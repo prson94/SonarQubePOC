@@ -29,6 +29,7 @@ export class DeleteForm  {
     //Modal
     @Input() showAsModal: boolean = false;
     @Input() modalTitle: string = '';
+    @Input() isModalVisible: boolean = false;
 
 
 
@@ -128,6 +129,7 @@ export class DeleteForm  {
     }
 
     public cancel(): void {
+        this.isLoading = false;
         this.onCancel.emit(null);
     }
 }

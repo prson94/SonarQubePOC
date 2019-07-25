@@ -28,6 +28,7 @@ import {
 } from 'primeng/primeng';
 
 import { TableModule } from 'primeng/table';
+import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -51,6 +52,7 @@ import { TableModule } from 'primeng/table';
         SharedObjectDetailsModule,
         SharedGridPagingInfoModule,
         TilesModule,
+        SiteModalModule
     ],
     declarations: [
         AdminTagsComponent,

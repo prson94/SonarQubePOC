@@ -69,77 +69,72 @@
 </ng-template>
 
 <ng-template [ngIf]="showAsModal">
-    <div #popupBox class="modal-overlay show" tabindex=-1 (keydown)="checkKey($event,popupBox)">
-        <d3s-loading [isLoading]="isLoading"></d3s-loading>
 
-        <div class="modal-dialog modal-dyn-editor">
-            <div class="title-bar">
-                <h1>{{modalTitle}}</h1>
-                <span class="grow"></span>
-                <button (click)="closeClick.emit();" class="light bar button close" title="Close"><i class="fa fa-times"></i></button>
-            </div>
-            <form (ngSubmit)="onSubmit()"
-                  [formGroup]="form" *ngIf="!isLoading">
-                <div class="content">
-                    <div class="row ui-grid-col-12">
 
-                        <ng-template ngFor
-                                     let-category
-                                     [ngForOf]="categories">
-                            <simple-accordion *ngIf="category.name"
-                                              [header]="category.name"
-                                              [active]="true">
-                                <div class="row"
-                                     *ngFor="let row of category.rows">
-                                    <div *ngFor="let field of row.Fields" [class]="row.getColClass() + ' form-row'">
-                                        <d3s-dynamic-field [field]="field"
-                                                           [form]="form"
-                                                           (listItemChange)="listSelectionChanged($event)"
-                                                           [object]="objectType"
-                                                           [objectID]="objectID"
-                                                           [selectedObject]="selectedObject"
-                                                           [selectedObjectID]="selectedObjectID"></d3s-dynamic-field>
-                                    </div>
+    <d3s-modal [title]="modalTitle" additionalClasses="'modal-dyn-editor'" (onClose)="closeClick.emit()" [isVisible]="isModalVisible">
+        <form (ngSubmit)="onSubmit()"
+              [formGroup]="form" *ngIf="!isLoading">
+            <div class="content">
+                <div class="row ui-grid-col-12">
+
+                    <ng-template ngFor
+                                 let-category
+                                 [ngForOf]="categories">
+                        <simple-accordion *ngIf="category.name"
+                                          [header]="category.name"
+                                          [active]="true">
+                            <div class="row"
+                                 *ngFor="let row of category.rows">
+                                <div *ngFor="let field of row.Fields" [class]="row.getColClass() + ' form-row'">
+                                    <d3s-dynamic-field [field]="field"
+                                                       [form]="form"
+                                                       (listItemChange)="listSelectionChanged($event)"
+                                                       [object]="objectType"
+                                                       [objectID]="objectID"
+                                                       [selectedObject]="selectedObject"
+                                                       [selectedObjectID]="selectedObjectID"></d3s-dynamic-field>
                                 </div>
-                            </simple-accordion>
-                            <span *ngIf="!category.name">
-                                <div class="row"
-                                     *ngFor="let row of category.rows">
-                                    <div *ngFor="let field of row.Fields" [class]="row.getColClass() + ' form-row'">
-                                        <d3s-dynamic-field [field]="field"
-                                                           [form]="form"
-                                                           (listItemChange)="listSelectionChanged($event)"
-                                                           [object]="objectType"
-                                                           [objectID]="objectID"
-                                                           [selectedObject]="selectedObject"
-                                                           [selectedObjectID]="selectedObjectID"></d3s-dynamic-field>
-                                    </div>
+                            </div>
+                        </simple-accordion>
+                        <span *ngIf="!category.name">
+                            <div class="row"
+                                 *ngFor="let row of category.rows">
+                                <div *ngFor="let field of row.Fields" [class]="row.getColClass() + ' form-row'">
+                                    <d3s-dynamic-field [field]="field"
+                                                       [form]="form"
+                                                       (listItemChange)="listSelectionChanged($event)"
+                                                       [object]="objectType"
+                                                       [objectID]="objectID"
+                                                       [selectedObject]="selectedObject"
+                                                       [selectedObjectID]="selectedObjectID"></d3s-dynamic-field>
                                 </div>
-                            </span>
-                        </ng-template>
-                        <div *ngIf="hasIconFields && fore.Value == back.Value"
-                             class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
-                        <div class="col s12">&nbsp;</div>
-                        <div class="col s12">
+                            </div>
+                        </span>
+                    </ng-template>
+                    <div *ngIf="hasIconFields && fore.Value == back.Value"
+                         class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
+                    <div class="col s12">&nbsp;</div>
+                    <div class="col s12">
 
-                        </div>
                     </div>
                 </div>
-                <div class="action-bar">
-                    <button class="left button"
-                            type="button"
-                            (click)="closeClick.emit();"
-                            label="Close">Close</button>
-                    <span class="grow"></span>
-                    <button class="right button primary {{savingInProgress ? 'loading' : 'loading'}}"
-                            type="submit"
-                            [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)"
-                            label="Done">Done<span class="loader"><span class="spinner light"></span></span></button>
-                </div>
-            </form>
-
-        </div>
-
-    </div>
+            </div>
+            <div class="action-bar">
+                <button class="left button"
+                        type="button"
+                        (click)="closeClick.emit();"
+                        label="Close">
+                    Close
+                </button>
+                <span class="grow"></span>
+                <button class="right button primary {{savingInProgress ? 'loading' : 'loading'}}"
+                        type="submit"
+                        [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)"
+                        label="Done">
+                    Done<span class="loader"><span class="spinner light"></span></span>
+                </button>
+            </div>
+        </form>
+    </d3s-modal>
 </ng-template>
 

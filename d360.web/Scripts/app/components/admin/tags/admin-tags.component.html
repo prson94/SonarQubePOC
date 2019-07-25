@@ -1,15 +1,14 @@
 ﻿<div class="row">
     <div class="col l12 m12 s12">
         <div class="tile tile-detail">
-            <header *ngIf="!showConsolidate">
+            <header>
                 Tags
 
-                
                 <d3s-admin-tags-action (onTagToggle)="tagStateChanged($event)" (onDelete)="openDeleteModal()" (onConsolidate)="openConsolidateModal()" [(selectedTags)]="selected"></d3s-admin-tags-action>
                 <d3s-tile-actions [hasAdd]="true"  (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
             </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
-            <span *ngIf="!isLoading && !showConsolidate">
+            <span *ngIf="!isLoading">
                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
                 <p-table #dt [value]="tags" selectionMode="multiple" [metaKeySelection]="true" [globalFilterFields]="['Value']" sortField="Value" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
                     <ng-template pTemplate="header">
@@ -54,27 +53,28 @@
                     </ng-template>
                 </p-table>
             </span>
-            <d3s-dynamic-editor *ngIf="showEditor" 
-                                [objectID]="selected[0]?.uid" 
+            <d3s-dynamic-editor [objectID]="selected[0]?.uid" 
                                 [objectType]="'Tag'" 
                                 [title]="'Tag'" 
                                 [selection]="selected[0]" 
                                 (saveClick)="saveTag($event)" 
                                 [showAsModal]="true"
-                                modalTitle="Edit Tag"
+                                [modalTitle]="'Delete Tag'"
+                                [isModalVisible]="showEditor"
                                 (closeClick)="closeEditor()">
 
             </d3s-dynamic-editor>
-            <d3s-delete-form *ngIf="showDelete"
-                             [callback]="theDeleteCallback"
+            <d3s-delete-form [callback]="theDeleteCallback"
                              [method]="'callback'"
                              [items]="selected"
                              [prompt]="deletePromptHTML"
                              [showAsModal]="true"
                              [modalTitle]="'Delete Tag'"
+                             [isModalVisible]="showDelete"
                              (onCancel)="showDelete=false;"></d3s-delete-form>
-            <d3s-admin-tags-consolidate *ngIf="showConsolidate"
-                                        [tags]="selected"
+            <d3s-admin-tags-consolidate [tags]="selected"                             
+                                        [modalTitle]="'Consolidate Tags'"
+                                        [isModalVisible]="showConsolidate"
                                         (onCancel)="showConsolidate=false"
                                         [callback]="theConsolidateCallback">
             </d3s-admin-tags-consolidate>

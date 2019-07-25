@@ -34,6 +34,7 @@ import { MultiSelectGridComponent } from './multiselect-grid.component';
 import { SimpleAccordionModule } from '../simple-accordion.part';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
+import { SiteModalModule } from '../modal/gov-modal.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -62,6 +63,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
         AutoCompleteModule,
         TableModule,
         DirectivesModule,
+        SiteModalModule,
 
         //color picker
         ColorPickerModule,

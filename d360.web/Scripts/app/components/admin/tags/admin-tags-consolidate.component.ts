@@ -12,6 +12,8 @@ export class AdminTagsConsolidateComponent implements OnInit {
     @Input() tags: TagType[] = [];
     private selected: TagType;
 
+    @Input() modalTitle: string = '';
+    @Input() isModalVisible: boolean = false;
 
     @Input() callback: Function;
     @Output() onCancel = new EventEmitter();
