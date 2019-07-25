@@ -7,9 +7,9 @@ import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { AuditService } from '../../../services/audit.service';
 import { StateService } from '../../../services/state.service';
 import { ArtifactTypeService } from '../../../services/artifact-type.service';
-import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -37,7 +37,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         headerBreadcrumbService: HeaderBreadcrumbService,
         private artifactsService: ArtifactTypeService,
         titleService: Title,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         private router: Router) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Artifacts";

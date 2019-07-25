@@ -3,9 +3,9 @@ import {ObjectDetailService} from '../../services/object-detail.service';
 import {Synonym, SynonymItem, SynonymEditModel} from '../../models/object-detail.model';
 import {FormMode, FormHelper} from '../../models/form.model';
 import {BaseComponent} from '../shared/base.component';
-import {MessagesService} from '../../services/messages.service';
 import {Router} from '@angular/router';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 declare var CompanySettings: any;
 
@@ -209,7 +209,7 @@ export class SynonymsTile extends BaseComponent implements OnChanges, OnInit {
 
     private isLoadingItems = false;
 
-    constructor(private messagesService: MessagesService, private objectDetailService: ObjectDetailService, private router: Router) {
+    constructor(private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService, private router: Router) {
         super();
 
         this.theDeleteCallback = this.deleteSynonym.bind(this);

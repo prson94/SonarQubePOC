@@ -3,10 +3,10 @@ import {ActivatedRoute, Router} from '@angular/router';
 
 import {ApiUri, ApiVersion} from '../../../models/custom-api.model';
 
-import {MessagesService} from '../../../services/messages.service';
 import {CustomAPIService} from '../../../services/custom-api.service';
 
 import {BaseComponent} from '../../shared/base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-api-endpoint-version-uritypes',
@@ -24,7 +24,7 @@ export class AdminCustomAPIEndpointVersionUriTypesComponent extends BaseComponen
 
     constructor(
         protected customAPIService: CustomAPIService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         private route: ActivatedRoute,
         private router: Router,
     ) {

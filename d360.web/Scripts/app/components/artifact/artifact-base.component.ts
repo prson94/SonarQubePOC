@@ -1,5 +1,4 @@
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { MessagesService } from '../../services/messages.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';

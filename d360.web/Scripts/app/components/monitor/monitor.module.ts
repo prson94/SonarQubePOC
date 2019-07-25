@@ -1,10 +1,9 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
-import { HttpModule, XHRBackend  }     from '@angular/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-
-import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
 
 import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
@@ -35,7 +34,7 @@ import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.comp
 @NgModule({
     imports: [CommonModule,   
         DeprecatedI18NPipesModule,
-        HttpModule,
+        HttpClientModule,
         RouterModule,
         FormsModule,
 
@@ -71,7 +70,10 @@ import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.comp
         MonitorListComponent,
         ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true },
     ] 
 })
 export class MonitorModule { }

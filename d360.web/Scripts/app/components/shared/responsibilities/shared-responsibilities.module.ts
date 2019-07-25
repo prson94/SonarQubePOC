@@ -1,9 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
 import {
     ButtonModule,
@@ -34,7 +33,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
 
         //d3s
         CoreModule,
@@ -67,7 +66,10 @@ import { PipesModule } from '../../../pipes/pipes.module';
         ResponsibilityRelationForm
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true },
     ]
 })
 export class SharedResponsibilitiesModule { }

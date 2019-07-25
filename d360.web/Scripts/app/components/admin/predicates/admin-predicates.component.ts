@@ -1,11 +1,11 @@
 ﻿import { Component, OnDestroy } from '@angular/core';
 import { Predicate } from '../../../models/predicate.model';
 import { PredicatesService } from '../../../services/predicates.service';
-import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Title } from '@angular/platform-browser';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-predicates-component',
@@ -99,7 +99,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     theDeleteCallback: Function;
 
     constructor(private predicatesService: PredicatesService,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         rightSidebarService: RightSidebarService,        
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title

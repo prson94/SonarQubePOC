@@ -1,10 +1,10 @@
 ﻿import {NgModule} from '@angular/core';
 import {CommonModule, DeprecatedI18NPipesModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {HttpModule, XHRBackend} from '@angular/http';
-import {RouterModule} from '@angular/router';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import {AuthenticationConnectionBackend} from '../../../authentication-connection-backend';
+import { RouterModule } from '@angular/router';
 
 import {AdminModule} from '../admin.module';
 import {CoreModule} from '../../shared/core.module';
@@ -45,7 +45,7 @@ import {AdminResponsibilitiesModule} from '../responsibilities/admin-responsibil
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
 
         AdminArtifactsRoutingModule,
 
@@ -85,7 +85,11 @@ import {AdminResponsibilitiesModule} from '../responsibilities/admin-responsibil
         ArtifactTypeDeleteComponent,
     ],
     providers: [
-        {provide: XHRBackend, useClass: AuthenticationConnectionBackend},
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true
+        }
     ]
 })
 

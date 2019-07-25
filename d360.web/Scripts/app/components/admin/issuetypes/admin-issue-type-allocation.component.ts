@@ -1,9 +1,9 @@
 ﻿import { Component, Input, OnChanges, SimpleChange, SimpleChanges } from '@angular/core';
-import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { WorkflowService } from '../../../services/workflow.service';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-issue-type-allocation',
@@ -84,7 +84,7 @@ export class AdminIssueTypeAllocationComponent extends BaseComponent implements 
     selection = null;
     deleteCallback: Function;
 
-    constructor(private workflowService: WorkflowService, protected messagesService: MessagesService) {
+    constructor(private workflowService: WorkflowService, protected messagesService: MessagesObservableService) {
         super();
         this.deleteCallback = this.delete.bind(this);
     }

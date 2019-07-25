@@ -9,7 +9,6 @@ import {RightSidebarService} from '../../services/right-sidebar.service';
 import {WebAnalyticsService} from '../../services/web-analytics.service';
 import {ObjectDetailService} from '../../services/object-detail.service';
 import {TagService} from '../../services/tag.service';
-import {MessagesService} from '../../services/messages.service';
 import {Breadcrumb} from '../../models/breadcrumb.model';
 import {SocialCommentType} from '../../models/social.model';
 import {WorkflowType, WorkflowIssueType} from '../../models/workflow.model';
@@ -20,6 +19,7 @@ import {Tag} from '../../models/tag.model';
 import {D3SObjectHelpers} from '../../static/d3s-object-helpers';
 import {HeaderActionsService} from '../../services/header-actions.service';
 import {HeaderActions} from '../../models/header.model';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 declare var CompanySettings;
 
@@ -132,7 +132,7 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         private headerActionsService: HeaderActionsService,
         webAnalyticsService: WebAnalyticsService,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         rightSidebarService: RightSidebarService) {
         super();
         this.rightSidebarService = rightSidebarService;

@@ -1,14 +1,9 @@
 import { Component, OnDestroy, AfterContentInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { MessagesService } from './services/messages.service';
-import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
 import { HeaderActionsService } from './services/header-actions.service';
-import { RightSidebarService } from './services/right-sidebar.service';
-import { StateService } from './services/state.service';
-import { SiteMessage } from './models/site-message.model';
 import { Subscription } from 'rxjs';
 import { Message } from 'primeng/components/common/api';
 import { CookieService } from './services/cookie.service';
+import { MessagesObservableService } from './services/messages-observable.service';
 
 
 
@@ -37,8 +32,8 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     msgs: Message[];
     public menuOpen: boolean = true;
 
-    constructor(                
-        private messagesService: MessagesService,
+    constructor(
+        private messagesService: MessagesObservableService,
         protected headerActionsService: HeaderActionsService,
         private cookieService: CookieService) {
         this.msgs = [];
