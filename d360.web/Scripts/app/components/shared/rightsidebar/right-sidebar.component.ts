@@ -33,8 +33,13 @@ declare var CompanySettings;
                             <d3s-dynamic-percentage [innerCircleColor]="getColor(badge)" [percentage]="statistics?.Score"></d3s-dynamic-percentage> 
                              <span class="text">{{statistics?.Score}}%</span>
                         </span> 
-                        <ng-template #noScore><span *ngIf="currentObject && !currentObject?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon">No Score</span></ng-template>
-                        <span *ngIf="showStatus" class="d3s-icon large-icon" [style.color]="getCertificationStatusColor(status)">
+                        <ng-template #noScore>
+                            <span #noScoreBadge *ngIf="currentObject && !currentObject?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon">
+                                <d3s-dynamic-percentage [innerCircleColor]="getColor(noScoreBadge)" [percentage]="0"></d3s-dynamic-percentage> 
+                                <span class="text">N/A</span>
+                            </span>
+                        </ng-template>
+                        <span *ngIf="showStatus" class="d3s-icon large-icon" [style.background-color]="getCertificationStatusColor(status)">
                             <i class="fa fa-certificate"></i>
                             <span class="text">{{status}}</span>
                         </span>
@@ -89,6 +94,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     private currentObject: any;
     private surveyType: SurveyType;
     @ViewChild('badge') badge: ElementRef;
+    @ViewChild('noScore') noScore: ElementRef;
     @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
     private statistics: ObjectStatistics;
 
@@ -130,6 +136,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     scroll(direction: string) {
         let scrollAmount = 0;
+        let scrollDistance = 300;
         let move = () => {
             if (direction == 'L') {
                 this.tabScroller.first.nativeElement.scrollLeft -= 10;
@@ -137,7 +144,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.tabScroller.first.nativeElement.scrollLeft += 10;
             }
             scrollAmount += 10;
-            if (scrollAmount >= 100) {
+            if (scrollAmount >= scrollDistance) {
                 window.clearInterval(id);
             }
         };

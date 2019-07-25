@@ -117,12 +117,12 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.rightSidebarService.setCurrentArea(this.resource.FirstName + " " + this.resource.LastName, 'fa-cog', 'User');
                    
                     this.itemsOwn = new RightSidebarItem(
-                        'Related Assets', 'itemOwn', ['fa-tasks'],
+                        'Ownership', 'itemOwn', ['fa-tasks'],
                         `/sidebar/itemown/${resourceId}`
                     );
                     this.rightSidebarService.showItem(this.itemsOwn);
                     this.memberGroups = new RightSidebarItem(
-                        'Ownership', 'memberGroup', ['fa-user-circle'],
+                        'Groups', 'memberGroup', ['fa-user-circle'],
                         `/sidebar/membergroup/${resourceId}`
                     );
                     this.rightSidebarService.showItem(this.memberGroups);
@@ -132,7 +132,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     );
                     this.rightSidebarService.showItem(this.itemsFollow);
                     this.hasRelations = new RightSidebarItem(
-                        'Relations', 'hasRelations', ['fa-retweet'],
+                        'Related Assets', 'hasRelations', ['fa-retweet'],
                         `/sidebar/relationships/resource/${resourceId}`
                     );
                     this.rightSidebarService.showItem(this.hasRelations);
