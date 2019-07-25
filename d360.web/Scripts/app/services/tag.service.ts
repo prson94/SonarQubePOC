@@ -72,11 +72,18 @@ export class TagService extends BaseObservableService {
                 catchError(err => this.handleError(err)));
     }
 
-    consolidateTags(parentTag: string, childrenTags: string[]): Observable<any> {
+    consolidateTags(parentTag: string, childrenTags: string[]): Observable<any[]> {
         let url = `api/v2/tags/consolidate/${parentTag}`;
         return this.http.post(url, childrenTags)
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err)));
+    }
+
+    getAssetPathsForTag(tagUid: string): Observable<any[]> {
+        let url = `api/v2/tags/${tagUid}/assetpath`; 
+        return this.http.get(url)
+            .pipe(map(response => <any[]>response),
+                catchError(err => this.handleError(err)))
     }
 
 }

@@ -45,14 +45,15 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             var sql = @"select t.uid,
 	                        t.Value,
-                            '0' as UseCount,
+                            Tags.count as UseCount,
 	                        t.CreatedOn,
 	                        grc.uid as CreatedByUid,
 	                        t.UpdatedOn,
 	                        gru.uid as UpdatedByUid
                          from [tag] t
 	                        left join reporting.Global_Resource grc on t.CreatedBy = grc.ResourceID
-	                        left join reporting.Global_Resource gru on t.UpdatedBy = gru.ResourceID";
+	                        left join reporting.Global_Resource gru on t.UpdatedBy = gru.ResourceID
+							cross apply (select count(*) from AssetTag where TagId = t.Id)Tags (count)";
 
             var countSql = @"select count(1)
                             from[tag] t
@@ -197,6 +198,57 @@ namespace d360.model.DataAccessLayer
         {
             var sql = $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID]) VALUES ('Update','Tag',{tag.Id})";
             companyContext.Query<int>(sql).FirstOrDefault();
+        }
+
+
+        public List<dynamic> GetAssetsPathForTag(Guid tagUid)
+        {
+            string sql = @"select D.DisplayValue ,
+                        'Glossary > Business Term' as AssetPath
+                        from Tag T
+	                inner join AssetTag AT on AT.TagId = T.Id
+	                inner join Asset A on A.ID = AT.AssetID
+	                left join dbo.GetAssetDisplayValue() D on D.ID = A.ID
+                where t.uid = @uid
+                ";
+
+            var result = companyContext.Query<dynamic>(sql, new { uid = tagUid }).ToList();
+            return result;
+        }
+
+        public IEnumerable<TagApiModel> ConsolidateTags(string parentUid, List<string> childrenUids)
+        {
+            StringBuilder sqlUidParams = new StringBuilder();
+            foreach (var uidString in childrenUids)
+            {
+                sqlUidParams.Append($"insert into @children values ('{uidString}')");
+            }
+            string sql = $@"
+                        declare @children TABLE (uid uniqueidentifier)
+                        {sqlUidParams.ToString()}                        
+                        declare @consolidateToId int = (select TOP 1 Id from Tag where uid = @parentUid)
+                        
+                        ;with CTE as 
+                        (
+                        	select T.Id from AssetTag AT
+                        	inner join Tag T on AT.TagID = T.ID
+                        	inner join @children CH on CH.uid = T.uid
+                        ) 
+                        update AssetTag
+                        set TagId = @consolidateToId
+                        where TagId in (select Id from cte)
+
+
+                        update Tag 
+                        set State = 3
+                        where uid in (select uid from @children)
+                        
+                        select T.uid, Items.count as UseCount from Tag T
+                        	cross apply (select count(*) from AssetTag where TagId = T.Id)Items (count)
+                        where T.uid = @parentUid or T.uid in (select uid from @children)";
+
+            var result = companyContext.Query<TagApiModel>(sql, new { parentUid });
+            return result;
         }
     }
 }

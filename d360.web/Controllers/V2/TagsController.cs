@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -28,12 +29,12 @@ namespace d360.web.Controllers.V2
         ApiExplorerSettings(IgnoreApi = false)
     ]
     public class TagsController : BaseV2ApiController
-    {        
+    {
         ITagRepository tagRepository;
 
         public TagsController(ICommunityContext community, ICompanyContext company, ITagRepository repository)
             : base(community, company)
-        {            
+        {
             this.tagRepository = repository;
         }
 
@@ -48,7 +49,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("uid", "The uid of a specific tag to return.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(List<TagApiModelWrapper>)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")            
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
         public async Task<HttpResponseMessage> Get()
         {
@@ -99,7 +100,7 @@ namespace d360.web.Controllers.V2
             HttpPost,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "The specified tag was saved, returns the properties of the created tag.", typeof(TagApiModel)),            
+            SwaggerResponse(HttpStatusCode.OK, "The specified tag was saved, returns the properties of the created tag.", typeof(TagApiModel)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
@@ -129,11 +130,11 @@ namespace d360.web.Controllers.V2
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error while creating tag", e.Message);
             }
-            
+
             return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
         }
 
-      
+
 
         /// <summary>
         /// Updates the specified tag.
@@ -220,7 +221,7 @@ namespace d360.web.Controllers.V2
             /// <param name="parentUid">The unique identifier of the parent tag.</param>        
             /// <param name="childrenUids">The list of children tags which we want to consolidate.</param>
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(TagApiModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
         ]
@@ -229,12 +230,56 @@ namespace d360.web.Controllers.V2
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            if (true)
+            try
             {
-                return errorMessageResponse(HttpStatusCode.NotImplemented, "Error consolidating tags", "Method not implemented!");
+
+                if (Guid.Parse(parentUid) == Guid.Empty)
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating tags", $"{parentUid} is not valid uid!");
+
+                foreach (var item in childrenUids)
+                {
+                    if (Guid.Parse(item) == Guid.Empty)
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating tags", $"{item} is not valid uid!");
+                }
+
+                if (childrenUids.Contains(parentUid))
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating tags", "Parent tag should not be included in children tags!");
+
+                IEnumerable<TagApiModel> result = tagRepository.ConsolidateTags(parentUid, childrenUids);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+            }
+            catch (Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error while consolidating tags", ex.Message);
+
             }
 
-            return successMessageResponse(HttpStatusCode.OK, "Tags consolidated.", "Tags successfully consolidated.");
+        }
+
+
+
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("{tagUid}/assetpath"),
+        ]
+        public IHttpActionResult GetAssetsPath(Guid tagUid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+                List<dynamic> result = tagRepository.GetAssetsPathForTag(tagUid);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+
+            }
+            catch (Exception e)
+            {
+
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting assets path", e.Message);
+            }
+
         }
 
     }

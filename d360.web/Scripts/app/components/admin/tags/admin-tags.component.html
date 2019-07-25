@@ -59,19 +59,35 @@
                                 [selection]="selected[0]" 
                                 (saveClick)="saveTag($event)" 
                                 [showAsModal]="true"
-                                [modalTitle]="'Delete Tag'"
+                                [modalTitle]="'Edit Tag'"
                                 [isModalVisible]="showEditor"
                                 (closeClick)="closeEditor()">
 
             </d3s-dynamic-editor>
-            <d3s-delete-form [callback]="theDeleteCallback"
+            <d3s-delete-form *ngIf="selected.length != 0" 
+                             [callback]="theDeleteCallback"
                              [method]="'callback'"
                              [items]="selected"
-                             [prompt]="deletePromptHTML"
                              [showAsModal]="true"
                              [modalTitle]="'Delete Tag'"
                              [isModalVisible]="showDelete"
-                             (onCancel)="showDelete=false;"></d3s-delete-form>
+                             (onCancel)="showDelete=false;">
+                <div prompt>
+                    <div *ngIf="selected.length == 1">
+                        Please confirm that you wish to delete the tag '{{this.selected[0].Value}}'(<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} assets</d3s-tag-usage> tagged)
+                    </div>
+                    <div *ngIf="selected.length > 1">
+                        Please confirm that you wish to delete following tags:
+                        <table>
+                            <tr *ngFor="let t of selected">
+                                <td>{{t.Value}}</td>
+                                <td><d3s-tag-usage [uid]="t.uid">{{t.UseCount}} assets</d3s-tag-usage> assets tagged</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+            </d3s-delete-form>
             <d3s-admin-tags-consolidate [tags]="selected"                             
                                         [modalTitle]="'Consolidate Tags'"
                                         [isModalVisible]="showConsolidate"

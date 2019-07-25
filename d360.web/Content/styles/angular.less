@@ -1915,7 +1915,7 @@ div.home-image-title-text {
     left: 0;
     bottom: 0;
     right: 0;
-    z-index: 5000 !important;
+    z-index: 800 !important;
     padding-top: 40px;
     padding-bottom: 40px;
     background: rgba(255, 255, 255, 0.8);
@@ -2418,10 +2418,11 @@ modal-overlay .modal-dialog .content {
         }
     }
 
-    .table-borderless{
-        margin:12px 0px;
-        thead{
-            border-bottom:unset;
+    .table-borderless {
+        margin: 12px 0px;
+
+        thead {
+            border-bottom: unset;
         }
     }
 }
@@ -2508,5 +2509,50 @@ modal-overlay .modal-dialog .content {
     .enable-tags {
         float: left;
         font-size: 14px;
+    }
+}
+
+.tag-usage-box {
+    display: inline-block;
+    position: relative;
+
+    .title {
+        color: #006FBA;
+    }
+
+    .title:hover {
+        cursor: pointer;
+    }
+}
+
+.ui-tooltip-right {
+    .ui-tooltip-text {
+        padding: .125em .5em;
+        background-color: #ffffff;
+        color: #000;
+        white-space: pre-line;
+        width: max-content;
+        max-width: 500px;
+        font-size: 12px;
+        padding: 15px;
+
+        .table-borderless {
+            td {
+                padding: 2px 0px;
+
+                &.name {
+                    color: #006FBA;
+                }
+
+                &.suppressed {
+                    color: #c1c0c0;
+                }
+            }
+        }
+    }
+
+
+    .ui-tooltip-arrow {
+        border-right-color: #ffffff;
     }
 }

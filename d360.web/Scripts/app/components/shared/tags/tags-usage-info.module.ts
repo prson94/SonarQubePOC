@@ -6,7 +6,7 @@ import { GovernRequestInterceptor } from "../../../http-interceptors/govern-requ
 
 import { RouterModule } from '@angular/router';
 
-import { D3SModal } from './gov-modal.component';
+import { TagUsageInfoBox } from './tags-usage-info.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 
 
@@ -23,13 +23,13 @@ import {
         PipesModule, 
 
         //prime
-        TooltipModule
+        TooltipModule,
     ],
     declarations: [
-        D3SModal
+        TagUsageInfoBox
     ],
     exports: [
-        D3SModal,        
+        TagUsageInfoBox,        
     ],
     providers: [
         {
@@ -38,4 +38,4 @@ import {
             multi: true },
     ]
 })
-export class SiteModalModule { }
+export class TagUsageInfoModule { }

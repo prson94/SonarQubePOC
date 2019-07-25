@@ -20,7 +20,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     error: any;
 
-    deletePromptHTML: string;
     consolidatePromptHTML: string;
     showDelete: boolean = false;
     showEditor: boolean = false;
@@ -126,17 +125,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     openDeleteModal() {
-        this.deletePromptHTML = '';
-        if (this.selected.length == 1) {
-            this.deletePromptHTML = `Please confirm that you wish to delete the tag '${this.selected[0].Value}'(${this.selected[0].UseCount} assets tagged)`;
-        }
-        else {
-            let tagList = '';
-            this.selected.forEach(t => {
-                tagList += `<tr><td>${t.Value}</td><td>${t.UseCount} assets tagged</td></tr>`;
-            });
-            this.deletePromptHTML = `Please confirm that you wish to delete following tags: <table>${tagList}</table>`;
-        }
         this.showDelete = true;
     }
 
@@ -147,17 +135,21 @@ export class AdminTagsComponent extends AdminBaseComponent {
     consolidateTags(parentUid: string, childrenUids: string[]) {
         this.tagsService.consolidateTags(parentUid, childrenUids)
             .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                //remove the template with this id from the grid
-                console.log(result);
-                if (result.type != 'error') {
-                    this.selected.forEach(t => {
-                        this.tags.splice(this.findTagIndex(t.uid), 1);
-                    })
-                    this.selected = [];
-                }
+                this.selected = [];
+                this.messagesService.showInfoMessage("Success", "Tag consolidation succesfull");
+                var temp = this.tags;
+                result.forEach(t => {
+                    if (t.UseCount != 0)
+                        this.tags[this.findTagIndex(t.uid)].UseCount = t.UseCount;
+                    else
+                        this.tags = this.tags.filter(x => x.uid != t.uid);
+                });
+                this.selected.push(this.tags[0]);
                 this.showConsolidate = false;
-            }, err => this.showMessageForResult(this.messagesService, err));
+            }, err => {
+                this.showMessageForResult(this.messagesService, err);
+                this.showConsolidate = false;
+            });
     }
 
     tagStateChanged(state: boolean) {

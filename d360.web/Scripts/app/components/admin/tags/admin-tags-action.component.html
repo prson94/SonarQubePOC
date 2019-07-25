@@ -1,7 +1,7 @@
 ﻿<div class="tag-actions">
 
     <div>
-        <div class="multiselect-action">
+        <div class="multiselect-action" *ngIf="selectedTags.length > 1">
             <div class="item-selection">
                 {{selectedTags.length}} items selected
             </div>

@@ -71,9 +71,9 @@
 <ng-template [ngIf]="showAsModal">
 
 
-    <d3s-modal [title]="modalTitle" additionalClasses="'modal-dyn-editor'" (onClose)="closeClick.emit()" [isVisible]="isModalVisible">
+    <d3s-modal [title]="modalTitle" additionalClasses="modal-dyn-editor" (onClose)="closeClick.emit()" [isVisible]="isModalVisible">
         <form (ngSubmit)="onSubmit()"
-              [formGroup]="form" *ngIf="!isLoading">
+              [formGroup]="form" *ngIf="!isLoading" prompt>
             <div class="content">
                 <div class="row ui-grid-col-12">
 
