@@ -437,14 +437,10 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk relationship results, including any error messages.", typeof(List<DatabaseBulkRelationshipResult>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to add/update relationships of this type.")));
-
             var prefix = "Relationships.PostRelationshipsAsync => ";
             var errorMessage = "";
 
@@ -511,14 +507,10 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)), SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostBulkRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
-
             var prefix = "Relationships.PostBulkRelationshipsAsync => ";
             var errorMessage = "";
 
