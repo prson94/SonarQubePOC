@@ -1,0 +1,44 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="SDooley" id="GOV-7728-1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+IF EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'ASSETTAG' AND Type = N'U')
+ BEGIN
+	DROP INDEX [IX_AssetTag_AssetID] ON [dbo].[AssetTag];
+	ALTER TABLE [AssetTag] ALTER COLUMN [AssetID] bigint;
+
+	CREATE NONCLUSTERED INDEX [IX_AssetTag_AssetID] ON [dbo].[AssetTag]
+	(
+		[AssetID] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY];
+
+	ALTER TABLE [dbo].[AssetTag] ADD  CONSTRAINT [DF_AssetTag_uid]  DEFAULT (newid()) FOR [uid]
+END
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+IF EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'ASSETTAG' AND Type = N'U')
+ BEGIN
+	DROP INDEX [IX_AssetTag_AssetID] ON [dbo].[AssetTag];
+	ALTER TABLE [AssetTag] ALTER COLUMN [AssetID] int;
+
+	CREATE NONCLUSTERED INDEX [IX_AssetTag_AssetID] ON [dbo].[AssetTag]
+	(
+		[AssetID] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY];
+END
+]]>
+    </rollback>
+  </changeSet>
+
+</databaseChangeLog>
