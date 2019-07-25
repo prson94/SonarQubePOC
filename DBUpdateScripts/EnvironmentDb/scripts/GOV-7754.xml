@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="GOV-7754">
+  <changeSet author="Pappas" id="GOV-7754-2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -63,7 +63,6 @@ begin
 	alter table #ft add ColumnStatement varchar(2500)
 	alter table #ft add OrderStatement varchar(2500)
 	alter table #ft add JoinStatement nvarchar(max)
-	alter table #ft add OverrideJoinStatement nvarchar(max) null
 	alter table #ft add FilterStatement varchar(2500)
 	alter table #ft add TxtId varchar(25)
 
@@ -150,20 +149,25 @@ begin
 	
 	update	#ft
 	set		JoinStatement = ' left join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' and FT'+TxtId+'.LookupObjectType = ''IntersectType''' 
-				+ ' left join [Intersect] F'+TxtId+'R with(nolock) on F'+TxtId+'R.IntersectTypeID = FT'+TxtId+'.LookupObjectID and ( (F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID) or (F'+TxtId+'R.Object = A.Object and F'+TxtId+'R.ObjectID = A.ObjectID) )'
-				+ ' outer apply dbo.GetRelationshipDisplayValue(case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.Object else F'+TxtId+'R.Subject end,case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.ObjectID else F'+TxtId+'R.SubjectID end) as F'+TxtId,
-			OverrideJoinStatement = ' left join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' and FT'+TxtId+'.LookupObjectType = ''IntersectType''' 
-				+ ' outer apply ('
-				+ '  select	top 1 F'+TxtId+'N.DisplayValue ' 
-				+ '  from	[Intersect] F'+TxtId+'R with(nolock) '
-				+ '  cross apply dbo.GetRelationshipDisplayValue(case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.Object else F'+TxtId+'R.Subject end,case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.ObjectID else F'+TxtId+'R.SubjectID end) as F'+TxtId+'N '
-				+ '  where F'+TxtId+'R.IntersectTypeID = FT'+TxtId+'.LookupObjectID and ( (F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID) or (F'+TxtId+'R.Object = A.Object and F'+TxtId+'R.ObjectID = A.ObjectID) ) '
-				+ ' ) F'+TxtId,
+				+ case 
+					when @listableFieldsOnly = 0 or IsListable = 1 then 
+					' left join [Intersect] F'+TxtId+'R with(nolock) on F'+TxtId+'R.IntersectTypeID = FT'+TxtId+'.LookupObjectID and ( (F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID) or (F'+TxtId+'R.Object = A.Object and F'+TxtId+'R.ObjectID = A.ObjectID) )'
+					+ ' outer apply dbo.GetRelationshipDisplayValue(case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.Object else F'+TxtId+'R.Subject end,case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.ObjectID else F'+TxtId+'R.SubjectID end) as F'+TxtId
+				  else ''
+				  end,
 			ColumnStatement = 'F'+TxtId+'.DisplayValue',
 			OrderStatement = 'F'+TxtId+'.DisplayValue',
 			FilterStatement =	case 
 									when (@filter is not null and IsListable = 1) then '(F'+TxtId+'.DisplayValue like @filter)' 
-									when ID in (select TypeID from @filters where FilterType = 'F') then 'F'+TxtId+'.DisplayValue like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
+									when @listableFieldsOnly = 0 and ID in (select TypeID from @filters where FilterType = 'F') then 'F'+TxtId+'.DisplayValue like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
+									when @listableFieldsOnly = 1 and ID in (select TypeID from @filters where FilterType = 'F') then ' exists ('
+										+ '  select	F'+TxtId+'N.DisplayValue ' 
+										+ '  from	[Intersect] F'+TxtId+'R with(nolock) '
+										+ '  cross apply dbo.GetRelationshipDisplayValue(case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.Object else F'+TxtId+'R.Subject end,case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.ObjectID else F'+TxtId+'R.SubjectID end) as F'+TxtId+'N '
+										+ '  where F'+TxtId+'R.IntersectTypeID = FT'+TxtId+'.LookupObjectID '
+ 	 									+ '  and ( (F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID) or (F'+TxtId+'R.Object = A.Object and F'+TxtId+'R.ObjectID = A.ObjectID) ) '
+										+ '  and F'+TxtId+'N.DisplayValue like (select top 1 FilterValues from @filters where TypeID = FT'+TxtId+'.ID)'
+										+ ' ) '
 									else '' 
 								end
 	where	[Type] = 'Relationship';
@@ -255,12 +259,7 @@ end as P_CanDelete, '
 
 	set @countSql = 'select count(1)'
 	set @countSql = @countSql + ' from Asset A '
-	select @countSql = @countSql + string_agg(
-			case 
-				when OverrideJoinStatement is not null and IsListable = 0 then OverrideJoinStatement 
-				else JoinStatement
-			end
-			, ' ') 
+	select @countSql = @countSql + string_agg(JoinStatement, ' ') 
 	from	#ft 
 	where	(coalesce(JoinStatement,'') <> '') and (IsListable = 1 OR coalesce(FilterStatement,'') <> '')
 	set @countSql = @countSql + @parentJoin
@@ -365,12 +364,7 @@ end as P_CanDelete, '
 			and (IsListable = 1 or @listableFieldsOnly = 0)
 
 	set @sql = @sql + ' from Asset A inner join AssetType T on T.ID = A.AssetTypeID '
-	select	@sql = @sql + string_agg(
-			case 
-				when OverrideJoinStatement is not null and IsListable = 0 then OverrideJoinStatement 
-				else JoinStatement
-			end
-			, ' ') 
+	select	@sql = @sql + string_agg(JoinStatement, ' ') 
 	from	#ft 
 	where	(coalesce(JoinStatement,'') <> '') 
 			and (IsListable = 1 OR @listableFieldsOnly = 0 OR coalesce(FilterStatement,'') <>'')
@@ -391,7 +385,7 @@ end as P_CanDelete, '
 
 	declare @parameters nvarchar(max)
 	set @parameters = '@assetTypeId int, @filter nvarchar(250), @userId int, @pageNumber int, @pageSize int, @filters [dbo].[AssetFiltersTable] readonly'
-	
+
 	exec sp_executesql @countSql, @parameters, @assetTypeId = @assetTypeId, @filter = @filter, @userId = @userId, @pageNumber = @pageNumber, @pageSize = @pageSize, @filters = @filters
 	exec sp_executesql @sql, @parameters, @assetTypeId = @assetTypeId, @filter = @filter, @userId = @userId, @pageNumber = @pageNumber, @pageSize = @pageSize, @filters = @filters
 end
