@@ -24,8 +24,8 @@ namespace d360.model.DataAccessLayer
         List<DatabaseBulkAssetResult> DeleteAsset(AssetDeletes assets, AssetType assetType, ApiExecution execution);
         Task<ApiExecutionInfo> DeleteBulkAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution);
         Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution);
-        Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution);
-        Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution);
+        Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true);
+        Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true);
         Predicate GetPredicateByUID(Guid predicateGuid);
         AssetType GetAssetTypeByUID(Guid assetTypeUid);
         AssetType GetAssetTypeByModel(AssetTypeInsert model);

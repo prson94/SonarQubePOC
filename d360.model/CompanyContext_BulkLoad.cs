@@ -993,14 +993,14 @@ order by	ColumnIndex", new { id });
                 if (putAssets.Any())
                 {
                     var execution = getApiExecution(putAssets.Count, new BulkLoadExecutionFields_Assets { AssetTypeUid = assetTypeUid, LoadID = load.ID });
-                    ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution);
+                    ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution, false);
                     load.PutExecutionID = executionInfo.ExecutionID;
                 }
 
                 if (postAssets.Any())
                 {
                     var execution = getApiExecution(postAssets.Count, new BulkLoadExecutionFields_Assets { AssetTypeUid = assetTypeUid, LoadID = load.ID });
-                    ApiExecutionInfo executionInfo = await repository.PostBulkAssets(postAssets, execution);
+                    ApiExecutionInfo executionInfo = await repository.PostBulkAssets(postAssets, execution, false);
                     load.PostExecutionID = executionInfo.ExecutionID;
                 }
 
