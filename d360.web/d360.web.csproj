@@ -638,6 +638,7 @@
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.component.css" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
+    <Content Include="Scripts\app\components\shared\modal\gov-modal.component.html" />
     <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\dynamic-lookup-grid.component.html" />
     <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
@@ -1170,6 +1171,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\modal\gov-modal.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\modal\gov-modal.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.ts" />

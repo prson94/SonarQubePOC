@@ -136,6 +136,7 @@ export class DeleteForm  {
 import {    
     ButtonModule,    
 } from 'primeng/primeng';
+import { SiteModalModule } from '../shared/modal/gov-modal.module';
 
 @NgModule({
     declarations: [
@@ -150,6 +151,7 @@ import {
         ButtonModule,
 
         SharedFormMessageModule,
+        SiteModalModule
     ]
 
 })
