@@ -1,6 +1,4 @@
 ﻿import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
-import { TagService } from '../../../services/tag.service';
-import { AdminBaseComponent } from '../admin-base.component'
 import { TagType } from '../../../models/tag.model';
 
 @Component({

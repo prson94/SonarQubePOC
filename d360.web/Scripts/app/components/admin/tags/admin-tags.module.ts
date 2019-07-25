@@ -15,7 +15,7 @@ import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-obj
 import { AdminTagsComponent } from './admin-tags.component';
 import { AdminTagsActionComponent } from './admin-tags-action.component';
 import { AdminTagsConsolidateComponent } from './admin-tags-consolidate.component'
-import { D3SCheckbox } from '../../shared/controls/gov-checkbox';
+import { D3SCheckboxModule } from '../../shared/controls/gov-checkbox';
 
 
 import { AdminTagsRoutingModule } from './admin-tags.routes';
@@ -54,13 +54,13 @@ import { TagUsageInfoModule } from '../../shared/tags/tags-usage-info.module';
         SharedGridPagingInfoModule,
         TilesModule,
         SiteModalModule,
-        TagUsageInfoModule
+        TagUsageInfoModule,
+        D3SCheckboxModule
     ],
     declarations: [
         AdminTagsComponent,
         AdminTagsActionComponent,
-        AdminTagsConsolidateComponent,
-        D3SCheckbox
+        AdminTagsConsolidateComponent
     ],
     providers: [
         {
