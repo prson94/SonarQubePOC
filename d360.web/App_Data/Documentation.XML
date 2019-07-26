@@ -3001,6 +3001,27 @@
             <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
+             <summary>
+             Creates association between an existing Asset and an existing tag
+             </summary>
+             <remarks>
+             An Administrator can create  any tag association. 
+            A regular user can only create a tag association to assets they have access to.
+             </remarks>
+             <param name="assetTags">AssetTag</param>
+             <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
+            <summary>
+            Removes association between an existing Asset and an exiting Tag
+            </summary>
+            <remarks>An Administrator can remove any tag association. 
+            A regular user can only remove a tag association to an asset they initially created the association for.
+            </remarks>
+            <param name="assetTags">AssetTag</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.ResponsibilitiesController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.

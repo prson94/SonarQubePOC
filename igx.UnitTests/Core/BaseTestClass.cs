@@ -383,6 +383,16 @@ namespace igx.UnitTests
 
             mock.Setup(x => x.UpdateTag(It.IsAny<Guid>(), It.IsAny<TagApiModel>(), It.IsAny<Tag>()))
                 .Returns((Guid uid, TagApiModel tam, Tag tag) => (uid == tam.uid && uid == Guid.Parse(DataConstants.ValidGUID)) ? tam : null);
+            mock.Setup(x => x.IsAuthorizedToDeleteAssetTag(It.IsAny<int>(), It.IsAny<long>()))
+                .Returns(true);
+            mock.Setup(x => x.CreateAssetTag(It.IsAny<int>(), It.IsAny<long>()))
+                .Returns(new AssetTag());
+            mock.Setup(x => x.DoesAssetTagExists(It.IsAny<int>(), It.IsAny<long>()))
+                .Returns(true);
+            mock.Setup(x=>x.GetAssetTag(It.IsAny<int>(),It.IsAny<long>()))
+            .Returns(new AssetTag() { UID = Guid.Parse(DataConstants.ValidGUID)});
+            mock.Setup(x => x.DeleteAssetTag(It.IsAny<int>(), It.IsAny<long>()))
+                .Returns(true);
 
             return mock.Object;
         }
