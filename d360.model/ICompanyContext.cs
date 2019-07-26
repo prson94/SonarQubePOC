@@ -275,7 +275,7 @@ namespace d360.model
         bool HasAssetPermission(SystemObjects type, int id, Permission permission);
         bool HasAssetTypePermission(string type, int id, Permission permission);
         bool HasAssetTypePermission(SystemObjects type, int id, Permission permission);
-        List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true);
+        List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true);
         List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600);
         bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID);
         bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID);

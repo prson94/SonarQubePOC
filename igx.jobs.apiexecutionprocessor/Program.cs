@@ -53,12 +53,14 @@ namespace igx.jobs.apiexecutionprocessor
         {
             ApiExecutionInfo info = null;
 #if DEBUG
-            info = new ApiExecutionInfo {
+            info = new ApiExecutionInfo
+            {
                 Action = ApiExecutionAction.PostAssets,
                 CompanyDomainPrefix = "mpappas.eng",
                 CompanyID = 2,
                 ResourceID = 3,
-                ExecutionID = new Guid("d04067cc-18e4-44d9-a817-c13dfbc6c6a7") };
+                ExecutionID = new Guid("d04067cc-18e4-44d9-a817-c13dfbc6c6a7")
+            };
 #else
             info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
 #endif
@@ -139,7 +141,7 @@ namespace igx.jobs.apiexecutionprocessor
                             var postAssets = JsonConvert.DeserializeObject<List<AssetInsert>>(postAssetsJson);
 
                             log.WriteLine($"POST Assets (DB Start): Total raw assets: {postAssets.Count}. Asset Type Uid: {postAssetsFields.AssetTypeUid}.");
-                            var postAssetsResults = company.ImportAssets(dbExecutionItem, assetType, postAssets, true, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel);
+                            var postAssetsResults = company.ImportAssets(dbExecutionItem, assetType, postAssets, true, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel, Info.SendWorkflowEvents);
                             dbExecutionItem.Processed = postAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = postAssetsResults.Count(i => !i.Success);
                             log.WriteLine($"POST Assets (DB Complete): Total results: {postAssetsResults.Count}.");
@@ -157,7 +159,7 @@ namespace igx.jobs.apiexecutionprocessor
                             var putAssets = JsonConvert.DeserializeObject<List<AssetUpdate>>(putAssetsJson);
 
                             log.WriteLine($"PUT Assets (DB Start): Total raw assets: {putAssets.Count}. Asset Type Uid: {putAssetsFields.AssetTypeUid}.");
-                            var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel);
+                            var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel, Info.SendWorkflowEvents);
                             dbExecutionItem.Processed = putAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
                             log.WriteLine($"PUT Assets (DB Complete): Total results: {putAssetsResults.Count}.");
