@@ -1,5 +1,4 @@
 ﻿using d360.core.entities;
-using d360.core.enums;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
@@ -9,10 +8,8 @@ using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -49,18 +46,27 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("uid", "The uid of a specific tag to return.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(List<TagApiModelWrapper>)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+
         ]
-        public async Task<HttpResponseMessage> Get()
+        public async Task<IHttpActionResult> Get()
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
 
-            var queryParams = Request.GetQueryNameValuePairs();
+                var tags = await tagRepository.GetTags(queryParams);
 
-            var tags = await tagRepository.GetTags(queryParams);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, tags));
+            }
+            catch (Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while fetching tags", ex.Message);
 
-            return Request.CreateResponse(tags);
+            }
         }
 
 
@@ -81,11 +87,20 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-
-            if (!tagRepository.DeleteTag(uid))
+            try
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", "Tag not found.");
+
+                if (!tagRepository.DeleteTag(uid))
+                {
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", "Tag not found.");
+                }
             }
+            catch (Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while deleting tag", ex.Message);
+
+            }
+
 
             return successMessageResponse(HttpStatusCode.OK, "Tag removed.", "Tag successfully removed.");
         }
@@ -201,11 +216,19 @@ namespace d360.web.Controllers.V2
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-
-            if (!tagRepository.DeleteTags(model))
+            try
             {
-                return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tags", "Tag not found.");
+                if (!tagRepository.DeleteTags(model))
+                {
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tags", "Tag not found.");
+                }
             }
+            catch(Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error while deleting tags", ex.Message);
+
+            }
+
 
             return successMessageResponse(HttpStatusCode.OK, "Tags removed.", "Tags successfully removed.");
         }
@@ -232,7 +255,6 @@ namespace d360.web.Controllers.V2
 
             try
             {
-
                 if (Guid.Parse(parentUid) == Guid.Empty)
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating tags", $"{parentUid} is not valid uid!");
 

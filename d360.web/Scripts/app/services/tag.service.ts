@@ -36,7 +36,7 @@ export class TagService extends BaseObservableService {
         let url = `api/v2/tags/${uid}`;
         return this.http.delete(url)
             .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err)));
+                catchError(err => this.handleError(err, true)));
     }
 
     deleteTags(tags: TagType[]): Observable<any> {
@@ -55,7 +55,7 @@ export class TagService extends BaseObservableService {
         };
         return this.http.delete(url, httpHeaders)
             .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err)));
+                catchError(err => this.handleError(err, true)));
     }
 
     saveTag(tag: TagType): Observable<any> {
@@ -69,21 +69,21 @@ export class TagService extends BaseObservableService {
         url = `api/v2/tags/${tag.uid}`;
         return this.http.put(url, tag)
             .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err)));
+                catchError(err => this.handleError(err, true)));
     }
 
     consolidateTags(parentTag: string, childrenTags: string[]): Observable<any[]> {
         let url = `api/v2/tags/consolidate/${parentTag}`;
         return this.http.post(url, childrenTags)
             .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err)));
+                catchError(err => this.handleError(err, true)));
     }
 
     getAssetPathsForTag(tagUid: string): Observable<any[]> {
-        let url = `api/v2/tags/${tagUid}/assetpath`; 
+        let url = `api/v2/tags/${tagUid}/assetpath`;
         return this.http.get(url)
             .pipe(map(response => <any[]>response),
-                catchError(err => this.handleError(err)))
+                catchError(err => this.handleError(err, true)))
     }
 
 }
