@@ -16,19 +16,22 @@
 
     <d3s-modal [title]="modalTitle" additionalClasses="modal-delete-form" (onClose)="cancel()" [isVisible]="isModalVisible">
         <div class="content">
-            <div class="flex row">
-                <div *ngIf="isLoading" style="text-align:center;"><i class="fa fa-spinner fa-spin fa-2x"></i></div>
+            <div class="row">
                 <div>
                     <ng-content select="[prompt]"></ng-content>
                 </div>
-                <form-message [message]="message"></form-message>
-
+                <ng-template *ngIf="message">
+                    <form-message [message]="message" ></form-message>
+                </ng-template>
             </div>
         </div>
         <div class="action-bar">
             <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
             <span class="grow"></span>
-            <button class="button primary" (click)="delete()" [disabled]="isLoading">{{deleteButtonText ? deleteButtonText : 'Delete'}}</button>
+            <button class="button primary {{deletingInProgress ? 'loading' : ''}}" (click)="delete()" [disabled]="isLoading">
+                {{deleteButtonText ? deleteButtonText : 'Delete'}}
+                <span class="loader"><span class="spinner light"></span></span>
+            </button>
         </div>
 
     </d3s-modal>

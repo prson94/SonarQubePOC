@@ -196,7 +196,8 @@ namespace d360.model.DataAccessLayer
 
         private void UpdateTagAudit(Tag tag)
         {
-            var sql = $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID]) VALUES ('Update','Tag',{tag.Id})";
+            var sql = $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
+                         VALUES ('Update','Tag',{tag.Id},[queue].WriteIndexXml('', 'Tag', {tag.Id}, coalesce({companyContext.CurrentResourceID}, 0)))";
             companyContext.Query<int>(sql).FirstOrDefault();
         }
 

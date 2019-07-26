@@ -30,6 +30,7 @@ export class DeleteForm  {
     @Input() showAsModal: boolean = false;
     @Input() modalTitle: string = '';
     @Input() isModalVisible: boolean = false;
+    private deletingInProgress: boolean = false;
 
 
 
@@ -45,6 +46,9 @@ export class DeleteForm  {
     public delete(): void {
        if (this.isLoading)
             return;
+
+        this.deletingInProgress = true;
+
         var headers = new HttpHeaders();
         headers.append('Content-Type', 'application/json');
 

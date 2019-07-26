@@ -30,6 +30,9 @@
         <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
         <span class="grow"></span>
 
-        <button class="button primary" (click)="consolidate()" [disabled]="!selected">Consolidate</button>
+        <button class="button primary {{consolidateInProgress ? 'loading' : ''}}" (click)="consolidate()" [disabled]="!selected">
+            Consolidate
+            <span class="loader"><span class="spinner light"></span></span>
+        </button>
     </div>
 </d3s-modal>

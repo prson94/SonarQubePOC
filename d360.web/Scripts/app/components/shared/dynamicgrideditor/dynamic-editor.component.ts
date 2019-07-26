@@ -60,6 +60,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() showAsModal: boolean = false;
     @Input() modalTitle: string = '';
     @Input() isModalVisible: boolean = false;
+    private savingInProgress: boolean = false;
 
     form: FormGroup;
 
@@ -93,6 +94,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         if (changes['objectID']) {
             if (!changes['objectID'].isFirstChange() && (changes['objectID'].previousValue != changes['objectID'].currentValue)) { // object has changed            
                 this.load();
+            }
+        }
+        if (changes['isModalVisible']) {
+            if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue != changes['isModalVisible'].currentValue)) { // visibility has changed            
+                this.savingInProgress = false;
             }
         }
     }
@@ -351,6 +357,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
 
     onSubmit() {
+        this.savingInProgress = true;
+
         let action = (this.selection == null ? "new" : "edit");
         let values: any = {};
         if (this.copy == true) {

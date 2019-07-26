@@ -98,7 +98,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
                     this.tags.push(result);
                 }
                 else {
-                    this.tags[this.findTagIndex(event.item.uid)] = event.item;
+                    this.tags[this.findTagIndex(event.item.uid)].Value = event.item.Value;
                 }
                 this.selected = [];
                 event.item.UseCount = 0;

@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, SimpleChange, EventEmitter, OnInit, NgModule } from '@angular/core';
+﻿import { Input, Component, Output, SimpleChange, EventEmitter, OnInit, NgModule, OnChanges } from '@angular/core';
 import { SiteModalModule } from '../modal/gov-modal.module';
 
 
@@ -7,7 +7,7 @@ import { SiteModalModule } from '../modal/gov-modal.module';
     templateUrl: 'gov-checkbox.html'
 })
 
-export class D3SCheckbox {
+export class D3SCheckbox  {
 
     @Input() label: string;
     @Input() value: boolean = false;
@@ -28,9 +28,11 @@ export class D3SCheckbox {
     private confirmText: string;
 
     private isModalVisible: boolean = false;
-
+    private changeInProgress: boolean = false;
 
     tryChangeValue(val: boolean) {
+        this.changeInProgress = false;
+
         if (val == this.value) return;
         this.pendingValue = val;
         if (this.pendingValue == true && this.trueText) {
@@ -56,6 +58,7 @@ export class D3SCheckbox {
     }
 
     confirm() {
+        this.changeInProgress = true;
         this.isModalVisible = false;
         this.value = this.pendingValue;
         this.onchange.emit(this.value);

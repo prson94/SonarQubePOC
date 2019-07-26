@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
+﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { TagService } from '../../../services/tag.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { TagType } from '../../../models/tag.model';
@@ -8,7 +8,7 @@ import { TagType } from '../../../models/tag.model';
     templateUrl: 'admin-tags-consolidate.component.html'
 })
 
-export class AdminTagsConsolidateComponent implements OnInit {
+export class AdminTagsConsolidateComponent implements OnChanges {
     @Input() tags: TagType[] = [];
     private selected: TagType;
 
@@ -17,12 +17,18 @@ export class AdminTagsConsolidateComponent implements OnInit {
 
     @Input() callback: Function;
     @Output() onCancel = new EventEmitter();
+    private consolidateInProgress: boolean = false;
 
-    ngOnInit() {
-
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (changes['isModalVisible']) {
+            if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue != changes['isModalVisible'].currentValue)) { // visibility has changed            
+                this.consolidateInProgress = false;
+            }
+        }
     }
 
     public consolidate(): void {
+        this.consolidateInProgress = true;
         let parentUid: string = this.selected.uid;
         let childrenUids: string[] = [];
         this.tags.forEach(t => {

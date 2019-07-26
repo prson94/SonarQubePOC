@@ -113,10 +113,6 @@
                     </ng-template>
                     <div *ngIf="hasIconFields && fore.Value == back.Value"
                          class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
-                    <div class="col s12">&nbsp;</div>
-                    <div class="col s12">
-
-                    </div>
                 </div>
             </div>
             <div class="action-bar">
@@ -127,11 +123,12 @@
                     Close
                 </button>
                 <span class="grow"></span>
-                <button class="right button primary {{savingInProgress ? 'loading' : 'loading'}}"
+                <button class="right button primary {{savingInProgress ? 'loading' : ''}}"
                         type="submit"
                         [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)"
                         label="Done">
-                    Done<span class="loader"><span class="spinner light"></span></span>
+                    Done
+                    <span class="loader"><span class="spinner light"></span></span>
                 </button>
             </div>
         </form>

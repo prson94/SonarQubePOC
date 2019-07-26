@@ -1906,6 +1906,36 @@ div.home-image-title-text {
 ///////////////////////////////////////////////////////////////////////////////////
 // Modal Dialog
 ///////////////////////////////////////////////////////////////////////////////////
+
+@-moz-keyframes spin {
+    from {
+        -moz-transform: rotate(0deg);
+    }
+
+    to {
+        -moz-transform: rotate(360deg);
+    }
+}
+
+@-webkit-keyframes spin {
+    from {
+        -webkit-transform: rotate(0deg);
+    }
+
+    to {
+        -webkit-transform: rotate(360deg);
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
 .modal-overlay {
     position: fixed;
     display: inline-flex;
@@ -1923,6 +1953,11 @@ div.home-image-title-text {
     opacity: 0;
     transition: opacity 200ms ease;
     cursor: auto;
+
+    .content {
+        font-weight: normal;
+        line-height: 18px;
+    }
 
     button.button {
         display: inline-flex;
@@ -2013,10 +2048,30 @@ div.home-image-title-text {
         left: 0;
         bottom: 0;
         right: 0;
+
+        .spinner {
+            display: inline-block;
+            box-sizing: border-box;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border-color: rgba(0, 0, 0, 0.67) rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.2);
+            border-style: solid;
+            border-width: 2px;
+            animation-name: spin;
+            animation-duration: 1000ms;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+        }
+
+        .spinner.light {
+            border-color: white rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.5);
+        }
     }
 
     button.button.loading {
         opacity: 1;
+        color: transparent;
     }
 
     button.button.loading .content {
@@ -2083,6 +2138,11 @@ div.home-image-title-text {
 
     button.button.bar.light:not(:disabled):active, button.button.bar.light.active {
         background: rgba(0, 0, 0, 0.14);
+    }
+
+    button.button:disabled {
+        opacity: 0.33;
+        cursor: default;
     }
 
     .flex {
@@ -2388,8 +2448,9 @@ modal-overlay .modal-dialog .content {
 }
 
 .modal-overlay {
-    .modal-dyn-editor, .modal-delete-form, .modal-consolidate,.medium-width {
-        min-width: 600px;
+    .modal-dyn-editor, .modal-delete-form, .modal-consolidate, .medium-width {
+        width: 100%;
+        max-width: 550px;
     }
 
 
@@ -2400,6 +2461,12 @@ modal-overlay .modal-dialog .content {
             margin-right: 12px;
         }
 
+        .row {
+            .col {
+                padding: 0px;
+            }
+        }
+
         input {
             display: inline-block;
             width: unset !important;
@@ -2407,7 +2474,7 @@ modal-overlay .modal-dialog .content {
 
 
         .errorMessage {
-            background-color: #FF7155;
+            background-color: #FFC6BB;
             border: 1px solid #C44D36;
             border-radius: 2px;
             width: 100%;
@@ -2441,13 +2508,13 @@ modal-overlay .modal-dialog .content {
 
         .item-selection {
             font-size: 14px;
-            font-weight: bold;
-            background-color: rgb(238,238,238);
+            background-color: #eeeeee;
             padding: 5px 10px;
             border-radius: 2px 0px 2px 0px;
-            border: 1px solid rgb(239,239,239);
+            border: 1px solid #efefef;
             height: 34px;
             float: left;
+            color: black;
         }
 
         .hamburger-menu {
@@ -2560,8 +2627,11 @@ modal-overlay .modal-dialog .content {
 
 .d3s-checkbox {
     color: black;
-    height: 34px;
-    line-height: 34px;
+
+    .label {
+        height: 34px;
+        line-height: 34px;
+    }
 
     .options {
         background-color: #e0e0e0;
@@ -2576,6 +2646,7 @@ modal-overlay .modal-dialog .content {
             line-height: 28px;
             padding: 0px 10px;
             width: 42px;
+
 
             &.selected {
                 background-color: rgb(0,111,186);
@@ -2597,3 +2668,39 @@ modal-overlay .modal-dialog .content {
     }
 }
 
+.tile-detail {
+    &.theme-new {
+        .ui-table {
+
+            td {
+                color: black;
+            }
+
+            .ui-chkbox {
+                background-color: white;
+
+                .ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default {
+                    border-radius: 2px !important;
+                    background-color: white;
+                }
+
+                .ui-chkbox-icon {
+                    color: black;
+                    font-weight: bold;
+                    position: relative;
+                    top: -1px;
+                }
+            }
+
+            .RowTools {
+                .fa {
+                    color: black;
+
+                    &:hover {
+                        color: #525252
+                    }
+                }
+            }
+        }
+    }
+}
