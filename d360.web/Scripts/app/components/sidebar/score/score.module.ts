@@ -15,6 +15,7 @@ import { TilesModule } from '../../shared/tiles/tiles.module';
 import { ScoreRoutingModule } from './score.routes';
 import { ScoreComponent } from './score.component';
 import { ResourceModule } from '../../resource/resource.module';
+import { SharedObjectGovernanceModule } from '../../shared/objectgovernance/shared-object-governance.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -33,6 +34,7 @@ import { ResourceModule } from '../../resource/resource.module';
         CoreModule,
         TilesModule,
         ResourceModule,
+        SharedObjectGovernanceModule,
     ],
     declarations: [
         ScoreComponent

@@ -56,6 +56,7 @@ import {
 
 import { TableModule } from 'primeng/table';
 import {GovernPostRequestInterceptor} from "../../http-interceptors/govern-post-request.interceptor";
+import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 
 
 @NgModule({
@@ -90,7 +91,8 @@ import {GovernPostRequestInterceptor} from "../../http-interceptors/govern-post-
         
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,        
-        SharedDynamicGridEditorModule,    
+        SharedDynamicGridEditorModule,   
+        SharedObjectGovernanceModule,
         TilesModule,
         WorkflowModule,        
     ],

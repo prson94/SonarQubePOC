@@ -45,6 +45,7 @@ import {
 } from 'primeng/primeng';
 
 import { TableModule } from 'primeng/table';
+import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -80,6 +81,7 @@ import { TableModule } from 'primeng/table';
         SharedDeleteFormModule,        
         SharedDynamicGridEditorModule,
         SharedObjectDetailsModule,
+        SharedObjectGovernanceModule,
     ],
     declarations: [
         RuleComponent,

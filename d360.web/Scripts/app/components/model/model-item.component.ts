@@ -124,12 +124,11 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
     private buildBreadcrumb() {
         this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
-            this.crumbs = [];
+            this.crumbs = []; 
             this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
                 this.lineageShowUsageOnly = true;   
                 this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
                 this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
-                console.log(this.selected);
                 this.rightSidebarService.setCurrentObject('TaxonomyType', this.model.ID, 'Taxonomy', this.selected.ID, false);
                 this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Taxonomy/${this.selected.Uid}`, null, 6));
                 this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Taxonomy/${this.selected.ID}/${this.selected.DisplayValue.replace("/", "%2F")}`, null, 31));

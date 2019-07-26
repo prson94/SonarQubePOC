@@ -637,6 +637,7 @@
     <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\dynamic-lookup-grid.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.html" />
+    <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
@@ -1159,6 +1160,13 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-board.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-governance.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-issues.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.ts" />
