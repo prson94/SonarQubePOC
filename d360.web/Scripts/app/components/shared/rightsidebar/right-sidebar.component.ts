@@ -46,7 +46,7 @@ declare var CompanySettings;
                         <span class="grow"></span>
                         <button class="button" *ngIf="showCertify" (click)="requestCertification()"><i class="fa fa-certificate"></i><span>Request Certification</span></button>
                         <button class="primary button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span>Take Survey</span></button>
-                        <button *ngFor="let button of buttons" (click)="button.EmitFunction()" [ngClass]="{'loading': button.isLoading}"  class="primary button" [disabled]="button.disabled">
+                        <button *ngFor="let button of buttons" (click)="button.dynamicCallback()" [ngClass]="{'loading': button.isLoading}"  class="primary button" [disabled]="button.disabled">
                             <span class="content">{{button.text}}</span>
                             <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>    
                         </button>
@@ -172,9 +172,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
         this.buttonSubscription = this.rightSidebarService.rightSidebarButton$.subscribe(
             button => {
-                console.log("addded");
                 this.buttons.push(button);
-                this.buttons = _.sortBy(this.buttons, 'text'); this.emitChanges();
+                this.buttons = _.sortBy(this.buttons, 'orderPriority'); this.emitChanges();
             });
         this.buttonSubscriptionClear = this.rightSidebarService.rightSidebarButtonClear$.subscribe(
             item => {

@@ -33,7 +33,7 @@ import { Subscriber, Subscription } from 'rxjs';
   `],    
 })
 
-export class AdminSettingsComponent extends AdminBaseComponent implements OnDestroy {
+export class AdminSettingsComponent extends AdminBaseComponent {
     
     companySettings: CompanySettings = new CompanySettings();
     searchTypes: SearchType[] = SettingsHelper.getSearchTypesList();
@@ -46,7 +46,6 @@ export class AdminSettingsComponent extends AdminBaseComponent implements OnDest
     rebuildLabel: string = "Refresh Search Index";
     disableRebuildIndex: boolean = false;
     SaveButton: DynamicButton;
-    saveSub: Subscription;
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -90,11 +89,11 @@ export class AdminSettingsComponent extends AdminBaseComponent implements OnDest
                 this.rightSidebarService.clearButtons();
                 this.SaveButton = new DynamicButton("Save Changes");
                 this.rightSidebarService.showButton(this.SaveButton);
-                this.saveSub = this.SaveButton.obervable$.subscribe(res => {
+                this.SaveButton.dynamicCallback = () => {
                     this.SaveButton.disabled = true;
                     this.SaveButton.isLoading = true;
                     this.save();
-                });
+                };
             })
     }
 
@@ -111,7 +110,6 @@ export class AdminSettingsComponent extends AdminBaseComponent implements OnDest
                 let type = data.type;
                 if (type && type == "error") {
                     let message = data.message;
-                    console.log("type: " + type + " message: " + message);
                     this.messagesService.showError("Problem Saving settings", message);
                 } else {
                     window.location.reload();
@@ -147,7 +145,5 @@ export class AdminSettingsComponent extends AdminBaseComponent implements OnDest
             });
     }
 
-    ngOnDestroy() {
-        this.saveSub.unsubscribe();
-    }
+
 }

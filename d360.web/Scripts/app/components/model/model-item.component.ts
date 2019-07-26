@@ -129,10 +129,11 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.lineageShowUsageOnly = true;   
                 this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
                 this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
+                console.log(this.selected);
                 this.rightSidebarService.setCurrentObject('TaxonomyType', this.model.ID, 'Taxonomy', this.selected.ID, false);
-                this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Taxonomy/${this.selected.Uid}`));
-                this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Taxonomy/${this.selected.ID}/${this.selected.DisplayValue.replace("/", "%2F")}`));
-                this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Taxonomy/${this.model.ID}/${this.model.Name.replace("/", "%2F")}`));
+                this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Taxonomy/${this.selected.Uid}`, null, 6));
+                this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Taxonomy/${this.selected.ID}/${this.selected.DisplayValue.replace("/", "%2F")}`, null, 31));
+                this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Taxonomy/${this.model.ID}/${this.model.Name.replace("/", "%2F")}`, null, 26));
             });
             this.rightSidebarService.showHeader(true);
             

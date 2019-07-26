@@ -26,7 +26,7 @@ import {SiteUrlHelpers} from '../../static/site-url-helpers';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail"
                      *ngIf="!isLoading">
-                    <header>{{ policyClassName }} Policies
+                    <header>
                         <d3s-tile-actions [hasAdd]="false"
                                           hasFilterMode="true"
                                           [(filterMode)]="showSimpleFilter"></d3s-tile-actions>

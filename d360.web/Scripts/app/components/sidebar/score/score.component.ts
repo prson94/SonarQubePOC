@@ -36,7 +36,7 @@ export class ScoreComponent extends BaseComponent implements OnInit, OnDestroy {
         this.showBoard = false;
 
         this.sub = this.route.params.subscribe(params => {
-            this.uid = params['uid'];
+            this.uid = params['Uid'];
             this.objectName = params['objectName'];
             
             this.isLoading = false;

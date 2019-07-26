@@ -19,7 +19,7 @@ import * as _ from 'lodash';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail"
                      *ngIf="!isLoading">
-                    <header>{{modelGroup}} Models
+                    <header>
                         <d3s-tile-actions [hasAdd]="false"
                                           [hasFilterMode]="true"
                                           [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
