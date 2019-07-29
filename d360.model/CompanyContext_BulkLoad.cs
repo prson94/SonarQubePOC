@@ -940,12 +940,17 @@ order by	ColumnIndex", new { id });
                             //resolve parent
                             if (parentAssetType != null && col.Name == parentAssetType.Name)
                             {
-                                string parentUid = "";
-                                int endIndex = field.Value.LastIndexOf(']');
-                                int startIndex = field.Value.LastIndexOf('[') + 1;
-                                if (startIndex < endIndex)
-                                    parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
-                                insert.ParentUid = new Guid(parentUid);
+                                if (!string.IsNullOrWhiteSpace(field.Value))
+                                {
+                                    string parentUid = "";
+                                    int endIndex = field.Value.LastIndexOf(']');
+                                    int startIndex = field.Value.LastIndexOf('[') + 1;
+                                    if (startIndex > -1 && endIndex > -1 && startIndex < endIndex)
+                                    {
+                                        parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
+                                        insert.ParentUid = new Guid(parentUid);
+                                    }
+                                }
                             }
                             else
                             {
@@ -992,14 +997,14 @@ order by	ColumnIndex", new { id });
                 if (putAssets.Any())
                 {
                     var execution = getApiExecution(putAssets.Count, new BulkLoadExecutionFields_Assets { AssetTypeUid = assetTypeUid, LoadID = load.ID });
-                    ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution);
+                    ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution, false);
                     load.PutExecutionID = executionInfo.ExecutionID;
                 }
 
                 if (postAssets.Any())
                 {
                     var execution = getApiExecution(postAssets.Count, new BulkLoadExecutionFields_Assets { AssetTypeUid = assetTypeUid, LoadID = load.ID });
-                    ApiExecutionInfo executionInfo = await repository.PostBulkAssets(postAssets, execution);
+                    ApiExecutionInfo executionInfo = await repository.PostBulkAssets(postAssets, execution, false);
                     load.PostExecutionID = executionInfo.ExecutionID;
                 }
 

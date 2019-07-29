@@ -1,10 +1,10 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-import { RouterModule } from '@angular/router';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 
-import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
+import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
@@ -26,7 +26,7 @@ import { TableModule } from 'primeng/table';
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
         RouterModule,
 
         //routing 
@@ -48,7 +48,11 @@ import { TableModule } from 'primeng/table';
         MappingComponent,
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true
+        },
     ]
 })
 export class MappingModule { }

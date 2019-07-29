@@ -1,10 +1,9 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { HttpModule, XHRBackend } from '@angular/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {
     ButtonModule,
@@ -25,7 +24,7 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
-        HttpModule,
+        HttpClientModule,
         ReactiveFormsModule,
         FormsModule,
         RouterModule,
@@ -50,7 +49,10 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
         AssetTypeEditorComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true },
     ]
 })
 export class SharedAssetTypeEditorModule { }

@@ -1760,7 +1760,7 @@ from	IntersectType I
             return results;
         }
 
-        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true)
         {
             var results = new List<DatabaseBulkAssetResult>();
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
@@ -2699,7 +2699,10 @@ from	api.ExecutionAsset T
 
                         Connection.Close();
 
-                        SendWorkflowEvents(at.Object, at.ObjectID, results);
+                        if (sendWorkflowEvents)
+                        {
+                            SendWorkflowEvents(at.Object, at.ObjectID, results);
+                        }
                     }
                 }
             }
@@ -2962,6 +2965,62 @@ from	api.ExecutionRelationship T
 					) S on S.ExecutionID = T.ExecutionID and S.SubjectUid = T.SubjectUid and S.ItemNumber < T.ItemNumber;",
                     new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
                 }
+
+                #endregion
+
+                #region Permissions Validation
+
+                Connection.Execute(@"
+declare @IsAdministrator bit = 0
+select	@IsAdministrator = IsAdministrator
+from	reporting.Global_Resource
+where	ResourceID = @ResourceID
+
+if @IsAdministrator = 0
+begin
+    update	T
+    set		T.Message = coalesce(T.Message + '; ', '') + 'You do not have permission to modify relationships on the subject asset.',
+	        T.Success = 0
+    from	api.ExecutionRelationship T
+            inner join	(
+                        select	R.ExecutionID, R.ItemNumber
+	                    from	api.ExecutionRelationship R
+			                    inner join Asset A on A.Uid = R.SubjectUid and R.ExecutionID = @ExecutionID
+			                    outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
+	                    where	(
+			                    (P.AssetID = A.ID) 
+			                    or P.AssetID is null
+			                    )
+			                    and (
+				                    (P.PermissionsBitMask is not null and P.PermissionsBitMask & 1024 <> 1024) 
+				                    or 
+				                    P.PermissionsBitMask is null
+				                    )
+                        group by R.ExecutionID, R.ItemNumber
+                        ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+
+    update	T
+    set		T.Message = coalesce(T.Message + '; ', '') + 'You do not have permission to modify relationships on the object asset.',
+	        T.Success = 0
+    from	api.ExecutionRelationship T
+            inner join	(
+                        select	R.ExecutionID, R.ItemNumber
+	                    from	api.ExecutionRelationship R
+			                    inner join Asset A on A.Uid = R.ObjectUid and R.ExecutionID = @ExecutionID
+			                    outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
+	                    where	(
+			                    (P.AssetID = A.ID) 
+			                    or P.AssetID is null
+			                    )
+			                    and (
+				                    (P.PermissionsBitMask is not null and P.PermissionsBitMask & 1024 <> 1024) 
+				                    or 
+				                    P.PermissionsBitMask is null
+				                    )
+                        group by R.ExecutionID, R.ItemNumber
+                        ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+end",
+                new { execution.ExecutionID, execution.ResourceID }, commandTimeout: timeout);
 
                 #endregion
 

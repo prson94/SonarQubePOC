@@ -1,12 +1,14 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpModule, XHRBackend } from '@angular/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+
 import { RouterModule } from '@angular/router';
 
 import { CoreModule } from '../core.module';
 import { TilesModule } from '../tiles/tiles.module';
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { IconPickerModule } from '../icon-picker.component';
 
@@ -28,7 +30,7 @@ import { TableModule } from 'primeng/table';
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
         RouterModule,
 
         CoreModule,
@@ -53,7 +55,10 @@ import { TableModule } from 'primeng/table';
         ShortcutDisplayComponent,
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true },
     ]
 })
 export class ShortcutModule { }
