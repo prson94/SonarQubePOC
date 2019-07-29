@@ -45,6 +45,9 @@ namespace d360.core.entities
         [DataMember]
         public Guid? ParentAssetUid { get; set; }
 
+
+        [IgnoreDataMember, NotMapped]
+        public int Level { get; set; }
         #endregion
 
         [IgnoreDataMember, ForeignKey("LoadID")]

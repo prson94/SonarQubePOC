@@ -859,8 +859,11 @@ order by	ColumnIndex", new { id });
                 //get parent type if applicable
                 var parentAssetType = GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
 
+                var hasLookups = FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.LookupObjectID != null);
+
                 //need to calculate key hashes to figure out which assets to put and post
-                await LoadLookupValues(load, assetType, timeout);
+                if (hasLookups)
+                    await LoadLookupValues(load, assetType, timeout);
                 await CalculateHashes(load, assetType, timeout);
                 await GenerateExecutionItemUids(load, timeout);
 
@@ -868,22 +871,39 @@ order by	ColumnIndex", new { id });
                 var putAssets = new List<AssetUpdate>();
                 var postAssets = new List<AssetInsert>();
 
-                var loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id", new { id = load.ID }).ToList();
+                var loadItems = new List<LoadItem>();
                 var loadColumns = Query<LoadColumn>("select * from LoadColumn LC where LoadID = @id", new { id = load.ID }).ToList();
                 var loadItemColumns = Query<LoadItemColumn>("select * from LoadItemColumn where LoadID = @id", new { id = load.ID }).ToList();
-                Dictionary<int, string> assetTypeLevels = new Dictionary<int, string>();
+
+                var assetTypeLevels = new Dictionary<int, string>();
 
                 //build level info for models
                 if (assetType.Class == AssetTypeClass.Model)
                 {
                     for (var i = 1; i <= assetType.HierarchyMaximumDepth; i++)
                     {
-                        var level = assetType.AssetTypeLevels.FirstOrDefault(l => l.Level == i);
+                        var level = AssetTypeLevels.Where(l => l.AssetTypeID == assetType.ID).FirstOrDefault(l => l.Level == i);
                         if (level != null)
                             assetTypeLevels.Add(i, level.Name);
                         else
                             assetTypeLevels.Add(i, $"Level {i}");
                     }
+
+                    loadItems = (await QueryAsync<LoadItem>(@"
+select I.*, L.[Level] from LoadItem I
+outer apply (
+    select      coalesce(max(L.[Level]), 1) as [Level]
+        from		AssetType ATT
+			        inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')
+			        inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+			        inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = I.RowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
+        where		ATT.[ObjectID] = @ObjectID
+) L
+where I.LoadID = @id ", new { id = load.ID, assetType.ObjectID }, timeout: timeout)).ToList();
+                }
+                else
+                {
+                    loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id", new { id = load.ID }).ToList();
                 }
 
                 foreach (var item in loadItems)
@@ -892,27 +912,16 @@ order by	ColumnIndex", new { id });
                     string assetTypeLevel = null;
 
                     var rowColumns = loadItemColumns.Where(l => l.RowIndex == item.RowIndex).ToList();
-                    var maxLevel = 0;
 
                     if (assetType.Class == AssetTypeClass.Model)
                     {
-                        //get max level for this row
-                        maxLevel = (await QueryAsync<int>(@"
-                        select      coalesce(max(L.[Level]), 1) 
-                        from		AssetType ATT
-			                        inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')
-			                        inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
-			                        inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
-                        where		ATT.[ObjectID] = @ObjectID", new { assetType.ObjectID, id = load.ID, rowIndex = item.RowIndex })).FirstOrDefault();
-
-                        assetTypeLevel = assetTypeLevels[maxLevel];
+                        assetTypeLevel = assetTypeLevels[item.Level];
 
                         //ignore parent key fields, not needed for API
                         var keyFields = FieldTypes.Where(f => f.Object == assetType.Object && f.ObjectID == assetType.ObjectID && f.IsPartOfKey);
                         foreach (var k in keyFields)
-                            fieldsToSkip.AddRange(assetTypeLevels.ToList().Where(l => l.Key != maxLevel).Select(l => $"{l.Value} {k.Name}"));
+                            fieldsToSkip.AddRange(assetTypeLevels.ToList().Where(l => l.Key != item.Level).Select(l => $"{l.Value} {k.Name}"));
                     }
-
 
                     if (!item.AssetUid.HasValue)
                     {
@@ -921,19 +930,18 @@ order by	ColumnIndex", new { id });
                         insert.Fields = new Dictionary<string, string>();
 
                         //resolve model parent
-                        if (assetType.Class == AssetTypeClass.Model && maxLevel > 1)
+                        if (assetType.Class == AssetTypeClass.Model && item.Level > 1)
                         {
-                            var parentKeyHash = await GetModelKeyHashForLevel(item, assetType, maxLevel - 1);
+                            var parentKeyHash = await GetModelKeyHashForLevel(item, assetType, item.Level - 1);
 
-                            Guid? parentUid = (await QueryAsync<Guid?>(@" select [uid] from asset a
+                            Guid? parentUid = (await QueryAsync<Guid?>(@"select [uid] from asset a
                                 cross apply GetAssetKeyHashById(A.ID) S
                                 where a.AssetTypeID = @assetTypeId and S.KeyHash = @parentKeyHash", new { parentKeyHash, assetTypeId = assetType.ID })).FirstOrDefault();
 
                             if (parentUid.HasValue)
                                 insert.ParentUid = parentUid;
                         }
-
-                        
+                      
                         foreach (var field in rowColumns)
                         {
                             var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
@@ -1041,12 +1049,6 @@ order by	ColumnIndex", new { id });
         private async Task LoadLookupValues(Load load, AssetType assetType, int timeout = 90)
         {
             var resolveLookupSql = $@"
-
-declare @id int, @Object varchar(50), @ObjectID int;
-set @id = {load.ID};
-set @Object = '{assetType.Object}';
-set @ObjectID = {assetType.ObjectID};
-
 begin
 
 	update	T
@@ -1314,13 +1316,13 @@ end
 
 ";
 
-            await QueryAsync<int>(resolveLookupSql, timeout: timeout);
+            await QueryAsync<int>(resolveLookupSql, new { id = load.ID, assetType.ObjectID, @Object = new DbString { Value = assetType.Object, IsAnsi = true, Length = 50 }},  timeout: timeout);
 
         }
 
         private async Task CalculateHashes(Load load, AssetType assetType, int timeout = 90)
         {
-            var parentAssetType = GetParentTypeById(assetType.ID);
+            var parentAssetType = GetParentTypeById(assetType.ID); 
 
             #region Hash Sql
 
@@ -1525,11 +1527,11 @@ where	T.LoadID = @id;
             {
                 if (parentAssetType != null)
                 {
-                    await QueryAsync<int>(glossaryHashWithParentSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID, parentTypeID = parentAssetType.ObjectID });
+                    await QueryAsync<int>(glossaryHashWithParentSql, new { @object = new DbString { Value = assetType.Object, IsAnsi = true, IsFixedLength = true, Length = 50 }, objectID = assetType.ObjectID, id = load.ID, parentTypeID = parentAssetType.ObjectID });
                 }
                 else
                 {
-                    await QueryAsync<int>(glossaryHashSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID });
+                    await QueryAsync<int>(glossaryHashSql, new { @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID, id = load.ID });
                 }
             }
             else if (assetType.Class == AssetTypeClass.Model)
@@ -1547,13 +1549,13 @@ where	T.LoadID = @id;
                         where		ATT.[ObjectID] = @ObjectID"
                         , new { id = load.ID, rowIndex = row, objectID = assetType.ObjectID })).FirstOrDefault();
 
-                    await QueryAsync<int>(modelHashSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID, rowIndex = row, currLevel }, timeout: timeout);
+                    await QueryAsync<int>(modelHashSql, new { @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID, id = load.ID, rowIndex = row, currLevel }, timeout: timeout);
 
                 }
             }
             else if (assetType.Class == AssetTypeClass.Reference)
             {
-                await QueryAsync<int>(referenceItemHashSql, new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
+                await QueryAsync<int>(referenceItemHashSql, new { @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
             }
 
             //find object/objectid for existing items
@@ -1571,7 +1573,7 @@ where	T.LoadID = @id;
                 cross apply[GetArtifactKeyHashByIdWithParent](A.ID) S
                 outer apply GetParentByAssetId(A.ID) P
                 left join Asset AP on AP.ID = P.ID
-        where S.KeyHash = T.KeyHash and T.LoadID = @id", new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
+        where S.KeyHash = T.KeyHash and T.LoadID = @id", new { @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
 
             }
             else if (parentAssetType != null)
@@ -1589,7 +1591,7 @@ where	T.LoadID = @id;
                 outer apply GetParentByAssetId(A.ID) P
                 left join Asset AP on AP.ID = P.ID
         where S.KeyHash = T.KeyHash and T.LoadID = @id",
-new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
+new { @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
             }
             else
             {
@@ -1604,7 +1606,7 @@ new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID },
                 inner join Asset A on A.AssetTypeID = ST.ID
                 cross apply GetAssetKeyHashById(A.ID) S
         where S.KeyHash = T.KeyHash and T.LoadID = @id",
-        new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
+        new { @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
 
             }
 
@@ -1612,7 +1614,7 @@ new { @object = assetType.Object, objectID = assetType.ObjectID, id = load.ID },
 
         private async Task GenerateExecutionItemUids(Load load, int timeout = 90)
         {
-            await QueryAsync<int>(@"update LoadItem set ExecutionItemUid = newid() where LoadID = @id", new { id = load.ID }, timeout: timeout);
+            await QueryAsync<int>(@"update LoadItem set ExecutionItemUid = newid() where LoadID = @id and ExecutionItemUid is null", new { id = load.ID }, timeout: timeout);
         }
 
         private async Task<string> GetModelKeyHashForLevel(LoadItem item, AssetType assetType, int level)
@@ -1645,7 +1647,7 @@ from    LoadItem T
 				        ) A
 	        group by	A.RowIndex
         ) K on K.RowIndex = T.RowIndex
-where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIndex = item.RowIndex, currLevel = level, @object = assetType.Object, objectID = assetType.ObjectID })).FirstOrDefault();
+where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIndex = item.RowIndex, currLevel = level, @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID })).FirstOrDefault();
         }
 
         #endregion
