@@ -170,7 +170,14 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     tagStateChanged(state: boolean) {
-        console.log(state);
+        this.tagsService.setTaggingStatus(state)
+            .subscribe(result => {
+                if (result)
+                    this.messagesService.showInfoMessage("Success", "Tagging status successfully changed!");
+            }
+                , err => {
+                    this.showMessageForResult(this.messagesService, err);
+                })
     }
 
 

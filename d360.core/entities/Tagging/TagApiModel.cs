@@ -35,4 +35,10 @@ namespace d360.core.entities
         [DataMember]
         public Guid uid { get; set; }
     }
+
+    public class TagStatusModel
+    {
+        [DataMember]
+        public bool IsTaggingEnabled { get; set; }
+    }
 }

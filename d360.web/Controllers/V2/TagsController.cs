@@ -248,7 +248,7 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tags", "Tag not found.");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error while deleting tags", ex.Message);
 
@@ -306,9 +306,7 @@ namespace d360.web.Controllers.V2
 
 
 
-        [
-            HttpGet, MapToApiVersion("2.0"), Route("{tagUid}/assetpath"),
-        ]
+        [HttpGet, MapToApiVersion("2.0"), Route("{tagUid}/assetpath")]
         public IHttpActionResult GetAssetsPath(Guid tagUid)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -317,6 +315,27 @@ namespace d360.web.Controllers.V2
             try
             {
                 List<dynamic> result = tagRepository.GetAssetsPathForTag(tagUid);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+
+            }
+            catch (Exception e)
+            {
+
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting assets path", e.Message);
+            }
+
+        }
+
+        [HttpPut, MapToApiVersion("2.0"), Route("settaggingstatus")]
+        public IHttpActionResult SetTaggingStatus(TagStatusModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+                var result = tagRepository.SetTaggingStatus(model.IsTaggingEnabled);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 

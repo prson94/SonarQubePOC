@@ -25,7 +25,7 @@ export class AdminTagsActionComponent  {
 
     changeTagStatusConfirmation($event) {
         this.isEnabled = $event;
-        console.log(this.isEnabled);
+        this.changeStatus();
     }
 
 

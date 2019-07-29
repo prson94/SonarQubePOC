@@ -92,4 +92,12 @@ export class TagService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)))
     }
 
+    setTaggingStatus(state: boolean): Observable<any> {
+        let url = `api/v2/tags/settaggingstatus`;
+        let body = { IsTaggingEnabled: state };
+        return this.http.put(url, body)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)))
+    }
+
 }

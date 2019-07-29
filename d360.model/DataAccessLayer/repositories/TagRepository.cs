@@ -260,5 +260,10 @@ namespace d360.model.DataAccessLayer
 
             return companyContext.Query<dynamic>(sql, new { term = tag }).ToList();
         }
+
+        public bool SetTaggingStatus(bool state)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

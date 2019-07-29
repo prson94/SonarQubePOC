@@ -20,5 +20,6 @@ namespace d360.model.DataAccessLayer
         List<dynamic> GetAssetsPathForTag(Guid tagUid);
         IEnumerable<TagApiModel> ConsolidateTags(string parentUid, List<string> childrenUids);
         List<dynamic> SearchTags(string tag);
+        bool SetTaggingStatus(bool state);
     }
 }
