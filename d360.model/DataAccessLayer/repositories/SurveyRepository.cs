@@ -255,9 +255,10 @@ namespace d360.model.DataAccessLayer
                         break;
                     case "asofdate":
                         DateTime date = DateTime.MinValue;
-                        DateTime.TryParseExact(param.Value,"MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out date);
-                        if (date == DateTime.MinValue)
-                            throw new Exception("Invalid value for date parameter! Use MM/dd/yyyy format");
+                        if (!DateTime.TryParse(param.Value, out date))
+                        {
+                            throw new Exception("Invalid date value for AsOfDate parameter!");
+                        }
 
                         whereClauses.Add($"S.CreatedOn <= '{date.Date.AddDays(1)}'");
                         response.asOfDate = date;
