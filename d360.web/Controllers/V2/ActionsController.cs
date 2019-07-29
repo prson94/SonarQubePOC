@@ -76,6 +76,7 @@ namespace d360.web.Controllers.V2
                                     GR.uid as UpdatedByUid";
             string whereSql = "";
             string joinsSql = " ";
+            string orderBySQL = " order By AssetUid ";
             List<string> queries = new List<string>();
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
@@ -108,7 +109,20 @@ namespace d360.web.Controllers.V2
                             break;
                         case "_order":
                             if (q.Value != null)
+                            {
                                 order = q.Value;
+                                dbArgs.Add("OrderBy", order);
+                                orderBySQL = @" ORDER BY CASE 
+                                                    WHEN @OrderBy='AssetUid' THEN 'AssetUid'
+                                                    WHEN @OrderBy='AssetTypeUid' THEN 'AssetTypeUid'
+                                                    WHEN @OrderBy='ActionTypeName' THEN 'ActionTypeName'
+                                                    WHEN @OrderBy='ActionTypeUid' THEN 'ActionTypeUid'
+                                                    WHEN @OrderBy='CreatedOn' THEN 'CreatedOn'
+                                                    WHEN @OrderBy='CreatedByUid' THEN 'CreatedByUid'
+                                                    WHEN @OrderBy='UpdatedOn' THEN 'UpdatedOn'
+                                                    WHEN @OrderBy='UpdatedByUid' THEN 'UpdatedByUid'
+                                                END ";
+                            }
                             break;
                     }
                 }
@@ -210,8 +224,9 @@ namespace d360.web.Controllers.V2
                 if (pageNum < 1) pageNum = 1;
                 model.pageNum = pageNum;
                 model.pageSize = pageSize;
-                string offsetSql = " Order by " + order + $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-                finalSql += offsetSql;
+
+                string offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+                finalSql += orderBySQL + offsetSql;
             }
             var count = await Company.QueryAsync<int>(countSql, dbArgs);
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
