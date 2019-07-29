@@ -62,7 +62,9 @@ namespace d360.core
         [Description("JSON")]
         JSON = 1 << 24,
         [Description("JSON Attribute")]
-        JsonElement = 1 << 25
+        JsonElement = 1 << 25,
+        [Description("Tag")]
+        Tag = 1 << 26
     } 
 
     public class DataTypeInfo
@@ -108,6 +110,7 @@ namespace d360.core
             var list = new List<DataTypeInfo>();
 
             var excludes = sysObj.ExcludeDataType();
+           
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
                 var aReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute)));
