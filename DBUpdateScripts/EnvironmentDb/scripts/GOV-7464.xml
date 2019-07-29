@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bhoward" id="GOV-7464-1">
+  <changeSet author="bhoward" id="GOV-7464">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -214,14 +214,14 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 		n.ImageIconUrl as ImageIconUrl,
 		n.Title as Title,
 		(
-		SELECT	R.name, 				
+		SELECT DISTINCT	R.name, 				
 				CONCAT('dashboard/', R.[ObjectType] ,'/' , R.ObjectID , '/' , R.Name) As url,
 				0 as feature,
 				null AS items	
 		FROM	Report R
 		left join ReportResponsibility rs on rs.ReportID = R.ID
 		left join ResponsibilityDetail rd on rd.ResponsibilityTypeID = rs.ResponsibilityTypeID
-		Where 15 = rd.ResourceID or rd.ResourceID is null
+		Where @ResourceID = rd.ResourceID or rd.ResourceID is null
 		Order By R.name
 		FOR XML PATH('nav'), TYPE
 		) AS Items
