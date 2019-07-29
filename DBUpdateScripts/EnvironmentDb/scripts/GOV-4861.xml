@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="GOV-4861">
+  <changeSet author="MDonato" id="GOV-4861-DeleteObject">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -206,8 +206,9 @@ begin
    set @ClearNyms = 1    
    set @ClearResponsibilities = 1    
    set @ClearPromotion = 1    
-    
-   delete Artifact where ID in (select ObjectID from @h)    
+
+   delete [Asset] where AssetTypeID in (select ID from AssetType where object ='ArtifactType' and objectid in (select ObjectID from @ht));
+
   end    
     
   if @Object = 'ArtifactType'    
@@ -223,11 +224,9 @@ begin
    set @ClearResponsibilities = 1    
    set @ClearSiteNav = 1       
        
-   delete Artifact    
-   where ID in (select ObjectID from @h)    
-    
-   delete ArtifactType       
-   where ID in (select ObjectID from @ht)    
+   delete [Asset] where AssetTypeID in (Select ID from AssetType where object='ArtifactType' and objectId in (select ObjectID from @ht))       
+   delete AssetType where ID in (Select ID from AssetType where object='ArtifactType' and objectId in (select ObjectID from @ht))    
+  
   end    
     
   if @Object = 'AttributeType'    
