@@ -2287,7 +2287,7 @@ where	R.SourceObject = 'FusionAttribute'
                                 throw new ArgumentException(Messages.Error_NameTaken);                            
                             break;
                         case EntityState.Deleted:
-                            if (Any<Artifact>(i => i.ArtifactTypeID == o.ID))
+                            if (Query<int>("select count(*) from Asset A inner join AssetType T on T.ID = A.AssetTypeID and T.Object = 'ArtifactType' and T.ObjectID = @ID", new { o.ID }).FirstOrDefault() > 0)
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ArtifactsAssignedToType);
                             var childIDs = GetChildTypes(o.ID, SystemObjects.ArtifactType).ToList();
                             if (childIDs.Count > 0)

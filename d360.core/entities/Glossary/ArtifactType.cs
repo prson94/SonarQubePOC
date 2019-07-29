@@ -46,13 +46,6 @@ namespace d360.core.entities
 
         #endregion
 
-        #region Collection Properties
-
-        [IgnoreDataMember, ForeignKey("ArtifactTypeID")]
-        public virtual ICollection<Artifact> Artifacts { get; set; }
-
-
-        #endregion
 
         public EventObjectInfo GetEventObjectInfo()
         {
