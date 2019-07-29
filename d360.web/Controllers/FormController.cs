@@ -854,6 +854,7 @@ namespace d360.web.Controllers
         [Route("AddArtifact"), HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false)]
         public JsonResult AddArtifact(FormCollection form)
         {
+
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException("artifact");
@@ -866,20 +867,20 @@ namespace d360.web.Controllers
 
                 if (assettype == null) throw new NotFoundException("artifact type");
                                 
-                var model = new Artifact {
-                    ArtifactTypeID = typeID
-                };
+                var model = new Asset { AssetTypeID = assettype.ID, Object = "Policy", State = State.Active, CreatedBy = Company.CurrentResourceID, CreatedOn = DateTime.UtcNow, UpdatedBy = Company.CurrentResourceID, UpdatedOn = DateTime.UtcNow };
+
 
                 int? parentId = parseNullableIntField(form, "ParentID");
 
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, typeID).ToList();
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, fieldTypes, form, Server);
-                Company.SaveOrUpdate<Artifact>(model, fields, (parentId.HasValue ? parentId.Value : -1));
-                processFormDynamicRelationshipFields(SystemObjects.ArtifactType, typeID, SystemObjects.Artifact, model.ID, fieldTypes, form);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ObjectID, fieldTypes, form, Server);
+                Company.SaveOrUpdateAsset(model, fields, parentId.GetValueOrDefault());
+
+                processFormDynamicRelationshipFields(SystemObjects.ArtifactType, typeID, SystemObjects.Artifact, model.ObjectID, fieldTypes, form);
 
                 if (parentId.HasValue)
                 {
-                    if(!Company.AddObjectParentRelationship(SystemObjects.ArtifactType, assettype.ObjectID, SystemObjects.Artifact, parentId.Value, model.ID))
+                    if(!Company.AddObjectParentRelationship(SystemObjects.ArtifactType, assettype.ObjectID, SystemObjects.Artifact, parentId.Value, model.ObjectID))
                     {
                         return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
                     }                    
