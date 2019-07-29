@@ -180,5 +180,52 @@ namespace d360.model.DataAccessLayer
         {
             return companyContext.Tags.Any(x => x.Value == model.Value && x.uid != model.uid);
         }
+
+        public bool DoesAssetTagExists(int tagId,long assetId)
+        {
+            return  companyContext.AssetTags.Any(x => x.TagID ==tagId && x.AssetID == assetId);
+        }
+
+
+        public AssetTag CreateAssetTag(int tagId, long assetId)
+        {
+            if (this.DoesAssetTagExists(tagId, assetId))
+                return null;
+
+            var assetTag = new AssetTag()
+            {
+               TagID=tagId,
+               AssetID=assetId
+
+            };
+
+            companyContext.AssetTags.Add(assetTag);
+            companyContext.SaveChanges();
+            return assetTag;
+        }
+
+        public AssetTag GetAssetTag(int tagId, long assetId)
+        {
+            return  companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
+        }
+        public bool DeleteAssetTag(int tagId, long assetId)
+        {
+            AssetTag tag= companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
+            return companyContext.Delete<AssetTag>(tag);
+        }
+
+
+        public bool IsAuthorizedToDeleteAssetTag(int tagId, long assetId)
+        {
+            bool hasPersmission = companyContext.CurrentResourceIsAdmin;
+            if (!hasPersmission)
+            {
+                AssetTag tag = companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
+                if(tag != null)
+                    hasPersmission = tag.CreatedBy == companyContext.CurrentResourceID;
+            }
+            return hasPersmission;
+        }
+
     }
 }
