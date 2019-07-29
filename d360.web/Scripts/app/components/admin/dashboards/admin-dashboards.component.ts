@@ -3,11 +3,11 @@ import { NgForm } from '@angular/forms';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { ReportsService } from '../../../services/reports.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
-import { MessagesService} from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Report, ReportType } from '../../../models/report.model';
 import { Title } from '@angular/platform-browser';
 import { StateService } from '../../../services/state.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 
 @Component({
@@ -126,7 +126,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     powerBiUser: string;
     powerBiPassword: string;
 
-    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, protected reportsService: ReportsService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, protected reportsService: ReportsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Dashboards";
         this.tabTitle = 'Dashboards'

@@ -4,13 +4,13 @@ import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.servi
 import {RightSidebarService} from '../../../services/right-sidebar.service';
 import {FusionService} from '../../../services/fusion.service';
 import {ObjectStyleService} from '../../../services/object-style.service';
-import {MessagesService} from '../../../services/messages.service';
 import {AdminBaseComponent} from '../admin-base.component';
 import {FormMode} from '../../../models/form.model';
 import {FusionType} from '../../../models/fusion.model';
 import {ObjectStyle} from '../../../models/object-style.model';
 import {Title} from '@angular/platform-browser';
 import * as _ from 'lodash';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-fusion',
@@ -32,7 +32,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
         headerBreadcrumbService: HeaderBreadcrumbService,
         private fusionService: FusionService,
         titleService: Title,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         private objectStyleService: ObjectStyleService
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);

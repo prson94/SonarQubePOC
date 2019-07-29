@@ -5,9 +5,9 @@ import {Subject} from "rxjs";
 import {FusionConfigurationDetails, FusionQueryAttributeType} from '../../models/fusion.model';
 
 import {FusionService} from '../../services/fusion.service';
-import {MessagesService} from '../../services/messages.service';
 
 import {BaseComponent} from '../shared/base.component';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-fusion-query-list',
@@ -108,7 +108,7 @@ export class FusionQueryListComponent extends BaseComponent implements OnChanges
 
     public theDeleteCallback: Function;
 
-    constructor(private fusionService: FusionService, private messagesService: MessagesService) {
+    constructor(private fusionService: FusionService, private messagesService: MessagesObservableService) {
         super();
 
         this.theDeleteCallback = this.deleteQuery.bind(this);

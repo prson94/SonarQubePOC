@@ -1,17 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpEvent, HttpInterceptor, HttpHandler, HttpRequest, HttpResponse, HttpErrorResponse } from '@angular/common/http';
-import { Observable } from 'rxjs';
 import { tap, finalize, catchError } from 'rxjs/operators';
 
-import { Message } from 'primeng/primeng';
-import { MessagesService } from '../services/messages.service';
-import { JsonCoreResult } from '../models/jsonresult.model';
+
+import { MessagesObservableService } from '../services/messages-observable.service';
 
 @Injectable()
 export class ErrorNotifyInterceptor implements HttpInterceptor {
-    m: MessagesService = null;
+    m: MessagesObservableService = null;
 
-    constructor(private messenger: MessagesService) {
+    constructor(private messenger: MessagesObservableService) {
         this.m = messenger;
     }
 

@@ -2,12 +2,12 @@
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {AttributeTypeService} from '../../../services/attribute-type.service';
 import {RightSidebarService} from '../../../services/right-sidebar.service';
-import {MessagesService} from '../../../services/messages.service';
 import {AdminBaseComponent} from '../admin-base.component';
 import {AttributeType} from '../../../models/attribute-type.model';
 import {TreeNode} from 'primeng/primeng';
 import {Title} from '@angular/platform-browser';
 import {type} from 'os';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-attributes-component',
@@ -27,7 +27,7 @@ export class AdminAttributesComponent extends AdminBaseComponent {
     constructor(
         rightSidebarService: RightSidebarService,
         private attributeTypeService: AttributeTypeService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title
     ) {

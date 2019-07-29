@@ -4,8 +4,8 @@ import { BaseComponent } from "../../shared/base.component";
 import { ExportTemplateStyle, ExportViewType } from "../../../models/export-template.model";
 import { SelectItem, Column } from "primeng/primeng";
 import { ExportTemplateService } from "../../../services/export-template.service";
-import { MessagesService } from "../../../services/messages.service";
 import * as _ from "lodash";
+import { MessagesObservableService } from "../../../services/messages-observable.service";
 
 @Component({
     selector: 'd3s-admin-export-template-style-form',
@@ -96,7 +96,7 @@ export class AdminExportTemplateStyleFormComponent extends BaseComponent impleme
     selections: SelectItem[] = [{ label: "Column", value: "Column" }, { label: "Row", value: "Row" }];
 
     constructor(private exportTemplateService: ExportTemplateService,
-        protected messagesService: MessagesService, ) {
+        protected messagesService: MessagesObservableService, ) {
         super();
         //default
         this.model = { SelectionType: "Row", BgColor: "#FFFFFF", TextColor: "#000000", Column: -1, Row:1, ID: 0, AssetTypeExportTemplateID: 0, IsBold: false };

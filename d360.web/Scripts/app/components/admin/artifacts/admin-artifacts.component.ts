@@ -1,20 +1,18 @@
-﻿import { Component, NgZone, OnDestroy, ViewChild, ElementRef, ViewChildren } from '@angular/core';
+﻿import { Component, OnDestroy } from '@angular/core';
 import { TreeNode } from 'primeng/primeng';
 import { Title } from '@angular/platform-browser';
-import { Router } from '@angular/router';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { AuditService } from '../../../services/audit.service';
 import { StateService } from '../../../services/state.service';
 import { ArtifactTypeService } from '../../../services/artifact-type.service';
-import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component'
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-artifacts',
     providers: [ArtifactTypeService, AuditService],
-    templateUrl: './admin-artifacts.component.html',
+    templateUrl: './admin-artifacts.component.html'
 })
 
 export class AdminArtifactsComponent extends AdminBaseComponent implements OnDestroy {
@@ -37,8 +35,8 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         headerBreadcrumbService: HeaderBreadcrumbService,
         private artifactsService: ArtifactTypeService,
         titleService: Title,
-        protected messagesService: MessagesService,
-        private router: Router) {
+        protected messagesService: MessagesObservableService        
+    ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Artifacts";
         this.tabTitle = 'Artifact Types';
@@ -59,12 +57,16 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.clearSidebar();
     }
 
-    load() {
+    load(selectionId:number = 0) {
         this.isLoading = true;
         this.artifactsService.getArtifactTypeTree()
             .subscribe(data => {
-                this.ArtifactTypes = data;
-                this.selectedRow = this.ArtifactTypes[0];
+                this.ArtifactTypes = data;                
+                if (selectionId <= 0) {
+                    this.selectedRow = this.ArtifactTypes[0];
+                } else {                    
+                    this.selectedRow = this.artifactsService.findArtifactType(this.ArtifactTypes, selectionId);
+                }
                 this.isLoading = false;
             });
     }
@@ -103,33 +105,12 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.load();
     }
 
-    actionComplete(e: any, type: string = ''): void {
-        var msg = e;
-        if (type != '') {
-            if (type == 'success') {
-                msg = {
-                    type: type,
-                    title: 'Success',
-                    message: 'Item deleted successfully'
-                }
-            } else {
-                msg = {
-                    type: type,
-                    title: 'Error',
-                    message: 'An error occurred'
-                }
-            }
-        }
-
+    actionComplete(e: any, type: string = ''): void {        
         this.isAdding = false;
         this.isEditing = false;
         this.isDeleting = false;
-        this.load();
+        this.load(e.id?(e.id-0):0);
         this.stateService.reloadLeftNavMenu();
-    }
-
-    navigate(item: any) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', item.ID));
     }
 
     private deleteArtifactType(id: number) {

@@ -51,7 +51,7 @@ export class CommunityResponsibilityCountComponent extends BaseComponent impleme
     @Output() selectedChange = new EventEmitter();
 
     private users: ResourceResponsibilityTypeCount[] = [];
-    
+
     constructor(private responsibilityTypeService: ResponsibilityTypeService,
         private router: Router
     ) {
@@ -70,7 +70,7 @@ export class CommunityResponsibilityCountComponent extends BaseComponent impleme
     load() {
         this.isLoading = true;
         this.responsibilityTypeService.getResourceResponsibilityByType(this.responsibilityTypeId).
-            then(result => {
+            subscribe(result => {
                 this.users = result;
                 this.isLoading = false;
             });

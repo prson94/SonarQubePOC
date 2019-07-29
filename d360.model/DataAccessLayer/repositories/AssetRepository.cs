@@ -31,7 +31,7 @@ namespace d360.model.DataAccessLayer
         }
         public Asset GetAssetByUID(Guid assetUid)
         {
-            return CompanyContext.Filter<Asset>(i => i.uid == assetUid).SingleOrDefault();
+            return CompanyContext.Filter<Asset>(i => i.uid == assetUid, i => i.AssetType).SingleOrDefault();
         }
         public List<AssetTypeClassInfo> GetAssetTypeList()
         {
@@ -718,7 +718,7 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
-        public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution)
+        public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
             {
@@ -726,7 +726,8 @@ namespace d360.model.DataAccessLayer
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
                 ResourceID = CompanyContext.CurrentResourceID,
-                Action = ApiExecutionAction.PutAssets
+                Action = ApiExecutionAction.PutAssets,
+                SendWorkflowEvents = sendWorkflowEvents
             };
 
             // Save to storage container.
@@ -742,7 +743,7 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
-        public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution)
+        public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
             {
@@ -750,7 +751,8 @@ namespace d360.model.DataAccessLayer
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
                 ResourceID = CompanyContext.CurrentResourceID,
-                Action = ApiExecutionAction.PostAssets
+                Action = ApiExecutionAction.PostAssets,
+                SendWorkflowEvents = sendWorkflowEvents
             };
 
             // Save to storage container.

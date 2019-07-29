@@ -1,8 +1,8 @@
 ﻿import { Component, Input, OnChanges, SimpleChange } from '@angular/core';
 import { SurveyQuestionType, SurveyType } from '../../../models/survey.model';
 import { SurveysService } from '../../../services/surveys.service';
-import { MessagesService } from '../../../services/messages.service';
 import { BaseComponent } from '../../shared/base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-survey-questions',
@@ -27,10 +27,12 @@ import { BaseComponent } from '../../shared/base.component';
                                 </th>
                                 <th style="width: 40px"></th>
                                 <th style="width: 40px"></th>
+                                <th style="width: 40px"></th>
                             </tr>
                             <tr [hidden]="showSimpleFilter">
                                 <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
                                 <th><d3s-column-filter [field]="'DisplayStyle'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th></th>
                                 <th></th>
                                 <th></th>
                             </tr>
@@ -39,6 +41,7 @@ import { BaseComponent } from '../../shared/base.component';
                             <tr (dblclick)="selected=item;showEditor=true" [pSelectableRow]="item">
                                 <td>{{item.Name}}</td>
                                 <td>{{item.DisplayStyle}}</td>
+                                <td><d3s-preview-tooltip objectType="QuestionType" [objectId]="item.ID" icon="info"></d3s-preview-tooltip></td>
                                 <td>
                                     <div class="RowTools">
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
@@ -77,7 +80,7 @@ export class AdminSurveyQuestionsComponent extends BaseComponent implements OnCh
     selected: SurveyQuestionType = null;
     theDeleteCallback: Function;
 
-    constructor(private surveysService: SurveysService, private messagesService: MessagesService) {
+    constructor(private surveysService: SurveysService, private messagesService: MessagesObservableService) {
         super();
         this.theDeleteCallback = this.deleteQuestion.bind(this);
     }

@@ -2,7 +2,7 @@
 import {FusionAttributeTypeCustomQuery} from '../../../models/fusion.model';
 import {FusionService} from '../../../services/fusion.service';
 import {BaseComponent} from '../../shared/base.component';
-import {MessagesService} from '../../../services/messages.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -103,7 +103,7 @@ export class FusionAttributeTypeCustomQueryComponent extends BaseComponent imple
 
     constructor(
         private fusionService: FusionService,
-        private messagesService: MessagesService
+        private messagesService: MessagesObservableService
     ) {
         super();
         this.theDeleteCallback = this.deleteOverride.bind(this);

@@ -1,11 +1,11 @@
 ﻿import { Component, OnDestroy} from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
-import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { RelationshipType } from '../../../models/relationship.model';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-relationships-component',
@@ -22,7 +22,7 @@ import { RightSidebarItem } from '../../../models/rightsidebar.model';
 export class AdminRelationshipsComponent extends AdminBaseComponent implements OnDestroy {   
     private selected: RelationshipType;
     
-    constructor(rightSidebarService: RightSidebarService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService,  titleService: Title) {
+    constructor(rightSidebarService: RightSidebarService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService,  titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Relationships";
         this.tabTitle = "Relationship Types";

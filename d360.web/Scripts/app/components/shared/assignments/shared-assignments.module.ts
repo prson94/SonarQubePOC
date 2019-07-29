@@ -1,8 +1,7 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
 import {
     SharedModule,
@@ -20,7 +19,7 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
-        HttpModule,
+        HttpClientModule,
 
         //d3s
         CoreModule,        
@@ -38,7 +37,10 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
         AssignmentsComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true },
     ]
 })
 export class SharedAssignmentsModule { }

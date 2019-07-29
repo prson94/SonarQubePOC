@@ -1,8 +1,8 @@
 ﻿import { Component, Input, OnChanges, SimpleChanges, OnInit } from "@angular/core";
 import { BaseComponent } from "../../shared/base.component";
 import { ExportTemplateService } from "../../../services/export-template.service";
-import { MessagesService } from "../../../services/messages.service";
 import { ExportTemplateStyle, ExportViewType } from "../../../models/export-template.model";
+import { MessagesObservableService } from "../../../services/messages-observable.service";
 
 @Component({
     selector: 'd3s-admin-export-template-styles',
@@ -87,7 +87,7 @@ export class AdminExportTemplateStylesComponent extends BaseComponent implements
     theDeleteCallback: Function;
 
     constructor(private exportTemplateService: ExportTemplateService,
-        protected messagesService: MessagesService, ) {
+        protected messagesService: MessagesObservableService, ) {
         super();
         this.theDeleteCallback = this.deleteTemplateStyle.bind(this);
     }

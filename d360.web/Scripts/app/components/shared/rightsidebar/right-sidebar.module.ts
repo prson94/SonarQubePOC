@@ -1,9 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
 import { RightSidebarItemComponent } from './right-sidebar-item.component';
 import { RightSidebarComponent } from './right-sidebar.component';
@@ -14,8 +13,8 @@ import { DynamicPercentageModule } from '../small-widgets/dynamic-percentage/dyn
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
         DynamicPercentageModule,
+        HttpClientModule,         
     ],
     declarations: [
         RightSidebarItemComponent,
@@ -25,7 +24,10 @@ import { DynamicPercentageModule } from '../small-widgets/dynamic-percentage/dyn
         RightSidebarComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true },
     ]
 })
 export class RightsidebarModule { }

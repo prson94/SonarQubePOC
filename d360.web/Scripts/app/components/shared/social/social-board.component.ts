@@ -3,7 +3,7 @@ import { BaseComponent } from '../base.component';
 import { SocialService } from '../../../services/social.service';
 import { SocialComment, SocialEditCommentData, SocialCommentType } from '../../../models/social.model';
 import { CurrentCompanySettings } from '../../../static/company-settings'
-import { MessagesService } from '../../../services/messages.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-social-board',
@@ -46,7 +46,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     
     
 
-    constructor(private socialService: SocialService, protected messagesService: MessagesService) {
+    constructor(private socialService: SocialService, protected messagesService: MessagesObservableService) {
         super();
     }
 

@@ -14,7 +14,6 @@ import {
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
 import {RulesService} from '../../services/rules.service';
 import {GridDefinitionService} from '../../services/grid-definition.service';
-import {MessagesService} from '../../services/messages.service';
 import {HeaderActionsService} from '../../services/header-actions.service';
 import {PermissionsService} from '../../services/permissions.service';
 import {Breadcrumb} from '../../models/breadcrumb.model';
@@ -23,6 +22,7 @@ import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
 import {RightSidebarService} from '../../services/right-sidebar.service';
 import * as _ from 'lodash';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-rule-list',
@@ -51,7 +51,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                 private router: Router,
                 protected rulesService: RulesService,
                 protected titleService: Title,
-                protected messagesService: MessagesService,
+                protected messagesService: MessagesObservableService,
                 private gridDefinitionService: GridDefinitionService,
                 private headerActionsService: HeaderActionsService,
                 protected headerBreadcrumbService: HeaderBreadcrumbService,
@@ -87,7 +87,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
             this.isLoading = true;
             this.rulesService.getRuleType(this.ruleTypeId)
-                .then(result => {
+                .subscribe(result => {
                     this.isLoading = false;
                     this.ruleType = result;
                     this.setObjectInfo('RuleType', this.ruleType.ID);
@@ -162,7 +162,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     private loadRules() {
         this.isLoading = true;
         this.rulesService.getRules(this.ruleTypeId)
-            .then(result => {
+            .subscribe(result => {
                 this.isLoading = false;
                 for (let rule of result) {
                     if (!rule.Dimension) rule.Dimension = ""; //prime grid has issues with null objects make sure we dont have any.
@@ -181,7 +181,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
     private saveRule(event) {
         this.rulesService.saveRule(event.item)
-            .then(result => {
+            .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {
                     this.loadRules();
@@ -196,7 +196,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     private deleteRule(id: number) {
-        this.rulesService.deleteRule(id).then(result => {
+        this.rulesService.deleteRule(id).subscribe(result => {
             this.showMessageForResult(this.messagesService, result);
             this.showDelete = false;
             this.selected = this.rules.length > 0 ? this.rules[0] : null;

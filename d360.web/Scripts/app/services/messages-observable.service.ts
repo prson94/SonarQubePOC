@@ -38,40 +38,28 @@ export class MessagesObservableService {
         this.timeout = window.setTimeout(() => { this.headerActionService.emitCountChange(); }, 200);
     }
 
-    saveLegacyClientError(error: Response) {
-        let objError: Error;
-        let model: any;
-
-        if (error instanceof Error) {
-            objError = error;
-        } else if (error.body instanceof Error) {
-            objError = error.body;
-        } else {
-            objError = new Error(error.toString());
-        }
-
-        model = {Name: objError.name, Message: objError.message, Stack: objError.stack};
-
-        return this.http.post('api/v2/errors/log/clienterror', model).pipe(
-            map(() => {}),
-            catchError(error => {
-                console.log('An error while logging error', error);
-                return of(error);
-            })
-        );
-    }
-
     saveClientError(error: HttpErrorResponse): Observable<any> {
         let objError: Error;
         let model: any;
 
+
+        //Depending on where the error was thrown (http get/post/put method, inside the pipe/map using inbuild httpclient json parser or other runtime error)
+        //HttpErrorResponse have slightly different format
         if (error instanceof Error) {
             objError = error;
-        } else if (error.error instanceof Error) {
-            objError = error.error;
-        } else {
+        } else if (error.error) {
+            objError = error.error.error;
+        }
+        else if (!error.error && error.name === 'HttpErrorResponse') {
+            objError = new Error(error.message);
+            objError.name = error.name;
+        }
+        else {
             objError = new Error(error.toString());
         }
+
+        if (error.message)
+            objError.message = error.message;
 
         model = {Name: objError.name, Message: objError.message, Stack: objError.stack};
 

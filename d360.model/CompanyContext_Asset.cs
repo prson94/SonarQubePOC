@@ -37,12 +37,11 @@ namespace d360.model
 
         #region Engine Methods
 
-        private string wildcardValue(string value)
+        private string wildcardValue(string value, bool isContains = true)
         {
-            if (value.Contains("*") || value.Contains("?"))
-                return value.Replace("*", "%").Replace("?", "_") + "%";
-            else
-                return value += "%";
+            value = value.Replace("*", "%").Replace("?", "_");
+            value = isContains ? $"%{value}%" : $"{value}%";
+            return value;
         }
 
         public string DetermineSqlDataTypeForFieldType(FieldType f)
@@ -101,12 +100,17 @@ namespace d360.model
 
             if (string.IsNullOrEmpty(simpleFilter))
             {
+                var usedFilters = new List<string>();
                 foreach (var filter in filters)
                 {
                     if (filter is UiRequestAttributeFilterValue)
                     {
                         var f = filter as UiRequestAttributeFilterValue;
-                        filterTable.Rows.Add("A", f.Operator, f.AttributeTypeID, null, $"{wildcardValue(f.RawValue)}");
+                        if (!usedFilters.Contains($"A{f.AttributeTypeID}"))
+                        {
+                            filterTable.Rows.Add("A", f.Operator, f.AttributeTypeID, null, $"{wildcardValue(f.RawValue)}");
+                            usedFilters.Add($"A{f.AttributeTypeID}");
+                        }                        
                     }
 
                     if (filter is UiRequestFieldFilterValue)
@@ -115,20 +119,34 @@ namespace d360.model
 
                         if (f.IsParentField)
                         {
-                            filterTable.Rows.Add("P", f.Operator, 0, null, $"{wildcardValue(f.RawValue)}");
+                            if (!usedFilters.Contains($"P0"))
+                            {
+                                filterTable.Rows.Add("P", f.Operator, 0, null, $"{wildcardValue(f.RawValue)}");
+                                usedFilters.Add($"P0");
+                            }
                         }
                         else
                         {
                             if (f.RawValue.Contains("!~!"))
                             {
-                                string[] seps = { "!~!" };
-                                var stringFilterArray = f.RawValue.Split(seps, StringSplitOptions.RemoveEmptyEntries);
-                                var valueArray = new JArray(stringFilterArray);
-                                filterTable.Rows.Add("M", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{valueArray.ToString()}");
+                                if (!usedFilters.Contains($"M{f.FieldName.Replace("Field", "")}"))
+                                {
+                                    string[] seps = { "!~!" };
+                                    var stringFilterArray = f.RawValue.Split(seps, StringSplitOptions.RemoveEmptyEntries);
+                                    var valueArray = new JArray(stringFilterArray);
+                                    filterTable.Rows.Add("M", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{valueArray.ToString()}");
+
+                                    usedFilters.Add($"M{f.FieldName.Replace("Field", "")}");
+                                }
                             }
                             else
                             {
-                                filterTable.Rows.Add("F", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{wildcardValue(f.RawValue)}");
+                                if (!usedFilters.Contains($"F{f.FieldName.Replace("Field", "")}"))
+                                {
+                                    filterTable.Rows.Add("F", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{wildcardValue(f.RawValue)}");
+
+                                    usedFilters.Add($"F{f.FieldName.Replace("Field", "")}");
+                                }
                             }
                         }
                     }
@@ -136,27 +154,39 @@ namespace d360.model
                     if (filter is UiRequestOwnershipFilterValue)
                     {
                         var f = filter as UiRequestOwnershipFilterValue;
-                        var arr = new JArray(f.Items.Select(o => o.GetAsJsonDbQueryObject()));
-                        filterTable.Rows.Add("O", f.Operator, 0, null, arr.ToString(Formatting.None));
+                        if (!usedFilters.Contains($"O0"))
+                        {
+                            var arr = new JArray(f.Items.Select(o => o.GetAsJsonDbQueryObject()));
+                            filterTable.Rows.Add("O", f.Operator, 0, null, arr.ToString(Formatting.None));
+                            usedFilters.Add($"O0");
+                        }
                     }
 
                     if (filter is UiRequestRelationshipFilterValue)
                     {
                         var f = filter as UiRequestRelationshipFilterValue;
-                        var idList = string.Join(",", f.TargetObjectIDs);
-                        filterTable.Rows.Add("R", f.Operator, f.IntersectTypeID, f.TargetObject, idList);
+                        if (!usedFilters.Contains($"R{f.IntersectTypeID}"))
+                        {
+                            var idList = string.Join(",", f.TargetObjectIDs);
+                            filterTable.Rows.Add("R", f.Operator, f.IntersectTypeID, f.TargetObject, idList);
+                            usedFilters.Add($"R{f.IntersectTypeID}");
+                        }
                     }
 
                     if (filter is UiRequestRelationshipFieldFilterValue)
                     {
                         var f = filter as UiRequestRelationshipFieldFilterValue;
-                        filterTable.Rows.Add("F", f.Operator, f.FieldTypeID, null, $"{wildcardValue(f.RawValue)}");
+                        if (!usedFilters.Contains($"F{f.FieldTypeID}"))
+                        {
+                            filterTable.Rows.Add("F", f.Operator, f.FieldTypeID, null, $"{wildcardValue(f.RawValue)}");
+                            usedFilters.Add($"F{f.FieldTypeID}");
+                        }
                     }
                 }
             }
             else
             {
-                simpleFilter = wildcardValue(simpleFilter);
+                simpleFilter = wildcardValue(simpleFilter, false);
             }
 
             #endregion

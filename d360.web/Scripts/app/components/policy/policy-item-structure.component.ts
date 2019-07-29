@@ -14,7 +14,6 @@ import {GridColumn, GridField} from '../../models/grid-definition.model';
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
 import {PoliciesService} from '../../services/policies.service';
 import {RightSidebarService} from '../../services/right-sidebar.service';
-import {MessagesService} from '../../services/messages.service';
 import {HeaderActionsService} from '../../services/header-actions.service';
 import {PermissionsService} from '../../services/permissions.service';
 import {LevelsService} from '../../services/levels.service';
@@ -24,6 +23,7 @@ import {BaseComponent} from '../shared/base.component';
 
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-policy-item-structure',
@@ -68,7 +68,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         private policiesService: PoliciesService,
         private route: ActivatedRoute,
         private router: Router,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         rightSidebarService: RightSidebarService,
         private permissionsService: PermissionsService,
         private levelsService: LevelsService,

@@ -6,11 +6,11 @@ import {Breadcrumb} from '../../../models/breadcrumb.model';
 import {ApiEndpoint, ApiService, ApiVersion} from '../../../models/custom-api.model';
 
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {MessagesService} from '../../../services/messages.service';
 import {CustomAPIService} from '../../../services/custom-api.service';
 import {RightSidebarService} from '../../../services/right-sidebar.service';
 
 import {AdminBaseComponent} from '../admin-base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-customapi-service-detail',
@@ -34,7 +34,7 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
         protected customAPIService: CustomAPIService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         rightSidebarService: RightSidebarService,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         titleService: Title
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);

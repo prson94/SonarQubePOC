@@ -52,14 +52,14 @@ export class WorkflowStepSummaryComponent extends BaseComponent implements OnCha
     ngOnInit() {
         this.isLoading = true;
         this.responsibilityService.getResponsibilityTypes()
-            .then(r => this.responsibilities = r)
-            .then(() => this.workflowService.getWorkflowFieldTypes(this.objectId, this.object, true, this.issueObject)
-                .pipe(
-                    map(r => this.fields = r),
-                    map(() => this.load())
-                ).subscribe()
-            );
-
+            .subscribe(r => {
+                this.responsibilities = r;
+                this.workflowService.getWorkflowFieldTypes(this.objectId, this.object, true, this.issueObject)
+                    .subscribe(f => {
+                        this.fields = f;
+                        this.load();
+                    })
+            })
     }
     ngOnChanges() {
         this.load();

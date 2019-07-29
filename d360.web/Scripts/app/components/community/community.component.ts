@@ -53,7 +53,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
     private selectedResponsibilityId: number = 0;
     private selectedResponsibilityName: string;
     private selectedResource: ResourceResponsibilityTypeCount;
-    
+
     constructor(protected responsibilityTypeService: ResponsibilityTypeService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
@@ -84,7 +84,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
     private load() {
         this.isLoading = true;
         this.responsibilityTypeService.getResponsibilityTypeBreakdown().
-            then(result => {
+            subscribe(result => {
                 this.responsibilitiesPie = {
                     chart: {
                         plotBackgroundColor: null,
@@ -102,7 +102,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                     credits: {
                         enabled: false
                     },
-                    tooltip: {                        
+                    tooltip: {
                         formatter: function () {
                             return this.point.name +'<br>' + Highcharts.numberFormat(this.y, 0, '.', ',') +  ' Total Assigned Items';
                         }
@@ -111,15 +111,15 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                         pie: {
                             allowPointSelect: true,
                             cursor: 'pointer',
-                            dataLabels: {                                
-                                enabled: true,                              
+                            dataLabels: {
+                                enabled: true,
                                 formatter: function () {
                                     return '<b>' + this.point.name+'</b>: ' + Highcharts.numberFormat(this.y, 0, '.', ',');
                                 },
                                 style: {
                                     color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
                                 }
-                            }                            
+                            }
                         }
                     },
                     series: [{
@@ -136,7 +136,7 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                 this.isLoading = false;
             });
     }
-        
+
     onPieClick(e) {
         this.selectedResource = null;
         this.selectedResponsibilityName = e.originalEvent.point.name; //name

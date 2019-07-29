@@ -56,9 +56,9 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
     ngOnInit() {        
         this.setCommonRightSideBar(true, true, false, true, true, true, false);
         this.sub = this.route.params.subscribe(params => {
-            this.type = params['type'];
+            this.type = decodeURIComponent(params['type']);
             this.id = +params['id'];
-            this.name = params['name'] ? params['name'] : 'Details';
+            this.name = decodeURIComponent(params['name'] ? params['name'] : 'Details');
             this.dataProfileId = params['dataProfileId'] ? +params['dataProfileId'] : -1;
             this.setBrowserTitle(this.titleService, this.name);
             this.loadPermissions(this.permissionsService, StringConstants.ObjectFusionAttribute, this.id);

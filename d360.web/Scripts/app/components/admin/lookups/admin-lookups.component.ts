@@ -7,9 +7,9 @@ import {Lookup} from '../../../models/lookup.model';
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {RightSidebarService} from '../../../services/right-sidebar.service';
 import {LookupService} from '../../../services/lookup.service';
-import {MessagesService} from '../../../services/messages.service';
 
 import {AdminBaseComponent} from '../admin-base.component';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -140,7 +140,7 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
         private router: Router,
         rightSidebarService: RightSidebarService,
         private lookupService: LookupService,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title
     ) {

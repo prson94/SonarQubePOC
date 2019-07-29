@@ -1,9 +1,8 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { RouterModule }    from '@angular/router';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
 import {
     ButtonModule,
@@ -41,7 +40,7 @@ export function highchartsFactory() {
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         RouterModule,
-        HttpModule,
+        HttpClientModule,
         //d3s
         CoreModule,
         SharedGridPagingInfoModule,        
@@ -71,7 +70,10 @@ export function highchartsFactory() {
         ObjectHealthDetailsComponent,     
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true },
         {
             provide: HighchartsStatic,
             useFactory: highchartsFactory

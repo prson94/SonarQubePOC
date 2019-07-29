@@ -5,15 +5,15 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tklok" id="GOV-7491">
+  <changeSet author="tklok" id="GOV-7491-b">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
 		<![CDATA[  
 	UPDATE [dbo].[SiteNav] SET [Title] = 'Reference Lists' WHERE [Name] = '#Reference' AND [Title] = 'Reference'
-	UPDATE [dbo].[SiteNav] SET [Icon] = 'fa-list-alt' WHERE [Name] = '#Reference' AND [Icon] = 'fa-cubes'
-	UPDATE [dbo].[SiteNav] SET [Icon] = 'fa-retweet' WHERE [Name] = '#Monitor' AND [Icon] = 'fa-usb';
+	UPDATE [dbo].[SiteNav] SET [Icon] = 'fa-list-alt' WHERE [Name] = '#Reference' AND [Icon] = 'fa-cubes'  	
+  UPDATE [dbo].[SiteNav] SET [Icon] = 'fa-usb' WHERE [Name] = '#Monitor' AND [Icon] = 'fa-retweet';
 		]]>
     </sql>
     <rollback>

@@ -1,8 +1,8 @@
 ﻿import {Input, Component, OnInit, OnChanges, SimpleChange} from '@angular/core';
-import {MessagesService} from '../../services/messages.service';
 import {ObjectDetailService} from '../../services/object-detail.service';
 import {BaseComponent} from '../shared/base.component';
 import {NymType} from '../../models/object-detail.model';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -49,7 +49,7 @@ export class AdminNymAllocationsComponent extends BaseComponent implements OnCha
 
     private nyms: NymType[] = [];
 
-    constructor(private messagesService: MessagesService, private objectDetailService: ObjectDetailService) {
+    constructor(private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
         super();
     }
 

@@ -1,10 +1,10 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
-import { HttpModule, XHRBackend  }     from '@angular/http';
-import { RouterModule } from '@angular/router';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 
-import { AuthenticationConnectionBackend } from '../../authentication-connection-backend';
+import { RouterModule } from '@angular/router';
 
 import { ResourceRoutingModule } from './resource.routes';
 
@@ -61,7 +61,7 @@ import { TableModule } from 'primeng/table';
         CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
+        HttpClientModule,
         RouterModule,        
         ResourceRoutingModule,
 
@@ -94,7 +94,10 @@ import { TableModule } from 'primeng/table';
     ],
     providers: [
        ApiKeyUsersGuard,
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true },
     ]
 
 })

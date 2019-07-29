@@ -1,0 +1,91 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="SDooley" id="GOV-7626">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+DROP TABLE IF EXISTS [dbo].[Policy-retired];
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+  IF NOT EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'Policy-retired' AND Type = N'U')
+ BEGIN
+  CREATE TABLE [dbo].[Policy-retired](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[TextPath] [nvarchar](2000) NULL,
+	[UpdatedOn] [datetime] NULL,
+	[UpdatedBy] [int] NULL,
+	[PolicyTypeID] [int] NOT NULL,
+	[Level] [int] NOT NULL,
+	[SourceID] [nvarchar](250) NULL,
+	[KeyHash] [varchar](250) NULL,
+	[FieldHash] [varchar](250) NULL,
+	[DisplayValue] [nvarchar](max) NOT NULL,
+ CONSTRAINT [PK_Policy] PRIMARY KEY CLUSTERED 
+  (
+	  [ID] ASC
+  )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+  ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+  ALTER TABLE [dbo].[Policy-retired] ADD  CONSTRAINT [DF_Policy_UpdatedOn]  DEFAULT (getutcdate()) FOR [UpdatedOn]
+  ALTER TABLE [dbo].[Policy-retired] ADD  CONSTRAINT [DF_Policy_PolicyTypeID]  DEFAULT ((50000)) FOR [PolicyTypeID]
+  ALTER TABLE [dbo].[Policy-retired] ADD  CONSTRAINT [DF_Policy_Level]  DEFAULT ((1)) FOR [Level]
+  ALTER TABLE [dbo].[Policy-retired] ADD  CONSTRAINT [DF_Policy_DisplayValue]  DEFAULT ('<INVALID VALUE>') FOR [DisplayValue]
+ END
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="SDooley" id="GOV-7626-1-Fix1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_NAME ='FK_PolicyTypeLevel_PolicyType') 
+   AND EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'PolicyTypeLevel' AND Type = N'U')
+ BEGIN
+	ALTER TABLE [dbo].[PolicyTypeLevel] DROP CONSTRAINT [FK_PolicyTypeLevel_PolicyType]
+END
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_NAME ='FK_PolicyTypeLevel_PolicyType') 
+   AND EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'PolicyTypeLevel-retired' AND Type = N'U')
+ BEGIN
+	ALTER TABLE [dbo].[PolicyTypeLevel-retired] DROP CONSTRAINT [FK_PolicyTypeLevel_PolicyType]
+END
+IF EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'PolicyType-retired' AND Type = N'U')
+ BEGIN
+	DROP TABLE IF EXISTS [dbo].[PolicyType-retired];
+END
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+IF NOT EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'PolicyType-retired' AND Type = N'U')
+ BEGIN
+  CREATE TABLE [dbo].[PolicyType-retired](
+	[ID] [int] IDENTITY(50000,1) NOT NULL,
+	[Name] [nvarchar](250) NOT NULL,
+	[Description] [nvarchar](max) NULL,
+	[UpdatedOn] [datetime] NULL,
+	[UpdatedBy] [int] NULL,
+	[MaximumDepth] [int] NULL,
+	[DisplayFormat] [nvarchar](250) NULL,
+  CONSTRAINT [PK_PolicyType] PRIMARY KEY CLUSTERED 
+  (
+	  [ID] ASC
+  )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+  ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+  ALTER TABLE [dbo].[PolicyType-retired] ADD  CONSTRAINT [DF_PolicyType_DisplayFormat]  DEFAULT ('{Name}') FOR [DisplayFormat]
+ END
+]]>
+    </rollback>
+  </changeSet>
+
+  </databaseChangeLog>

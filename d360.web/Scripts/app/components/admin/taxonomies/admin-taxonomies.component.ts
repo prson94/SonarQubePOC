@@ -1,6 +1,5 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Taxonomy } from '../../../models/taxonomy.model';
-import { MessagesService } from '../../../services/messages.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { TaxonomiesService } from '../../../services/taxonomies.service';
 import { FieldsService } from '../../../services/fields.service';
@@ -11,6 +10,7 @@ import { FieldDefinition } from '../../../models/fields.model';
 import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
 import { AssetTypeService } from "../../../services/asset-type.services";
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-models-component',
@@ -119,7 +119,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
         rightSidebarService: RightSidebarService,
         private taxonomiesService: TaxonomiesService,
         private fieldsService: FieldsService,
-        private messagesService: MessagesService,
+        private messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title) {
 

@@ -1,10 +1,7 @@
 ﻿import {NgModule} from '@angular/core';
 import {CommonModule, DeprecatedI18NPipesModule} from '@angular/common';
 import {FormsModule} from '@angular/forms';
-import {HttpModule, XHRBackend} from '@angular/http';
 import {HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
-
-import {AuthenticationConnectionBackend} from '../../../authentication-connection-backend';
 
 import {CoreModule} from '../../shared/core.module';
 import {PipesModule} from '../../../pipes/pipes.module';
@@ -42,13 +39,12 @@ import {TableModule} from 'primeng/table';
 import {SimpleAccordionModule} from '../../shared/simple-accordion.part';
 import {ErrorNotifyInterceptor} from '../../../http-interceptors/error-notify-interceptor';
 import {DirectivesModule} from '../../../directives/directives.module';
-import {GovernPostRequestInterceptor} from "../../../http-interceptors/govern-post-request.interceptor";
+import {GovernRequestInterceptor} from "../../../http-interceptors/govern-request.interceptor";
 
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
         HttpClientModule,
 
         AdminAnalyticsRoutingModule,
@@ -91,17 +87,13 @@ import {GovernPostRequestInterceptor} from "../../../http-interceptors/govern-po
     ],
     providers: [
         {
-            provide: XHRBackend,
-            useClass: AuthenticationConnectionBackend
-        },
-        {
             provide: HTTP_INTERCEPTORS,
             useClass: ErrorNotifyInterceptor,
             multi: true
         },
         {
             provide: HTTP_INTERCEPTORS,
-            useClass: GovernPostRequestInterceptor,
+            useClass: GovernRequestInterceptor,
             multi: true
         }
     ]

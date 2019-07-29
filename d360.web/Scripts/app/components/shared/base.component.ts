@@ -1,7 +1,6 @@
 import {Title} from '@angular/platform-browser';
 import {RightSidebarItem} from '../../models/rightsidebar.model';
 import {PermissionsService} from '../../services/permissions.service';
-import {MessagesService} from '../../services/messages.service';
 import {RightSidebarService} from '../../services/right-sidebar.service';
 import {WebAnalyticsService} from '../../services/web-analytics.service';
 
@@ -10,6 +9,7 @@ import {FormHelpers} from '../../static/form-helpers';
 import {JsonResult} from '../../models/jsonresult.model';
 import {ResponsibilityTypeRelationPermission, Permission} from '../../models/responsibility-type.model';
 import {HttpErrorResponse} from '@angular/common/http';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 declare var CompanySettings;
 
@@ -301,7 +301,7 @@ export class BaseComponent {
         }
     }
 
-    showMessageForResult(messagesService: MessagesService, result: JsonResult, defaultMessage?: string) {
+    showMessageForResult(messagesService: MessagesObservableService, result: JsonResult, defaultMessage?: string) {
         if (defaultMessage == undefined) {
             defaultMessage = 'Success';
         }
@@ -316,7 +316,7 @@ export class BaseComponent {
         }
     }
 
-    showHttpErrorMessage(messagesService: MessagesService, err: HttpErrorResponse) {
+    showHttpErrorMessage(messagesService: MessagesObservableService, err: HttpErrorResponse) {
         messagesService.showError('An error occurred', err.error);
     }
 

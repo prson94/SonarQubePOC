@@ -3,7 +3,6 @@ import {Router, ActivatedRoute} from '@angular/router';
 import {BaseComponent} from '../shared/base.component';
 import {Title} from '@angular/platform-browser';
 import {ModelsService} from '../../services/models.service';
-import {MessagesService} from '../../services/messages.service';
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
 import {PermissionsService} from '../../services/permissions.service';
 import {RightSidebarService} from '../../services/right-sidebar.service';
@@ -17,6 +16,7 @@ import {LevelsService} from '../../services/levels.service';
 import {RightSidebarItem} from '../../models/rightsidebar.model';
 import {GridColumn, GridField} from '../../models/grid-definition.model';
 import {GridDefinitionService} from '../../services/grid-definition.service';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-model-item-structure',
@@ -56,7 +56,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         rightSidebarService: RightSidebarService,
         protected modelsService: ModelsService,
         protected titleService: Title,
-        protected messagesService: MessagesService,
+        protected messagesService: MessagesObservableService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         protected levelsService: LevelsService,

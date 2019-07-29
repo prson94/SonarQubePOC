@@ -4,9 +4,9 @@ import { WorkflowIssueType } from '../../../models/workflow.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { WorkflowService } from '../../../services/workflow.service';
-import { MessagesService } from '../../../services/messages.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-admin-issue-types',
@@ -106,7 +106,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(rightSidebarService: RightSidebarService, private workflowService: WorkflowService, protected messagesService: MessagesService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+    constructor(rightSidebarService: RightSidebarService, private workflowService: WorkflowService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Actions";
         this.adminHeading = "Actions";
