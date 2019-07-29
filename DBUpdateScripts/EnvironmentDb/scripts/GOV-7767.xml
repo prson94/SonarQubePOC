@@ -1,0 +1,39 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-7767">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+delete	I
+from	[Intersect] I
+		inner join Asset C on I.Object = C.Object and I.ObjectID = C.ObjectID
+where	C.ID in (
+			select assetid from utility.ArtifactAssetParentIntermediate group by assetid  having count(assetid) > 1
+		)
+		and I.ID not in (
+			select	max(I.ID) as IntersectID
+			from	Asset C
+					inner join [Intersect] I on I.Object = C.Object and I.ObjectID = C.ObjectID
+			where	C.ID in (
+							select assetid from utility.ArtifactAssetParentIntermediate group by assetid  having count(assetid) > 1
+							)
+			group by C.ID
+		)
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+
+]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
