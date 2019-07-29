@@ -938,7 +938,7 @@ namespace d360.web.Controllers
                 if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
                                 
-                var model = Company.GetById<Artifact>(id, i => i.ArtifactType);
+                var model = Company.Assets.Where(x => (x.Object == "Artifact" && x.ObjectID == id)).Include(x => x.AssetType).FirstOrDefault();
 
                 if (model == null) throw new NotFoundException("artifact");
 
@@ -951,7 +951,7 @@ namespace d360.web.Controllers
                     var intersect = Company.Filter<Intersect>(i => 
                         i.Subject == sType &&
                         i.Object == sType &&
-                        i.ObjectID == model.ID &&
+                        i.ObjectID == model.ObjectID &&
                         i.IntersectType.Predicate.Type == PredicateType.InterTypeHierarchy
                     ).SingleOrDefault();
 
@@ -967,7 +967,7 @@ namespace d360.web.Controllers
                     {
                         var intersectType = Company.Filter<IntersectTypeDetail>(i =>
                         i.Object == "ArtifactType" &&
-                        i.ObjectID == model.ArtifactType.ID &&
+                        i.ObjectID == model.AssetType.ObjectID &&
                         i.PredicateType.Value == PredicateType.InterTypeHierarchy
                     ).SingleOrDefault();
 
@@ -978,7 +978,7 @@ namespace d360.web.Controllers
                                 Subject = SystemObjects.Artifact.ToString(),
                                 SubjectID = parentID,
                                 Object = SystemObjects.Artifact.ToString(),
-                                ObjectID = model.ID,
+                                ObjectID = model.ObjectID,
                                 IntersectTypeID = intersectType.ID
                             };
 
@@ -998,12 +998,12 @@ namespace d360.web.Controllers
                     }
                 }
                 
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, model.ArtifactTypeID).ToList();
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, fieldTypes, form, Server, false);
-                Company.SaveOrUpdate<Artifact>(model, fields, (parentID > 0 ? parentID : -1));
-                processFormDynamicRelationshipFields(SystemObjects.ArtifactType, model.ArtifactTypeID, SystemObjects.Artifact, model.ID, fieldTypes, form);
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, model.AssetType.ObjectID).ToList();
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ObjectID, fieldTypes, form, Server, false);
+                Company.SaveOrUpdateAsset(model, fields, (parentID > 0 ? parentID : -1));
+                processFormDynamicRelationshipFields(SystemObjects.ArtifactType, model.AssetType.ObjectID, SystemObjects.Artifact, model.ObjectID, fieldTypes, form);
                 
-                return jsonSuccess(model.ArtifactType.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
+                return jsonSuccess(model.AssetType.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
             }
             catch (BaseException ex)
             {

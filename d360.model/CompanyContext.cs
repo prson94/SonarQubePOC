@@ -89,8 +89,6 @@ namespace d360.model
 
         #region DbSets
 
-        public DbSet<Artifact> Artifacts { get; set; }
-
         public DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
 
         public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
@@ -2274,28 +2272,6 @@ where	R.SourceObject = 'FusionAttribute'
                     var o = entry.Entity as IUpdatedMetadata;
                     o.UpdatedBy = CurrentResourceID;
                     o.UpdatedOn = DateTime.UtcNow;
-                }
-                #endregion
-
-                #region Business logic : Artifact
-                if (entry.Entity is Artifact)
-                {
-                    var o = entry.Entity as Artifact;
-                    
-
-                    switch (entry.State)
-                    {                         
-                        case EntityState.Deleted:
-                            var any = false;
-                            any = Any<Intersect>(i => (i.Subject == "Artifact" && i.SubjectID == o.ID) || (i.Object == "Artifact" && i.ObjectID == o.ID));
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Item_RelationshipsReferences);
-
-                            any = ObjectHasChildren(SystemObjects.Artifact, o.ID);
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Artifact_ExistingChildren);                            
-                            break;                        
-                    }
-
-                    Caching.RemoveItem(key(ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY, o.ArtifactTypeID));
                 }
                 #endregion
 
