@@ -71,16 +71,16 @@ from
 	    1 as New,        					
 		0 as Total,
         at.id as Id		
-from    Artifact a
-        inner join artifacttype at on a.artifacttypeid = at.id
+from    Asset a
+        inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'
 where   a.createdon > dateadd(day, @d, CURRENT_TIMESTAMP)
 union all
 select  at.Name,
 	    0 as New,   
 		1 as Total,     					
         at.id as Id		
-from    Artifact a
-        inner join artifacttype at on a.artifacttypeid = at.id
+from    Asset a
+        inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'
 where a.updatedon > dateadd(day, @d, CURRENT_TIMESTAMP)) T
 group by Name, Id";
 
@@ -89,9 +89,9 @@ select  at.Name,
 	    count(1) as New,        					
         count(1) as Total,
         at.id as Id								
-from    Artifact a
-        inner join artifacttype at on a.artifacttypeid = at.id                        
-group by at.name,at.id order by at.name";
+from    Asset a
+        inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'                       
+group by at.name,at.objectid order by at.name";
 
         public static string ObjectNymTypes = @"
                                 select 

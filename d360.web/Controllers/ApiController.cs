@@ -3752,10 +3752,10 @@ outer apply (
                     switch (join.Object)
                     {
                         case "ArtifactType":
-                            join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID in (select ChildID from dbo.GetChildObjectIds('Artifact',A{i - 1}.ID))";
+                            join.JoinStatement = (i == 0) ? $"from AssetDetail A{i}" : $"{joinType} join AssetDetail A{i} on A{i}.[Object] = 'Artifact' and A{i}.ObjectID in (select ChildID from dbo.GetChildObjectIds('Artifact',A{i - 1}.ID))";
                             if (i == 0)
                             {
-                                join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ID in (select ChildID from dbo.GetChildObjectIds('Artifact',{id}))";
+                                join.WhereStatement = $"A{i}.TypeID = {join.ObjectID} and A{i}.ObjectID in (select ChildID from dbo.GetChildObjectIds('Artifact',{id}))";
                             }
                             break;
                         case "FusionAttributeType":
@@ -3779,10 +3779,10 @@ outer apply (
                     switch (join.Object)
                     {
                         case "ArtifactType":
-                            join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID = dbo.GetParentObjectId('Artifact', A{i - 1}.ID) and A{i}.ArtifactTypeID = {join.ObjectID}";
+                            join.JoinStatement = (i == 0) ? $"from AssetDetail A{i}" : $"{joinType} join AssetDetail A{i} on A{i}.[Object] = 'Artifact' and A{i}.ObjectID = dbo.GetParentObjectId('Artifact', A{i - 1}.ID) and A{i}.TypeID = {join.ObjectID}";
                             if (i == 0)
                             {
-                                join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ID = dbo.GetParentObjectId('Artifact', {id})";
+                                join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ObjectID = dbo.GetParentObjectId('Artifact', {id})";
                             }
                             break;
                         case "FusionAttributeType":

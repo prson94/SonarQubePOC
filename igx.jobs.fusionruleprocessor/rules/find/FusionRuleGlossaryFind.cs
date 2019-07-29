@@ -103,14 +103,15 @@ namespace igx.jobs.fusionruleprocessor
                                 fVal.ID as AttributeID,
 							    fVal.ObjectType as AttributeType, 
                                 'Artifact' as ObjectType,
-								a.ID as ObjectID,
+								a.ObjectID as ObjectID,
                                 @RuleID as RuleID,
 								0 as PromotedObjectTypeID,
 								@RuleStepID as RuleStepID                        
-						    from	Artifact a
+						    from	Asset a
+                                    inner join AssetType T on t.ID = a.AssetTypeID
                                     inner join field f on(a.ID = f.ObjectID and f.Objecttype = 'Artifact' and f.fieldtypeid = @FindTargetField)
                                     inner join #fields fVal on(fVal.ObjectType = @AttributeType and fVal.ID in (select distinct id from #items) and f.FormattedValue = fVal.Value and fVal.TargetFieldTypeID = f.fieldtypeid)
-                            where	a.ArtifactTypeID = @FindSearchObjectID									                                    
+                            where	t.ObjectID = @FindSearchObjectID and a.[Object] = 'Artifact'								                                    
                         ) as S
                     ON		T.RuleID = S.RuleID
 							and T.RuleStepID = S.RuleStepID 

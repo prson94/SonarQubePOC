@@ -11540,7 +11540,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                     switch (targetType)
                     {
                         case "ArtifactType":
-                            sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue as Name from Artifact O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                            sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue as Name from AssetDetail O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
                             break;
                         case "GroupType":
                             sql = $@"select C.Object, C.ObjectID, O.Name from [Group] O inner join {sql} order by O.Name";
