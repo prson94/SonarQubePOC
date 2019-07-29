@@ -2,6 +2,7 @@
 using d360.core.entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
@@ -18,5 +19,6 @@ namespace d360.model.DataAccessLayer
         Tag GetTagByUid(Guid uid);
         List<dynamic> GetAssetsPathForTag(Guid tagUid);
         IEnumerable<TagApiModel> ConsolidateTags(string parentUid, List<string> childrenUids);
+        List<dynamic> SearchTags(string tag);
     }
 }

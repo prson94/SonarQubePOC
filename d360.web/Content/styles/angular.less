@@ -1936,6 +1936,7 @@ div.home-image-title-text {
         transform: rotate(360deg);
     }
 }
+
 .modal-overlay {
     position: fixed;
     display: inline-flex;
@@ -2353,7 +2354,7 @@ div.home-image-title-text {
     padding: 20px;
     flex-grow: 1;
     flex-shrink: 1;
-    overflow-y: auto;
+    min-height: 66px;
 }
 
 .modal-overlay.show .modal-dialog {
@@ -2453,6 +2454,11 @@ modal-overlay .modal-dialog .content {
         max-width: 550px;
     }
 
+    .content {
+        .no-float{
+            float:unset;
+        }
+    }
 
     .form-row {
         .FieldName {
@@ -2471,18 +2477,28 @@ modal-overlay .modal-dialog .content {
             display: inline-block;
             width: unset !important;
         }
+    }
 
+    .errorMessage {
+        background-color: #FFC6BB;
+        border: 1px solid #C44D36;
+        border-radius: 2px;
+        width: 100%;
+        padding: 10px 20px;
+        margin-top: 15px;
+        color: black;
+        font-weight: normal;
+    }
 
-        .errorMessage {
-            background-color: #FFC6BB;
-            border: 1px solid #C44D36;
-            border-radius: 2px;
-            width: 100%;
-            padding: 10px 20px;
-            margin-top: 15px;
-            color: black;
-            font-weight: normal;
-        }
+    .warningMessage {
+        background-color: #FFE7B2;
+        border: 1px solid #FFB000;
+        border-radius: 2px;
+        width: 100%;
+        padding: 10px 20px;
+        margin-top: 15px;
+        color: black;
+        font-weight: normal;
     }
 
     .table-borderless {
@@ -2490,6 +2506,25 @@ modal-overlay .modal-dialog .content {
 
         thead {
             border-bottom: unset;
+        }
+    }
+
+    .ui-autocomplete {
+        ul {
+            margin: 0px;
+            padding: 0px;
+
+            li {
+                padding: 0px;
+                margin: 0px;
+                color: black;
+                border: 0px;
+                padding: 10px;
+
+                &.ui-state-highlight {
+                    background-color: #DFF3F7;
+                }
+            }
         }
     }
 }

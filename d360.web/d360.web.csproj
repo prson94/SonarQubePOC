@@ -646,7 +646,7 @@
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
-    <Content Include="Scripts\app\components\shared\tags\tags-usage-info.component.html" />
+    <Content Include="Scripts\app\components\admin\tags\tags-usage-info.component.html" />
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
     <Content Include="Scripts\app\components\shared\tiles\tile-actions.component.html" />
@@ -1288,8 +1288,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\tags\tags-usage-info.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\tags\tags-usage-info.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\treetable-toggler.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-sorticon.component.ts" />

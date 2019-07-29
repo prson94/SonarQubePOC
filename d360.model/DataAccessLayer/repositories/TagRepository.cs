@@ -19,7 +19,7 @@ namespace d360.model.DataAccessLayer
 
         public bool DeleteTags(List<TagApiDeleteModel> model)
         {
-            foreach(var item in model)
+            foreach (var item in model)
             {
                 DeleteTag(item.uid);
             }
@@ -250,6 +250,15 @@ namespace d360.model.DataAccessLayer
 
             var result = companyContext.Query<TagApiModel>(sql, new { parentUid });
             return result;
+        }
+
+        public List<dynamic> SearchTags(string tag)
+        {
+            string sql = @"select T.Value as name, T.uid as code, Results.count from Tag T 
+                            cross apply (select count(*) from AssetTag where TagID = T.ID)Results(count)
+                            where State = 1 and LOWER(T.Value) like '%'+@term+'%'";
+
+            return companyContext.Query<dynamic>(sql, new { term = tag }).ToList();
         }
     }
 }

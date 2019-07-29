@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace d360.core.entities
 {
     [DataContract(Namespace = NAMESPACE)]
-    public class Tag : BaseCreatedAndUpdatedIntObject, IEventTrackedEntity
+    public class Tag : BaseCreatedAndUpdatedIntObject
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }

@@ -59,7 +59,7 @@
                                 [selection]="selected[0]" 
                                 (saveClick)="saveTag($event)" 
                                 [showAsModal]="true"
-                                [modalTitle]="'Edit Tag'"
+                                [modalTitle]="editPopupTitle"
                                 [isModalVisible]="showEditor"
                                 (closeClick)="closeEditor()">
 
@@ -69,7 +69,7 @@
                              [method]="'callback'"
                              [items]="selected"
                              [showAsModal]="true"
-                             [modalTitle]="'Delete Tag'"
+                             [modalTitle]="deletePopupTitle"
                              [isModalVisible]="showDelete"
                              (onCancel)="showDelete=false;">
                 <div prompt>

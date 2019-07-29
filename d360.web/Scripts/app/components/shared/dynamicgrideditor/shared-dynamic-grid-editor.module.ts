@@ -35,6 +35,7 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
 import { SiteModalModule } from '../modal/gov-modal.module';
+import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -51,6 +52,7 @@ import { SiteModalModule } from '../modal/gov-modal.module';
         TilesModule,
         SimpleAccordionModule,
         SimilarItemsModule,
+        TagUsageInfoModule,
 
         //prime        
         CalendarModule,

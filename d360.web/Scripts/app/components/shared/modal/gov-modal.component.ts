@@ -31,7 +31,7 @@ export class D3SModal implements OnChanges {
 
     checkKey(event) {
         if (event.keyCode) {
-            if (event.keyCode == 27 || event.keyCode == 13)
+            if (event.keyCode == 27)
                 this.closePopUp();
         }
     }

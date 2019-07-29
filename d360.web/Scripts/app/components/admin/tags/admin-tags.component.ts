@@ -25,6 +25,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
     showEditor: boolean = false;
     showConsolidate: boolean = false
 
+    private deletePopupTitle: string = 'Delete Tag';
+    private editPopupTitle: string = 'Edit Tag';
+
 
     public theDeleteCallback: Function;
     public theConsolidateCallback: Function;
@@ -69,6 +72,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     selectSingleItem(item: TagType) {
         this.selected = [];
         this.selected.push(item);
+        this.editPopupTitle = 'Edit Tag';
     }
 
 
@@ -80,10 +84,19 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     add() {
         this.selected = [];
+        this.editPopupTitle = 'Add Tag';
         this.showEditor = true;
 
     }
     saveTag(event) {
+
+        if (event.additionalOption && event.additionalOption.code) {
+            let arr: string[] = [];
+            arr.push(event.item.uid);
+            this.consolidateTags(event.additionalOption.code, arr);
+            return;
+        }
+
         this.tagsService.saveTag(event.item)
             .subscribe(result => {
                 let msg: string = '';
@@ -125,6 +138,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     openDeleteModal() {
+        this.deletePopupTitle = this.selected.length == 1 ? 'Delete Tag' : 'Delete Tags';
         this.showDelete = true;
     }
 
@@ -146,9 +160,12 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 });
                 this.selected.push(this.tags[0]);
                 this.showConsolidate = false;
+                this.showEditor = false;
             }, err => {
                 this.showMessageForResult(this.messagesService, err);
                 this.showConsolidate = false;
+                this.showEditor = false;
+
             });
     }
 

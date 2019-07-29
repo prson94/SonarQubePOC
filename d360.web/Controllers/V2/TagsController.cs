@@ -35,6 +35,31 @@ namespace d360.web.Controllers.V2
             this.tagRepository = repository;
         }
 
+
+        /// <summary>
+        /// Returns all tags that are defined in Govern.          
+        /// </summary>        
+        /// <returns>A list of tags</returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("search/{name}"),
+        ]
+        public async Task<IHttpActionResult> Search(string name)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            try
+            {
+                var tags = tagRepository.SearchTags(name);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, tags));
+            }
+            catch (Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while fetching tags", ex.Message);
+
+            }
+        }
+
         /// <summary>
         /// Returns all tags that are defined in Govern.          
         /// </summary>        

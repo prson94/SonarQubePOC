@@ -75,7 +75,7 @@
         <form (ngSubmit)="onSubmit()"
               [formGroup]="form" *ngIf="!isLoading" prompt>
             <div class="content">
-                <div class="row ui-grid-col-12">
+                <div class="no-float row ui-grid-col-12">
 
                     <ng-template ngFor
                                  let-category
@@ -103,6 +103,7 @@
                                     <d3s-dynamic-field [field]="field"
                                                        [form]="form"
                                                        (listItemChange)="listSelectionChanged($event)"
+                                                       (autoCompleteSelected)="autoCompleteSelected($event)"
                                                        [object]="objectType"
                                                        [objectID]="objectID"
                                                        [selectedObject]="selectedObject"
@@ -113,6 +114,15 @@
                     </ng-template>
                     <div *ngIf="hasIconFields && fore.Value == back.Value"
                          class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
+
+                    <div *ngIf="this.consolidateToTag && editedItem" class="warningMessage">
+                        <h4>Consolidate Tags?</h4>
+                        <p>
+                            A tag with the name '{{consolidateToTag.name}}' already exists, used to tag <d3s-tag-usage [uid]="consolidateToTag.code">{{consolidateToTag.count}} items</d3s-tag-usage>.<br />
+                            Choose <strong>Consolidate</strong> to replace the tag '{{editedItem.Value}}' with '{{consolidateToTag.name}}' , for <d3s-tag-usage [uid]="editedItem.uid">{{editedItem.UseCount}} items</d3s-tag-usage>.<br />
+                            The tag '{{editedItem.Value}}' will then be deleted.
+                        </p>
+                    </div>
                 </div>
             </div>
             <div class="action-bar">

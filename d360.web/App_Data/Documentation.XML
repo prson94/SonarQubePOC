@@ -3089,6 +3089,12 @@
             This service houses all endpoints handling tag management in Govern
             </summary>
         </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.Search(System.String)">
+            <summary>
+            Returns all tags that are defined in Govern.          
+            </summary>        
+            <returns>A list of tags</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.TagsController.Get">
             <summary>
             Returns all tags that are defined in Govern.          

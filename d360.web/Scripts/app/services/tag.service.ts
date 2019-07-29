@@ -71,7 +71,6 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
-
     consolidateTags(parentTag: string, childrenTags: string[]): Observable<any[]> {
         let url = `api/v2/tags/consolidate/${parentTag}`;
         return this.http.post(url, childrenTags)
@@ -81,6 +80,13 @@ export class TagService extends BaseObservableService {
 
     getAssetPathsForTag(tagUid: string): Observable<any[]> {
         let url = `api/v2/tags/${tagUid}/assetpath`;
+        return this.http.get(url)
+            .pipe(map(response => <any[]>response),
+                catchError(err => this.handleError(err, true)))
+    }
+
+    searchTags(q: string, exceptId): Observable<any[]> {
+        let url = `api/v2/tags/search/${q}`;
         return this.http.get(url)
             .pipe(map(response => <any[]>response),
                 catchError(err => this.handleError(err, true)))

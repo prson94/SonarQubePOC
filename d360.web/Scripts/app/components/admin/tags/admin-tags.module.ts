@@ -29,7 +29,7 @@ import {
 
 import { TableModule } from 'primeng/table';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
-import { TagUsageInfoModule } from '../../shared/tags/tags-usage-info.module';
+import { TagUsageInfoModule } from './tags-usage-info.module';
 
 @NgModule({
     imports: [CommonModule,
