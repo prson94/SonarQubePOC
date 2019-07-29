@@ -25,7 +25,7 @@ namespace igx.UnitTests
         internal AssetsController assetsController;
         public AssetControllerTest()
         {
-            this.assetsController = new AssetsController(GetCommunity(), GetCompany(), GetStorage(), GetQueue(), GetAssetRepository())
+            this.assetsController = new AssetsController(GetCommunity(), GetCompany(), GetStorage(), GetQueue(), GetAssetRepository(),GetTagRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -687,5 +687,39 @@ namespace igx.UnitTests
 
         }
 
+        [Fact]
+        public async void PostAssetTag()
+        {
+            var model = new List<AssetTagApiModel>();
+            model.Add(new AssetTagApiModel()
+            {
+                AssetUID = Guid.Parse(DataConstants.ValidGUID),
+                TagUID = Guid.Parse(DataConstants.ValidGUID),
+            });
+
+            var actionResult = this.assetsController.PostAssetTag(model);
+            var res = await actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+            var data = res.Content.ReadAsStringAsync();
+            Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
+            AssertJSON.True<List<AssetTagSuccessApiModel>>(data.Result);
+        }
+
+        [Fact]
+        public async void DeleteAssetTag()
+        {
+            var model = new List<AssetTagApiModel>();
+            model.Add(new AssetTagApiModel()
+            {
+                AssetUID = Guid.Parse(DataConstants.ValidGUID),
+                TagUID = Guid.Parse(DataConstants.ValidGUID),
+            });
+
+            var actionResult = this.assetsController.DeleteAssetTag(model);
+            var res = await actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+            var data = res.Content.ReadAsStringAsync();
+            Assert.True(res.IsSuccessStatusCode, XMsg.BadResponseCode);
+            AssertJSON.True<List<AssetTagSuccessApiModel>>(data.Result);
+
+        }
     }
 }

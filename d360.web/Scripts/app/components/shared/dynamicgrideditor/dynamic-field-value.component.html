@@ -41,7 +41,7 @@
     </span>
     <span *ngSwitchCase="'html'">
         <span *ngIf="fieldValue != null"
-              [innerHtml]="fieldValue"></span>
+              [innerHtml]="fieldValue | safeHtml"></span>
     </span>
     <ng-template ngSwitchDefault>
         <span *ngIf="fieldValue != null"

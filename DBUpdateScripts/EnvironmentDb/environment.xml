@@ -248,8 +248,10 @@
   <!-- Sprint 7 2019 Start-->
   <include file="scripts/GOV-7732.xml"/>
   <include file="scripts/GOV-7728.xml"/>
+  <include file="scripts/GOV-7728-1.xml"/>
   <include file="scripts/GOV-7711.xml"/>
   <include file="scripts/GOV-7658.xml"/>
   <include file="scripts/GOV-7644.xml"/> <!-- goes after 7658-->
-  <include file="scripts/GOV-7754.xml"/>
+  <include file="scripts/GOV-7754.xml"/> <!-- GetDynamicAssets -->
+  <include file="scripts/GOV-7608.xml"/> <!-- GetDynamicAssets, goes after 7754 -->
 </databaseChangeLog>

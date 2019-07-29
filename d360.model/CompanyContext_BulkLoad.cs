@@ -949,12 +949,17 @@ where I.LoadID = @id ", new { id = load.ID, assetType.ObjectID }, timeout: timeo
                             //resolve parent
                             if (parentAssetType != null && col.Name == parentAssetType.Name)
                             {
-                                string parentUid = "";
-                                int endIndex = field.Value.LastIndexOf(']');
-                                int startIndex = field.Value.LastIndexOf('[') + 1;
-                                if (startIndex < endIndex)
-                                    parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
-                                insert.ParentUid = new Guid(parentUid);
+                                if (!string.IsNullOrWhiteSpace(field.Value))
+                                {
+                                    string parentUid = "";
+                                    int endIndex = field.Value.LastIndexOf(']');
+                                    int startIndex = field.Value.LastIndexOf('[') + 1;
+                                    if (startIndex > -1 && endIndex > -1 && startIndex < endIndex)
+                                    {
+                                        parentUid = field.Value.Substring(startIndex, (endIndex - startIndex));
+                                        insert.ParentUid = new Guid(parentUid);
+                                    }
+                                }
                             }
                             else
                             {
