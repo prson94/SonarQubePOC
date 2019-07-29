@@ -4,8 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule, XHRBackend } from '@angular/http';
 import { RouterModule } from '@angular/router';
 
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
-
 import {
     ButtonModule,
 } from 'primeng/primeng';
@@ -17,6 +15,8 @@ import { SurveyComponent } from './survey.component';
 import { ResourceModule } from '../../resource/resource.module';
 import { SocialModule } from '../../shared/social/social.module';
 import { D3SSharedModule } from '../../shared/shared.module';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 
 @NgModule({
     imports: [CommonModule,
@@ -42,7 +42,11 @@ import { D3SSharedModule } from '../../shared/shared.module';
         SurveyComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true
+        },
     ]
 })
 export class SurveyModule { }

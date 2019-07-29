@@ -4,8 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule, XHRBackend } from '@angular/http';
 
 
-import { AuthenticationConnectionBackend } from '../../../../authentication-connection-backend';
 import { DynamicPercentageComponent } from './dynamic-percentage-component';
+import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-request.interceptor';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 @NgModule({
     imports: [CommonModule,
@@ -20,7 +21,11 @@ import { DynamicPercentageComponent } from './dynamic-percentage-component';
         DynamicPercentageComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true
+        },
     ]
 })
 export class DynamicPercentageModule { }

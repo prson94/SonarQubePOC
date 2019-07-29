@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule, XHRBackend } from '@angular/http';
 import { RouterModule } from '@angular/router';
 
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {
     ButtonModule,
@@ -16,6 +15,8 @@ import { ScoreRoutingModule } from './score.routes';
 import { ScoreComponent } from './score.component';
 import { ResourceModule } from '../../resource/resource.module';
 import { SharedObjectGovernanceModule } from '../../shared/objectgovernance/shared-object-governance.module';
+import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 @NgModule({
     imports: [CommonModule,
@@ -40,7 +41,11 @@ import { SharedObjectGovernanceModule } from '../../shared/objectgovernance/shar
         ScoreComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true
+        },
     ]
 })
 export class ScoreModule { }

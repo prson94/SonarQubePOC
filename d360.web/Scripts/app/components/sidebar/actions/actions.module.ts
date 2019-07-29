@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { HttpModule, XHRBackend } from '@angular/http';
 import { RouterModule } from '@angular/router';
 
-import { AuthenticationConnectionBackend } from '../../../authentication-connection-backend';
 
 import {
     ButtonModule,
@@ -16,6 +15,8 @@ import { ActionsRoutingModule } from './actions.routes';
 import { ActionsComponent } from './actions.component';
 import { ResourceModule } from '../../resource/resource.module';
 import { WorkflowModule } from '../../workflow/workflow.module';
+import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 @NgModule({
     imports: [CommonModule,
@@ -40,7 +41,11 @@ import { WorkflowModule } from '../../workflow/workflow.module';
         ActionsComponent
     ],
     providers: [
-        { provide: XHRBackend, useClass: AuthenticationConnectionBackend },
+        {
+            provide: HTTP_INTERCEPTORS,
+            useClass: GovernRequestInterceptor,
+            multi: true
+        },
     ]
 })
 export class ActionsModule { }

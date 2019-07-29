@@ -1,6 +1,5 @@
 import { Component, OnDestroy, AfterContentInit, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { MessagesService } from './services/messages.service';
 import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
 import { HeaderActionsService } from './services/header-actions.service';
 import { Subscription } from 'rxjs';
