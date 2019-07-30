@@ -19,7 +19,6 @@ export class TagUsageInfoBox  {
 
     loadContent() {
         if (!this.isContentLoaded) {
-            console.log("loading content!");
             this.tagsService.getAssetPathsForTag(this.uid).subscribe(assets => {
                 let tableHTML: string = '';
                 assets.forEach(a => {

@@ -2800,12 +2800,12 @@ select @err";
                     switch (entry.State)
                     {
                         case EntityState.Added:
-                            if (Any<Tag>(i => i.Value == o.Value))
+                            if (Any<Tag>(i => i.Value == o.Value && i.State == State.Active))
                                 throw new ArgumentException(Messages.Error_NameTaken);
 
                             break;
                         case EntityState.Modified:
-                            if (Any<Tag>(i => i.Value == o.Value && i.ID != o.ID))
+                            if (Any<Tag>(i => i.Value == o.Value && i.ID != o.ID && i.State == State.Active))
                                 throw new ArgumentException(Messages.Error_NameTaken);
 
                             break;

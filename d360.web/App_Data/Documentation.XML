@@ -3135,6 +3135,12 @@
             </summary>
             <returns>A status for the POST request.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.ExportToExcel">
+            <summary>
+            GET a list of relationship types.
+            </summary>
+            <returns>A excel file containing relationships types.</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowTypeAsync(System.Nullable{d360.core.enums.Workflow.ChangeType},System.Nullable{d360.core.enums.State})">
             <summary>
             Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier .

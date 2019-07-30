@@ -64,7 +64,7 @@ export class TagService extends BaseObservableService {
         if (tag.uid == undefined || !tag.uid) {
             return this.http.post(url, tag)
                 .pipe(map(response => <any>response),
-                    catchError(err => this.handleError(err)));
+                    catchError(err => this.handleError(err, true)));
         }
         url = `api/v2/tags/${tag.uid}`;
         return this.http.put(url, tag)
@@ -99,5 +99,26 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)))
     }
+
+    exportTags() {
+        this.http.get('api/v2/tags/export/', { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
+    }
+
+    downloadFile(data: Blob, name: string) {
+        var filename = `${name} ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data, filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data);
+            var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
+    }
+
 
 }

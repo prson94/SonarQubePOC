@@ -4,7 +4,9 @@ using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.web.Filters;
 using d360.web.Models;
+using d360.web.Models.Attributes;
 using Microsoft.Web.Http;
+using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
@@ -346,6 +348,77 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting assets path", e.Message);
             }
 
+        }
+
+        /// <summary>
+        /// GET a list of relationship types.
+        /// </summary>
+        /// <returns>A excel file containing relationships types.</returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            ApiExplorerSettings(IgnoreApi = true),
+            Route("export"),
+            FileDownload,
+            SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
+            SwaggerResponse(HttpStatusCode.OK, "Exported realtionship types to Excel.", typeof(List<TagApiModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> ExportToExcel()
+        {
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            var tags = await tagRepository.GetTags(queryParams);
+         
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            #region Header
+
+            int index = 1;
+            document.SetCellValue(1, index++, "Uid");
+            document.SetCellValue(1, index++, "Value");
+            document.SetCellValue(1, index++, "Use Count");
+            document.SetCellValue(1, index++, "Created On");
+            document.SetCellValue(1, index++, "Created By");
+            document.SetCellValue(1, index++, "Updated On");
+            document.SetCellValue(1, index++, "Updated By");
+
+            #endregion
+
+            int rowNumber = 1;
+            foreach (var row in tags.items)
+            {
+                index = 1;
+                rowNumber++;
+                document.SetCellValue(rowNumber, index++, row.uid.ToString());
+                document.SetCellValue(rowNumber, index++, row.Value.ToString());
+                document.SetCellValue(rowNumber, index++, row.UseCount.ToString());
+                document.SetCellValue(rowNumber, index++, row.CreatedOn.ToString());
+                document.SetCellValue(rowNumber, index++, row.CreatedByUid.ToString());
+                document.SetCellValue(rowNumber, index++, row.UpdatedOn.ToString());
+                document.SetCellValue(rowNumber, index++, row.UpdatedByUid.ToString());
+            }
+
+            #endregion
+
+            var stream = new System.IO.MemoryStream();
+            document.SaveAs(stream);
+
+            var result = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(stream.GetBuffer())
+            };
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = string.Format("Relationship Types {0}.xlsx", System.DateTime.Now.ToShortDateString())
+            };
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+            return ResponseMessage(result);
         }
 
     }

@@ -43,7 +43,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/Tag/`
+                return `/sidebar/audit/Tag/0`
             });
         }
         this.getTags();
@@ -149,16 +149,18 @@ export class AdminTagsComponent extends AdminBaseComponent {
     consolidateTags(parentUid: string, childrenUids: string[]) {
         this.tagsService.consolidateTags(parentUid, childrenUids)
             .subscribe(result => {
-                this.selected = [];
+                
                 this.messagesService.showInfoMessage("Success", "Tag consolidation succesfull");
-                var temp = this.tags;
+
                 result.forEach(t => {
                     if (t.UseCount != 0)
                         this.tags[this.findTagIndex(t.uid)].UseCount = t.UseCount;
-                    else
+                    else if (t.uid != parentUid)
                         this.tags = this.tags.filter(x => x.uid != t.uid);
                 });
-                this.selected.push(this.tags[0]);
+
+                this.selected = [];
+                this.selected.push(this.tags[0])
                 this.showConsolidate = false;
                 this.showEditor = false;
             }, err => {
@@ -188,4 +190,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
             if (tag.uid == uid) return index;
         }
     }
+
+    private export() {
+        this.tagsService.exportTags();
+    }
+
 };

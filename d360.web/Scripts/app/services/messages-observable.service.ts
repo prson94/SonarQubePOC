@@ -43,7 +43,7 @@ export class MessagesObservableService {
             //HttpErrorResponse have slightly different format
             if (error instanceof Error) {
                 objError = error;
-            } else if (error.error) {
+            } else if (error.error && error.error.error) {
                 objError = error.error.error;
             }
             else if (!error.error && error.name === 'HttpErrorResponse') {
@@ -53,7 +53,6 @@ export class MessagesObservableService {
             else {
                 objError = new Error(error.toString());
             }
-
             if (error.message)
                 objError.message = error.message;
         }

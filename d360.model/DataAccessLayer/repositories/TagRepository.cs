@@ -33,6 +33,8 @@ namespace d360.model.DataAccessLayer
             if (model == null && model.State != State.Deleted) return false;
 
             model.State = State.Deleted;
+            AddTagAudit(model, "Delete");
+
             return companyContext.SaveChanges() > 0;
         }
 
@@ -141,6 +143,7 @@ namespace d360.model.DataAccessLayer
             companyContext.Entry(tag).State = System.Data.Entity.EntityState.Added;
 
             companyContext.SaveChanges();
+            AddTagAudit(tag, "Add");
 
             var user = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == companyContext.CurrentResourceID);
 
@@ -162,7 +165,7 @@ namespace d360.model.DataAccessLayer
             companyContext.Entry(existingTag).State = System.Data.Entity.EntityState.Modified;
 
             companyContext.SaveChanges();
-            UpdateTagAudit(existingTag);
+            AddTagAudit(existingTag,"Update");
             var updateUser = companyContext.GlobalReportingResources.First(x => x.ResourceID == companyContext.CurrentResourceID);
 
             var createUser = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == existingTag.CreatedBy);
@@ -186,21 +189,13 @@ namespace d360.model.DataAccessLayer
 
         public bool DoesTagExists(string value)
         {
-            return companyContext.Tags.Any(x => x.Value == value);
+            return companyContext.Tags.Any(x => x.Value == value && x.State == State.Active);
         }
 
         public bool DoesTagExists(TagApiModel model)
         {
-            return companyContext.Tags.Any(x => x.Value == model.Value && x.uid != model.uid);
+            return companyContext.Tags.Any(x => x.Value == model.Value && x.uid != model.uid && x.State == State.Active);
         }
-
-        private void UpdateTagAudit(Tag tag)
-        {
-            var sql = $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
-                         VALUES ('Update','Tag',{tag.Id},[queue].WriteIndexXml('', 'Tag', {tag.Id}, coalesce({companyContext.CurrentResourceID}, 0)))";
-            companyContext.Query<int>(sql).FirstOrDefault();
-        }
-
 
         public List<dynamic> GetAssetsPathForTag(Guid tagUid)
         {
@@ -243,10 +238,31 @@ namespace d360.model.DataAccessLayer
                         update Tag 
                         set State = 3
                         where uid in (select uid from @children)
+
+                        ;with ConsolidateData as 
+                        (
+	                        select 
+	                        T.Id as FromId,
+	                        T.Value as FromValue,
+	                        Target.ID as TargetId,
+	                        Target.Value as TargetValue
+	                        from Tag T
+	                        cross apply (select top 1 * from Tag where uid = @parentUid)Target
+	                        WHERE T.uid in (select uid from @children)
+                        )
+                        INSERT INTO [queue].[Task] 
+                        ([Action], [Object], [ObjectID],[Custom]) 
+                        select 
+                        'TagConsolidated', 
+                        'Tag', 
+                        FromId,
+                        [queue].WriteIndexXml('', 'Tag', TargetId, coalesce(56, 0)) 
+                        from ConsolidateData
                         
                         select T.uid, Items.count as UseCount from Tag T
                         	cross apply (select count(*) from AssetTag where TagId = T.Id)Items (count)
                         where T.uid = @parentUid or T.uid in (select uid from @children)";
+
 
             var result = companyContext.Query<TagApiModel>(sql, new { parentUid });
             return result;
@@ -259,6 +275,15 @@ namespace d360.model.DataAccessLayer
                             where State = 1 and LOWER(T.Value) like '%'+@term+'%'";
 
             return companyContext.Query<dynamic>(sql, new { term = tag }).ToList();
+        }
+
+
+
+        private void AddTagAudit(Tag tag, string action)
+        {
+            var sql = $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
+                         VALUES ('{action}','Tag',{tag.Id},[queue].WriteIndexXml('', 'Tag', {tag.Id}, coalesce({companyContext.CurrentResourceID}, 0)))";
+            companyContext.Query<int>(sql).FirstOrDefault();
         }
 
         public bool SetTaggingStatus(bool state)
