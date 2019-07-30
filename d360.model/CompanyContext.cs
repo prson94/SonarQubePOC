@@ -38,7 +38,7 @@ namespace d360.model
 
         internal string FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY = "AttributesByFusion_{0}_{1}";
         internal string REPORTING_SCHEMA_KEY = "ReportingSchema_{0}";
-        internal string TAXONOMY_TYPES_KEY = "TaxonomyTypes_{0}";                
+        internal string TAXONOMY_TYPES_KEY = "TaxonomyTypes_{0}";
         internal string ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY = "ArtifactDictionaryByType_{0}_{1}";
 
         internal string key(string token)
@@ -74,7 +74,7 @@ namespace d360.model
             CurrentResourceID = context.ResourceID;
             CurrentResourceIsAdmin = context.IsAdministrator;
             CurrentCompanyDomain = context.CompanyPrefix;
-            
+
             //output queries in debug mode to console
             if (System.Diagnostics.Debugger.IsAttached)
                 this.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
@@ -111,7 +111,7 @@ namespace d360.model
         public DbSet<AttributeTypeRelation> AttributeTypeRelations { get; set; }
 
         public DbSet<AttributeTypeRelationDetail> AttributeTypeRelationDetails { get; set; }    /* VIEW */
-                
+
         public DbSet<Comment> Comments { get; set; }
 
         public DbSet<CommentRelation> CommentRelations { get; set; }
@@ -131,7 +131,7 @@ namespace d360.model
         public DbSet<FieldWithRelation> FieldWithRelations { get; set; }                        /* VIEW */
 
         public DbSet<FieldType> FieldTypes { get; set; }
-        
+
         public DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }
 
         public DbSet<FieldTypeFilteredLookupDefinition> FieldTypeFilteredLookupDefinitions { get; set; }
@@ -149,7 +149,7 @@ namespace d360.model
         public DbSet<FusionExecution> FusionExecutions { get; set; }
 
         public DbSet<FusionSchedule> FusionSchedules { get; set; }
-        
+
         public DbSet<Fusion> FusionTypeConfigurations { get; set; }
 
         public DbSet<FusionAttribute> FusionAttributes { get; set; }
@@ -157,7 +157,7 @@ namespace d360.model
         public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
 
         public DbSet<FusionAttributeTypeCustomQuery> FusionAttributeTypeCustomQueries { get; set; }
-                
+
         public DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
 
         public DbSet<FusionQueryAttributeType> FusionQueryAttributeTypes { get; set; }
@@ -167,7 +167,7 @@ namespace d360.model
         public DbSet<FusionRuleFilter> FusionRuleFilters { get; set; }
 
         public DbSet<FusionRuleItem> FusionRuleItem { get; set; }
-        
+
         public DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
 
         public DbSet<FusionType> FusionTypes { get; set; }
@@ -179,7 +179,7 @@ namespace d360.model
         public DbSet<IntersectDetail> IntersectDetails { get; set; }                /* VIEW */
 
         public DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }        /* VIEW */
-        
+
 
         public DbSet<IntersectType> IntersectTypes { get; set; }
 
@@ -198,7 +198,7 @@ namespace d360.model
         public DbSet<NymRelation> NymRelations { get; set; }
 
         public DbSet<ObjectStyle> ObjectStyles { get; set; }
-        
+
         public DbSet<Predicate> Predicates { get; set; }
 
         public DbSet<Question> Questions { get; set; }
@@ -247,11 +247,12 @@ namespace d360.model
 
         public DbSet<SurveyType> SurveyTypes { get; set; }
 
-        public DbSet<Taxonomy> Taxonomies { get; set; }        
+        public DbSet<Taxonomy> Taxonomies { get; set; }
 
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<AssetTag> AssetTags { get;set;}
 
         public DbSet<TaxonomyType> TaxonomyTypes { get; set; }
 

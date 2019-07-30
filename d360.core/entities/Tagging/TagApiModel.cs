@@ -30,6 +30,25 @@ namespace d360.core.entities
         public DateTime UpdatedOn { get; set; }
     }
 
+    public class AssetTagApiModel
+    {
+        [DataMember]
+        public Guid AssetUID { get; set; }
+        [DataMember]
+        public Guid TagUID { get; set; }
+    }
+
+    public class AssetTagSuccessApiModel
+    {
+        [DataMember]
+        public Guid? Uid { get; set; }
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+    }
+
     public class TagApiDeleteModel
     {
         [DataMember]
