@@ -70,7 +70,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this
                 .loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
                 .then(p => {
-                        this.load(artifactId)
+                    this.load(artifactId, this.artifactTypeId)
                     }
                 )
             ;
@@ -85,7 +85,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         this.clearSidebar();
     }
 
-    private load(id: number) {
+    private load(id: number, typeID: number) {
         this.messages = []; /* clear any messages for this artifact */
         this
             .artifactService
@@ -100,7 +100,6 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     this.artifact = artifact;
                     this.buildBreadcrumb();
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
-
                     this
                         .setObjectInfo(
                             'Artifact',
@@ -123,8 +122,8 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                             true,
                             true
                         )
-                    ;
-                    
+                        ;
+                    this.rightSidebarService.setCurrentObject("ArtifactType", typeID, "Artifact", id, false, artifact.HasWorkflow);
                     if (this.artifact.HasChildArtifacts) {
                         this
                             .rightSidebarService
@@ -138,7 +137,27 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                             )
                         ;
                     }
+                    this.rightSidebarService.showItem(
+                        new RightSidebarItem(
+                            'Scoring',
+                            'Scoring',
+                            ['fa-sitemap'],
+                            `/sidebar/score/Artifact/${this.artifact.Uid}`
 
+                        )
+                    );
+                    this.rightSidebarService.showItem(
+                        new RightSidebarItem(
+                            'Comments', 'Comments', ['fa-comments'],
+                            `/sidebar/comments/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue.replace("/", "%2F")}`
+                        )
+                    );
+                    this.rightSidebarService.showItem(
+                        new RightSidebarItem(
+                            'Actions', 'Actions', null,
+                            `/sidebar/actions/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue.replace("/", "%2F")}`
+                        )
+                    );
                     this.loadItemSurvey(id);
                 },
                 err => {
@@ -166,12 +185,16 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     });
                 }
 
-            });
+            }); 
     }
 
     private buildBreadcrumb() {
         let index = 0;
+        let currentFolderName = this.currentAreaName ? this.currentAreaName : this.folderTitle;
         this.headerBreadcrumbService.clearBreadcrumbs();
+        this.headerBreadcrumbService.getFolderIcon(currentFolderName).then(res => {
+            this.rightSidebarService.setCurrentArea(this.artifact.DisplayValue, res, 'Definition');
+        });
         let areaBreadcrumb = new Breadcrumb(
             this.currentAreaName ? this.currentAreaName : this.folderTitle,
             this.areaLink,
@@ -243,6 +266,6 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     
     private editArtifact(e: any) {
         this.isLoading = true;
-        this.load(e.ID);
+        this.load(e.ID, this.artifactTypeId);
     }
 };

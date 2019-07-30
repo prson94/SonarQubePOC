@@ -4,6 +4,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { SiteCustomizationsService } from '../../../services/site-customizations.service';
 import { Title } from '@angular/platform-browser';
 import 'codemirror/mode/css/css.js';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
@@ -41,11 +42,12 @@ export class AdminCustomizationsComponent extends AdminBaseComponent implements 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,        
         titleService: Title,
+        rightSidebarService: RightSidebarService,
         protected siteCustomizationsService: SiteCustomizationsService,
         protected messagesService: MessagesObservableService
     ) {
 
-        super(headerBreadcrumbService, titleService);
+        super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Style Customizations";
         this.setCommonItems();
         

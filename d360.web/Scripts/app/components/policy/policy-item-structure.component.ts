@@ -121,6 +121,11 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                                                 SiteUrlHelpers.getObjectUrl('POLICYTYPE', this.policyTypeId),
                                                 undefined, 'POLICYTYPE', this.policyTypeId, undefined, undefined, true)
                                         );
+                                        this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
+                                            this.rightSidebarService.showHeader(true);
+                                            this.rightSidebarService.setCurrentArea(this.policyType.Name, icon, 'Policy');
+                                            this.rightSidebarService.setCurrentObject('PolicyType', this.policyType.ID, null, null, true);
+                                        });
                                     });
                                 });
 

@@ -52,29 +52,12 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                 .subscribe(artifactType => {
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.artifactType = artifactType;
-                    this.setObjectInfo('ArtifactType', this.artifactType.ID);
+                    this.setObjectInfo('ArtifactType', this.artifactType.ID); 
 
                     this.artifactTypeHierarchy.push(this.artifactType);
                     this.createBreadcrumbHierarchy(artifactType);
                     
-                    this.clearSidebar();
                     this.setBrowserTitle(this.titleService, this.artifactType.Name);
-                    this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
-
-                    if (this.artifactType.HasV2Workflows) {
-                        this
-                            .rightSidebarService
-                            .showItem(
-                                new RightSidebarItem(
-                                    'Workflow',
-                                    'workflowmonitor',
-                                    ['fa-usb'],
-                                    `/sidebar/workflowmonitor${this.objectContextUrl()}`
-                                )
-                            )
-                            ;
-                    }
-
                     this.isLoading = false;
                 });
         });
@@ -112,6 +95,21 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                             null,
                             true,
                             x.ParentID > 0));
+
+                        this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
+                        this.rightSidebarService.setCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true);
+                        this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : this.folderTitle).then(res => {
+                            this.rightSidebarService.setCurrentArea(this.artifactType.Name, res, 'Assets');
+                            if (this.artifactType.HasV2Workflows) {
+                                this.rightSidebarService
+                                    .showItem(
+                                        new RightSidebarItem(
+                                            'Workflow',
+                                            'workflowmonitor',
+                                            ['fa-usb'],
+                                            `/sidebar/workflowmonitor${this.objectContextUrl()}`));
+                            }
+                        });
                 });
         });
 
