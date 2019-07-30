@@ -685,8 +685,6 @@
     <Content Include="Scripts\app\3.chunk.js" />
     <Content Include="Scripts\app\30.chunk.js" />
     <Content Include="Scripts\app\33.chunk.js" />
-    <Content Include="Scripts\app\34.chunk.js" />
-    <Content Include="Scripts\app\35.chunk.js" />
     <Content Include="Scripts\app\36.chunk.js" />
     <Content Include="Scripts\app\37.chunk.js" />
     <Content Include="Scripts\app\38.chunk.js" />
