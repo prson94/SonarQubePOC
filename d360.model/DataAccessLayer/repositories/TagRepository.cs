@@ -197,19 +197,52 @@ namespace d360.model.DataAccessLayer
             return companyContext.Tags.Any(x => x.Value == model.Value && x.uid != model.uid && x.State == State.Active);
         }
 
-        public List<dynamic> GetAssetsPathForTag(Guid tagUid)
+        public List<AssetTagList> GetAssetsPathForTag(Guid tagUid)
         {
             string sql = @"select D.DisplayValue ,
-                        'Glossary > Business Term' as AssetPath
+						AST.Object,
+						A.ObjectID as AssetId,
+						AST.ObjectID as AssetTypeId,
+						AST.Name
                         from Tag T
 	                inner join AssetTag AT on AT.TagId = T.Id
 	                inner join Asset A on A.ID = AT.AssetID
+					inner join AssetType AST ON AST.ID = A.AssetTypeId
 	                left join dbo.GetAssetDisplayValue() D on D.ID = A.ID
                 where t.uid = @uid
                 ";
 
             var result = companyContext.Query<dynamic>(sql, new { uid = tagUid }).ToList();
-            return result;
+
+            var ret = new List<AssetTagList>();
+            foreach(var item in result)
+            {
+                var atl = new AssetTagList();
+                ret.Add(atl);
+
+                atl.DisplayName = item.DisplayValue;
+                switch (item.Object.ToString())
+                {
+                    case "ArtifactType":
+                        atl.Breadcrumbs = "Glossary <i class=\"fa fa-chevron-right\"></i> " + item.Name;
+                        atl.Url = $"/artifact/{item.AssetTypeId}/{item.AssetId}";
+                        break;
+                    case "PolicyType":
+                        atl.Breadcrumbs = "Policy <i class=\"fa fa-chevron-right\"></i> " + item.Name;
+                        atl.Url = $"/policy/{item.AssetTypeId};hierarchyId={item.AssetId}";
+                        break;
+                    case "TaxonomyType":
+                        atl.Breadcrumbs = "Model <i class=\"fa fa-chevron-right\"></i> " + item.Name;
+                        atl.Url = $"/model/{item.AssetTypeId};hierarchyId={item.AssetId}";
+                        break;
+                    case "RuleType":
+                        atl.Breadcrumbs = "Rule <i class=\"fa fa-chevron-right\"></i> " + item.Name;
+                        atl.Url = $"/quality/rule/{item.AssetTypeId}/{item.AssetId}";
+                        break;
+                }
+            }
+
+            return ret;
         }
 
         public IEnumerable<TagApiModel> ConsolidateTags(string parentUid, List<string> childrenUids)

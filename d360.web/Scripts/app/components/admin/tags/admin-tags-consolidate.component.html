@@ -17,7 +17,7 @@
                     <tr *ngFor="let tag of tags;">
                         <td><input type="radio" name="radio" (click)="selectItem(tag);" checked="{{selected && tag.uid == selected.uid ? 'checked' : ''}}" /></td>
                         <td>{{tag.Value}}</td>
-                        <td>{{tag.UseCount}} assets tagged</td>
+                        <td><d3s-tag-usage [uid]="tag.uid">{{tag.UseCount}} assets</d3s-tag-usage> tagged</td>
                     </tr>
                 </tbody>
             </table>

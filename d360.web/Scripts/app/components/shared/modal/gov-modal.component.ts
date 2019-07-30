@@ -39,7 +39,9 @@ export class D3SModal implements OnChanges {
 
     @HostListener('wheel', ['$event'])
     handleWheelEvent(event) {
-        if (this.display == true) {
+        let path: any[] = event.path;
+        //add scroll exceptions here
+        if (this.display == true && !(path.filter(x => x.tagName == 'D3S-TAG-USAGE').length > 0)) {
             event.preventDefault();
         }
     }

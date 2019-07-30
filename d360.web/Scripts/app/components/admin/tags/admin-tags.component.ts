@@ -149,16 +149,18 @@ export class AdminTagsComponent extends AdminBaseComponent {
     consolidateTags(parentUid: string, childrenUids: string[]) {
         this.tagsService.consolidateTags(parentUid, childrenUids)
             .subscribe(result => {
-                
-                this.messagesService.showInfoMessage("Success", "Tag consolidation succesfull");
 
-                result.forEach(t => {
-                    if (t.UseCount != 0)
-                        this.tags[this.findTagIndex(t.uid)].UseCount = t.UseCount;
-                    else if (t.uid != parentUid)
-                        this.tags = this.tags.filter(x => x.uid != t.uid);
-                });
+                if (result) {
 
+                    this.messagesService.showInfoMessage("Success", "Tag consolidation succesfull");
+
+                    result.forEach(t => {
+                        if (t.UseCount != 0)
+                            this.tags[this.findTagIndex(t.uid)].UseCount = t.UseCount;
+                        else if (t.uid != parentUid)
+                            this.tags = this.tags.filter(x => x.uid != t.uid);
+                    });
+                }
                 this.selected = [];
                 this.selected.push(this.tags[0])
                 this.showConsolidate = false;
@@ -190,6 +192,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
             if (tag.uid == uid) return index;
         }
     }
+
 
     private export() {
         this.tagsService.exportTags();

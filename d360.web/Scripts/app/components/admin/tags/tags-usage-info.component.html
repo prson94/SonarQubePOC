@@ -1,6 +1,13 @@
-﻿<div class="tag-usage-box" >
-    <div (mouseover)="loadContent()" class="title" [escape]="false" [pTooltip]="tooltipHTML" tooltipPosition="right" tooltipEvent="hover">
+﻿<div class="tag-usage-box" (mouseover)="showContent()" (mouseout)="hideContent()">
+    <span class="title">
         <ng-content></ng-content>
+    </span>
+    <div (mouseover)="showContent(true)" (mouseout)="hideContent(true)" class="ui-tooltip ui-widget ui-tooltip-right gov-tooltip {{isTooltipVisibe ? 'show' : 'hide'}}">
+        <div class="tooltip-content">
+            <div class="ui-tooltip-arrow"></div>
+            <div class="ui-tooltip-text ui-shadow ui-corner-all" [innerHTML]="tooltipHTML"></div>
+        </div>
+
     </div>
 </div>
 

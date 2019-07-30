@@ -52,7 +52,6 @@ namespace d360.web.Controllers.V2
             try
             {
                 var tags = tagRepository.SearchTags(name);
-
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, tags));
             }
             catch (Exception ex)
@@ -116,7 +115,6 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             try
             {
-
                 if (!tagRepository.DeleteTag(uid))
                 {
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", "Tag not found.");
@@ -202,6 +200,7 @@ namespace d360.web.Controllers.V2
             TagApiModel result = new TagApiModel();
             try
             {
+
                 TagValidator.ValidateForPut(uid, model);
 
                 var existingTag = tagRepository.GetTagByUid(uid);
@@ -245,6 +244,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             try
             {
+
                 if (!tagRepository.DeleteTags(model))
                 {
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tags", "Tag not found.");
@@ -282,6 +282,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
+
                 if (Guid.Parse(parentUid) == Guid.Empty)
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error while consolidating tags", $"{parentUid} is not valid uid!");
 
@@ -316,7 +317,8 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                List<dynamic> result = tagRepository.GetAssetsPathForTag(tagUid);
+
+                List<AssetTagList> result = tagRepository.GetAssetsPathForTag(tagUid);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 
@@ -337,6 +339,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
+
                 var result = tagRepository.SetTaggingStatus(model.IsTaggingEnabled);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
@@ -366,6 +369,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> ExportToExcel()
         {
+
             var queryParams = Request.GetQueryNameValuePairs();
 
             var tags = await tagRepository.GetTags(queryParams);

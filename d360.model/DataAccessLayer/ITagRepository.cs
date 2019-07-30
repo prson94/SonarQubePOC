@@ -17,7 +17,7 @@ namespace d360.model.DataAccessLayer
         bool DoesTagExists(string value);
         bool DoesTagExists(TagApiModel model);
         Tag GetTagByUid(Guid uid);
-        List<dynamic> GetAssetsPathForTag(Guid tagUid);
+        List<AssetTagList> GetAssetsPathForTag(Guid tagUid);
         IEnumerable<TagApiModel> ConsolidateTags(string parentUid, List<string> childrenUids);
         List<dynamic> SearchTags(string tag);
         bool SetTaggingStatus(bool state);
