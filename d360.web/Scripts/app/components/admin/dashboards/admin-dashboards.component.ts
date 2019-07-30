@@ -6,6 +6,7 @@ import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Report, ReportType } from '../../../models/report.model';
 import { Title } from '@angular/platform-browser';
+import { StateService } from '../../../services/state.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 
@@ -125,9 +126,10 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     powerBiUser: string;
     powerBiPassword: string;
 
-    constructor(rightSidebarService: RightSidebarService, protected reportsService: ReportsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, protected reportsService: ReportsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Dashboards";
+        this.tabTitle = 'Dashboards'
         this.setCommonItems();
         this.setCommonRightSideBar();
         if (this.auditSidebar) {
@@ -177,6 +179,8 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                     this.selected = this.reports.length > 0 ? this.reports[0] : null;
                     this.reports.splice(this.findReportIndex(id), 1);
                 }
+
+                this.stateService.reloadLeftNavMenu();
             });
     }
 
@@ -208,6 +212,8 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                 }
                 this.isLoading = false;
                 this.selected = event.report;
+
+                this.stateService.reloadLeftNavMenu();
             });
     }
 

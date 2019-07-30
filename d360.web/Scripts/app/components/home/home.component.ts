@@ -83,7 +83,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.clearSidebar();
 
         this.setCommonRightSideBar(false, false, true);
-
+        this.rightSidebarService.showHeader(false);
         this.showActivityTile = CompanySettings.ShowHomeActivityTile == 'true';
         this.showAssignmentTile = CompanySettings.ShowHomeAssignmentTile == 'true';
         this.showBoardTile = CompanySettings.ShowHomeBoardTile == 'true';
@@ -104,13 +104,6 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 
         this.colSize = 12.0 / (this.numTiles == 0 ? 1 : this.numTiles);
 
-        this.dashboardService.getHomePageDashboards().subscribe(
-            r => {
-                if (r && r.length > 0) {
-                    this.dashboard = r[0];
-                }
-            }
-        );
     }
 
     ngOnDestroy() {

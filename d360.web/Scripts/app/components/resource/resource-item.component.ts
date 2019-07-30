@@ -108,34 +108,36 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
                     this.isLoading = false;
 
-                    this.clearSidebar();
                     this.setCommonRightSideBar(
                         false, false, false,
                         false, false, false,
                         false, false
                     );
+                    this.rightSidebarService.showHeader(true);
+                    this.rightSidebarService.setCurrentArea(this.resource.FirstName + " " + this.resource.LastName, 'fa-cog', 'User');
+                   
                     this.itemsOwn = new RightSidebarItem(
-                        'Items Own', 'itemOwn', ['fa-tasks'],
+                        'Ownership', 'itemOwn', ['fa-tasks'],
                         `/sidebar/itemown/${resourceId}`
                     );
                     this.rightSidebarService.showItem(this.itemsOwn);
                     this.memberGroups = new RightSidebarItem(
-                        'Member Groups', 'memberGroup', ['fa-user-circle'],
+                        'Groups', 'memberGroup', ['fa-user-circle'],
                         `/sidebar/membergroup/${resourceId}`
                     );
                     this.rightSidebarService.showItem(this.memberGroups);
                     this.itemsFollow = new RightSidebarItem(
-                        'Items Follow', 'itemFollow', ['fa-user-plus'],
+                        'Following', 'itemFollow', ['fa-user-plus'],
                         `/sidebar/itemfollow/${resourceId}`
                     );
                     this.rightSidebarService.showItem(this.itemsFollow);
                     this.hasRelations = new RightSidebarItem(
-                        'Relations', 'hasRelations', ['fa-retweet'],
+                        'Related Assets', 'hasRelations', ['fa-retweet'],
                         `/sidebar/relationships/resource/${resourceId}`
                     );
                     this.rightSidebarService.showItem(this.hasRelations);
                     this.comments = new RightSidebarItem(
-                        this.resource.FirstName + '\'s Comments', 'comments', ['fa-comments'],
+                        'Comments', 'comments', ['fa-comments'],
                         `/sidebar/comments/Resource/${resourceId}/${this.resource.FirstName}`
                     );
                     this.rightSidebarService.showItem(this.comments);

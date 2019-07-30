@@ -1,0 +1,659 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="bhoward" id="GOV-7464">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+	ALTER   PROCEDURE [dbo].[GetSiteNavigation]
+(
+	@ResourceID int = 0
+)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, 
+		n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		NULL AS Items	
+FROM SiteNav n
+WHERE n.Name = '#Monitor' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, 
+		n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		NULL AS Items		
+FROM SiteNav n
+WHERE n.Name = '#Home' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+UNION ALL
+
+SELECT	n.name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, 
+		n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(		
+			select
+				T.name,
+				AUrl.[Url] as [url],
+				0 as feature,		
+				dbo.ArtifactNgSiteNavigation(T.ObjectID) as items
+					from AssetType T 
+						cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
+						left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'ArtifactType'
+					WHERE not exists  (
+							select	IT.SubjectID
+							from	IntersectType IT 
+									inner join [Predicate] P on IT.Object = T.Object and IT.ObjectID = T.ObjectID and P.ID = IT.PredicateID and P.Type = 3
+							) 	
+							and v.ObjectID is null
+							and T.Object = 'ArtifactType'
+							Order By T.name
+					FOR XML PATH('nav'), TYPE
+		) AS Items
+FROM SiteNav n
+WHERE n.Name = '#Glossary' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+UNION ALL
+
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+			SELECT	name,
+					url,
+					0 as feature,
+					null as items
+			FROM	(
+					SELECT		TOP 1000
+								T.ObjectID,
+								T.Name,
+								dbo.GenerateAssetTypeUrl(T.ID) As url
+					FROM		AssetType T 
+								left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'TaxonomyType'
+					WHERE		v.ObjectID is null
+					and			T.Object = 'TaxonomyType'
+					ORDER BY	T.Name
+					) BG
+					FOR XML PATH('nav'), TYPE
+		) AS Items
+FROM SiteNav n
+WHERE n.Name = '#Models' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+			SELECT	name,
+					url,
+					0 as feature,
+					null as items
+			FROM	(
+					SELECT		TOP 1000
+								T.ObjectID,
+								T.name,
+								dbo.GenerateAssetTypeUrl(T.ID) As url
+					FROM		AssetType T 
+								left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'PolicyType'
+					WHERE		v.ObjectID is null
+					and T.Object = 'PolicyType' 
+					ORDER BY	T.name
+					) BG
+					FOR XML PATH('nav'), TYPE
+		) AS Items
+FROM SiteNav n
+WHERE n.Name = '#Policy' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+		
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		null AS Items
+FROM SiteNav n
+WHERE n.Name = '#Reference' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		2 as Feature,
+		n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+		SELECT		FT.name, 
+					dbo.GenerateAssetTypeUrl(T.ID)  As url,
+					2 as feature,
+					(
+					SELECT		name, 
+								dbo.GenerateAssetUrl(A.ID)  As url,
+								'F' + cast(F.ID as varchar(15)) as menuID,
+								2 as feature
+					FROM		Fusion F
+								inner join Asset A on A.Object = 'Fusion' and A.ObjectID = F.ID
+					WHERE		F.FusionTypeID = FT.ID
+					ORDER BY	name
+					FOR XML PATH('nav'), TYPE
+					) AS items	
+		FROM		FusionType FT
+					inner join AssetType T on T.Object = 'FusionType' and T.ObjectID = FT.ID
+		ORDER BY	name
+		FOR XML PATH('nav'), TYPE
+		) AS Items	
+	FROM SiteNav n
+WHERE n.Name = '#Fusion' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+		
+UNION ALL
+
+SELECT	n.Name as MenuID, 
+		n.SortOrder,
+		4 as Feature,
+		n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+        SELECT	'People' AS name, 
+                'community/groups' AS url, 		        
+                0 as feature,
+		        NULL AS Items
+        FOR XML PATH('nav'), TYPE
+        ) AS Items
+FROM SiteNav n
+WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+	UNION ALL
+	SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, 
+		n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+		SELECT	RT.name, 				
+				dbo.GenerateAssetTypeUrl(T.ID) As url,
+				0 as feature,
+				null AS items	
+		FROM	RuleType RT
+				inner join AssetType T on T.Object = 'RuleType' and T.ObjectID = RT.ID
+				LEFT JOIN SiteNav v on v.ObjectID = RT.ID and v.Object ='RuleType'
+		WHERE	v.ObjectID IS NULL
+		Order By RT.name
+		FOR XML PATH('nav'), TYPE
+		) AS Items
+	FROM SiteNav n
+	WHERE n.Name = '#Data Quality' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+	UNION ALL
+	SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, 
+		n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+		SELECT DISTINCT	R.name, 				
+				CONCAT('dashboard/', R.[ObjectType] ,'/' , R.ObjectID , '/' , R.Name) As url,
+				0 as feature,
+				null AS items	
+		FROM	Report R
+		left join ReportResponsibility rs on rs.ReportID = R.ID
+		left join ResponsibilityDetail rd on rd.ResponsibilityTypeID = rs.ResponsibilityTypeID
+		Where @ResourceID = rd.ResourceID or rd.ResourceID is null
+		Order By R.name
+		FOR XML PATH('nav'), TYPE
+		) AS Items
+	FROM SiteNav n
+	WHERE n.Name = '#Dashboards' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+	UNION ALL
+
+	SELECT 
+		'~' + Name AS MenuID,
+		s.SortOrder,
+		0 AS Feature,
+		s.Icon as Icon,
+		s.ImageIconUrl as ImageIconUrl,
+		s.Title as Title,
+		dbo.CustomSiteNavigation(ID) AS Items
+	from SiteNav s
+	where ParentID IS NULL and Name not like '#%' AND dbo.HasSiteNavPermission(s.ID, @ResourceID) = 1
+
+	order by sortorder
+END					
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+			ALTER   PROCEDURE [dbo].[GetSiteNavigation]
+(
+	@ResourceID int = 0
+)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, 
+		n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		NULL AS Items	
+FROM SiteNav n
+WHERE n.Name = '#Monitor' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, 
+		n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		NULL AS Items		
+FROM SiteNav n
+WHERE n.Name = '#Home' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+UNION ALL
+
+SELECT	n.name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, 
+		n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(		
+			select
+				T.name,
+				AUrl.[Url] as [url],
+				0 as feature,		
+				dbo.ArtifactNgSiteNavigation(T.ObjectID) as items
+					from AssetType T 
+						cross apply [dbo].[GetAssetTypeUrlById](T.ID) AUrl
+						left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'ArtifactType'
+					WHERE not exists  (
+							select	IT.SubjectID
+							from	IntersectType IT 
+									inner join [Predicate] P on IT.Object = T.Object and IT.ObjectID = T.ObjectID and P.ID = IT.PredicateID and P.Type = 3
+							) 	
+							and v.ObjectID is null
+							and T.Object = 'ArtifactType'
+							Order By T.name
+					FOR XML PATH('nav'), TYPE
+		) AS Items
+FROM SiteNav n
+WHERE n.Name = '#Glossary' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+UNION ALL
+
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+			SELECT	name,
+					url,
+					0 as feature,
+					null as items
+			FROM	(
+					SELECT		TOP 1000
+								T.ObjectID,
+								T.Name,
+								dbo.GenerateAssetTypeUrl(T.ID) As url
+					FROM		AssetType T 
+								left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'TaxonomyType'
+					WHERE		v.ObjectID is null
+					and			T.Object = 'TaxonomyType'
+					ORDER BY	T.Name
+					) BG
+					FOR XML PATH('nav'), TYPE
+		) AS Items
+FROM SiteNav n
+WHERE n.Name = '#Models' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+			SELECT	name,
+					url,
+					0 as feature,
+					null as items
+			FROM	(
+					SELECT		TOP 1000
+								T.ObjectID,
+								T.name,
+								dbo.GenerateAssetTypeUrl(T.ID) As url
+					FROM		AssetType T 
+								left join SiteNav v on v.ObjectID = T.ObjectID and v.Object = 'PolicyType'
+					WHERE		v.ObjectID is null
+					and T.Object = 'PolicyType' 
+					ORDER BY	T.name
+					) BG
+					FOR XML PATH('nav'), TYPE
+		) AS Items
+FROM SiteNav n
+WHERE n.Name = '#Policy' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+		
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		null AS Items
+FROM SiteNav n
+WHERE n.Name = '#Reference' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+UNION ALL
+
+SELECT	n.Name as MenuID,
+		n.SortOrder,
+		2 as Feature,
+		n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+		SELECT		FT.name, 
+					dbo.GenerateAssetTypeUrl(T.ID)  As url,
+					2 as feature,
+					(
+					SELECT		name, 
+								dbo.GenerateAssetUrl(A.ID)  As url,
+								'F' + cast(F.ID as varchar(15)) as menuID,
+								2 as feature
+					FROM		Fusion F
+								inner join Asset A on A.Object = 'Fusion' and A.ObjectID = F.ID
+					WHERE		F.FusionTypeID = FT.ID
+					ORDER BY	name
+					FOR XML PATH('nav'), TYPE
+					) AS items	
+		FROM		FusionType FT
+					inner join AssetType T on T.Object = 'FusionType' and T.ObjectID = FT.ID
+		ORDER BY	name
+		FOR XML PATH('nav'), TYPE
+		) AS Items	
+	FROM SiteNav n
+WHERE n.Name = '#Fusion' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+		
+UNION ALL
+
+SELECT	n.Name as MenuID, 
+		n.SortOrder,
+		4 as Feature,
+		n.Icon as Icon, n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+        SELECT	'People' AS name, 
+                'community/groups' AS url, 		        
+                0 as feature,
+		        NULL AS Items
+        FOR XML PATH('nav'), TYPE
+        ) AS Items
+FROM SiteNav n
+WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+UNION ALL
+
+SELECT	'#Admin' as MenuID,
+		999 as SortOrder,
+		0 as Feature,
+		'fa-cogs' as Icon, 
+		null as ImageIconUrl,
+		'Administration' as Title,
+		(
+			select	*
+			from	(
+					SELECT	'Security' AS name, 
+							'#/' AS url, 
+							0 as feature,
+							(
+							select	*
+							from	(
+									SELECT	'Groups' AS name, 
+											'#/groups/administration' AS url, 
+											
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Users' AS name, 
+											'#/resources/administration' AS url, 
+											
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Responsibilities' AS name, 
+											'#/governance/administration' AS url, 
+											0 as feature,
+											NULL AS items
+                            ) bg
+							FOR XML PATH('nav'), TYPE
+							) AS items
+						
+					union all
+
+					SELECT	'MetaModel' AS name, 
+							'#/' AS url,
+							0 as feature, 
+							(
+							select	*
+							from	(
+									SELECT	'Artifacts' AS name, 
+											'#/artifacts/administration' AS url, 
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Attributes' AS name, 
+											'#/attributes/administration' AS url, 
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Lookups' AS name, 
+											'#/lookups/administration' AS url, 
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Models' AS name, 
+											'#/catalogs/administration' AS url, 
+											0 as feature,
+											NULL AS items
+                                    union all
+									SELECT	'Policies' AS name, 
+											'#/policies/administration' AS url, 
+											1 as feature,
+											NULL AS items
+                                    union all
+									SELECT	'Relationships' AS name, 
+											'#/relations/administration' AS url, 
+											0 as feature,
+											NULL AS items
+                                    union all
+                                    SELECT	'Rules' AS name, 
+											'#/rules/administration' AS url, 
+											0 as feature,
+											NULL AS items
+									) bg
+							FOR XML PATH('nav'), TYPE
+							) AS items
+						
+					union all
+
+					SELECT	'Metrics' AS name, 
+							'#/' AS url,
+							0 as feature, 
+							(
+							select	*
+							from	(
+									SELECT	'Scoring' AS name, 
+											'#/analytics/administration' AS url, 
+											5 as feature,
+											NULL AS items
+									union all
+					                SELECT	'Dashboards' AS name, 
+							                '#/reporting/administration' AS url, 
+							                0 as feature,
+							                NULL AS items
+                                    union all
+					                SELECT	'Surveys' AS name, 
+							                '#/surveys/administration' AS url, 
+							                7 as feature,
+							                (
+							                SELECT	'Response Types' AS name, 
+									                '#/surveyresponsetypes/administration' AS url, 
+									                7 as feature,
+									                NULL AS items
+							                FOR XML PATH('nav'), TYPE
+							                ) AS items
+									) bg
+							FOR XML PATH('nav'), TYPE
+							) AS items
+						
+					union all
+
+					SELECT	'Reference' AS name, 
+							'#/domains/administration' AS url, 
+							0 as feature,
+							NULL AS items
+
+					union all
+
+					SELECT	'Workflow' AS name, 
+							'#/workflow/administration' AS url, 
+							0 as feature,
+							NULL AS items
+
+                    union all
+
+                    SELECT	'Templates' AS name, 
+							'#/templates/administration' AS url, 
+							0 as feature,
+							NULL AS items
+
+					union all
+
+					SELECT	'Integration' AS name, 
+							'#/' AS url, 
+							0 as feature,
+							(
+							select	*
+							from	(
+									SELECT	'Bulk Loader' AS name, 
+											'#/load' AS url, 
+											0 as feature,
+											NULL AS items
+									union all
+									SELECT	'Fusion' AS name, 
+											'#/fusion/administration' AS url, 
+											2 as feature,
+											NULL AS items
+									union all
+									SELECT	'API' AS name, 
+											'/swagger' AS url, 
+											0 as feature,
+											NULL AS items
+									) bg
+							FOR XML PATH('nav'), TYPE
+							) AS items
+
+                    union all
+
+                    SELECT	'Settings' AS name, 
+							'#/settings' AS url, 
+							0 as feature,
+							NULL AS items
+            ) bg
+			for xml path('nav'), type
+		) as Items
+
+	where 1 = 1
+
+	UNION ALL
+
+	SELECT	n.Name as MenuID,
+		n.SortOrder,
+		0 as Feature,
+		n.Icon as Icon, 
+		n.ImageIconUrl as ImageIconUrl,
+		n.Title as Title,
+		(
+		SELECT	RT.name, 				
+				dbo.GenerateAssetTypeUrl(T.ID) As url,
+				0 as feature,
+				null AS items	
+		FROM	RuleType RT
+				inner join AssetType T on T.Object = 'RuleType' and T.ObjectID = RT.ID
+				LEFT JOIN SiteNav v on v.ObjectID = RT.ID and v.Object ='RuleType'
+		WHERE	v.ObjectID IS NULL
+		Order By RT.name
+		FOR XML PATH('nav'), TYPE
+		) AS Items
+	FROM SiteNav n
+	WHERE n.Name = '#Data Quality' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+
+	UNION ALL
+
+	SELECT 
+		'~' + Name AS MenuID,
+		s.SortOrder,
+		0 AS Feature,
+		s.Icon as Icon,
+		s.ImageIconUrl as ImageIconUrl,
+		s.Title as Title,
+		dbo.CustomSiteNavigation(ID) AS Items
+	from SiteNav s
+	where ParentID IS NULL and Name not like '#%' AND dbo.HasSiteNavPermission(s.ID, @ResourceID) = 1
+
+	order by sortorder
+END
+		]]>
+	</rollback>
+  </changeSet>
+  <changeSet author="bhoward" id="GOV-7464-2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM [dbo].[SiteNav] Where Name = '#Dashboards')
+		BEGIN
+			INSERT INTO [dbo].[SiteNav] ([ParentId],[Name],[Route],[SortOrder],[ObjectID],[Object],[Icon],[Title],[ImageIconUrl])
+			VALUES (null,'#Dashboards',null,(SELECT MAX([SortOrder]) FROM [dbo].[SiteNav] Where Name like '#%') , null,null,'fa-tachometer', 'Dashboards',null)
+		END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+		IF EXISTS (SELECT 1 FROM [dbo].[SiteNav] Where Name = '#Dashboards')
+		BEGIN 
+			DELETE FROM [dbo].[SiteNav] Where Name = '#Dashboards'
+		END
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
