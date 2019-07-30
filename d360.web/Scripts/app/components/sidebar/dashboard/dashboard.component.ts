@@ -47,7 +47,8 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
 
-    private buildBreadcrumb(){
+    private buildBreadcrumb() {
+
         this.headerBreadcrumbService.clearBreadcrumbs();
 
         this.headerBreadcrumbService.getFolderTitle('#Dashboards').then(res => {
