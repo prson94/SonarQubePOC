@@ -82,7 +82,8 @@ order by C.ParentID, C.[Name]", new { id }).AsQueryable();
         public IQueryable<dynamic> GetFusionAttributeTypes()
         {
             return Company.FusionAttributeTypes.Select(i =>
-            new {
+            new
+            {
                 ID = i.ID,
                 ParentID = i.ParentID,
                 TextPath = i.TextPath,
@@ -1484,11 +1485,7 @@ where   A.Deleted = 0";
             public DateTime UpdatedOn { get; set; }
         }
 
-        [Route("rules/steps/{ruleStepID:int}/promotionhistory")]
-        public IEnumerable<RuleStepPromotionHistoryModel> GetFusionRuleStepPromotionHistory(int ruleStepID)
-        {
-            return Company.Query<RuleStepPromotionHistoryModel>(QueryConstants.FusionRuleStepPromotionHistory, new { id = ruleStepID });
-        }
+
 
         [Route("promotions/{typeID:int}")]
         public IQueryable<dynamic> GetPromotionsByAttributeType(int typeID)

@@ -1362,32 +1362,7 @@ where   h.ID <> @t order by h.[Level] desc;
             return model;
         }
 
-        [Route("artifacttypes")]
-        public IEnumerable<dynamic> GetArtifactTypes()
-        {
-            var sql = @"select		AT.ObjectID as ID,
-			                IT.ParentID,
-			                AT.Name,
-			                AT.Description,
-			                AT.DisplayFormat,
-			                AT.CanOwnFusion,
-			                AT.AutoDisplayDescription
-                from		AssetType as AT
-			                outer apply (
-				                select	IT.SubjectID as ParentID
-				                from	IntersectType IT 
-						                inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
-			                ) IT
-	                Where AT.Object = 'ArtifactType'
-                order by	IT.ParentID,
-			                AT.Name
-                ";
-            var artifactTypes = Company.Query<dynamic>(sql).ToList();
 
-
-
-            return artifactTypes;
-        }
 
         [Route("artifacttype/possibleowners/{artifactTypeId:int}")]
         public HttpResponseMessage GetArtifactTypePossibleOwners(int artifactTypeId)
@@ -1481,23 +1456,7 @@ order by 'Name'";
             );
         }
         
-        [Route("fusion/promotion/ChildAttributeNodes"), HttpGet]
-        public HttpResponseMessage GetPromotionChildAttributeNodes(int fusionID, int targetFusionAttributeTypeID, int ruleID, int currentFusionAttributeTypeID = 0, int fusionAttributeID = 0)
-        {
-            var models = Company.Query<dynamic>(
-                QueryConstants.FusionPromotionChildAttributeNodeList,
-                new
-                {
-                    fusionID,
-                    targetFusionAttributeTypeID,
-                    ruleID,
-                    currentFusionAttributeTypeID,
-                    fusionAttributeID
-                }
-            );
-
-            return Request.CreateResponse(HttpStatusCode.OK, models);
-        }
+      
 
         [Route("fusion/promotion/QueryAttributes"), HttpGet]
         public HttpResponseMessage GetPromotionFusionQueryAttributes(int ruleID)
@@ -1508,142 +1467,11 @@ order by 'Name'";
 
         }
                 
-        [Route("fusion/{fusionID:int}/rules")]
-        public HttpResponseMessage GetFusionRules(int fusionID)
-        {
-            var sql = @"select 
-                        r.id as ID,
-	                    r.[description] as Description,
-	                    r.[enabled] as Enabled,
-	                    r.fusionid as FusionID,
-	                    r.objecttype as ObjectType,
-	                    r.objectid as ObjectID,
-						case when r.objecttype = 'FusionQueryAttributeType' then
-							'Query :: ' + fqat.Name
-						else
-							fat.Textpath
-						end as ObjectName
-                    from[fusion].[Rule]
-                            r
-                        left outer join [dbo].fusionattributetype fat on (r.objectid = fat.id and r.objecttype ='FusionAttributeType')
-                        left outer join [dbo].fusionqueryattributetype fqat on (r.objectid = fqat.id and r.objecttype ='FusionQueryAttributeType')                       
-                    where r.fusionid = @fid";
 
 
-            var dbArgs = new Dapper.DynamicParameters();
 
-            dbArgs.Add("fid", fusionID);
 
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                Company.Query<dynamic>(sql, dbArgs)
-            );
-        }
 
-        [Route("fusion/rules/{ruleID:int}/steps")]
-        public IEnumerable<FusionRuleStep> GetFusionRuleSteps(int ruleID)
-        {
-            var rule = Company.GetById<FusionRule>(ruleID);
-
-            if (rule == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
-
-            return rule.FusionRuleSteps.OrderBy(x => x.Step);
-        }
-
-        [Route("fusion/rule/{ruleID:int}/steps/{ruleStepID:int}")]
-        public IEnumerable<dynamic> GetRuleSteps(int ruleID, int ruleStepID)
-        {
-            return Company.Filter<FusionRuleStep>(x => x.RuleID == ruleID && x.ID != ruleStepID)
-                .Select(i => new { Step = i.Step, Description = i.Description, ID = i.ID })
-                .AsEnumerable()
-                .Select(y => new { Description = $"{y.Step} - {y.Description}", ID = y.ID });
-        }
-
-        [Route("fusion/rule/actions")]
-        public IEnumerable<dynamic> GetActions()
-        {
-            var types = new List<dynamic>();
-
-            types.Add(new { Name = FusionRuleType.Promote.ToString(), ID = FusionRuleType.Promote.ToString().ToLower() });
-            types.Add(new { Name = FusionRuleType.Find.ToString(), ID = FusionRuleType.Find.ToString().ToLower() });
-            types.Add(new { Name = FusionRuleType.Relate.ToString(), ID = FusionRuleType.Relate.ToString().ToLower() });
-
-            return types;
-        }
-
-        [Route("fusion/rule/fusionattributetypes")]
-        public IQueryable GetFusionAttributeTypes()
-        {
-            return Company.FusionAttributeTypes.OrderBy(x => x.TextPath).Select(x => new { Name = x.TextPath, ID = x.ID });
-        }
-
-        [Route("fusion/rule/fusionOwners/{fusionID:int}")]
-        public IEnumerable<dynamic> GetRuleFusionOwners(int fusionID)
-        {
-            var sql = @"
-                     with cte as (
-	                select	a.objectId as ID,
-			                I.SubjectID as ParentID,
-			                a.TypeID,
-			                d.DisplayValue
-	                from	FusionOwner fo
-			                inner join AssetWithType a on a.ID = fo.AssetID 
-			                left join IntersectTypeDetail ITD on ITD.PredicateType = 3 and ITD.[Object] = 'ArtifactType' 
-				                and ITD.ObjectID = a.TypeID and ITD.[Subject] = 'ArtifactType'
-			                left join [Intersect] I on I.IntersectTypeID = ITD.ID and I.ObjectID = a.ObjectID
-			                cross apply dbo.GetAssetDisplayValueById(a.ID) d
-							where a.[Object] = 'Artifact' and fo.fusionID = @fusionID
-	                	
-	                union all
-	                select	c.ObjectID as ID,
-			                x.SubjectID as ParentID,
-			                c.TypeID,
-			                d.DisplayValue
-	                from	AssetDetail c
-			                outer apply (
-				                select I.* from [Intersect] I
-				                inner join IntersectTypeDetail ITD on ITD.PredicateType = 3 and ITD.[Object] = 'ArtifactType' 
-					                and ITD.ObjectID = c.TypeID and ITD.[Subject] = 'ArtifactType'
-					                and I.IntersectTypeID = ITD.ID
-				                where I.ObjectID = c.ObjectID 
-			                ) x
-			                cross apply dbo.GetAssetDisplayValueById(c.ID) d
-							cross apply [dbo].[GetParentByAssetID] (c.ID) as PA
-							cross apply (Select objectId from  Asset where Id = PA.ID )PAA  
-							inner join AssetType ct on ct.ID = c.AssetTypeId and ct.CanOwnFusion = 1
-			                inner join cte p on p.ID = PAA.objectID
-							where  c.Object='Artifact'
-                )
-
-                select distinct	a.ID,
-		                t.Name + ': ' + a.DisplayValue as Name
-                from	cte a
-		                inner join AssetType t on t.ID = a.TypeID";
-
-            return Company.Query<dynamic>(sql, new { fusionID });
-        }
-
-        [Route("fusion/rule/relate/intersectTypes")]
-        public IQueryable GetIntersectTypes()
-        {
-            return Company.Filter<IntersectTypeDetail>(x => 
-                x.SubjectID > 0 && 
-                x.ObjectID > 0 && 
-                !string.IsNullOrEmpty(x.Subject) && 
-                !string.IsNullOrEmpty(x.Object) && 
-                !x.IsSystem)
-                .OrderBy(x => x.SubjectName)
-                .ThenBy(x => x.ObjectName)
-                .ToList()
-                .Select(x => new {
-                    Name = $"{x.SubjectName} {x.PredicateName ?? " / "} {x.ObjectName}",
-                    x.ID,
-                    x.Subject,
-                    x.SubjectID,
-                    x.Object,
-                    x.ObjectID
-                }).OrderBy(x => x.Name).AsQueryable();
-        }
 
         [Route("fusion/rule/relate/objectTypes")]
         public IEnumerable<dynamic> GetDirectObjectRelateTypes()
@@ -1660,90 +1488,9 @@ order by 'Name'";
         
         #region Promotion
 
-        [Route("fusion/{typeID:int}/configurations/{fusionID:int}/promotion/options")]
-        public List<FusionPromotionOption> GetFusionPromotionOptions(int typeID, int fusionID)
-        {
-            return Company.GetFusionPromotionOptions();
-        }
 
-        [Route("fusion/{id:int}/FusionRuleFilters")]
-        public HttpResponseMessage GetFusionRuleFilters(int id)
-        {
-            var list = Company.Filter<FusionRuleFilter>(i => i.RuleID == id).OrderBy(i => i.Name).ToList();
 
-            if (list.Count >= 0)
-            {
-                var fieldTypeIDs = (
-                    from f in list
-                    from fld in f.FieldsDocument.Elements("field")
-                    where fld.Element("FieldTypeID").Value != "0"
-                    select int.Parse(fld.Element("FieldTypeID").Value)
-                    ).ToList();
 
-                var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID))
-                    .Select(i => new { i.ID, i.FriendlyName, i.Name, i.Type})
-                    .ToList()
-                    .Select(i => new { i.ID, Name = $"{i.FriendlyName} ({i.Name})", i.Type })
-                    .ToList();
-
-                list.ForEach(f =>
-                {
-                    foreach (var e in f.FieldsDocument.Elements("field"))
-                    {
-                        var fld = new FusionRuleFilterItem
-                        {
-                            FieldTypeID = int.Parse(e.Element("FieldTypeID").Value),
-                            FusionRuleFilterID = f.ID,
-                            Operator = e.Element("Operator").Value,
-                            Value = e.Element("Value").Value
-                        };
-
-                        if (fld.FieldTypeID > 0)
-                        {
-                            var ft = fieldTypes.FirstOrDefault(i => i.ID == fld.FieldTypeID);
-                            fld.Type = (ft != null) ? ft.Type : "Text";
-                        }
-
-                        f.Items.Add(fld);
-                    }
-
-                });
-            }
-
-            return Request.CreateResponse(HttpStatusCode.OK, list);
-        }
-
-        [Route("fusion/{id:int}/FusionRuleItems")]
-        public HttpResponseMessage GetFusionRuleItems(int id)
-        {
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                Company.Query<dynamic>(QueryConstants.FusionRuleItemList, new { id })
-            );
-        }
-
-        [Route("fusion/{id:int}/FusionRuleStepMappings")]
-        public HttpResponseMessage GetFusionRuleMappings(int id)
-        {
-            var rulestep = Company.GetById<FusionRuleStep>(id);
-            IEnumerable<string> unMappedColumns = new List<string>();
-            if (rulestep?.Action.ToUpper() == "PROMOTE")
-            {
-                 unMappedColumns = Company.Query<string>(QueryConstants.FusionRuleUnmappedKeyColumnList,
-                    new
-                    {
-                        obj = rulestep.GetSettingValueByName("Object"),
-                        objId = Convert.ToInt32(rulestep.GetSettingValueByName("ObjectID")),
-                        ruleStepId = id
-                    });
-            }
-
-           
-            return Request.CreateResponse(
-                HttpStatusCode.OK, new {Items = Company.Query<dynamic>(QueryConstants.FusionRuleMappingList, new { id }), UnMappedKeyColumns = unMappedColumns }
-               
-            );
-        }
 
         #endregion
 
@@ -7074,33 +6821,7 @@ where v.id = {0}", id)).FirstOrDefault();
         }
 
 
-        /// <summary>
-        /// Used only in fusion rules to get the parents of an artifact that has a parent type.  
-        /// once fusion rules are retired this can go
-        /// </summary>        
-        /// <param name="id"></param>        
-        /// <returns></returns>
-        [Route("Artifact/{id:int}/fieldlookup")]
-        public async Task<List<dynamic>> GetFusionRulesArtifactParents(int id)
-        {
-            var list = new List<dynamic>();
 
-            var sql = "select a.ID,d.DisplayValue  from artifact a inner join asset ast on (a.id = ast.objectid and ast.[object] = 'Artifact') cross apply [dbo].GetAssetDisplayValueById(ast.id) d where a.ArtifactTypeID = @id order by d.DisplayValue";
-            var aItems = (await Company.QueryAsync<dynamic>(sql, new { id = id })).Take(10000);
-
-            foreach (var item in aItems)
-            {
-                var ei = new
-                {
-                    ID = item.ID,
-                    Name = item.DisplayValue
-                };
-
-                list.Add(ei);
-            }
-
-            return list;            
-        }
 
         [Route("{type}/{id:int}/fields")]
         public List<EditableFieldItem> GetFieldTypesByObject(SystemObjects type, int id)

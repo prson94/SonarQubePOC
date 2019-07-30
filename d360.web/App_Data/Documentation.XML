@@ -3192,14 +3192,6 @@
             Used in the Filter By Relationship tile on artifact list pages.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.D3SApiController.GetFusionRulesArtifactParents(System.Int32)">
-            <summary>
-            Used only in fusion rules to get the parents of an artifact that has a parent type.  
-            once fusion rules are retired this can go
-            </summary>        
-            <param name="id"></param>        
-            <returns></returns>
-        </member>
         <member name="M:d360.web.Controllers.FormController.getIconText(System.String)">
             <summary>
             Generates the icon text shown on icons that represent the Asset 

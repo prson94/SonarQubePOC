@@ -179,83 +179,12 @@ export class MapRuleItemDetail {
     children: MapRuleItemDetail[];
 }
 
-export class FusionRule {
-    ID: number;
-    Enabled: boolean;
-    FusionID: number;
-    ObjectType: string;
-    ObjectID: number;
-    ObjectName: string;
-    Description: string;
-}
-
-export class FusionRuleStep {
-    ID: number;
-    RuleID: number;
-    Step: number;
-    Action: string;
-    Description: string;
-    Settings: any;
-    FormSettings: any;
-}
-
-export class FusionRuleFilter {
-    ID: number;
-    RuleID: number;
-    Name: string;
-}
-
-export class FusionRuleFilterItem {
-    FusionRuleFilterID: number;
-    FieldTypeID: number;
-    Type: string;
-    Operator: string;
-    Value: string;
-}
-
-export class FusionRuleFilterFieldEditorModel {
-    ID: number;
-    Name: string;
-    Type: string;
-}
-
-export class FusionRuleFilterEditorModel {
-    FormName: string;
-    FusionRuleID: number;
-
-    ID: number;
-    Name: string;
-    All: boolean;
-    Items: FusionRuleFilterItem[] = [];
-
-    FieldTypes: FusionRuleFilterFieldEditorModel[] = [];
-    BoolOperators: string[] = [];
-    TextOperators: string[] = [];
-}
 
 
-export class FusionRuleItem {
-    ID: number;
-    RuleID: number;
-    Name: string;
-    ObjectID: number;
-    ObjectType: string;
-}
 
-export class FusionRuleMappingModel {
-    Items: FusionRuleMapping[] = [];
-    UnMappedKeyColumns: string[] = [];
-}
-export class FusionRuleMapping {
-    ID: number;
-    SourceFieldTypeID: number;
-    SourceFieldName: string;
-    TargetFieldTypeID: number;
-    TargetFieldName: string;
-    RuleStepID: number;
-    IsConstantValue: boolean;
-    ConstantValue: string;
-}
+
+
+
 
 export class FusionProcessError {
     Date: Date;
@@ -307,55 +236,7 @@ export class FusionExecutionResult {
     OldValue: string;
 }
 
-export class FusionRuleEditorModel {
-    FusionTypeID: number;
-    FusionID: number;
-    FormUri: string;
-    FormMethod: string;
-    FormName: string;
-    Rule: FusionRule;
-    AttributeTypes: FusionAttributeItem[] = [];
 
-
-}
-
-export class FusionRuleStepEditorModel {
-    FormUri: string;
-    FormMethod: string;
-    FormName: string;
-    RuleStep: FusionRuleStep;
-    FusionID: number;
-    FusionTypeID: number;
-}
-
-export class FusionRuleItemEditorModel {
-    FormMethod: string;
-    FormName: string;
-    FusionID: number;
-    TargetFusionAttributeTypeID: number;
-    Items: FusionRuleItem[] = [];
-}
-
-export class FusionRuleMappingEditorModel {
-    FormUri: string;
-    FormName: string;
-    FormMethod: string;
-    SourceFields: any[];
-    TargetFields: any[];
-    Item: FusionRuleMapping;
-
-    sourceValue: string;
-    targetValue: string;
-}
-
-export class PromotionObject {
-    Name: string;
-    ParentObjectTypeID: number;
-    PromotionObjectID: number;
-    PromotionObjectType: string;
-
-    id: string;
-}
 
 export class RelationIntersectType {
     ID: number;
