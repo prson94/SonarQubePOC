@@ -27,7 +27,6 @@ using System.Web.Http.Description;
 using System.Xml.Linq;
 using d360.core.resources;
 
-
 namespace d360.web.Controllers
 {
     [ApiVersion("1.0"), RoutePrefix("api"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
