@@ -1473,12 +1473,7 @@ order by 'Name'";
 
 
 
-        [Route("fusion/rule/relate/objectTypes")]
-        public IEnumerable<dynamic> GetDirectObjectRelateTypes()
-        {
-            return Company.GetIntersectTypeOptions()
-                .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
-        }
+ 
         
         [Route("fusion/technicalmapping")]
         public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings() 

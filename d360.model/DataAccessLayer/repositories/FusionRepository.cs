@@ -36,11 +36,6 @@ namespace d360.model.DataAccessLayer
             return CompanyContext.Assets.Include(at => at.AssetType).FirstOrDefault(x => x.Object == "Fusion" && x.uid == guid);
         }
 
-        public bool HasFusionRules(int fusionId)
-        {
-            return CompanyContext.FusionRules.Any(x => x.FusionID == fusionId);
-        }
-
         public async Task<ApiExecutionInfo> BulkDeleteFusionConfiguration(Guid assetUid, bool Cascade, ApiExecution execution)
         {
             var executionInfo = new ApiExecutionInfo

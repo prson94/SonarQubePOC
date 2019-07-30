@@ -25,8 +25,7 @@ import {
     FusionWorkerExecution,
     MapRuleItemDetail,
     RelationIntersectType,
-    RuleStepPromotionHistoryModel
-} from '../models/fusion.model';
+   } from '../models/fusion.model';
 import {GridColumn} from '../models/grid-definition.model';
 import {SortOrder} from '../models/enums.model';
 import {MessagesObservableService} from './messages-observable.service';
@@ -271,16 +270,6 @@ export class FusionService extends BaseObservableService {
         this
             .http
             .get(url, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, 'fusion execution history.xlsx'));
-    }
-
-    getFusionPromotionHistory(maxRows?: number): Observable<FusionPromotionExecutionStats[]> {
-        return this
-            .http
-            .get(`services/fusion/promotionhistory?$top=${maxRows ? maxRows : '100'}&$orderby=DateStarted%20desc`)
-            .pipe(
-                map(response => <FusionPromotionExecutionStats[]>response),
-                catchError(err => this.handleError(err))
-            );
     }
 
     getFusionStatsSummary(daysToLookBack: number): Observable<FusionSummaryStats> {
@@ -545,15 +534,6 @@ export class FusionService extends BaseObservableService {
             );
     }
 
-    getFindPromotions(fusionAttributeID: number) {
-        return this
-            .http
-            .get(`services/fusion/promotions/${fusionAttributeID}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
 
    
 

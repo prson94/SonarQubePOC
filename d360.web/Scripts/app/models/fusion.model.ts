@@ -153,7 +153,6 @@ export class FusionSummaryStats {
     AgentExecutions: number;
     FusionErrors: number;
     FusionExecutions: number;
-    PromotionJobsExecuted: number;
 }
 
 
@@ -260,18 +259,6 @@ export class AttributeNode {
 }
 
     
-export class RuleStepPromotionHistoryModel {
-    ID: number;
-    AttributeID: number;
-    AttributeType: string;
-    AttributeName: string;
-    Object: string;
-    ObjectID: number;
-    ObjectName: string;
-    ObjectUrl: string;
-    CreatedOn: string;
-    UpdatedOn: string;
-}
 
 
 export class AssetDataProfile {

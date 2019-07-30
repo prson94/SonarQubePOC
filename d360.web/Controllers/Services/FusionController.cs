@@ -1450,56 +1450,7 @@ where   A.Deleted = 0";
             return Ok();
         }
 
-        public class PromotionHistoryApiModel
-        {
-            public int ID { get; set; }            
-            public DateTime DateStarted { get; set; }
-            public DateTime? DateCompleted { get; set; }
-            public int PromotedTaxonomies { get; set; }
-            public int PromotedDomainItems { get; set; }
-            public int PromotedDomains { get; set; }
-            public int PromotedArtifacts { get; set; }
-            public int TotalNewPromotions { get; set; }
-            public int AttributesConsidered { get; set; }
-            public string NumberOfRules { get; set; }
-            public int RelationshipsAdded { get; set; }
-        }
-
-        [Route("promotionhistory")]
-        public IQueryable<PromotionHistoryApiModel> GetPromotionHistory()
-        {
-            return Company.Query<PromotionHistoryApiModel>(QueryConstants.PromotionHistoryList).AsQueryable();
-        }
-
-        public class RuleStepPromotionHistoryModel
-        {
-            public int ID { get; set; }
-            public int AttributeID { get; set; }
-            public string AttributeType { get; set; }
-            public string AttributeName { get; set; }
-            public string Object { get; set; }
-            public int ObjectID { get; set; }
-            public string ObjectName { get; set; }
-            public string ObjectUrl { get; set; }
-            public DateTime CreatedOn { get; set; }
-            public DateTime UpdatedOn { get; set; }
-        }
 
 
-
-        [Route("promotions/{typeID:int}")]
-        public IQueryable<dynamic> GetPromotionsByAttributeType(int typeID)
-        {
-            var sql = @"select 
-	                        s.id, r.Description + ' - ' + s.[Description] as Name, t.Name as AttributeName, t.TextPath, t.ID as AttributeID, t.ParentID 
-                        from 
-	                        fusion.rulestep s
-                        join fusion.[rule] r on r.id = s.ruleid
-                        join fusionattributetype t on t.id = r.objectid
-                        where s.Action = 'Promote'
-                        and r.objectid = @typeID";
-
-            return Company.Query<dynamic>(sql, new { typeID }).AsQueryable();
-        }
     }
 }
