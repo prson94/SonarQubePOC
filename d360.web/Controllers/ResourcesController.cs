@@ -1066,7 +1066,7 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
                         var qType = Company.Query<dynamic>(sql, new { id = objectID }).FirstOrDefault();
                         typeName = "QuestionType";
                         uid = qType.Uid.ToString();
-                        desc = qType.Description.ToString();
+                        desc = qType.Description ?? "";
                         dispName = qType.Name.ToString();
                     }
                 }

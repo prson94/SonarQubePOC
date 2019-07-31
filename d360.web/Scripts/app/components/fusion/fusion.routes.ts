@@ -21,8 +21,6 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_FUSION_ATTRIBUTE_DETAILS + '/:type/:id/:name/:dataProfileId', component: FusionAttributeDetailsComponent },
             { path: 'manual/load/:fusionId', component: FusionManualLoadComponent },
             { path: 'history/:fusionId', component: FusionHistoryComponent },
-            //lazy load
-            { path: SiteUrlHelpers.SITE_URL_FUSION_RULES, loadChildren: './rules/fusion-rule.module#FusionRuleModule?chunkName=fusionRuleChunk' }, 
         ]
     },
 ];
