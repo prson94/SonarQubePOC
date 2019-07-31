@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>false</UseIISExpress>
+    <UseIISExpress>true</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -1163,6 +1163,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-action.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-action.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute.component.ts" />

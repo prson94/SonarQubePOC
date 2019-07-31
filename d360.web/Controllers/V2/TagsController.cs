@@ -43,7 +43,9 @@ namespace d360.web.Controllers.V2
         /// </summary>        
         /// <returns>A list of tags</returns>
         [
-            HttpGet, MapToApiVersion("2.0"), Route("search/{name}"),
+            HttpGet, MapToApiVersion("2.0"),
+            Route("search/{name}"),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> Search(string name)
         {
@@ -227,7 +229,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Allows you to remove a tag based on tag lists.
+        /// Allows you to remove a tags based on tag lists.
         /// </summary>
         /// <returns>A status for the DELETE request.</returns>
         [
@@ -238,7 +240,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
         ]
-        public IHttpActionResult BulkTagDelete(List<TagApiDeleteModel> model)
+        public IHttpActionResult DeleteTags(List<TagApiDeleteModel> model)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
@@ -309,7 +311,7 @@ namespace d360.web.Controllers.V2
 
 
 
-        [HttpGet, MapToApiVersion("2.0"), Route("{tagUid}/assetpath")]
+        [HttpGet, MapToApiVersion("2.0"), Route("{tagUid}/assetpath"), ApiExplorerSettings(IgnoreApi = true)]
         public IHttpActionResult GetAssetsPath(Guid tagUid)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -331,7 +333,7 @@ namespace d360.web.Controllers.V2
 
         }
 
-        [HttpPut, MapToApiVersion("2.0"), Route("settaggingstatus")]
+        [HttpPut, MapToApiVersion("2.0"), Route("settaggingstatus"), ApiExplorerSettings(IgnoreApi = true)]
         public IHttpActionResult SetTaggingStatus(TagStatusModel model)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -354,9 +356,9 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// GET a list of relationship types.
+        /// GET a list of tags.
         /// </summary>
-        /// <returns>A excel file containing relationships types.</returns>
+        /// <returns>A excel file containing tags.</returns>
         [
             HttpGet,
             MapToApiVersion("2.0"),
@@ -364,7 +366,7 @@ namespace d360.web.Controllers.V2
             Route("export"),
             FileDownload,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
-            SwaggerResponse(HttpStatusCode.OK, "Exported realtionship types to Excel.", typeof(List<TagApiModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "Exported tags to Excel.", typeof(List<TagApiModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> ExportToExcel()
@@ -373,7 +375,7 @@ namespace d360.web.Controllers.V2
             var queryParams = Request.GetQueryNameValuePairs();
 
             var tags = await tagRepository.GetTags(queryParams);
-         
+
             var document = new SLDocument();
             document.AddWorksheet("Items");
 

@@ -30,6 +30,7 @@ import {
 import { TableModule } from 'primeng/table';
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { TagUsageInfoModule } from './tags-usage-info.module';
+import { AdminTagsActionModule } from './admin-tags-action.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -55,11 +56,11 @@ import { TagUsageInfoModule } from './tags-usage-info.module';
         TilesModule,
         SiteModalModule,
         TagUsageInfoModule,
-        D3SCheckboxModule
+        D3SCheckboxModule,
+        AdminTagsActionModule
     ],
     declarations: [
         AdminTagsComponent,
-        AdminTagsActionComponent,
         AdminTagsConsolidateComponent
     ],
     providers: [

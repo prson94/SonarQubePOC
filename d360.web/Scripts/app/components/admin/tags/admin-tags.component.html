@@ -1,11 +1,10 @@
-﻿<div class="row">
+﻿<d3s-admin-tags-action (onTagToggle)="tagStateChanged($event)" (onDelete)="openDeleteModal()" (onConsolidate)="openConsolidateModal()" [(selectedTags)]="selected"></d3s-admin-tags-action>
+
+<div class="row">
     <div class="col l12 m12 s12">
         <div class="tile tile-detail theme-new">
             <header>
-                Tags
-
-                <d3s-admin-tags-action (onTagToggle)="tagStateChanged($event)" (onDelete)="openDeleteModal()" (onConsolidate)="openConsolidateModal()" [(selectedTags)]="selected"></d3s-admin-tags-action>
-                <d3s-tile-actions [hasAdd]="true"  (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
             </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <span *ngIf="!isLoading">
@@ -33,8 +32,8 @@
                             <th></th>
                         </tr>
                     </ng-template>
-                    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-                        <tr [pSelectableRow]="item" [pSelectableRowIndex]="rowIndex">
+                    <ng-template pTemplate="body" let-item >
+                        <tr [pSelectableRow]="item">
                             <td>
                                 <p-tableCheckbox [value]="item"></p-tableCheckbox>
                             </td>
@@ -54,47 +53,47 @@
                 </p-table>
             </span>
 
-                <d3s-dynamic-editor [objectID]="selected[0]?.uid"
-                                    [objectType]="'Tag'"
-                                    [title]="'Tag'"
-                                    [selection]="selected[0]"
-                                    (saveClick)="saveTag($event)"
-                                    [showAsModal]="true"
-                                    [modalTitle]="editPopupTitle"
-                                    [isModalVisible]="showEditor"
-                                    (closeClick)="closeEditor()">
+            <d3s-dynamic-editor [objectID]="selected[0]?.uid"
+                                [objectType]="'Tag'"
+                                [title]="'Tag'"
+                                [selection]="selected[0]"
+                                (saveClick)="saveTag($event)"
+                                [showAsModal]="true"
+                                [modalTitle]="editPopupTitle"
+                                [isModalVisible]="showEditor"
+                                (closeClick)="closeEditor()">
 
-                </d3s-dynamic-editor>
-                <d3s-delete-form *ngIf="selected.length != 0"
-                                 [callback]="theDeleteCallback"
-                                 [method]="'callback'"
-                                 [items]="selected"
-                                 [showAsModal]="true"
-                                 [modalTitle]="deletePopupTitle"
-                                 [isModalVisible]="showDelete"
-                                 (onCancel)="showDelete=false;">
-                    <div prompt>
-                        <div *ngIf="selected.length == 1">
-                            Please confirm that you wish to delete the tag '{{this.selected[0].Value}}'(<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} assets</d3s-tag-usage> tagged)
-                        </div>
-                        <div *ngIf="selected.length > 1">
-                            Please confirm that you wish to delete following tags:
-                            <table class="table-borderless table">
-                                <tr *ngFor="let t of selected">
-                                    <td>{{t.Value}}</td>
-                                    <td><d3s-tag-usage [uid]="t.uid">{{t.UseCount}} assets</d3s-tag-usage> tagged</td>
-                                </tr>
-                            </table>
-                        </div>
+            </d3s-dynamic-editor>
+            <d3s-delete-form *ngIf="selected.length != 0"
+                             [callback]="theDeleteCallback"
+                             [method]="'callback'"
+                             [items]="selected"
+                             [showAsModal]="true"
+                             [modalTitle]="deletePopupTitle"
+                             [isModalVisible]="showDelete"
+                             (onCancel)="showDelete=false;">
+                <div prompt>
+                    <div *ngIf="selected.length == 1">
+                        Please confirm that you wish to delete the tag '{{this.selected[0].Value}}'(<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} assets</d3s-tag-usage> tagged)
                     </div>
+                    <div *ngIf="selected.length > 1">
+                        Please confirm that you wish to delete following tags:
+                        <table class="table-borderless table">
+                            <tr *ngFor="let t of selected">
+                                <td>{{t.Value}}</td>
+                                <td><d3s-tag-usage [uid]="t.uid">{{t.UseCount}} assets</d3s-tag-usage> tagged</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
 
-                </d3s-delete-form>
-                <d3s-admin-tags-consolidate [tags]="selected"
-                                            [modalTitle]="'Consolidate Tags'"
-                                            [isModalVisible]="showConsolidate"
-                                            (onCancel)="showConsolidate=false"
-                                            [callback]="theConsolidateCallback">
-                </d3s-admin-tags-consolidate>
+            </d3s-delete-form>
+            <d3s-admin-tags-consolidate [tags]="selected"
+                                        [modalTitle]="'Consolidate Tags'"
+                                        [isModalVisible]="showConsolidate"
+                                        (onCancel)="showConsolidate=false"
+                                        [callback]="theConsolidateCallback">
+            </d3s-admin-tags-consolidate>
         </div>
     </div>
 </div>

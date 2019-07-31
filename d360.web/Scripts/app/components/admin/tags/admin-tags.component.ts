@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, HostListener } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { TagService } from '../../../services/tag.service';
 import { AdminBaseComponent } from '../admin-base.component'
@@ -36,10 +36,13 @@ export class AdminTagsComponent extends AdminBaseComponent {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Tags";
         this.setCommonItems();
+        this.rightSidebarService.setCurrentArea(this.areaName, this.area === 'Tags' ? 'fa-tag' : "fa-tag", this.tabTitle);
+
     }
 
     ngOnInit() {
         this.setCommonRightSideBar(true);
+
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {
