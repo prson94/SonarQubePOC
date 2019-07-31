@@ -1055,16 +1055,16 @@ namespace d360.web.Controllers
         public JsonResult DeleteArtifactType(int id)
         {
             try
-            {               
-                var model = Company.GetById<ArtifactType>(id);
-                if (model == null) throw new NotFoundException("artifact type");
+            {
+                var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == id);
+                if (assetType == null) throw new NotFoundException("artifact type");
 
                 if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 var intersectType = Company.Filter<IntersectType>(i =>
                     i.Object == "ArtifactType" &&
-                    i.ObjectID == model.ID &&
+                    i.ObjectID == assetType.ObjectID &&
                     i.Predicate.Type == PredicateType.InterTypeHierarchy
                 ).SingleOrDefault();
 
@@ -1077,7 +1077,7 @@ namespace d360.web.Controllers
 
                 dynamic custom = new
                 {                    
-                    Name = model.Name,
+                    Name = assetType.Name,
                     action = "delete"              
                 };
 
@@ -1313,17 +1313,23 @@ namespace d360.web.Controllers
                 {
                     case SystemObjects.ArtifactType:
                         #region
-                        var a = new ArtifactType
+                        var a = new AssetType
                         {
                             Name = model.AssetType.Name,
                             DisplayFormat = model.AssetType.DisplayFormat,
                             Description = model.AssetType.Description,
+                            AutoDisplayDescription = model.AutoDisplayDescription ?? false,
                             CanOwnFusion = model.CanOwnFusion ?? false,
-                            AutoDisplayDescription = model.AutoDisplayDescription ?? false
+                            Object = SystemObjects.ArtifactType.ToString(),
+                            State = State.Active,
+                            UpdatedBy = Company.CurrentResourceID,
+                            UpdatedOn = DateTime.UtcNow,
+                            Class = AssetTypeClass.Glossary
                         };
                         Company.Add(a);
                         parentType = SystemObjects.ArtifactType;
-                        model.AssetType.ObjectID = a.ID;
+                        model.AssetType.ObjectID = a.ObjectID;
+
                         #endregion
                         break;
                     case SystemObjects.FusionAttributeType:
@@ -1509,7 +1515,7 @@ namespace d360.web.Controllers
                 switch (ot)
                 {
                     case SystemObjects.ArtifactType:
-                        var a = Company.GetById<ArtifactType>(model.AssetType.ObjectID);
+                        var a = Company.GetById<AssetType>(model.AssetType.ID);
                         if (a == null) throw new NotFoundException("artifact type");
 
                         a.Name = model.AssetType.Name;

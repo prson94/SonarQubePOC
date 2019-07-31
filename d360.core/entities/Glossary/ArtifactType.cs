@@ -41,8 +41,6 @@ namespace d360.core.entities
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
 
-        [IgnoreDataMember, ForeignKey("ParentID")]
-        public virtual ArtifactType Parent { get; set; }
 
         #endregion
 

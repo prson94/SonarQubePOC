@@ -96,8 +96,6 @@ namespace d360.model
 
         public DbSet<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
 
-        public DbSet<ArtifactType> ArtifactTypes { get; set; }
-
         public DbSet<d360.core.entities.Attribute> Attributes { get; set; }
 
         public DbSet<AttributeDetail> AttributeDetails { get; set; }                            /* VIEW */
@@ -2267,34 +2265,6 @@ where	R.SourceObject = 'FusionAttribute'
                     var o = entry.Entity as IUpdatedMetadata;
                     o.UpdatedBy = CurrentResourceID;
                     o.UpdatedOn = DateTime.UtcNow;
-                }
-                #endregion
-
-                #region Business logic : ArtifactType
-                if (entry.Entity is ArtifactType)
-                {
-                    var o = entry.Entity as ArtifactType;
-                    
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<ArtifactType>(i => i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);                            
-                            break;
-                        case EntityState.Deleted:
-                            if (Query<int>("select count(*) from Asset A inner join AssetType T on T.ID = A.AssetTypeID and T.Object = 'ArtifactType' and T.ObjectID = @ID", new { o.ID }).FirstOrDefault() > 0)
-                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ArtifactsAssignedToType);
-                            var childIDs = GetChildTypes(o.ID, SystemObjects.ArtifactType).ToList();
-                            if (childIDs.Count > 0)
-                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ChildTypesAssignedToType);
-                            
-                            break;
-                        case EntityState.Modified:
-                            if (Any<ArtifactType>(i => i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            
-                            break;
-                    }
                 }
                 #endregion
 

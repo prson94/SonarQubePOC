@@ -18,8 +18,6 @@ namespace d360.core.entities
         [DataMember]
         public string SourceID { get; set; }
 
-        [IgnoreDataMember]
-        public virtual ArtifactType ArtifactType { get; set; }
 
         public EventObjectInfo GetEventObjectInfo()
         {
