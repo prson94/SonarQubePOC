@@ -246,8 +246,8 @@
   <include file="scripts/GOV-7591.xml"/> <!-- GetDynamicAssets -->
   <include file="scripts/GOV-7647.xml"/>
   
-  <!-- Sprint 6.2 Read only user group Patch-->
-  <include file="scripts/GOV-7789.xml"/>
+  <!-- Sprint 6.2 Read only user group Patch removed till liquibase is changed to let this script run by Andy-->
+  <!--<include file="scripts/GOV-7789.xml"/>-->
   
   <!-- Sprint 7 2019 Start-->
   <include file="scripts/GOV-7732.xml"/>
@@ -257,6 +257,8 @@
   <include file="scripts/GOV-7658.xml"/>
   <include file="scripts/GOV-7644.xml"/> <!-- goes after 7658-->
   <include file="scripts/GOV-7754.xml"/> <!-- GetDynamicAssets -->
+  <include file="scripts/GOV-7767.xml"/> <!-- parent relationship cleanup - must go BEFORE 7608 -->
   <include file="scripts/GOV-7608.xml"/> <!-- GetDynamicAssets, goes after 7754 -->
   <include file="scripts/GOV-7670.xml"/> <!-- GetLineage, v1 -->
+  <include file="scripts/GOV-7784.xml"/>  
 </databaseChangeLog>
