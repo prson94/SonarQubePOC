@@ -585,9 +585,9 @@
     </EmbeddedResource>
     <Content Include="Scripts\app\31.chunk.js" />
     <Content Include="Scripts\app\32.chunk.js" />
+    <Content Include="Scripts\app\56.chunk.js" />
     <Content Include="Scripts\app\57.chunk.js" />
     <Content Include="Scripts\app\58.chunk.js" />
-    <Content Include="Scripts\app\59.chunk.js" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
@@ -712,7 +712,6 @@
     <Content Include="Scripts\app\53.chunk.js" />
     <Content Include="Scripts\app\54.chunk.js" />
     <Content Include="Scripts\app\55.chunk.js" />
-    <Content Include="Scripts\app\56.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />
     <Content Include="Scripts\app\7.chunk.js" />
     <Content Include="Scripts\app\8.chunk.js" />
@@ -732,13 +731,6 @@
     <Content Include="Scripts\app\components\admin\settings\admin-site-menu.component.html" />
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow-editor.component.html" />
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-findviarelation.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-lineage.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rules.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-relate.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-promote.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-find.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-update.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-business-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-editor.component.html" />
@@ -1286,7 +1278,6 @@
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-custom-export.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-top-level-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-implementation-summary.component.ts" />
@@ -1331,16 +1322,6 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-attribute-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-filter-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-filter-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-history.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-mapping-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-mapping-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-update.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.routes.ts" />
@@ -1404,12 +1385,6 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community-responsibility-count.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-base.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-findviarelation.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-lineage.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-relate.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-promote.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-find.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\help\help.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\help\help.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\help\help.routes.ts" />
@@ -1558,8 +1533,6 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-manual-load.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-process-errors.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rules.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-responsibility.component.ts" />
@@ -1574,7 +1547,6 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-promotion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-statistics.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-technical-mappings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-structure-tree.component.ts" />

@@ -166,10 +166,6 @@ namespace d360.web.Controllers.V2
                 if (fusion == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Fusion configuration with Uid {fusionGuid} could not be found."));
 
-                if (FusionRepository.HasFusionRules(fusion.ObjectID))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not found", $"Fusion configuration have rules. Delete them manually before calling this endpoint!"));
-                }
 
                 var execution = getApiExecution(1, new ApiExecutionFields_DeleteAssets { AssetTypeUid = fusion.AssetType.uid});
 

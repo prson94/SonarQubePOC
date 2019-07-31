@@ -1155,6 +1155,7 @@ namespace d360.web.Controllers.V2
 
             }
             return ResponseMessage(Request.CreateResponse<List<AssetTagSuccessApiModel>>(HttpStatusCode.OK, resultList));
+
         }
         #endregion
     }
