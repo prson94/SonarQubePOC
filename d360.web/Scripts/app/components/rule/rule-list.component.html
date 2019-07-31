@@ -4,7 +4,7 @@
         <div class="tile tile-detail" >    
             <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">                        
                 <div class="col s12">
-                    <header>{{modelGroup}} Rules                                
+                    <header>                               
                         <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="showAddRule()" hasFilterMode="true" [(filterMode)]="showSimpleFilter">
                         </d3s-tile-actions>                                                     
                     </header>

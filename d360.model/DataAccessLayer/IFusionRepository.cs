@@ -10,7 +10,6 @@ namespace d360.model.DataAccessLayer
     public interface IFusionRepository
     {
         Asset GetFusionByUID(Guid guid);
-        bool HasFusionRules(int fusionId);
         Task<ApiExecutionInfo> BulkDeleteFusionConfiguration(Guid assetUid, bool Cascade, ApiExecution execution);
     }
 }

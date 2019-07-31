@@ -22,6 +22,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     template: ` <div #hovertarget class="hover-container" (mouseenter)="in(treePanel,searchPanel,$event)" (mouseleave)="out(treePanel,searchPanel,$event)" >
                     <a id="breadlink" (click)="navigateToLink(breadcrumb.link)" 
                             class="breadcrumb" 
+                            [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}"
                             [ngStyle]="{'max-width.px': setLastBreadcrumbWidth()}">
                             <span class="breadcrumb-text" [ngClass]="{'highlight' : breadcrumb.isType, 'breadcrumb-link' : hasLink(breadcrumb.link)}">{{breadcrumb.text}} </span>
                             <span class="parent"  [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}" *ngIf="breadcrumb.parentTypeName"   
@@ -112,6 +113,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
         let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
         if (this.isChangableItem() && !this.isTreeItem()) {
             this.showSearch = true;            
+            let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
             if (this.hasClass(parent, 'collapsed-crumb')) {
                 searchPanel.show(event, this.hoverTarget.nativeElement.parentNode);
                 

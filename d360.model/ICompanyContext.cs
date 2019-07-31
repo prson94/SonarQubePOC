@@ -74,10 +74,7 @@ namespace d360.model
         DbSet<FusionExecution> FusionExecutions { get; set; }
         DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
         DbSet<FusionQueryAttributeType> FusionQueryAttributeTypes { get; set; }
-        DbSet<FusionRuleFilter> FusionRuleFilters { get; set; }
-        DbSet<FusionRuleItem> FusionRuleItem { get; set; }
-        DbSet<FusionRule> FusionRules { get; set; }
-        DbSet<FusionSchedule> FusionSchedules { get; set; }
+       DbSet<FusionSchedule> FusionSchedules { get; set; }
         DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
         DbSet<Fusion> FusionTypeConfigurations { get; set; }
         DbSet<FusionType> FusionTypes { get; set; }

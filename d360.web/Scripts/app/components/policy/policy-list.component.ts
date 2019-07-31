@@ -26,7 +26,7 @@ import {SiteUrlHelpers} from '../../static/site-url-helpers';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail"
                      *ngIf="!isLoading">
-                    <header>{{ policyClassName }} Policies
+                    <header>
                         <d3s-tile-actions [hasAdd]="false"
                                           hasFilterMode="true"
                                           [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
@@ -115,16 +115,6 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
         super();
 
         this.rightSidebarService = rightSidebarService;
-        this.setCommonRightSideBar(true);
-
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (
-                () => {
-                    return `/sidebar/audit/PolicyType/${this.selected.ID}`;
-                }
-            );
-        }
     }
 
     ngOnInit() {
@@ -134,6 +124,19 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.headerBreadcrumbService.clearCurrentObjectInfo();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
+                    this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
+                        this.rightSidebarService.showHeader(true);
+                        this.setCommonRightSideBar(true);
+                        if (this.auditSidebar) {
+                            this.auditSidebar.hasDynamicUrl = true;
+                            this.auditSidebar.dynamicUrlCallback = (
+                                () => {
+                                    return `/sidebar/audit/PolicyType/${this.selected.ID}`;
+                                }
+                            );
+                        }
+                        this.rightSidebarService.setCurrentArea(res, icon, 'Policies');
+                    });
                 });
 
                 this.loadPolicies();

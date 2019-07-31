@@ -583,6 +583,11 @@
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <Content Include="Scripts\app\31.chunk.js" />
+    <Content Include="Scripts\app\32.chunk.js" />
+    <Content Include="Scripts\app\56.chunk.js" />
+    <Content Include="Scripts\app\57.chunk.js" />
+    <Content Include="Scripts\app\58.chunk.js" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
@@ -637,8 +642,8 @@
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
     <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\dynamic-lookup-grid.component.html" />
-    <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.html" />
+    <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
@@ -680,8 +685,6 @@
     <Content Include="Scripts\app\3.chunk.js" />
     <Content Include="Scripts\app\30.chunk.js" />
     <Content Include="Scripts\app\33.chunk.js" />
-    <Content Include="Scripts\app\34.chunk.js" />
-    <Content Include="Scripts\app\35.chunk.js" />
     <Content Include="Scripts\app\36.chunk.js" />
     <Content Include="Scripts\app\37.chunk.js" />
     <Content Include="Scripts\app\38.chunk.js" />
@@ -704,7 +707,6 @@
     <Content Include="Scripts\app\53.chunk.js" />
     <Content Include="Scripts\app\54.chunk.js" />
     <Content Include="Scripts\app\55.chunk.js" />
-    <Content Include="Scripts\app\56.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />
     <Content Include="Scripts\app\7.chunk.js" />
     <Content Include="Scripts\app\8.chunk.js" />
@@ -724,13 +726,6 @@
     <Content Include="Scripts\app\components\admin\settings\admin-site-menu.component.html" />
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow-editor.component.html" />
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-findviarelation.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-lineage.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rules.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-relate.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-promote.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-find.component.html" />
-    <Content Include="Scripts\app\components\fusion\rules\fusion-rule-step-update.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-business-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-editor.component.html" />
@@ -1160,6 +1155,13 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-board.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-governance.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-issues.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.ts" />
@@ -1233,7 +1235,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-profile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lookup-tooltip.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-multiselect-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-item.component.ts" />
@@ -1262,7 +1263,6 @@
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-custom-export.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-top-level-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-implementation-summary.component.ts" />
@@ -1274,6 +1274,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dynamic-percentage\dynamic-percentage-component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dynamic-percentage\dynamic-percentage-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\treetable-toggler.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-sorticon.component.ts" />
@@ -1281,6 +1283,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shoppingcart\shopping-cart.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.routes.ts" />
@@ -1300,16 +1305,6 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-attribute-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-query-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-filter-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-filter-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-history.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-mapping-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-mapping-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-update.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\mapping\mapping.routes.ts" />
@@ -1342,7 +1337,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-editor-preview.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-business-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationship-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.ts" />
@@ -1374,12 +1368,6 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community-responsibility-count.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-base.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-findviarelation.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-lineage.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-relate.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-promote.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step-find.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\help\help.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\help\help.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\help\help.routes.ts" />
@@ -1426,6 +1414,12 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\survey\survey.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\survey\survey.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\survey\survey.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\impact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\lineage.component.ts" />
@@ -1522,8 +1516,6 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-results.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-manual-load.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-process-errors.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rule-step.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\rules\fusion-rules.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\group\group-responsibility.component.ts" />
@@ -1538,7 +1530,6 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-execution-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-promotion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-statistics.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-technical-mappings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-structure-tree.component.ts" />
@@ -1592,7 +1583,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\loading.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\messages-bar.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-followers.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\raise-issue-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationship-technical-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\take-survey.component.ts" />
@@ -1605,9 +1595,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\dynamic-relationship-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-board.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-issues.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shared.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social-tag-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip.component.ts" />
@@ -1625,7 +1612,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\object-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-report-items.component.ts" />

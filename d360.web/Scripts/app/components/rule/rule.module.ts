@@ -13,7 +13,6 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 
 import { RuleRoutingModule } from './rule.routes';
@@ -46,6 +45,7 @@ import {
 } from 'primeng/primeng';
 
 import { TableModule } from 'primeng/table';
+import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -80,8 +80,8 @@ import { TableModule } from 'primeng/table';
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,        
         SharedDynamicGridEditorModule,
-        SharedObjectGovernanceModule,   
         SharedObjectDetailsModule,
+        SharedObjectGovernanceModule,
     ],
     declarations: [
         RuleComponent,

@@ -6,12 +6,14 @@ import { GovernRequestInterceptor } from "../../../http-interceptors/govern-requ
 
 import { RightSidebarItemComponent } from './right-sidebar-item.component';
 import { RightSidebarComponent } from './right-sidebar.component';
+import { DynamicPercentageModule } from '../small-widgets/dynamic-percentage/dynamic-percentage-module';
 
 
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
+        DynamicPercentageModule,
         HttpClientModule,         
     ],
     declarations: [

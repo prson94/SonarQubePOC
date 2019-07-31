@@ -101,16 +101,16 @@ import { MessagesObservableService } from '../../../services/messages-observable
 
 export class AdminIssueTypesComponent extends AdminBaseComponent {
     issueTypes: WorkflowIssueType[] = [];
-    selected: WorkflowIssueType;
+    selected: WorkflowIssueType;    
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
     constructor(rightSidebarService: RightSidebarService, private workflowService: WorkflowService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = "Action Types";
-        this.adminHeading = "Action Types";
-
+        this.areaName = "Actions";
+        this.adminHeading = "Actions";
+        this.tabTitle = 'Action Types';
         this.setCommonItems();
         this.theDeleteCallback = this.deleteIssueType.bind(this);
         this.setCommonRightSideBar(true);

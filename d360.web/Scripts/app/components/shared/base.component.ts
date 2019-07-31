@@ -142,7 +142,6 @@ export class BaseComponent {
     ) {
         if (this.rightSidebarService) {
             this.clearSidebar();
-
             if (hasLineage && CompanySettings.ShowLineageSidebar != 'false') {
                 const isLineageShowUsageOnly = this.lineageShowUsageOnly ? '/1' : '';
                 const urlLineage = this.objectContextUrl() + isLineageShowUsageOnly;
@@ -151,17 +150,17 @@ export class BaseComponent {
                     'Lineage',
                     'lineage',
                     ['fa-random'],
-                    `/sidebar/visualization/lineage${urlLineage}`
+                    `/sidebar/visualization/lineage${urlLineage}`, null,15
                 );
                 this.rightSidebarService.showItem(this.lineageSidebar);
             }
 
             if (hasAudit || hasAudit === undefined) {
                 this.auditSidebar = new RightSidebarItem(
-                    'Audit',
-                    'audit',
+                    'Change Log',
+                    'Change Log',
                     ['fa-eye'],
-                    `/sidebar/audit${this.objectContextUrl()}`
+                    `/sidebar/audit${this.objectContextUrl()}`, null, 40
                 );
                 this.rightSidebarService.showItem(this.auditSidebar);
             }
@@ -171,7 +170,7 @@ export class BaseComponent {
                     'Ownership',
                     'ownership',
                     ['fa-user'],
-                    `/sidebar/ownership/${this.assetID}`
+                    `/sidebar/ownership/${this.assetID}`, null, 25
                 );
                 this.rightSidebarService.showItem(this.ownershipSidebar);
             }
@@ -182,7 +181,7 @@ export class BaseComponent {
                         'Dashboards',
                         'dashboards',
                         ['fa-tachometer'],
-                        `/sidebar/dashboard${this.objectContextUrl()}`
+                        `/dashboard${this.objectContextUrl()}`, null, 5
                     )
                 );
             }
@@ -192,7 +191,7 @@ export class BaseComponent {
                     'Impact',
                     'impact',
                     ['fa-exchange'],
-                    `/sidebar/visualization/impact${this.objectContextUrl()}`
+                    `/sidebar/visualization/impact${this.objectContextUrl()}`, null, 10
                 );
                 this.rightSidebarService.showItem(this.impactSidebar);
             }
@@ -202,7 +201,7 @@ export class BaseComponent {
                     'Relations',
                     'relationship',
                     ['fa-retweet'],
-                    `/sidebar/relationships${this.objectContextUrl()}`
+                    `/sidebar/relationships${this.objectContextUrl()}`, null, 20
                 );
                 this.rightSidebarService.showItem(this.relationsSidebar);
             }
@@ -213,7 +212,7 @@ export class BaseComponent {
                         'Followers',
                         'followers',
                         ['fa-bookmark-o'],
-                        `/sidebar/followers${this.objectContextUrl()}`
+                        `/sidebar/followers${this.objectContextUrl()}`, null, 35
                     )
                 );
             }
@@ -223,7 +222,7 @@ export class BaseComponent {
                     'Workflow',
                     'monitor',
                     ['fa-usb'],
-                    `/sidebar/workflowmonitor${this.objectContextUrl()}`
+                    `/sidebar/workflowmonitor${this.objectContextUrl()}`, null, 30
                 );
                 this.rightSidebarService.showItem(this.monitorSidebar);
             }
@@ -293,6 +292,7 @@ export class BaseComponent {
         if (this.rightSidebarService) {
             if (!this.isVisitingSidebar) {
                 this.rightSidebarService.clearItems();
+                this.rightSidebarService.clearButtons();
             }
 
             if (this.sidebarSubscription && (unsubscribe || unsubscribe == undefined)) {

@@ -1,4 +1,4 @@
-﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange} from '@angular/core';
+﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange, AfterViewInit} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, AverageScore } from '../../../models/score.model';
@@ -55,7 +55,7 @@ const Highcharts = require('highcharts/highstock.src');
     providers: [ScoreService],
 })
 
-export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges{
+export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewInit{
     @Input() uid: string;
     @Input() objectName: string;
 
@@ -70,6 +70,11 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         super();
     }
 
+    ngAfterViewInit(): void {
+        this.loadPoints();
+        this.loadSeriesData();
+    }
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         let requiresLoad: boolean = false;
         for (let p in changes) {
@@ -77,7 +82,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 requiresLoad = changes['uid'].currentValue != changes['uid'].previousValue;
             }
         }
-
         if (requiresLoad) {
             this.loadPoints();
             this.loadSeriesData();
@@ -85,7 +89,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
 
     private loadSeriesData() {
-        this.scoreService.getAverageScore(this.uid)
+        if (this.uid) {
+            this.scoreService.getAverageScore(this.uid)
             .subscribe(res => {
                 this.averageScore = (res == null || res.AverageScore == null) ? 0 : res.AverageScore;
                 this.scoreService.getScoreHistory(this.uid)
@@ -161,13 +166,14 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         };
                     });
             }) 
+        }
     }
 
     private loadPoints() {
         this.isLoading = true;
-        this.scoreService.getPointBreakdown(this.uid, this.scoreDate)
+        if (this.uid) {
+            this.scoreService.getPointBreakdown(this.uid, this.scoreDate)
             .subscribe(res => {
-
                 this.pointBreakdown = res;
                 this.pointBreakdownTree = [];
 
@@ -212,5 +218,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 //console.log(this.pointBreakdownTree);
                 this.isLoading = false;
             });
+        }
     }
 }
