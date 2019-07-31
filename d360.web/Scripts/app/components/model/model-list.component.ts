@@ -19,7 +19,7 @@ import * as _ from 'lodash';
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="tile tile-detail"
                      *ngIf="!isLoading">
-                    <header>{{modelGroup}} Models
+                    <header>
                         <d3s-tile-actions [hasAdd]="false"
                                           [hasFilterMode]="true"
                                           [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
@@ -154,10 +154,14 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
                     this.selected = this.models[0];
                 }
                     this.headerBreadcrumbService.getFolderTitle('#Models').then((res) => {
-                    this.headerBreadcrumbService.clearCurrentObjectInfo();
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, this.modelGroup ? `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}` : undefined));
-                });
+                        this.headerBreadcrumbService.clearCurrentObjectInfo();
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, this.modelGroup ? `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}` : undefined));
+                        this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
+                            this.rightSidebarService.setCurrentArea(res, icon, 'Models');
+                        });
+                        this.rightSidebarService.showHeader(true);
+                    });
 
                 if (this.modelGroup) {
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.modelGroup));

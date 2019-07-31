@@ -94,7 +94,6 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                     this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res));
-
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.ruleType.Name, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.ruleTypeId}`,
                             undefined,
                             'RuleType',
@@ -102,13 +101,16 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                             undefined,
                             undefined,
                             true));
+
+                        this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
+                            this.rightSidebarService.setCurrentArea(this.currentAreaName ? this.currentAreaName : res, icon, 'Rules');
+                            this.rightSidebarService.setCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true);
+                            this.setCommonRightSideBar(false, false, this.ruleType.HasDashboards);
+                        });
+                        this.rightSidebarService.showHeader(true);
                     });
                     this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
-
-                    this.setCommonRightSideBar(false, false, this.ruleType.HasDashboards);
-
                     this.loadRules();
-
                     this.setBrowserTitle(this.titleService, this.ruleType.Name);
                 });
         });

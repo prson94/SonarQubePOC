@@ -1,7 +1,7 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div class="tile tile-detail"
     *ngIf="!isLoading">
-    <header *ngIf="!showDelete && !showEditor">{{model?.Name}}
+    <header *ngIf="!showDelete && !showEditor">
         &nbsp; <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()"
             (addClick)="showAdd(0)"></d3s-tile-actions>
     </header>

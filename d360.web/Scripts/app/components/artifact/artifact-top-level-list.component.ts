@@ -32,14 +32,11 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
         private titleService: Title,
         rightSidebarService: RightSidebarService
     ) {
-        super(headerBreadcrumbService);
-
-        this.rightSidebarService = rightSidebarService;
+        super(headerBreadcrumbService, rightSidebarService);
     }
 
     ngOnInit() {
         this.setBrowserTitle(this.titleService, 'Glossary');
-        this.clearSidebar();
         this.load();
     }
 
@@ -61,6 +58,11 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
                 this.headerBreadcrumbService.clearBreadcrumbs();
                 this.headerBreadcrumbService.clearCurrentObjectInfo();
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.folderTitle ? this.folderTitle : this.area));
+                this.headerBreadcrumbService.getFolderIcon(this.folderTitle ? this.folderTitle : this.area).then(res => {
+                    this.rightSidebarService.clearCurrentObject();
+                    this.rightSidebarService.clearItems();
+                    this.rightSidebarService.setCurrentArea(this.folderTitle ? this.folderTitle : this.area, res, null);
+                });
 
                 this.isLoading = false;
             }

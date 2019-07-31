@@ -985,7 +985,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Creates association between an existing Asset and an existing tag, returns the UID of asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse)),
-             ApiExplorerSettings(IgnoreApi = false)
+             ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult PostAssetTag(List<AssetTagApiModel> assetTags)
         {
@@ -1078,7 +1078,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Delete association between an existing Asset and an exiting Tag,returns the UID of deleted asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse)),
-             ApiExplorerSettings(IgnoreApi = false)
+             ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult DeleteAssetTag(List<AssetTagApiModel> assetTags)
         {

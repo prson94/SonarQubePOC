@@ -30,6 +30,7 @@ body {
     min-height: 100vh;
     font-family: 'Nunito Sans', sans-serif;
     font-size: 14px;
+    overflow: hidden;
 }
 
 select,
@@ -693,12 +694,10 @@ d3s-navbar-item {
 
 .maincontent {
     margin-left: 40px;
-    margin-right: 40px;
 }
 
 .maincontent-open {
     margin-left: 200px;
-    margin-right: 40px;
 }
 
 main {
@@ -1897,6 +1896,7 @@ div.home-image-title-text {
 
 .tile {
     header {
+        min-height:40px;
         .row {
             font-size: 14px;
         }
@@ -2448,6 +2448,498 @@ modal-overlay .modal-dialog .content {
     overflow-y: auto;
 }
 
+
+
+.title-bar {
+    position: relative;
+    background: white;
+    margin-left: 40px;
+    transition: all 200ms ease;
+
+    h1 {
+        font-size: 18px;
+        font-weight: 300;
+        margin-right: 15px;
+        flex-shrink: 1;
+        margin-left: 10px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    .grow {
+        flex-grow: 1;
+    }
+
+    .title {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 15px;
+    }
+
+    .icon {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        line-height: 32px;
+        font-size: 15px;
+        background: #4e5466;
+        color: white;
+        border-radius: 3px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .header-tabs {
+        display: flex;
+        flex-direction: row;
+    }
+
+    &.menu-open {
+        margin-left: 200px;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+// Panel Button
+///////////////////////////////////////////////////////////////////////////////////
+
+button.button {
+    display: inline-flex;
+    position: relative;
+    box-sizing: border-box;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    cursor: pointer;
+    height: 32px;
+    font-family: 'Nunito Sans';
+    font-size: 14px;
+    text-align: center;
+    white-space: nowrap;
+    background: #f0f0f0;
+    color: #202020;
+    border: none;
+    border-radius: 3px;
+
+    &:not(.icon):not(.bar) {
+        padding: 0 15px;
+        margin-left: 5px;
+
+        i.fa {
+            padding-right: 7px;
+        }
+    }
+
+    &.icon {
+        width: 30px;
+    }
+
+
+    &:not(:disabled):hover, &.hover {
+        background: mix(black, #f0f0f0, 7%)
+    }
+
+    &:not(:disabled):active, &.active {
+        background: mix(black, #f0f0f0, 14%)
+    }
+
+    &.primary {
+        background: @igx-blue;
+        color: #ffffff;
+
+        &:not(:disabled):hover, &.hover {
+            background: mix(black, @igx-blue, 7%)
+        }
+
+        &:not(:disabled):active, &.active {
+            background: mix(black, @igx-blue, 14%)
+        }
+    }
+
+    &.accent {
+        background: @igx-coral;
+        color: #ffffff;
+
+        &:not(:disabled):hover, &.hover {
+            background: mix(black, @igx-coral, 7%)
+        }
+
+        &:not(:disabled):active, &.active {
+            background: mix(black, @igx-coral, 14%)
+        }
+    }
+
+    &.negative {
+        background: @igx-red;
+        color: #ffffff;
+
+        &:not(:disabled):hover, &.hover {
+            background: mix(black, @igx-red, 7%)
+        }
+
+        &:not(:disabled):active, &.active {
+            background: mix(black, @igx-red, 14%)
+        }
+    }
+
+    .loader {
+        position: absolute;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+    }
+
+    &.loading {
+        opacity: 1;
+
+        .content {
+            visibility: hidden;
+        }
+
+        .loader {
+            display: inline-flex;
+        }
+    }
+
+    &.bar {
+        width: 40px;
+        height: 40px;
+        background: none;
+        color: #ffffff;
+        font-size: 16px;
+        border-radius: 0;
+
+        &:not(:disabled):hover, &.hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        &:not(:disabled):active, &.active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        &.light {
+            color: #202020;
+
+            &:not(:disabled):hover, &.hover {
+                background: rgba(0, 0, 0, 0.07);
+            }
+
+            &:not(:disabled):active, &.active {
+                background: rgba(0, 0, 0, 0.14);
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+// Tab View
+///////////////////////////////////////////////////////////////////////////////////
+
+.tab-view {
+    display: inline-flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+
+    .content {
+        display: inline-block;
+        position: relative;
+        width: 100%;
+        height: 150px;
+        background: #f0f0f0;
+
+        .view {
+            position: absolute;
+            display: none;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            color: #202020;
+
+            &.selected {
+                display: inline-flex;
+            }
+        }
+    }
+}
+
+.tab-bar-outer {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    height: 34px;
+ 
+    .tab-scroller {
+        position: absolute;
+        display: inline-flex;
+        box-sizing: border-box;
+        flex-direction: row;
+        box-sizing: border-box;
+        background: white;
+        height: 40px;
+
+        &.left {
+            left: 0;
+        }
+
+        &.right {
+            right: 0;
+        }
+    }
+}
+
+.tab-bar {
+    display: inline-flex;
+    box-sizing: border-box;
+    flex-direction: row;
+    box-sizing: border-box;
+    background: white;
+    width: 100%;
+    height: auto;
+
+
+    &.can-overflow {
+        position: absolute;
+        overflow-y: hidden;
+        overflow-x: auto;
+        right: 0px;
+        left: 0px;
+        width: auto;
+        
+        scrollbar-width: none !important; /* Firefox */
+        -ms-overflow-style: none !important; /* IE 10+ */
+        /* end hiding scrollbar*/
+    }
+}
+.tab-bar::-webkit-scrollbar { /* WebKit hide scrollbar */
+    width: 0px !important;
+    height: 0px !important;
+}
+button.tab, button.tab-scroller {
+    box-sizing: border-box;
+    padding: 0 15px;
+    height: 40px;
+    cursor: pointer;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    color: @igx-blue;
+    border-bottom: 3px solid transparent;
+
+    &:focus, &.focused {
+        box-shadow: none;
+        outline: 1px solid fade(@igx-blue, 20%);
+        outline-offset: -1px;
+    }
+
+    &:disabled, &.disabled {
+        cursor: default;
+    }
+
+    &.selected {
+        border-bottom: 3px solid @igx-blue;
+    }
+
+    &:not(:disabled) {
+        &:hover {
+            background: rgba(20,20,20, 0.05);
+        }
+
+        &:active {
+            background: rgba(20,20,20, 0.10);
+        }
+    }
+
+    .badge {
+        position: relative;
+        top: -1px;
+        margin-left: 4px;
+    }
+}
+
+button.tab-scroller {
+    justify-content: center;
+    padding: 0;
+    width: 40px;
+}
+
+.tab-bar.below {
+    button.tab {
+        border-bottom: none;
+        border-top: 3px solid transparent;
+
+        &.selected {
+            border-bottom: none;
+            border-top: 3px solid @igx-blue;
+        }
+    }
+}
+
+.d3s-icon {
+    display: inline-flex;
+    position: relative;
+    box-sizing: border-box;
+    flex-direction: row;
+    align-items: center;
+    user-select: none;
+    height: 32px;
+    padding: 0 5px;
+    font-family: 'Nunito Sans';
+    font-size: 12px;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1;
+    background: #6c7884;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    margin-left: 10px;
+
+    img {
+        margin: 5px;
+    }
+
+    &.large-icon {
+        font-size: 14px;
+        height: 32px;
+        padding: 0 10px;
+        line-height: 1.1;
+    }
+
+    &.bad {
+        background: @igx-red-light;
+    }
+
+    &.ok {
+        background: @igx-orange-light;
+    }
+
+    &.good {
+        background: @igx-green-light;
+    }
+
+    &.primary {
+        background: @igx-blue; 
+    }
+
+    .text {
+        padding-left: 7px;
+    }
+
+    &.small-icon {
+        margin-left: 4px;
+        position: relative;
+        top: -1px;
+        height: 16px;
+    }
+}
+
+.d3s-dynamic-percentage {
+	position: relative;
+	text-align: center;
+	width: 20px;
+	height: 20px;
+	border-radius: 100%;
+	background-color: white;
+	background-image: linear-gradient(91deg, transparent 50%, #ccc 50%), linear-gradient(90deg, #ccc 50%, transparent 50%);
+}
+.d3s-dynamic-percentage .d3s-dynamic-percentageInner {
+    position: relative;
+    top: 4px;
+    left: 4px;
+    text-align: center;
+    width: 12px;
+    height: 12px;
+    border-radius: 100%;
+    background-color: @igx-grey-light;
+
+    &.bad {
+        background: @igx-red-light;
+    }
+
+    &.ok {
+        background: @igx-orange-light;
+    }
+
+    &.good {
+        background: @igx-green-light;
+    }
+}
+.d3s-dynamic-percentage .d3s-dynamic-percentageInner div {
+    position: relative;
+    top: 22px;
+    color: @igx-grey-light;
+}
+.d3s-dynamic-percentage .d3s-dynamic-percentage-text {
+    font-size: 30px;
+    line-height: 1em;
+}
+
+.d3s-content-pane {
+    overflow: auto;
+}
+
+.grid-header {
+    padding-top: 35px;
+
+    .description-toggle {
+        padding-right: 5px;
+        cursor: pointer;
+        color:@igx-blue-light;
+        font-size: 12px;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+// Spinner
+///////////////////////////////////////////////////////////////////////////////////
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner {
+    display: inline-block;
+    box-sizing: border-box;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border-color: rgba(0, 0, 0, 0.67) rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.2);
+    border-style: solid;
+    border-width: 2px;
+    animation-name: spin;
+    animation-duration: 1000ms;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+
+    &.light {
+        border-color: rgba(255, 255, 255, 1) rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.5) rgba(255, 255, 255, 0.5);
+    }
+
+    &.large {
+        width: 36px;
+        height: 36px;
+        border-width: 4px;
+    }
+}
 .modal-overlay {
     .modal-dyn-editor, .modal-delete-form, .modal-consolidate, .medium-width {
         width: 100%;

@@ -25,19 +25,6 @@ declare var CompanySettings;
     template: ` 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
-                    <d3s-messages-bar [messages]="messages" (messageClick)="showSurvey=true"></d3s-messages-bar>
-                    <div class="col s12" *ngIf="showSurvey && surveyType">
-                                <div class="tile tile-detail">
-                                    <d3s-take-survey [surveyType]="surveyType" [objectID]="selected?.ID" [objectType]="'Taxonomy'" (surveyCancel)="showSurvey=false" (surveyComplete)="completeSurvey()"></d3s-take-survey>
-                                </div>
-                    </div>
-                    <div class="col s12" *ngIf="showSocialScoreBar">
-                        <div class="tile tile-detail" style="padding-left:0;padding-right:0;">
-                            <d3s-object-governance [uid]="rule?.Uid" [objectType]="'Rule'" [objectID]="rule?.ID" [objectName]="rule?.Name" [status]="rule?.Status"></d3s-object-governance>
-                        </div>
-                    </div>
-                </div>
-                <div class="row" *ngIf="!isLoading">
                     <div class="col s12">
                         <div class="tile tile-detail">
                             <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="ruleType?.AllowAttributes" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
@@ -107,7 +94,6 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     ngOnDestroy() {
         this.routeParamsSubscription.unsubscribe();
         this.currentAreaNameSubscription.unsubscribe();
-        this.clearSidebar();
     }
 
     private buildbreadcrumb() {
@@ -126,6 +112,16 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 true,
                 'Rule',
                 this.ruleType.ID));
+
+            this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
+                this.rightSidebarService.setCurrentArea(this.rule.Name, icon, 'Definition');
+                this.rightSidebarService.setCurrentObject('RuleType', this.ruleType.ID, 'Rule', this.rule.ID, false);
+                this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Rule/${this.rule.UID}`, null, 6));
+                this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Rule/${this.rule.ID}/${this.rule.Name.replace("/", "%2F"), null, 31}`));
+                this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Rule/${this.rule.ID}/${this.rule.Name.replace("/", "%2F")}`, null, 26));
+            });
+            this.rightSidebarService.showHeader(true);
+
         });
     }
     load(ruleId: number) {

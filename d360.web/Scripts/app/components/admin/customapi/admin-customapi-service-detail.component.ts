@@ -37,8 +37,6 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
         titleService: Title
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = "Custom API";
-        this.setCommonItems();
     }
 
     ngOnInit(): void {
@@ -53,17 +51,14 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
                 this.customAPIService.getService(this.serviceId).subscribe(
                     res => {
                         this.isLoading = false;
-
                         this.service = res;
-
-                        this.headerBreadcrumbService.clearBreadcrumbs();
-
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Administration'));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Custom API', '/admin/customapi'));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.service.Name}`));
-
-                        this.setCommonItems();
+                        this.adminHeading = 'Integration';
+                        this.areaName ='Custom API';
+                        this.areaLink = '/admin/customapi';
+                        this.tabTitle = 'Service';
                         this.setCommonRightSideBar(false);
+                        this.setCommonItems();
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.service.Name}`));
 
                         this.rightSidebarService.showItem(
                             new RightSidebarItem(

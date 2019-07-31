@@ -15,8 +15,7 @@ import {SurveyType} from '../../models/survey.model';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
 import {Permission} from '../../models/responsibility-type.model';
-import {Observable} from "rxjs";
-import { forEach } from '@angular/router/src/utils/collection';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 declare var CompanySettings;
 
@@ -28,32 +27,6 @@ declare var CompanySettings;
         <div *ngIf="!isLoading"
              class="row">
             <div class="col s12">
-                <d3s-messages-bar [messages]="messages"
-                                  (messageClick)="showSurvey=true"></d3s-messages-bar>
-                <div class="row"
-                     *ngIf="showSurvey && surveyType">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-take-survey [surveyType]="surveyType"
-                                             [objectID]="selected?.ID"
-                                             [objectType]="'Taxonomy'"
-                                             (surveyCancel)="showSurvey=false"
-                                             (surveyComplete)="completeSurvey()"></d3s-take-survey>
-                        </div>
-                    </div>
-                </div>
-                <div class="row"
-                     *ngIf="showSocialScoreBar">
-                    <div class="col s12">
-                        <div class="tile tile-detail"
-                             style="padding-left:0;padding-right:0;">
-                            <d3s-object-governance [uid]="selected?.Uid"
-                                                   [objectType]="'Taxonomy'"
-                                                   [objectID]="selected?.ID"
-                                                   [objectName]="selected?.DisplayValue"></d3s-object-governance>
-                        </div>
-                    </div>
-                </div>
                 <div class="row">
                     <div class="col s12">
                         <div class="tile tile-detail">
@@ -98,7 +71,6 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
-        this.lineageShowUsageOnly = true;
     }
 
     ngOnInit() {
@@ -152,7 +124,18 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
     private buildBreadcrumb() {
         this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
-            this.crumbs = [];
+            this.crumbs = []; 
+            this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
+                this.lineageShowUsageOnly = true;   
+                this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
+                this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
+                this.rightSidebarService.setCurrentObject('TaxonomyType', this.model.ID, 'Taxonomy', this.selected.ID, false);
+                this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Taxonomy/${this.selected.Uid}`, null, 6));
+                this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Taxonomy/${this.selected.ID}/${this.selected.DisplayValue.replace("/", "%2F")}`, null, 31));
+                this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Taxonomy/${this.model.ID}/${this.model.Name.replace("/", "%2F")}`, null, 26));
+            });
+            this.rightSidebarService.showHeader(true);
+            
             this.headerBreadcrumbService.clearBreadcrumbs();
             let areaBreadcrumb = new Breadcrumb(
                 this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`
@@ -209,10 +192,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
         this.assetID = this.selected.AssetID;
 
-        this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomy, this.selected.ID).then(p => {
-            this.clearSidebar();
-            this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
-        });
+        this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomy, this.selected.ID);
         this.buildBreadcrumb();
         return Promise.resolve(null);
     }
