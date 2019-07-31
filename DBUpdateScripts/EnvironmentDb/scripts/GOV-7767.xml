@@ -15,6 +15,8 @@
 delete	I
 from	[Intersect] I
 		inner join Asset C on I.Object = C.Object and I.ObjectID = C.ObjectID
+		inner join IntersectType T on T.ID = I.IntersectTypeID
+		inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] in (3,4)
 where	C.ID in (
 			select assetid from utility.ArtifactAssetParentIntermediate group by assetid  having count(assetid) > 1
 		)
@@ -22,6 +24,8 @@ where	C.ID in (
 			select	max(I.ID) as IntersectID
 			from	Asset C
 					inner join [Intersect] I on I.Object = C.Object and I.ObjectID = C.ObjectID
+					inner join IntersectType T on T.ID = I.IntersectTypeID
+					inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] in (3,4)
 			where	C.ID in (
 							select assetid from utility.ArtifactAssetParentIntermediate group by assetid  having count(assetid) > 1
 							)
