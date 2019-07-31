@@ -246,8 +246,8 @@
   <include file="scripts/GOV-7591.xml"/> <!-- GetDynamicAssets -->
   <include file="scripts/GOV-7647.xml"/>
   
-  <!-- Sprint 6.2 Read only user group Patch-->
-  <include file="scripts/GOV-7789.xml"/>
+  <!-- Sprint 6.2 Read only user group Patch removed till liquibase is changed to let this script run by Andy-->
+  <!--<include file="scripts/GOV-7789.xml"/>-->
   
   <!-- Sprint 7 2019 Start-->
   <include file="scripts/GOV-7732.xml"/>
