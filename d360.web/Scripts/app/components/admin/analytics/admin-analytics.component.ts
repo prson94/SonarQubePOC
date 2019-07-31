@@ -42,6 +42,7 @@ export class AdminAnalyticsComponent extends AdminBaseComponent implements OnIni
         titleService: Title) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Scoring";
+        this.tabTitle = 'Scoring';
         this.setCommonItems();
         this.setCommonRightSideBar(false);
         //this.rightSidebarService.showItem(new RightSidebarItem('Measures', 'measures',['fa-balance-scale'], '/admin/analytics/measures' ))

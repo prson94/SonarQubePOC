@@ -38,8 +38,6 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
         titleService: Title
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = "Custom API";
-        this.setCommonItems();
     }
 
     ngOnInit(): void {
@@ -54,10 +52,10 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
                     this.service = res;
 
                     this.clearSidebar();
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Administration'));
-                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Custom API', '/admin/customapi'));
+                    this.adminHeading = 'Integration';
+                    this.areaName = 'Custom API';
+                    this.areaLink = '/admin/customapi';
+                    this.setCommonItems();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.service.Name}`, `/admin/customapi/${this.service.ID}/details`));
 
                     this.customAPIService.getEndpoint(this.endpointId).subscribe(
@@ -65,7 +63,8 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
                             this.endpoint = res;
 
                             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.endpoint.Name}`));
-
+                            
+                            this.rightSidebarService.setCurrentArea(this.endpoint.Name, 'fa-cog', this.endpoint.Name);
                             this.isLoading = false;
                         });
                 });

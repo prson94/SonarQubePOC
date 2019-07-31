@@ -59,6 +59,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     @Input() showClearButton: boolean = false;
     @Input() expanded: boolean;
     @Input() imageUrl: string;
+    @Input() countData: any[];
 
     @Output() clearClick = new EventEmitter();
     @Output() clearSearchesEvent = new EventEmitter();
@@ -68,7 +69,6 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     private maxMenuHeight: number; 
     public searchText: string = "";
 
-    private subReloadCounts: any;
     private currentButtonIndex: number = -1;
 
     constructor(private menuService: SiteMenuService,
@@ -180,10 +180,6 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     }
 
     ngAfterViewInit(): void {
-
-        this.subReloadCounts = this.headerActionsService.onSiteCountsChange.subscribe(() => {
-            this.loadCounts(this.menu);
-        });
 
         this.viewReady = true;
 

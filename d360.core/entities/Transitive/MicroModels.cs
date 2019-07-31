@@ -361,8 +361,6 @@ namespace d360.core.entities
         [DataMember]
         public int FusionErrors { get; set; }
 
-        [DataMember]
-        public int PromotionJobsExecuted { get; set; }
     }
 
     public class FusionAddItemModel

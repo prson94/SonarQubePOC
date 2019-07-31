@@ -40,6 +40,8 @@ export class HeaderBreadcrumbService extends BaseObservableService{
 
     currentObject: any;
 
+
+    SiteNavItemsCache: SiteNav[];
     // Service message commands
     
     clearCurrentObjectInfo() {
@@ -81,17 +83,65 @@ export class HeaderBreadcrumbService extends BaseObservableService{
     getFolderTitle(menuID: string) {
         let folderName = menuID;
         let promise = new Promise<string>((resolve, reject) => {
-
-            this.sitenavservice.getSiteNavItems().subscribe(res => {
-                res.forEach(s => {
+            if (this.SiteNavItemsCache && this.SiteNavItemsCache.length > 0) {
+                this.SiteNavItemsCache.forEach(s => {
                     if (s.Name.indexOf(menuID) !== -1) {
                         folderName = s.Title;
                     }
                 });
-            }).add(() => {
+
                 if (folderName != menuID) resolve(folderName);
                 else reject(menuID.substr(1, menuID.length));
-            });
+
+            } else {
+
+                this.sitenavservice.getSiteNavItems().subscribe(res => {
+
+                    res.forEach(s => {
+                        if (s.Name.indexOf(menuID) !== -1) {
+                            folderName = s.Title;
+                        }
+                    });
+                }).add(() => {
+                    if (folderName != menuID) resolve(folderName);
+                    else reject(menuID.substr(1, menuID.length));
+                });
+            }
+        });
+        return promise;
+    }
+
+    getFolderIcon(menuID: string) {
+        let icon = "fa-folder";
+        let promise = new Promise<string>((resolve, reject) => {
+            if (this.SiteNavItemsCache && this.SiteNavItemsCache.length > 0) {
+                this.SiteNavItemsCache.forEach(s => {
+                    if (s.Title.indexOf(menuID) !== -1) {
+                        icon = s.Icon;
+                        if (icon == null && s.FullURL)
+                            icon = "URL-" + s.FullURL;
+                        else if(icon == null)
+                            icon = "fa-folder";
+                    }
+                });
+                if (icon) resolve(icon);
+
+            } else {
+                this.sitenavservice.getSiteNavItems().subscribe(res => {
+
+                    res.forEach(s => {
+                        if (s.Title.indexOf(menuID) !== -1) {
+                            icon = s.Icon;
+                            if (icon == null && s.FullURL)
+                                icon = "URL-" + s.FullURL;
+                            else if(icon == null)
+                                icon = "fa-folder";
+                        }
+                    });
+                }).add(() => {
+                    if (icon) resolve(icon);
+                });
+            }
         });
         return promise;
     }

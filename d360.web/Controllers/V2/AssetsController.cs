@@ -985,7 +985,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Creates association between an existing Asset and an existing tag, returns the UID of asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse)),
-             ApiExplorerSettings(IgnoreApi = false)
+             ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult PostAssetTag(List<AssetTagApiModel> assetTags)
         {
@@ -1078,7 +1078,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Delete association between an existing Asset and an exiting Tag,returns the UID of deleted asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse)),
-             ApiExplorerSettings(IgnoreApi = false)
+             ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult DeleteAssetTag(List<AssetTagApiModel> assetTags)
         {
@@ -1126,7 +1126,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"A regular user can only remove a tag {assetTagApi.TagUID} association to an asset {assetTagApi.AssetUID} they initially created the association for",
+                        Message = $"A regular user can only remove a tag {assetTagApi.TagUID} association to an asset {assetTagApi.AssetUID} they initially created the association for / they have edit rights to asset",
                         Success = false
                     };
                     resultList.Add(result);
@@ -1155,6 +1155,7 @@ namespace d360.web.Controllers.V2
 
             }
             return ResponseMessage(Request.CreateResponse<List<AssetTagSuccessApiModel>>(HttpStatusCode.OK, resultList));
+
         }
         #endregion
     }

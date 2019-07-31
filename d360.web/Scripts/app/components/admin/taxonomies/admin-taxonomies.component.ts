@@ -127,6 +127,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
         this.assetTypeService = assetTypeService;
 
         this.areaName = "Models";
+        this.tabTitle = "Model Types";
         this.setCommonItems();
         this.setCommonRightSideBar(true);
         if (this.auditSidebar) {

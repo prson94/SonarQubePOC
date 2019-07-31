@@ -1,36 +1,29 @@
 <d3s-loading [isLoading]="isEditing"></d3s-loading>
-<header *ngIf="!showEditor && !showDelete && !isEditing">
-  <i
-    *ngIf="artifactType && artifactType.Description"
-    class="fa"
-    [ngClass]="{
-      'fa-plus-square-o': !showArtifactDetails,
-      'fa-minus-square-o': showArtifactDetails
-    }"
-    aria-hidden="true"
-    style="padding-right:5px;cursor:pointer;font-size:12px"
-    title="Details"
-    (click)="toggleArtifactDetail()"
-    (mouseenter)="showArtifactDetails = true"
-  ></i>
-  {{ artifactType?.Name }} {{ titlePostfix }}
-  <d3s-tile-actions
-    [hasAdd]="showAddButton && hasModifyAssetPermissions()"
-    [hasExport]="!artifactType.HasCustomExportTemplates"
-    [hasCustomExport]="artifactType.HasCustomExportTemplates"
-    (addClick)="add()"
-    (customExportClick)="customExport()"
-    (exportClick)="export(false)"
-    [hasFilterMode]="true"
-    [filterMode]="showGridSimpleFilter"
-    (filterModeChange)="resetFilters($event)"
-  ></d3s-tile-actions>
-  <div
-    (click)="toggleArtifactDetail()"
-    *ngIf="showArtifactDetails && artifactType && artifactType.Description"
-    [innerHtml]="artifactType.Description | safeHtml"
-    style="text-transform:none;font-size:12px;font-weight:normal;margin-left:20px"
-  ></div>
+<header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing">
+    <d3s-tile-actions [hasAdd]="showAddButton && hasModifyAssetPermissions()"
+                      [hasExport]="!artifactType.HasCustomExportTemplates"
+                      [hasCustomExport]="artifactType.HasCustomExportTemplates"
+                      (addClick)="add()"
+                      (customExportClick)="customExport()"
+                      (exportClick)="export(false)"
+                      [hasFilterMode]="true"
+                      [filterMode]="showGridSimpleFilter"
+                      (filterModeChange)="resetFilters($event)"></d3s-tile-actions>
+    <div (click)="toggleArtifactDetail()"
+         *ngIf="showArtifactDetails && artifactType && artifactType.Description"
+         [innerHtml]="artifactType.Description | safeHtml"
+         style="text-transform:none;font-size:12px;font-weight:normal;margin-top:20px;"></div>
+    <span *ngIf="artifactType && artifactType.Description"
+          aria-hidden="true"
+          title="Details"
+          style="padding-right: 5px;
+                cursor: pointer;
+                color:#66A9D6;
+                font-weight:normal;
+                font-size: 14px;"
+          (click)="toggleArtifactDetail()">
+        {{showArtifactDetails ? 'Hide Description':'Show Description'}}
+    </span>
 </header>
 <div class="row" *ngIf="!showDelete && !showEditor && !isEditing">
   <div

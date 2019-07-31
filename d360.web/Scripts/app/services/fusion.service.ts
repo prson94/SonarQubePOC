@@ -19,26 +19,13 @@ import {
     FusionProcessError,
     FusionPromotionExecutionStats,
     FusionQueryAttributeType,
-    FusionRule,
-    FusionRuleEditorModel,
-    FusionRuleFilter,
-    FusionRuleFilterEditorModel,
-    FusionRuleItem,
-    FusionRuleItemEditorModel,
-    FusionRuleMapping,
-    FusionRuleMappingEditorModel,
-    FusionRuleMappingModel,
-    FusionRuleStep,
-    FusionRuleStepEditorModel,
     FusionSchedule,
     FusionSummaryStats,
     FusionType,
     FusionWorkerExecution,
     MapRuleItemDetail,
-    PromotionObject,
     RelationIntersectType,
-    RuleStepPromotionHistoryModel
-} from '../models/fusion.model';
+   } from '../models/fusion.model';
 import {GridColumn} from '../models/grid-definition.model';
 import {SortOrder} from '../models/enums.model';
 import {MessagesObservableService} from './messages-observable.service';
@@ -285,16 +272,6 @@ export class FusionService extends BaseObservableService {
             .get(url, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, 'fusion execution history.xlsx'));
     }
 
-    getFusionPromotionHistory(maxRows?: number): Observable<FusionPromotionExecutionStats[]> {
-        return this
-            .http
-            .get(`services/fusion/promotionhistory?$top=${maxRows ? maxRows : '100'}&$orderby=DateStarted%20desc`)
-            .pipe(
-                map(response => <FusionPromotionExecutionStats[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getFusionStatsSummary(daysToLookBack: number): Observable<FusionSummaryStats> {
         return this
             .http
@@ -426,68 +403,11 @@ export class FusionService extends BaseObservableService {
             );
     }
 
-    getFusionRules(fusionID: number): Observable<FusionRule[]> {
-        return this
-            .http
-            .get(`api/fusion/${fusionID}/rules`)
-            .pipe(
-                map(response => <FusionRule[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
+   
 
-    getFusionRuleSteps(ruleID: number): Observable<FusionRuleStep[]> {
-        return this
-            .http
-            .get(`api/fusion/rules/${ruleID}/steps`)
-            .pipe(
-                map(response => <FusionRuleStep[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
+   
 
-    getRuleSteps(
-        ruleID: number,
-        ruleStepID: number
-    ) {
-        return this
-            .http
-            .get(`api/fusion/rule/${ruleID}/steps/${ruleStepID}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getFusionRuleFilters(id: number): Observable<FusionRuleFilter[]> {
-        return this
-            .http
-            .get(`api/fusion/${id}/FusionRuleFilters`)
-            .pipe(
-                map(response => <FusionRuleFilter[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getFusionRuleItems(id: number): Observable<FusionRuleItem[]> {
-        return this
-            .http
-            .get(`api/fusion/${id}/FusionRuleItems`)
-            .pipe(
-                map(response => <FusionRuleItem[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getFusionRuleStepMappings(id: number): Observable<FusionRuleMappingModel> {
-        return this
-            .http
-            .get(`api/fusion/${id}/FusionRuleStepMappings`)
-            .pipe(
-                map(response => <FusionRuleMappingModel>response),
-                catchError(err => this.handleError(err))
-            );
-    }
+    
 
     getFusionExecutionErrors(executionId: number): Observable<FusionExecutionError[]> {
         return this
@@ -568,357 +488,41 @@ export class FusionService extends BaseObservableService {
         }
     }
 
-    getEditFusionRule(id: number): Observable<FusionRuleEditorModel> {
-        return this
-            .http
-            .get(`form/GetEditFusionRule?id=${id}`)
-            .pipe(
-                map(response => response),
-                map(r => {
-                    let m = new FusionRuleEditorModel();
+    
 
-                    m = r["model"];
-                    m.AttributeTypes = r["attributeTypes"];
 
-                    return m;
-                }),
-                catchError(err => this.handleError(err))
-            );
-    }
 
-    postEditFusionRule(rule: FusionRule): Observable<any> {
-        return this
-            .http
-            .post('form/PostEditFusionRule', rule)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
 
-    deleteFusionRuleById(id: number): Observable<any> {
-        return this
-            .http
-            .delete(`form/DeleteFusionRuleById?id=${id}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
 
-    getAddFusionRule(
-        typeID: number,
-        fusionID: number
-    ): Observable<FusionAttributeItem[]> {
-        return this
-            .http
-            .get(`form/GetAddFusionRule?typeID=${typeID}&fusionID=${fusionID}`)
-            .pipe(
-                map(response => <FusionAttributeItem[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
 
-    postAddFusionRule(rule: FusionRule): Observable<any> {
-        return this
-            .http
-            .post('form/PostAddFusionRule', rule)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
 
-    }
 
-    getAddFusionRuleStep(ruleID: number): Observable<FusionRuleStepEditorModel> {
-        return this
-            .http
-            .get(`form/GetAddFusionRuleStep?ruleID=${ruleID}`)
-            .pipe(
-                map(response => <FusionRuleStepEditorModel>response),
-                catchError(err => this.handleError(err))
-            );
-    }
 
-    postAddFusionRuleStep(step: FusionRuleStep) {
-        return this
-            .http
-            .post('form/PostAddFusionRuleStep', step)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
+    
 
-    getEditFusionRuleStep(
-        ruleID: number,
-        ruleStepID: number
-    ): Observable<FusionRuleStepEditorModel> {
-        return this
-            .http
-            .get(`form/GetEditFusionRuleStep?ruleID=${ruleID}&ruleStepID=${ruleStepID}`)
-            .pipe(
-                map(response => <FusionRuleStepEditorModel>response),
-                catchError(err => this.handleError(err))
-            );
-    }
+   
 
-    putEditFusionRuleStep(step: FusionRuleStep) {
-        return this
-            .http
-            .put('form/PutEditFusionRuleStep', step)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
+   
 
-    deleteFusionRuleStep(
-        ruleID: number,
-        ruleStepID: number
-    ) {
-        return this
-            .http
-            .delete(`form/DeleteFusionRuleStepByID?ruleID=${ruleID}&ruleStepID=${ruleStepID}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
+   
 
-    getAddFusionRuleStepMapping(id: number): Observable<FusionRuleMappingEditorModel> {
-        return this
-            .http
-            .get(`form/GetAddFusionRuleStepMapping?id=${id}`)
-            .pipe(
-                map(response => <FusionRuleMappingEditorModel>response),
-                catchError(err => this.handleError(err))
-            );
-    }
+   
 
-    postAddFusionRuleStepMapping(mapp: FusionRuleMapping) {
-        return this
-            .http
-            .post('form/PostAddFusionRuleStepMapping', mapp)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
+    
 
-    deleteFusionRuleStepMapping(id: number) {
-        return this
-            .http
-            .delete(`form/DeleteFusionRuleStepMappingByID?id=${id}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
+    
 
-    getEditFusionRuleStepMapping(id: number): Observable<FusionRuleMappingEditorModel> {
-        return this
-            .http
-            .get(`form/GetEditFusionRuleStepMapping?id=${id}`)
-            .pipe(
-                map(response => <FusionRuleMappingEditorModel>response),
-                catchError(err => this.handleError(err))
-            );
-    }
+    
+    
 
-    putEditFusionRuleStepMapping(mapp: FusionRuleMapping) {
-        return this.http.put('form/PutEditFusionRuleStepMapping', mapp)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
+    
 
-    getAddFusionRuleFilter(id: number): Observable<FusionRuleFilterEditorModel> {
-        return this
-            .http
-            .get(`form/GetAddFusionRuleFilter?id=${id}`)
-            .pipe(
-                map(response => <FusionRuleFilterEditorModel>response),
-                catchError(err => this.handleError(err))
-            );
-    }
+    
 
-    getEditFusionRuleFilter(id: number): Observable<FusionRuleFilterEditorModel> {
-        return this
-            .http
-            .get(`form/GetEditFusionRuleFilter?id=${id}`)
-            .pipe(
-                map(response => <FusionRuleFilterEditorModel>response),
-                catchError(err => this.handleError(err))
-            );
-    }
+    
 
-    postAddFusionRuleFilter(form: FusionRuleFilterEditorModel) {
-        return this
-            .http
-            .post('form/AddFusionRuleFilter', form)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
 
-    putEditFusionRuleFilter(form: FusionRuleFilterEditorModel) {
-        console.log(form);
-        return this
-            .http
-            .put('form/EditFusionRuleFilter', form)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    deleteFusionRuleFilter(id: number) {
-        return this
-            .http
-            .delete(`form/DeleteFusionRuleFilterByID?id=${id}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getFusionRuleFilterTestResults(form: FusionRuleFilterEditorModel) {
-        return this
-            .http
-            .post('form/TestFusionRuleFilter', form)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getAddFusionRuleItem(id: number): Observable<FusionRuleItemEditorModel> {
-        return this
-            .http
-            .get(`form/GetAddFusionRuleItem?id=${id}`)
-            .pipe(
-                map(response => <FusionRuleItemEditorModel>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    postAddFusionRuleItem(form: any) {
-        return this.http.post('form/PostAddFusionRuleItem', form)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    deleteFusionRuleItem(id: number) {
-        return this.http.delete(`form/DeleteFusionRuleItemByID?id=${id}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getFusionPromotionItems(
-        fusionID: number,
-        fusionTypeID: number
-    ): Observable<PromotionObject[]> {
-        return this
-            .http
-            .get(`api/fusion/${fusionTypeID}/configurations/${fusionID}/promotion/options`)
-            .pipe(
-                map(response => <PromotionObject[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getPromotionParents(parentTypeID: number, objectType: string) {
-        return this
-            .http
-            .get(`api/${objectType}/${parentTypeID}/fieldlookup`)
-            .pipe(
-                map(response => response),
-                map(r => {
-                    r = r["sort"]((a, b) => {
-                        let n1 = (a.Name || '').toUpperCase();
-                        let n2 = (b.Name || '').toUpperCase();
-
-                        return (n1 < n2) ? -1 : (n1 > n2) ? 1 : 0;
-                    });
-
-                    return r;
-                }),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getPromotionRuleSteps(
-        ruleID: number,
-        ruleStepID: number
-    ) {
-        return this
-            .http
-            .get(`api/fusion/rule/${ruleID}/steps/${ruleStepID}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getPromotionFusionOwnerRules(fusionID: number) {
-        return this
-            .http
-            .get(`api/fusion/rule/fusionOwners/${fusionID}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getFindSourceFields(
-        ruleObjectType: string,
-        ruleObjectID: number
-    ) {
-        return this
-            .http
-            .get(`fields/${ruleObjectType}/${ruleObjectID}.json`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getFindModels() {
-        return this
-            .http
-            .get('api/catalogs')
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getFindArtifactTypes() {
-        return this
-            .http
-            .get('api/artifacttypes?$orderby=Name')
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getFindFusionAttributeTypes() {
-        return this
-            .http
-            .get('api/fusion/rule/fusionattributetypes')
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
+    
 
     getFindAttributeTypes() {
         return this
@@ -930,45 +534,8 @@ export class FusionService extends BaseObservableService {
             );
     }
 
-    getFindPromotions(fusionAttributeID: number) {
-        return this
-            .http
-            .get(`services/fusion/promotions/${fusionAttributeID}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
 
-    getFindReferenceItemTypes() {
-        return this
-            .http
-            .get('api/referenceitemtypes?$orderby=Name')
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getLineageRoles() {
-        return this
-            .http
-            .get('/api/fusion/rule/lineage/roles')
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getRelateIntersectTypes() {
-        return this
-            .http
-            .get('/api/fusion/rule/relate/intersectTypes')
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
+   
 
     getFusionConfigurationFromAttributeId(fusionAtttributeId: number): Observable<FusionConfigurationDetails> {
         return this
@@ -980,55 +547,11 @@ export class FusionService extends BaseObservableService {
             );
     }
 
-    getFusionRelationIntersectTypes(): Observable<RelationIntersectType[]> {
-        return this
-            .http
-            .get('/api/fusion/rule/relate/intersectTypes')
-            .pipe(
-                map(response => <RelationIntersectType[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
+   
 
-    getPromotionChildAttributeNodes(
-        fusionID: number,
-        targetFusionAttributeTypeID: number,
-        ruleID: number,
-        currentFusionAttributeTypeID: number = 0,
-        fusionAttributeID: number = 0
-    ): Observable<AttributeNode[]> {
-        return this
-            .http
-            .get(`api/fusion/promotion/ChildAttributeNodes?fusionID=${fusionID}&targetFusionAttributeTypeID=${targetFusionAttributeTypeID}&ruleID=${ruleID}&currentFusionAttributeTypeID=${currentFusionAttributeTypeID}&fusionAttributeID=${fusionAttributeID}`)
-            .pipe(
-                map(response => <AttributeNode[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
+    
 
-    putMoveFusionRuleStep(
-        ruleID: number,
-        ruleStepID: number,
-        moveUp: boolean
-    ) {
-        return this
-            .http
-            .put(`form/MoveFusionRuleStep?ruleID=${ruleID}&ruleStepID=${ruleStepID}&moveUp=${moveUp}`, null)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getFusionRuleStepPromotionHistory(ruleStepID: number): Observable<RuleStepPromotionHistoryModel[]> {
-        return this
-            .http
-            .get(`services/fusion/rules/steps/${ruleStepID}/promotionhistory`)
-            .pipe(
-                map(response => <RuleStepPromotionHistoryModel[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
+    
 
     deleteFusionQuery(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'FusionQueryAttribute', id);

@@ -231,6 +231,7 @@
   <include file="scripts/GOV-7524.xml"/>
   <include file="scripts/GOV-4868.xml"/>
   <include file="scripts/GOV-7523.xml"/>
+  <include file="scripts/GOV-7464.xml"/>
   <include file="scripts/GOV-7556.xml"/>
   <include file="scripts/GOV-7481.xml"/>
   <include file="scripts/GOV-4863.xml"/>
@@ -245,6 +246,9 @@
   <include file="scripts/GOV-7591.xml"/> <!-- GetDynamicAssets -->
   <include file="scripts/GOV-7647.xml"/>
   
+  <!-- Sprint 6.2 Read only user group Patch removed till liquibase is changed to let this script run by Andy-->
+  <!--<include file="scripts/GOV-7789.xml"/>-->
+  
   <!-- Sprint 7 2019 Start-->
   <include file="scripts/GOV-7732.xml"/>
   <include file="scripts/GOV-7728.xml"/>
@@ -254,4 +258,5 @@
   <include file="scripts/GOV-7644.xml"/> <!-- goes after 7658-->
   <include file="scripts/GOV-7754.xml"/> <!-- GetDynamicAssets -->
   <include file="scripts/GOV-7608.xml"/> <!-- GetDynamicAssets, goes after 7754 -->
+  <include file="scripts/GOV-7784.xml"/>  
 </databaseChangeLog>
