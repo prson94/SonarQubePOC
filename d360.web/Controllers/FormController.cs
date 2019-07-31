@@ -2754,7 +2754,7 @@ namespace d360.web.Controllers
                           ,v.Icon
                           ,v.Title
                       FROM [dbo].[SiteNav] v
-		                    left join artifacttype a on a.id = v.objectID and v.Object = 'ArtifactType'
+		                    left join assettype a on a.objectid = v.objectID and v.Object = 'ArtifactType' and a.Object = 'ArtifactType'
                             WHERE   v.ParentID = @parentId
                             ORDER BY v.SortOrder";
 
