@@ -26,9 +26,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <div class="col s12">   
                                     <d3s-fusion-execution-history></d3s-fusion-execution-history>
                                 </div>
-                                <div class="col s12">   
-                                    <d3s-fusion-promotion-history></d3s-fusion-promotion-history>
-                                </div>
                             </div>
                         </div>
                     </div>
