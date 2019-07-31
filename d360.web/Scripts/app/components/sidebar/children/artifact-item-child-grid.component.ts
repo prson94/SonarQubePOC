@@ -10,6 +10,7 @@ import {Artifacts} from '../../../models/artifacts.model';
 import {LazyLoadEvent, DataTable} from 'primeng/primeng';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import {StringConstants} from '../../../static/string-constants';
+import {  debounceTime } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-artifact-item-child-grid',
@@ -62,6 +63,12 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
          * filters: FilterMetadata object having field as key and filter value, filter matchMode as value
          */
 
+        this.filter = "";
+        for (var key in event.filters) {
+            this.filter = event.filters[key].value;
+            break;
+        }
+
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.numberOfRows = event.rows;
@@ -81,6 +88,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                 this.sortField,
                 this.sortOrder
             )
+            .pipe(debounceTime(this.searchDelayMilliSeconds))
             .subscribe(
                 res => {
                     this.artifacts = res;
