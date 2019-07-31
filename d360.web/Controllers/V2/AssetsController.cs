@@ -1126,7 +1126,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"A regular user can only remove a tag {assetTagApi.TagUID} association to an asset {assetTagApi.AssetUID} they initially created the association for",
+                        Message = $"A regular user can only remove a tag {assetTagApi.TagUID} association to an asset {assetTagApi.AssetUID} they initially created the association for / they have edit rights to asset",
                         Success = false
                     };
                     resultList.Add(result);
