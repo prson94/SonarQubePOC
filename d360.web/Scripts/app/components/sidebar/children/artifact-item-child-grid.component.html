@@ -4,7 +4,7 @@
         [hidden]="!showSimpleFilter"
         pInputText
         size="100"
-        (keyup)="checkSimpleSearchEnter($event,dt);"
+        (input)="$event.target.value;dt.filterGlobal($event.target.value, 'contains')"
         placeholder="Search..."
         class="grid-simple-filter">
     <p-table #dt
