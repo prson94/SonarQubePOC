@@ -47,7 +47,7 @@ namespace d360.core.entities
         [DataMember]
         public bool Success { get; set; }
     }
-    }
+    
 
     public class TagApiDeleteModel
     {
