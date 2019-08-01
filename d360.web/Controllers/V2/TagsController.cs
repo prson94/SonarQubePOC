@@ -28,12 +28,12 @@ namespace d360.web.Controllers.V2
         ApiExplorerSettings(IgnoreApi = true)
     ]
     public class TagsController : BaseV2ApiController
-    {        
+    {
         ITagRepository tagRepository;
 
         public TagsController(ICommunityContext community, ICompanyContext company, ITagRepository repository)
             : base(community, company)
-        {            
+        {
             this.tagRepository = repository;
         }
 
@@ -48,7 +48,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("uid", "The uid of a specific tag to return.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(List<TagApiModelWrapper>)),
-            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")            
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied")
         ]
         public async Task<HttpResponseMessage> Get()
         {
@@ -61,6 +61,7 @@ namespace d360.web.Controllers.V2
 
             return Request.CreateResponse(tags);
         }
+
 
 
         /// <summary>
@@ -99,7 +100,7 @@ namespace d360.web.Controllers.V2
             HttpPost,
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "The specified tag was saved, returns the properties of the created tag.", typeof(TagApiModel)),            
+            SwaggerResponse(HttpStatusCode.OK, "The specified tag was saved, returns the properties of the created tag.", typeof(TagApiModel)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
@@ -129,11 +130,11 @@ namespace d360.web.Controllers.V2
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error while creating tag", e.Message);
             }
-            
+
             return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
         }
 
-      
+
 
         /// <summary>
         /// Updates the specified tag.
@@ -182,5 +183,55 @@ namespace d360.web.Controllers.V2
 
             return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
         }
+
+
+        /// <summary>
+        /// Gets tag details.
+        /// </summary>
+        /// <param name="uid">The unique identifier of the tag.</param>        
+        /// <returns>Tag details.</returns>
+        [
+            HttpGet, 
+            MapToApiVersion("2.0"), 
+            Route("{uid}/details"), 
+            ApiExplorerSettings(IgnoreApi = true),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "The specified tag was updated, returns the properties of the created tag.", typeof(TagDetailApiModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+            ]
+        public IHttpActionResult GetTagDetails(string uid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+
+                Guid tagUid = Guid.Parse(uid);
+
+                //make sure no tag with the same name exists
+                if (tagRepository.DoesTagExists(uid))
+                {
+                    throw new Exception("Invalid tag specified [same tag already exists].");
+                }
+
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                TagDetailApiModel results = tagRepository.GetDetails(tagUid, queryParams);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+            }
+            catch (Exception e)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while creating tag", e.Message);
+            }
+
+
+        }
+
+
     }
+
 }

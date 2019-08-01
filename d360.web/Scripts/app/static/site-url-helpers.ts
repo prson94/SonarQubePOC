@@ -17,6 +17,7 @@ export class SiteUrlHelpers {
     static SITE_URL_GROUP_ROOT = 'group';
     static SITE_URL_RESOURCE_ROOT = 'resource';
     static SITE_URL_RULE_ROOT = 'quality/rule';
+    static SITE_URL_TAG_ROOT = 'tag';
     static SITE_URL_SEARCH_ROOT = 'search';
     static SITE_URL_WORKFLOW_ROOT = 'workflow';
     static SITE_URL_MODEL_ROOT = 'model';

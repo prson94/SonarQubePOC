@@ -21,5 +21,6 @@ namespace d360.model.DataAccessLayer
         bool IsAuthorizedToDeleteAssetTag(int tagId, long assetId);
         AssetTag GetAssetTag(int tagId, long assetId);
         bool DeleteAssetTag(int tagId, long assetId);
+        TagDetailApiModel GetDetails(Guid tagUid, IEnumerable<KeyValuePair<string,string>> keyValuePairs);
     }
 }

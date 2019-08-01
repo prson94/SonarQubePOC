@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -1428,6 +1428,11 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\monitor-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\workflowmonitor\workflow-monitor.routes.ts" />
+    <Content Include="Scripts\app\components\tag\tag-item.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\tag\tag-item.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tag\tag.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tag\tag.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\tag\tag.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\worflowmonitor-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-action-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflowmonitor\workflowmonitor-list-column-filter.components.ts" />

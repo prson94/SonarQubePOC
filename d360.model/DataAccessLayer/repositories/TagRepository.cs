@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
 using Dapper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,6 +69,16 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "id"))
+            {
+                int id = int.MinValue;
+                var tagIdString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "id").Value;
+                if (int.TryParse(tagIdString, out id))
+                {
+                    dbArgs.Add("@id", id);
+                    queryFilters.Add($"t.[Id] = @id");
+                }
+            }
             if (queryParams.ToList().Any(q => q.Key.ToLower() == "_pagesize")) {
                 
                 if (int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_pagesize").Value, out pageSize))
@@ -225,6 +236,71 @@ namespace d360.model.DataAccessLayer
                     hasPersmission = tag.CreatedBy == companyContext.CurrentResourceID;
             }
             return hasPersmission;
+        }
+
+        public TagDetailApiModel GetDetails(Guid tagUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            TagDetailApiModel result = new TagDetailApiModel();
+            result.pageNum = 1;
+            result.pageSize = 200;
+
+            foreach (var param in queryParams)
+            {
+                switch (param.Key.ToLower())
+                {
+                    case "_pagesize":
+                        int size = 0;
+                        if (int.TryParse(param.Value, out size))
+                        {
+                            result.pageSize = int.Parse(param.Value);
+                        }
+                        else throw new Exception("Invalid value for page size parametar!");
+                        break;
+                    case "_pagenum":
+                        int num = 0;
+                        if (int.TryParse(param.Value, out num))
+                        {
+                            result.pageNum = int.Parse(param.Value);
+                            if (result.pageNum <= 0) result.pageNum = 1;
+                        }
+                        else throw new Exception("Invalid value for page number parametar!");
+                        break;
+                }
+            }
+
+            var countSql = @"select count(*) from AssetTag AT
+	                        inner join Tag T on AT.TagId = T.ID
+	                        where T.uid = @tagUid";
+
+            result.total = companyContext.Query<int>(countSql, new { tagUid }).FirstOrDefault();
+
+            var pagingSql = $"OFFSET {result.pageSize * (result.pageNum - 1)} ROWS FETCH NEXT {result.pageSize} ROWS ONLY";
+            var sql = $@";with cte as (
+                        select AssetID, T.ID as TagId, T.Value from AssetTag AT
+	                        inner join Tag T on T.ID = at.TagID
+                        )
+                        select 
+                        ADV.*, 
+                        A.Id as AssetID,
+                        AST.Object as AssetType, 
+                        A.Object,
+                        A.ObjectID,
+                        AST.Name  as AssetTypeName,
+                        (select TagId as Id, Value from cte where AssetId = A.Id order by Value for json path) as Tags
+                        from Tag T
+	                        inner join AssetTag AT on AT.TagID = T.ID
+	                        inner join Asset A ON A.ID = AT.AssetID
+	                        inner join AssetType AST ON AST.Id = A.AssetTypeId
+	                        cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
+                        where T.uid = @tagUid
+                        order by DisplayValue
+                        {pagingSql}
+                        for json path";
+
+            var data = string.Join("", companyContext.Query<string>(sql, new { tagUid }).ToList());
+
+            result.items = JsonConvert.DeserializeObject<List<TagDetail>>(data);
+            return result;
         }
 
     }
