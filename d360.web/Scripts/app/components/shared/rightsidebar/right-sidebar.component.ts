@@ -152,7 +152,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             }
         };
 
-        let id = window.setInterval(move,10);
+        let id = window.setInterval(move,5);
 
     }
 
