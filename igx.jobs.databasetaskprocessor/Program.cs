@@ -50,7 +50,7 @@ namespace igx.jobs.databasetaskprocessor
             message.TrackOpens = false;
             message.TrackClicks = false;
 
-            
+
             if (templateTags != null)
             {
                 foreach (var k in templateTags.Keys)
@@ -70,7 +70,7 @@ namespace igx.jobs.databasetaskprocessor
         const string functionName = "DatabaseTask_ProcessScheduled";
         const string timerSettings = "*/1 * * * * *";
         const int markitLineageSettingID = 62;
-        
+
 
         public static void Run([TimerTrigger(timerSettings, RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
         {
@@ -79,7 +79,7 @@ namespace igx.jobs.databasetaskprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 3).ToList();
+                companies = companies.Where(i => i.CompanyID == 12).ToList();
 #endif
 
                 companies.Shuffle(); //Randomize
@@ -97,7 +97,7 @@ namespace igx.jobs.databasetaskprocessor
                         var numberOfQueueItems = 1000;
                         var indexCollectionModel = new ObjectIndexCollectionModel();
                         List<CompanySetting> settings = null;
-                        
+
                         using (var outerCompanyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
                         {
                             outerCompanyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
@@ -187,8 +187,8 @@ namespace igx.jobs.databasetaskprocessor
 	                                        inner join [cache].[objectdetails] c on (s.[Object] = c.[Object] and s.[ObjectID] = c.[ObjectID])
                                             inner join [dbo].[predicate] p on (s.predicateid = p.id) where s.id = @id";
 
-                                //custom synonym load details from nym table
-                                var nymRecord = companyConnection.Query<dynamic>(sql, new { id = oid }).FirstOrDefault();
+                                    //custom synonym load details from nym table
+                                    var nymRecord = companyConnection.Query<dynamic>(sql, new { id = oid }).FirstOrDefault();
 
                                     if (nymRecord != null)
                                     {
@@ -249,7 +249,7 @@ namespace igx.jobs.databasetaskprocessor
                             };
 
                             #endregion
-                                                        
+
                             var checkoutAndGetQueueItemSql = $@"
 declare @IDs table (ID uniqueidentifier)
 insert into @IDs
@@ -282,19 +282,23 @@ from    [queue].[Task] T
                                             switch (q.Action)
                                             {
                                                 case "Add":
-                                                #region
-                                                addAuditEntry(companyConnection, q.Object, q.ObjectID, "Created", q.Custom, q.AssetID);
-                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A", q.AssetID);
-                                                break;
+                                                    #region
+                                                    addAuditEntry(companyConnection, q.Object, q.ObjectID, "Created", q.Custom, q.AssetID);
+                                                    resolveIndexItem(companyConnection, q.Object, q.ObjectID, "A", q.AssetID);
+                                                    break;
                                                 #endregion
                                                 case "Delete":
-                                                #region
-                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D", q.AssetID);
-                                                break;
+                                                    #region
+                                                    if (q.Object == SystemObjects.Tag.ToString())
+                                                    {
+                                                        addAuditEntry(companyConnection, q.Object, q.ObjectID, "Removed", q.Custom, q.AssetID);
+                                                    }
+                                                    resolveIndexItem(companyConnection, q.Object, q.ObjectID, "D", q.AssetID);
+                                                    break;
                                                 #endregion
                                                 case "EventTopicNotification":
-                                                #region
-                                                if (!string.IsNullOrEmpty(q.Custom))
+                                                    #region
+                                                    if (!string.IsNullOrEmpty(q.Custom))
                                                     {
                                                         var customXml = XElement.Parse(q.Custom);
 
@@ -313,9 +317,9 @@ from    [queue].[Task] T
                                                                     {
                                                                         var topicName = c.EventTopic;
 #if DEBUG
-                                                                    topicName = "events-debug";
+                                                                        topicName = "events-debug";
 #endif
-                                                                    queue.CreateTopicMessage(topicName, new EventInfo
+                                                                        queue.CreateTopicMessage(topicName, new EventInfo
                                                                         {
                                                                             Action = ct,
                                                                             CompanyID = c.CompanyID,
@@ -353,24 +357,24 @@ from    [queue].[Task] T
                                                     }
 
                                                     break;
-                                            #endregion                                            
+                                                #endregion
                                                 case "FusionCache":
-                                                #region
-                                                if(settings == null)
-                                                {
-                                                    settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
-                                                }
-                                                bool useNewMarkitLineage = settings.Any(s => s.SettingID == markitLineageSettingID && s.Value.ToLower() == "true");
-                                                companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID, @useNewMarkitLineage", new { FusionID = q.ObjectID, useNewMarkitLineage }, null, 10800);    // 180 minute timeout.
-                                                break;
+                                                    #region
+                                                    if (settings == null)
+                                                    {
+                                                        settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
+                                                    }
+                                                    bool useNewMarkitLineage = settings.Any(s => s.SettingID == markitLineageSettingID && s.Value.ToLower() == "true");
+                                                    companyConnection.Execute("exec fusion.ProcessFusionCacheInQueue @FusionID, @useNewMarkitLineage", new { FusionID = q.ObjectID, useNewMarkitLineage }, null, 10800);    // 180 minute timeout.
+                                                    break;
                                                 #endregion
                                                 case "Notify":
-                                                #region
-                                                switch (q.Object)
+                                                    #region
+                                                    switch (q.Object)
                                                     {
-                                                    case "FusionExecution":
-                                                        #region
-                                                        var execution = companyConnection.Query<FusionExecution>(@"select * from fusion.Execution where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
+                                                        case "FusionExecution":
+                                                            #region
+                                                            var execution = companyConnection.Query<FusionExecution>(@"select * from fusion.Execution where ID = @id", new { id = q.ObjectID }, null, true, 900).FirstOrDefault();
 
                                                             if (execution != null)
                                                             {
@@ -395,24 +399,28 @@ from    [queue].[Task] T
                                                                 });
                                                             }
                                                             break;
-                                                        #endregion
-                                                }
+                                                            #endregion
+                                                    }
                                                     break;
-                                            #endregion
+                                                #endregion
                                                 case "ObjectIndex":
-                                                #region
-                                                resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
+                                                    #region
+                                                    resolveIndexItem(companyConnection, q.Object, q.ObjectID, q.Custom, q.AssetID);
                                                     break;
-                                            #endregion
+                                                #endregion
                                                 case "Update":
-                                                #region
-                                                addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update", q.Custom, q.AssetID);
+                                                    #region
+                                                    addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update", q.Custom, q.AssetID);
 
                                                     if (q.Object != "PolicyType" && q.Object != "TaxonomyType")
                                                         resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U", q.AssetID);
                                                     break;
                                                 #endregion
+                                                case "TagConsolidated":
+                                                    addAuditEntry(companyConnection, q.Object, q.ObjectID, "Tag Consolidate", q.Custom, q.AssetID);
+                                                    break;
                                             }
+
 
                                             companyConnection.Execute("delete [queue].[Task] where ID = @queueID", new { queueID = q.ID }, null, 500);
                                         }

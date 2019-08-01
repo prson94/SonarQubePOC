@@ -1,5 +1,5 @@
 ﻿import * as _ from 'lodash';
-import {Number} from 'core-js';
+import { Number } from 'core-js';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -11,19 +11,20 @@ import {
     Output,
     SimpleChange
 } from '@angular/core';
-import {FormBuilder, FormControl, FormGroup, Validators} from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
-import {EditorCategory, EditorField, EditorRow} from '../../../models/editor-field.model';
+import { EditorCategory, EditorField, EditorRow } from '../../../models/editor-field.model';
 
-import {EditorDefinitionService} from '../../../services/editor-definition.service';
-import {UriBasedService} from '../../../services/uri-based.service';
-import {FieldsService} from '../../../services/fields.service';
-import {CascadeService} from '../../../services/cascade.service';
+import { EditorDefinitionService } from '../../../services/editor-definition.service';
+import { UriBasedService } from '../../../services/uri-based.service';
+import { FieldsService } from '../../../services/fields.service';
+import { CascadeService } from '../../../services/cascade.service';
 
-import {BaseComponent} from '../base.component';
+import { BaseComponent } from '../base.component';
 
-import {FormHelpers} from '../../../static/form-helpers';
+import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { concat } from 'rxjs';
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -54,6 +55,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
+
+    //Modal
+    @Input() showAsModal: boolean = false;
+    @Input() modalTitle: string = '';
+    @Input() isModalVisible: boolean = false;
+    private savingInProgress: boolean = false;
+    private consolidateToTag: any;
 
     form: FormGroup;
 
@@ -89,6 +97,19 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 this.load();
             }
         }
+        if (changes['isModalVisible']) {
+            if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue != changes['isModalVisible'].currentValue)) { // visibility has changed            
+                this.savingInProgress = false;
+                this.consolidateToTag = null;
+                this.load();
+            }
+        }
+    }
+    autoCompleteSelected(event) {
+        if (this.objectType == 'Tag') {
+            this.consolidateToTag = event;
+        }
+        
     }
 
     private load() {
@@ -104,7 +125,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     getDefinition() {
         let id = (this.selection ? this.selection[this.rowID] : null);
-
         this.isLoading = true;
 
         this.editorDefinitionService.getEditorDefinition(
@@ -346,12 +366,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
 
     onSubmit() {
+        this.savingInProgress = true;
+
         let action = (this.selection == null ? "new" : "edit");
         let values: any = {};
-
         if (this.copy == true) {
             action = this.action;
         }
+
 
         //adjust any dates to utc
         for (var p in this.form.value) {
@@ -361,13 +383,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 if (this.form.value[p] instanceof Date) {
                     this.form.value[p] = this.getUTCDate(this.form.value[p]);
                 } else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
-                     if (this.form.value[p] != null) {
+                    if (this.form.value[p] != null) {
                         this.form.value[p] = this.form.value[p].Value;
                     }
                 }
             }
         }
-        
+
         //takes the form and convert any array values to , separated string values
         for (var p in this.form.value) {
             if (this.form.value.hasOwnProperty(p)) {
@@ -386,10 +408,16 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 .subscribe(result => {
                     this.showMessageForResult(this.messagesService, result);
                     this.isLoading = false;
-                    this.saveClick.emit({item: result, action: action, values: values});
+                    this.saveClick.emit({ item: result, action: action, values: values });
                 });
         } else {
-            this.saveClick.emit({item: values, action: action});
+            if (this.consolidateToTag) {
+                this.saveClick.emit({ item: values, action: action, additionalOption: this.consolidateToTag });
+
+            }
+            else {
+                this.saveClick.emit({ item: values, action: action });
+            }
         }
     }
 

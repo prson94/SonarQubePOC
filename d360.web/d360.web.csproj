@@ -602,6 +602,9 @@
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi.component.html" />
     <Content Include="Scripts\app\components\admin\load\load.form.html" />
+    <Content Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.html" />
+    <Content Include="Scripts\app\components\admin\tags\admin-tags-action.component.html" />
+    <Content Include="Scripts\app\components\admin\tags\admin-tags.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
@@ -640,6 +643,7 @@
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.component.css" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
+    <Content Include="Scripts\app\components\shared\modal\gov-modal.component.html" />
     <Content Include="Scripts\app\components\shared\object-definition.tile.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\dynamic-lookup-grid.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.html" />
@@ -647,6 +651,7 @@
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
+    <Content Include="Scripts\app\components\admin\tags\tags-usage-info.component.html" />
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
     <Content Include="Scripts\app\components\shared\tiles\tile-actions.component.html" />
@@ -1147,10 +1152,18 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\organizations\admin-organization-contract-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-action.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-action.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
+    <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\gov-checkbox.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-responsibility-selector.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
@@ -1162,6 +1175,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-issues.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\modal\gov-modal.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\modal\gov-modal.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\responsibilities\responsibility-relation.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor.component.ts" />
@@ -1276,6 +1291,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dynamic-percentage\dynamic-percentage-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dynamic-percentage\dynamic-percentage-module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\treetable-toggler.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-sorticon.component.ts" />

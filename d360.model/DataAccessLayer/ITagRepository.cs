@@ -2,6 +2,7 @@
 using d360.core.entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
@@ -10,6 +11,7 @@ namespace d360.model.DataAccessLayer
     {
         Task<TagApiModelWrapper> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool DeleteTag(Guid uid);
+        bool DeleteTags(List<TagApiDeleteModel> models);
         TagApiModel CreateTag(TagApiModel model);
         TagApiModel UpdateTag(Guid uid, TagApiModel model, Tag tag);
         bool DoesTagExists(string value);
@@ -21,5 +23,9 @@ namespace d360.model.DataAccessLayer
         bool IsAuthorizedToDeleteAssetTag(int tagId, long assetId);
         AssetTag GetAssetTag(int tagId, long assetId);
         bool DeleteAssetTag(int tagId, long assetId);
+        List<AssetTagList> GetAssetsPathForTag(Guid tagUid);
+        IEnumerable<TagApiModel> ConsolidateTags(string parentUid, List<string> childrenUids);
+        List<dynamic> SearchTags(string tag);
+        bool SetTaggingStatus(bool state);
     }
 }
