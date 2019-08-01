@@ -153,17 +153,7 @@ namespace igx.jobs.bulkloadprocessor
                                         }
                                     }
 
-                                    int? lookupFieldObjectId = null;
-                                    var lookupColumn = loadColumns.Where(x => x.IsLookup == true && x.Name == c.Name).FirstOrDefault();
-
-                                    if (lookupColumn != null && lookupColumn.FieldTypeId != null)
-                                    {
-                                        int? val = (await company.QueryAsync<int?>("select value from [FieldLookupValue] where FieldTypeID = @fieldTypeID and Text = @val", new { fieldTypeID = lookupColumn.FieldTypeId, val = loadValue }, 180)).FirstOrDefault();
-                                                                                
-                                        if (val.HasValue)
-                                            lookupFieldObjectId = val;
-                                    }
-                                    loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue, LookupObjectID = lookupFieldObjectId });
+                                    loadItemColumns.Add(new LoadItemColumn { ColumnIndex = c.ColumnIndex, LoadID = load.ID, RowIndex = rowIndex, Value = loadValue, LookupObjectID = null });
                                 }
                             }
                             rowIndex++;
@@ -260,6 +250,90 @@ namespace igx.jobs.bulkloadprocessor
 
                                 bulkCopy.WriteToServer(table);
                             }
+                            trans.Commit();
+                        }
+
+                        #endregion
+
+                        #region Update Lookup Values
+
+                        using (var trans = companyConnection.BeginTransaction())
+                        {
+
+                            var lookupColumns = loadColumns.Where(l => l.IsLookup);
+                            List<dynamic> tempLookupColumns = new List<dynamic>();
+
+                            foreach(var col in lookupColumns)
+                            {
+                                var loadCol = load.LoadColumns.FirstOrDefault(l => l.Name == col.Name);
+
+                                if (loadCol != null && col.FieldTypeId != null)
+                                {
+                                    tempLookupColumns.Add(new {
+                                        LoadID = load.ID,
+                                        loadCol.ColumnIndex,
+                                        col.Name,
+                                        FieldTypeID = col.FieldTypeId
+                                    });
+                                }
+                            }
+
+                            companyConnection.Execute(@"drop table if exists #tempLookupColumns;
+                            create table #tempLookupColumns (
+                                LoadID int,
+                                Name nvarchar(max),
+                                ColumnIndex int,
+                                FieldTypeID int
+                                );", transaction: trans);
+
+
+                            using (var bulkCopy = new SqlBulkCopy(companyConnection, SqlBulkCopyOptions.Default, trans))
+                            {
+
+                                bulkCopy.BatchSize = tempLookupColumns.Count;
+                                bulkCopy.DestinationTableName = "#tempLookupColumns";
+                                bulkCopy.BulkCopyTimeout = 3600;
+
+                                var table = new System.Data.DataTable();
+                                var columnName = "LoadID";
+                                table.Columns.Add(columnName, typeof(int));
+                                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                columnName = "Name";
+                                table.Columns.Add(columnName, typeof(string));
+                                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                columnName = "ColumnIndex";
+                                table.Columns.Add(columnName, typeof(int));
+                                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                columnName = "FieldTypeID";
+                                table.Columns.Add(columnName, typeof(int));
+                                bulkCopy.ColumnMappings.Add(columnName, columnName);
+
+                                foreach (var item in tempLookupColumns)
+                                {
+                                    var row = table.NewRow();
+
+                                    row["LoadID"] = item.LoadID;
+                                    row["Name"] = item.Name;
+                                    row["ColumnIndex"] = item.ColumnIndex;
+                                    row["FieldTypeID"] = item.FieldTypeID;
+
+                                    table.Rows.Add(row);
+                                }
+
+                                bulkCopy.WriteToServer(table);
+                            }
+
+                            companyConnection.Execute(@"
+                                update LIC
+                                set LIC.LookupObjectID = FLV.Value
+                                from LoadItemColumn LIC
+                                inner join #tempLookupColumns T on T.ColumnIndex = LIC.ColumnIndex and T.LoadID = LIC.LoadID
+                                left join FieldLookupValue FLV on FLV.FIeldTypeID = T.FieldTypeID and FLV.Text = LIC.Value
+                                ", transaction: trans, commandTimeout: 3600);
+
                             trans.Commit();
                         }
 
