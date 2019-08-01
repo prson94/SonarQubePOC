@@ -260,5 +260,6 @@
   <include file="scripts/GOV-7767.xml"/> <!-- parent relationship cleanup - must go BEFORE 7608 -->
   <include file="scripts/GOV-7608.xml"/> <!-- GetDynamicAssets, goes after 7754 -->
   <include file="scripts/GOV-7670.xml"/> <!-- GetLineage, v1 -->
-  <include file="scripts/GOV-7784.xml"/>  
+  <include file="scripts/GOV-7784.xml"/>
+  <include file="scripts/GOV-7463-3.xml"/>
 </databaseChangeLog>
