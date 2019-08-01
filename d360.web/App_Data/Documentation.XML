@@ -3162,6 +3162,13 @@
             </summary>
             <returns>A excel file containing tags.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.GetTagDetails(System.String)">
+            <summary>
+            Gets tag details.
+            </summary>
+            <param name="uid">The unique identifier of the tag.</param>        
+            <returns>Tag details.</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowTypeAsync(System.Nullable{d360.core.enums.Workflow.ChangeType},System.Nullable{d360.core.enums.State})">
             <summary>
             Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier .

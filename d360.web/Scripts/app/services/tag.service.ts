@@ -118,10 +118,6 @@ export class TagService extends BaseObservableService {
             anchor.href = url;
             anchor.click();
         }
-                return response
-            }),
-            map(item => { return <Tag[]>item }),
-            catchError(err => this.handleError(err)));
     }
 
     getTagById(id: number): Observable<TagType> {

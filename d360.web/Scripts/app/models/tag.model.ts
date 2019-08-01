@@ -26,27 +26,6 @@ export enum TagTypeState {
     PendingDelete = 2,
     Deleted = 3,
     InActive = 4
-}
-}
-
-export class TagType {
-    uid: string;
-    Value: string;
-    UseCount: number;
-    State: TagTypeState;
-    CreatedOn: Date;
-    CreatedBy: string;
-    UpdatedOn: Date;
-    UpdatedBy: string;
-}
-
-export enum TagTypeState {
-    Unknown = -1,
-    PendingAdd = 0,
-    Active = 1,
-    PendingDelete = 2,
-    Deleted = 3,
-    InActive = 4
 } 
 
 export class TagDetail {

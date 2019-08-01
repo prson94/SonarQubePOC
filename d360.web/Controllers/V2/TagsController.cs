@@ -428,8 +428,6 @@ namespace d360.web.Controllers.V2
             return ResponseMessage(result);
         }
 
-    }
-
 
         /// <summary>
         /// Gets tag details.
@@ -437,9 +435,9 @@ namespace d360.web.Controllers.V2
         /// <param name="uid">The unique identifier of the tag.</param>        
         /// <returns>Tag details.</returns>
         [
-            HttpGet, 
-            MapToApiVersion("2.0"), 
-            Route("{uid}/details"), 
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("{uid}/details"),
             ApiExplorerSettings(IgnoreApi = true),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "The specified tag was updated, returns the properties of the created tag.", typeof(TagDetailApiModel)),
@@ -479,5 +477,5 @@ namespace d360.web.Controllers.V2
 
 
     }
-
 }
+
