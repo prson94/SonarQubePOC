@@ -5,7 +5,12 @@
             <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
             <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
         </div>
-        <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" style="width: 100%;" type="text">
+        <div *ngIf="object != 'Tag' || (object == 'Tag' && !objectID)" style="display:inline-block;">
+            <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" style="width: 100%;" type="text">
+        </div>
+        <div *ngIf="object == 'Tag' && objectID" style="display:inline-block;">
+            <p-autoComplete *ngSwitchCase="'Text'"  [formControlName]="field.FieldName" (blur)="OnBlurTrim()" [suggestions]="suggestionResults" (completeMethod)="searchTags($event)" (onSelect)="selectTag($event)"></p-autoComplete>
+        </div>
         <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
         <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl #ed>
             <header style="padding-bottom:0px !important">

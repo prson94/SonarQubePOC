@@ -77,6 +77,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_RELATIONSHIPS = 'relationships';
     static SITE_URL_ADMIN_RULES = 'rules';
     static SITE_URL_ADMIN_SURVEYS = 'surveys';
+    static SITE_URL_ADMIN_TAGS = 'tags';
     static SITE_URL_ADMIN_ANALYTICS = 'analytics';
     static SITE_URL_ADMIN_DASHBOARDS = 'dashboard';
     static SITE_URL_ADMIN_GROUPS = 'groups';
@@ -88,6 +89,8 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ORGANIZATIONS = 'organizations';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
     static SITE_URL_ADMIN_EXPORT_TEMPLATES = 'exporttemplates';
+
+
 
     static getDefaultRoute() {
         if (ResourceHomePage != null && ResourceHomePage != "" && ResourceHomePage != '/') {

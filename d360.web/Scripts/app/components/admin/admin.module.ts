@@ -37,6 +37,7 @@ import { AdminNymAllocationsComponent } from './admin-nym-allocations.component'
 import { SimpleAccordionModule } from "../shared/simple-accordion.part";
 import { DialogModule } from 'primeng/dialog';
 
+
 @NgModule({
     declarations: [        
         AdminAllocationComponent,

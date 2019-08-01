@@ -60,7 +60,7 @@ namespace d360.core
         ResourceType,
         [Description("Survey Type"), AllowSurvey(false), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON | DataType.JsonElement)]
         SurveyType,
-        [Description("Tag"), AllowSurvey(false), EnableAudit(true), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement)]
+        [Description("Tag"), EnableAudit(true), IsType(true), ExcludeDataType(DataType.JSON | DataType.JsonElement)]
         Tag,
         [Description("Taxonomy"), EnableAudit(true), IsType(false)]
         Taxonomy,

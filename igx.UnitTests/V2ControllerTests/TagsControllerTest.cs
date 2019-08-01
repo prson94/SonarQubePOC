@@ -35,9 +35,10 @@ namespace igx.UnitTests.V2ControllerTests
 
             var actionResult = await tagsController.Get();
 
-            var str = actionResult.Content.ReadAsStringAsync().Result;
+            var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+            var str = res.Result.Content.ReadAsStringAsync().Result;
 
-            Assert.True(actionResult.IsSuccessStatusCode, XMsg.BadResponseCode);
+            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             AssertJSON.True<TagApiModelWrapper>(str);
 
         }

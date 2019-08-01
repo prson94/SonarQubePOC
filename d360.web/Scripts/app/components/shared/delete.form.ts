@@ -20,10 +20,19 @@ export class DeleteForm  {
     @Input() prompt: string;
     @Input() callback: Function;
     @Input() itemId: number;
+    @Input() items: any[];
     @Output() onDeleteComplete = new EventEmitter();
     @Output() onDeleteSuccess = new EventEmitter();
     @Output() onDeleteFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
+
+    //Modal
+    @Input() showAsModal: boolean = false;
+    @Input() modalTitle: string = '';
+    @Input() isModalVisible: boolean = false;
+    private deletingInProgress: boolean = false;
+
+
 
     public message: FormMessage = new FormMessage();
     public isLoading = false;
@@ -37,13 +46,21 @@ export class DeleteForm  {
     public delete(): void {
        if (this.isLoading)
             return;
+
+        this.deletingInProgress = true;
+
         var headers = new HttpHeaders();
         headers.append('Content-Type', 'application/json');
 
         this.isLoading = true;
         switch (this.method.toLowerCase()) {
             case 'callback':
-                this.callback(this.itemId);
+                if (this.items) {
+                    this.callback(this.items);
+                }
+                else {
+                    this.callback(this.itemId);
+                }
                  break;
             case 'post':
                 this.http.post(this.uri, JSON.stringify(this.model), { headers: headers }).pipe(
@@ -116,6 +133,7 @@ export class DeleteForm  {
     }
 
     public cancel(): void {
+        this.isLoading = false;
         this.onCancel.emit(null);
     }
 }
@@ -124,6 +142,7 @@ export class DeleteForm  {
 import {    
     ButtonModule,    
 } from 'primeng/primeng';
+import { SiteModalModule } from '../shared/modal/gov-modal.module';
 
 @NgModule({
     declarations: [
@@ -138,6 +157,7 @@ import {
         ButtonModule,
 
         SharedFormMessageModule,
+        SiteModalModule
     ]
 
 })
