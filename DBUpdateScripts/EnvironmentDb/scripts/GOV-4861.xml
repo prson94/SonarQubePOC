@@ -2816,7 +2816,7 @@ begin
 						@OptionalID,
 						P.ObjectID,
 						C.SourceID,
-						RF.FieldValue as Name
+						substring(RF.FieldValue, 1, 250) as Name
 				from	#Assets C
 						inner join integration.AssetField RF on RF.SynchedAssetTypeID = @SynchedAssetTypeID and RF.Section = 1 and RF.SourceID = C.SourceID and RF.FieldName = '_name' and C.[Action] = 'A'
 						left join Asset P on P.SourceID = C.ParentSourceID
@@ -2919,6 +2919,8 @@ begin
 					from	#Assets C
 							inner join Asset P on P.SourceID = C.ParentSourceID
 					where	C.[Action] in ('A', 'U')
+							and C.Object is not null 
+							and C.ObjectID is not null
 					) S
 			on		(T.IntersectTypeID = S.IntersectTypeID and T.Object = S.Object and T.ObjectID = S.ObjectID)
 			when	matched and ( (T.Subject <> S.Subject) OR (T.SubjectID <> S.SubjectID) ) then
@@ -4333,7 +4335,7 @@ begin
 						@OptionalID,
 						P.ObjectID,
 						C.SourceID,
-						RF.FieldValue as Name
+						substring(RF.FieldValue, 1, 250) as Name
 				from	#Assets C
 						inner join integration.AssetField RF on RF.SynchedAssetTypeID = @SynchedAssetTypeID and RF.Section = 1 and RF.SourceID = C.SourceID and RF.FieldName = '_name' and C.[Action] = 'A'
 						left join Asset P on P.SourceID = C.ParentSourceID
@@ -4436,6 +4438,8 @@ begin
 					from	#Assets C
 							inner join Asset P on P.SourceID = C.ParentSourceID
 					where	C.[Action] in ('A', 'U')
+							and C.Object is not null 
+							and C.ObjectID is not null
 					) S
 			on		(T.IntersectTypeID = S.IntersectTypeID and T.Object = S.Object and T.ObjectID = S.ObjectID)
 			when	matched and ( (T.Subject <> S.Subject) OR (T.SubjectID <> S.SubjectID) ) then
