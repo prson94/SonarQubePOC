@@ -447,6 +447,7 @@ namespace d360.model.DataAccessLayer
             var data = string.Join("", companyContext.Query<string>(sql, new { tagUid }).ToList());
 
             result.items = JsonConvert.DeserializeObject<List<TagDetail>>(data);
+            if (result.items == null) result.items = new List<TagDetail>();
             return result;
         }
 

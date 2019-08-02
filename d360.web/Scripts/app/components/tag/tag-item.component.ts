@@ -116,8 +116,11 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
                 this.tagsService.getTagDetails(this.tag.uid)
                     .subscribe(data => {
+
                         this.tagUsage = data.items;
-                        this.selected = this.tagUsage[0];
+                        if (this.tagUsage.length > 0) {
+                            this.selected = this.tagUsage[0];
+                        }
                         this.isLoading = false;
 
                     });
@@ -147,8 +150,12 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
     openTagPage(item: TagItem) {
         if (item.Id != this.tagId) {
-            this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.Id}`]);
+            this.openTagPageByID(item.Id);
         }
+    }
+
+    openTagPageByID(id) {
+        this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${id}`]);
     }
 
     export() {
@@ -166,7 +173,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         let editAction: EditFormData = new EditFormData();
         editAction.title = 'Edit Tag';
         editAction.closeClick = this.onActionEditCloseClick.bind(this);
-        editAction.selected = this.tag.uid;
+        editAction.selected = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
         editAction.isModalVisible = false;
         editAction.modalTitle = "Edit Tag";
         editAction.objectID = this.tag.uid;
@@ -209,8 +216,18 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                 else {
                     msg = `${result.Value} succesfully updated`;
                 }
+
                 this.showMessageForResult(this.messagesService, result, msg);
 
+                this.tagUsage.forEach(detail => {
+                    detail.Tags.forEach(t => {
+                        if (t.Id == this.tagId) {
+                            console.log(event);
+                        }
+                    });
+                });
+
+                this.onActionEditCloseClick();
             });
     }
 
@@ -219,7 +236,6 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             .subscribe(result => {
 
                 if (result) {
-
                     this.messagesService.showInfoMessage("Success", "Tag consolidation succesfull");
 
                 }

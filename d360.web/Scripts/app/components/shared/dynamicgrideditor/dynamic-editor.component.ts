@@ -113,7 +113,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
 
     private load() {
-        console.log(this.objectID);
         if (this.selection != undefined) {
             this.editedItem = _.cloneDeep(this.selection);
             this.action = this.copy ? "Copy" : this.action;

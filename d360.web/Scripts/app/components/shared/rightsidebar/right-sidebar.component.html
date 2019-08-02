@@ -38,6 +38,7 @@
 
             <d3s-dynamic-editor [objectID]="assetAction.edit.objectID"
                                 [objectType]="assetAction.edit.objectType"
+                                [selection]="assetAction.edit.selected"
                                 [title]="assetAction.edit.title"
                                 (saveClick)="assetAction.edit.saveClick($event);"
                                 [showAsModal]="assetAction.edit.showAsModal"
