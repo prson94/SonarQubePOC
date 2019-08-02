@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {Subject} from 'rxjs';
-import { RightSidebarItem, DynamicButton } from '../models/rightsidebar.model';
+import { RightSidebarItem, DynamicButton, AssetAction } from '../models/rightsidebar.model';
 
 @Injectable()
 export class RightSidebarService {
@@ -13,6 +13,8 @@ export class RightSidebarService {
     private currentObjectSource = new Subject<any>();
     private hideHeaderSource = new Subject<boolean>();
     private rightSidebarButtonSource = new Subject<DynamicButton>();
+    private assetActionSource = new Subject<AssetAction>();
+
 
     // Observable streams
     rightSidebar$ = this.rightSidebarSource.asObservable();
@@ -23,6 +25,7 @@ export class RightSidebarService {
     currentObject$ = this.currentObjectSource.asObservable();
     hideHeader$ = this.hideHeaderSource.asObservable();
     rightSidebarButton$ = this.rightSidebarButtonSource.asObservable();
+    assetAction$ = this.assetActionSource.asObservable();
 
     setCurrentArea(area: string, icon: string, title: string) {
         this.currentAreaSource.next({ title: area, icon: icon, tabTitle:title });
@@ -57,5 +60,9 @@ export class RightSidebarService {
     }
     showHeader(val: boolean) {
         this.hideHeaderSource.next(val);
+    }
+
+    setActionTitleItems(val: AssetAction) {
+        this.assetActionSource.next(val);
     }
 }

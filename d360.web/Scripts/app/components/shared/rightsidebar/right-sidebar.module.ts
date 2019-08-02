@@ -7,6 +7,7 @@ import { GovernRequestInterceptor } from "../../../http-interceptors/govern-requ
 import { RightSidebarItemComponent } from './right-sidebar-item.component';
 import { RightSidebarComponent } from './right-sidebar.component';
 import { DynamicPercentageModule } from '../small-widgets/dynamic-percentage/dynamic-percentage-module';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 
 @NgModule({
@@ -14,7 +15,8 @@ import { DynamicPercentageModule } from '../small-widgets/dynamic-percentage/dyn
         DeprecatedI18NPipesModule,
         FormsModule,
         DynamicPercentageModule,
-        HttpClientModule,         
+        HttpClientModule,
+        SharedDynamicGridEditorModule
     ],
     declarations: [
         RightSidebarItemComponent,

@@ -13,7 +13,7 @@ import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { RightSidebarItem, AssetAction, EditFormData } from '../../models/rightsidebar.model';
 import { Permission } from '../../models/responsibility-type.model';
 import { Observable, Subscribable, Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../services/messages-observable.service';
@@ -22,6 +22,8 @@ import { HeaderActionsService } from '../../services/header-actions.service';
 import { TagService } from '../../services/tag.service';
 import { TagType, TagDetail, TagItem } from '../../models/tag.model';
 import { retry, window } from 'rxjs/operators';
+import { Action } from 'rxjs/internal/scheduler/Action';
+import { EditableColumn } from 'primeng/table';
 
 declare var CompanySettings;
 
@@ -43,6 +45,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     private messages: MessageBarItem[] = [];
 
     private sub: any;
+    actions: AssetAction;
 
 
     constructor(private route: ActivatedRoute,
@@ -102,6 +105,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                 this.setCommonRightSideBar(true);
                 this.rightSidebarService.showHeader(true);
 
+                this.setActions();
+
                 if (this.auditSidebar) {
                     this.auditSidebar.hasDynamicUrl = true;
                     this.auditSidebar.dynamicUrlCallback = (() => {
@@ -148,6 +153,81 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
     export() {
         this.tagsService.exportTagsByUid(this.tag.uid);
+    }
+
+    setActions() {
+        this.actions = new AssetAction();
+        this.actions.isVisible = true;
+        this.actions.showBack = true;
+        this.actions.showDelete = true;
+        this.actions.showEdit = true;
+        this.actions.editCallback = this.onActionEditClick.bind(this);
+
+        let editAction: EditFormData = new EditFormData();
+        editAction.title = 'Edit Tag';
+        editAction.closeClick = this.onActionEditCloseClick.bind(this);
+        editAction.selected = this.tag.uid;
+        editAction.isModalVisible = false;
+        editAction.modalTitle = "Edit Tag";
+        editAction.objectID = this.tag.uid;
+        editAction.objectType = 'Tag';
+        editAction.saveClick = this.saveTag.bind(this);
+        editAction.showAsModal = true;
+
+        this.actions.edit = editAction;
+
+        this.rightSidebarService.setActionTitleItems(this.actions);
+    }
+
+    onActionEditCloseClick() {
+        if (this.actions) {
+            this.actions.edit.isModalVisible = false;
+            this.rightSidebarService.setActionTitleItems(this.actions);
+        }
+    }
+
+    onActionEditClick() {
+        this.actions.edit.isModalVisible = true;
+        this.rightSidebarService.setActionTitleItems(this.actions);
+    }
+
+    saveTag(event) {
+
+        if (event.additionalOption && event.additionalOption.code) {
+            let arr: string[] = [];
+            arr.push(event.item.uid);
+            this.consolidateTags(event.additionalOption.code, arr);
+            return;
+        }
+
+        this.tagsService.saveTag(event.item)
+            .subscribe(result => {
+                let msg: string = '';
+                if (event.item.uid == undefined) {
+                    msg = `${result.Value} succesfully created`;
+                }
+                else {
+                    msg = `${result.Value} succesfully updated`;
+                }
+                this.showMessageForResult(this.messagesService, result, msg);
+
+            });
+    }
+
+    consolidateTags(parentUid: string, childrenUids: string[]) {
+        this.tagsService.consolidateTags(parentUid, childrenUids)
+            .subscribe(result => {
+
+                if (result) {
+
+                    this.messagesService.showInfoMessage("Success", "Tag consolidation succesfull");
+
+                }
+                this.onActionEditCloseClick();
+            }, err => {
+                this.showMessageForResult(this.messagesService, err);
+
+            });
     }
 
 };

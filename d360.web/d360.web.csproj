@@ -1251,6 +1251,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lookup-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-multiselect-grid.component.ts" />
+    <Content Include="Scripts\app\components\shared\rightsidebar\right-sidebar.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.ts" />

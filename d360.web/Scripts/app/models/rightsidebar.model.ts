@@ -31,3 +31,27 @@ export class DynamicButton {
     isLoading: boolean = false;
     dynamicCallback: Function;
 }
+
+export class AssetAction {
+    isVisible: boolean = false;
+    showBack: boolean;
+    showEdit: boolean;
+    showDelete: boolean;
+
+    editCallback: Function;
+
+
+    edit: EditFormData;
+}
+
+export class EditFormData {
+    objectID: string;
+    objectType: string;
+    selected: any;
+    title: string;
+    saveClick: Function;
+    showAsModal: boolean;
+    modalTitle: string;
+    isModalVisible: boolean;
+    closeClick: Function;
+}
