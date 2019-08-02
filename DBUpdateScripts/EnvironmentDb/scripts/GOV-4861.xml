@@ -5745,4 +5745,22 @@ GO
 		]]>
 	</rollback>
   </changeSet>
+      <changeSet author="MDonato" id="GOV-4861-rename-tables">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+EXEC sp_rename 'Artifact', 'Artifact-retired'	
+EXEC sp_rename 'ArtifactType', 'ArtifactType-retired'	
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+		EXEC sp_rename 'Artifact-retired', 'Artifact'	
+		EXEC sp_rename 'ArtifactType-retired', 'ArtifactType'
+		
+		]]>
+	</rollback>
+  </changeSet>
   </databaseChangeLog>
