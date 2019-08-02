@@ -250,8 +250,6 @@
     <Compile Include="entities\Fusion\Fusion.cs" />
     <Compile Include="entities\Field.cs" />
     <Compile Include="entities\FieldType.cs" />
-    <Compile Include="entities\Glossary\Taxonomy.cs" />
-    <Compile Include="entities\Glossary\TaxonomyType.cs" />
     <Compile Include="entities\Security\ResourceGroup.cs" />
     <Compile Include="entities\Security\ResourceType.cs" />
     <Compile Include="entities\Social\Follow.cs" />

@@ -243,14 +243,13 @@ namespace d360.model
 
         public DbSet<SurveyType> SurveyTypes { get; set; }
 
-        public DbSet<Taxonomy> Taxonomies { get; set; }
-
+   
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
         public DbSet<Tag> Tags { get; set; }
         public DbSet<AssetTag> AssetTags { get;set;}
 
-        public DbSet<TaxonomyType> TaxonomyTypes { get; set; }
+
 
         public DbSet<AuditField> AuditFields { get; set; }
 
@@ -2785,57 +2784,6 @@ select @err";
                             
                             break;
                     }
-                }
-                #endregion
-
-                #region Business logic : Taxonomy
-                if (entry.Entity is Taxonomy)
-                {
-                    var o = entry.Entity as Taxonomy;
-                    var id = o.ID.ToString();
-                    var taxonomyTypeID = o.TaxonomyTypeID;
-
-                    switch (entry.State)
-                    {
-                        
-                        case EntityState.Deleted:
-                            var any = Any<Field>(f => f.FieldType.LookupObjectType == "Taxonomy" && f.FieldType.LookupObjectID == taxonomyTypeID && f.Value == id);
-                            if (any) 
-                                throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_FieldReference);
-                            if (Any<core.entities.Attribute>(i => i.ObjectType == "Taxonomy" && i.ObjectID == o.ID))
-                                throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_AttributeReference);
-                            if (Any<Intersect>(i => (i.Subject == "Taxonomy" && i.SubjectID == o.ID) || (i.Object == "Taxonomy" && i.ObjectID == o.ID)))
-                                throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_RelationshipReference);
-                            if (ObjectHasChildren(SystemObjects.Taxonomy, o.ID)) 
-                                throw new ConflictException(Messages.Error_Taxonomy_RemoveTitle, Messages.Error_Taxonomy_ChildModelsExist);
-                            
-                            break;
-                        
-                    }
-
-                }
-                #endregion
-
-                #region Business logic : TaxonomyType
-                if (entry.Entity is TaxonomyType)
-                {
-                    var o = entry.Entity as TaxonomyType;                    
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<TaxonomyType>(i => i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            
-                            break;
-                        case EntityState.Modified:
-                            if (Any<TaxonomyType>(i => i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            
-                            break;
-                    }
-
-                    Caching.RemoveItem(key(TAXONOMY_TYPES_KEY));
                 }
                 #endregion
 
