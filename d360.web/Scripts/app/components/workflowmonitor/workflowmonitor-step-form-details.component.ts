@@ -4,6 +4,7 @@ import {  WorkflowStepDetail } from '../../models/workflow.model';
 import * as _ from 'lodash';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import {  isDate } from 'util';
 
 declare var CurrentResourceID;
 
@@ -84,7 +85,10 @@ export class WorkflowMonitorStepFormDetailsComponent extends BaseComponent imple
     }
 
     getDate(val: string): string {
-        return new Date(val).toLocaleDateString();
+        if (isDate(val))
+            return new Date(val).toLocaleDateString();
+        else
+            return "";
     }
 
     doSelect() {

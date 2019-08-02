@@ -304,5 +304,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                
         this.adminMenu.NavigationItems.push({ Name: 'Style Customizations', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, IsHomePage: false, count:null });
 
+        //Uncomment in sprint 8
+        //this.adminMenu.NavigationItems.push({ Name: 'Tags', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`, IsLink: false, IsHomePage: false, count: null });
+
     }
 };

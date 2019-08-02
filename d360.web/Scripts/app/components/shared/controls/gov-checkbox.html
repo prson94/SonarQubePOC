@@ -1,0 +1,22 @@
+﻿
+<div class="d3s-checkbox">
+    <div class="label">{{label}}</div>
+    <div class="options">
+        <div (click)="tryChangeValue(true)" class="option first-opt {{value == true ? 'selected' : ''}}">Yes</div>
+        <div (click)="tryChangeValue(false)" class="option second-opt {{value == false ? 'selected' : ''}}">No</div>
+    </div>
+
+    <d3s-modal [title]="confirmTitle" additionalClasses="medium-width" (onClose)="cancel()" [isVisible]="isModalVisible">
+        <div class="content">
+            <div class="row" [innerHtml]="confirmText"></div>
+        </div>
+        <div class="action-bar">
+            <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
+            <span class="grow"></span>
+            <button class="button primary {{changeInProgress ? 'loading' : ''}}" (click)="confirm()" [disabled]="isLoading">{{confirmButton}}
+                <span class="loader"><span class="spinner light"></span></span></button>
+        </div>
+
+    </d3s-modal>
+
+</div>

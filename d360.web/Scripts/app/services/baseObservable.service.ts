@@ -13,8 +13,9 @@ export class BaseObservableService {
     constructor(protected messages: MessagesObservableService) {
     }
 
-    handleError(error: HttpErrorResponse) {
-        return this.messages.saveClientError(error).pipe(
+    handleError(error: HttpErrorResponse, handleAsAPI2Error: boolean = false) {
+
+        return this.messages.saveClientError(error, handleAsAPI2Error).pipe(
             tap(res => {
                 if (error instanceof Error) {
                     // A client-side or network error occurred. Handle it accordingly.

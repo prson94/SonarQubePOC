@@ -304,6 +304,18 @@ namespace d360.web.Controllers
             }
             throw new Exception("Invalid or non implemented editor type");
         }
+        [HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
+        public JsonResult DynamicEditorEditFields(string o, Guid? uid)
+        {
+            int objectId = -1;
+            switch ((o ?? "").ToUpper())
+            {
+                case "TAG":
+                    objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
+                    return DynamicEditorEditFields(o,objectId);
+            }
+            throw new Exception("Invalid or non implemented editor type");
+        }
 
         [HttpGet, Route("dynamiceditor/edit/{o}/{oid:int}")]
         public JsonResult DynamicEditorEditFields(string o, int oid)
@@ -364,6 +376,8 @@ namespace d360.web.Controllers
                     return CustomAPIService_EditFields(oid);
                 case "SURVEYTYPE":
                     return SurveyType_EditFields(oid);
+                case "TAG":
+                    return Tag_EditFields(oid);
                 case "TAXONOMY":
                     return Taxonomy_EditFields(oid);
                 case "VERSION":
@@ -431,6 +445,8 @@ namespace d360.web.Controllers
                     return CustomAPIService_AddFields();
                 case "SURVEYTYPE":
                     return SurveyType_AddFields();
+                case "TAG":
+                    return Tag_AddFields();
                 case "TAXONOMY":
                     return Taxonomy_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "VERSION":
@@ -13531,6 +13547,31 @@ order by	case
 
         #endregion
 
+        #endregion
+
+        #region Tag
+        [Route("Tag_AddFields")]
+        public JsonResult Tag_AddFields()
+        {
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Value", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">SurveyTypeID</param>
+        [Route("Tag_EditFields"), NonNullableParameters]
+        public JsonResult Tag_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<Tag>(id);
+
+            list.Add(new EditableField { FieldName = "uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Value", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
         #endregion
 
         #region Synonym

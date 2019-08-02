@@ -2733,6 +2733,27 @@ select @err";
                 }
                 #endregion
 
+                #region Business logic : Tag
+                if (entry.Entity is Tag)
+                {
+                    var o = entry.Entity as Tag;
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (Any<Tag>(i => i.Value == o.Value && i.State == State.Active))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+
+                            break;
+                        case EntityState.Modified:
+                            if (Any<Tag>(i => i.Value == o.Value && i.ID != o.ID && i.State == State.Active))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+
+                            break;
+                    }
+                }
+                #endregion
+
                 #region Business logic : Taxonomy
                 if (entry.Entity is Taxonomy)
                 {

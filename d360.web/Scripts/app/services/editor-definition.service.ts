@@ -29,7 +29,6 @@ export class EditorDefinitionService extends BaseObservableService {
         action?: string
     ): Observable<EditorField[]> {
         let uri = "";
-
         if (ID == undefined) {
             if (parentID) {
                 uri = `form/dynamiceditor/new/${objectType}/${objectID}/${parentID}`;
@@ -39,6 +38,10 @@ export class EditorDefinitionService extends BaseObservableService {
             }
             else {
                 uri = `form/dynamiceditor/new/${objectType}/${objectID}`;
+
+                if (objectID && objectID.toString().length == 36) {
+                    uri = `form/dynamiceditor/edit/${objectType}/${objectID}`;
+                }
             }
         } else {
             if (action && action == "Copy") {
