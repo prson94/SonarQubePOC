@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="GOV-4861-DeleteObject">
+  <changeSet author="MDonato" id="GOV-4861-DeleteObject2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -5697,9 +5697,9 @@ end
             splitStatements="true"
             stripComments="true">
 		<![CDATA[
-drop trigger [dbo].[Artifact_AfterDelete] ON [dbo].[Artifact];
-drop trigger [dbo].[Artifact_AfterInsert] ON  [dbo].[Artifact];
-drop trigger [dbo].[Artifact_AfterUpdate] ON  [dbo].[Artifact];		
+drop trigger if exists [dbo].[Artifact_AfterDelete];
+drop trigger if exists [dbo].[Artifact_AfterInsert];
+drop trigger if exists [dbo].[Artifact_AfterUpdate];	
 		]]>
     </sql>
 	<rollback>
