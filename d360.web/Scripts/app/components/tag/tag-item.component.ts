@@ -146,4 +146,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         }
     }
 
+    export() {
+        this.tagsService.exportTagsByUid(this.tag.uid);
+    }
+
 };

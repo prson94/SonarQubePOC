@@ -104,6 +104,10 @@ export class TagService extends BaseObservableService {
         this.http.get('api/v2/tags/export/', { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
     }
 
+    exportTagsByUid(uid: string) {
+        this.http.get(`api/v2/tags/${uid}/export`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
+    }
+
     downloadFile(data: Blob, name: string) {
         var filename = `${name} ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {

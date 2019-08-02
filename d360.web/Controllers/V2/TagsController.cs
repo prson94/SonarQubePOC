@@ -15,6 +15,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using System.Linq;
 
 namespace d360.web.Controllers.V2
 {
@@ -421,7 +422,7 @@ namespace d360.web.Controllers.V2
             result.Content.Headers.ContentLength = stream.Length;
             result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
             {
-                FileName = string.Format("Relationship Types {0}.xlsx", System.DateTime.Now.ToShortDateString())
+                FileName = string.Format("Tags {0}.xlsx", System.DateTime.Now.ToShortDateString())
             };
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 
@@ -475,6 +476,73 @@ namespace d360.web.Controllers.V2
 
         }
 
+        /// <summary>
+        /// GET a list of tagged assets by tag Uid.
+        /// </summary>
+        /// <returns>A excel file containing tagged assets.</returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            ApiExplorerSettings(IgnoreApi = true),
+            Route("{tagUid}/export"),
+            FileDownload,
+            SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
+            SwaggerResponse(HttpStatusCode.OK, "Exported tags to Excel.", typeof(List<TagApiModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> ExportTagToExcel(string tagUid)
+        {
+
+            Guid uid = Guid.Parse(tagUid);
+
+            var tag = Company.Tags.FirstOrDefault(x => x.uid == uid);
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            var tags = tagRepository.GetDetails(uid, queryParams);
+
+            var document = new SLDocument();
+            document.AddWorksheet("Items");
+
+            #region Create the list sheet
+
+            #region Header
+
+            int index = 1;
+            document.SetCellValue(1, index++, "Asset");
+            document.SetCellValue(1, index++, "Asset Type");
+            document.SetCellValue(1, index++, "Tags");
+
+
+            #endregion
+
+            int rowNumber = 1;
+            foreach (var row in tags.items)
+            {
+                index = 1;
+                rowNumber++;
+                document.SetCellValue(rowNumber, index++, row.DisplayValue);
+                document.SetCellValue(rowNumber, index++, $"{row.AssetType.ToString()}>{row.AssetTypeName.ToString()}");
+                document.SetCellValue(rowNumber, index++, $"{string.Join("|", row.Tags.Select(x => x.Value))}");
+            }
+
+            #endregion
+
+            var stream = new System.IO.MemoryStream();
+            document.SaveAs(stream);
+
+            var result = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(stream.GetBuffer())
+            };
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = string.Format("{1} {0}.xlsx", System.DateTime.Now.ToShortDateString(), tag.Value)
+            };
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+            return ResponseMessage(result);
+        }
 
     }
 }

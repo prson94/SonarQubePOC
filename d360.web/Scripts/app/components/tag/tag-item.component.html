@@ -5,14 +5,17 @@
             <header>
                 <d3s-tile-actions [hasAdd]="false"
                                   [hasFilterMode]="true"
-                                  [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+                                  [(filterMode)]="showSimpleFilter"
+                                  [hasExport]="true" 
+                                  (exportClick)="export()"
+                                  ></d3s-tile-actions>
             </header>
             <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
             <p-table #dt [value]="tagUsage" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['DisplayValue']" sortField="DisplayValue" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'DisplayValue'" style="width: 20%">
-                            Value
+                            Asset
                             <d3s-sortIcon [field]="'DisplayValue'"></d3s-sortIcon>
                         </th>
                         <th style="width: 20%">
