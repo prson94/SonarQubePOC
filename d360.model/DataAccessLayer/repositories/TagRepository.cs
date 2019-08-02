@@ -377,7 +377,12 @@ namespace d360.model.DataAccessLayer
                 if(tag != null)
                     hasPersmission = tag.CreatedBy == companyContext.CurrentResourceID;
             }
-            return hasPersmission;
+
+            if (!hasPersmission)
+            {
+                hasPersmission = companyContext.HasAssetPermission(assetId, Permission.ModifyAsset);
+            }
+                return hasPersmission;
         }
 
         public TagDetailApiModel GetDetails(Guid tagUid, IEnumerable<KeyValuePair<string, string>> queryParams)

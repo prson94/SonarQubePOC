@@ -1,0 +1,232 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="kmcnamee" id="GOV-7784-rdv">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetRelationshipDisplayValue]
+(
+	@o varchar(50),
+	@oid int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+select
+		DisplayValue
+	from
+		dbo.Asset A
+		cross apply [dbo].[GetAssetDisplayValueById](A.ID) DV		
+	where 
+		@o = 'FusionAttribute' and A.[Object] = @o and A.ObjectID = @oid
+	union
+	select
+		DV.DisplayValue
+	from
+		dbo.Asset A
+		inner join dbo.AssetDisplayValue DV on DV.AssetID = A.ID		
+	where 
+		@o not in('Taxonomy','FusionAttribute') and A.[Object] = @o and A.ObjectID = @oid
+	union all
+	select 
+		TextPath
+	from 
+		dbo.Asset A
+		cross apply [dbo].GetAssetTextPathById(A.ID,'/')
+	where 
+		@o = 'Taxonomy' and A.[Object] = @o and A.ObjectID = @oid		
+)
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetRelationshipDisplayValue]
+(
+	@o varchar(50),
+	@oid int
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	select
+		DisplayValue
+	from
+		dbo.Asset A
+		cross apply [dbo].[GetAssetDisplayValueById](A.ID) DV
+	where 
+		@o != 'Taxonomy' and A.[Object] = @o and A.ObjectID = @oid
+	union all
+	select 
+		TextPath
+	from 
+		dbo.Asset A
+		cross apply [dbo].GetAssetTextPathById(A.ID,'/')
+	where 
+		@o = 'Taxonomy' and A.[Object] = @o and A.ObjectID = @oid		
+)
+
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="kmcnamee" id="GOV-7784-adv">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetAssetTextPathById]
+(
+	@Id bigint,
+	@delimiter nvarchar(5)
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+
+	with c as (
+		select	T.ID as AssetID,
+				P.ID as ParentID,
+				T.Object as AssetObject,
+				T.ObjectID as AssetObjectID,
+				T.ID,
+				T.Object,
+				T.ObjectID,
+				D.DisplayValue,
+				1 as Level
+		from	Asset T
+				outer apply dbo.GetAssetDisplayValueById(T.ID) D
+				outer apply dbo.GetParentByAssetID(T.ID) P
+		where	T.ID = @Id
+		union all
+		select	c.AssetID,
+				P.ID as ParentID,
+				c.AssetObject,
+				c.AssetObjectID,
+				T.ID,
+				T.Object,
+				T.ObjectID,
+				D.DisplayValue + @delimiter + c.DisplayValue as DisplayValue,
+				c.Level + 1 as Level
+		from	Asset T
+				outer apply dbo.GetAssetDisplayValueById(T.ID) D
+				outer apply dbo.GetParentByAssetID(T.ID) P
+				inner join c on c.ParentID = T.ID
+	), c2 as (
+		select	T.ID as AssetID,
+				P.ID as ParentID,
+				T.Object as AssetObject,
+				T.ObjectID as AssetObjectID,
+				T.ID,
+				T.Object,
+				T.ObjectID,
+				D.DisplayValue,
+				1 as Level
+		from	Asset T
+				outer apply dbo.GetAssetDisplayValueById(T.ID) D
+				outer apply dbo.GetParentByAssetID(T.ID) P
+		where	T.ID = @Id
+		union all
+		select	c2.AssetID,
+				P.ID as ParentID,
+				c2.AssetObject,
+				c2.AssetObjectID,
+				T.ID,
+				T.Object,
+				T.ObjectID,
+				D.DisplayValue + @delimiter + c2.DisplayValue as DisplayValue,
+				c2.Level + 1 as Level
+		from	Asset T
+				outer apply dbo.GetAssetDisplayValueById(T.ID) D
+				outer apply dbo.GetParentByAssetID(T.ID) P
+				inner join c2 on c2.ParentID = T.ID
+	)
+
+	(select	top 1 
+			AssetID as ID, 
+			AssetObject as Object, 
+			AssetObjectID as ObjectID, 
+			DisplayValue as TextPath, 
+			Level 
+	from	c
+	where c.AssetObject = 'FusionAttribute'
+	order by Level desc)
+	union all
+	(select	top 1 
+			AssetID as ID, 
+			AssetObject as Object, 
+			AssetObjectID as ObjectID, 
+			DisplayValue as TextPath, 
+			Level 
+	from	c2
+	where c2.AssetObject != 'FusionAttribute'
+	order by Level desc)
+)
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetAssetTextPathById]
+(
+	@Id bigint,
+	@delimiter nvarchar(5)
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+
+	with c as (
+		select	T.ID as AssetID,
+				P.ID as ParentID,
+				T.Object as AssetObject,
+				T.ObjectID as AssetObjectID,
+				T.ID,
+				T.Object,
+				T.ObjectID,
+				D.DisplayValue,
+				1 as Level
+		from	Asset T
+				outer apply dbo.GetAssetDisplayValueById(T.ID) D
+				outer apply dbo.GetParentByAssetID(T.ID) P
+		where	T.ID = @Id
+		union all
+		select	c.AssetID,
+				P.ID as ParentID,
+				c.AssetObject,
+				c.AssetObjectID,
+				T.ID,
+				T.Object,
+				T.ObjectID,
+				D.DisplayValue + @delimiter + c.DisplayValue as DisplayValue,
+				c.Level + 1 as Level
+		from	Asset T
+				outer apply dbo.GetAssetDisplayValueById(T.ID) D
+				outer apply dbo.GetParentByAssetID(T.ID) P
+				inner join c on c.ParentID = T.ID
+	)
+
+	select	top 1 
+			AssetID as ID, 
+			AssetObject as Object, 
+			AssetObjectID as ObjectID, 
+			DisplayValue as TextPath, 
+			Level 
+	from	c
+	order by Level desc
+)
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
