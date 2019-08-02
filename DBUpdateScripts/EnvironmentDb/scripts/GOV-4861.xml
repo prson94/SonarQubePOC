@@ -207,7 +207,7 @@ begin
    set @ClearResponsibilities = 1    
    set @ClearPromotion = 1    
 
-   delete [Asset] where AssetTypeID in (select ID from AssetType where object ='ArtifactType' and objectid in (select ObjectID from @ht));
+    delete [Asset] where [Object] = 'Artifact' and ObjectID in (select ObjectID from @h);
 
   end    
     

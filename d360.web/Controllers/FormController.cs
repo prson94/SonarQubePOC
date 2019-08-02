@@ -867,7 +867,7 @@ namespace d360.web.Controllers
 
                 if (assettype == null) throw new NotFoundException("artifact type");
                                 
-                var model = new Asset { AssetTypeID = assettype.ID, Object = "Policy", State = State.Active, CreatedBy = Company.CurrentResourceID, CreatedOn = DateTime.UtcNow, UpdatedBy = Company.CurrentResourceID, UpdatedOn = DateTime.UtcNow };
+                var model = new Asset { AssetTypeID = assettype.ID, Object = "Artifact", State = State.Active, CreatedBy = Company.CurrentResourceID, CreatedOn = DateTime.UtcNow, UpdatedBy = Company.CurrentResourceID, UpdatedOn = DateTime.UtcNow };
 
 
                 int? parentId = parseNullableIntField(form, "ParentID");
