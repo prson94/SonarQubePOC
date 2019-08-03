@@ -2,7 +2,10 @@
 using d360.core.entities;
 using d360.core.queue;
 using Dapper;
+using Elasticsearch.Net;
 using MoreLinq;
+using Nest;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,7 +16,6 @@ using System.Text;
 
 namespace d360.extensions.search
 {
-
     public class JsonResponseModel
     {
         public JObject Data { get; set; }
@@ -93,21 +95,20 @@ namespace d360.extensions.search
         private const string DEFAULT_SEARCH_SERVER = "search1-d3s.cloudapp.net:9200";
         private const int BULK_BATCH_SIZE = 5000;
 
-        //Elastic Search introduced breaking changes to Mapping in version 5, so depending on the version of the server, we'll use a differnt default mapping
-        private const string MAPPING_VERSION_2 = "{\"settings\": { \"index\": { \"number_of_shards\": 2, \"number_of_replicas\": 1 }},\"mappings\": {\"_default_\" : {\"properties\" : {\"Type\" : {\"type\" : \"string\",\"fields\" : {\"raw\" : {\"type\" : \"string\", \"index\" :\"not_analyzed\"}}}}}}}";
         private const string MAPPING_VERSION_5 = "{\"settings\": { \"index\": { \"number_of_shards\": 2, \"number_of_replicas\": 1 }},\"mappings\": {\"_doc\" : {\"properties\" : {\"d3sGroup\" : {\"type\" : \"keyword\" }, \"Type\" : {\"type\" : \"keyword\" }}}}}";
 
-
         protected string SearchServerUrl { get; set; }
-        protected Version SearchServerVersion { get; set; }
+
         public int? IndexFieldLimit { get; set; }
 
         #region Utility methods
 
-        JObject createDocument(IndexObjectModel item)
+        private JObject CreateDocument(IndexObjectModel item)
         {
-            var doc = new JObject();            
-            doc.Add("Url", item.RelativeUrl);
+            var doc = new JObject
+            {
+                { "Url", item.RelativeUrl }
+            };
             if (item.Fields != null)
             {
                 foreach (var key in item.Fields.Keys)
@@ -119,17 +120,17 @@ namespace d360.extensions.search
             return doc;
         }
 
-        string getCompanyIndexName(int companyID)
+        private string GetCompanyIndexName(int companyID)
         {
             return $"d3s{companyID}";
         }
 
-        string createItemID(IndexObjectModel item)
+        private string CreateItemID(IndexObjectModel item)
         {
             return item.getObjectID();            
         }
 
-        void loadSearchServerUrl(int companyID)
+        private ConnectionSettings GetConnectionSettings(int companyID)
         {
             using (var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
             {
@@ -140,125 +141,47 @@ namespace d360.extensions.search
 
             if (string.IsNullOrEmpty(SearchServerUrl)) throw new Exception("DEV ERROR - NO SEARCH BASE URL SPECIFIED.");
 
-            SearchServerVersion = getElasticVersion(companyID);
-        }
+            var uri = new Uri("http://"+SearchServerUrl);
 
-
-        HttpWebRequest createWebRequest(string method, string uri, int companyID)
-        {
-            if(string.IsNullOrEmpty(SearchServerUrl))
-            {
-                loadSearchServerUrl(companyID);
-            }
-            
-            var webReq = HttpWebRequest.CreateHttp($"http://{SearchServerUrl}/{uri}");
-            webReq.ContentType = "application/json; charset=UTF-8";
-            webReq.Accept = "application/json";
-            webReq.Method = method;
-            return webReq;
-        }
-
-        void loadMessageInRequestBody(HttpWebRequest webReq, JObject obj)
-        {
-            var json = obj.ToString(Newtonsoft.Json.Formatting.None);
-            byte[] schemaData;
-            var encoding = new System.Text.UTF8Encoding();
-            schemaData = encoding.GetBytes(json);
-            webReq.ContentLength = schemaData.Length;
-            var schemaStream = webReq.GetRequestStream();
-            schemaStream.Write(schemaData, 0, schemaData.Length);
-        }
-
-        void loadMessageInRequestBody(HttpWebRequest webReq, string obj)
-        {
-            byte[] schemaData;
-            var encoding = new System.Text.UTF8Encoding();
-            schemaData = encoding.GetBytes(obj);
-            webReq.ContentLength = schemaData.Length;
-            var schemaStream = webReq.GetRequestStream();
-            schemaStream.Write(schemaData, 0, schemaData.Length);
-        }
-
-        JsonResponseModel getJsonResponse(HttpWebRequest webReq, bool parseResult = true)
-        {
-            var model = new JsonResponseModel();
-            var wr = "";
-            try {
-                using (var resp = (HttpWebResponse)webReq.GetResponse())
-                {
-                    model.Status = resp.StatusCode;
-                    model.StatusMessage = resp.StatusDescription;
-
-                    if (parseResult)
-                    {
-                        using (var responseStream = resp.GetResponseStream())
-                        {
-                            using (var rdr = new System.IO.StreamReader(responseStream))
-                            {
-                                wr = rdr.ReadToEnd();
-                            }
-                        }
-
-                        if (!string.IsNullOrEmpty(wr))
-                            model.Data = JObject.Parse(wr);
-                    }
-                }
-            }
-            catch(WebException we)
-            {
-                var resp = we.Response as HttpWebResponse;
-                if (resp == null)
-                    throw;
-                model.Status = resp.StatusCode;
-                model.StatusMessage = resp.StatusDescription;
-            }
-            return model;
+            return new ConnectionSettings(uri).DefaultIndex(GetCompanyIndexName(companyID));
         }
 
         /// <summary>
         /// Create an index if id doesnt exist
         /// </summary>
         /// <param name="companyID"></param>
-        void createIndexIfNotExists(int companyID)
+        private void CreateIndexIfNotExists(int companyID)
         {
-            var indexName = $"{getCompanyIndexName(companyID)}";
-            var webReq = createWebRequest("HEAD", indexName, companyID);
-            var response = getJsonResponse(webReq);
-            if (response.Status == HttpStatusCode.NotFound)
+            var indexName = GetCompanyIndexName(companyID);
+            //NEST client
+            var client = new ElasticClient(GetConnectionSettings(companyID));
+            if (!client.IndexExists(indexName).Exists)
             {
-                webReq = createWebRequest("PUT", indexName, companyID);
-
-                if (SearchServerVersion.Major >= 5)
+                string esSettings = MAPPING_VERSION_5;
+                if (IndexFieldLimit.HasValue)
                 {
-                    string esSettings = MAPPING_VERSION_5;
-                    if (IndexFieldLimit.HasValue)
-                    {
-                        esSettings = esSettings.Replace("\"number_of_replicas\": 1", "\"number_of_replicas\": 1, \"mapping.total_fields.limit\" : "+IndexFieldLimit);
-                    }
-                    loadMessageInRequestBody(webReq, JObject.Parse(esSettings));
+                    esSettings = esSettings.Replace("\"number_of_replicas\": 1", "\"number_of_replicas\": 1, \"mapping.total_fields.limit\" : " + IndexFieldLimit);
                 }
-                else
-                {
-                    loadMessageInRequestBody(webReq, JObject.Parse(MAPPING_VERSION_2));
-                }
-               response = getJsonResponse(webReq);
-                if (response.Status != HttpStatusCode.OK)
-                    throw new ApplicationException(response.StatusMessage);
+                var response = client.LowLevel.IndicesCreate<CreateResponse>(indexName, esSettings);
+                if(!response.IsValid)
+                    throw new ApplicationException(response.OriginalException.Message);
             }
+
         }
 
         /// <summary>
         /// Gets version number from Elastic server
         /// </summary>
         /// <param name="companyID"></param>
-        Version getElasticVersion(int companyID)
+        public Version GetElasticVersion(int companyID)
         {
             Version ver = null;
-            var webReq = createWebRequest("GET", "", companyID);
-            var response = getJsonResponse(webReq);
-            if (response.Status == HttpStatusCode.OK)
+            var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
+            var response = client.Info<StringResponse>();
+
+            if(response.Success)
             {
-                JObject result = response.Data;
+                JObject result = JObject.Parse(response.Body);
                 if (!Version.TryParse((string)result.SelectToken("version.number"), out ver))
                 {
                     throw new ApplicationException("Could not determine server version");
@@ -267,21 +190,33 @@ namespace d360.extensions.search
             return ver;
         }
 
+        public int GetTotalRecordCount(int companyID)
+        {
+            int count = -1;
+            var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
+            var response = client.Count<StringResponse>(PostData.Serializable(new { }));
+            if (response.Success)
+            {
+                JObject result = JObject.Parse(response.Body);
+                count = (int)result.SelectToken("count");
+            }
+            return count;
+        }
+
         /// <summary>
         /// Delete an index if it exists
         /// </summary>
         /// <param name="companyID"></param>
-        private void deleteIndexIfExists(int companyID)
+        private void DeleteIndexIfExists(int companyID)
         {
-            var indexName = $"{getCompanyIndexName(companyID)}";
-            var webReq = createWebRequest("HEAD", indexName, companyID);
-            var response = getJsonResponse(webReq);
-            if (response.Status != HttpStatusCode.NotFound)
+            var indexName = GetCompanyIndexName(companyID);
+            //NEST client
+            var client = new ElasticClient(GetConnectionSettings(companyID));
+            if(client.IndexExists(indexName).Exists)
             {
-                webReq = createWebRequest("DELETE", indexName, companyID);                
-                response = getJsonResponse(webReq);
-                if (response.Status != HttpStatusCode.OK)
-                    throw new ApplicationException(response.StatusMessage);
+                var response = client.DeleteIndex(indexName);
+                if(!response.IsValid)
+                    throw new ApplicationException(response.OriginalException.Message);
             }
         }
 
@@ -300,29 +235,26 @@ namespace d360.extensions.search
             
             var companyId = firstItem.CompanyID;
             
-            createIndexIfNotExists(companyId);
+            CreateIndexIfNotExists(companyId);
             
             foreach (var batch in items.Batch(BULK_BATCH_SIZE))
             {                
                 var sb = new StringBuilder();
 
-                var indexName = getCompanyIndexName(companyId);
+                var indexName = GetCompanyIndexName(companyId);
                 foreach (var item in batch)
                 {
                     sb.Append("{\"index\":{\"_id\":\"");                                        
                     sb.Append(item.getObjectID());
                     sb.Append("\",\"_type\":\"");
-                    sb.Append(SearchServerVersion.Major >= 5 ? "_doc" : item.Group);
+                    sb.Append( "_doc");
                     sb.Append("\" } }\n");
                     sb.Append("{\"Url\" : \"");
                     sb.Append(item.RelativeUrl);
                     sb.Append("\"");
-                    if (SearchServerVersion.Major >= 5)
-                    {
-                        sb.Append(",\"d3sGroup\":\"");
-                        sb.Append(item.Group);
-                        sb.Append("\"");
-                    }
+                    sb.Append(",\"d3sGroup\":\"");
+                    sb.Append(item.Group);
+                    sb.Append("\"");
 
                     if (item.Fields.Any())
                         sb.Append(",");
@@ -350,52 +282,60 @@ namespace d360.extensions.search
                     sb.Append("}\n");
                 }
                 sb.Append("\n");
-                
-                var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyId)}/_bulk", companyId);
-                webReq.AllowWriteStreamBuffering = false;
-                loadMessageInRequestBody(webReq, sb.ToString());
-                var response = getJsonResponse(webReq);
-                if (response.Status != HttpStatusCode.OK)
-                    throw new ApplicationException(response.StatusMessage);
 
-                var result = response.Data;
+                var client = new ElasticLowLevelClient(GetConnectionSettings(companyId));
+                var bulkResponse = client.Bulk<StringResponse>(GetCompanyIndexName(companyId), sb.ToString());
+
+                if (!bulkResponse.Success)
+                    throw new ApplicationException(bulkResponse.OriginalException.Message);
+
+                var result = JObject.Parse(bulkResponse.Body);
 
                 if (result == null) throw new Exception("Invalid response no data");
 
                 var hasErrors = result.GetValue("errors");
 
                 if (hasErrors.Value<bool>())
-                    throw new Exception(response.Data.ToString());                
+                    throw new Exception(bulkResponse.Body);                
             }     
         }
 
         public void ClearIndex(int companyID)
         {
-            deleteIndexIfExists(companyID);
+            DeleteIndexIfExists(companyID);
 
-            createIndexIfNotExists(companyID);            
+            CreateIndexIfNotExists(companyID);            
         }
 
      
         public void ClearIndex(int companyID, string group)
         {
-            createIndexIfNotExists(companyID);
+            CreateIndexIfNotExists(companyID);
 
-            var webReq = createWebRequest("DELETE", $"{getCompanyIndexName(companyID)}/{group}/_query", companyID);
-            loadMessageInRequestBody(webReq, JObject.Parse("{\"query\": { \"match_all\": {} }}"));
+            var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
+            StringResponse deleteResponse;
+            deleteResponse = client.DeleteByQuery<StringResponse>(GetCompanyIndexName(companyID), PostData.Serializable(new
+            {
+                query = new
+                {
+                    term = new
+                    {
+                        d3sGroup = group
+                    }
+                }
+            }));
 
-            var response = getJsonResponse(webReq);
-            if (response.Status != HttpStatusCode.OK)
-                throw new ApplicationException(response.StatusMessage);
+            if (!deleteResponse.Success)
+                throw new ApplicationException(deleteResponse.OriginalException.Message);
         }
       
         public IEnumerable<string> GetSearchPhrases(int companyID, string term, int maxResults)
         {
-            createIndexIfNotExists(companyID);
+            CreateIndexIfNotExists(companyID);
             return null;
         }
 
-        private bool isElasticSearchSpecialChar(char ch)
+        private bool IsElasticSearchSpecialChar(char ch)
         {
             if (ch == '\\' || ch == '/' || ch == ':' || ch == '^' || ch == '~' || ch == ')' || ch == '(' ||
                ch == '!' || ch == '[' || ch == ']' || ch == '{' || ch == '}' || ch == '-' ) return true;
@@ -425,7 +365,7 @@ namespace d360.extensions.search
                 }
             }
 
-            if (phrase.Any( ch => isElasticSearchSpecialChar(ch)))
+            if (phrase.Any( ch => IsElasticSearchSpecialChar(ch)))
             {
                 phrase = phrase.Replace("\\", "?");  // replace backslash with wildcard LEAVE FIRST
                 
@@ -470,28 +410,21 @@ namespace d360.extensions.search
         {
             IndexResults result = new IndexResults();
 
-            string searchType = type != null ? type + "/" : null;
-            List<string> searchFilters = new List<string>(); 
-            if(SearchServerVersion == null)
-                SearchServerVersion = getElasticVersion(companyID);
-            if (SearchServerVersion.Major >= 5)
+            string searchType = type ?? null;
+            List<string> searchFilters = new List<string>();
+            searchType = "_doc";
+            if(!string.IsNullOrEmpty(type))
             {
-                searchType = "_doc/";
-                if(!string.IsNullOrEmpty(type))
+                string[] types = type.Split(',');
+                if (types.Length > 1)
                 {
-                    String[] types = type.Split(',');
-                    if (types.Length > 1)
-                    {
-                        searchFilters.Add(" { \"terms\":  { \"d3sGroup\": [\"" + String.Join("\",\"",types) + "\"] } }");
-                    }
-                    else
-                    {
-                        searchFilters.Add(" { \"term\":  { \"d3sGroup\": \"" + type + "\" } }");
-                    }
+                    searchFilters.Add(" { \"terms\":  { \"d3sGroup\": [\"" + String.Join("\",\"",types) + "\"] } }");
+                }
+                else
+                {
+                    searchFilters.Add(" { \"term\":  { \"d3sGroup\": \"" + type + "\" } }");
                 }
             }
-
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/{searchType}_search", companyID);
 
             StringBuilder sb = new StringBuilder();
             
@@ -507,26 +440,11 @@ namespace d360.extensions.search
                 }
                 else
                 {
-                    //Not exact match, so append *
-                    if (SearchServerVersion.Major == 2) {
-                        if (!phrase.EndsWith("*"))
-                        {
-                            //ES2 tokenizer not working great with stuff like UID, so we'll do a 
-                            // bool:(must(bool:(should:prase, should:phrase*))) ~= an OR of phrase and phrase*
-                            sb.Append("{\"query\":{\"bool\": {\"must\": { \"bool\": { \"should\": { \"query_string\": { \"query\":\"" + phrase + "\"} }, \"should\": { \"query_string\": { \"query\":\"" + phrase + "*\"} } } }");
-                        } else
-                        {
-                            sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
-
-                        }
+                    if (!phrase.EndsWith("*"))
+                    {
+                        phrase += "*";
                     }
-                    else {
-                        if (!phrase.EndsWith("*"))
-                        {
-                            phrase += "*";
-                        }
-                        sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
-                    }
+                    sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
                 }
             }
             else if(!string.IsNullOrEmpty(advancedFilterJSON))
@@ -559,7 +477,7 @@ namespace d360.extensions.search
                         searchTerm += "*";
                     }
                     var field = item.field;
-                    if (SearchServerVersion.Major >= 5 && field == "_type")
+                    if (field == "_type")
                         field = "d3sGroup";
                     compositeSearchTerm += $"{field}:{searchTerm}";
                 }
@@ -570,13 +488,13 @@ namespace d360.extensions.search
             //if a group was specified filter by it
             if (!string.IsNullOrEmpty(group))
             {
-                searchFilters.Add("{ \"term\":  { \"Type"+(SearchServerVersion.Major >= 5 ? "" : ".raw")+"\": \"" + group + "\" } }");
+                searchFilters.Add("{ \"term\":  { \"Type\": \"" + group + "\" } }");
             }
 
             if(searchFilters.Count > 0)
             {
                 sb.Append(",\"filter\":  { \"bool\": { \"must\": [ ");
-                sb.Append(String.Join(",",searchFilters));
+                sb.Append(string.Join(",",searchFilters));
                 sb.Append("]}}");
             }
 
@@ -587,8 +505,8 @@ namespace d360.extensions.search
             {
                 //size=0 intepreted as integer.MAX_VALUE deprecated in ES 2.4.0.
                 //Using 2000 for EX6 for now. @TODO: Consider using Composite aggreation
-                int bucketSize = SearchServerVersion.Major >= 5 ? 2000 : 0;
-                sb.Append(",\"aggs\" : { \"all_types\": {\"terms\": {\"field\": \""+ (SearchServerVersion.Major >= 5 ? "d3sGroup" : "_type") + "\"},\"aggs\": {\"category\": {\"terms\": {\"field\": \"Type" + (SearchServerVersion.Major >= 5 ? "" : ".raw") + "\",\"size\": " + bucketSize+"}}}}}");
+                int bucketSize = 2000;
+                sb.Append(",\"aggs\" : { \"all_types\": {\"terms\": {\"field\": \"d3sGroup\"},\"aggs\": {\"category\": {\"terms\": {\"field\": \"Type\",\"size\": " + bucketSize+"}}}}}");
             }
 
             //turn on highlighting
@@ -599,16 +517,17 @@ namespace d360.extensions.search
 
             //if no group specified get the categories for this search
 
-            loadMessageInRequestBody(webReq, sb.ToString());
-            var response = getJsonResponse(webReq);
-            if (response.Status != HttpStatusCode.OK)
-                throw new ApplicationException(response.StatusMessage);
+            var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
+            var response = client.Search<StringResponse>(GetCompanyIndexName(companyID), searchType, sb.ToString());
 
-            var searchResults = response.Data.ToObject<SearchResultsModel>();
+            if (!response.Success)
+                throw new ApplicationException(response.OriginalException.Message);
+
+            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
             result.Results = searchResults.hits.hits.Select(h => new IndexResult {
                     Description = GetHighlightedPropertyValueIfExists(h, "Description"),
-                    Group = (SearchServerVersion.Major >= 5) ? GetPropertyValue<string>(h._source, "d3sGroup") : h._type,
+                    Group = GetPropertyValue<string>(h._source, "d3sGroup"),
                     ID = h._id,
                     Name = GetHighlightedNameValueIfExists(h),
                     NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score/searchResults.hits.max_score.GetValueOrDefault()*100)),
@@ -623,13 +542,13 @@ namespace d360.extensions.search
                 categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexTypeList
                 {
                     Name = h.key,
-                    DisplayName = mapTypeToFriendlyName(h.key),
+                    DisplayName = MapTypeToFriendlyName(h.key),
                     ResultCount = h.doc_count,
-                    Categories = h.category != null ? h.category.buckets.Select(c => new IndexCategory
+                    Categories = h.category?.buckets.Select(c => new IndexCategory
                     {
                         Name = c.key,
                         ResultCount = c.doc_count
-                    }).OrderBy(x =>x.Name).ToList() : null
+                    }).OrderBy(x =>x.Name).ToList()
                 }).OrderBy(x =>x.DisplayName));
             }
             
@@ -641,7 +560,7 @@ namespace d360.extensions.search
             return result;
         }
 
-        private string mapTypeToFriendlyName(string key)
+        private string MapTypeToFriendlyName(string key)
         {
             if (string.IsNullOrEmpty(key)) return string.Empty;
 
@@ -667,17 +586,7 @@ namespace d360.extensions.search
 
 
         public IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, int size = 10, string type = "")
-        {            
-            var searchType = type != null ? type + "/" : null;
-            if (SearchServerVersion == null)
-                SearchServerVersion = getElasticVersion(companyID);
-            if (SearchServerVersion.Major >= 5)
-                searchType = "_doc/";
-
-
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/{searchType}_search", companyID);
-            
-
+        {
             StringBuilder sb = new StringBuilder();
 
             if (!string.IsNullOrEmpty(phrase))
@@ -700,17 +609,33 @@ namespace d360.extensions.search
 
                     indx++;
                 }
+                sb.Append("]}}");
 
-                sb.Append("]}}, \"size\":" + size + "}");
+                if (!string.IsNullOrEmpty(type))
+                {
+                    sb.Append(",\"filter\":  { \"bool\": { \"must\": [ ");
+                    string[] types = type.Split(',');
+                    if (types.Length > 1)
+                    {
+                        sb.Append(" { \"terms\":  { \"d3sGroup\": [\"" + String.Join("\",\"", types) + "\"] } }");
+                    }
+                    else
+                    {
+                        sb.Append(" { \"term\":  { \"d3sGroup\": \"" + type + "\" } }");
+                    }
+                    sb.Append("]}}");
+                }
+
+                sb.Append(", \"size\":" + size + "}");
             }
-            
 
-            loadMessageInRequestBody(webReq, sb.ToString());
-            var response = getJsonResponse(webReq);
-            if (response.Status != HttpStatusCode.OK)
-                throw new ApplicationException(response.StatusMessage);
+            var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
+            var response = client.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", sb.ToString());
 
-           var searchResults = response.Data.ToObject<SearchResultsModel>();
+            if (!response.Success)
+                throw new ApplicationException(response.OriginalException.Message);
+
+            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
             return searchResults.hits.hits.Select(h => new TypeaheadResult
             {
@@ -724,22 +649,11 @@ namespace d360.extensions.search
 
         private string GetTypeAheadDisplayType(SearchResultsHitModel h)
         {
-            if (SearchServerVersion.Major >= 5)
+            if ((h.d3sGroup ?? string.Empty).ToUpper() == "ARTIFACT")
             {
-                if ((h.d3sGroup ?? string.Empty).ToUpper() == "ARTIFACT")
-                {
-                    return $"{mapTypeToFriendlyName(h.d3sGroup)} - {GetPropertyValue<string>(h._source, "Type")}";
-                }
-                return mapTypeToFriendlyName(h.d3sGroup);
+                return $"{MapTypeToFriendlyName(h.d3sGroup)} - {GetPropertyValue<string>(h._source, "Type")}";
             }
-            else
-            {
-                if ((h._type ?? string.Empty).ToUpper() == "ARTIFACT")
-                {
-                    return $"{mapTypeToFriendlyName(h._type)} - {GetPropertyValue<string>(h._source, "Type")}";
-                }
-                return mapTypeToFriendlyName(h._type);
-            }
+            return MapTypeToFriendlyName(h.d3sGroup);
         }
 
         private string GetTypeAheadSynonymDisplayType(SearchResultsHitModel h)
@@ -747,9 +661,9 @@ namespace d360.extensions.search
             var type = GetPropertyValue<string>(h._source, "SynonymForObject");
             if ((type ?? string.Empty).ToUpper() == "ARTIFACT")
             {
-                return $"{mapTypeToFriendlyName(type)} - {GetPropertyValue<string>(h._source, "SynonymForObjectType")}";
+                return $"{MapTypeToFriendlyName(type)} - {GetPropertyValue<string>(h._source, "SynonymForObjectType")}";
             }
-            return mapTypeToFriendlyName(type);
+            return MapTypeToFriendlyName(type);
         }
 
         /// <summary>
@@ -763,9 +677,7 @@ namespace d360.extensions.search
         {
             IndexResults result = new IndexResults();
 
-            createIndexIfNotExists(companyID);
-
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyID)}/_search", companyID);
+            CreateIndexIfNotExists(companyID);
 
             StringBuilder sb = new StringBuilder();
 
@@ -777,7 +689,7 @@ namespace d360.extensions.search
             //if a group was specified filter by it
             if (!string.IsNullOrEmpty(group))
             {
-                sb.Append(",\"filter\": { \"term\":  { \"Type"+(SearchServerVersion.Major >= 5 ? "" : ".raw")+"\": \"" + group + "\" } }");
+                sb.Append(",\"filter\": { \"term\":  { \"Type\": \"" + group + "\" } }");
             }
 
             sb.Append("}},\"from\":" + from + ",\"size\":" + size + ",\"sort\":{ \"_score\":{ \"order\":\"desc\"} }");
@@ -786,17 +698,18 @@ namespace d360.extensions.search
 
             //if no group specified get the categories for this search
 
-            loadMessageInRequestBody(webReq, sb.ToString());
-            var response = getJsonResponse(webReq);
-            if (response.Status != HttpStatusCode.OK)
-                throw new ApplicationException(response.StatusMessage);
+            var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
+            var response = client.Search<StringResponse>(GetCompanyIndexName(companyID), sb.ToString());
 
-            var searchResults = response.Data.ToObject<SearchResultsModel>();
+            if (!response.Success)
+                throw new ApplicationException(response.OriginalException.Message);
+
+            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
             result.Results = searchResults.hits.hits.Select(h => new IndexResult
             {
                 Description = GetPropertyValue<string>(h._source, "Description"),
-                Group = (SearchServerVersion.Major >= 5) ? h.d3sGroup : h._type,
+                Group = h.d3sGroup,
                 ID = h._id,
                 Name = GetPropertyValue<string>(h._source, "Name"),
                 NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score / searchResults.hits.max_score.GetValueOrDefault() * 100)),
@@ -821,7 +734,7 @@ namespace d360.extensions.search
 
             if (string.IsNullOrEmpty(synonymFor))
             {
-                if((((SearchServerVersion.Major >= 5) ? h.d3sGroup : h._type) ?? "").ToUpper() != "ARTIFACT")
+                if((h.d3sGroup ?? "").ToUpper() != "ARTIFACT")
                     return name;
 
                 var taxonomy = GetPropertyValue<string>(h._source, "Taxonomy");
@@ -839,7 +752,7 @@ namespace d360.extensions.search
             var synonymFor = GetPropertyValue<string>(h._source, "SynonymFor");
             var taxonomy = "";
 
-            if ((((SearchServerVersion.Major >= 5) ? h.d3sGroup : h._type) ?? "").ToUpper() == "ARTIFACT")
+            if ((h.d3sGroup ?? "").ToUpper() == "ARTIFACT")
             {
                 taxonomy = GetPropertyValue<string>(h._source, "Taxonomy");
 
@@ -875,11 +788,9 @@ namespace d360.extensions.search
 
         private T GetPropertyValue<T>(JObject _source, string propName)
         {
-            JToken jToken = null;
-            
-            if (_source != null && _source.TryGetValue(propName, out jToken))
+            if (_source != null && _source.TryGetValue(propName, out JToken jToken))
             {
-                if(jToken.Type == JTokenType.Array)
+                if (jToken.Type == JTokenType.Array)
                 {
                     return ((JArray)jToken)[0].Value<T>();
                 }
@@ -898,12 +809,13 @@ namespace d360.extensions.search
         {
             if (item == null) return;
 
-            createIndexIfNotExists(item.CompanyID);
+            CreateIndexIfNotExists(item.CompanyID);
 
-            var webReq = createWebRequest("DELETE", $"{getCompanyIndexName(item.CompanyID)}/{item.Group}/{createItemID(item)}", item.CompanyID);            
-            var response = getJsonResponse(webReq);
-            if (response.Status != HttpStatusCode.OK)
-                throw new ApplicationException(response.StatusMessage);
+            var client = new ElasticLowLevelClient(GetConnectionSettings(item.CompanyID));
+            var response = client.Delete<StringResponse>(GetCompanyIndexName(item.CompanyID), "_doc" , CreateItemID(item));
+
+            if(!response.Success)
+                throw new ApplicationException(response.OriginalException.Message);
         }
 
         public void RemoveFromIndex(IEnumerable<RemoveFromIndexModel> items)
@@ -914,42 +826,42 @@ namespace d360.extensions.search
 
             var companyId = firstItem.CompanyID;
 
-            createIndexIfNotExists(companyId);
+            CreateIndexIfNotExists(companyId);
 
             StringBuilder sb = new StringBuilder();
 
             foreach (var item in items)
             {
-                sb.Append("{ \"delete\" : { \"_type\" : \"" + (SearchServerVersion.Major >= 5 ? "_doc" : item.Group) + "\", \"_id\" : \"" + createItemID(item) + "\"}}\n");
+                sb.Append("{ \"delete\" : { \"_type\" : \"_doc\", \"_id\" : \"" + CreateItemID(item) + "\"}}\n");
             }
-                        
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyId)}/_bulk", companyId);
-            loadMessageInRequestBody(webReq, sb.ToString());
-            var response = getJsonResponse(webReq);
-            if (response.Status != HttpStatusCode.OK)
-                throw new ApplicationException(response.StatusMessage);
 
-            var result = response.Data;
+            var client = new ElasticLowLevelClient(GetConnectionSettings(companyId));
+            var bulkResponse = client.Bulk<StringResponse>(GetCompanyIndexName(companyId), sb.ToString());
+
+            if (!bulkResponse.Success)
+                throw new ApplicationException(bulkResponse.OriginalException.Message);
+
+            var result = JObject.Parse(bulkResponse.Body);
 
             if (result == null) throw new Exception("Invalid response no data");
 
             var hasErrors = result.GetValue("errors");
 
             if (hasErrors.Value<bool>())
-                throw new Exception(response.Data.ToString());
+                throw new Exception(bulkResponse.Body);
         }
 
         public void UpdateInIndex(UpdateInIndexModel item)
         {
             if (item == null) return;
 
-            createIndexIfNotExists(item.CompanyID);
+            CreateIndexIfNotExists(item.CompanyID);
 
-            var webReq = createWebRequest("PUT", $"{getCompanyIndexName(item.CompanyID)}/{item.Group}/{createItemID(item)}", item.CompanyID);
-            loadMessageInRequestBody(webReq, createDocument(item));
-            var response = getJsonResponse(webReq);
-            if (response.Status != HttpStatusCode.OK)
-                throw new ApplicationException(response.StatusMessage);
+            var client = new ElasticLowLevelClient(GetConnectionSettings(item.CompanyID));
+            var response = client.Update<StringResponse>(GetCompanyIndexName(item.CompanyID), "_doc", CreateItemID(item), CreateDocument(item).ToString());
+
+            if(!response.Success)
+                throw new ApplicationException(response.OriginalException.Message);
         }
 
         public void UpdateInIndex(IEnumerable<UpdateInIndexModel> items)
@@ -960,14 +872,14 @@ namespace d360.extensions.search
 
             var companyId = firstItem.CompanyID;
 
-            createIndexIfNotExists(companyId);
+            CreateIndexIfNotExists(companyId);
 
             StringBuilder sb = new StringBuilder();
 
             foreach (var item in items)
             {
 
-                sb.Append("{ \"update\" : { \"_type\" : \"" + (SearchServerVersion.Major >= 5 ? "_doc" : item.Group) + "\", \"_id\" : \"" + createItemID(item) + "\"}}\n");
+                sb.Append("{ \"update\" : { \"_type\" : \"_doc\", \"_id\" : \"" + CreateItemID(item) + "\"}}\n");
 
                 sb.Append("{ \"doc\" : {\"Url\" : \"" + item.RelativeUrl + "\"");
                 
@@ -988,20 +900,20 @@ namespace d360.extensions.search
                 sb.Append(" } }\n");
             }
 
-            var webReq = createWebRequest("POST", $"{getCompanyIndexName(companyId)}/_bulk", companyId);
-            loadMessageInRequestBody(webReq, sb.ToString());
-            var response = getJsonResponse(webReq);
-            if (response.Status != HttpStatusCode.OK)
-                throw new ApplicationException(response.StatusMessage);
+            var client = new ElasticLowLevelClient(GetConnectionSettings(companyId));
+            var bulkResponse = client.Bulk<StringResponse>(GetCompanyIndexName(companyId), sb.ToString());
 
-            var result = response.Data;
+            if (!bulkResponse.Success)
+                throw new ApplicationException(bulkResponse.OriginalException.Message);
+
+            var result = JObject.Parse(bulkResponse.Body);
 
             if (result == null) throw new Exception("Invalid response no data");
 
             var hasErrors = result.GetValue("errors");
 
             if (hasErrors.Value<bool>())
-                throw new Exception(response.Data.ToString());            
+                throw new Exception(bulkResponse.Body);            
         }
     }
 }
