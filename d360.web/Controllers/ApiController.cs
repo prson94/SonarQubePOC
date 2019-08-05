@@ -3330,10 +3330,10 @@ outer apply (
             switch (currentObj.ToLower())
             {
                 case "policy":
+                case "artifact":
                     permissionJoin = $@"  inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ObjectID ";
                     useAssetJoin = true;
                     break;
-                case "artifact":
                 case "taxonomy":
                     break;
                 default:
