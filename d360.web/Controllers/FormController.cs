@@ -13415,10 +13415,8 @@ order by	case
             items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.TaxonomyType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Model Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.TaxonomyType.ToString(), i.ID) }));
 
             //rules
-            items.Add(new SelectListItem { Text = "Rule Type :: Informational", Value = "RuleType|1" });
-            items.Add(new SelectListItem { Text = "Rule Type :: Quality Check", Value = "RuleType|2" });
-            items.Add(new SelectListItem { Text = "Rule Type :: Metric", Value = "RuleType|3" });
-            items.Add(new SelectListItem { Text = "Rule Type :: Profile", Value = "RuleType|4" });
+            items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.RuleType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Rule Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.RuleType.ToString(), i.ID) }));
+
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Object", Name = "Assign Survey To", FieldType = DataType.Lookup.ToString(), Items = items });
