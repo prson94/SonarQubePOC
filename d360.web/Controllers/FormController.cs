@@ -7136,7 +7136,7 @@ select 'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name
 union
 select 'ArtifactType|' + cast(ID as varchar(10)) as value, 'Artifact: ' + Name as title from ArtifactType
 union
-select 'TaxonomyType|' + cast(ID as varchar(10)) as value, 'Model: ' + Name as title from TaxonomyType
+select 'TaxonomyType|' + cast(ObjectID  as varchar(10)) as value, 'Model: ' + Name as title from AssetType where object='TaxonomyType'
 union
 select 'ReferenceItemType|' + cast(ID as varchar(10)) as value, 'Reference Item: ' + Name as title from ReferenceItemType
 ) O order by title";
