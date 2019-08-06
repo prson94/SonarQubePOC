@@ -3331,10 +3331,9 @@ outer apply (
             {
                 case "policy":
                 case "artifact":
+                case "taxonomy":
                     permissionJoin = $@"  inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ObjectID ";
                     useAssetJoin = true;
-                    break;
-                case "taxonomy":
                     break;
                 default:
                     permissionJoin = "";

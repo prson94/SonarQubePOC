@@ -899,22 +899,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 	order by	ASTT.Name + ' : ' + D.DisplayValue").ToList();
         }
 
-        public List<FusionPromotionOption> GetFusionPromotionOptions()
-        {
-            return Query<FusionPromotionOption>(@"
-select	'ArtifactType' as PromotionObjectType, 
-		ID as PromotionObjectID, 
-		'Glossary: ' + Name as Name, 
-		ParentID as ParentObjectTypeID
-from	ArtifactType 
-union
-select 'TaxonomyType' as PromotionObjectType, 
-		ID as PromotionObjectID, 
-		'Information Model: ' + Name as Name, 
-		ID as ParentObjectTypeID
-from	TaxonomyType
-").OrderBy(i => i.Name).ToList();
-        }
+
 
         public List<FusionAttributeItem> GetAttributesByFusion(int fusionID)
         {

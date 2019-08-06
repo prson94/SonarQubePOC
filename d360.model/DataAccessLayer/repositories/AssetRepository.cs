@@ -372,13 +372,6 @@ namespace d360.model.DataAccessLayer
                     break;
                 case AssetTypeClass.Model:
                     #region
-                    //var t = new TaxonomyType
-                    //{
-                    //    Name = model.Name,
-                    //    DisplayFormat = model.DisplayFormat,
-                    //    Description = model.Description,
-                    //    MaximumDepth = model.Hierarchy.MaximumDepth,
-                    //};
                     var t = new AssetType
                     {
                         Name = model.Name,
@@ -400,8 +393,7 @@ namespace d360.model.DataAccessLayer
 
 
                     CompanyContext.Add(t);
-                    //assetType = CompanyContext.Filter<AssetType>(x => x.ObjectID == t.ID && x.Object == "TaxonomyType").SingleOrDefault();
-                    //if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Type", "Asset Not Found.");
+
                     for (int i = 1; i <= t.HierarchyMaximumDepth; i++)
                     {
                         CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = t.ID });
@@ -545,8 +537,6 @@ namespace d360.model.DataAccessLayer
 
                     break;
                 case AssetTypeClass.Model:
-                   // var t = CompanyContext.GetById<TaxonomyType>(model.ObjectID);
-
                     if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Model.ToString()}", $"Not valid {AssetTypeClass.Model.ToString()} provided.Please check your request and try again.");
 
                     assetType.Name = model.Name;

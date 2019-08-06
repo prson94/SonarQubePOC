@@ -1404,13 +1404,7 @@ namespace d360.web.Controllers
                         break;
                     case SystemObjects.TaxonomyType:
                         #region
-                        //var t = new TaxonomyType
-                        //{
-                        //    Name = model.AssetType.Name,
-                        //    DisplayFormat = model.AssetType.DisplayFormat,
-                        //    Description = model.AssetType.Description,
-                        //    MaximumDepth = model.AssetType.HierarchyMaximumDepth,
-                        //};
+
                         var t = new AssetType
                         {
                             Name = model.AssetType.Name,
@@ -1429,8 +1423,7 @@ namespace d360.web.Controllers
                             throw new GenericException(HttpStatusCode.BadRequest, "Invalid Maximum Level", "Invalid Maximum Model level specified must be a value between 1 and 10");
 
                         Company.Add(t);
-                        //var assetType = Company.Filter<AssetType>(x => x.ObjectID == t.ID && x.Object == "TaxonomyType").SingleOrDefault();
-                        //if (assetType == null) throw new NotFoundException("asset type");
+
                         for (int i = 1; i <= t.HierarchyMaximumDepth; i++)
                         {
                             Company.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = t.ID });
@@ -1611,9 +1604,9 @@ namespace d360.web.Controllers
                         parentType = SystemObjects.ReferenceItemType;
                         break;
                     case SystemObjects.TaxonomyType:
-                       // var t = Company.GetById<TaxonomyType>(model.AssetType.ObjectID);
+
                         var assetType = Company.GetById<AssetType>(model.AssetType.ID, x => x.AssetTypeLevels);
-                       // if (t == null) throw new NotFoundException("model type");
+
                         if (assetType == null) throw new NotFoundException("asset type");
                         assetType.Name = model.AssetType.Name;
                         assetType.DisplayFormat = model.AssetType.DisplayFormat;
@@ -13955,7 +13948,7 @@ order by	case
 
                 int typeID = parseIntField(form, "TaxonomyTypeID");
                 var assettype = Company.AssetTypes.FirstOrDefault(x => x.ObjectID == typeID && x.Object == SystemObjects.TaxonomyType.ToString());
-              //  var type = Company.GetById<TaxonomyType>(typeID);
+
                 if (assettype == null) throw new NotFoundException("taxonomy type");
 
                 int? parentId = parseNullableIntField(form, "ParentID");
@@ -13963,7 +13956,7 @@ order by	case
                 if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, typeID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
-                //var model = new Taxonomy { TaxonomyTypeID = typeID };
+
                 var model = new Asset { AssetTypeID = assettype.ID, Object = "Taxonomy", State = State.Active, CreatedBy = Company.CurrentResourceID, CreatedOn = DateTime.UtcNow, UpdatedBy = Company.CurrentResourceID, UpdatedOn = DateTime.UtcNow };
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, typeID).ToList(), form, Server);
@@ -14069,7 +14062,7 @@ order by	case
                 if (!form.HasKeys()) throw new NoFormDataException("taxonomy");
 
                 var id = parseIntField(form, "ID");
-                //var model = Company.GetById<Taxonomy>(id);
+
                 var model = Company.Assets.Where(x => (x.Object == "Taxonomy" && x.ObjectID == id)).Include(x => x.AssetType).FirstOrDefault();
 
                 if (model == null) throw new NotFoundException("taxonomy");
@@ -14081,9 +14074,8 @@ order by	case
 
                 Company.SaveOrUpdateAsset(model, new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, model.AssetType.ObjectID).ToList(), form, Server, false));
 
-               // var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, model.TaxonomyTypeID).ToList(), form, Server, false);
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, model.AssetType.ObjectID).ToList();
-               // Company.SaveOrUpdate<Asset>(model, fields);
+
                 processFormDynamicRelationshipFields(SystemObjects.TaxonomyType, model.AssetType.ObjectID, SystemObjects.Taxonomy, model.ObjectID, fieldTypes, form);
 
                 var sType = SystemObjects.Taxonomy.ToString();
