@@ -69,8 +69,8 @@ namespace d360.model.DataAccessLayer
                         {
                             throw new Exception("Invalid date value for AsOfDate parameter!");
                         }
-                        response.asOfDate = date.AddDays(1);
-                        additionalWhereClause += $" AND S.CreatedOn <= '{response.asOfDate.ToString()}'";
+                        response.asOfDate = date;
+                        additionalWhereClause += $" AND S.CreatedOn <= '{date.AddDays(1)}'";
                         break;
                 }
             }
