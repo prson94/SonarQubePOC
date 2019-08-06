@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bhoward" id="GOV-7464">
+  <changeSet author="bhoward" id="GOV-7464-A">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -206,7 +206,7 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 	FROM SiteNav n
 	WHERE n.Name = '#Data Quality' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 
-	UNION ALL
+	/*UNION ALL
 	SELECT	n.Name as MenuID,
 		n.SortOrder,
 		0 as Feature,
@@ -226,7 +226,7 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 		FOR XML PATH('nav'), TYPE
 		) AS Items
 	FROM SiteNav n
-	WHERE n.Name = '#Dashboards' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
+	WHERE n.Name = '#Dashboards' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1*/
 
 	UNION ALL
 

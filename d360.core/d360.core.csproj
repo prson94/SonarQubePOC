@@ -230,8 +230,6 @@
     <Compile Include="entities\Views\IntersectTypeDetail.cs" />
     <Compile Include="entities\Report.cs" />
     <Compile Include="entities\Security\ResponsibilityType.cs" />
-    <Compile Include="entities\Glossary\Artifact.cs" />
-    <Compile Include="entities\Glossary\ArtifactType.cs" />
     <Compile Include="entities\Glossary\AttributeTypeRelation.cs">
       <SubType>Code</SubType>
     </Compile>

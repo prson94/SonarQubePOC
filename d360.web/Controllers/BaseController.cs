@@ -2086,10 +2086,11 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
 
                         if (RelationshipObjectType.ToUpper() == "MAP")
                         {
-                            var subSql = $@"select a.ID from [Intersect] i
+                            var subSql = $@"select a.ObjectID from [Intersect] i
                                     inner join intersecttype it on (i.intersecttypeid = it.id)
                                     inner join[intersect] i_2 on(i_2.subject = 'Map' and i_2.subjectid = i.subjectid and i.subject = 'Map')
-                                    inner join artifact a on(a.id = i_2.objectid and a.artifacttypeid = @id)
+                                    inner join asset a on a.object = 'Artifact' and a.objectid = = i_2.objectid
+                                    inner join assettype t on t.id = a.assettypeid and t.object = 'ArtifactType' and t.objectid = @id
                                 where i.intersecttypeid = {int.Parse(RelationshipIntersectTypeID)} and i.objectid in ({idList})";
 
                             filters += ((string.IsNullOrEmpty(filters)) ? " WHERE " : " AND ") + $"{idColumn} in ({subSql})";

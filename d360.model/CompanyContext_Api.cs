@@ -1368,9 +1368,6 @@ from	IntersectType I
                                             var legacyTable = "";
                                             switch (at.Object)
                                             {
-                                                case "ArtifactType":
-                                                    legacyTable = "Artifact";
-                                                    break;
                                                 case "FusionAttributeType":
                                                     legacyTable = "FusionAttribute";
                                                     break;
@@ -2273,52 +2270,7 @@ from	api.ExecutionAsset T
                                     {
                                         switch (at.Class)
                                         {
-                                            case AssetTypeClass.Glossary:
-                                                #region
-                                                if (isInsert)
-                                                {
-                                                    Connection.Execute($@"
-    create table #ObjectMergeTableResult (ID int, ItemNumber int);
-    CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
-    merge   Artifact as T
-    using   (
-            select  ItemNumber
-            from    api.ExecutionAsset
-            where   {executionAssetWhereSql}
-            ) S
-    on      (T.ArtifactTypeID = @ObjectID and T.SourceID = @NonExistentUid)
-    when    not matched then
-    insert  (ArtifactTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, @R, @D, @R, @D)
-    output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
-
-    update  T
-    set     T.Object = 'Artifact',
-            T.ObjectID = S.ID,
-            T.IsNew = 1
-    from    api.ExecutionAsset T
-            inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
-
-    {updateAssetInfoOnExecutionRecordsSql}",
-                                                    new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                }
-                                                else
-                                                {
-                                                    Connection.Execute($@"
-    update	T
-    set		T.UpdatedBy = @R,
-		    T.UpdatedOn = @D
-    from	Artifact T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql};
-
-    update	api.ExecutionAsset
-    set		IsNew = 0
-    where	{executionAssetWhereSql};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                }
-                                                break;
-                                            #endregion
                                             case AssetTypeClass.Model:
                                                 #region
                                                 if (isInsert)
@@ -2451,7 +2403,11 @@ from	api.ExecutionAsset T
                                                 break;
                                             #endregion
                                             case AssetTypeClass.Policy:
+                                            case AssetTypeClass.Glossary:
                                                 #region
+                                                string @object = "Artifact";
+                                                if (at.Class == AssetTypeClass.Policy)
+                                                    @object = "Policy";
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
@@ -2469,18 +2425,18 @@ from	api.ExecutionAsset T
     on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
     when    not matched then
     insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@AssetTypeID,1,'Policy', @R, @D, @R, @D)
+    values  (@AssetTypeID,1,@Object, @R, @D, @R, @D)
     output  inserted.ObjectID, S.ItemNumber into #ObjectMergeTableResult;
 
     update  T
-    set     T.Object = 'Policy',
+    set     T.Object = @Object,
             T.ObjectID = S.ID,
             T.IsNew = 1
     from    api.ExecutionAsset T
             inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
     {updateAssetInfoOnExecutionRecordsSql}",
-                                                    new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                    new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 else
                                                 {
@@ -2489,12 +2445,12 @@ from	api.ExecutionAsset T
     set		T.UpdatedBy = @R,
 		    T.UpdatedOn = @D
     from	[Asset] T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Policy' and {executionAssetWhereSql};
+		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = @Object and {executionAssetWhereSql};
 
     update	api.ExecutionAsset
     set		IsNew = 0
     where	{executionAssetWhereSql};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 break;
                                             #endregion

@@ -3087,20 +3087,20 @@
         </member>
         <member name="M:d360.web.Controllers.V2.SurveysController.GetSurveysResultsAsync(System.String)">
             <summary>
-            Returns all survey results defined in Govern.          
+            Get a list of surveys contained within the system.          
             </summary>        
             <param name="surveyTypeUid">Uid of survey type</param>
             <returns>A list of survey results</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.SurveysController.GetSurveyTypes">
             <summary>
-            Returns all survey types defined in Govern.          
+            Returns defined survey types.          
             </summary>        
             <returns>A list of survey types</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.SurveysController.GetSurveysResultsSummaryAsync(System.String)">
             <summary>
-            Returns survey result summary for specific survey type uid defined in Govern.          
+            Returns survey result summary for specific survey type Uid.        
             </summary>        
             <param name="surveyTypeUid">Uid of survey type</param>
             <returns>A list of survey summary results</returns>
@@ -3109,6 +3109,12 @@
             <summary>
             This service houses all endpoints handling tag management in Govern
             </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.Search(System.String)">
+            <summary>
+            Returns all tags that are defined in Govern.          
+            </summary>        
+            <returns>A list of tags</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.Get">
             <summary>
@@ -3137,6 +3143,24 @@
             <param name="uid">The unique identifier of the asset cross reference.</param>        
             <param name="model">The tag to be updated.</param>
             <returns>The updated tag.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.DeleteTags(System.Collections.Generic.List{d360.core.entities.TagApiDeleteModel})">
+            <summary>
+            Allows you to remove a tags based on tag lists.
+            </summary>
+            <returns>A status for the DELETE request.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.ConsolidateTags(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Consolidates tags
+            </summary>
+            <returns>A status for the POST request.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.ExportToExcel">
+            <summary>
+            GET a list of tags.
+            </summary>
+            <returns>A excel file containing tags.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowTypeAsync(System.Nullable{d360.core.enums.Workflow.ChangeType},System.Nullable{d360.core.enums.State})">
             <summary>
@@ -3373,6 +3397,9 @@
             <param name="id">PolicyTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.SurveyType_EditFields(System.Int32)">
+            <param name="id">SurveyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Tag_EditFields(System.Int32)">
             <param name="id">SurveyTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Taxonomy_AddFields(System.Int32,System.Int32)">
