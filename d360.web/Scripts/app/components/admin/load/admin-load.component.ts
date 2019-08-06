@@ -28,7 +28,7 @@ export class AdminLoadComponent extends AdminBaseComponent implements OnInit {
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
 
-        this.areaName = "Bulk Loading";
+        this.areaName = "Bulk Loader";
         this.adminHeading = 'Integration';
         this.setCommonItems();
     }

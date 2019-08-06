@@ -170,7 +170,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.subscription = this.rightSidebarService.rightSidebar$.subscribe(
             item => {
                 this.items.push(item);
-                this.items = _.sortBy(this.items, 'title'); this.emitChanges();
+                this.items = _.sortBy(this.items, 'title').reverse(); this.emitChanges();
             });
 
         this.buttonSubscription = this.rightSidebarService.rightSidebarButton$.subscribe(
