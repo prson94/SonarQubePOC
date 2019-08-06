@@ -1,0 +1,76 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-7831">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+ALTER   FUNCTION [utility].[DeriveIntersectTypeName] 
+(
+
+	@id int
+
+)
+RETURNS nvarchar(500)
+AS
+BEGIN
+	DECLARE @result nvarchar(500)
+
+	SET @result =	(
+					SELECT	COALESCE(SATT.Name, SF.TextPath,'') + ' [' + coalesce(P.Name,'/') + '] ' + COALESCE(OATT.Name, [OF].TextPath, '')
+					FROM	[IntersectType] I
+							left join AssetType SATT on I.Subject = SATT.[Object] and SATT.ObjectID = I.SubjectID and I.Subject != 'FusionAttributeType'
+							left join AssetType OATT on I.Object = OATT.[Object] and OATT.ObjectID = I.ObjectID and I.Object != 'FusionAttributeType'
+
+							left join [FusionAttributeType] SF on I.Subject = 'FusionAttributeType' and SF.ID = I.SubjectID
+							left join [FusionAttributeType] [OF] on I.Object = 'FusionAttributeType' and [OF].ID = I.ObjectID
+														
+							left join [Predicate] P on P.ID = I.PredicateID
+					WHERE	I.ID = @id					
+					)
+
+	RETURN @result
+END
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+		ALTER   FUNCTION [utility].[DeriveIntersectTypeName] 
+(
+
+	@id int
+
+)
+RETURNS nvarchar(500)
+AS
+BEGIN
+	DECLARE @result nvarchar(500)
+
+	SET @result =	(
+					SELECT	COALESCE(SATT.Name, SF.TextPath,'') + ' [' + coalesce(P.Name,'/') + '] ' + COALESCE(OATT.Name, [OF].TextPath, '')
+					FROM	[IntersectType] I
+							left join AssetType SATT on I.Subject = SATT.[Object] and SATT.ID = I.SubjectID and I.Subject != 'FusionAttributeType'
+							left join AssetType OATT on I.Object = OATT.[Object] and OATT.ID = I.ObjectID and I.Object != 'FusionAttributeType'
+
+							left join [FusionAttributeType] SF on I.Subject = 'FusionAttributeType' and SF.ID = I.SubjectID
+							left join [FusionAttributeType] [OF] on I.Object = 'FusionAttributeType' and [OF].ID = I.ObjectID
+														
+							left join [Predicate] P on P.ID = I.PredicateID
+					WHERE	I.ID = @id					
+					)
+
+	RETURN @result
+END
+		
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
