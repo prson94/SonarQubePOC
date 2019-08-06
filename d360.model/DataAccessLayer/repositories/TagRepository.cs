@@ -325,7 +325,7 @@ namespace d360.model.DataAccessLayer
         private void AddTagAudit(Tag tag, string action)
         {
             var sql = $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
-                         VALUES ('{action}','Tag',{tag.Id},[queue].WriteIndexXml('', 'Tag', {tag.Id}, coalesce({companyContext.CurrentResourceID}, 0)))";
+                         VALUES ('{action}','Tag',{tag.ID},[queue].WriteIndexXml('', 'Tag', {tag.ID}, coalesce({companyContext.CurrentResourceID}, 0)))";
             companyContext.Query<int>(sql).FirstOrDefault();
         }
 
@@ -423,7 +423,7 @@ namespace d360.model.DataAccessLayer
 
             var pagingSql = $"OFFSET {result.pageSize * (result.pageNum - 1)} ROWS FETCH NEXT {result.pageSize} ROWS ONLY";
             var sql = $@";with cte as (
-                        select AssetID, T.ID as TagId, T.Value from AssetTag AT
+                        select AssetID, T.uid as TagUid, T.Value from AssetTag AT
 	                        inner join Tag T on T.ID = at.TagID
                         )
                         select 
@@ -433,7 +433,7 @@ namespace d360.model.DataAccessLayer
                         A.Object,
                         A.ObjectID,
                         AST.Name  as AssetTypeName,
-                        (select TagId as Id, Value from cte where AssetId = A.Id order by Value for json path) as Tags
+                        (select TagUid as Uid, Value from cte where AssetId = A.Id order by Value for json path) as Tags
                         from Tag T
 	                        inner join AssetTag AT on AT.TagID = T.ID
 	                        inner join Asset A ON A.ID = AT.AssetID

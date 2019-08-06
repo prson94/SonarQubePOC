@@ -40,6 +40,7 @@ export class AssetAction {
 
     editCallback: Function;
     deleteCallback: Function;
+    backCallback: Function;
 
     edit: EditFormData;
     delete: DeleteFormData;

@@ -15,22 +15,6 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 
-
-import {
-    GrowlModule,
-    InputTextModule,
-    InputMaskModule,
-    TreeTableModule,
-    ButtonModule,
-    DropdownModule,
-    CheckboxModule,    
-    SelectButtonModule,
-    MultiSelectModule,   
-    TabViewModule,
-    TooltipModule,
-    SharedModule,
-} from 'primeng/primeng';
-
 import { TableModule } from 'primeng/table';
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { TagComponent } from './tag.component';
@@ -47,18 +31,6 @@ import { TagRoutingModule } from './tag.routes';
         TagRoutingModule,
 
         //primeng
-        GrowlModule,
-        InputTextModule,
-        InputMaskModule,
-        TreeTableModule,
-        ButtonModule,
-        DropdownModule,
-        CheckboxModule,                        
-        SelectButtonModule,        
-        MultiSelectModule, 
-        TabViewModule,
-        TooltipModule,                
-        SharedModule,
         TableModule,
                 
         //d3s

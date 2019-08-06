@@ -124,8 +124,8 @@ export class TagService extends BaseObservableService {
         }
     }
 
-    getTagById(id: number): Observable<TagType> {
-        let url = `api/v2/tags?id=${id}`;
+    getTagByUid(uid: number): Observable<TagType> {
+        let url = `api/v2/tags?uid=${uid}`;
 
         return this.http.get(url)
             .pipe(map(response => <any>response),

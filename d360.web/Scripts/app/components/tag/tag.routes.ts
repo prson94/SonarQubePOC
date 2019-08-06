@@ -9,7 +9,7 @@ const routes: Routes = [
         path: '',
         component: TagComponent,
         children: [            
-            { path: ':tagId', component: TagItemComponent }          
+            { path: ':tagUid', component: TagItemComponent }          
         ]
     },
 ];

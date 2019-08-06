@@ -1895,7 +1895,8 @@ div.home-image-title-text {
 
 .tile {
     header {
-        min-height:40px;
+        min-height: 40px;
+
         .row {
             font-size: 14px;
         }
@@ -2142,7 +2143,7 @@ div.home-image-title-text {
 
     button.button:disabled {
         opacity: 0.33;
-        cursor: default;
+        cursor: default !important;
     }
 
     .flex {
@@ -2320,7 +2321,7 @@ div.home-image-title-text {
     align-items: center;
     padding: 10px;
     padding-left: 20px;
-    margin-left:0px;
+    margin-left: 0px;
 }
 
 .modal-overlay .modal-dialog .title-bar h1 {
@@ -2679,7 +2680,7 @@ button.button {
     position: relative;
     width: 100%;
     height: 34px;
- 
+
     .tab-scroller {
         position: absolute;
         display: inline-flex;
@@ -2716,16 +2717,17 @@ button.button {
         right: 0px;
         left: 0px;
         width: auto;
-        
         scrollbar-width: none !important; /* Firefox */
         -ms-overflow-style: none !important; /* IE 10+ */
         /* end hiding scrollbar*/
     }
 }
+
 .tab-bar::-webkit-scrollbar { /* WebKit hide scrollbar */
     width: 0px !important;
     height: 0px !important;
 }
+
 button.tab, button.tab-scroller {
     box-sizing: border-box;
     padding: 0 15px;
@@ -2831,7 +2833,7 @@ button.tab-scroller {
     }
 
     &.primary {
-        background: @igx-blue; 
+        background: @igx-blue;
     }
 
     .text {
@@ -2847,14 +2849,15 @@ button.tab-scroller {
 }
 
 .d3s-dynamic-percentage {
-	position: relative;
-	text-align: center;
-	width: 20px;
-	height: 20px;
-	border-radius: 100%;
-	background-color: white;
-	background-image: linear-gradient(91deg, transparent 50%, #ccc 50%), linear-gradient(90deg, #ccc 50%, transparent 50%);
+    position: relative;
+    text-align: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 100%;
+    background-color: white;
+    background-image: linear-gradient(91deg, transparent 50%, #ccc 50%), linear-gradient(90deg, #ccc 50%, transparent 50%);
 }
+
 .d3s-dynamic-percentage .d3s-dynamic-percentageInner {
     position: relative;
     top: 4px;
@@ -2877,11 +2880,13 @@ button.tab-scroller {
         background: @igx-green-light;
     }
 }
+
 .d3s-dynamic-percentage .d3s-dynamic-percentageInner div {
     position: relative;
     top: 22px;
     color: @igx-grey-light;
 }
+
 .d3s-dynamic-percentage .d3s-dynamic-percentage-text {
     font-size: 30px;
     line-height: 1em;
@@ -2897,7 +2902,7 @@ button.tab-scroller {
     .description-toggle {
         padding-right: 5px;
         cursor: pointer;
-        color:@igx-blue-light;
+        color: @igx-blue-light;
         font-size: 12px;
     }
 }
@@ -2940,6 +2945,7 @@ button.tab-scroller {
         border-width: 4px;
     }
 }
+
 .modal-overlay {
     .modal-dyn-editor, .modal-delete-form, .modal-consolidate, .medium-width {
         width: 100%;
@@ -2947,8 +2953,8 @@ button.tab-scroller {
     }
 
     .content {
-        .no-float{
-            float:unset;
+        .no-float {
+            float: unset;
         }
     }
 
@@ -3025,7 +3031,7 @@ button.tab-scroller {
     position: fixed;
     top: 56px;
     right: 18px;
-    z-index:999;
+    z-index: 999;
 
 
     .multiselect-action {
@@ -3113,7 +3119,7 @@ button.tab-scroller {
 
     .title {
         color: #006FBA;
-        padding:0px;
+        padding: 0px;
     }
 
     .title:hover {
@@ -3128,7 +3134,7 @@ button.tab-scroller {
         display: inline-block;
         z-index: 1000;
         position: absolute;
-        transform: translate(0, -47%);
+        transform: translate(52px, -54%);
     }
 
     &.ui-tooltip {
@@ -3281,6 +3287,47 @@ button.tab-scroller {
     .tag-list {
         .tag-item {
             display: inline-block;
+        }
+    }
+}
+
+.gov-detail-page {
+    .tile-detail {
+        padding: 5px 18px;
+
+        header {
+            padding: 0px !important;
+
+            d3s-tile-actions {
+                display: flex;
+
+                .TileTools {
+                    all: unset;
+                    margin-left: 15px;
+
+                    ul {
+                        display: flex;
+
+                        li {
+                            all: unset;
+                            display: inline-block;
+                        }
+                    }
+                }
+
+                input.grid-simple-filter {
+                    margin-bottom: 10px !important;
+                    width: 100%;
+                    font-size: 14px;
+                    height: 32px;
+                    position: relative;
+                    top: 14px;
+
+                    &.hidden {
+                        visibility: hidden;
+                    }
+                }
+            }
         }
     }
 }

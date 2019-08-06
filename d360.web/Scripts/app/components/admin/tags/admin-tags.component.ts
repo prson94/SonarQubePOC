@@ -3,10 +3,12 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { TagService } from '../../../services/tag.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
-import { TagType } from '../../../models/tag.model';
+import { TagType, TagItem } from '../../../models/tag.model';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { forEach } from '@angular/router/src/utils/collection';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -32,7 +34,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     public theDeleteCallback: Function;
     public theConsolidateCallback: Function;
 
-    constructor(private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title, rightSidebarService: RightSidebarService, ) {
+    constructor(private router: Router, private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title, rightSidebarService: RightSidebarService, ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Tags";
         this.setCommonItems();
@@ -116,6 +118,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
                 else {
                     this.tags[this.findTagIndex(event.item.uid)].Value = event.item.Value;
                 }
+                this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
+
                 this.selected = [];
                 event.item.UseCount = 0;
                 this.selected.push(event.item);
@@ -196,6 +200,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         }
     }
 
+    openTagDetails(item: TagType) {
+        this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid}`]);
+    }
 
     private export() {
         this.tagsService.exportTags();

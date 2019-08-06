@@ -6,30 +6,34 @@
                 <d3s-tile-actions [hasAdd]="false"
                                   [hasFilterMode]="true"
                                   [(filterMode)]="showSimpleFilter"
-                                  [hasExport]="true" 
-                                  (exportClick)="export()"
-                                  ></d3s-tile-actions>
+                                  [hasExport]="true"
+                                  (exportClick)="export()">
+                    <input type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter {{showSimpleFilter ? '' : 'hidden'}}">
+                </d3s-tile-actions>
             </header>
-            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-            <p-table #dt [value]="tagUsage" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['DisplayValue']" sortField="DisplayValue" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
+            <p-table #dt [value]="tagUsage" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['DisplayValue','AssetType','AssetTypeName','TagsAsString']" sortField="DisplayValue" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'DisplayValue'" style="width: 20%">
                             Asset
                             <d3s-sortIcon [field]="'DisplayValue'"></d3s-sortIcon>
                         </th>
-                        <th style="width: 20%">
+                        <th [pSortableColumn]="'AssetType'" style="width: 20%">
                             Asset Type
+                            <d3s-sortIcon [field]="'AssetType'"></d3s-sortIcon>
+
                         </th>
-                        <th style="width: 50%">
+                        <th [pSortableColumn]="'TagsAsString'" style="width: 50%">
                             Tags
+                            <d3s-sortIcon [field]="'TagsAsString'"></d3s-sortIcon>
+
                         </th>
                         <th style="width: 10%"></th>
                     </tr>
                     <tr [hidden]="showSimpleFilter">
                         <th><d3s-column-filter [field]="'DisplayValue'" [datatype]="'text'"></d3s-column-filter></th>
-                        <th></th>
-                        <th></th>
+                        <th><d3s-column-filter [field]="'AssetType'" [datatype]="'text'"></d3s-column-filter></th>
+                        <th><d3s-column-filter [field]="'TagsAsString'" [datatype]="'text'"></d3s-column-filter></th>
                         <th></th>
                     </tr>
                 </ng-template>
@@ -40,7 +44,7 @@
                         <td>
                             <div class="tag-list">
                                 <div class="tag-item" *ngFor="let tag of item.Tags">
-                                    <button class="button" (click)="openTagPage(tag)">{{tag.Value}}</button>
+                                    <button class="button" (click)="openTagPage(tag)" [disabled]="tag.Uid == tagUid">{{tag.Value}}</button>
                                 </div>
                             </div>
                         </td>

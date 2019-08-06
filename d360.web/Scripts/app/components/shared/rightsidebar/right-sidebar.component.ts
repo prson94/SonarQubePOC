@@ -35,6 +35,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     objectSub: Subscription;
     hideHeaderSub: Subscription;
     assetActionSub: Subscription;
+    assetActionClearSub: Subscription;
 
     items: RightSidebarItem[];  
     buttons: DynamicButton[];
@@ -131,6 +132,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             item => {
                 this.buttons.splice(0, this.buttons.length); this.emitChanges();
             })
+
+
         this.subscriptionClear = this.rightSidebarService.rightSidebarClear$.subscribe(
             item => {
                 this.items.splice(0, this.items.length);
@@ -165,6 +168,12 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.assetActionSub = this.rightSidebarService.assetAction$.subscribe(res => {
             this.assetAction = res;
         });
+
+        this.assetActionClearSub = this.rightSidebarService.assetActionClear$.subscribe(
+            item => {
+                this.assetAction = null;
+                this.emitChanges();
+            })
         this.emitChanges();
 
     }

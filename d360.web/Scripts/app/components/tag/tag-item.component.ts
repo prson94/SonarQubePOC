@@ -6,43 +6,33 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { RightSidebarService } from '../../services/right-sidebar.service';
 import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
-import { SurveysService } from '../../services/surveys.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { RuleDetail, RuleImplementation, RuleType } from '../../models/rule.model';
-import { MessageBarItem } from '../../models/message-bar-item.model';
-import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { StringConstants } from '../../static/string-constants';
-import { RightSidebarItem, AssetAction, EditFormData, DeleteFormData } from '../../models/rightsidebar.model';
-import { Permission } from '../../models/responsibility-type.model';
-import { Observable, Subscribable, Subscription } from 'rxjs';
+import { AssetAction, EditFormData, DeleteFormData } from '../../models/rightsidebar.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
-import { HeaderActionsService } from '../../services/header-actions.service';
 import { TagService } from '../../services/tag.service';
 import { TagType, TagDetail, TagItem } from '../../models/tag.model';
-import { retry, window } from 'rxjs/operators';
-import { Action } from 'rxjs/internal/scheduler/Action';
-import { EditableColumn } from 'primeng/table';
+import { Location } from '@angular/common';
+import { forEach } from '@angular/router/src/utils/collection';
 
-declare var CompanySettings;
 
 @Component({
-    selector: 'd3s-rule-item',
+    selector: 'd3s-tag-item',
     providers: [RulesService, PermissionsService, TagService, GridDefinitionService],
-    templateUrl: 'tag-item.component.html'
+    templateUrl: 'tag-item.component.html',
+    host: { 'class': 'gov-detail-page' }
 })
 
 export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy {
     routeParamsSubscription: any;
-    tagId: number;
+    tagUid: number;
     tag: TagType;
     tagUsage: TagDetail[];
     selected: TagDetail;
-    private currentAreaNameSubscription: any;
     private currentAreaName: string;
 
-    private messages: MessageBarItem[] = [];
+    private backUrl: string;
+
 
     private sub: any;
     actions: AssetAction;
@@ -50,11 +40,10 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
     constructor(private route: ActivatedRoute,
         private router: Router,
+        private loc: Location,
         protected tagsService: TagService,
         protected titleService: Title,
         protected messagesService: MessagesObservableService,
-        private gridDefinitionService: GridDefinitionService,
-        private headerActionsService: HeaderActionsService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         rightSidebarService: RightSidebarService) {
@@ -65,14 +54,12 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            this.tagId = +params['tagId']; // (+) converts string 'id' to a number
-            this.headerBreadcrumbService.setCurrentObjectInfo('Tag', this.tagId);
-            this.logAction('open', 'Tag', this.tagId);
+            this.tagUid = params['tagUid'];
+            this.headerBreadcrumbService.setCurrentObjectInfo('Tag', this.tagUid);
+            this.logAction('open', 'Tag', this.tagUid);
             this.isLoading = true;
-            this.messages = [];
 
-
-            this.loadPermissions(this.permissionsService, "Tag", this.tagId)
+            this.loadPermissions(this.permissionsService, "Tag", this.tagUid)
                 .then(p => {
                     this.load();
                 });
@@ -82,53 +69,65 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnDestroy() {
-
+        this.sub.unsubscribe();
+        this.rightSidebarService.clearActions();
+        this.clearSidebar();
     }
 
     load() {
         this.isLoading = true;
-        this.tagsService.getTagById(this.tagId)
+        this.tagsService.getTagByUid(this.tagUid)
             .subscribe(result => {
-                this.tag = result;
-                this.setObjectInfo('Tag', this.tagId);
-                this.buildBreadcrumb();
-                this.setBrowserTitle(this.titleService, this.tag.Value);
+                if (result) {
+                    this.tag = result;
+                    this.setObjectInfo('Tag', this.tagUid);
+                    this.buildBreadcrumb();
+                    this.setBrowserTitle(this.titleService, this.tag.Value);
 
-                this.setObjectInfo(
-                    'Tag',
-                    this.tagId,
-                    this.tag.Value,
-                    null,
-                    null,
-                    this.tag.uid
-                );
-                this.setCommonRightSideBar(true);
-                this.rightSidebarService.showHeader(true);
+                    this.setObjectInfo(
+                        'Tag',
+                        this.tagUid,
+                        this.tag.Value,
+                        null,
+                        null,
+                        this.tag.uid
+                    );
+                    this.setCommonRightSideBar(true);
+                    this.rightSidebarService.showHeader(true);
 
-                this.setActions();
+                    this.setActions();
 
-                if (this.auditSidebar) {
-                    this.auditSidebar.hasDynamicUrl = true;
-                    this.auditSidebar.dynamicUrlCallback = (() => {
-                        return `/sidebar/audit/Tag/${this.tagId}`
-                    });
+                    if (this.auditSidebar) {
+                        this.auditSidebar.hasDynamicUrl = true;
+                        this.auditSidebar.dynamicUrlCallback = (() => {
+                            return `/sidebar/audit/Tag/${this.tagUid}`
+                        });
+                    }
+
+                    this.tagsService.getTagDetails(this.tag.uid)
+                        .subscribe(data => {
+
+                            this.tagUsage = data.items;
+                            if (this.tagUsage.length > 0) {
+                                this.selected = this.tagUsage[0];
+                            }
+                            this.tagUsage.forEach(tu => {
+                                tu.TagsAsString = tu.Tags.map(x => x.Value).join('|');
+                            })
+                            this.isLoading = false;
+                        });
                 }
+                else {
+                    this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
 
-                this.tagsService.getTagDetails(this.tag.uid)
-                    .subscribe(data => {
-
-                        this.tagUsage = data.items;
-                        if (this.tagUsage.length > 0) {
-                            this.selected = this.tagUsage[0];
-                        }
-                        this.isLoading = false;
-
-                    });
+                }
 
             },
                 err => {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-                });
+            });
+
+
     }
 
     buildBreadcrumb() {
@@ -149,8 +148,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     openTagPage(item: TagItem) {
-        if (item.Id != this.tagId) {
-            this.openTagPageByID(item.Id);
+        if (item.Uid != this.tagUid) {
+            this.openTagPageByID(item.Uid);
         }
     }
 
@@ -170,6 +169,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.actions.showEdit = true;
         this.actions.editCallback = this.onActionEditClick.bind(this);
         this.actions.deleteCallback = this.onActionDeleteClick.bind(this);
+        this.actions.backCallback = this.onActionBackClick.bind(this);
 
         let editAction: EditFormData = new EditFormData();
         editAction.title = 'Edit Tag';
@@ -187,6 +187,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         deleteAction.item = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
         deleteAction.modalTitle = 'Delete Tag';
         deleteAction.isModalVisible = false;
+        deleteAction.showAsModal = true;
 
         this.actions.edit = editAction;
         this.actions.delete = deleteAction;
@@ -194,9 +195,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.rightSidebarService.setActionTitleItems(this.actions);
     }
 
-    deleteCallback() {
-        console.log("Delete callback!");
-    }
+
 
     onActionEditCloseClick() {
         if (this.actions) {
@@ -222,9 +221,23 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.rightSidebarService.setActionTitleItems(this.actions);
     }
 
+    onActionBackClick() {
+        this.loc.back();
+    }
+
+    deleteCallback() {
+        let tagForDelete: TagType[] = [];
+        tagForDelete.push(this.tag);
+        this.tagsService.deleteTags(tagForDelete).
+            subscribe(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.onActionBackClick();
+
+            }, err => this.showMessageForResult(this.messagesService, err));
+    }
+
     saveTag(event) {
 
-        this.onActionEditCloseClick();
         if (event.additionalOption && event.additionalOption.code) {
             let arr: string[] = [];
             arr.push(event.item.uid);
@@ -241,16 +254,21 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                 else {
                     msg = `${result.Value} succesfully updated`;
                 }
-
+                this.tag = event.item;
                 this.showMessageForResult(this.messagesService, result, msg);
+                this.rightSidebarService.setCurrentArea(this.tag.Value, 'fa-tag', 'Tagged Assets');
+                this.setBrowserTitle(this.titleService, this.tag.Value);
 
                 this.tagUsage.forEach(detail => {
                     detail.Tags.forEach(t => {
-                        if (t.Id == this.tagId) {
+                        if (t.Uid == this.tagUid) {
                             t.Value = event.item.Value;
                         }
                     });
                 });
+
+                this.onActionEditCloseClick();
+
 
             });
     }
@@ -261,6 +279,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
                 if (result) {
                     this.messagesService.showInfoMessage("Success", "Tag consolidation succesfull");
+                    this.onActionEditCloseClick();
+                    this.openTagPageByID(parentUid);
 
                 }
             }, err => {

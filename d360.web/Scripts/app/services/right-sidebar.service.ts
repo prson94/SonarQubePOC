@@ -14,6 +14,7 @@ export class RightSidebarService {
     private hideHeaderSource = new Subject<boolean>();
     private rightSidebarButtonSource = new Subject<DynamicButton>();
     private assetActionSource = new Subject<AssetAction>();
+    private assetActionClearSource = new Subject<boolean>();
 
 
     // Observable streams
@@ -26,6 +27,7 @@ export class RightSidebarService {
     hideHeader$ = this.hideHeaderSource.asObservable();
     rightSidebarButton$ = this.rightSidebarButtonSource.asObservable();
     assetAction$ = this.assetActionSource.asObservable();
+    assetActionClear$ = this.assetActionClearSource.asObservable();
 
     setCurrentArea(area: string, icon: string, title: string) {
         this.currentAreaSource.next({ title: area, icon: icon, tabTitle:title });
@@ -44,6 +46,9 @@ export class RightSidebarService {
     }
     clearButtons() {
         this.rightSidebarClearButtonSource.next(true);
+    }
+    clearActions() {
+        this.assetActionClearSource.next(true);
     }
 
     // Service message commands

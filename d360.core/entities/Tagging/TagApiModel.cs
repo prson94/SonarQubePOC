@@ -95,7 +95,7 @@ namespace d360.core.entities
 
     public class TagDetailItem
     {
-        public int Id { get; set; }
+        public Guid Uid { get; set; }
         public string Value { get; set; }
     }
 

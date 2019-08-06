@@ -35,9 +35,10 @@ export class TagDetail {
     AssetTypeName: string;
     Object: string;
     ObjectID: number;
+    TagsAsString: string;
     Tags: TagItem[];
 }
 export class TagItem {
-    Id: number;
+    Uid: number;
     Value: string;
 }

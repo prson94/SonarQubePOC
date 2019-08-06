@@ -1395,6 +1395,12 @@ order by 'Name'";
 
         #region Followers
 
+        [HttpGet, Route("followinfo/{type}/{uid}")]
+        public dynamic GetFollowInfo(Guid uid, SystemObjects type)
+        {
+            int id = Company.GetObjectId(uid, type);
+            return GetFollowInfo(id, type);
+        }
         [HttpGet, Route("followinfo/{type}/{id:int}")]
         public dynamic GetFollowInfo(int id, SystemObjects type)
         {
@@ -5175,6 +5181,13 @@ where    A.RuleID = @id", new { id });
             return Company.GetAssetDetail(id);
         }
 
+        [Route("{type}/{uid}")]
+        public ObjectDetail GetObjectDetail(SystemObjects type, Guid uid)
+        {
+            int id = Company.GetObjectId(uid, type);
+            return GetObjectDetail(type, id);
+        }
+
         [Route("{type}/{id:int}")]
         public ObjectDetail GetObjectDetail(SystemObjects type, int id)
         {
@@ -6921,6 +6934,12 @@ where v.id = {0}", id)).FirstOrDefault();
             return GetPermissionsByObject(asset, isAdmin);
         }
 
+        [Route("{type}/{uid}/permissions")]
+        public List<PermissionInfo> GetPermissionsByObject(SystemObjects type, Guid uid)
+        {
+            int id = Company.GetObjectId(uid, type);
+            return GetPermissionsByObject(type, id);
+        }
 
         [Route("{type}/{id:int}/permissions")]
         public List<PermissionInfo> GetPermissionsByObject(SystemObjects type, int id)
