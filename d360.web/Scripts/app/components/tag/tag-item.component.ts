@@ -13,7 +13,7 @@ import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
-import { RightSidebarItem, AssetAction, EditFormData } from '../../models/rightsidebar.model';
+import { RightSidebarItem, AssetAction, EditFormData, DeleteFormData } from '../../models/rightsidebar.model';
 import { Permission } from '../../models/responsibility-type.model';
 import { Observable, Subscribable, Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../services/messages-observable.service';
@@ -169,6 +169,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.actions.showDelete = true;
         this.actions.showEdit = true;
         this.actions.editCallback = this.onActionEditClick.bind(this);
+        this.actions.deleteCallback = this.onActionDeleteClick.bind(this);
 
         let editAction: EditFormData = new EditFormData();
         editAction.title = 'Edit Tag';
@@ -181,9 +182,20 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         editAction.saveClick = this.saveTag.bind(this);
         editAction.showAsModal = true;
 
+        let deleteAction: DeleteFormData = new DeleteFormData();
+        deleteAction.callback = this.deleteCallback.bind(this);
+        deleteAction.item = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
+        deleteAction.modalTitle = 'Delete Tag';
+        deleteAction.isModalVisible = false;
+
         this.actions.edit = editAction;
+        this.actions.delete = deleteAction;
 
         this.rightSidebarService.setActionTitleItems(this.actions);
+    }
+
+    deleteCallback() {
+        console.log("Delete callback!");
     }
 
     onActionEditCloseClick() {
@@ -198,8 +210,21 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.rightSidebarService.setActionTitleItems(this.actions);
     }
 
+    onActionDeleteCloseClick() {
+        if (this.actions) {
+            this.actions.delete.isModalVisible = false;
+            this.rightSidebarService.setActionTitleItems(this.actions);
+        }
+    }
+
+    onActionDeleteClick() {
+        this.actions.delete.isModalVisible = true;
+        this.rightSidebarService.setActionTitleItems(this.actions);
+    }
+
     saveTag(event) {
 
+        this.onActionEditCloseClick();
         if (event.additionalOption && event.additionalOption.code) {
             let arr: string[] = [];
             arr.push(event.item.uid);
@@ -222,12 +247,11 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                 this.tagUsage.forEach(detail => {
                     detail.Tags.forEach(t => {
                         if (t.Id == this.tagId) {
-                            console.log(event);
+                            t.Value = event.item.Value;
                         }
                     });
                 });
 
-                this.onActionEditCloseClick();
             });
     }
 
@@ -239,7 +263,6 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                     this.messagesService.showInfoMessage("Success", "Tag consolidation succesfull");
 
                 }
-                this.onActionEditCloseClick();
             }, err => {
                 this.showMessageForResult(this.messagesService, err);
 

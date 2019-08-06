@@ -39,9 +39,10 @@ export class AssetAction {
     showDelete: boolean;
 
     editCallback: Function;
-
+    deleteCallback: Function;
 
     edit: EditFormData;
+    delete: DeleteFormData;
 }
 
 export class EditFormData {
@@ -54,4 +55,12 @@ export class EditFormData {
     modalTitle: string;
     isModalVisible: boolean;
     closeClick: Function;
+}
+
+export class DeleteFormData {
+    callback: Function;
+    item: any;
+    showAsModal: boolean;
+    modalTitle: string;
+    isModalVisible: boolean;
 }
