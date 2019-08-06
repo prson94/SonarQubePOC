@@ -167,7 +167,7 @@ namespace d360.model.DataAccessLayer
                         switch (param.Value.ToLower())
                         {
                             case "name": orderByClause = "order by ST.Name"; break;
-                            case "validfordays": orderByClause = "order by ST.ValidForDays"; break;
+                            case "validfordays": orderByClause = "order by ST.ValidForDays desc"; break;
                             case "createdon": orderByClause = "order by ST.CreatedOn"; break;
                             case "updatedon": orderByClause = "order by ST.UpdatedOn"; break;
                             case "numberofresponses": orderByClause = "order by NumberOfResponses desc"; break;
