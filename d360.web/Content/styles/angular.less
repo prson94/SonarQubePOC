@@ -2952,6 +2952,7 @@ button.tab-scroller {
         max-width: 550px;
     }
 
+    font-family: "Nunito Sans";
     color: black;
 
     .content {
@@ -3146,6 +3147,7 @@ button.tab-scroller {
 
     &.ui-tooltip {
         max-width: unset;
+        max-width: none;
 
         a {
             color: #006FBA;
@@ -3519,5 +3521,12 @@ button.tab-scroller {
         margin-right: 12px;
         line-height: 32px;
         font-weight: normal;
+    }
+}
+
+
+.enable-pointer-events {
+    .ui-chkbox {
+        pointer-events: all;
     }
 }
