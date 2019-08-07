@@ -262,4 +262,5 @@
   <include file="scripts/GOV-7670.xml"/> <!-- GetLineage, v1 -->
   <include file="scripts/GOV-7784.xml"/>
   <include file="scripts/GOV-7463-3.xml"/>
+  <include file="scripts/GOV-7464-5.xml"/>
 </databaseChangeLog>
