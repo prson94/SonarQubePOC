@@ -5,13 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="GOV-7833">
+  <changeSet author="kmcnamee" id="GOV-7833-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
 		<![CDATA[  
-create or ALTER procedure [dbo].[GetDynamicAssets]
+CREATE OR ALTER   procedure [dbo].[GetDynamicAssets]
 	@assetTypeId int,
 	@userId int,
 	@filter nvarchar(250),
@@ -172,7 +172,7 @@ begin
 	end
 
 	--relationships where other object is only subject
-	if (@relationIsSubject = 1)
+	if (@relationIsSubject = 1 and @relationIsObject = 0)
 	begin
 		update	#ft
 		set		JoinStatement = ' left join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' and FT'+TxtId+'.LookupObjectType = ''IntersectType''' 
@@ -199,7 +199,7 @@ begin
 									end
 		where	[Type] = 'Relationship';
 	end
-	else if (@relationIsObject =1 ) -- relationship where target is always object
+	else if (@relationIsObject =1 and @relationIsSubject = 0 ) -- relationship where target is always object
 	begin
 		update	#ft
 		set		JoinStatement = ' left join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' and FT'+TxtId+'.LookupObjectType = ''IntersectType''' 
