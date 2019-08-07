@@ -9,7 +9,7 @@
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <span *ngIf="!isLoading">
                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                <p-table #dt [value]="tags" selectionMode="multiple" [metaKeySelection]="true" [globalFilterFields]="['Value']" sortField="Value" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
+                <p-table #dt [value]="tags" [globalFilterFields]="['Value']" [rowsPerPageOptions]="[10,20,50,100,200,500]" sortField="Value" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
                     <ng-template pTemplate="header">
                         <tr>
                             <th style="width: 20px;">
@@ -34,11 +34,11 @@
                     </ng-template>
                     <ng-template pTemplate="body" let-item >
                         <tr [pSelectableRow]="item">
-                            <td>
+                            <td class="enable-pointer-events">
                                 <p-tableCheckbox [value]="item"></p-tableCheckbox>
                             </td>
-                            <td>{{item.Value}}</td>
-                            <td>{{item.UseCount}}</td>
+                            <td (click)="selectSingleItem(item);">{{item.Value}}</td>
+                            <td (click)="selectSingleItem(item);">{{item.UseCount}}</td>
                             <td>
                                 <div class="RowTools">
                                     <a style="cursor:pointer;" (click)="openTagDetails(item);"><i class="fa fa-info"></i></a>
@@ -75,14 +75,17 @@
                              (onCancel)="showDelete=false;">
                 <div prompt>
                     <div *ngIf="selected.length == 1">
-                        Please confirm that you wish to delete the tag '{{this.selected[0].Value}}'(<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} assets</d3s-tag-usage> tagged)
+                        Please confirm that you wish to delete the tag '{{this.selected[0].Value}}' 
+                        <ng-container *ngIf="this.selected[0].UseCount > 0">
+                            (<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} assets</d3s-tag-usage> tagged)
+                        </ng-container>
                     </div>
                     <div *ngIf="selected.length > 1">
                         Please confirm that you wish to delete following tags:
                         <table class="table-borderless table">
                             <tr *ngFor="let t of selected">
                                 <td>{{t.Value}}</td>
-                                <td><d3s-tag-usage [uid]="t.uid">{{t.UseCount}} assets</d3s-tag-usage> tagged</td>
+                                <td *ngIf="t.UseCount > 0"><span class="tag-desc"><d3s-tag-usage [uid]="t.uid">{{t.UseCount}} assets</d3s-tag-usage> tagged</span></td>
                             </tr>
                         </table>
                     </div>

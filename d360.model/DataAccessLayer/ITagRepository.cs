@@ -10,6 +10,7 @@ namespace d360.model.DataAccessLayer
     public interface ITagRepository
     {
         Task<TagApiModelWrapper> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<dynamic> GetTagsWithResourceName(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool DeleteTag(Guid uid);
         bool DeleteTags(List<TagApiDeleteModel> models);
         TagApiModel CreateTag(TagApiModel model);
@@ -25,7 +26,7 @@ namespace d360.model.DataAccessLayer
         bool DeleteAssetTag(int tagId, long assetId);
         List<AssetTagList> GetAssetsPathForTag(Guid tagUid);
         IEnumerable<TagApiModel> ConsolidateTags(string parentUid, List<string> childrenUids);
-        List<dynamic> SearchTags(string tag);
+        List<dynamic> SearchTags(IEnumerable<KeyValuePair<string,string>> queryParams);
         bool SetTaggingStatus(bool state);
         TagDetailApiModel GetDetails(Guid tagUid, IEnumerable<KeyValuePair<string,string>> keyValuePairs);
     }

@@ -45,16 +45,17 @@ namespace d360.web.Controllers.V2
         /// <returns>A list of tags</returns>
         [
             HttpGet, MapToApiVersion("2.0"),
-            Route("search/{name}"),
+            Route("search"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> Search(string name)
+        public async Task<IHttpActionResult> Search()
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             try
             {
-                var tags = tagRepository.SearchTags(name);
+                var queryParams = Request.GetQueryNameValuePairs();
+                var tags = tagRepository.SearchTags(queryParams);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, tags));
             }
             catch (Exception ex)
@@ -376,7 +377,7 @@ namespace d360.web.Controllers.V2
 
             var queryParams = Request.GetQueryNameValuePairs();
 
-            var tags = await tagRepository.GetTags(queryParams);
+            var tags = await tagRepository.GetTagsWithResourceName(queryParams);
 
             var document = new SLDocument();
             document.AddWorksheet("Items");
@@ -387,7 +388,7 @@ namespace d360.web.Controllers.V2
 
             int index = 1;
             document.SetCellValue(1, index++, "Uid");
-            document.SetCellValue(1, index++, "Value");
+            document.SetCellValue(1, index++, "Name");
             document.SetCellValue(1, index++, "Use Count");
             document.SetCellValue(1, index++, "Created On");
             document.SetCellValue(1, index++, "Created By");
@@ -397,7 +398,7 @@ namespace d360.web.Controllers.V2
             #endregion
 
             int rowNumber = 1;
-            foreach (var row in tags.items)
+            foreach (var row in tags)
             {
                 index = 1;
                 rowNumber++;
@@ -405,9 +406,9 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, row.Value.ToString());
                 document.SetCellValue(rowNumber, index++, row.UseCount.ToString());
                 document.SetCellValue(rowNumber, index++, row.CreatedOn.ToString());
-                document.SetCellValue(rowNumber, index++, row.CreatedByUid.ToString());
+                document.SetCellValue(rowNumber, index++, row.CreatedBy.ToString());
                 document.SetCellValue(rowNumber, index++, row.UpdatedOn.ToString());
-                document.SetCellValue(rowNumber, index++, row.UpdatedByUid.ToString());
+                document.SetCellValue(rowNumber, index++, row.UpdatedBy.ToString());
             }
 
             #endregion
