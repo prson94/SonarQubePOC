@@ -49,9 +49,9 @@ namespace d360.model.DataAccessLayer
 	                        t.Value,
                             Tags.count as UseCount,
 	                        t.CreatedOn,
-	                        grc.FirstName + ' ' +grc.LastName as CreatedBy,
+	                        grc.uid as CreatedByUid,
 	                        t.UpdatedOn,
-	                        gru.FirstName + ' ' +gru.LastName as UpdatedBy
+	                        gru.uid as UpdatedByUid
                          from [tag] t
 	                        left join reporting.Global_Resource grc on t.CreatedBy = grc.ResourceID
 	                        left join reporting.Global_Resource gru on t.UpdatedBy = gru.ResourceID
