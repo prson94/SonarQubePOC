@@ -3134,16 +3134,17 @@ button.tab-scroller {
         display: inline-block;
         z-index: 1000;
         position: absolute;
-        transform: translate(52px, -54%);
+        transform: translate(0, -47%);
     }
 
     &.ui-tooltip {
+        max-width: unset;
+
         .ui-tooltip-text {
             padding: .125em .5em;
             background-color: #ffffff;
             color: #000;
             white-space: pre-line;
-            width: max-content;
             max-width: 500px;
             font-size: 12px;
             padding: 15px;
@@ -3163,6 +3164,7 @@ button.tab-scroller {
                     }
 
                     &.suppressed {
+                        min-width: 250px;
                         color: #969696;
 
                         .fa {
@@ -3171,19 +3173,6 @@ button.tab-scroller {
                         }
                     }
                 }
-            }
-
-            &::-webkit-scrollbar {
-                width: 5px;
-            }
-
-            &::-webkit-scrollbar-track {
-                border-radius: 4px;
-            }
-
-            &::-webkit-scrollbar-thumb {
-                background: #4e5466;
-                border-radius: 4px;
             }
         }
 
