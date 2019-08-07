@@ -13563,7 +13563,7 @@ order by	case
         {
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Value", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -13576,7 +13576,7 @@ order by	case
             var a = Company.GetById<Tag>(id);
 
             list.Add(new EditableField { FieldName = "uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Value", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
