@@ -2894,7 +2894,7 @@ order by    rnk, [Name]";
 
                                 var obj = i.Object.Replace("Type", "");
 
-                                var useAssetJoins = (i.Object == SystemObjects.PolicyType.ToString() || i.Object == SystemObjects.Artifact.ToString());
+                                var useAssetJoins = (i.Object == SystemObjects.PolicyType.ToString() || i.Object == SystemObjects.ArtifactType.ToString());
 
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{obj}'", datafield = $"{dataField}_Object" });
@@ -2989,9 +2989,15 @@ outer apply (
                     string overrideDisplayColumn = null;
                     bool isReferenceType = (join.Object == "ReferenceItemType" && join.ObjectID == 0);
                     string @object = isReferenceType ? join.Object : join.Object.Replace("Type", "");
-                    string idColumn = @object == "Resource" ? "ResourceID" : "ID";
+                    string idColumn = "ID";
                     string delim = @object.StartsWith("Fusion") ? "." : "/";
 
+                    if (@object == "Resource")
+                        idColumn = "ResourceID";
+                    else if (@object == "Artifact" || @object == "Policy")
+                        idColumn = "ObjectID";
+                        
+                    
                     if (i.FieldTypeID == 0)
                     {
                         if (isReferenceType)
