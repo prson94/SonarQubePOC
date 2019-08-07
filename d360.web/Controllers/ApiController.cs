@@ -2894,7 +2894,7 @@ order by    rnk, [Name]";
 
                                 var obj = i.Object.Replace("Type", "");
 
-                                var useAssetJoins = i.Object == SystemObjects.PolicyType.ToString();
+                                var useAssetJoins = (i.Object == SystemObjects.PolicyType.ToString() || i.Object == SystemObjects.Artifact.ToString());
 
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{obj}'", datafield = $"{dataField}_Object" });
