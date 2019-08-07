@@ -36,7 +36,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Tags";
         this.setCommonItems();
-        this.rightSidebarService.setCurrentArea(this.areaName, this.area === 'Tags' ? 'fa-tag' : "fa-tag", this.tabTitle);
+        this.tabTitle = 'Tags';
+        this.rightSidebarService.setCurrentArea(this.areaName, 'fa-tag', this.tabTitle);
 
     }
 

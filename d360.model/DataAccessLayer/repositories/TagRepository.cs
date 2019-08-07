@@ -129,6 +129,88 @@ namespace d360.model.DataAccessLayer
             return results;
         }
 
+        public async Task<dynamic> GetTagsWithResourceName(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            int pageSize = 0;
+            int pageNum = 0;
+
+            var dbArgs = new DynamicParameters();
+            var sql = @"select t.uid,
+	                        t.Value,
+                            Tags.count as UseCount,
+	                        t.CreatedOn,
+	                        grc.FirstName + ' ' +grc.LastName as CreatedBy,
+	                        t.UpdatedOn,
+	                        gru.FirstName + ' ' +gru.LastName as UpdatedBy
+                         from [tag] t
+	                        left join reporting.Global_Resource grc on t.CreatedBy = grc.ResourceID
+	                        left join reporting.Global_Resource gru on t.UpdatedBy = gru.ResourceID
+							cross apply (select count(*) from AssetTag where TagId = t.Id)Tags (count)";
+
+            var countSql = @"select count(1)
+                            from[tag] t
+                                left join reporting.Global_Resource grc on t.CreatedBy = grc.ResourceID
+                                left join reporting.Global_Resource gru on t.UpdatedBy = gru.ResourceID";
+
+
+            List<string> queryFilters = new List<string>();
+
+            dbArgs.Add("@state", State.Active);
+            queryFilters.Add($"t.[state] = @state");
+
+
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "uid"))
+            {
+                Guid uid = new Guid();
+
+                var tagUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "uid").Value;
+                if (Guid.TryParse(tagUidString, out uid))
+                {
+                    dbArgs.Add("@uid", uid);
+                    queryFilters.Add($"t.[UID] = @uid");
+                }
+            }
+
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_pagesize"))
+            {
+
+                if (int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_pagesize").Value, out pageSize))
+                {
+                    if (pageSize < 1) pageSize = 1;
+                }
+                if (pageSize > 250) pageSize = 250; // max page size is 250 people.
+            }
+
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_pagenum"))
+            {
+                if (int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_pagenum").Value, out pageNum))
+                {
+                    if (pageNum < 1) pageNum = 1;
+                }
+            }
+
+            if (queryFilters.Count > 0)
+            {
+                sql += " where " + string.Join(" and ", queryFilters);
+                countSql += " where " + string.Join(" and ", queryFilters);
+            }
+
+            sql += " order by [ID] ASC"; // admin screen will most likely order results however it sees fit
+
+            if (pageSize > 0 || pageNum > 0)
+            {
+                if (pageSize < 1) pageSize = 1;
+                if (pageNum < 1) pageNum = 1;
+
+                sql += $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+
+            }
+
+
+           return await companyContext.QueryAsync<dynamic>(sql, dbArgs);
+  
+        }
+
         public TagApiModel CreateTag(TagApiModel model)
         {
             var tag = new Tag
@@ -301,13 +383,35 @@ namespace d360.model.DataAccessLayer
             return result;
         }
 
-        public List<dynamic> SearchTags(string tag)
+        public List<dynamic> SearchTags(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
+            string value = "";
+            Guid exceptUid = Guid.Empty;
+            foreach(var queryitem in queryParams)
+            {
+                switch (queryitem.Key.ToLower())
+                {
+                    case "exceptuid":
+                        try
+                        {
+                            exceptUid = Guid.Parse(queryitem.Value);
+                        }
+                        catch
+                        {
+                            exceptUid = Guid.Empty;
+                        }
+                        break;
+                    case "value":
+                        value = queryitem.Value.ToLower();
+                        break;
+                }
+            }
+
             string sql = @"select T.Value as name, T.uid as code, Results.count from Tag T 
                             cross apply (select count(*) from AssetTag where TagID = T.ID)Results(count)
-                            where State = 1 and LOWER(T.Value) like '%'+@term+'%'";
+                            where State = 1 and LOWER(T.Value) like '%'+@value+'%' and T.uid != @exceptUid";
 
-            return companyContext.Query<dynamic>(sql, new { term = tag }).ToList();
+            return companyContext.Query<dynamic>(sql, new { value, exceptUid }).ToList();
         }
 
 
