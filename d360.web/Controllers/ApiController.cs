@@ -2989,9 +2989,15 @@ outer apply (
                     string overrideDisplayColumn = null;
                     bool isReferenceType = (join.Object == "ReferenceItemType" && join.ObjectID == 0);
                     string @object = isReferenceType ? join.Object : join.Object.Replace("Type", "");
-                    string idColumn = @object == "Resource" ? "ResourceID" : "ID";
+                    string idColumn = "ID";
                     string delim = @object.StartsWith("Fusion") ? "." : "/";
 
+                    if (@object == "Resource")
+                        idColumn = "ResourceID";
+                    else if (@object == "Artifact" || @object == "Policy")
+                        idColumn = "ObjectID";
+                        
+                    
                     if (i.FieldTypeID == 0)
                     {
                         if (isReferenceType)
