@@ -8250,8 +8250,7 @@ where	Type = 'ReferenceItemType'
 
             if (entity == null) return null;
 
-            var types = DataType.Text.GetDataTypeInfoList();
-
+            var types = DataType.Text.GetDataTypeInfoList().Where(x => x.CompanySettingActive != null && Community.IsCompanySettingActive(x.CompanySettingActive)).ToList();
             var fields = Company.Query<dynamic>(@"select 
                                            eft.*,
                                            ft.Name,

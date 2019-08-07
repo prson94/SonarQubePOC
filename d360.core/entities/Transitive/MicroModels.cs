@@ -261,6 +261,9 @@ namespace d360.core.entities
         public int? Score { get; set; }
 
         [DataMember]
+        public DateTime? ScoreLast { get; set; }
+
+        [DataMember]
         public int IssueCount { get; set; }
 
         [DataMember]

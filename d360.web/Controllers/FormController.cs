@@ -3596,15 +3596,12 @@ namespace d360.web.Controllers
                 { "Public Url", @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
                 { "US Zip Code", @"^(\d{5}(?:\-\d{4})?)$" }
             };
-            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type)
-                    .Where(i => !i.ReadOnly)
-                    .Select(i => new
+            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type).Where(i => i.CompanySettingActive != null && !i.ReadOnly && Community.IsCompanySettingActive(i.CompanySettingActive)).Select(i => new
                     {
                         title = i.Description,
                         value = i.Name
                     })
-                    .OrderBy(i => i.title)
-                    .ToList();
+                    .OrderBy(i => i.title).ToList();
 
             var jsonFieldType = new Dictionary<string, string>()
             {
@@ -13560,7 +13557,7 @@ order by	case
         {
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Value", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -13573,7 +13570,7 @@ order by	case
             var a = Company.GetById<Tag>(id);
 
             list.Add(new EditableField { FieldName = "uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Value", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
