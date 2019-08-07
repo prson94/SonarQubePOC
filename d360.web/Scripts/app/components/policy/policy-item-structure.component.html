@@ -43,7 +43,7 @@
             </style>
             <tr [ttSelectableRow]="rowNode"
                 class="linkTree">
-                <td>
+                <td title="{{item.DisplayValue}}" class="no-text-overflow">
                     <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                     <a (click)="showHierarchy(item.ID)"
                         [ngStyle]="setTreeNodeStyles(rowNode.node)">{{item.DisplayValue}} <i *ngIf="item?.hasRelations"
@@ -52,7 +52,7 @@
                             title="Item has relationships"
                             style="color:#999;"></i></a>
                 </td>
-                <td *ngFor="let column of columns">
+                <td class="no-text-overflow" *ngFor="let column of columns">
                     <d3s-dynamic-field-value [column]="column"
                         [fields]="fields"
                         [item]="item"></d3s-dynamic-field-value>
