@@ -360,6 +360,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             return false;
         }
 
+        if (this.object == 'Tag' && this.field.Value) {
+            if (this.field.Value.includes('|')) {
+                this.form.controls[this.field.FieldName].setErrors({ hasPipe: true });
+                return false;
+            }
+        }
+
         if (this.field.FieldType == "Link") {
             if (this.form.controls[this.field.FieldName + '_Name'] == undefined
                 || this.form.controls[this.field.FieldName + '_Name'].disabled
@@ -480,6 +487,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         if (errors["alreadyExists"]) {
             message += `A ${this.object.toLowerCase()} with this name already exists, please enter a unique name.`;
+        }
+
+        if (errors["hasPipe"]) {
+            message += `Tag name should not have pipe symbol '|' in name!`;
         }
 
         return message;
