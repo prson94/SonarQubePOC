@@ -27,10 +27,10 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
     }
 
     ngOnInit() {
-        this.areaName = "Workflow";
-        this.adminHeading = "Workflow";
+        this.areaName = "Workflows";
+        this.adminHeading = "Workflows";
         this.clearSidebar();
-        this.titleService.setTitle('Workflow');
+        this.titleService.setTitle('Workflows');
         this.setCommonItems();
     }
 

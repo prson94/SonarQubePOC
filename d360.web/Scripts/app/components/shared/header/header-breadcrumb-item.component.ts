@@ -271,7 +271,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
             this.router.navigateByUrl(url);
     }
     private hasLink(url: string) {
-        if (url && url.length > 0) return true;
+        if (url && url.length > 0 && !this.isLastItem) return true;
         else false;
     }
     private hasClass(element, className) {
