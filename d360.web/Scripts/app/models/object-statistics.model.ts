@@ -11,5 +11,6 @@ export class ObjectStatistics {
     IssueCount: number;
     IssueLast: string;
     Score: number;
+    ScoreLast: string;
     Items: ObjectStatisticChildItem[];
 }

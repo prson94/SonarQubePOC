@@ -60,7 +60,7 @@ export class DynamicPercentageComponent implements AfterViewInit, OnChanges {
         }
         if (curr < end) {
             setTimeout(() => {
-                this.calculatePercent(event, end, ++i);
+                this.calculatePercent(event, end, 2 + i);
             }, 1);
         }
     }

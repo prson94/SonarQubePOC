@@ -123,7 +123,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                             true
                         )
                         ;
-                    this.rightSidebarService.setCurrentObject("ArtifactType", typeID, "Artifact", id, false, artifact.HasWorkflow);
+                    this.rightSidebarService.setCurrentObject("ArtifactType", typeID, "Artifact", id, false, artifact.HasWorkflow, this.artifact.Uid);
                     if (this.artifact.HasChildArtifacts) {
                         this
                             .rightSidebarService

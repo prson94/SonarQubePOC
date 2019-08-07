@@ -274,6 +274,7 @@ when not matched by target then
                         break;
                     case "Score":
                         model.Score = i.Value;
+                        model.ScoreLast = i.MostRecent;
                         break;
                     case "Issues":
                         model.IssueCount = i.Value.GetValueOrDefault();

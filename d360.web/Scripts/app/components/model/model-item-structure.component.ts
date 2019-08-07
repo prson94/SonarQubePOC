@@ -106,9 +106,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                             this.rightSidebarService.setCurrentArea(this.model.Name, icon, 'Model');
                             this.rightSidebarService.setCurrentObject('TaxonomyType', this.model.ID, this.model.Name, null, true);
                             this.setCommonRightSideBar(true, false, this.model.HasDashboards);
+                            this.rightSidebarService.showItem(new RightSidebarItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`,null,7))
                             this.rightSidebarService.showHeader(true);
                         });
-                        this.rightSidebarService.showItem(new RightSidebarItem('Hierarchy Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`))
 
                     });
 

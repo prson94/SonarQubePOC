@@ -4,6 +4,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { SurveysService } from '../../../services/surveys.service';
 import { SurveyType } from '../../../models/survey.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 declare var CurrentResourceID;
 
@@ -14,7 +15,7 @@ declare var CurrentResourceID;
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div *ngIf="showBoard" class="tile tile-detail" style="margin-top: 5px; margin-bottom: 5px;">
-                        <d3s-take-survey [surveyType]="surveyType" [objectID]="objectId" [objectType]="[objectName]" [ShowCloseButton]="true" (surveyBack)="goBack()"></d3s-take-survey>
+                        <d3s-take-survey [surveyType]="surveyType" [objectID]="objectId" [objectType]="objectName" [ShowCloseButton]="true" (surveyBack)="goBack()" (surveyComplete)="handleComplete($event)"></d3s-take-survey>
                     </div>
                 </div>
             </div>
@@ -36,6 +37,7 @@ export class SurveyComponent extends BaseComponent implements OnInit, OnDestroy 
 
     constructor(private route: ActivatedRoute,
         private surveysService: SurveysService,
+        private msgService: MessagesObservableService,
         private router: Router) { super(); }
 
     ngOnInit() {
@@ -68,6 +70,10 @@ export class SurveyComponent extends BaseComponent implements OnInit, OnDestroy 
 
     ngOnDestroy() {
         this.sub.unsubscribe();
+    }
+
+    handleComplete(res) {
+        this.showMessageForResult(this.msgService, res);
     }
 
     goBack() {
