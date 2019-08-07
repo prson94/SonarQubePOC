@@ -1377,9 +1377,6 @@ from	IntersectType I
                                                 case "RuleType":
                                                     legacyTable = "[Rule]";
                                                     break;
-                                                case "TaxonomyType":
-                                                    legacyTable = "Taxonomy";
-                                                    break;
                                             }
 
                                             if (!string.IsNullOrEmpty(legacyTable))
