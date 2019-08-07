@@ -18,9 +18,9 @@ declare var CompanySettings;
                         <li class="header-action-li spacer" *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
                         <li class="header-action-li spacer" *ngIf="hasRaiseIssueButton"><d3s-raise-issue-button></d3s-raise-issue-button></li>
                         <li class="header-action-li hide-on-med-and-down" *ngIf="showShoppingCart" ><d3s-header-shopping-cart ></d3s-header-shopping-cart></li>
-                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-favorites></li>
-                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-homepage></li>
-                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFollow  && !isAdminUrl" ><d3s-header-follow></d3s-header-follow></li>                    
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl && !isSidebarUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-favorites></li>
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl && !isSidebarUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-homepage></li>
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFollow  && !isAdminUrl && !isSidebarUrl" ><d3s-header-follow></d3s-header-follow></li>                    
                         <li class="header-action-li" *ngIf="headerActionsService.showHelp"><d3s-header-help></d3s-header-help></li>
                         <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i></a></li>
                         <li class="header-action-li hide-on-med-and-down" ><d3s-header-profile></d3s-header-profile></li>                    
@@ -38,6 +38,7 @@ export class HeaderActionsComponent {
     @ViewChild('actions') actionsUIElem : any;
 
     public isAdminUrl = false;
+    public isSidebarUrl = false;
     private uri = "";
     public notTopArtifact: boolean = true;
     public testuri: string[] = [];
@@ -82,7 +83,8 @@ export class HeaderActionsComponent {
                 //dont show raise issue button on raise issue screen or any admin screens or user profile           
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
                 let isResourceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESOURCE_ROOT.toUpperCase());
-                this.hasRaiseIssueButton = ((!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !this.isAdminUrl && !isResourceUrl && (CompanySettings.DisableIssueManagement==='false') ) == true);                
+                this.isSidebarUrl = (this.uri || '').toUpperCase().startsWith('sidebar'.toUpperCase());
+                this.hasRaiseIssueButton = ((!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !this.isAdminUrl && !isResourceUrl && !this.isSidebarUrl && (CompanySettings.DisableIssueManagement==='false') ) == true);                
                 setTimeout(() => { this.calculateControlWidth();}, 250);
             }
         });
