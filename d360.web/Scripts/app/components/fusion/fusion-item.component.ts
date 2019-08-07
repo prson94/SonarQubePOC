@@ -108,7 +108,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
 
         this.rightSidebarService.showItem(new RightSidebarItem('History', 'fusionhistory', ['fa-archive'], `/fusion/history/${this.fusionId}`));
 
-        if (isManual) this.rightSidebarService.showItem(new RightSidebarItem('Load', 'fusionload', ['fa-file-excel-o'], `/fusion/manual/load/${this.fusionId}`));           
+        if (isManual) this.rightSidebarService.showItem(new RightSidebarItem('Load Data', 'fusionload', ['fa-file-excel-o'], `/fusion/manual/load/${this.fusionId}`));           
     }
     
     private buildBreadcrumb() {  
@@ -132,7 +132,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             }
             this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).then(icon => {
                 this.setRightSideBar(this.fusion.HasDashboards, this.fusion.Manual);
-                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon, 'Definition');
+                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon, 'Configuration');
                 this.rightSidebarService.showHeader(true);
             });
         });

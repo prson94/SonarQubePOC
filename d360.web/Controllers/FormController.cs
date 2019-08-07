@@ -3602,15 +3602,12 @@ namespace d360.web.Controllers
                 { "Public Url", @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
                 { "US Zip Code", @"^(\d{5}(?:\-\d{4})?)$" }
             };
-            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type)
-                    .Where(i => !i.ReadOnly)
-                    .Select(i => new
+            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type).Where(i => i.CompanySettingActive != null && !i.ReadOnly && Community.IsCompanySettingActive(i.CompanySettingActive)).Select(i => new
                     {
                         title = i.Description,
                         value = i.Name
                     })
-                    .OrderBy(i => i.title)
-                    .ToList();
+                    .OrderBy(i => i.title).ToList();
 
             var jsonFieldType = new Dictionary<string, string>()
             {
@@ -9655,6 +9652,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             
             int objectTypeID = -1;
             string parentType = string.Empty;
+            bool useAssetJoin = false;
 
             #region Resolve Type
 
@@ -9691,6 +9689,11 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             {
                 targetType = relationshipType.Subject;
                 targetTypeID = relationshipType.SubjectID;
+            }
+
+            if (targetType == SystemObjects.ArtifactType.ToString())
+            {
+                useAssetJoin = true;
             }
 
             #endregion
@@ -9951,7 +9954,8 @@ order by r.Name";
                 default:
                     #region
                     sql = $@"(
-select		D.[Object], 
+select		D.ID,
+            D.[Object], 
 			D.ObjectID
 from		Asset D
             inner join AssetType AST on D.AssetTypeID = AST.ID
@@ -9960,7 +9964,7 @@ from		Asset D
 											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
 										)
 where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType and D.ObjectID != @id
-) C on C.ObjectID = O.ID";
+) C on {(useAssetJoin ? "C.ID" : "C.ObjectID")} = O.ID";
 
                     switch (targetType)
                     {

@@ -325,7 +325,7 @@ namespace d360.model.DataAccessLayer
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
-                    model.ObjectID = a.ID;
+                    model.ObjectID = a.ObjectID;
                     model.Object = SystemObjects.ArtifactType.ToString();
 
                     #endregion
