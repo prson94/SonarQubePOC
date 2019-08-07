@@ -102,8 +102,9 @@ export class TakeSurveyComponent extends BaseComponent implements OnInit {
     }
 
     private onSubmit() {
-        this.surveysService.saveSurveyResponse(this.questionDetails, this.surveyType.ID, this.objectType, this.objectID).subscribe();
-        this.surveyComplete.emit();
+        this.surveysService.saveSurveyResponse(this.questionDetails, this.surveyType.ID, this.objectType, this.objectID).subscribe(res => {
+            this.surveyComplete.emit(res);
+        });
     }
 
     private nextQuestion(currentIndex: number) {

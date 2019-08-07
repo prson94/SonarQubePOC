@@ -154,6 +154,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Take Action'));
         this.clearSidebar();
+        this.rightSidebarService.setCurrentArea('Take Action', 'fa-paper-plane-o', null);
+        this.rightSidebarService.showHeader(true);
     }
 
     ngOnDestroy(): void {

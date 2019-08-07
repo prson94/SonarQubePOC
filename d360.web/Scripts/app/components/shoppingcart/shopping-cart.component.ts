@@ -10,6 +10,7 @@ import { ShoppingCart, ShoppingCartListItem } from '../../models/shopping-cart.m
 import { Header, Column } from 'primeng/primeng';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-shopping-cart',
@@ -27,6 +28,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
 
     constructor(
         private headerBreadcrumbService: HeaderBreadcrumbService,
+        protected rightSidebarService: RightSidebarService,
         private titleService: Title,
         private locationService: Location,
         private shoppingCartService: ShoppingCartService,
@@ -34,12 +36,16 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
         private router: Router)
     {
         super();
+        this.rightSidebarService = rightSidebarService;
     }
 
     ngOnInit() {
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.title));
         this.setBrowserTitle(this.titleService, this.title);
+        this.clearSidebar();
+        this.rightSidebarService.setCurrentArea('Shopping Cart', 'fa-shopping-cart', null);
+        this.rightSidebarService.showHeader(true);
         this.load();
     }
 

@@ -190,7 +190,7 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
 
         this.assetTypeService = assetTypeService;
 
-        this.areaName = 'Policys';
+        this.areaName = 'Policies';
         this.tabTitle = 'Policy Types';
         this.setCommonItems();
         this.theDeleteCallback = this.deletePolicyType.bind(this);

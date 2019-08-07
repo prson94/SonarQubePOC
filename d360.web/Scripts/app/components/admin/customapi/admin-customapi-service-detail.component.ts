@@ -58,6 +58,7 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
                         this.tabTitle = 'Service';
                         this.setCommonRightSideBar(false);
                         this.setCommonItems();
+                        this.rightSidebarService.setCurrentArea(this.service.Name, 'fa-cog', this.tabTitle);
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.service.Name}`));
 
                         this.rightSidebarService.showItem(

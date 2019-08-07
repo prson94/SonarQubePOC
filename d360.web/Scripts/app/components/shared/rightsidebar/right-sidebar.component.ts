@@ -24,7 +24,9 @@ declare var CompanySettings;
                          <img class="icon" *ngIf="!IsIcon(area.icon)" [src]="GetURL(area.icon)"  height="20" width="20" />
                          <i *ngIf="IsIcon(area.icon)" [class]="'icon fa ' + area.icon"></i>
                         <h1 title="{{area.title ? area.title: 'D3S'}}">{{area.title ? area.title: 'D3S'}}</h1>
-                        <span #badge *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon" 
+                        <span #badge *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon"
+                                title="{{lastCalculatedMessage()}}"
+                                (click)="OpenScoring()"
                                 [ngClass]="{
                                     'bad':scoreBetween(0,49),
                                     'ok':scoreBetween(50,89),
@@ -97,6 +99,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     @ViewChild('noScore') noScore: ElementRef;
     @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
     private statistics: ObjectStatistics;
+    private lastCalculatedDate: number;
 
     status: string;
     showStatus = false;
@@ -149,7 +152,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             }
         };
 
-        let id = window.setInterval(move,10);
+        let id = window.setInterval(move,5);
 
     }
 
@@ -161,13 +164,12 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.showSurvey = false;
         this.items = [];
         this.buttons = [];
-        console.log("load");
         this.showScrollButtons = false;
 
         this.subscription = this.rightSidebarService.rightSidebar$.subscribe(
             item => {
                 this.items.push(item);
-                this.items = _.sortBy(this.items, 'title'); this.emitChanges();
+                this.items = _.sortBy(this.items, 'title').reverse(); this.emitChanges();
             });
 
         this.buttonSubscription = this.rightSidebarService.rightSidebarButton$.subscribe(
@@ -226,7 +228,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     if (!draftValues) {
                         draftValues = "DRAFT";
                     }
-                    console.log(hasWorkFlow);
                     if (objectName === 'Artifact')
                         this.showCertify = this.status && (draftValues.toUpperCase().split(',').indexOf(this.status.toUpperCase()) > -1) && hasWorkFlow;
                     else
@@ -239,7 +240,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
         this.objectStatisticsService.getObjectStatistics(objectID, objectName).subscribe(
             result => {
-                this.statistics = result; 
+                this.statistics = result;
                 this.ref.markForCheck();
             }
         );
@@ -272,6 +273,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
     
     itemClicked(item: RightSidebarItem) {   
+
         if (item.active) {
             //look for any other already active items and fire click for them
             let isFirstItemOpen = true;
@@ -351,6 +353,45 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             let Url = `${SiteUrlHelpers.SITE_URL_SURVEY_ROOT}/${this.currentObject.objectType}/${this.currentObject.objectTypeID}/${this.currentObject.objectName}/${this.currentObject.objectID}`
             this.showSurvey = false;
             this.router.navigateByUrl(Url);
+        }
+    }
+
+    private lastCalculatedMessage() {
+        if (!this.statistics) {
+            return "Governance Score not yet calculated";
+        }
+        var diff = new Date(Date.now() - Date.parse(this.statistics.ScoreLast));
+
+        var years = diff.getUTCFullYear() - 1970;
+
+        if (years > 0) return "Governance Score last calculated " + years + " years ago.";
+
+        var months = diff.getUTCMonth();
+
+        if (months > 0) return "Governance Score last calculated " + months + " months ago.";
+
+        var days = diff.getUTCDate() - 1;
+
+        if (days > 0) return "Governance Score last calculated " + days + " days ago.";
+
+        var hours = diff.getUTCHours();
+
+        if (hours > 0) return "Governance Score last calculated " + hours + " hours ago.";
+
+        var minutes = diff.getUTCMinutes();
+
+        if (minutes > 0) return "Governance Score last calculated " + minutes + " minutes ago.";
+
+        return "Governance Score last calculated a few seconds ago.";
+    }
+
+    OpenScoring() {
+        if (this.currentObject.Uid) {
+            let scoreItems = this.items.filter(x => x.title === 'Scoring' );
+            if (scoreItems.length == 1) {
+                scoreItems[0].active = !scoreItems[0].active; 
+                this.itemClicked(scoreItems[0]);
+            }
         }
     }
 
