@@ -91,10 +91,8 @@ export class HeaderActionsComponent {
                 let isResourceUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_RESOURCE_ROOT.toUpperCase());
 
                 if (this.previousUrl) {
-                    console.log(this.previousUrl + " " + this.uri);
                     this.previousUrl = _.trimStart(this.previousUrl, '/');
                     this.isAdminSidebarUrl = (this.uri || '').toUpperCase().startsWith('sidebar'.toUpperCase()) && (this.previousUrl || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
-                    console.log(this.isAdminSidebarUrl);
                 }
 
                 this.hasRaiseIssueButton = ((!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !this.isAdminUrl && !isResourceUrl && !this.isAdminSidebarUrl && (CompanySettings.DisableIssueManagement === 'false')) == true);                
