@@ -43,15 +43,21 @@ DROP TABLE IF EXISTS [dbo].[Policy-retired];
     </rollback>
   </changeSet>
 
-  <changeSet author="SDooley" id="GOV-7626-1">
+  <changeSet author="SDooley" id="GOV-7626-1-Fix1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
       <![CDATA[
-IF Exists(SELECT * FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_NAME ='FK_PolicyTypeLevel_PolicyType')
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_NAME ='FK_PolicyTypeLevel_PolicyType') 
+   AND EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'PolicyTypeLevel' AND Type = N'U')
  BEGIN
 	ALTER TABLE [dbo].[PolicyTypeLevel] DROP CONSTRAINT [FK_PolicyTypeLevel_PolicyType]
+END
+IF EXISTS(SELECT * FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_NAME ='FK_PolicyTypeLevel_PolicyType') 
+   AND EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'PolicyTypeLevel-retired' AND Type = N'U')
+ BEGIN
+	ALTER TABLE [dbo].[PolicyTypeLevel-retired] DROP CONSTRAINT [FK_PolicyTypeLevel_PolicyType]
 END
 IF EXISTS(SELECT 1 FROM sys.Tables WHERE  Name = N'PolicyType-retired' AND Type = N'U')
  BEGIN

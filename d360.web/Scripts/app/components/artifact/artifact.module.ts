@@ -14,7 +14,6 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 
 import { ArtifactRoutingModule } from './artifact.routes';
 
@@ -54,6 +53,7 @@ import {
 
 import { TableModule } from 'primeng/table';
 import {GovernRequestInterceptor} from "../../http-interceptors/govern-request.interceptor";
+import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 
 
 @NgModule({
@@ -87,8 +87,8 @@ import {GovernRequestInterceptor} from "../../http-interceptors/govern-request.i
         
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,        
-        SharedDynamicGridEditorModule,
-        SharedObjectGovernanceModule,        
+        SharedDynamicGridEditorModule,   
+        SharedObjectGovernanceModule,
         TilesModule,
         WorkflowModule,        
     ],

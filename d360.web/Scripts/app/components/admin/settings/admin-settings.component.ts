@@ -10,6 +10,9 @@ import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { FormMode } from '../../../models/form.model';
 import { SelectItem } from 'primeng/primeng';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { DynamicButton } from '../../../models/rightsidebar.model';
+import { Subscriber, Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
@@ -42,10 +45,12 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     routeValidationMessage = "";
     rebuildLabel: string = "Refresh Search Index";
     disableRebuildIndex: boolean = false;
-    
+    SaveButton: DynamicButton;
+
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         private companySettingsService: CompanySettingsService,
+        rightSidebarService: RightSidebarService,
         titleService: Title,
         private siteMenuService: SiteMenuService,        
         private stateService: StateService,
@@ -54,7 +59,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         private route: ActivatedRoute
     ) {
 
-        super(headerBreadcrumbService, titleService);        
+        super(headerBreadcrumbService, titleService, rightSidebarService);        
         this.areaName = "Settings";
         this.setCommonItems();
 
@@ -81,7 +86,14 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                         this.groups.unshift({ label: '[Administrators]', value: '0' });
                         this.isLoading = false;
                     });
-             
+                this.rightSidebarService.clearButtons();
+                this.SaveButton = new DynamicButton("Save Changes");
+                this.rightSidebarService.showButton(this.SaveButton);
+                this.SaveButton.dynamicCallback = () => {
+                    this.SaveButton.disabled = true;
+                    this.SaveButton.isLoading = true;
+                    this.save();
+                };
             })
     }
 
@@ -98,7 +110,6 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 let type = data.type;
                 if (type && type == "error") {
                     let message = data.message;
-                    console.log("type: " + type + " message: " + message);
                     this.messagesService.showError("Problem Saving settings", message);
                 } else {
                     window.location.reload();
@@ -133,4 +144,6 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 }
             });
     }
+
+
 }

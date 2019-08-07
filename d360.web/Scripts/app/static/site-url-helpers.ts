@@ -24,7 +24,7 @@ export class SiteUrlHelpers {
     static SITE_URL_HOME_ROOT = 'home';
     static SITE_URL_MAPPING_ROOT = 'mapping';
     static SITE_URL_AUDIT_ROOT = 'sidebar/audit';
-    static SITE_URL_DASHBOARD_ROOT = 'sidebar/dashboard';
+    static SITE_URL_DASHBOARD_ROOT = 'dashboard';
     static SITE_URL_FOLLOWERS_ROOT = 'sidebar/followers';
     static SITE_URL_OWNERSHIP_ROOT = 'sidebar/ownership';
     static SITE_URL_VISUALIZATION_ROOT = 'sidebar/visualization';
@@ -38,6 +38,9 @@ export class SiteUrlHelpers {
     static SITE_URL_ITEM_OWN_ROOT = 'sidebar/itemown';
     static SITE_URL_MEMBER_GROUP_ROOT = 'sidebar/membergroup';
     static SITE_URL_COMMENTS_ROOT = 'sidebar/comments';
+    static SITE_URL_SCORE_ROOT = 'sidebar/score';
+    static SITE_URL_SURVEY_ROOT = 'sidebar/survey';
+    static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
 
 
     //model child routes
@@ -59,8 +62,7 @@ export class SiteUrlHelpers {
     static SITE_URL_FUSION_BY_FUSIONATTRIBUTEID = 'fusionattribute';
     static SITE_URL_FUSION_LIST = '';
     static SITE_URL_FUSION_ATTRIBUTE_DETAILS = 'details';
-    static SITE_URL_FUSION_RULES = 'rules';
-
+ 
     //admin child routes
     static SITE_URL_ADMIN_BULK_LOAD = `load`;
     static SITE_URL_ADMIN_FUSION = `fusion`;
@@ -74,8 +76,9 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_RELATIONSHIPS = 'relationships';
     static SITE_URL_ADMIN_RULES = 'rules';
     static SITE_URL_ADMIN_SURVEYS = 'surveys';
+    static SITE_URL_ADMIN_TAGS = 'tags';
     static SITE_URL_ADMIN_ANALYTICS = 'analytics';
-    static SITE_URL_ADMIN_DASHBOARDS = 'dashboards';
+    static SITE_URL_ADMIN_DASHBOARDS = 'dashboard';
     static SITE_URL_ADMIN_GROUPS = 'groups';
     static SITE_URL_ADMIN_RESPONSIBILITIES = 'responsibilities';
     static SITE_URL_ADMIN_RESOURCES = 'resources';
@@ -85,6 +88,8 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ORGANIZATIONS = 'organizations';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
     static SITE_URL_ADMIN_EXPORT_TEMPLATES = 'exporttemplates';
+
+
 
     static getDefaultRoute() {
         if (ResourceHomePage != null && ResourceHomePage != "" && ResourceHomePage != '/') {
@@ -128,6 +133,8 @@ export class SiteUrlHelpers {
                 return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${parentId}/${objectId}`;
             case 'RULEIMPLEMENTATION':
                 return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${parentId}/${objectId}`;
+            case 'DASHBOARD':
+                return `${SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT}/${objectId}/${objectName}`;
             default:
                 console.log('Unable to generate object link', objectType, objectId);
         }

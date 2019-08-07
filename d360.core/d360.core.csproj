@@ -94,7 +94,6 @@
     <Compile Include="entities\Fusion\FusionMarkitLineageMapToBusinessItems.cs" />
     <Compile Include="entities\Fusion\FusionQueryAttribute.cs" />
     <Compile Include="entities\Fusion\FusionQueryAttributeType.cs" />
-    <Compile Include="entities\Fusion\FusionRuleFilter.cs" />
     <Compile Include="entities\Fusion\FusionAttributeTypeCustomQuery.cs" />
     <Compile Include="entities\Fusion\FusionSchedule.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRelationItemTarget.cs" />
@@ -149,11 +148,6 @@
     <Compile Include="entities\FieldTypeLookup.cs" />
     <Compile Include="entities\FieldTypeFilteredLookupDefinition.cs" />
     <Compile Include="entities\FieldTypeFilteredLookupDisplayField.cs" />
-    <Compile Include="entities\Fusion\FusionRule.cs" />
-    <Compile Include="entities\Fusion\FusionRuleItem.cs" />
-    <Compile Include="entities\Fusion\FusionRuleStep.cs" />
-    <Compile Include="entities\Fusion\FusionRuleStepMapping.cs" />
-    <Compile Include="entities\Fusion\FusionRuleStepSetting.cs" />
     <Compile Include="entities\Relation\MapRuleItemMapItem.cs" />
     <Compile Include="entities\Relation\MapRule.cs" />
     <Compile Include="entities\Relation\MapRuleItem.cs" />
@@ -189,6 +183,7 @@
     <Compile Include="entities\Nym.cs" />
     <Compile Include="entities\NymRelation.cs" />
     <Compile Include="entities\Survey\SurveyApiViewModels.cs" />
+    <Compile Include="entities\Tagging\AssetTag.cs" />
     <Compile Include="entities\Tagging\Tag.cs" />
     <Compile Include="entities\Tagging\TagApiModel.cs" />
     <Compile Include="entities\Tagging\TagApiModelWrapper.cs" />
@@ -200,7 +195,6 @@
     <Compile Include="entities\Transitive\BulkLoadGetLoadColumnsModel.cs" />
     <Compile Include="entities\Transitive\AssetDetail.cs" />
     <Compile Include="entities\Transitive\FusionAttributeTypeWithQuery.cs" />
-    <Compile Include="entities\Transitive\FusionRuleFilterItem.cs" />
     <Compile Include="entities\Transitive\FieldFilterModel.cs" />
     <Compile Include="entities\Transitive\FusionProcessingData.cs" />
     <Compile Include="entities\Transitive\PredicateIntersect.cs" />
@@ -236,8 +230,6 @@
     <Compile Include="entities\Views\IntersectTypeDetail.cs" />
     <Compile Include="entities\Report.cs" />
     <Compile Include="entities\Security\ResponsibilityType.cs" />
-    <Compile Include="entities\Glossary\Artifact.cs" />
-    <Compile Include="entities\Glossary\ArtifactType.cs" />
     <Compile Include="entities\Glossary\AttributeTypeRelation.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -294,8 +286,6 @@
     <Compile Include="enums\BulkRelationshipOperation.cs" />
     <Compile Include="enums\Permission.cs" />
     <Compile Include="enums\EnvironmentLevel.cs" />
-    <Compile Include="enums\FusionRuleFindSearchType.cs" />
-    <Compile Include="enums\FusionRuleRelateSearchType.cs" />
     <Compile Include="enums\HelpResourceType.cs" />
     <Compile Include="enums\ExportView.cs" />
     <Compile Include="enums\AssetTypeClass.cs" />
@@ -330,7 +320,6 @@
     <Compile Include="enums\ComplexLookupRelationType.cs" />
     <Compile Include="enums\QuestionDisplayStyle.cs" />
     <Compile Include="enums\FollowType.cs" />
-    <Compile Include="enums\FusionRuleType.cs" />
     <Compile Include="enums\PredicateType.cs" />
     <Compile Include="enums\HashAlgorithmType.cs" />
     <Compile Include="enums\Feature.cs" />

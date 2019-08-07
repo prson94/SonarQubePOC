@@ -37,21 +37,21 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Returns all survey results defined in Govern.          
+        /// Get a list of surveys contained within the system.          
         /// </summary>        
         /// <param name="surveyTypeUid">Uid of survey type</param>
         /// <returns>A list of survey results</returns>
         [
             HttpGet, MapToApiVersion("2.0"), Route("{surveyTypeUid}/results"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerParameter("AssetUid", "The uid of a specific asset to return.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("AssetUid", "The Uid of a specific asset to return.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("AsOfDate", "Pull results up to a certain date.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of survey results.", typeof(SurveyApiResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
 
         ]
@@ -95,6 +95,13 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+                if (ex is FormatException)
+                {
+                    errorMessage = errorMessage.Replace("Guid", "Uid");
+                }
+
+
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix }
                 });
@@ -106,21 +113,21 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Returns all survey types defined in Govern.          
+        /// Returns defined survey types.          
         /// </summary>        
         /// <returns>A list of survey types</returns>
         [
             HttpGet, MapToApiVersion("2.0"), Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("AssetTypeUid", "Asset type this survey is assigned", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("HasResponses", "Return results that have responses", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("HasResponses", "Default value(blank) returns all types. Set to true to return only those survey types to which users have responded, and set to false to return survey types without responses", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by CreatedBy.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by. The acceptable fields are Name, CreatedOn, UpdatedOn, ValidForDays and NumberOfResponses. By default the results are ordered by CreatedOn ascending. Fields ValidForDays and NumberOfResponses are sorted descending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of survey types.", typeof(SurveyTypeApiResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset type not found based on Uid provided.", typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetSurveyTypes()
@@ -153,6 +160,11 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                if(ex is FormatException)
+                {
+                    errorMessage = errorMessage.Replace("Guid", "Uid");
+                }
+
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix }
                 });
@@ -163,22 +175,22 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Returns survey result summary for specific survey type uid defined in Govern.          
+        /// Returns survey result summary for specific survey type Uid.        
         /// </summary>        
         /// <param name="surveyTypeUid">Uid of survey type</param>
         /// <returns>A list of survey summary results</returns>
         [
             HttpGet, MapToApiVersion("2.0"), Route("{surveyTypeUid}/results/summary"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerParameter("AssetUid", "The uid of a specific asset to return.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("AssetUid", "The Uid of a specific asset to return.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("AsOfDate", "Pull results up to a certain date.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by CreatedBy.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerResponse(HttpStatusCode.OK, "A full list of survey results.", typeof(SurveyApiResponseModel)),
+            SwaggerParameter("_order", "The name of the field to order results by. The acceptable fields are FirstRespondedOn, LastRespondedOn, NumberOfResponders. By default the results are ordered by FirstRespondedOn ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.OK, "A full list of survey results.", typeof(SurveyResultSummaryApiResponseModel)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
 
         ]
@@ -226,6 +238,12 @@ namespace d360.web.Controllers.V2
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                if (ex is FormatException)
+                {
+                    errorMessage = errorMessage.Replace("Guid", "Uid");
+                }
+
+
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix }
                 });

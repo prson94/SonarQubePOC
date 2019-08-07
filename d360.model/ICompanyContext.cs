@@ -31,8 +31,6 @@ namespace d360.model
         DbSet<ApiExecution> ApiExecutions { get; set; }
         DbSet<ApiNamespace> ApiNamespaces { get; set; }
         DbSet<ApiService> ApiServices { get; set; }
-        DbSet<Artifact> Artifacts { get; set; }
-        DbSet<ArtifactType> ArtifactTypes { get; set; }
         DbSet<AssetApiModel> AssetApiModels { get; set; }
         DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
         DbSet<AssetDetail> AssetDetails { get; set; }
@@ -75,10 +73,7 @@ namespace d360.model
         DbSet<FusionExecution> FusionExecutions { get; set; }
         DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
         DbSet<FusionQueryAttributeType> FusionQueryAttributeTypes { get; set; }
-        DbSet<FusionRuleFilter> FusionRuleFilters { get; set; }
-        DbSet<FusionRuleItem> FusionRuleItem { get; set; }
-        DbSet<FusionRule> FusionRules { get; set; }
-        DbSet<FusionSchedule> FusionSchedules { get; set; }
+       DbSet<FusionSchedule> FusionSchedules { get; set; }
         DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
         DbSet<Fusion> FusionTypeConfigurations { get; set; }
         DbSet<FusionType> FusionTypes { get; set; }
@@ -165,6 +160,7 @@ namespace d360.model
         DbSet<Survey> Surveys { get; set; }
         DbSet<SurveyType> SurveyTypes { get; set; }
         DbSet<Tag> Tags { get; set; }
+        DbSet<AssetTag> AssetTags { get; set; }
         DbSet<Taxonomy> Taxonomies { get; set; }        
         DbSet<TaxonomyType> TaxonomyTypes { get; set; }
         DbSet<WorkflowEventRegistration> WorkflowEventRegistrations { get; set; }

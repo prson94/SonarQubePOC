@@ -304,6 +304,18 @@ namespace d360.web.Controllers
             }
             throw new Exception("Invalid or non implemented editor type");
         }
+        [HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
+        public JsonResult DynamicEditorEditFields(string o, Guid? uid)
+        {
+            int objectId = -1;
+            switch ((o ?? "").ToUpper())
+            {
+                case "TAG":
+                    objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
+                    return DynamicEditorEditFields(o,objectId);
+            }
+            throw new Exception("Invalid or non implemented editor type");
+        }
 
         [HttpGet, Route("dynamiceditor/edit/{o}/{oid:int}")]
         public JsonResult DynamicEditorEditFields(string o, int oid)
@@ -364,6 +376,8 @@ namespace d360.web.Controllers
                     return CustomAPIService_EditFields(oid);
                 case "SURVEYTYPE":
                     return SurveyType_EditFields(oid);
+                case "TAG":
+                    return Tag_EditFields(oid);
                 case "TAXONOMY":
                     return Taxonomy_EditFields(oid);
                 case "VERSION":
@@ -431,6 +445,8 @@ namespace d360.web.Controllers
                     return CustomAPIService_AddFields();
                 case "SURVEYTYPE":
                     return SurveyType_AddFields();
+                case "TAG":
+                    return Tag_AddFields();
                 case "TAXONOMY":
                     return Taxonomy_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "VERSION":
@@ -854,6 +870,7 @@ namespace d360.web.Controllers
         [Route("AddArtifact"), HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false)]
         public JsonResult AddArtifact(FormCollection form)
         {
+
             try
             {
                 if (!form.HasKeys()) throw new NoFormDataException("artifact");
@@ -866,20 +883,20 @@ namespace d360.web.Controllers
 
                 if (assettype == null) throw new NotFoundException("artifact type");
                                 
-                var model = new Artifact {
-                    ArtifactTypeID = typeID
-                };
+                var model = new Asset { AssetTypeID = assettype.ID, Object = "Artifact", State = State.Active, CreatedBy = Company.CurrentResourceID, CreatedOn = DateTime.UtcNow, UpdatedBy = Company.CurrentResourceID, UpdatedOn = DateTime.UtcNow };
+
 
                 int? parentId = parseNullableIntField(form, "ParentID");
 
                 var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, typeID).ToList();
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, fieldTypes, form, Server);
-                Company.SaveOrUpdate<Artifact>(model, fields, (parentId.HasValue ? parentId.Value : -1));
-                processFormDynamicRelationshipFields(SystemObjects.ArtifactType, typeID, SystemObjects.Artifact, model.ID, fieldTypes, form);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ObjectID, fieldTypes, form, Server);
+                Company.SaveOrUpdateAsset(model, fields, parentId.GetValueOrDefault());
+
+                processFormDynamicRelationshipFields(SystemObjects.ArtifactType, typeID, SystemObjects.Artifact, model.ObjectID, fieldTypes, form);
 
                 if (parentId.HasValue)
                 {
-                    if(!Company.AddObjectParentRelationship(SystemObjects.ArtifactType, assettype.ObjectID, SystemObjects.Artifact, parentId.Value, model.ID))
+                    if(!Company.AddObjectParentRelationship(SystemObjects.ArtifactType, assettype.ObjectID, SystemObjects.Artifact, parentId.Value, model.ObjectID))
                     {
                         return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
                     }                    
@@ -937,7 +954,7 @@ namespace d360.web.Controllers
                 if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
                                 
-                var model = Company.GetById<Artifact>(id, i => i.ArtifactType);
+                var model = Company.Assets.Where(x => (x.Object == "Artifact" && x.ObjectID == id)).Include(x => x.AssetType).FirstOrDefault();
 
                 if (model == null) throw new NotFoundException("artifact");
 
@@ -950,7 +967,7 @@ namespace d360.web.Controllers
                     var intersect = Company.Filter<Intersect>(i => 
                         i.Subject == sType &&
                         i.Object == sType &&
-                        i.ObjectID == model.ID &&
+                        i.ObjectID == model.ObjectID &&
                         i.IntersectType.Predicate.Type == PredicateType.InterTypeHierarchy
                     ).SingleOrDefault();
 
@@ -966,7 +983,7 @@ namespace d360.web.Controllers
                     {
                         var intersectType = Company.Filter<IntersectTypeDetail>(i =>
                         i.Object == "ArtifactType" &&
-                        i.ObjectID == model.ArtifactType.ID &&
+                        i.ObjectID == model.AssetType.ObjectID &&
                         i.PredicateType.Value == PredicateType.InterTypeHierarchy
                     ).SingleOrDefault();
 
@@ -977,7 +994,7 @@ namespace d360.web.Controllers
                                 Subject = SystemObjects.Artifact.ToString(),
                                 SubjectID = parentID,
                                 Object = SystemObjects.Artifact.ToString(),
-                                ObjectID = model.ID,
+                                ObjectID = model.ObjectID,
                                 IntersectTypeID = intersectType.ID
                             };
 
@@ -997,12 +1014,12 @@ namespace d360.web.Controllers
                     }
                 }
                 
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, model.ArtifactTypeID).ToList();
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ID, fieldTypes, form, Server, false);
-                Company.SaveOrUpdate<Artifact>(model, fields, (parentID > 0 ? parentID : -1));
-                processFormDynamicRelationshipFields(SystemObjects.ArtifactType, model.ArtifactTypeID, SystemObjects.Artifact, model.ID, fieldTypes, form);
+                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, model.AssetType.ObjectID).ToList();
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ObjectID, fieldTypes, form, Server, false);
+                Company.SaveOrUpdateAsset(model, fields, (parentID > 0 ? parentID : -1));
+                processFormDynamicRelationshipFields(SystemObjects.ArtifactType, model.AssetType.ObjectID, SystemObjects.Artifact, model.ObjectID, fieldTypes, form);
                 
-                return jsonSuccess(model.ArtifactType.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
+                return jsonSuccess(model.AssetType.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
             }
             catch (BaseException ex)
             {
@@ -1054,16 +1071,16 @@ namespace d360.web.Controllers
         public JsonResult DeleteArtifactType(int id)
         {
             try
-            {               
-                var model = Company.GetById<ArtifactType>(id);
-                if (model == null) throw new NotFoundException("artifact type");
+            {
+                var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == id);
+                if (assetType == null) throw new NotFoundException("artifact type");
 
                 if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 var intersectType = Company.Filter<IntersectType>(i =>
                     i.Object == "ArtifactType" &&
-                    i.ObjectID == model.ID &&
+                    i.ObjectID == assetType.ObjectID &&
                     i.Predicate.Type == PredicateType.InterTypeHierarchy
                 ).SingleOrDefault();
 
@@ -1076,7 +1093,7 @@ namespace d360.web.Controllers
 
                 dynamic custom = new
                 {                    
-                    Name = model.Name,
+                    Name = assetType.Name,
                     action = "delete"              
                 };
 
@@ -1312,17 +1329,23 @@ namespace d360.web.Controllers
                 {
                     case SystemObjects.ArtifactType:
                         #region
-                        var a = new ArtifactType
+                        var a = new AssetType
                         {
                             Name = model.AssetType.Name,
                             DisplayFormat = model.AssetType.DisplayFormat,
                             Description = model.AssetType.Description,
+                            AutoDisplayDescription = model.AutoDisplayDescription ?? false,
                             CanOwnFusion = model.CanOwnFusion ?? false,
-                            AutoDisplayDescription = model.AutoDisplayDescription ?? false
+                            Object = SystemObjects.ArtifactType.ToString(),
+                            State = State.Active,
+                            UpdatedBy = Company.CurrentResourceID,
+                            UpdatedOn = DateTime.UtcNow,
+                            Class = AssetTypeClass.Glossary
                         };
                         Company.Add(a);
                         parentType = SystemObjects.ArtifactType;
-                        model.AssetType.ObjectID = a.ID;
+                        model.AssetType.ObjectID = a.ObjectID;
+
                         #endregion
                         break;
                     case SystemObjects.FusionAttributeType:
@@ -1508,7 +1531,7 @@ namespace d360.web.Controllers
                 switch (ot)
                 {
                     case SystemObjects.ArtifactType:
-                        var a = Company.GetById<ArtifactType>(model.AssetType.ObjectID);
+                        var a = Company.GetById<AssetType>(model.AssetType.ID);
                         if (a == null) throw new NotFoundException("artifact type");
 
                         a.Name = model.AssetType.Name;
@@ -2747,7 +2770,7 @@ namespace d360.web.Controllers
                           ,v.Icon
                           ,v.Title
                       FROM [dbo].[SiteNav] v
-		                    left join artifacttype a on a.id = v.objectID and v.Object = 'ArtifactType'
+		                    left join assettype a on a.objectid = v.objectID and v.Object = 'ArtifactType' and a.Object = 'ArtifactType'
                             WHERE   v.ParentID = @parentId
                             ORDER BY v.SortOrder";
 
@@ -5235,1611 +5258,8 @@ offset 0 rows fetch next 25 rows only
 
         #endregion
 
-        #region FusionRule
 
-        #region Form Get/Post
 
-        [HttpGet, Route("GetAddFusionRule"), NonNullableParameters]
-        public JsonNetResult GetAddFusionRule(int typeID, int fusionID)
-        {
-            var attributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == typeID).Select(i => new { i.ID, Name = i.TextPath, @Type = "FusionAttributeType" }).ToList();
-            attributeTypes.AddRange(Company.Filter<FusionQueryAttributeType>(i => i.FusionID == fusionID).Select(i => new { i.ID, Name = "Query :: " + i.Name, @Type = "FusionQueryAttributeType" }).ToList());
-            attributeTypes = attributeTypes.AsEnumerable().OrderBy(a => a.Name).ToList();
-
-            return new JsonNetResult
-            {
-                Data = attributeTypes,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("PostAddFusionRule")]
-        public JsonResult PostAddFusionRule(FusionRule r)
-        {
-            try
-            {
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, r.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var rule = new FusionRule
-                {
-                    Enabled = r.Enabled,
-                    Description = r.Description,
-                    FusionID = r.FusionID,
-                    ObjectID = r.ObjectID,
-                    ObjectType = r.ObjectType,
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-
-                Company.Add(rule);
-                Company.SaveChanges();
-
-                //automatically add all items for query attribute types
-                var exists = Company.FusionRuleItem.Any(i => i.RuleID == rule.ID && i.ObjectType == "FusionQueryAttributeType");
-                if (r.ObjectType == "FusionQueryAttributeType" && !exists)
-                {
-                    var item = new FusionRuleItem();
-                    item.ObjectType = "FusionQueryAttribute";
-                    item.ObjectID = null;
-                    item.RuleID = rule.ID;
-
-                    Company.Add(item);
-                }
-
-                return jsonSuccess("Items marked for auto-promotion", "0", "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusionRule")]
-        public JsonResult AddFusionRule(FormCollection form)
-        {
-            try
-            {
-                var item = new FusionRule
-                {
-                    Enabled = parseBooleanField(form, "Enabled"),
-                    Description = parseTextField(form, "Description"),
-                    FusionID = parseIntField(form, "FusionID"),
-                    ObjectID = parseIntField(form, "FusionAttributeTypeID"),
-                    ObjectType = "FusionAttributeType",
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, item.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                Company.Add(item);
-
-                return jsonSuccess("Items marked for auto-promotion", "0", "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteFusionRule")]
-        public JsonResult DeleteFusionRule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-                var id = parseIntField(form, "ID");
-                var rule = Company.GetById<FusionRule>(id);
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<FusionRuleItem>(i => i.RuleID == id);
-                Company.Delete(rule);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteFusionRuleById"), NonNullableParameters]
-        public JsonResult DeleteFusionRuleById(int id)
-        {
-            var form = new FormCollection();
-            form.Add("ID", id.ToString());
-            return DeleteFusionRule(form);
-        }
-
-        [HttpGet, Route("GetEditFusionRule"), NonNullableParameters]
-        public JsonNetResult GetEditFusionRule(int id)
-        {
-            var a = Company.GetById<FusionRule>(id);
-            if (a == null) return null;
-
-            var attributeTypes = Company.Filter<FusionAttributeType>(i => i.FusionTypeID == a.Fusion.FusionTypeID).OrderBy(x=>x.TextPath).Select(i => new { i.ID, Name = i.TextPath, @Type = "FusionAttributeType" }).ToList();
-            attributeTypes.AddRange(Company.Filter<FusionQueryAttributeType>(i => i.FusionID == a.FusionID).Select(i => new { i.ID, Name = "Query :: " + i.Name, @Type = "FusionQueryAttributeType" }).ToList());
-
-
-            var model = new FusionRuleEditorModel
-            {
-                FusionID = a.Fusion.ID,
-                FusionTypeID = a.Fusion.FusionTypeID,
-                FormUri = "/Form/EditFusionRule",
-                FormMethod = "PUT",
-                FormName = "Edit Fusion Rule",
-                Rule = a
-            };
-
-            return new JsonNetResult
-            {
-                Data = new { model, attributeTypes },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("PostEditFusionRule")]
-        public JsonResult PostEditFusionRule(FusionRule r)
-        {
-            try
-            {
-                var model = Company.GetById<FusionRule>(r.ID);
-                if (model == null) throw new NotFoundException("promotion rule");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var type = model.ObjectType;
-
-                model.Enabled = r.Enabled;
-                model.Description = r.Description;
-                model.FusionID = r.FusionID;
-                model.ObjectID = r.ObjectID;
-                model.ObjectType = r.ObjectType;
-
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-
-                Company.Update(model);
-
-                if (model.ObjectType != type)
-                {
-                    //if the type has changed, delete the rule items
-                    Company.Delete<FusionRuleItem>(i => i.RuleID == model.ID);
-
-                    //if the type was changed to query attribute, add the item record
-                    if (model.ObjectType == "FusionQueryAttributeType")
-                    {
-                        var item = new FusionRuleItem();
-                        item.RuleID = model.ID;
-                        item.ObjectType = "FusionQueryAttribute";
-                        item.ObjectID = null;
-
-                        Company.Add(item);
-                    }
-                }
-
-                return jsonSuccess("Fusion rule successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditFusionRule")]
-        public JsonResult EditFusionRule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("fusion rule");
-
-                var model = Company.GetById<FusionRule>(parseIntField(form, "ID"));
-                if (model == null) throw new NotFoundException("promotion rule");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Enabled = parseBooleanField(form, "Enabled");
-                model.Description = parseTextField(form, "Description");
-                model.FusionID = parseIntField(form, "FusionID");
-                model.ObjectID = parseIntField(form, "FusionAttributeTypeID");
-                model.ObjectType = "FusionAttributeType";
-
-                model.UpdatedBy = Company.CurrentResourceID;
-                model.UpdatedOn = DateTime.UtcNow;
-
-                Company.Update(model);
-
-                return jsonSuccess("Fusion rule successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
-
-        #region FusionRuleFilter
-
-        string getFusionRuleFilterSql(FusionRuleFilterEditorModel form, bool getNameColumn = true)
-        {
-            try
-            {
-                var rule = Company.GetById<FusionRule>(form.FusionRuleID);
-
-                if (rule == null)
-                    throw new NotFoundException("Fusion Rule");
-
-                var sql = "";
-                var columnSql = "A.ID";
-                var whereSql = "";
-                var isQuery = (rule.ObjectType == "FusionQueryAttributeType");
-
-                if (isQuery)
-                {
-                    if (getNameColumn) columnSql = "A.DisplayValue as Name";
-                    sql = $"select {columnSql} from FusionQueryAttribute A inner join FusionQueryAttributeType T on T.ID = A.FusionQueryAttributeTypeID ";
-                    whereSql = $"where T.FusionID = {rule.FusionID} and A.FusionQueryAttributeTypeID = {rule.ObjectID} and A.Deleted = 0 ";
-                }
-                else
-                {
-                    if (getNameColumn) columnSql = "coalesce(A.TextPath, A.Name) as Name";
-                    sql = $"select {columnSql} from FusionAttribute A ";
-                    whereSql = $"where A.FusionID = {rule.FusionID} and A.FusionAttributeTypeID = {rule.ObjectID} and A.Deleted = 0 ";
-                }
-
-                if (!form.All)
-                {
-                    if (form.Items.Count == 0)
-                        throw new NotFoundException("Fusion Rule Filter Fields");
-
-                    List<int> usedFieldTypeIDs = new List<int>();
-
-                    foreach (var f in form.Items)
-                    {
-                        var queryFormat = "";
-                        switch (f.Operator)
-                        {
-                            case "Contains":
-                                queryFormat = "{0} like '%{1}%'";
-                                break;
-                            case "Does Not Contain":
-                                queryFormat = "{0} not like '%{1}%'";
-                                break;
-                            case "Ends With":
-                                queryFormat = "{0} like '%{1}'";
-                                break;
-                            case "Does Not End With":
-                                queryFormat = "{0} not like '%{1}'";
-                                break;
-                            case "Does Not Equal":
-                                queryFormat = "{0} <> '{1}'";
-                                break;
-                            case "Starts With":
-                                queryFormat = "{0} like '{1}%'";
-                                break;
-                            case "Does Not Start With":
-                                queryFormat = "{0} not like '{1}%'";
-                                break;
-                            default: //Equals
-                                queryFormat = "{0} = '{1}'";
-                                break;
-                        }
-
-                        if (f.FieldTypeID == 0)
-                        {
-                            whereSql += " and " + string.Format(queryFormat, (isQuery) ? "A.DisplayValue" : "A.Name", f.Value.Replace("'", "''"));
-                        }
-                        else if (f.FieldTypeID == -1)
-                        {
-                            whereSql += " and " + string.Format(queryFormat, (isQuery) ? "A.DisplayValue" : "A.TextPath", f.Value.Replace("'", "''"));
-                        }
-                        else
-                        {
-                            if (f.Type == "Boolean" && string.IsNullOrEmpty(f.Value)) f.Value = "false";
-
-                            if (!string.IsNullOrEmpty(f.Value))
-                            {
-                                var fieldTypeCount = usedFieldTypeIDs.Count(i => i == f.FieldTypeID);
-                                var alias = f.FieldTypeID.ToString() + (fieldTypeCount > 0 ? $"_{fieldTypeCount}" : "");
-                                usedFieldTypeIDs.Add(f.FieldTypeID);
-
-                                sql += $" inner join Field F{alias} on F{alias}.FieldTypeID = {f.FieldTypeID} and F{alias}.ObjectType = '{rule.ObjectType.Replace("Type", "")}' and F{alias}.ObjectID = A.ID and {string.Format(queryFormat, $"F{alias}.FormattedValue", f.Value.Replace("'", "''"))}";
-
-                            }
-                        }
-                    }
-                }
-
-                sql += " " + whereSql;
-
-                return sql;
-            }
-            catch 
-            {
-                throw;
-            }
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("TestFusionRuleFilter")]
-        public JsonNetResult TestFusionRuleFilter(FusionRuleFilterEditorModel form)
-        {
-            try
-            {
-                var sql = getFusionRuleFilterSql(form);
-                return new JsonNetResult { Data = Company.Query<dynamic>(sql), Formatting = Newtonsoft.Json.Formatting.None };
-            }
-            catch (BaseException ex)
-            {
-                return jsonNetException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonNetException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #region Form Get/Post
-
-        [HttpGet, Route("GetAddFusionRuleFilter"), NonNullableParameters]
-        public JsonNetResult GetAddFusionRuleFilter(int id)
-        {
-            var rule = Company.GetById<FusionRule>(id);
-
-            if (rule == null)
-                return null;
-
-            if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
-                return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var editorModel = new FusionRuleFilterEditorModel { FusionRuleID = id, All = false };
-
-            editorModel.FieldTypes.AddRange(
-                Company
-                    .Filter<FieldType>(i => i.Object == rule.ObjectType && i.ObjectID == rule.ObjectID && (i.Type == "Text" || i.Type == "Boolean"))
-                    .OrderBy(i => i.FriendlyName)
-                    .Select(i => new FusionRuleFilterFieldEditorModel { ID = i.ID, Name = i.FriendlyName, Type = i.Type })
-            );
-
-            if (rule.ObjectType == "FusionAttributeType")
-            {
-                editorModel.FieldTypes.Insert(0, new FusionRuleFilterFieldEditorModel { ID = 0, Name = "Name", Type = core.DataType.Text.ToString() });
-                editorModel.FieldTypes.Insert(1, new FusionRuleFilterFieldEditorModel { ID = -1, Name = "Text Path", Type = core.DataType.Text.ToString() });
-            }
-
-            return new JsonNetResult
-            {
-                Data = editorModel,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusionRuleFilter")]
-        public JsonResult AddFusionRuleFilter(FusionRuleFilterEditorModel form)
-        {
-            try
-            {
-                int ruleID = form.FusionRuleID;
-                var rule = Company.GetById<FusionRule>(ruleID);
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var filter = new FusionRuleFilter { RuleID = ruleID, Name = form.Name, Items = form.Items, All = form.All };
-                var fieldsXml = new XElement("fields");
-                filter.Items.ForEach(f =>
-                {
-                    fieldsXml.Add(new XElement("field",
-                        new XElement("FieldTypeID", f.FieldTypeID),
-                        new XElement("Operator", f.Operator),
-                        new XElement("Value", f.Value)
-                    ));
-                });
-                filter.FieldsDocument = fieldsXml;
-                filter.Sql = getFusionRuleFilterSql(form, false);
-                
-                Company.Add(filter);
-
-                if (rule != null)
-                {
-                    rule.UpdatedBy = Company.CurrentResourceID;
-                    rule.UpdatedOn = DateTime.UtcNow;
-                }
-
-                Company.SaveChanges();
-
-                return jsonSuccess("Filter successfully created.", filter.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpGet, Route("GetEditFusionRuleFilter"), NonNullableParameters]
-        public JsonNetResult GetEditFusionRuleFilter(int id)
-        {
-            var filter = Company.GetById<FusionRuleFilter>(id, i => i.FusionRule);
-
-            if (filter == null)
-                return null;
-
-            if (!Company.HasAssetPermission(SystemObjects.Fusion, filter.FusionRule.FusionID, Permission.ModifyAsset))
-                return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var editorModel = new FusionRuleFilterEditorModel { FusionRuleID = filter.RuleID, ID = filter.ID, Name = filter.Name, All = filter.All };
-
-            editorModel.FieldTypes.AddRange(
-                Company
-                    .Filter<FieldType>(i => i.Object == filter.FusionRule.ObjectType && i.ObjectID == filter.FusionRule.ObjectID && (i.Type == "Text" || i.Type == "Boolean"))
-                    .OrderBy(i => i.FriendlyName)
-                    .Select(i => new FusionRuleFilterFieldEditorModel { ID = i.ID, Name = i.FriendlyName, Type = i.Type })
-            );
-
-            if (filter.FusionRule.ObjectType == "FusionAttributeType")
-            {
-                editorModel.FieldTypes.Insert(0, new FusionRuleFilterFieldEditorModel { ID = 0, Name = "Name", Type = core.DataType.Text.ToString() });
-                editorModel.FieldTypes.Insert(1, new FusionRuleFilterFieldEditorModel { ID = -1, Name = "Text Path", Type = core.DataType.Text.ToString() });
-            }
-
-            foreach (var f in filter.FieldsDocument.Elements("field"))
-            {
-                var ft = editorModel.FieldTypes.FirstOrDefault(o => o.ID == int.Parse(f.Element("FieldTypeID").Value));
-                if (ft != null)
-                {
-                    editorModel.Items.Add(new FusionRuleFilterItem { Type = ft.Type, FieldTypeID = int.Parse(f.Element("FieldTypeID").Value), Operator = f.Element("Operator").Value, Value = f.Element("Value").Value });
-                }
-            }
-
-            return new JsonNetResult
-            {
-                Data = editorModel,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditFusionRuleFilter")]
-        public JsonResult EditFusionRuleFilter(FusionRuleFilterEditorModel form)
-        {
-            try
-            {
-                var filter = Company.GetById<FusionRuleFilter>(form.ID.Value, i => i.FusionRule);
-
-                if (filter != null)
-                {
-                    if (!Company.HasAssetPermission(SystemObjects.Fusion, filter.FusionRule.FusionID, Permission.ModifyAsset))
-                        return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                    filter.Items = form.Items;
-
-                    var fieldsXml = new XElement("fields");
-                    filter.Items.ForEach(f =>
-                    {
-                        fieldsXml.Add(new XElement("field",
-                            new XElement("FieldTypeID", f.FieldTypeID),
-                            new XElement("Operator", f.Operator),
-                            new XElement("Value", f.Value)
-                        ));
-                    });
-                    filter.FieldsDocument = fieldsXml;
-                    filter.Sql = getFusionRuleFilterSql(form, false);
-
-                    filter.Name = form.Name;
-                    filter.All = form.All;
-                    filter.FusionRule.UpdatedBy = Company.CurrentResourceID;
-                    filter.FusionRule.UpdatedOn = DateTime.UtcNow;
-
-                    Company.SaveChanges();
-                }
-
-                return jsonSuccess("Filter successfully updated.", filter.ID.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteFusionRuleFilter")]
-        public JsonResult DeleteFusionRuleFilter(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-                var id = parseIntField(form, "ID");
-                var filter = Company.GetById<FusionRuleFilter>(id, i => i.FusionRule);
-                if (filter != null)
-                {
-                    if (!Company.HasAssetPermission(SystemObjects.Fusion, filter.FusionRule.FusionID, Permission.ModifyAsset))
-                        return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                    if (filter.FusionRule != null)
-                    {
-                        filter.FusionRule.UpdatedBy = Company.CurrentResourceID;
-                        filter.FusionRule.UpdatedOn = DateTime.UtcNow;
-                    }
-                    Company.Delete(filter);
-                }
-                return jsonSuccess("Filter successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteFusionRuleFilterByID"), NonNullableParameters]
-        public JsonResult DeleteFusionRuleFilterByID(int id)
-        {
-            var form = new FormCollection();
-            form.Add("ID", id.ToString());
-            return DeleteFusionRuleFilter(form);
-        }
-
-        #endregion
-
-        #endregion
-
-        #region FusionRuleItem
-
-        
-        #region Form Get/Post
-
-        [HttpGet, Route("GetAddFusionRuleItem"), NonNullableParameters]
-        public JsonNetResult GetAddFusionRuleItem(int id)
-        {
-            var rule = Company.GetById<FusionRule>(id);
-
-            if (rule == null)
-                return null;
-
-            if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
-                return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var editorModel = new FusionRuleItemEditorModel
-            {
-                FormUri = "/Form/AddFusionRuleItem",
-                FormMethod = "POST",
-                FormName = "Add Promotion Target Item",
-                FusionID = rule.FusionID,
-                TargetFusionAttributeTypeID = rule.ObjectID,
-                Items = Company.FusionRuleItem.Where(i => i.RuleID == id).ToList()
-            };
-
-            return new JsonNetResult
-            {
-                Data = editorModel,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-        
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false),Route("PostAddFusionRuleItem")]
-        public JsonResult PostAddFusionRuleItem(FusionAddItemModel form)
-        {
-            try
-            {
-                int ruleID = form.RuleID;
-                var rule = Company.GetById<FusionRule>(ruleID);
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                bool allSelected = form.AllSelected;
-                List<string> attributes = new List<string>();
-
-                if (!string.IsNullOrEmpty(form.attributeIDs))
-                    attributes = form.attributeIDs.Split(',').ToList();
-
-                if(attributes.Count == 0 && allSelected)
-                {
-                    Company.Set<FusionRuleItem>().Add(
-                        new FusionRuleItem { RuleID = ruleID, ObjectID = null, ObjectType = form.ObjectType }
-                    );
-                }
-                else
-                {
-                    attributes.ForEach(fa =>
-                    {
-                        int? attributeID = null;
-                        if (!string.IsNullOrEmpty(fa))
-                        {
-                            attributeID = int.Parse(fa);
-                        }
-
-                        var existing = Company.FusionRuleItem.Any(i => i.RuleID == ruleID && i.ObjectID == attributeID && i.ObjectType == form.ObjectType);
-                        if (!existing)
-                            Company.Set<FusionRuleItem>().Add(
-                                new FusionRuleItem { RuleID = ruleID, ObjectID = attributeID, ObjectType = form.ObjectType }
-                            );
-                    });
-                }
-
-                if (rule != null)
-                {
-                    rule.UpdatedBy = Company.CurrentResourceID;
-                    rule.UpdatedOn = DateTime.UtcNow;
-                }
-
-                Company.SaveChanges();
-
-                return jsonSuccess("Target item(s) successfully created.", "0", "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusionRuleItem")]
-        public JsonResult AddFusionRuleItem(FormCollection form)
-        {
-            try
-            {
-                var ruleID = parseIntField(form, "RuleID");
-                var rule = Company.GetById<FusionRule>(ruleID);
-
-                if (rule == null)
-                    throw new NotFoundException("fusion rule");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                rule.UpdatedBy = Company.CurrentResourceID;
-                rule.UpdatedOn = DateTime.UtcNow;
-
-                var fusionAttributeIDs = form["FusionAttributeID"].Split(',').ToList();
-                if (fusionAttributeIDs.Count == 0)
-                {
-                    Company.Set<FusionRuleItem>().Add(
-                        new FusionRuleItem { RuleID = ruleID, ObjectID = null }
-                        );
-                }
-                else
-                {
-                    fusionAttributeIDs.ForEach(fa =>
-                    {
-                        int? fusionAttributeID = null;
-                        if (!string.IsNullOrEmpty(fa))
-                        {
-                            fusionAttributeID = int.Parse(fa);
-                        }
-                        Company.Set<FusionRuleItem>().Add(
-                            new FusionRuleItem { RuleID = ruleID, ObjectID = fusionAttributeID }
-                            );
-                    });
-                }
-                Company.SaveChanges();
-
-                return jsonSuccess("Target item(s) successfully created.", "0", "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteFusionRuleItem")]
-        public JsonResult DeleteFusionRuleItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-                var id = parseIntField(form, "ID");
-                var item = Company.GetById<FusionRuleItem>(id, i => i.FusionRule);
-
-                if (item == null)
-                    throw new NotFoundException("fusion rule item");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, item.FusionRule.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                item.FusionRule.UpdatedBy = Company.CurrentResourceID;
-                item.FusionRule.UpdatedOn = DateTime.UtcNow;
-
-                Company.FusionRuleItem.Remove(item);
-                Company.SaveChanges();
-
-                return jsonSuccess("Target item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteFusionRuleItemByID"), NonNullableParameters]
-        public JsonResult DeleteFusionRuleItemByID(int id)
-        {
-            var form = new FormCollection();
-            form.Add("ID", id.ToString());
-            return DeleteFusionRuleItem(form);
-        }
-
-        #endregion
-
-        #endregion
-
-        #region FusionRuleStep
-
-        #region Form Get/Post
-
-        [HttpGet, Route("GetAddFusionRuleStep"), NonNullableParameters]
-        public JsonNetResult GetAddFusionRuleStep(int ruleID)
-        {
-            if (ruleID <= 0) return null;
-
-            var rule = Company.GetById<FusionRule>(ruleID);
-
-            if (rule == null) return null;
-
-            return new JsonNetResult
-            {
-                Data = new FusionRuleStepEditorModel
-                {
-                    FormUri = "/form/AddFusionRuleStep",
-                    FormMethod = "POST",
-                    RuleStep = new FusionRuleStep { Action = "promote", Step = rule.FusionRuleSteps.Count + 1, RuleID = ruleID, FusionRule = rule },
-                    FormName = "Add Fusion Rule Step",
-                    FusionID = rule.FusionID,
-                    FusionTypeID = rule.Fusion.FusionTypeID
-                },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false),  Route("PostAddFusionRuleStep")]
-        public JsonResult PostAddFusionRuleStep(FusionRuleStep s)
-        {
-            try
-            {
-                var ruleID = s.RuleID;
-
-                if (ruleID <= 0) return jsonException("", HttpStatusCode.NotFound, "");
-
-                var rule = Company.GetById<FusionRule>(ruleID);
-
-                if (rule == null)
-                    throw new NotFoundException("fusion rule");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var item = new FusionRuleStep
-                {
-                    Action = s.Action,
-                    Description = s.Description,
-                    Step = s.Step,
-                    RuleID = rule.ID
-                };
-
-                rule.FusionRuleSteps.Add(item);
-                if (rule != null)
-                {
-                    rule.UpdatedBy = Company.CurrentResourceID;
-                    rule.UpdatedOn = DateTime.UtcNow;
-                }
-
-                Company.SaveChanges();
-
-                foreach (var setting in s.Settings)
-                {
-                    if (!string.IsNullOrEmpty(setting.Value))
-                    {
-                        Company.Add(new FusionRuleStepSetting { RuleStepID = item.ID, Name = setting.Key, Value = setting.Value });
-                    }
-                }
-
-                Company.SaveChanges();
-
-                return jsonSuccess("New Fusion Rule Step Added", "0", "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-        
-        [HttpGet, Route("GetEditFusionRuleStep"), NonNullableParameters]
-        public JsonNetResult GetEditFusionRuleStep(int ruleID, int ruleStepID)
-        {
-            var rule = Company.GetById<FusionRule>(ruleID);
-            if (rule == null) return null;
-
-            var step = rule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
-            if (step == null) return null;
-
-            step.Settings.Add("Search", step.GetSettingValueByName("Search"));
-            step.Settings.Add("ID", step.GetSettingValueByName("ID"));
-
-            step.Settings.Add("SubjectSearch", step.GetSettingValueByName("SubjectSearch"));
-            step.Settings.Add("Subject", step.GetSettingValueByName("Subject"));
-            step.Settings.Add("SubjectID", step.GetSettingValueByName("SubjectID"));
-            step.Settings.Add("ObjectSearch", step.GetSettingValueByName("ObjectSearch"));
-            step.Settings.Add("Object", step.GetSettingValueByName("Object"));
-            step.Settings.Add("ObjectID", step.GetSettingValueByName("ObjectID"));
-
-            step.Settings.Add("TechnicalSubjectSearch", step.GetSettingValueByName("TechnicalSubjectSearch"));
-            step.Settings.Add("TechnicalSubject", step.GetSettingValueByName("TechnicalSubject"));
-            step.Settings.Add("TechnicalSubjectID", step.GetSettingValueByName("TechnicalSubjectID"));
-
-            step.Settings.Add("TechnicalObjectSearch", step.GetSettingValueByName("TechnicalObjectSearch"));
-            step.Settings.Add("TechnicalObject", step.GetSettingValueByName("TechnicalObject"));
-            step.Settings.Add("TechnicalObjectID", step.GetSettingValueByName("TechnicalObjectID"));
-
-            step.Settings.Add("ParentObjectTypeID", step.GetSettingValueByName("ParentObjectTypeID"));
-            step.Settings.Add("ParentObjectSearch", step.GetSettingValueByName("ParentObjectSearch"));
-            step.Settings.Add("ParentObjectID", step.GetSettingValueByName("ParentObjectID"));
-
-            step.Settings.Add("FilterField", step.GetSettingValueByName("FilterField"));
-            step.Settings.Add("TargetField", step.GetSettingValueByName("TargetField"));
-            step.Settings.Add("IntersectType", step.GetSettingValueByName("IntersectType"));
-
-            step.Settings.Add("Role", step.GetSettingValueByName("Role"));
-            step.Settings.Add("FindParent", step.GetSettingValueByName("FindParent"));
-
-            step.Settings.Add("PromotionFusionAttributeTypeID", step.GetSettingValueByName("PromotionFusionAttributeTypeID"));
-            step.Settings.Add("PromotionStepID", step.GetSettingValueByName("PromotionStepID"));
-
-            return new JsonNetResult
-            {
-
-                Data = new FusionRuleStepEditorModel
-                {
-                    FormUri = "/form/EditFusionRuleStep",
-                    FormMethod = "PUT",
-                    RuleStep = step,
-                    FormName = "Edit Fusion Rule Step",
-                    FusionID = rule.FusionID,
-                    FusionTypeID = rule.Fusion.FusionTypeID
-                },
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpPut, ValidateInput(false), Route("PutEditFusionRuleStep")]
-        public JsonResult PutEditFusionRuleStep(FusionRuleStep s)
-        {
-            try
-            {
-                var ruleID = s.RuleID;
-                var ruleStepID = s.ID;
-
-                if (ruleID <= 0 || ruleStepID <= 0) return null;
-
-                var rule = Company.GetById<FusionRule>(ruleID);
-
-                if (rule == null)
-                    throw new NotFoundException("fusion rule");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, rule.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var step = rule.FusionRuleSteps.First(x => x.ID == ruleStepID);
-
-                if (step == null) return null;
-
-                step.Description = s.Description;
-                step.Step = s.Step;
-                step.Action = s.Action;
-                step.Settings = s.Settings;
-
-                rule.UpdatedBy = Company.CurrentResourceID;
-                rule.UpdatedOn = DateTime.UtcNow;
-
-                //remove old step settings                
-                for (int i = step.FusionRuleStepSettings.Count - 1; i >= 0; i--)
-                {
-                    Company.ObjectContext.DeleteObject(step.FusionRuleStepSettings.ElementAt(i));
-                }
-                Company.SaveChanges();
-
-                foreach (var setting in s.Settings)
-                {
-                    if (!string.IsNullOrEmpty(setting.Value))
-                    {
-                        Company.Add(new FusionRuleStepSetting { RuleStepID = step.ID, Name = setting.Key, Value = setting.Value });
-                    }
-                }
-                Company.SaveChanges();
-
-                return jsonSuccess("Step updated", "0", "add", HttpStatusCode.Accepted);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("MoveFusionRuleStep")]
-        public ActionResult MoveFusionRuleStep(int ruleID, int ruleStepID, bool moveUp)
-        {
-            var direction = moveUp ? "UP" : "DOWN";
-            var currentRule = Company.GetById<FusionRule>(ruleID);
-
-            if (currentRule == null)
-                throw new NotFoundException("fusion rule");
-
-            if (!Company.HasAssetPermission(SystemObjects.Fusion, currentRule.FusionID, Permission.ModifyAsset))
-                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-            var itemToMove = currentRule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
-            int currentStepNumber = itemToMove.Step;
-
-            currentRule.UpdatedBy = Company.CurrentResourceID;
-            currentRule.UpdatedOn = DateTime.UtcNow;
-
-            if (string.Compare(direction, "UP", true) == 0)
-            {
-                //swap item to move and the item above it                
-                var itemBeforeSelected = currentRule.FusionRuleSteps.OrderBy(x => x.Step).TakeWhile(x => x.ID != ruleStepID).LastOrDefault();
-
-                if (itemBeforeSelected != null)
-                {
-                    itemToMove.Step = itemBeforeSelected.Step;
-                    itemBeforeSelected.Step = currentStepNumber;
-                    Company.Entry(itemToMove).Property(u => u.Step).IsModified = true;
-                    Company.Entry(itemBeforeSelected).Property(u => u.Step).IsModified = true;
-                    Company.SaveChanges();
-                }
-            }
-            else if (string.Compare(direction, "DOWN", true) == 0)
-            {
-                var itemAfterSelected = currentRule.FusionRuleSteps.OrderBy(x => x.Step).SkipWhile(p => p.ID != ruleStepID)
-                                  .ElementAt(1); //Zero-indexed, means second
-
-                if (itemAfterSelected != null)
-                {
-                    itemToMove.Step = itemAfterSelected.Step;
-                    itemAfterSelected.Step = currentStepNumber;
-                    Company.Entry(itemToMove).Property(u => u.Step).IsModified = true;
-                    Company.Entry(itemAfterSelected).Property(u => u.Step).IsModified = true;
-                    Company.SaveChanges();
-                }
-            }
-
-            return jsonSuccess("Step successfully moved", ruleID.ToString(), "move", HttpStatusCode.OK);
-        }
-
-        #endregion
-
-        #endregion
-
-        #region FusionRuleStepMapping
-        
-        #region Form Get/Post
-
-        List<SelectListItem> loadSourceItemOptions(FusionRuleStep ruleStep, FusionRuleStepMapping existingItem = null)
-        {
-            #region Process Source Field Logic
-
-            var sourceFieldIDs = ruleStep.FusionRuleStepMappings.Where(i => i.SourceFieldTypeID > 0).Select(i => i.SourceFieldTypeID).ToList();
-            var sourceFieldNames = ruleStep.FusionRuleStepMappings.Where(i => i.SourceFieldTypeID == 0).Select(i => i.SourceFieldName).ToList();
-
-            if (existingItem != null)
-            {
-                if (existingItem.SourceFieldTypeID > 0)
-                {
-                    sourceFieldIDs.Remove(existingItem.SourceFieldTypeID);
-                }
-                else
-                {
-                    sourceFieldNames.Remove(existingItem.SourceFieldName);
-                }
-            }
-
-            var sourceFields = Company.Filter<FieldType>(i => i.Object == ruleStep.FusionRule.ObjectType && i.ObjectID == ruleStep.FusionRule.ObjectID)
-                .OrderBy(i => i.FriendlyName)
-                .ToList()
-                .Select(i => new SelectListItem
-                {
-                    Text = string.Format("{0} ({1})", i.FriendlyName, i.Name),
-                    Value = string.Format("{0}|{1}", i.Name, i.ID)
-                })
-                .ToList();
-
-            if (ruleStep.FusionRule.ObjectType == "FusionAttributeType")
-            {
-                var thisFusionAttributeType = Company.GetById<FusionAttributeType>(ruleStep.FusionRule.ObjectID);
-                if (thisFusionAttributeType != null)
-                {
-                    sourceFields.AddRange(
-                        Company
-                        .Filter<FieldType>(i => i.Object == ruleStep.FusionRule.ObjectType && i.ObjectID == thisFusionAttributeType.ParentID)
-                        .OrderBy(i => i.FriendlyName)
-                        .ToList()
-                        .Select(i => new SelectListItem {
-                            Text = string.Format("Parent.{0} ({1})", i.FriendlyName, i.Name),
-                            Value = string.Format("{0}|{1}", i.Name, i.ID)
-                        })
-                    );
-                }
-            }
-
-            //These fields do not exists, by default, for fusion query attributes.
-            if (ruleStep.FusionRule.ObjectType != SystemObjects.FusionQueryAttributeType.ToString())
-            {
-                sourceFields.Insert(0, new SelectListItem { Text = "ID", Value = "ID|0" });
-                sourceFields.Insert(1, new SelectListItem { Text = "Name", Value = "Name|0" });
-                sourceFields.Insert(2, new SelectListItem { Text = "TextPath", Value = "TextPath|0" });
-            }
-
-            #endregion
-
-            var selectedID = "";
-            if (existingItem != null)
-            {
-                if (existingItem.SourceFieldTypeID > 0)
-                {
-                    selectedID = existingItem.SourceFieldTypeID.ToString();
-                }
-                else
-                {
-                    selectedID = existingItem.SourceFieldName;
-                }
-            }
-
-            if (selectedID != null)
-            {
-                sourceFields.ForEach(i =>
-                {
-                    if (!string.IsNullOrEmpty(i.Value))
-                    {
-                        string[] parts = i.Value.Split('|');
-                        i.Selected = parts.Length > 1 && parts[0] == selectedID || parts[1] == selectedID;
-                    }
-                });
-            }
-
-            return sourceFields;
-        }
-
-        List<SelectListItem> loadTargetItemOptions(FusionRuleStep ruleStep, FusionRuleStepMapping existingItem = null)
-        {
-            var targetFields = new List<SelectListItem>();
-
-            if (ruleStep.Action.ToLower() == "update")
-            {
-                //find the referenced step
-                int id = 0;
-                int.TryParse(ruleStep.GetSettingValueByName("SubjectID"), out id);
-                if (id > 0)
-                    ruleStep = Company.GetById<FusionRuleStep>(id);
-            }
-
-            #region Process Target Field Logic
-
-            var targetFieldIDs = ruleStep.FusionRuleStepMappings.Where(i => i.TargetFieldTypeID > 0).Select(i => i.TargetFieldTypeID).ToList();
-            var targetFieldNames = ruleStep.FusionRuleStepMappings.Where(i => i.TargetFieldTypeID == 0).Select(i => i.TargetFieldName).ToList();
-
-            if (existingItem != null)
-            {
-                if (existingItem.TargetFieldTypeID > 0)
-                {
-                    targetFieldIDs.Remove(existingItem.TargetFieldTypeID);
-                }
-                else
-                {
-                    targetFieldNames.Remove(existingItem.TargetFieldName);
-                }
-            }
-                        
-            var promotionType = ruleStep.GetSettingValueByName("Object");            
-            int promotionObjectID = 0;
-            int.TryParse(ruleStep.GetSettingValueByName("ObjectID"), out promotionObjectID);
-
-            var ignoreFields = DataType.Text.GetComputedFields();
-
-            var targetDynamicFields = Company.Filter<FieldType>(i => i.Object == promotionType && i.ObjectID == promotionObjectID && !ignoreFields.Contains(i.Type))
-                .OrderBy(i => i.FriendlyName)
-                .ToList()
-                .Where(i => !targetFieldIDs.Contains(i.ID))
-                .Select(i => new SelectListItem
-                {
-                    Text = string.Format("{0} ({1})", i.FriendlyName, i.Name),
-                    Value = string.Format("{0}|{1}", i.Name, i.ID)
-                })
-                .ToList();
-
-            switch (promotionType)
-            {
-                case "ReferenceItemType":
-                    if (!targetFieldNames.Contains("Code"))
-                        targetFields.Add(new SelectListItem { Text = "Code", Value = "Code|0" });
-                    targetFields.AddRange(targetDynamicFields);
-                    break;
-                case "ArtifactType":
-                case "TaxonomyType":                    
-                    targetFields.AddRange(targetDynamicFields);
-                    break;
-                case "IntersectType":
-                    targetFields.AddRange(targetDynamicFields);
-                    break;
-            }
-
-            #endregion
-
-            var selectedID = "";
-            if (existingItem != null)
-            {
-                if (existingItem.TargetFieldTypeID > 0)
-                {
-                    selectedID = existingItem.TargetFieldTypeID.ToString();
-                }
-                else
-                {
-                    selectedID = existingItem.TargetFieldName;
-                }
-            }
-
-            targetFields.ForEach(i =>
-            {
-                i.Selected = i.Value.Contains(selectedID);
-            });
-
-            return targetFields;
-        }
-
-        [HttpGet, Route("GetAddFusionRuleStepMapping"), NonNullableParameters]
-        public JsonNetResult GetAddFusionRuleStepMapping(int id)
-        {
-            var ruleStep = Company.GetById<FusionRuleStep>(id, i => i.FusionRule);
-
-            if (ruleStep == null)
-                throw new NotFoundException("fusion rule step");
-
-            if (!Company.HasAssetPermission(SystemObjects.Fusion, ruleStep.FusionRule.FusionID, Permission.ModifyAsset))
-                return jsonNetException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-            var editorModel = new FusionRuleStepMappingEditorModel
-            {
-                FormUri = "/Form/AddFusionRuleStepMapping",
-                FormMethod = "POST",
-                FormName = "Add Promotion Field Mapping",
-                Item = new FusionRuleStepMapping { RuleStepID = id, FusionRuleStep = ruleStep },
-                SourceFields = loadSourceItemOptions(ruleStep),
-                TargetFields = loadTargetItemOptions(ruleStep)
-            };
-
-            return new JsonNetResult
-            {
-                Data = editorModel,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("PostAddFusionRuleStepMapping")]
-        public JsonResult PostAddFusionRuleStepMapping(FusionRuleStepMapping map)
-        {
-            try
-            {
-                var model = new FusionRuleStepMapping
-                {
-                    RuleStepID = map.RuleStepID,
-                    SourceFieldName = map.SourceFieldName,
-                    SourceFieldTypeID = map.SourceFieldTypeID,
-                    TargetFieldName = map.TargetFieldName,
-                    TargetFieldTypeID = map.TargetFieldTypeID
-                };
-
-                if (map.IsConstantValue)
-                {
-                    model.IsConstantValue = true;
-                    model.SourceFieldTypeID = 0;
-                    model.ConstantValue = map.ConstantValue;
-                    model.SourceFieldName = null;
-                }
-                else
-                {
-                    model.IsConstantValue = false;
-                    model.ConstantValue = string.Empty;
-                }
-
-                Company.Add(model);
-
-                var ruleStep = Company.GetById<FusionRuleStep>(model.RuleStepID, i => i.FusionRule);
-                if (ruleStep != null)
-                {
-                    if (!Company.HasAssetPermission(SystemObjects.Fusion, ruleStep.FusionRule.FusionID, Permission.ModifyAsset))
-                        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                    ruleStep.FusionRule.UpdatedBy = Company.CurrentResourceID;
-                    ruleStep.FusionRule.UpdatedOn = DateTime.UtcNow;
-                    Company.SaveChanges();
-                }
-
-                return jsonSuccess("Field mapping successfully created.", "0", "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFusionRuleStepMapping")]
-        public JsonResult AddFusionRuleStepMapping(FormCollection form)
-        {
-            try
-            {
-                var model = new FusionRuleStepMapping
-                {
-                    RuleStepID = parseIntField(form, "RuleID")
-                };
-
-                var source = form["Source"].Split('|');
-                var target = form["Target"].Split('|');
-                var constantValue = form["ConstantValue"];
-                var isConstantValue = form["isConstantValue"];
-
-                if (source[1] == "0")
-                {
-                    model.SourceFieldName = source[0];
-                    model.SourceFieldTypeID = 0;
-                }
-                else
-                    model.SourceFieldTypeID = int.Parse(source[1]);
-
-                if (target[1] == "0")
-                {
-                    model.TargetFieldName = target[0];
-                    model.TargetFieldTypeID = 0;
-                }
-                else
-                    model.TargetFieldTypeID = int.Parse(target[1]);
-
-
-                if (!string.IsNullOrEmpty(isConstantValue) && isConstantValue.Contains("true"))
-                {
-                    model.IsConstantValue = true;
-                    model.SourceFieldTypeID = 0;
-                    model.ConstantValue = constantValue;
-                    model.SourceFieldName = null;
-                }
-                else
-                {
-                    model.IsConstantValue = false;
-                    model.ConstantValue = string.Empty;
-                }
-
-                Company.Add(model);
-
-                var ruleStep = Company.GetById<FusionRuleStep>(model.RuleStepID, i => i.FusionRule);
-                if (ruleStep != null)
-                {
-                    if (!Company.HasAssetPermission(SystemObjects.Fusion, ruleStep.FusionRule.FusionID, Permission.ModifyAsset))
-                        return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                    ruleStep.FusionRule.UpdatedBy = Company.CurrentResourceID;
-                    ruleStep.FusionRule.UpdatedOn = DateTime.UtcNow;
-                    Company.SaveChanges();
-                }
-
-                return jsonSuccess("Field mapping successfully created.", "0", "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteFusionRuleStep")]
-        public JsonResult DeleteFusionRuleStep(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-                var id = parseIntField(form, "ID");
-                var ruleStepID = parseIntField(form, "RuleStepID");
-                var currentRule = Company.GetById<FusionRule>(id);
-
-                if (currentRule == null)
-                    throw new NotFoundException("fusion rule");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, currentRule.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                var itemToRemove = currentRule.FusionRuleSteps.SingleOrDefault(x => x.ID == ruleStepID);
-
-                if (itemToRemove == null) throw new Exception("Fusion Rule Step not found.");                     
-
-                Company.Delete(itemToRemove);
-
-                currentRule.UpdatedBy = Company.CurrentResourceID;
-                currentRule.UpdatedOn = DateTime.UtcNow;
-                    
-                //update the step numbers 
-                var steps = currentRule.FusionRuleSteps.OrderBy(x => x.Step);
-
-                for (int i = 0; i < steps.Count(); i++)
-                {
-                    steps.ElementAt(i).Step = (i + 1);
-                }
-
-                Company.SaveChanges();
-
-                return jsonSuccess("Step successfully removed.", id.ToString(), form["_context"], HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteFusionRuleStepByID")]
-        public JsonResult DeleteFusionRuleStepByID(int ruleID, int ruleStepID)
-        {
-            var form = new FormCollection();
-            form.Add("ID", ruleID.ToString());
-            form.Add("RuleStepID", ruleStepID.ToString());
-            
-            return DeleteFusionRuleStep(form);
-        }
-
-        [HttpDelete, Route("DeleteFusionRuleStepMapping")]
-        public JsonResult DeleteFusionRuleStepMapping(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("configuration");
-                var id = parseIntField(form, "ID");
-
-                var mapping = Company.GetById<FusionRuleStepMapping>(id, i => i.FusionRuleStep.FusionRule);
-
-                if (mapping == null)
-                    throw new NotFoundException("field mapping");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, mapping.FusionRuleStep.FusionRule.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(mapping);
-                return jsonSuccess("Mapping successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteFusionRuleStepMappingByID"), NonNullableParameters]
-        public JsonResult DeleteFusionRuleStepMappingByID(int id)
-        {
-            var form = new FormCollection();
-            form.Add("ID", id.ToString());
-            return DeleteFusionRuleStepMapping(form);
-        }
-
-        [Route("GetEditFusionRuleStepMapping"), NonNullableParameters]
-        public JsonNetResult GetEditFusionRuleStepMapping(int id)
-        {
-            var a = Company.GetById<FusionRuleStepMapping>(id);
-            if (a == null) return null;
-
-            var editorModel = new FusionRuleStepMappingEditorModel
-            {
-                FormUri = "/Form/EditFusionAttributePromotionRuleMapping",
-                FormMethod = "PUT",
-                FormName = "Update Promotion Field Mapping",
-                Item = a,
-                SourceFields = loadSourceItemOptions(a.FusionRuleStep, a),
-                TargetFields = loadTargetItemOptions(a.FusionRuleStep, a)
-            };
-
-            return new JsonNetResult
-            {
-                Data = editorModel,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        [HttpPut, ValidateInput(false), Route("PutEditFusionRuleStepMapping")]
-        public JsonResult PutEditFusionRuleStepMapping(FusionRuleStepMapping map)
-        {
-            try
-            {
-                var model = Company.GetById<FusionRuleStepMapping>(map.ID, i => i.FusionRuleStep.FusionRule);
-
-                if (model == null)
-                    throw new NotFoundException("field mapping");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionRuleStep.FusionRule.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.SourceFieldName = map.SourceFieldName;
-                model.SourceFieldTypeID = map.SourceFieldTypeID;
-                model.TargetFieldName = map.TargetFieldName;
-                model.TargetFieldTypeID = map.TargetFieldTypeID;
-
-                if (map.IsConstantValue)
-                {
-                    model.IsConstantValue = true;
-                    model.SourceFieldTypeID = 0;
-                    model.ConstantValue = map.ConstantValue;
-                }
-                else
-                {
-                    model.IsConstantValue = false;
-                    model.ConstantValue = null;
-                }
-                model.FusionRuleStep.FusionRule.UpdatedBy = Company.CurrentResourceID;
-                model.FusionRuleStep.FusionRule.UpdatedOn = DateTime.UtcNow;
-
-                Company.Update(model);
-
-                return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditFusionRuleStepMapping")]
-        public JsonResult EditFusionRuleStepMapping(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("field mapping");
-
-                var model = Company.GetById<FusionRuleStepMapping>(parseIntField(form, "ID"), i => i.FusionRuleStep.FusionRule);
-                
-                if (model == null)
-                    throw new NotFoundException("field mapping");
-
-                if (!Company.HasAssetPermission(SystemObjects.Fusion, model.FusionRuleStep.FusionRule.FusionID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var source = form["Source"].Split('|');
-                var target = form["Target"].Split('|');
-                var constantValue = form["ConstantValue"];
-                var isConstantValue = form["isConstantValue"];
-
-                if (source[1] == "0")
-                {
-                    model.SourceFieldName = source[0];
-                    model.SourceFieldTypeID = 0;
-                }
-                else
-                    model.SourceFieldTypeID = int.Parse(source[1]);
-
-                if (target[1] == "0")
-                {
-                    model.TargetFieldName = target[0];
-                    model.TargetFieldTypeID = 0;
-                }
-                else
-                    model.TargetFieldTypeID = int.Parse(target[1]);
-
-                if (!string.IsNullOrEmpty(isConstantValue) && isConstantValue.Contains("true"))
-                {
-                    model.IsConstantValue = true;
-                    model.SourceFieldTypeID = 0;
-                    model.ConstantValue = constantValue;
-                }
-                else
-                {
-                    model.IsConstantValue = false;
-                    model.ConstantValue = null;
-                }
-                model.FusionRuleStep.FusionRule.UpdatedBy = Company.CurrentResourceID;
-                model.FusionRuleStep.FusionRule.UpdatedOn = DateTime.UtcNow;
-
-                Company.Update(model);
-
-                return jsonSuccess("Field mapping successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
 
         #region FusionType
 
@@ -8721,7 +7141,7 @@ select 'ReferenceItemType|0' as value, 'Reference' as title
 select * from (
 select 'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title from AttributeType where ParentID is null
 union
-select 'ArtifactType|' + cast(ID as varchar(10)) as value, 'Artifact: ' + Name as title from ArtifactType
+select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 'Artifact: ' + Name as title from AssetType where Object = 'ArtifactType'
 union
 select 'TaxonomyType|' + cast(ID as varchar(10)) as value, 'Model: ' + Name as title from TaxonomyType
 union
@@ -11226,6 +9646,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             
             int objectTypeID = -1;
             string parentType = string.Empty;
+            bool useAssetJoin = false;
 
             #region Resolve Type
 
@@ -11262,6 +9683,11 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             {
                 targetType = relationshipType.Subject;
                 targetTypeID = relationshipType.SubjectID;
+            }
+
+            if (targetType == SystemObjects.ArtifactType.ToString())
+            {
+                useAssetJoin = true;
             }
 
             #endregion
@@ -11522,7 +9948,8 @@ order by r.Name";
                 default:
                     #region
                     sql = $@"(
-select		D.[Object], 
+select		D.ID,
+            D.[Object], 
 			D.ObjectID
 from		Asset D
             inner join AssetType AST on D.AssetTypeID = AST.ID
@@ -11531,12 +9958,12 @@ from		Asset D
 											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
 										)
 where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType and D.ObjectID != @id
-) C on C.ObjectID = O.ID";
+) C on {(useAssetJoin ? "C.ID" : "C.ObjectID")} = O.ID";
 
                     switch (targetType)
                     {
                         case "ArtifactType":
-                            sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue as Name from Artifact O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                            sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue as Name from AssetDetail O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
                             break;
                         case "GroupType":
                             sql = $@"select C.Object, C.ObjectID, O.Name from [Group] O inner join {sql} order by O.Name";
@@ -14992,10 +13419,8 @@ order by	case
             items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.TaxonomyType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Model Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.TaxonomyType.ToString(), i.ID) }));
 
             //rules
-            items.Add(new SelectListItem { Text = "Rule Type :: Informational", Value = "RuleType|1" });
-            items.Add(new SelectListItem { Text = "Rule Type :: Quality Check", Value = "RuleType|2" });
-            items.Add(new SelectListItem { Text = "Rule Type :: Metric", Value = "RuleType|3" });
-            items.Add(new SelectListItem { Text = "Rule Type :: Profile", Value = "RuleType|4" });
+            items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.RuleType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Rule Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.RuleType.ToString(), i.ID) }));
+
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Object", Name = "Assign Survey To", FieldType = DataType.Lookup.ToString(), Items = items });
@@ -15124,6 +13549,31 @@ order by	case
 
         #endregion
 
+        #endregion
+
+        #region Tag
+        [Route("Tag_AddFields")]
+        public JsonResult Tag_AddFields()
+        {
+            var list = new List<EditableField>();
+
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Value", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">SurveyTypeID</param>
+        [Route("Tag_EditFields"), NonNullableParameters]
+        public JsonResult Tag_EditFields(int id)
+        {
+            var list = new List<EditableField>();
+            var a = Company.GetById<Tag>(id);
+
+            list.Add(new EditableField { FieldName = "uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Value", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
         #endregion
 
         #region Synonym

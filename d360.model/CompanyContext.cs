@@ -38,7 +38,7 @@ namespace d360.model
 
         internal string FUSIONATTRIBUTES_BY_FUSION_PREFIX_KEY = "AttributesByFusion_{0}_{1}";
         internal string REPORTING_SCHEMA_KEY = "ReportingSchema_{0}";
-        internal string TAXONOMY_TYPES_KEY = "TaxonomyTypes_{0}";                
+        internal string TAXONOMY_TYPES_KEY = "TaxonomyTypes_{0}";
         internal string ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY = "ArtifactDictionaryByType_{0}_{1}";
 
         internal string key(string token)
@@ -74,7 +74,7 @@ namespace d360.model
             CurrentResourceID = context.ResourceID;
             CurrentResourceIsAdmin = context.IsAdministrator;
             CurrentCompanyDomain = context.CompanyPrefix;
-            
+
             //output queries in debug mode to console
             if (System.Diagnostics.Debugger.IsAttached)
                 this.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
@@ -89,16 +89,12 @@ namespace d360.model
 
         #region DbSets
 
-        public DbSet<Artifact> Artifacts { get; set; }
-
         public DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
 
         public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
 
 
         public DbSet<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
-
-        public DbSet<ArtifactType> ArtifactTypes { get; set; }
 
         public DbSet<d360.core.entities.Attribute> Attributes { get; set; }
 
@@ -111,7 +107,7 @@ namespace d360.model
         public DbSet<AttributeTypeRelation> AttributeTypeRelations { get; set; }
 
         public DbSet<AttributeTypeRelationDetail> AttributeTypeRelationDetails { get; set; }    /* VIEW */
-                
+
         public DbSet<Comment> Comments { get; set; }
 
         public DbSet<CommentRelation> CommentRelations { get; set; }
@@ -131,7 +127,7 @@ namespace d360.model
         public DbSet<FieldWithRelation> FieldWithRelations { get; set; }                        /* VIEW */
 
         public DbSet<FieldType> FieldTypes { get; set; }
-        
+
         public DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }
 
         public DbSet<FieldTypeFilteredLookupDefinition> FieldTypeFilteredLookupDefinitions { get; set; }
@@ -149,7 +145,7 @@ namespace d360.model
         public DbSet<FusionExecution> FusionExecutions { get; set; }
 
         public DbSet<FusionSchedule> FusionSchedules { get; set; }
-        
+
         public DbSet<Fusion> FusionTypeConfigurations { get; set; }
 
         public DbSet<FusionAttribute> FusionAttributes { get; set; }
@@ -157,17 +153,13 @@ namespace d360.model
         public DbSet<FusionAttributeType> FusionAttributeTypes { get; set; }
 
         public DbSet<FusionAttributeTypeCustomQuery> FusionAttributeTypeCustomQueries { get; set; }
-                
+
         public DbSet<FusionQueryAttribute> FusionQueryAttributes { get; set; }
 
         public DbSet<FusionQueryAttributeType> FusionQueryAttributeTypes { get; set; }
 
-        public DbSet<FusionRule> FusionRules { get; set; }
 
-        public DbSet<FusionRuleFilter> FusionRuleFilters { get; set; }
 
-        public DbSet<FusionRuleItem> FusionRuleItem { get; set; }
-        
         public DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
 
         public DbSet<FusionType> FusionTypes { get; set; }
@@ -179,7 +171,7 @@ namespace d360.model
         public DbSet<IntersectDetail> IntersectDetails { get; set; }                /* VIEW */
 
         public DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }        /* VIEW */
-        
+
 
         public DbSet<IntersectType> IntersectTypes { get; set; }
 
@@ -198,7 +190,7 @@ namespace d360.model
         public DbSet<NymRelation> NymRelations { get; set; }
 
         public DbSet<ObjectStyle> ObjectStyles { get; set; }
-        
+
         public DbSet<Predicate> Predicates { get; set; }
 
         public DbSet<Question> Questions { get; set; }
@@ -247,11 +239,12 @@ namespace d360.model
 
         public DbSet<SurveyType> SurveyTypes { get; set; }
 
-        public DbSet<Taxonomy> Taxonomies { get; set; }        
+        public DbSet<Taxonomy> Taxonomies { get; set; }
 
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<AssetTag> AssetTags { get;set;}
 
         public DbSet<TaxonomyType> TaxonomyTypes { get; set; }
 
@@ -902,8 +895,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 			ASTT.Name + ' : ' + D.DisplayValue as Name
 	from	
 			Asset AST
-			inner join AssetType ASTT on ASTT.ID = AST.AssetTypeID and ASTT.CanOwnFusion = 1
-			inner join ArtifactType T on (ASTT.ObjectID = T.ID and ASTT.[Object] = 'ArtifactType'  )			
+			inner join AssetType ASTT on ASTT.ID = AST.AssetTypeID and ASTT.CanOwnFusion = 1 and ASTT.[Object] = 'ArtifactType'		
             cross apply GetAssetDisplayValueById(AST.ID) D
 	order by	ASTT.Name + ' : ' + D.DisplayValue").ToList();
         }
@@ -2077,7 +2069,6 @@ where	R.SourceObject = 'FusionAttribute'
                 i.MapLeftKey("MapID").MapRightKey("MapItemID").ToTable("MapItemMap");
             });
 
-            modelBuilder.Entity<FusionRuleStep>().HasRequired(t => t.FusionRule).WithMany(t => t.FusionRuleSteps).HasForeignKey(k => k.RuleID).WillCascadeOnDelete(true);
 
             base.OnModelCreating(modelBuilder);
         }
@@ -2273,56 +2264,6 @@ where	R.SourceObject = 'FusionAttribute'
                     var o = entry.Entity as IUpdatedMetadata;
                     o.UpdatedBy = CurrentResourceID;
                     o.UpdatedOn = DateTime.UtcNow;
-                }
-                #endregion
-
-                #region Business logic : Artifact
-                if (entry.Entity is Artifact)
-                {
-                    var o = entry.Entity as Artifact;
-                    
-
-                    switch (entry.State)
-                    {                         
-                        case EntityState.Deleted:
-                            var any = false;
-                            any = Any<Intersect>(i => (i.Subject == "Artifact" && i.SubjectID == o.ID) || (i.Object == "Artifact" && i.ObjectID == o.ID));
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Item_RelationshipsReferences);
-
-                            any = ObjectHasChildren(SystemObjects.Artifact, o.ID);
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Artifact_ExistingChildren);                            
-                            break;                        
-                    }
-
-                    Caching.RemoveItem(key(ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY, o.ArtifactTypeID));
-                }
-                #endregion
-
-                #region Business logic : ArtifactType
-                if (entry.Entity is ArtifactType)
-                {
-                    var o = entry.Entity as ArtifactType;
-                    
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<ArtifactType>(i => i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);                            
-                            break;
-                        case EntityState.Deleted:
-                            if (Any<Artifact>(i => i.ArtifactTypeID == o.ID))
-                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ArtifactsAssignedToType);
-                            var childIDs = GetChildTypes(o.ID, SystemObjects.ArtifactType).ToList();
-                            if (childIDs.Count > 0)
-                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ChildTypesAssignedToType);
-                            
-                            break;
-                        case EntityState.Modified:
-                            if (Any<ArtifactType>(i => i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            
-                            break;
-                    }
                 }
                 #endregion
 
@@ -2787,6 +2728,27 @@ select @err";
                             if (Any<SurveyType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : Tag
+                if (entry.Entity is Tag)
+                {
+                    var o = entry.Entity as Tag;
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (Any<Tag>(i => i.Value == o.Value && i.State == State.Active))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+
+                            break;
+                        case EntityState.Modified:
+                            if (Any<Tag>(i => i.Value == o.Value && i.ID != o.ID && i.State == State.Active))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+
                             break;
                     }
                 }

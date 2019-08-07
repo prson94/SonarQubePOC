@@ -1,0 +1,11 @@
+﻿<div #popupBox class="modal-overlay" tabindex=-1 (keydown)="checkKey($event)">
+    <div class="modal-dialog {{additionalClasses}}">
+        <div class="title-bar">
+            <h1>{{title}}</h1>
+            <span class="grow"></span>
+            <button (click)="closePopUp()" class="light bar button close" title="Close"><i class="fa fa-times"></i></button>
+        </div>
+       <ng-content></ng-content>
+
+    </div>
+</div>

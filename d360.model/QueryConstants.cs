@@ -71,16 +71,16 @@ from
 	    1 as New,        					
 		0 as Total,
         at.id as Id		
-from    Artifact a
-        inner join artifacttype at on a.artifacttypeid = at.id
+from    Asset a
+        inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'
 where   a.createdon > dateadd(day, @d, CURRENT_TIMESTAMP)
 union all
 select  at.Name,
 	    0 as New,   
 		1 as Total,     					
         at.id as Id		
-from    Artifact a
-        inner join artifacttype at on a.artifacttypeid = at.id
+from    Asset a
+        inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'
 where a.updatedon > dateadd(day, @d, CURRENT_TIMESTAMP)) T
 group by Name, Id";
 
@@ -89,9 +89,9 @@ select  at.Name,
 	    count(1) as New,        					
         count(1) as Total,
         at.id as Id								
-from    Artifact a
-        inner join artifacttype at on a.artifacttypeid = at.id                        
-group by at.name,at.id order by at.name";
+from    Asset a
+        inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'                       
+group by at.name,at.objectid order by at.name";
 
         public static string ObjectNymTypes = @"
                                 select 
@@ -285,101 +285,13 @@ from    fusionattribute f
 where   f.id = @id";
 
        
-        public static string FusionPromotionChildAttributeNodeList = @"
-declare @tbl table (ID int, ParentID int);
 
-with at as	(
-			select	ID,
-					ParentID
-			from	FusionAttributeType
-			where	ID = @targetFusionAttributeTypeID
-			union all
-			select	P.ID,
-					P.ParentID
-			from	FusionAttributeType P
-					inner join at C on C.ParentID = P.ID and P.ID <> C.ID
-			)
-insert into @tbl 
-	select * from at
-
-if @currentFusionAttributeTypeID = 0 and @fusionAttributeID = 0
-	begin
-		select		A.ID,
-                    A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-		from		FusionAttribute A
-					inner join @tbl t on t.ParentID is null and A.FusionAttributeTypeiD = t.ID and A.FusionID = @fusionID
-        where       A.ID not in (
-                                select  RI.ObjectID
-                                from    fusion.RuleItem RI
-                                        inner join fusion.[Rule] R on R.ID = RI.RuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.ObjectID is not null and RI.ObjectType = 'FusionAttribute'
-                                )
-		order by	A.Name
-	end
-else
-	begin
-		select		A.ID,
-                    A.ParentID,
-					A.FusionAttributeTypeID,
-					A.Name
-		from		FusionAttribute A
-					inner join @tbl t on t.ParentID = @currentFusionAttributeTypeID 
-								and A.FusionAttributeTypeiD = t.ID 
-								and A.ParentID = @fusionAttributeID
-								and A.FusionID = @fusionID
-        where       A.ID not in (
-                                select  RI.ObjectID
-                                from    fusion.RuleItem RI
-                                        inner join fusion.[Rule] R on R.ID = RI.RuleID and R.ID = @ruleID and R.FusionID = @fusionID and RI.ObjectID is not null and RI.ObjectType = 'FusionAttribute'
-                                )
-        order by	Name
-	end";
-
-        public static string FusionRuleItemList = @"
-select	I.ID,
-        I.RuleID,
-        I.ObjectID,
-		case when I.ObjectType = 'FusionAttribute' and F.FusionAttributeTypeID = FT.ID then F.TextPath
-			when I.ObjectType = 'FusionAttribute' then coalesce(FT.Name + ' attributes under ' + F.TextPath, 'All ' + FT.Name + ' attributes') 
-			when I.ObjectType = 'FusionQueryAttribute' and I.ObjectID is not null then QFT.Name
-			when I.ObjectType = 'FusionQueryAttribute' then'All ' + QT.Name + ' query attributes'
-        end as FusionAttributeName
-from	[fusion].[RuleItem] I
-		inner join [fusion].[Rule] R on R.ID = I.RuleID
-		left join FusionAttributeType FT on FT.ID = R.ObjectID and I.ObjectType = 'FusionAttribute'
-        left join FusionAttribute F on F.ID = I.ObjectID and I.ObjectType = 'FusionAttribute'
-		left join FusionQueryAttributeType QT on QT.ID = R.ObjectID and I.ObjectType = 'FusionQueryAttribute'
-		left join FieldType QFT on I.ObjectType = 'FusionQueryAttribute' and QFT.ID = I.ObjectID
-where   I.RuleID = @id
-        ";
-
-        public static string FusionRuleUnmappedKeyColumnList = @"
-Select Name from fieldtype ft 
-where ft.object=@obj 
-and ft.objectid=@objId and ft.ispartofkey=1
-and  not exists (select	* from	[fusion].[RuleStepMapping] I where   I.RuleStepID =@ruleStepId and TargetFieldTypeId=ft.id)";
-
-
-        public static string FusionRuleMappingList = @"
-select	I.ID,
-        RS.RuleID,
-        I.SourceFieldTypeID,
-        coalesce(case when I.SourceFieldTypeID = 0 then I.SourceFieldName end, SF.FriendlyName + ' (' + SF.Name + ')', 'Constant: ' + I.ConstantValue) as SourceFieldName,
-        I.TargetFieldTypeID,
-        coalesce(case when I.TargetFieldTypeID = 0 then I.TargetFieldName end, TF.FriendlyName + ' (' + TF.Name + ')') as TargetFieldName
-from	[fusion].[RuleStepMapping] I
-        inner join [fusion].[RuleStep] RS on (I.RuleStepID = RS.ID)
-		left join FieldType SF on SF.ID = I.SourceFieldTypeID
-		left join FieldType TF on TF.ID = I.TargetFieldTypeID
-where   I.RuleStepID = @id";
 
         public static string FusionStatisticsItem = @"select
 	(select count(1) from fusion.agenterror where [date] > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as AgentErrors,
 	(select count(1) from fusion.execution where datestarted > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as AgentExecutions,
     (select count(1) from fusion.execution where datestarted > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as FusionExecutions,	
-	(select count(1) from fusion.error where [date] > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as FusionErrors,
-	(select sum(PromotedTaxonomies) + sum(PromotedDomainItems) + sum(PromotedDomains) + sum(PromotedArtifacts) from fusion.RuleLog where datestarted > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as NumberOfPromotions";
+	(select count(1) from fusion.error where [date] > Dateadd(Day, @days, CURRENT_TIMESTAMP )) as FusionErrors";
 
         public static string GroupResourceInfoList = @"
 select  RG.GroupID,
@@ -765,20 +677,6 @@ from	AssetType T
 					) R
 where T.[object]='RuleType' and		T.ObjectID = @id";
 
-        public static string PromotionHistoryList = @"
-select	ID,
-		DateStarted,
-		DateCompleted,
-		PromotedTaxonomies,
-		PromotedDomainItems,
-		PromotedDomains,
-		PromotedArtifacts,
-		TotalNewPromotions,
-		AttributesConsidered,
-        NumberOfRules,
-        RelationshipsAdded
-from    fusion.RuleLog
-order by    DateStarted desc";
 
         
         public static string SourceRuleList = @"
@@ -1228,45 +1126,6 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
     for json path, WITHOUT_ARRAY_WRAPPER;
 ";
 
-        public static string FusionRuleStepPromotionHistory = @"select
-	P.ID,
-	P.AttributeID,
-    P.AttributeType,
-	FA.Name as AttributeName,
-	P.ObjectType as [Object],
-	P.ObjectID,
-	D.Name as ObjectName,
-	D.Url as ObjectUrl,
-	P.CreatedOn,
-	P.UpdatedOn
-from fusion.RulePromotion P
-Cross apply utility.objectdetail(P.ObjectType,  P.ObjectID) D
-join FusionAttribute FA ON P.AttributeID = FA.ID and P.AttributeType = 'FusionAttribute'
-where P.RuleStepID = @id
-union all
-select
-	P.ID,
-	P.AttributeID,
-    P.AttributeType,
-	FA.DisplayValue as AttributeName,
-	P.ObjectType as [Object],
-	P.ObjectID,
-	D.[Name] as ObjectName,
-	D.[Url] as ObjectUrl,
-	P.CreatedOn,
-	P.UpdatedOn
-from fusion.RulePromotion P
-cross apply (
-	select A.DisplayValue as [Name], AUrl.[Url] as [Url] from AssetDetail A
-	cross apply [dbo].[GetAssetUrlById](A.ID) AUrl
-	where A.[Object] = P.ObjectType and A.ObjectID = P.ObjectID
-	union all
-	select N.[Name], null as Url from [Intersect] I
-	cross apply dbo.GetIntersectNames(I.ID) N 
-	where 'Intersect' = P.ObjectType and I.ID = P.ObjectID
-) D 
-join FusionQueryAttribute FA ON P.AttributeID = FA.ID and P.AttributeType = 'FusionQueryAttribute'
-where P.RuleStepID = @id;";
 
         public static string MapItems = @"
 select	MI.ID as MapItemID,

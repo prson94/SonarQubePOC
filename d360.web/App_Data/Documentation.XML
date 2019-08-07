@@ -2589,7 +2589,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.FusionController.DeleteBulkFusionAsync(System.String,System.Boolean)">
             <summary>
-            Removes a fusion configuration based on the specific fusion Uid. This endpoint is meant for deleting one fusion at a time.
+            Removes a fusion configuration based on the specific fusion Uid. This endpoint is meant for deleting one fusion configuration at a time.
             </summary>
             <remarks>
             <strong>&#9888; Read before calling this endpoint</strong><br/>
@@ -2597,7 +2597,7 @@
             <br/>Fusion rules must be deleted manually from the UI before calling this endpoint.
             </remarks>
             <param name="assetUid">The unique identifier of the fusion configuration.</param>
-            <param name="cascade">Delete all related data.</param>
+            <param name="cascade">Cascade delete to all related data (true/false). Setting cascade to false will not cascade the delete to other items and attempt to just delete the specified fusion configuration.  If the specified fusion configuration has data and you try to delete with cascade set to false, you will get an error.  The default value for cascade is FALSE.  If cascade is set to true, the fusion configuration and all related data will be removed.  This includes all fusion attribute data in this fusion configuration, all field data for those field attributes, and all relations that include fusion attributes in the configuration to be deleted.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.ActionsController">
@@ -3001,6 +3001,27 @@
             <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
+             <summary>
+             Creates association between an existing Asset and an existing tag
+             </summary>
+             <remarks>
+             An Administrator can create  any tag association. 
+            A regular user can only create a tag association to assets they have access to.
+             </remarks>
+             <param name="assetTags">AssetTag</param>
+             <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
+            <summary>
+            Removes association between an existing Asset and an exiting Tag
+            </summary>
+            <remarks>An Administrator can remove any tag association. 
+            A regular user can only remove a tag association to an asset they initially created the association for.
+            </remarks>
+            <param name="assetTags">AssetTag</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
         <member name="T:d360.web.Controllers.V2.ResponsibilitiesController">
             <summary>
             This service houses all endpoints handling glossary-related data such as artifacts and models.
@@ -3066,20 +3087,20 @@
         </member>
         <member name="M:d360.web.Controllers.V2.SurveysController.GetSurveysResultsAsync(System.String)">
             <summary>
-            Returns all survey results defined in Govern.          
+            Get a list of surveys contained within the system.          
             </summary>        
             <param name="surveyTypeUid">Uid of survey type</param>
             <returns>A list of survey results</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.SurveysController.GetSurveyTypes">
             <summary>
-            Returns all survey types defined in Govern.          
+            Returns defined survey types.          
             </summary>        
             <returns>A list of survey types</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.SurveysController.GetSurveysResultsSummaryAsync(System.String)">
             <summary>
-            Returns survey result summary for specific survey type uid defined in Govern.          
+            Returns survey result summary for specific survey type Uid.        
             </summary>        
             <param name="surveyTypeUid">Uid of survey type</param>
             <returns>A list of survey summary results</returns>
@@ -3088,6 +3109,12 @@
             <summary>
             This service houses all endpoints handling tag management in Govern
             </summary>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.Search(System.String)">
+            <summary>
+            Returns all tags that are defined in Govern.          
+            </summary>        
+            <returns>A list of tags</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.Get">
             <summary>
@@ -3116,6 +3143,24 @@
             <param name="uid">The unique identifier of the asset cross reference.</param>        
             <param name="model">The tag to be updated.</param>
             <returns>The updated tag.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.DeleteTags(System.Collections.Generic.List{d360.core.entities.TagApiDeleteModel})">
+            <summary>
+            Allows you to remove a tags based on tag lists.
+            </summary>
+            <returns>A status for the DELETE request.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.ConsolidateTags(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Consolidates tags
+            </summary>
+            <returns>A status for the POST request.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.ExportToExcel">
+            <summary>
+            GET a list of tags.
+            </summary>
+            <returns>A excel file containing tags.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowTypeAsync(System.Nullable{d360.core.enums.Workflow.ChangeType},System.Nullable{d360.core.enums.State})">
             <summary>
@@ -3170,14 +3215,6 @@
             Gets a list of available relationships types based on the source type specified in parameters. 
             Used in the Filter By Relationship tile on artifact list pages.
             </summary>
-        </member>
-        <member name="M:d360.web.Controllers.D3SApiController.GetFusionRulesArtifactParents(System.Int32)">
-            <summary>
-            Used only in fusion rules to get the parents of an artifact that has a parent type.  
-            once fusion rules are retired this can go
-            </summary>        
-            <param name="id"></param>        
-            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.FormController.getIconText(System.String)">
             <summary>
@@ -3360,6 +3397,9 @@
             <param name="id">PolicyTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.SurveyType_EditFields(System.Int32)">
+            <param name="id">SurveyTypeID</param>
+        </member>
+        <member name="M:d360.web.Controllers.FormController.Tag_EditFields(System.Int32)">
             <param name="id">SurveyTypeID</param>
         </member>
         <member name="M:d360.web.Controllers.FormController.Taxonomy_AddFields(System.Int32,System.Int32)">

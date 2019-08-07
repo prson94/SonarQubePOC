@@ -167,7 +167,7 @@ namespace d360.model.DataAccessLayer
                         switch (param.Value.ToLower())
                         {
                             case "name": orderByClause = "order by ST.Name"; break;
-                            case "validfordays": orderByClause = "order by ST.ValidForDays"; break;
+                            case "validfordays": orderByClause = "order by ST.ValidForDays desc"; break;
                             case "createdon": orderByClause = "order by ST.CreatedOn"; break;
                             case "updatedon": orderByClause = "order by ST.UpdatedOn"; break;
                             case "numberofresponses": orderByClause = "order by NumberOfResponses desc"; break;
@@ -255,9 +255,10 @@ namespace d360.model.DataAccessLayer
                         break;
                     case "asofdate":
                         DateTime date = DateTime.MinValue;
-                        DateTime.TryParseExact(param.Value,"MM/dd/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out date);
-                        if (date == DateTime.MinValue)
-                            throw new Exception("Invalid value for date parameter! Use MM/dd/yyyy format");
+                        if (!DateTime.TryParse(param.Value, out date))
+                        {
+                            throw new Exception("Invalid date value for AsOfDate parameter!");
+                        }
 
                         whereClauses.Add($"S.CreatedOn <= '{date.Date.AddDays(1)}'");
                         response.asOfDate = date;

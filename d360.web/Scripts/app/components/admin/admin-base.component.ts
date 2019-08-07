@@ -13,6 +13,7 @@ export class AdminBaseComponent extends BaseComponent {
     public areaLink: string = undefined;    
     public area: string = "Administration";
     public adminHeading: string;
+    public tabTitle: string = 'Admin'
 
     @ViewChildren('treetableRows') treeTableElements: any;
     private isDefaultTreeValuesSet: boolean = false;
@@ -25,7 +26,7 @@ export class AdminBaseComponent extends BaseComponent {
 
     setCommonItems() {
 
-        this.area = ['Artifacts', 'Attribute Groups', 'Lookup Types', 'Models', 'Policy Types', 'Predicates', 'Relationship Types', 'Rule Types', 'Surveys', 'Workflow', 'Action Types']
+        this.area = ['Artifacts', 'Attribute Groups', 'Lookup Types', 'Models', 'Policy Types', 'Predicates', 'Relationship Types', 'Rule Types', 'Surveys','Tags', 'Workflow', 'Action Types']
             .indexOf(this.areaName) !== -1 ? 'Configuration' : "Administration";
 
         this.headerBreadcrumbService.clearBreadcrumbs();
@@ -33,7 +34,12 @@ export class AdminBaseComponent extends BaseComponent {
         if (this.adminHeading)
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.adminHeading));     
         
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));     
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));
+        this.rightSidebarService.clearItems();
+        this.rightSidebarService.clearButtons();
+        this.rightSidebarService.setCurrentArea(this.areaName, this.area === 'Configuration' ? 'fa-sliders' : "fa-cog", this.tabTitle);
+        this.rightSidebarService.setCurrentObject(null,null,null,null,true);
+        this.rightSidebarService.showHeader(true);
         this.setBrowserTitle(this.titleService, this.areaName);
     }       
 

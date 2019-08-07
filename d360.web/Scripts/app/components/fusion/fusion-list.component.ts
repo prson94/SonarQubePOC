@@ -26,9 +26,6 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                                 <div class="col s12">   
                                     <d3s-fusion-execution-history></d3s-fusion-execution-history>
                                 </div>
-                                <div class="col s12">   
-                                    <d3s-fusion-promotion-history></d3s-fusion-promotion-history>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -59,16 +56,20 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
         this.headerBreadcrumbService.getFolderTitle('#Fusion').then((res) => {
             let areaBreadcrumb = new Breadcrumb(res ? res : 'Fusion', `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}`);
             this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
+            this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).then(icon => {
+                this.clearSidebar();
+                //this.rightSidebarService.showItem(new RightSidebarItem('Technical Mappings','technical'));
+
+                this.sub = this.rightSidebarService.rightSidebarClicked$.subscribe(s => {
+                    if (s.tag == 'technical')
+                        this.showTechnicalMappings = s.active
+                });
+                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon, 'Fusion List');
+                this.rightSidebarService.showHeader(true);
+            });
         });
         
 
-        this.clearSidebar();
-        //this.rightSidebarService.showItem(new RightSidebarItem('Technical Mappings','technical'));
-
-        this.sub = this.rightSidebarService.rightSidebarClicked$.subscribe(s => {
-            if (s.tag == 'technical')
-                this.showTechnicalMappings = s.active
-        });
 
     }
 

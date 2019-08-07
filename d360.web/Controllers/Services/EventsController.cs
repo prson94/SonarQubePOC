@@ -873,7 +873,7 @@ order by A.RunDate desc, A.EffectiveDate desc";
         public bool QualifierResolutionObjectsExits(int id, string type)
         {
            return Company.Query<dynamic>(string.Format(@"select ID, [Type], [value], [label] from (
-                        select ID, 'ArtifactType' as [Type],  'ArtifactType|' + cast(ID as varchar(50)) as [value],  'Artifact :: ' + [Name] as [label] from ArtifactType
+                        select ID, 'ArtifactType' as [Type],  'ArtifactType|' + cast(ObjectID as varchar(50)) as [value],  'Artifact :: ' + [Name] as [label] from AssetType where [Object] = 'ArtifactType'
                         union all
                         select ID, 'TaxonomyType' as [Type], 'TaxonomyType|' + cast(ID as varchar(50)) as [value],  'Model :: ' + [Name] as [label] from TaxonomyType
                         union all

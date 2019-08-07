@@ -19,7 +19,8 @@ export class ArtifactBaseComponent extends BaseComponent {
         super();
         this.rightSidebarService = rightSidebarService;
         this.webAnalyticsService = webAnalyticsService;
-        headerBreadcrumbService.getFolderTitle('#Glossary').then(res => { this.folderTitle = res });
+        headerBreadcrumbService.getFolderTitle('#Glossary').then(res => { this.folderTitle = res; });
+        this.rightSidebarService.showHeader(true);
     }        
     
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {

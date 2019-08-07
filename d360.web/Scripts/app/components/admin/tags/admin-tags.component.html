@@ -1,0 +1,99 @@
+﻿<d3s-admin-tags-action (onTagToggle)="tagStateChanged($event)" (onDelete)="openDeleteModal()" (onConsolidate)="openConsolidateModal()" [(selectedTags)]="selected"></d3s-admin-tags-action>
+
+<div class="row">
+    <div class="col l12 m12 s12">
+        <div class="tile tile-detail theme-new">
+            <header>
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
+            </header>
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <span *ngIf="!isLoading">
+                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                <p-table #dt [value]="tags" selectionMode="multiple" [metaKeySelection]="true" [globalFilterFields]="['Value']" sortField="Value" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 20px;">
+                                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                            </th>
+                            <th [pSortableColumn]="'Value'" style="width: 60%">
+                                Name
+                                <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
+                            </th>
+                            <th [pSortableColumn]="'UseCount'" style="width: 15%">
+                                Use count
+                                <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
+                            </th>
+                            <th style="width: 80px"></th>
+                        </tr>
+                        <tr [hidden]="showSimpleFilter">
+                            <th></th>
+                            <th><d3s-column-filter [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
+                            <th><d3s-column-filter [field]="'UseCount'" [datatype]="'number'"></d3s-column-filter></th>
+                            <th></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item >
+                        <tr [pSelectableRow]="item">
+                            <td>
+                                <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                            </td>
+                            <td>{{item.Value}}</td>
+                            <td>{{item.UseCount}}</td>
+                            <td>
+                                <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="selectSingleItem(item);showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                    <a style="cursor:pointer;" (click)="selectSingleItem(item);openDeleteModal();"><i class="fa fa-trash-o"></i></a>
+                                </div>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+            </span>
+
+            <d3s-dynamic-editor [objectID]="selected[0]?.uid"
+                                [objectType]="'Tag'"
+                                [title]="'Tag'"
+                                [selection]="selected[0]"
+                                (saveClick)="saveTag($event)"
+                                [showAsModal]="true"
+                                [modalTitle]="editPopupTitle"
+                                [isModalVisible]="showEditor"
+                                (closeClick)="closeEditor()">
+
+            </d3s-dynamic-editor>
+            <d3s-delete-form *ngIf="selected.length != 0"
+                             [callback]="theDeleteCallback"
+                             [method]="'callback'"
+                             [items]="selected"
+                             [showAsModal]="true"
+                             [modalTitle]="deletePopupTitle"
+                             [isModalVisible]="showDelete"
+                             (onCancel)="showDelete=false;">
+                <div prompt>
+                    <div *ngIf="selected.length == 1">
+                        Please confirm that you wish to delete the tag '{{this.selected[0].Value}}'(<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} assets</d3s-tag-usage> tagged)
+                    </div>
+                    <div *ngIf="selected.length > 1">
+                        Please confirm that you wish to delete following tags:
+                        <table class="table-borderless table">
+                            <tr *ngFor="let t of selected">
+                                <td>{{t.Value}}</td>
+                                <td><d3s-tag-usage [uid]="t.uid">{{t.UseCount}} assets</d3s-tag-usage> tagged</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+            </d3s-delete-form>
+            <d3s-admin-tags-consolidate [tags]="selected"
+                                        [modalTitle]="'Consolidate Tags'"
+                                        [isModalVisible]="showConsolidate"
+                                        (onCancel)="showConsolidate=false"
+                                        [callback]="theConsolidateCallback">
+            </d3s-admin-tags-consolidate>
+        </div>
+    </div>
+</div>

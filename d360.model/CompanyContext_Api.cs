@@ -1368,9 +1368,6 @@ from	IntersectType I
                                             var legacyTable = "";
                                             switch (at.Object)
                                             {
-                                                case "ArtifactType":
-                                                    legacyTable = "Artifact";
-                                                    break;
                                                 case "FusionAttributeType":
                                                     legacyTable = "FusionAttribute";
                                                     break;
@@ -2273,52 +2270,7 @@ from	api.ExecutionAsset T
                                     {
                                         switch (at.Class)
                                         {
-                                            case AssetTypeClass.Glossary:
-                                                #region
-                                                if (isInsert)
-                                                {
-                                                    Connection.Execute($@"
-    create table #ObjectMergeTableResult (ID int, ItemNumber int);
-    CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
-    merge   Artifact as T
-    using   (
-            select  ItemNumber
-            from    api.ExecutionAsset
-            where   {executionAssetWhereSql}
-            ) S
-    on      (T.ArtifactTypeID = @ObjectID and T.SourceID = @NonExistentUid)
-    when    not matched then
-    insert  (ArtifactTypeID, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, @R, @D, @R, @D)
-    output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
-
-    update  T
-    set     T.Object = 'Artifact',
-            T.ObjectID = S.ID,
-            T.IsNew = 1
-    from    api.ExecutionAsset T
-            inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
-
-    {updateAssetInfoOnExecutionRecordsSql}",
-                                                    new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                }
-                                                else
-                                                {
-                                                    Connection.Execute($@"
-    update	T
-    set		T.UpdatedBy = @R,
-		    T.UpdatedOn = @D
-    from	Artifact T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql};
-
-    update	api.ExecutionAsset
-    set		IsNew = 0
-    where	{executionAssetWhereSql};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                }
-                                                break;
-                                            #endregion
                                             case AssetTypeClass.Model:
                                                 #region
                                                 if (isInsert)
@@ -2455,7 +2407,11 @@ from	api.ExecutionAsset T
                                                 break;
                                             #endregion
                                             case AssetTypeClass.Policy:
+                                            case AssetTypeClass.Glossary:
                                                 #region
+                                                string @object = "Artifact";
+                                                if (at.Class == AssetTypeClass.Policy)
+                                                    @object = "Policy";
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
@@ -2473,18 +2429,18 @@ from	api.ExecutionAsset T
     on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
     when    not matched then
     insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@AssetTypeID,1,'Policy', @R, @D, @R, @D)
+    values  (@AssetTypeID,1,@Object, @R, @D, @R, @D)
     output  inserted.ObjectID, S.ItemNumber into #ObjectMergeTableResult;
 
     update  T
-    set     T.Object = 'Policy',
+    set     T.Object = @Object,
             T.ObjectID = S.ID,
             T.IsNew = 1
     from    api.ExecutionAsset T
             inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
     {updateAssetInfoOnExecutionRecordsSql}",
-                                                    new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                    new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 else
                                                 {
@@ -2493,12 +2449,12 @@ from	api.ExecutionAsset T
     set		T.UpdatedBy = @R,
 		    T.UpdatedOn = @D
     from	[Asset] T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Policy' and {executionAssetWhereSql};
+		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = @Object and {executionAssetWhereSql};
 
     update	api.ExecutionAsset
     set		IsNew = 0
     where	{executionAssetWhereSql};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 break;
                                             #endregion
@@ -2965,6 +2921,62 @@ from	api.ExecutionRelationship T
 					) S on S.ExecutionID = T.ExecutionID and S.SubjectUid = T.SubjectUid and S.ItemNumber < T.ItemNumber;",
                     new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
                 }
+
+                #endregion
+
+                #region Permissions Validation
+
+                Connection.Execute(@"
+declare @IsAdministrator bit = 0
+select	@IsAdministrator = IsAdministrator
+from	reporting.Global_Resource
+where	ResourceID = @ResourceID
+
+if @IsAdministrator = 0
+begin
+    update	T
+    set		T.Message = coalesce(T.Message + '; ', '') + 'You do not have permission to modify relationships on the subject asset.',
+	        T.Success = 0
+    from	api.ExecutionRelationship T
+            inner join	(
+                        select	R.ExecutionID, R.ItemNumber
+	                    from	api.ExecutionRelationship R
+			                    inner join Asset A on A.Uid = R.SubjectUid and R.ExecutionID = @ExecutionID
+			                    outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
+	                    where	(
+			                    (P.AssetID = A.ID) 
+			                    or P.AssetID is null
+			                    )
+			                    and (
+				                    (P.PermissionsBitMask is not null and P.PermissionsBitMask & 1024 <> 1024) 
+				                    or 
+				                    P.PermissionsBitMask is null
+				                    )
+                        group by R.ExecutionID, R.ItemNumber
+                        ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+
+    update	T
+    set		T.Message = coalesce(T.Message + '; ', '') + 'You do not have permission to modify relationships on the object asset.',
+	        T.Success = 0
+    from	api.ExecutionRelationship T
+            inner join	(
+                        select	R.ExecutionID, R.ItemNumber
+	                    from	api.ExecutionRelationship R
+			                    inner join Asset A on A.Uid = R.ObjectUid and R.ExecutionID = @ExecutionID
+			                    outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
+	                    where	(
+			                    (P.AssetID = A.ID) 
+			                    or P.AssetID is null
+			                    )
+			                    and (
+				                    (P.PermissionsBitMask is not null and P.PermissionsBitMask & 1024 <> 1024) 
+				                    or 
+				                    P.PermissionsBitMask is null
+				                    )
+                        group by R.ExecutionID, R.ItemNumber
+                        ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+end",
+                new { execution.ExecutionID, execution.ResourceID }, commandTimeout: timeout);
 
                 #endregion
 

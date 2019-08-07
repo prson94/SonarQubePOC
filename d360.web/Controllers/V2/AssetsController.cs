@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using d360.model.DataAccessLayer;
 using d360.core.validators;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
@@ -42,13 +43,15 @@ namespace d360.web.Controllers.V2
         IQueueSource QueueSource;
         IStorageProvider Storage;
         IAssetRepository AssetRepository;
+        ITagRepository tagRepository;
 
-        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository)
+        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository,ITagRepository tagRepository)
             : base(community, company)
         {
             QueueSource = queueSource;
             Storage = storage;
             this.AssetRepository = repository;
+            this.tagRepository = tagRepository;
         }
 
         #endregion
@@ -964,6 +967,196 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        #endregion
+
+        #region AssetTag
+        /// <summary>
+        /// Creates association between an existing Asset and an existing tag
+        /// </summary>
+        /// <remarks>
+        /// An Administrator can create  any tag association. 
+        ///A regular user can only create a tag association to assets they have access to.
+        /// </remarks>
+        /// <param name="assetTags">AssetTag</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPost,
+            Route("tags"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Creates association between an existing Asset and an existing tag, returns the UID of asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse)),
+             ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public IHttpActionResult PostAssetTag(List<AssetTagApiModel> assetTags)
+        {
+            List<AssetTagSuccessApiModel> resultList = new List<AssetTagSuccessApiModel>();
+            foreach (var assetTagApi in assetTags)
+            {
+                AssetTagSuccessApiModel result;
+
+                var existingTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
+                if (existingTag == null)
+                {
+                    result = new AssetTagSuccessApiModel()
+                    { 
+                        Message = $"Invalid TagUid {assetTagApi.TagUID} ,no tag exists with the specified uid.",
+                        Success = false
+                    };
+             
+                    resultList.Add(result);
+                    continue;
+                }
+
+                var asset = this.AssetRepository.GetAssetByUID(assetTagApi.AssetUID);
+                if (asset == null)
+                {
+                    result = new AssetTagSuccessApiModel()
+                    { 
+                        Message = $"Invalid uid {assetTagApi.AssetUID} no asset exists with the specified uid.",
+                        Success = false
+                    };
+                    resultList.Add(result);
+                    continue;
+                }
+
+                if (this.tagRepository.DoesAssetTagExists(existingTag.ID, asset.ID))
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists ; it is not valid to add a 2nd association",
+                        Success = false
+                    };
+                    resultList.Add(result);
+                    continue;
+                }
+                if (!Company.HasAssetDefaultReadPermission(asset.Object, asset.ObjectID))
+                {
+                    result = new AssetTagSuccessApiModel()
+                    { 
+                         Message = $"A regular user can only create a tag association to assets {assetTagApi.AssetUID} they have access to",
+                         Success = false
+                    };
+                    resultList.Add(result);
+                    continue;
+                }
+                AssetTag assetTag = this.tagRepository.CreateAssetTag(existingTag.ID, asset.ID);
+                if (assetTag != null)
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"Asset / Tag Association  created",
+                        Uid = assetTag.UID.Value,
+                        Success = true
+                    };
+                    resultList.Add(result);
+                }
+                else
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists ; it is not valid to add a 2nd association",
+                        Success = false
+                    };
+                    resultList.Add(result);
+                }
+
+            }
+            return ResponseMessage(Request.CreateResponse<List<AssetTagSuccessApiModel>>(HttpStatusCode.OK, resultList));
+        }
+
+        /// <summary>
+        /// Removes association between an existing Asset and an exiting Tag
+        /// </summary>
+        /// <remarks>An Administrator can remove any tag association. 
+        /// A regular user can only remove a tag association to an asset they initially created the association for.
+        /// </remarks>
+        /// <param name="assetTags">AssetTag</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            Route("tags"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Delete association between an existing Asset and an exiting Tag,returns the UID of deleted asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse)),
+             ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public IHttpActionResult DeleteAssetTag(List<AssetTagApiModel> assetTags)
+        {
+            List<AssetTagSuccessApiModel> resultList = new List<AssetTagSuccessApiModel>();
+            foreach (var assetTagApi in assetTags)
+            {
+                AssetTagSuccessApiModel result;
+
+                var existingTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
+                if (existingTag == null)
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"Invalid TagUid {assetTagApi.TagUID} ,no tag exists with the specified uid.",
+                        Success = false
+                    };
+                    resultList.Add(result);
+                    continue;
+                }
+
+                var asset = this.AssetRepository.GetAssetByUID(assetTagApi.AssetUID);
+                if (asset == null)
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"Invalid uid {assetTagApi.AssetUID} no asset exists with the specified uid.",
+                        Success = false
+                    };
+                    resultList.Add(result);
+                    continue;
+                }
+
+                if (!this.tagRepository.DoesAssetTagExists(existingTag.ID, asset.ID))
+                {
+                    result = new AssetTagSuccessApiModel
+                    {
+                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  does not exists",
+                        Success = false
+                    };
+                    resultList.Add(result);
+                    continue;
+                }
+
+                if (!this.tagRepository.IsAuthorizedToDeleteAssetTag(existingTag.ID, asset.ID))
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"A regular user can only remove a tag {assetTagApi.TagUID} association to an asset {assetTagApi.AssetUID} they initially created the association for / they have edit rights to asset",
+                        Success = false
+                    };
+                    resultList.Add(result);
+                    continue;
+                }
+                AssetTag assetTag = this.tagRepository.GetAssetTag(existingTag.ID, asset.ID);
+                if (assetTag != null && this.tagRepository.DeleteAssetTag(existingTag.ID, asset.ID))
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"Asset / Tag Association  Deleted",
+                        Uid = assetTag.UID.Value,
+                        Success = true
+                    };
+                    resultList.Add(result);
+                }
+                else
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  does not exists",
+                        Success = false
+                    };
+                    resultList.Add(result);
+                }
+
+            }
+            return ResponseMessage(Request.CreateResponse<List<AssetTagSuccessApiModel>>(HttpStatusCode.OK, resultList));
+
+        }
         #endregion
     }
 }

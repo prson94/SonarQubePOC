@@ -130,7 +130,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Removes a fusion configuration based on the specific fusion Uid. This endpoint is meant for deleting one fusion at a time.
+        /// Removes a fusion configuration based on the specific fusion Uid. This endpoint is meant for deleting one fusion configuration at a time.
         /// </summary>
         /// <remarks>
         /// <strong>&#9888; Read before calling this endpoint</strong><br/>
@@ -138,7 +138,7 @@ namespace d360.web.Controllers.V2
         /// <br/>Fusion rules must be deleted manually from the UI before calling this endpoint.
         /// </remarks>
         /// <param name="assetUid">The unique identifier of the fusion configuration.</param>
-        /// <param name="cascade">Delete all related data.</param>
+        /// <param name="cascade">Cascade delete to all related data (true/false). Setting cascade to false will not cascade the delete to other items and attempt to just delete the specified fusion configuration.  If the specified fusion configuration has data and you try to delete with cascade set to false, you will get an error.  The default value for cascade is FALSE.  If cascade is set to true, the fusion configuration and all related data will be removed.  This includes all fusion attribute data in this fusion configuration, all field data for those field attributes, and all relations that include fusion attributes in the configuration to be deleted.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
@@ -166,10 +166,6 @@ namespace d360.web.Controllers.V2
                 if (fusion == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Fusion configuration with Uid {fusionGuid} could not be found."));
 
-                if (FusionRepository.HasFusionRules(fusion.ObjectID))
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not found", $"Fusion configuration have rules. Delete them manually before calling this endpoint!"));
-                }
 
                 var execution = getApiExecution(1, new ApiExecutionFields_DeleteAssets { AssetTypeUid = fusion.AssetType.uid});
 

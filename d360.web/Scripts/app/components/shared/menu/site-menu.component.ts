@@ -37,6 +37,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     private subSiteNav: any;
     private subFavorites: any;
 
+    private subReloadCounts: any;
+    private countData: any[];
+
     @ViewChildren(SiteMenuCategoryComponent) menuRefs: QueryList<SiteMenuCategoryComponent>;
 
     constructor(
@@ -55,16 +58,25 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.loadMenu();
         this.loadFavorites();
 
+        this.subReloadCounts = this.headerActionsService.onSiteCountsChange.subscribe(() => {
+            this.rebuildCounts();
+        });
+
         this.subSiteNav = this.stateService.siteMenuRequiresReload$.subscribe(() => {
             this.loadMenu();
-            //wait for the menu to laod before getting the counts
-            window.setTimeout(() => {
-                this.headerActionsService.emitCountChange();
-            }, 500);
         });
 
         this.subFavorites = this.headerActionsService.onFavoritesChanges$.subscribe(() => {
             this.loadFavorites();
+        });
+    }
+
+    private rebuildCounts() {
+        this.siteMenuService.getCounts().subscribe((res) => {
+            this.countData = res;
+            this.siteMenu.forEach(menu => {
+                this.loadCounts(menu, res);
+            });
         });
     }
 
@@ -151,6 +163,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                             menu.NavigationItems = [];
                             menu.ngUrl = SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
                             break;
+                        case '#Dashboards':
+                            menu.ngUrl = SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT;
+                            break;
                         default:
                             //is it a custom menu?
                             if (menu.MenuID.startsWith('~')) {
@@ -184,6 +199,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                 });
             });
     }
+
 
     loadCounts(menu: any, items: any[]) {
         if (menu && menu.NavigationItems && menu.NavigationItems.length > 0 && !menu.MenuID.startsWith('-')) {
@@ -287,6 +303,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu.NavigationItems.push({ Name: 'Dashboard', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
                
         this.adminMenu.NavigationItems.push({ Name: 'Style Customizations', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS}`, IsLink: false, IsHomePage: false, count:null });
+
+        //Uncomment in sprint 8
+        //this.adminMenu.NavigationItems.push({ Name: 'Tags', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`, IsLink: false, IsHomePage: false, count: null });
 
     }
 };
