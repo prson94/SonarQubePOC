@@ -44,16 +44,17 @@ namespace d360.web.Controllers.V2
         /// <returns>A list of tags</returns>
         [
             HttpGet, MapToApiVersion("2.0"),
-            Route("search/{name}"),
+            Route("search"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> Search(string name)
+        public async Task<IHttpActionResult> Search()
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             try
             {
-                var tags = tagRepository.SearchTags(name);
+                var queryParams = Request.GetQueryNameValuePairs();
+                var tags = tagRepository.SearchTags(queryParams);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, tags));
             }
             catch (Exception ex)

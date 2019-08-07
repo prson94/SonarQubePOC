@@ -11,18 +11,18 @@ import {
     Output,
     ViewChild
 } from '@angular/core';
-import {FormGroup} from '@angular/forms';
-import {Editor} from 'primeng/primeng';
-import {Subject } from 'rxjs';
+import { FormGroup } from '@angular/forms';
+import { Editor } from 'primeng/primeng';
+import { Subject } from 'rxjs';
 
-import {EditorDropDownItem, EditorField} from '../../../models/editor-field.model';
+import { EditorDropDownItem, EditorField } from '../../../models/editor-field.model';
 
-import {FormHelpers} from '../../../static/form-helpers';
+import { FormHelpers } from '../../../static/form-helpers';
 
-import {CascadeService} from '../../../services/cascade.service';
-import {FieldsObservableService} from '../../../services/fieldsObservable.service';
+import { CascadeService } from '../../../services/cascade.service';
+import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
-import {BaseComponent} from '../base.component';
+import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
 import { map } from 'rxjs/operators';
 
@@ -42,6 +42,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     @Input() objectID: number = null;
     @Input() selectedObject: string;
     @Input() selectedObjectID: number;
+
+    @Input() useNewUI: boolean = false;
+    private isDirty: boolean = false;
 
     @ViewChild('ed') ed: Editor;
     private quill;
@@ -76,6 +79,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private suggestionResults: string[] = [];
     private suggestionResultsArray: any[] = [];
     @Output() autoCompleteSelected = new EventEmitter();
+    private doesAssetExists: boolean = false;
 
 
     constructor(
@@ -94,8 +98,30 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.suggestionResultsArray = response;
                 this.suggestionResults = [];
                 this.suggestionResultsArray.forEach(x => this.suggestionResults.push(x.name));
+
+                this.suggestionResultsArray.forEach(s => {
+                    if (s.name.toLowerCase() == this.field.Value.toLowerCase()) {
+                        this.autoCompleteSelected.emit(s);
+                    }
+                });
             });
     }
+
+    checkAssetExistance() {
+        this.tagService.searchTags(this.field.Value, this.objectID)
+            .subscribe(response => {
+                this.doesAssetExists = false;
+
+                response.forEach(s => {
+                    if (s.name.toLowerCase() == this.field.Value.toLowerCase()) {
+                        this.doesAssetExists = true;
+                    }
+                });
+
+                this.ref.markForCheck();
+            });
+    }
+
     selectTag(event) {
         var obj = this.suggestionResultsArray.filter(x => x.name == event)[0];
         this.autoCompleteSelected.emit(obj);
@@ -159,7 +185,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
                                 this.hasCascadeLoaded = true;
 
-                                this.listItemChange.emit({field: this.field, value: this.field.Value});
+                                this.listItemChange.emit({ field: this.field, value: this.field.Value });
                                 this.ref.markForCheck();
                             }
                         )
@@ -171,7 +197,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                             this.form.controls[this.field.FieldName].disable();
                         }
 
-                        this.listItemChange.emit({field: this.field, value: null});
+                        this.listItemChange.emit({ field: this.field, value: null });
                     }
                 }
             });
@@ -194,10 +220,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     this.ref.markForCheck();
                 })
             : this.fieldsService.getTypeaheadItems(this.typeAheadSource$)
-            .subscribe(res => {
-                this.field.Items = <EditorDropDownItem[]>res;
-                this.ref.markForCheck();
-            });
+                .subscribe(res => {
+                    this.field.Items = <EditorDropDownItem[]>res;
+                    this.ref.markForCheck();
+                });
 
         if (this.field.DelayedLoadType == 'Predicate') {
             this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).subscribe(
@@ -253,7 +279,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
             window.setTimeout(() => {
-                this.listItemChange.emit({field: this.field, value: this.field.Value});
+                this.listItemChange.emit({ field: this.field, value: this.field.Value });
             }, 250);
         }
 
@@ -264,7 +290,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.loadTypeAheadValue = true;
                 this.typeAheadValue = sel;
                 this.onSelect(sel);
-                
+
             }
         }
 
@@ -304,6 +330,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     onFieldChanges(data: any) {
+        this.isDirty = true;
         if (this.field.FieldType == 'Lookup') {
             if (this.field.UseTypeahead) {
                 if (this.typeAheadValue != null)
@@ -320,9 +347,19 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         } else {
             this.field.Value = data;
         }
+
+        if (this.object == 'Tag' && !this.objectID) {
+            this.checkAssetExistance();
+        }
     }
 
     get isValid() {
+
+        if (this.doesAssetExists) {
+            this.form.controls[this.field.FieldName].setErrors({ alreadyExists: true });
+            return false;
+        }
+
         if (this.field.FieldType == "Link") {
             if (this.form.controls[this.field.FieldName + '_Name'] == undefined
                 || this.form.controls[this.field.FieldName + '_Name'].disabled
@@ -344,10 +381,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
             if (elem.validity.badInput && elem.validationMessage == "Please enter a number.") {
                 if (this.field.FieldType == 'Number' && this.field.FieldName == elem.name) {
-                    this.form.controls[this.field.FieldName].setErrors({integer: true});
+                    this.form.controls[this.field.FieldName].setErrors({ integer: true });
                 }
                 if (this.field.FieldType == 'Decimal' && this.field.FieldName == elem.name) {
-                    this.form.controls[this.field.FieldName].setErrors({number: true});
+                    this.form.controls[this.field.FieldName].setErrors({ number: true });
                 }
             }
 
@@ -359,7 +396,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     || elem.value.split('E').length > 1
                 ) {
                     if (this.field.FieldName == elem.name) {
-                        this.form.controls[this.field.FieldName].setErrors({integer: true});
+                        this.form.controls[this.field.FieldName].setErrors({ integer: true });
                     }
                 }
             } else if (this.field.FieldType == 'Decimal') {
@@ -370,7 +407,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     || elem.value.split('E').length > 1
                 ) {
                     if (this.field.FieldName == elem.name) {
-                        this.form.controls[this.field.FieldName].setErrors({number: true});
+                        this.form.controls[this.field.FieldName].setErrors({ number: true });
                     }
                 }
             }
@@ -439,6 +476,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         if (errors["min"]) {
             message += ` Please enter a minimum value of ${errors["min"].min} `;
+        }
+
+        if (errors["alreadyExists"]) {
+            message += `A ${this.object.toLowerCase()} with this name already exists, please enter a unique name.`;
         }
 
         return message;
@@ -543,7 +584,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private search(e: any) {
-        this.typeAheadSource$.next({fieldTypeID: this.field.FieldTypeID, value: this.field.Value, event: e});
+        this.typeAheadSource$.next({ fieldTypeID: this.field.FieldTypeID, value: this.field.Value, event: e });
     }
 
     private onSelect(e: EditorDropDownItem) {
@@ -554,7 +595,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         }
 
         //Typeahead is a technically a list field, so we should emit an itemchange
-        this.listItemChange.emit({field: this.field, value: this.field.Value});
+        this.listItemChange.emit({ field: this.field, value: this.field.Value });
     }
 
     private clearTypeahead(e: any) {

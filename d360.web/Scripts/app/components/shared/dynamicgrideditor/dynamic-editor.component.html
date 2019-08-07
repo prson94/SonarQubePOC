@@ -86,7 +86,8 @@
                             <div class="row"
                                  *ngFor="let row of category.rows">
                                 <div *ngFor="let field of row.Fields" [class]="row.getColClass() + ' form-row'">
-                                    <d3s-dynamic-field [field]="field"
+                                    <d3s-dynamic-field [useNewUI]="true"
+                                                       [field]="field"
                                                        [form]="form"
                                                        (listItemChange)="listSelectionChanged($event)"
                                                        [object]="objectType"
@@ -100,7 +101,8 @@
                             <div class="row"
                                  *ngFor="let row of category.rows">
                                 <div *ngFor="let field of row.Fields" [class]="row.getColClass() + ' form-row'">
-                                    <d3s-dynamic-field [field]="field"
+                                    <d3s-dynamic-field [useNewUI]="true"
+                                                       [field]="field"
                                                        [form]="form"
                                                        (listItemChange)="listSelectionChanged($event)"
                                                        (autoCompleteSelected)="autoCompleteSelected($event)"
@@ -137,7 +139,7 @@
                         type="submit"
                         [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)"
                         label="Done">
-                    Done
+                    {{consolidateToTag ? 'Consolidate' : 'Done'}}
                     <span class="loader"><span class="spinner light"></span></span>
                 </button>
             </div>

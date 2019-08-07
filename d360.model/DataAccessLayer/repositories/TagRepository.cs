@@ -301,13 +301,35 @@ namespace d360.model.DataAccessLayer
             return result;
         }
 
-        public List<dynamic> SearchTags(string tag)
+        public List<dynamic> SearchTags(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
+            string value = "";
+            Guid exceptUid = Guid.Empty;
+            foreach(var queryitem in queryParams)
+            {
+                switch (queryitem.Key.ToLower())
+                {
+                    case "exceptuid":
+                        try
+                        {
+                            exceptUid = Guid.Parse(queryitem.Value);
+                        }
+                        catch
+                        {
+                            exceptUid = Guid.Empty;
+                        }
+                        break;
+                    case "value":
+                        value = queryitem.Value.ToLower();
+                        break;
+                }
+            }
+
             string sql = @"select T.Value as name, T.uid as code, Results.count from Tag T 
                             cross apply (select count(*) from AssetTag where TagID = T.ID)Results(count)
-                            where State = 1 and LOWER(T.Value) like '%'+@term+'%'";
+                            where State = 1 and LOWER(T.Value) like '%'+@value+'%' and T.uid != @exceptUid";
 
-            return companyContext.Query<dynamic>(sql, new { term = tag }).ToList();
+            return companyContext.Query<dynamic>(sql, new { value, exceptUid }).ToList();
         }
 
 

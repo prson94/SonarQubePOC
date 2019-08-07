@@ -25,7 +25,7 @@ namespace d360.model.DataAccessLayer
         bool DeleteAssetTag(int tagId, long assetId);
         List<AssetTagList> GetAssetsPathForTag(Guid tagUid);
         IEnumerable<TagApiModel> ConsolidateTags(string parentUid, List<string> childrenUids);
-        List<dynamic> SearchTags(string tag);
+        List<dynamic> SearchTags(IEnumerable<KeyValuePair<string,string>> queryParams);
         bool SetTaggingStatus(bool state);
     }
 }
