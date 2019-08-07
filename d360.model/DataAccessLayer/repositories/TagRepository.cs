@@ -299,7 +299,7 @@ namespace d360.model.DataAccessLayer
                         'TagConsolidated', 
                         'Tag', 
                         FromId,
-                        [queue].WriteIndexXml('', 'Tag', TargetId, coalesce(56, 0)) 
+                        [queue].WriteIndexXml('', 'Tag', TargetId, coalesce(@resourceId, 0)) 
                         from ConsolidateData
                         
                         select T.uid, Items.count as UseCount from Tag T
@@ -307,7 +307,7 @@ namespace d360.model.DataAccessLayer
                         where T.uid = @parentUid or T.uid in (select uid from @children)";
 
 
-            var result = companyContext.Query<TagApiModel>(sql, new { parentUid });
+            var result = companyContext.Query<TagApiModel>(sql, new { parentUid, resourceId = companyContext.CurrentResourceID });
             return result;
         }
 

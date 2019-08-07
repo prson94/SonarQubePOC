@@ -61,7 +61,7 @@ namespace d360.web.Controllers
                 return null;
             }
 
-            var types = DataType.Text.GetDataTypeInfoList(type);
+            var types = DataType.Text.GetDataTypeInfoList(type).Where(x => x.CompanySettingActive != null && Community.IsCompanySettingActive(x.CompanySettingActive)).ToList();
             var list = (from ft in Company.GetFieldTypesByObject(type, id).ToList()
                        join dt in types on ft.Type equals dt.Name
                        select new {

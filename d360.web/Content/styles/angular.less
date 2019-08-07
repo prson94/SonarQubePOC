@@ -2959,21 +2959,26 @@ button.tab-scroller {
     }
 
     .form-row {
+
+
         .FieldName {
             color: black;
-            display: inline-block;
             margin-right: 12px;
+            line-height: 25px;
         }
 
-        .row {
-            .col {
-                padding: 0px;
+        .col {
+            padding: 0px;
+            display: flex;
+            flex-direction: row;
+
+            .ui-autocomplete {
+                width: 100%;
+
+                input {
+                    width: inherit;
+                }
             }
-        }
-
-        input {
-            display: inline-block;
-            width: unset !important;
         }
     }
 

@@ -3336,10 +3336,10 @@ outer apply (
             switch (currentObj.ToLower())
             {
                 case "policy":
+                case "artifact":
                     permissionJoin = $@"  inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ObjectID ";
                     useAssetJoin = true;
                     break;
-                case "artifact":
                 case "taxonomy":
                     break;
                 default:
@@ -3501,10 +3501,10 @@ outer apply (
                     switch (join.Object)
                     {
                         case "ArtifactType":
-                            join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID in (select ChildID from dbo.GetChildObjectIds('Artifact',A{i - 1}.ID))";
+                            join.JoinStatement = (i == 0) ? $"from AssetDetail A{i}" : $"{joinType} join AssetDetail A{i} on A{i}.[Object] = 'Artifact' and A{i}.ObjectID in (select ChildID from dbo.GetChildObjectIds('Artifact',A{i - 1}.ID))";
                             if (i == 0)
                             {
-                                join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ID in (select ChildID from dbo.GetChildObjectIds('Artifact',{id}))";
+                                join.WhereStatement = $"A{i}.TypeID = {join.ObjectID} and A{i}.ObjectID in (select ChildID from dbo.GetChildObjectIds('Artifact',{id}))";
                             }
                             break;
                         case "FusionAttributeType":
@@ -3528,10 +3528,10 @@ outer apply (
                     switch (join.Object)
                     {
                         case "ArtifactType":
-                            join.JoinStatement = (i == 0) ? $"from Artifact A{i}" : $"{joinType} join Artifact A{i} on A{i}.ID = dbo.GetParentObjectId('Artifact', A{i - 1}.ID) and A{i}.ArtifactTypeID = {join.ObjectID}";
+                            join.JoinStatement = (i == 0) ? $"from AssetDetail A{i}" : $"{joinType} join AssetDetail A{i} on A{i}.[Object] = 'Artifact' and A{i}.ObjectID = dbo.GetParentObjectId('Artifact', A{i - 1}.ID) and A{i}.TypeID = {join.ObjectID}";
                             if (i == 0)
                             {
-                                join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ID = dbo.GetParentObjectId('Artifact', {id})";
+                                join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ObjectID = dbo.GetParentObjectId('Artifact', {id})";
                             }
                             break;
                         case "FusionAttributeType":
@@ -8263,8 +8263,7 @@ where	Type = 'ReferenceItemType'
 
             if (entity == null) return null;
 
-            var types = DataType.Text.GetDataTypeInfoList();
-
+            var types = DataType.Text.GetDataTypeInfoList().Where(x => x.CompanySettingActive != null && Community.IsCompanySettingActive(x.CompanySettingActive)).ToList();
             var fields = Company.Query<dynamic>(@"select 
                                            eft.*,
                                            ft.Name,
