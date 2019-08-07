@@ -23,6 +23,8 @@ import {CascadeService} from '../../../services/cascade.service';
 import {FieldsObservableService} from '../../../services/fieldsObservable.service';
 
 import {BaseComponent} from '../base.component';
+import { TagService } from '../../../services/tag.service';
+import { map } from 'rxjs/operators';
 
 declare var CompanySettings;
 
@@ -30,7 +32,7 @@ declare var CompanySettings;
     selector: 'd3s-dynamic-field',
     templateUrl: './dynamic-field.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [FieldsObservableService]
+    providers: [FieldsObservableService, TagService]
 })
 
 export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
@@ -70,12 +72,33 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
     private hasCascadeLoaded: boolean = false;
 
+    //For a drop down search option
+    private suggestionResults: string[] = [];
+    private suggestionResultsArray: any[] = [];
+    @Output() autoCompleteSelected = new EventEmitter();
+
+
     constructor(
         private cascadeService: CascadeService,
         private fieldsService: FieldsObservableService,
-        private ref: ChangeDetectorRef
+        private ref: ChangeDetectorRef,
+        private tagService: TagService
     ) {
         super();
+    }
+
+    searchTags(q: any) {
+        this.autoCompleteSelected.emit(null);
+        this.tagService.searchTags(q.query, this.objectID)
+            .subscribe(response => {
+                this.suggestionResultsArray = response;
+                this.suggestionResults = [];
+                this.suggestionResultsArray.forEach(x => this.suggestionResults.push(x.name));
+            });
+    }
+    selectTag(event) {
+        var obj = this.suggestionResultsArray.filter(x => x.name == event)[0];
+        this.autoCompleteSelected.emit(obj);
     }
 
     setEditorContent(e: any) {

@@ -8,13 +8,17 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace d360.core.entities
-{    
+{
     public class TagApiModel
     {
+
         [DataMember]
         public Guid uid { get; set; }
         [DataMember, StringLength(250)]
         public string Value { get; set; }
+
+        [DataMember]
+        public int UseCount { get; set; }
         [DataMember]
         public Guid? CreatedByUid { get; set; }
         [DataMember]
@@ -42,5 +46,30 @@ namespace d360.core.entities
         public string Message { get; set; }
         [DataMember]
         public bool Success { get; set; }
+    }
+    
+
+    public class TagApiDeleteModel
+    {
+        [DataMember]
+        public Guid uid { get; set; }
+    }
+
+    public class TagStatusModel
+    {
+        [DataMember]
+        public bool IsTaggingEnabled { get; set; }
+    }
+
+    public class AssetTagList
+    {
+        [DataMember]
+        public string DisplayName { get; set; }
+
+        [DataMember]
+        public string Breadcrumbs { get; set; }
+
+        [DataMember]
+        public string Url { get; set; }
     }
 }

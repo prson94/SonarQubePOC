@@ -259,8 +259,11 @@
   <include file="scripts/GOV-7754.xml"/> <!-- GetDynamicAssets -->
   <include file="scripts/GOV-7767.xml"/> <!-- parent relationship cleanup - must go BEFORE 7608 -->
   <include file="scripts/GOV-7608.xml"/> <!-- GetDynamicAssets, goes after 7754 -->
+  <include file="scripts/GOV-7687.xml"/>
   <include file="scripts/GOV-7670.xml"/> <!-- GetLineage, v1 -->
-  <include file="scripts/GOV-7784.xml"/>
+  <include file="scripts/GOV-7784.xml"/>  
+  <include file="scripts/GOV-7802.xml"/> <!--IGC proc-->
+  <include file="scripts/GOV-4861.xml"/>
   <include file="scripts/GOV-7463-3.xml"/>
   <include file="scripts/GOV-7464-5.xml"/>
 </databaseChangeLog>

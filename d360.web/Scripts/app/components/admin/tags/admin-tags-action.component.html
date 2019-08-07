@@ -1,0 +1,34 @@
+﻿<div class="tag-actions">
+
+    <div>
+        <div class="multiselect-action" *ngIf="selectedTags.length > 1">
+            <div class="item-selection">
+                {{selectedTags.length}} items selected
+            </div>
+            <div class="hamburger-menu">
+                <div class="layer"></div>
+                <div class="layer"></div>
+                <div class="layer"></div>
+                <div class="actions">
+                    <ul>
+                        <li (click)="onDeleteClick()">Delete</li>
+                        <li (click)="onConsolidateClick()">Consolidate</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="enable-tags">
+            <d3s-checkbox (onchange)="changeTagStatusConfirmation($event)" 
+                          label="Enable Tagging"
+                          trueTitle="Enable Tagging"
+                          trueButtonText="Enable Tagging"
+                          trueText="<p>Please confirm that you wish to enable the tagging of assets in Govern.<br/>All users will be able to view, search by, add and remove tags.</p><p><strong>NOTE: Search indices will need to be rebuilt. This could take up to 20 minutes and could affect system performance.</strong></p>"
+                          falseTitle="Disable Tagging"
+                          falseButtonText="Disable Tagging"
+                          falseText="<p>Please confirm that you wish to disable the tagging of assets in Govern.</p><p>Users will no longer be able to view, search by, add or remove tags.<br/>All references to tags will be removed from the user interface, with the exception of the <strong>Administration-Tags</strong> page, which you can use to re-enable tagging at any time.</p>">
+
+            </d3s-checkbox>
+        </div>
+    </div>
+
+</div>

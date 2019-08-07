@@ -26,7 +26,7 @@ export class AdminBaseComponent extends BaseComponent {
 
     setCommonItems() {
 
-        this.area = ['Artifacts', 'Attributes', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflows', 'Action Types']
+        this.area = ['Artifacts', 'Attributes', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflows', 'Action Types', 'Tags']
             .indexOf(this.areaName) !== -1 ? 'Configuration' : "Administration";
 
         this.headerBreadcrumbService.clearBreadcrumbs();

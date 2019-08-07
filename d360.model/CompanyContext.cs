@@ -89,16 +89,12 @@ namespace d360.model
 
         #region DbSets
 
-        public DbSet<Artifact> Artifacts { get; set; }
-
         public DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
 
         public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
 
 
         public DbSet<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
-
-        public DbSet<ArtifactType> ArtifactTypes { get; set; }
 
         public DbSet<d360.core.entities.Attribute> Attributes { get; set; }
 
@@ -899,8 +895,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 			ASTT.Name + ' : ' + D.DisplayValue as Name
 	from	
 			Asset AST
-			inner join AssetType ASTT on ASTT.ID = AST.AssetTypeID and ASTT.CanOwnFusion = 1
-			inner join ArtifactType T on (ASTT.ObjectID = T.ID and ASTT.[Object] = 'ArtifactType'  )			
+			inner join AssetType ASTT on ASTT.ID = AST.AssetTypeID and ASTT.CanOwnFusion = 1 and ASTT.[Object] = 'ArtifactType'		
             cross apply GetAssetDisplayValueById(AST.ID) D
 	order by	ASTT.Name + ' : ' + D.DisplayValue").ToList();
         }
@@ -2272,56 +2267,6 @@ where	R.SourceObject = 'FusionAttribute'
                 }
                 #endregion
 
-                #region Business logic : Artifact
-                if (entry.Entity is Artifact)
-                {
-                    var o = entry.Entity as Artifact;
-                    
-
-                    switch (entry.State)
-                    {                         
-                        case EntityState.Deleted:
-                            var any = false;
-                            any = Any<Intersect>(i => (i.Subject == "Artifact" && i.SubjectID == o.ID) || (i.Object == "Artifact" && i.ObjectID == o.ID));
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Item_RelationshipsReferences);
-
-                            any = ObjectHasChildren(SystemObjects.Artifact, o.ID);
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Artifact"), Messages.Error_Artifact_ExistingChildren);                            
-                            break;                        
-                    }
-
-                    Caching.RemoveItem(key(ARTIFACTDICTIONARY_BY_TYPE_PREFIX_KEY, o.ArtifactTypeID));
-                }
-                #endregion
-
-                #region Business logic : ArtifactType
-                if (entry.Entity is ArtifactType)
-                {
-                    var o = entry.Entity as ArtifactType;
-                    
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<ArtifactType>(i => i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);                            
-                            break;
-                        case EntityState.Deleted:
-                            if (Any<Artifact>(i => i.ArtifactTypeID == o.ID))
-                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ArtifactsAssignedToType);
-                            var childIDs = GetChildTypes(o.ID, SystemObjects.ArtifactType).ToList();
-                            if (childIDs.Count > 0)
-                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ChildTypesAssignedToType);
-                            
-                            break;
-                        case EntityState.Modified:
-                            if (Any<ArtifactType>(i => i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            
-                            break;
-                    }
-                }
-                #endregion
-
                 #region Business logic : AttributeType
                 if (entry.Entity is AttributeType)
                 {
@@ -2783,6 +2728,27 @@ select @err";
                             if (Any<SurveyType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
                             
+                            break;
+                    }
+                }
+                #endregion
+
+                #region Business logic : Tag
+                if (entry.Entity is Tag)
+                {
+                    var o = entry.Entity as Tag;
+
+                    switch (entry.State)
+                    {
+                        case EntityState.Added:
+                            if (Any<Tag>(i => i.Value == o.Value && i.State == State.Active))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+
+                            break;
+                        case EntityState.Modified:
+                            if (Any<Tag>(i => i.Value == o.Value && i.ID != o.ID && i.State == State.Active))
+                                throw new ArgumentException(Messages.Error_NameTaken);
+
                             break;
                     }
                 }
