@@ -164,7 +164,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.showSurvey = false;
         this.items = [];
         this.buttons = [];
-        console.log("load");
         this.showScrollButtons = false;
 
         this.subscription = this.rightSidebarService.rightSidebar$.subscribe(
@@ -229,7 +228,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     if (!draftValues) {
                         draftValues = "DRAFT";
                     }
-                    console.log(hasWorkFlow);
                     if (objectName === 'Artifact')
                         this.showCertify = this.status && (draftValues.toUpperCase().split(',').indexOf(this.status.toUpperCase()) > -1) && hasWorkFlow;
                     else
