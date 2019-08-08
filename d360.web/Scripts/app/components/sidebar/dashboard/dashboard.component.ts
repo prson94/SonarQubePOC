@@ -68,7 +68,6 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
                 );
                 this.headerBreadcrumbService.showBreadcrumb(dashboardCrumb);
             }
-            console.log(clearInfo);
             if (clearInfo) {
                 this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
                         this.clearSidebar();
@@ -94,10 +93,14 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
                 if (this.objectType && this.objectID && this.dashboardName) {
                     this.selected = this.dashboards[0];
                     this.showSingle = true;
-                    this.buildBreadcrumb(true);
-                } else {
-                    this.buildBreadcrumb(false);
                 }
+
+                if (this.showSingle || (this.objectType && this.objectID)) {
+                    this.buildBreadcrumb(false);
+                } else {
+                    this.buildBreadcrumb(true);
+                }
+
                 this.isLoading = false;
             }
         );
