@@ -13,12 +13,13 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
 import { TagService } from '../../services/tag.service';
 import { TagType, TagDetail, TagItem } from '../../models/tag.model';
 import { Location } from '@angular/common';
-import { forEach } from '@angular/router/src/utils/collection';
+import { AuthenticationService } from '../../services/authentication.service';
+import { Permission } from '../../models/responsibility-type.model';
 
 
 @Component({
     selector: 'd3s-tag-item',
-    providers: [RulesService, PermissionsService, TagService, GridDefinitionService],
+    providers: [RulesService, PermissionsService, TagService, GridDefinitionService, AuthenticationService],
     templateUrl: 'tag-item.component.html',
     host: { 'class': 'gov-detail-page' }
 })
@@ -30,7 +31,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     tagUsage: TagDetail[];
     selected: TagDetail;
     private currentAreaName: string;
-
+    private isAdmin: boolean = false;
     private backUrl: string;
 
 
@@ -46,7 +47,9 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         protected messagesService: MessagesObservableService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
-        rightSidebarService: RightSidebarService) {
+        rightSidebarService: RightSidebarService,
+        private authService: AuthenticationService
+    ) {
         super();
         this.rightSidebarService = rightSidebarService;
 
@@ -61,11 +64,16 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
             this.loadPermissions(this.permissionsService, "Tag", this.tagUid)
                 .then(p => {
+                    if (this.hasModifyAssetPermissions() && this.hasDeleteAssetPermissions()) {
+                        this.isAdmin = true;
+                    }
                     this.load();
                 });
 
             this.currentAreaName = "Tag";
         });
+
+
     }
 
     ngOnDestroy() {
@@ -92,17 +100,25 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         null,
                         this.tag.uid
                     );
-                    this.setCommonRightSideBar(true);
-                    this.rightSidebarService.showHeader(true);
 
-                    this.setActions();
 
-                    if (this.auditSidebar) {
-                        this.auditSidebar.hasDynamicUrl = true;
-                        this.auditSidebar.dynamicUrlCallback = (() => {
-                            return `/sidebar/audit/Tag/${this.tagUid}`
-                        });
+                    if (this.isAdmin) {
+
+                        this.setCommonRightSideBar(true);
+                        this.setActions();
+
+                        if (this.auditSidebar) {
+                            this.auditSidebar.hasDynamicUrl = true;
+                            this.auditSidebar.dynamicUrlCallback = (() => {
+                                return `/sidebar/audit/Tag/${this.tagUid}`
+                            });
+                        }
                     }
+                    else {
+                        this.setCommonRightSideBar(false);
+
+                    }
+                    this.rightSidebarService.showHeader(true);
 
                     this.tagsService.getTagDetails(this.tag.uid)
                         .subscribe(data => {
@@ -125,7 +141,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             },
                 err => {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
-            });
+                });
 
 
     }
@@ -162,6 +178,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     setActions() {
+        if (!this.isAdmin) return;
         this.actions = new AssetAction();
         this.actions.isVisible = true;
         this.actions.showBack = true;
