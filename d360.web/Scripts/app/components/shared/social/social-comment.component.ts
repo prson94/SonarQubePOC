@@ -28,7 +28,7 @@ import { CurrentCompanySettings } from '../../../static/company-settings'
                             </div>
                             <div class="col s12" [innerHtml]="comment.Body"></div>                            
                             <div class="col s12">
-                                <i class="fa fa-tag" aria-hidden="true"></i> Tags: <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [objectType]="tag.Object" [objectId]="tag.ObjectID" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.TextPath}}</d3s-preview-tooltip>
+                                <i class="fa fa-tag" aria-hidden="true"></i> Comment Tags: <d3s-preview-tooltip *ngFor="let tag of comment.Tags" class="comment-tag" (click)="changeUrl(tag.Url)" [objectType]="tag.Object" [objectId]="tag.ObjectID" [iconColor]="tag.IconForeColor" [foreColor]="tag.IconBackColor">{{tag.TextPath}}</d3s-preview-tooltip>
                             </div>
                         </div>                        
                         <div class="row" *ngIf="showEdit">

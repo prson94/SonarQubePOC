@@ -6468,6 +6468,8 @@ offset 0 rows fetch next 25 rows only
                 var typeRelations = Company.IssueTypeRelations.Where(i => i.IssueTypeID == id).ToList();
                 Company.IssueTypeRelations.RemoveRange(typeRelations);
 
+                var customFields = Company.FieldTypes.Where(x => x.Object == SystemObjects.IssueType.ToString() && x.ObjectID == id);
+                Company.FieldTypes.RemoveRange(customFields);
                 Company.Delete<IssueType>(i => i.ID == id);
                 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
