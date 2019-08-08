@@ -68,7 +68,6 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
                 );
                 this.headerBreadcrumbService.showBreadcrumb(dashboardCrumb);
             }
-            console.log(clearInfo);
             if (clearInfo) {
                 this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
                         this.clearSidebar();
@@ -87,7 +86,6 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     private loadAvailableDashboards() {
-        console.log(this.objectType + ' ' + this.objectID + ' ' + this.dashboardName);
         this.isLoading = true;
         this.dashboardService.getDashboards(this.objectID, this.objectType).subscribe(
             result => {
