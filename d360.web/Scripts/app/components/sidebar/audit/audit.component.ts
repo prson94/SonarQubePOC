@@ -53,7 +53,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                 if (params['objectId'].length == 36) {
                     this.objectID = params['objectId'];
                 }
-                console.log(this.objectID);
+
                 this.objectType = params['objectType'];
 
                 this
