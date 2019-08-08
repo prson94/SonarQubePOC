@@ -110,7 +110,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         titleService: Title)
     {
         super(headerBreadcrumbService, titleService, rightSidebarService);        
-        this.areaName = "Rule Types";
+        this.areaName = "Rules";
         this.setCommonItems();
         this.theDeleteCallback = this.deleteRuleType.bind(this);
         this.setCommonRightSideBar(false, false, false);

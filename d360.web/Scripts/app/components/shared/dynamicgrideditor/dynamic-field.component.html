@@ -1,127 +1,72 @@
-﻿<div [formGroup]="form">
-    <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
-    <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'">
-        <div class="FieldName">
-            <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
-            <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
-        </div>
-        <div *ngIf="object != 'Tag' || (object == 'Tag' && !objectID)" style="display:inline-block;">
-            <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" style="width: 100%;" type="text">
-        </div>
-        <div *ngIf="object == 'Tag' && objectID" style="display:inline-block;">
-            <p-autoComplete *ngSwitchCase="'Text'"  [formControlName]="field.FieldName" (blur)="OnBlurTrim()" [suggestions]="suggestionResults" (completeMethod)="searchTags($event)" (onSelect)="selectTag($event)"></p-autoComplete>
-        </div>
-        <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
-        <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl #ed>
-            <header style="padding-bottom:0px !important">
-                <span class="ql-formats">
-                    <select class="ql-header">
-                        <option value="1">Heading</option>
-                        <option value="2">Subheading</option>
-                        <option selected>Normal</option>
-                    </select>
-                    <select class="ql-font">
-                        <option selected>Sans Serif</option>
-                        <option value="serif">Serif</option>
-                        <option value="monospace">Monospace</option>
-                    </select>
-                </span>
-                <span class="ql-formats">
-                    <button class="ql-bold"></button>
-                    <button class="ql-italic"></button>
-                    <button class="ql-underline"></button>
-                </span>
-                <span class="ql-formats">
-                    <select class="ql-color"></select>
-                    <select class="ql-background"></select>
-                </span>
-                <span class="ql-formats">
-                    <button class="ql-list" value="ordered"></button>
-                    <button class="ql-list" value="bullet"></button>
-                    <select class="ql-align">
-                        <option selected></option>
-                        <option value="center"></option>
-                        <option value="right"></option>
-                        <option value="justify"></option>
-                    </select>
-                </span>
-                <span class="ql-formats">
-                    <button class="ql-link"></button>
-                    <button class="ql-code-block"></button>
-                </span>
-                <span class="ql-formats">
-                    <button class="ql-clean"></button>
-                </span>
-            </header>
-        </p-editor>
-        <div *ngSwitchCase="'Lookup'">
-            <ng-container *ngIf="!field.DelayedLoadType else delayedLoadType">
-                <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect" [formControlName]="field.FieldName" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
-                <ng-template #singleSelect>
-                    <ng-container *ngIf="!field.UseTypeahead">
-                        <select [formControlName]="field.FieldName" style="height:auto;width:100%;" >
-                            <option *ngIf="field.ParentFieldTypeName && (!field.Items || field.Items.length == 0);else blankOption" value="" disabled selected>Select a {{field.ParentFieldTypeName}}</option>
-                            <ng-template #blankOption>
-                                <option value=""></option>
-                            </ng-template>
-                            <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
+﻿<ng-container *ngIf="!useNewUI || useNewUI == false">
+    <div [formGroup]="form">
+        <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
+        <div [ngSwitch]="field.FieldType" class="col s12" *ngIf="field.FieldType!='Hidden'">
+            <div class="FieldName">
+                <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
+                <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
+            </div>
+            <div *ngIf="object != 'Tag' || (object == 'Tag' && !objectID)" style="width:100%;">
+                <input *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" style="width: 100%;" type="text">
+            </div>
+            <div *ngIf="object == 'Tag' && objectID" style="width:100%;">
+                <p-autoComplete *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" [suggestions]="suggestionResults" (completeMethod)="searchTags($event)" (onSelect)="selectTag($event)"></p-autoComplete>
+            </div>
+            <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
+            <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl #ed>
+                <header style="padding-bottom:0px !important">
+                    <span class="ql-formats">
+                        <select class="ql-header">
+                            <option value="1">Heading</option>
+                            <option value="2">Subheading</option>
+                            <option selected>Normal</option>
                         </select>
-                    </ng-container>
-                    <ng-container *ngIf="field.UseTypeahead">
-                        <p-autoComplete [placeholder]="'Start typing to select an item'"
-                                        [delay]="350"
-                                        [field]="'Text'"
-                                        [style]="{'width':'100%'}"
-                                        [inputStyle]="{'width':'100%' }"
-                                        [inputId]="field.FieldName + '_input'"
-                                        [formControlName]="field.FieldName"
-                                        (onSelect)="onSelect($event)"
-                                        [suggestions]="field.Items"
-                                        (completeMethod)="search($event)"
-                                        [forceSelection]="field.Required"
-                                        (onClear)="clearTypeahead($event)"
-                                        [dropdown]="false">
-                            <ng-template let-item pTemplate="item">
-                                <div *ngIf="item.Selected" style="font-weight: bold; color: #fff; background: #54a4da">
-                                    {{item.Text}}
-                                </div>
-                                <div *ngIf="!item.Selected">
-                                    {{item.Text}}
-                                </div>
-                            </ng-template>
-                        </p-autoComplete>
-                    </ng-container>
-                </ng-template>
-            </ng-container>
-            <ng-template #delayedLoadType>
-                <div *ngIf="filterException" class="fa-stack" style="width:2em;font-size:smaller;float:right;" title="{{filterException}}">
-                    <i class="fa fa-filter fa-stack-2x"></i>
-                    <i class="fa fa-times fa-stack-1x" style="padding-left:0.5em;padding-top:0.5em;color:red;"></i>
-                </div>
-                <div [style.margin-right]="(filterException == '') ? 'auto' : '2.5em'">
-                    <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect"
-                                   [formControlName]="field.FieldName"
-                                   [options]="field.Items | selectItemTextToLabel"
-                                   [style]="{width: '100%'}"
-                                   ngDefaultControl [defaultLabel]="multiselectLabel()">
-                        <ng-template let-item pTemplate="item">
-                            <div class="selectlistinfoitem-wrapper-multiselect">
-                                <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>
-                            </div>
-                        </ng-template>
-                    </p-multiSelect>
+                        <select class="ql-font">
+                            <option selected>Sans Serif</option>
+                            <option value="serif">Serif</option>
+                            <option value="monospace">Monospace</option>
+                        </select>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-bold"></button>
+                        <button class="ql-italic"></button>
+                        <button class="ql-underline"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <select class="ql-color"></select>
+                        <select class="ql-background"></select>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-list" value="ordered"></button>
+                        <button class="ql-list" value="bullet"></button>
+                        <select class="ql-align">
+                            <option selected></option>
+                            <option value="center"></option>
+                            <option value="right"></option>
+                            <option value="justify"></option>
+                        </select>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-link"></button>
+                        <button class="ql-code-block"></button>
+                    </span>
+                    <span class="ql-formats">
+                        <button class="ql-clean"></button>
+                    </span>
+                </header>
+            </p-editor>
+            <div *ngSwitchCase="'Lookup'">
+                <ng-container *ngIf="!field.DelayedLoadType else delayedLoadType">
+                    <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect" [formControlName]="field.FieldName" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
                     <ng-template #singleSelect>
                         <ng-container *ngIf="!field.UseTypeahead">
-                            <p-dropdown [formControlName]="field.FieldName"
-                                        [style]="{'height':'auto',width: '100%'}"
-                                        [options]="field.Items | selectItemTextToLabel"
-                                        [placeholder]="multiselectLabel()">
-                                <ng-template let-item pTemplate="item">
-                                    <div class="selectlistinfoitem-wrapper">
-                                        <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>
-                                    </div>
+                            <select [formControlName]="field.FieldName" style="height:auto;width:100%;">
+                                <option *ngIf="field.ParentFieldTypeName && (!field.Items || field.Items.length == 0);else blankOption" value="" disabled selected>Select a {{field.ParentFieldTypeName}}</option>
+                                <ng-template #blankOption>
+                                    <option value=""></option>
                                 </ng-template>
-                            </p-dropdown>
+                                <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
+                            </select>
                         </ng-container>
                         <ng-container *ngIf="field.UseTypeahead">
                             <p-autoComplete [placeholder]="'Start typing to select an item'"
@@ -138,70 +83,154 @@
                                             (onClear)="clearTypeahead($event)"
                                             [dropdown]="false">
                                 <ng-template let-item pTemplate="item">
-                                    <div class="selectlistinfoitem-wrapper">
-                                        <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>
+                                    <div *ngIf="item.Selected" style="font-weight: bold; color: #fff; background: #54a4da">
+                                        {{item.Text}}
+                                    </div>
+                                    <div *ngIf="!item.Selected">
+                                        {{item.Text}}
                                     </div>
                                 </ng-template>
                             </p-autoComplete>
                         </ng-container>
                     </ng-template>
-                </div>
-            </ng-template>
-        </div>
-        <div *ngSwitchCase="'Relationship'">
-            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-            <p-table #dt [value]="field.Items" [selectionMode]="field?.MultiSelect ? 'multiple' : 'single'" [selection]="relationItems" (selectionChange)="selectRelationItems($event)"
-                     [globalFilterFields]="['Text']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
-                     [lazy]="true" (onLazyLoad)="lazyLoad($event)" [totalRecords]="field?.RecordCount" [formControlName]="field.FieldName" ngDefaultControl>
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th style="width: 30px">
-                            <p-tableHeaderCheckbox *ngIf="field?.MultiSelect"></p-tableHeaderCheckbox>
-                        </th>
-                        <th>Name</th>
-                    </tr>
+                </ng-container>
+                <ng-template #delayedLoadType>
+                    <div *ngIf="filterException" class="fa-stack" style="width:2em;font-size:smaller;float:right;" title="{{filterException}}">
+                        <i class="fa fa-filter fa-stack-2x"></i>
+                        <i class="fa fa-times fa-stack-1x" style="padding-left:0.5em;padding-top:0.5em;color:red;"></i>
+                    </div>
+                    <div [style.margin-right]="(filterException == '') ? 'auto' : '2.5em'">
+                        <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect"
+                                       [formControlName]="field.FieldName"
+                                       [options]="field.Items | selectItemTextToLabel"
+                                       [style]="{width: '100%'}"
+                                       ngDefaultControl [defaultLabel]="multiselectLabel()">
+                            <ng-template let-item pTemplate="item">
+                                <div class="selectlistinfoitem-wrapper-multiselect">
+                                    <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>
+                                </div>
+                            </ng-template>
+                        </p-multiSelect>
+                        <ng-template #singleSelect>
+                            <ng-container *ngIf="!field.UseTypeahead">
+                                <p-dropdown [formControlName]="field.FieldName"
+                                            [style]="{'height':'auto',width: '100%'}"
+                                            [options]="field.Items | selectItemTextToLabel"
+                                            [placeholder]="multiselectLabel()">
+                                    <ng-template let-item pTemplate="item">
+                                        <div class="selectlistinfoitem-wrapper">
+                                            <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>
+                                        </div>
+                                    </ng-template>
+                                </p-dropdown>
+                            </ng-container>
+                            <ng-container *ngIf="field.UseTypeahead">
+                                <p-autoComplete [placeholder]="'Start typing to select an item'"
+                                                [delay]="350"
+                                                [field]="'Text'"
+                                                [style]="{'width':'100%'}"
+                                                [inputStyle]="{'width':'100%' }"
+                                                [inputId]="field.FieldName + '_input'"
+                                                [formControlName]="field.FieldName"
+                                                (onSelect)="onSelect($event)"
+                                                [suggestions]="field.Items"
+                                                (completeMethod)="search($event)"
+                                                [forceSelection]="field.Required"
+                                                (onClear)="clearTypeahead($event)"
+                                                [dropdown]="false">
+                                    <ng-template let-item pTemplate="item">
+                                        <div class="selectlistinfoitem-wrapper">
+                                            <div class="selectlistinfoitem-text" [style.width]="item.Info ? '' : '100%'">{{item.Text}}</div><div class="selectlistinfoitem-info">{{item.Info}}</div>
+                                        </div>
+                                    </ng-template>
+                                </p-autoComplete>
+                            </ng-container>
+                        </ng-template>
+                    </div>
                 </ng-template>
-                <ng-template pTemplate="body" let-item>
-                    <tr [pSelectableRow]="item">
-                        <td>
-                            <p-tableRadioButton *ngIf="!field?.MultiSelect" [value]="item"></p-tableRadioButton>
-                            <p-tableCheckbox *ngIf="field?.MultiSelect" [value]="item"></p-tableCheckbox>
-                        </td>
-                        <td>{{item.Text}}</td>
-                    </tr>
-                </ng-template>
-                <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                </ng-template>
-            </p-table>
+            </div>
+            <div *ngSwitchCase="'Relationship'">
+                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                <p-table #dt [value]="field.Items" [selectionMode]="field?.MultiSelect ? 'multiple' : 'single'" [selection]="relationItems" (selectionChange)="selectRelationItems($event)"
+                         [globalFilterFields]="['Text']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
+                         [lazy]="true" (onLazyLoad)="lazyLoad($event)" [totalRecords]="field?.RecordCount" [formControlName]="field.FieldName" ngDefaultControl>
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 30px">
+                                <p-tableHeaderCheckbox *ngIf="field?.MultiSelect"></p-tableHeaderCheckbox>
+                            </th>
+                            <th>Name</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-item>
+                        <tr [pSelectableRow]="item">
+                            <td>
+                                <p-tableRadioButton *ngIf="!field?.MultiSelect" [value]="item"></p-tableRadioButton>
+                                <p-tableCheckbox *ngIf="field?.MultiSelect" [value]="item"></p-tableCheckbox>
+                            </td>
+                            <td>{{item.Text}}</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                    </ng-template>
+                </p-table>
+            </div>
+            <input *ngSwitchCase="'Number'" name="{{field.FieldName}}" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="{{Increment ? Increment : 1}}" min="{{Min}}" max="{{Max}}">
+            <input *ngSwitchCase="'Decimal'" name="{{field.FieldName}}" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="{{Increment ? Increment : 1}}" min="{{Min}}" max="{{Max}}" (keyup)="toDecimalPlaces($event,Precision)">
+            <input *ngSwitchCase="'Percentage'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="0.01" min="0.00" max="1.00" (keyup)="clamp($event, 0, 1, 3)">
+            <div *ngSwitchCase="'Color'">
+                <p-colorPicker [formControlName]="field.FieldName"></p-colorPicker>
+                <input type="text" [formControlName]="field.FieldName" style="padding:2px;" />
+            </div>
+            <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
+            <input *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />
+            <div *ngSwitchCase="'Date'">
+                <p-calendar [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()"></p-calendar>
+            </div>
+            <div *ngSwitchCase="'DateTime'">
+                <p-calendar [formControlName]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
+            </div>
+            <div *ngSwitchCase="'Link'">
+                <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" type="text">
+                <div>(Link Name)</div>
+                <input [formControlName]="field.FieldName + '_Url'" style="width: 100%;" type="text">
+                <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
+            </div>
+            <div *ngSwitchCase="'FusionLookup'">
+                <select [formControlName]="field.FieldName" style="height:auto;width:100%;">
+                    <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
+                </select>
+            </div>
+            <d3s-multiselect-grid *ngSwitchCase="'DataTableSelect'" [multiple]="field.MultiSelect" [formControlName]="field.FieldName" ngDefaultControl [field]="field"></d3s-multiselect-grid>
+            <div class="errorMessage" *ngIf="!isValid">* {{errorMessage}}</div>
         </div>
-        <input *ngSwitchCase="'Number'"  name="{{field.FieldName}}" [formControlName]="field.FieldName"  style="width: 100%;" type="number" step="{{Increment ? Increment : 1}}" min="{{Min}}" max="{{Max}}">
-        <input *ngSwitchCase="'Decimal'"  name="{{field.FieldName}}" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="{{Increment ? Increment : 1}}" min="{{Min}}" max="{{Max}}" (keyup)="toDecimalPlaces($event,Precision)">
-        <input *ngSwitchCase="'Percentage'" [formControlName]="field.FieldName" style="width: 100%;" type="number" step="0.01" min="0.00" max="1.00" (keyup)="clamp($event, 0, 1, 3)">
-        <div *ngSwitchCase="'Color'">
-            <p-colorPicker [formControlName]="field.FieldName"></p-colorPicker>
-            <input type="text" [formControlName]="field.FieldName" style="padding:2px;" />
-        </div>
-        <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
-        <input *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />
-        <div *ngSwitchCase="'Date'">
-            <p-calendar [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()"></p-calendar>
-        </div>
-        <div *ngSwitchCase="'DateTime'">
-            <p-calendar [formControlName]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
-        </div>
-        <div *ngSwitchCase="'Link'">
-            <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" type="text">
-            <div>(Link Name)</div>
-            <input [formControlName]="field.FieldName + '_Url'" style="width: 100%;" type="text">
-            <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
-        </div>
-        <div *ngSwitchCase="'FusionLookup'">
-            <select [formControlName]="field.FieldName" style="height:auto;width:100%;">
-                <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
-            </select>
-        </div>
-        <d3s-multiselect-grid *ngSwitchCase="'DataTableSelect'" [multiple]="field.MultiSelect" [formControlName]="field.FieldName" ngDefaultControl [field]="field" ></d3s-multiselect-grid>
-        <div class="errorMessage" *ngIf="!isValid">* {{errorMessage}}</div>
     </div>
-</div>
+</ng-container>
+
+
+
+<ng-container *ngIf="useNewUI && useNewUI == true">
+    <div [formGroup]="form">
+        <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
+        <div [ngSwitch]="field.FieldType" class="col s12 form-field" *ngIf="field.FieldType!='Hidden'">
+            <label>
+                <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
+                <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
+            </label>
+            <div *ngIf="object != 'Tag' || (object == 'Tag' && !objectID)" class="field {{field.Required == true ? 'required' : ''}} {{isValid == false && isDirty == true ? 'error' : ''}}">
+                <input placeholder="{{field.Required == true ? 'Value required' : ''}}" *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" type="text">
+                <span *ngIf="!isValid && isDirty" class="feedback">{{errorMessage}}</span>
+            </div>
+
+
+            <div *ngIf="object == 'Tag' && objectID" class="field {{field.Required == true ? 'required' : ''}} {{isValid == false && isDirty == true ? 'error' : ''}}">
+                <p-autoComplete *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (onBlur)="OnBlurTrim()" [suggestions]="suggestionResults" (completeMethod)="searchTags($event)" (onSelect)="selectTag($event)"></p-autoComplete>
+                <span *ngIf="!isValid && isDirty" class="feedback">{{errorMessage}}</span>
+            </div>
+
+        </div>
+
+
+    </div>
+</ng-container>

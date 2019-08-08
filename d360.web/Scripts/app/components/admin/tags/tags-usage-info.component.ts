@@ -30,7 +30,7 @@ export class TagUsageInfoBox implements OnInit {
         this.tagsService.getAssetPathsForTag(this.uid).subscribe(assets => {
             let tableHTML: string = '';
             assets.forEach(a => {
-                tableHTML += `<tr><td class="name"><a href='${a.Url}'>${a.DisplayName}</a></td><td class="suppressed">${a.Breadcrumbs}</td></tr>`;
+                tableHTML += `<tr><td class="name"><a target="_blank" href='${a.Url}'>${a.DisplayName}</a></td><td class="suppressed">${a.Breadcrumbs}</td></tr>`;
             })
 
             this.tooltipHTML = `<table class="table table-borderless">${tableHTML}</div>`;
