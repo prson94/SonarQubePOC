@@ -372,29 +372,36 @@ namespace d360.model.DataAccessLayer
                     break;
                 case AssetTypeClass.Model:
                     #region
-                    var t = new TaxonomyType
+                    var t = new AssetType
                     {
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
-                        MaximumDepth = model.Hierarchy.MaximumDepth,
+                        HierarchyMaximumDepth = model.Hierarchy.MaximumDepth,
+                        Object = SystemObjects.TaxonomyType.ToString(),
+                        State = State.Active,
+                        UpdatedBy = resourceId,
+                        UpdatedOn = DateTime.UtcNow,
+                        CreatedBy = resourceId,
+                        CreatedOn = DateTime.UtcNow,
+                        Hierarchical = true,
+                        Class = AssetTypeClass.Model
                     };
 
-                    if (t.MaximumDepth <= 0 || t.MaximumDepth > 10)
+                    if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
                         return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", "Invalid Maximum Depth,Model level specified must be a value between 1 and 10.");
 
 
                     CompanyContext.Add(t);
-                    assetType = CompanyContext.Filter<AssetType>(x => x.ObjectID == t.ID && x.Object == "TaxonomyType").SingleOrDefault();
-                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Type", "Asset Not Found.");
-                    for (int i = 1; i <= t.MaximumDepth; i++)
+
+                    for (int i = 1; i <= t.HierarchyMaximumDepth; i++)
                     {
-                        CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = assetType.ID });
+                        CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = t.ID });
                     }
                     CompanyContext.SaveChanges();
 
                     parentType = SystemObjects.TaxonomyType;
-                    model.ObjectID = t.ID;
+                    model.ObjectID = t.ObjectID;
                     model.Object = SystemObjects.TaxonomyType.ToString();
                     #endregion
                     break;
@@ -530,22 +537,20 @@ namespace d360.model.DataAccessLayer
 
                     break;
                 case AssetTypeClass.Model:
-                    var t = CompanyContext.GetById<TaxonomyType>(model.ObjectID);
+                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Model.ToString()}", $"Not valid {AssetTypeClass.Model.ToString()} provided.Please check your request and try again.");
 
-                    if (t == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Model.ToString()}", $"Not valid {AssetTypeClass.Model.ToString()} provided.Please check your request and try again.");
+                    assetType.Name = model.Name;
+                    assetType.DisplayFormat = model.DisplayFormat;
+                    assetType.Description = model.Description;
+                    assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
 
-                    t.Name = model.Name;
-                    t.DisplayFormat = model.DisplayFormat;
-                    t.Description = model.Description;
-                    t.MaximumDepth = model.Hierarchy.MaximumDepth;
-
-                    if (t.MaximumDepth <= 0 || t.MaximumDepth > 10)
+                    if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
                         return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", "Invalid Maximum Depth,Model level specified must be a value between 1 and 10.");
 
 
-                    CompanyContext.Update(t);
+                    CompanyContext.Update(assetType);
 
-                    for (int i = 1; i <= t.MaximumDepth; i++)
+                    for (int i = 1; i <= assetType.HierarchyMaximumDepth; i++)
                     {
                         var level = assetType.AssetTypeLevels.SingleOrDefault(l => l.Level == i);
                         if (level == null)
@@ -553,7 +558,7 @@ namespace d360.model.DataAccessLayer
                             CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = assetType.ID });
                         }
                     }
-                    CompanyContext.Delete<AssetTypeLevel>(l => l.Level > t.MaximumDepth);
+                    CompanyContext.Delete<AssetTypeLevel>(l => l.Level > assetType.HierarchyMaximumDepth);
                     CompanyContext.SaveChanges();
 
 
