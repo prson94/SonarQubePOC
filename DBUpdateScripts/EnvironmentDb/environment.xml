@@ -264,6 +264,7 @@
   <include file="scripts/GOV-7784.xml"/>  
   <include file="scripts/GOV-7802.xml"/> <!--IGC proc-->
   <include file="scripts/GOV-4861.xml"/>
+  <include file="scripts/GOV-7833.xml"/> <!-- GetDynamicAssets -->
   <include file="scripts/GOV-7831.xml"/>
   <include file="scripts/GOV-7463-3.xml"/>
   <include file="scripts/GOV-7464-5.xml"/>
