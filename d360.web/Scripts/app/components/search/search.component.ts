@@ -8,6 +8,7 @@ import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
+import { RightSidebarService } from '../../services/right-sidebar.service';
 
 declare var CompanySettings;
 
@@ -34,9 +35,14 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public sub: any;
     public showAdvanced: boolean = false;
 
-    constructor(private route: ActivatedRoute, protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
+    constructor(private route: ActivatedRoute,
+        protected titleService: Title,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected rightSidebarService: RightSidebarService,
+        private searchService: SearchService,
+        private typeaheadSearchService: TypeaheadSearchService) {
         super();
-        
+        this.rightSidebarService = rightSidebarService;
     }
 
     ngOnInit() {
@@ -44,7 +50,12 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Search'));
-        
+
+        this.rightSidebarService.clearItems();
+        this.rightSidebarService.clearButtons();
+        this.rightSidebarService.setCurrentArea('Search', 'fa-database', null);
+        this.rightSidebarService.showHeader(true);
+
         this.sub = this.route.queryParams.subscribe(params => {
             this.showAdvanced = params['advanced'] == '1';
             this.searchText = params['query'] ? params['query'] : '';

@@ -3596,15 +3596,12 @@ namespace d360.web.Controllers
                 { "Public Url", @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
                 { "US Zip Code", @"^(\d{5}(?:\-\d{4})?)$" }
             };
-            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type)
-                    .Where(i => !i.ReadOnly)
-                    .Select(i => new
+            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type).Where(i => i.CompanySettingActive != null && !i.ReadOnly && Community.IsCompanySettingActive(i.CompanySettingActive)).Select(i => new
                     {
                         title = i.Description,
                         value = i.Name
                     })
-                    .OrderBy(i => i.title)
-                    .ToList();
+                    .OrderBy(i => i.title).ToList();
 
             var jsonFieldType = new Dictionary<string, string>()
             {
@@ -6465,6 +6462,8 @@ offset 0 rows fetch next 25 rows only
                 var typeRelations = Company.IssueTypeRelations.Where(i => i.IssueTypeID == id).ToList();
                 Company.IssueTypeRelations.RemoveRange(typeRelations);
 
+                var customFields = Company.FieldTypes.Where(x => x.Object == SystemObjects.IssueType.ToString() && x.ObjectID == id);
+                Company.FieldTypes.RemoveRange(customFields);
                 Company.Delete<IssueType>(i => i.ID == id);
                 
                 return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
@@ -7144,7 +7143,7 @@ select 'ReferenceItemType|0' as value, 'Reference' as title
 select * from (
 select 'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title from AttributeType where ParentID is null
 union
-select 'ArtifactType|' + cast(ID as varchar(10)) as value, 'Artifact: ' + Name as title from ArtifactType
+select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 'Artifact: ' + Name as title from AssetType where Object = 'ArtifactType'
 union
 select 'TaxonomyType|' + cast(ID as varchar(10)) as value, 'Model: ' + Name as title from TaxonomyType
 union
@@ -9649,6 +9648,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             
             int objectTypeID = -1;
             string parentType = string.Empty;
+            bool useAssetJoin = false;
 
             #region Resolve Type
 
@@ -9685,6 +9685,11 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             {
                 targetType = relationshipType.Subject;
                 targetTypeID = relationshipType.SubjectID;
+            }
+
+            if (targetType == SystemObjects.ArtifactType.ToString())
+            {
+                useAssetJoin = true;
             }
 
             #endregion
@@ -9945,7 +9950,8 @@ order by r.Name";
                 default:
                     #region
                     sql = $@"(
-select		D.[Object], 
+select		D.ID,
+            D.[Object], 
 			D.ObjectID
 from		Asset D
             inner join AssetType AST on D.AssetTypeID = AST.ID
@@ -9954,7 +9960,7 @@ from		Asset D
 											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
 										)
 where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType and D.ObjectID != @id
-) C on C.ObjectID = O.ID";
+) C on {(useAssetJoin ? "C.ID" : "C.ObjectID")} = O.ID";
 
                     switch (targetType)
                     {
@@ -13415,10 +13421,8 @@ order by	case
             items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.TaxonomyType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Model Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.TaxonomyType.ToString(), i.ID) }));
 
             //rules
-            items.Add(new SelectListItem { Text = "Rule Type :: Informational", Value = "RuleType|1" });
-            items.Add(new SelectListItem { Text = "Rule Type :: Quality Check", Value = "RuleType|2" });
-            items.Add(new SelectListItem { Text = "Rule Type :: Metric", Value = "RuleType|3" });
-            items.Add(new SelectListItem { Text = "Rule Type :: Profile", Value = "RuleType|4" });
+            items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.RuleType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Rule Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.RuleType.ToString(), i.ID) }));
+
 
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Object", Name = "Assign Survey To", FieldType = DataType.Lookup.ToString(), Items = items });
@@ -13555,7 +13559,7 @@ order by	case
         {
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Value", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -13568,7 +13572,7 @@ order by	case
             var a = Company.GetById<Tag>(id);
 
             list.Add(new EditableField { FieldName = "uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Value", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
