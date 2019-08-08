@@ -2921,7 +2921,8 @@ select @err";
                             var isFusionAttributeType = (relationFieldInfo.Object == SystemObjects.FusionAttributeType.ToString());
                             var isTaxonomyType = (relationFieldInfo.Object == SystemObjects.TaxonomyType.ToString());
                             var isPolicyType = (relationFieldInfo.Object == SystemObjects.PolicyType.ToString());
-                            var useAssetTable = isPolicyType;
+                            var isArtifactType = (relationFieldInfo.Object == SystemObjects.ArtifactType.ToString());
+                            var useAssetTable = isPolicyType || isTaxonomyType  || isArtifactType; 
 
                             var tableName = isReferenceItemType ? relationFieldInfo.Object : relationFieldInfo.Object.Replace("Type", "");
                             var typeIDColumnName = relationFieldInfo.Object + "ID";
