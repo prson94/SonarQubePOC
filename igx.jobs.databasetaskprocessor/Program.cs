@@ -79,7 +79,7 @@ namespace igx.jobs.databasetaskprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 12).ToList();
+                companies = companies.Where(i => i.CompanyID == 1).ToList();
 #endif
 
                 companies.Shuffle(); //Randomize
@@ -106,20 +106,12 @@ namespace igx.jobs.databasetaskprocessor
 
                             Func<SqlConnection, string, int, string, long, string> resolveIndexItem = (companyConnection, o, oid, a, givenAssetId) =>
                             {
+                                // check if this object requires to go into elastic search
+                                if (!ShouldItemBeIndexedForElasticSearch(o)) return string.Empty;
+
                                 ObjectDetail detail = null;
                                 Dictionary<string, string> fields = new Dictionary<string, string>();
-
-                                if (string.IsNullOrEmpty(o)) return "";
-
-                                // ignore intersects we dont want to add them to the search index.
-                                if (string.Compare(o, "IntersectType", true) == 0
-                                        || string.Compare(o, "ResponsibilityType", true) == 0
-                                        || string.Compare(o, "FusionAttributeType", true) == 0
-                                        || string.Compare(o, "Intersect", true) == 0
-                                        || string.Compare(o, "Lookup", true) == 0
-                                        || string.Compare(o, "LookupType", true) == 0
-                                        ) return "";
-
+                                
                                 #region Load Info for Object
 
                                 detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
@@ -491,6 +483,25 @@ from    [queue].[Task] T
             {
                 CoreFunction.AITrackException(functionName, ex);
             }
+        }
+
+        private static bool ShouldItemBeIndexedForElasticSearch(string obj)
+        {
+            if (string.IsNullOrEmpty(obj)) return false;
+
+            // ignore intersects we dont want to add them to the search index.
+            if (string.Compare(obj, "IntersectType", true) == 0
+                    || string.Compare(obj, "ResponsibilityType", true) == 0
+                    || string.Compare(obj, "FusionAttributeType", true) == 0
+                    || string.Compare(obj, "Intersect", true) == 0
+                    || string.Compare(obj, "Lookup", true) == 0
+                    || string.Compare(obj, "LookupType", true) == 0
+                    || string.Compare(obj, "Tag", true) == 0
+                    || string.Compare(obj, "FieldType", true) == 0
+                    || string.Compare(obj, "ArtifactType", true) == 0
+                    ) return false;
+
+            return true;
         }
 
         private static void addAuditEntry(SqlConnection companyConnection, string @object, int objectID, string oper, string custom, long assetID)
