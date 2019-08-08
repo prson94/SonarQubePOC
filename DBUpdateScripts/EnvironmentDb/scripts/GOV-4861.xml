@@ -1717,7 +1717,7 @@ end
 		]]>
 	</rollback>
   </changeSet>
-    <changeSet author="MDonato" id="GOV-4861-DeleteAssetType">
+    <changeSet author="MDonato" id="GOV-4861-DeleteAssetType2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
