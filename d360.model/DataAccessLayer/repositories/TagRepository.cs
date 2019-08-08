@@ -36,6 +36,9 @@ namespace d360.model.DataAccessLayer
             model.State = State.Deleted;
             AddTagAudit(model, "Delete");
 
+            var assetTagsForDeletion = companyContext.AssetTags.Where(x => x.TagID == model.ID);
+            companyContext.AssetTags.RemoveRange(assetTagsForDeletion);
+
             return companyContext.SaveChanges() > 0;
         }
 
@@ -92,8 +95,9 @@ namespace d360.model.DataAccessLayer
                     queryFilters.Add($"t.[Id] = @id");
                 }
             }
-            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_pagesize")) {
-                
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "_pagesize"))
+            {
+
                 if (int.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_pagesize").Value, out pageSize))
                 {
                     if (pageSize < 1) pageSize = 1;
@@ -217,8 +221,8 @@ namespace d360.model.DataAccessLayer
             }
 
 
-           return await companyContext.QueryAsync<dynamic>(sql, dbArgs);
-  
+            return await companyContext.QueryAsync<dynamic>(sql, dbArgs);
+
         }
 
         public TagApiModel CreateTag(TagApiModel model)
@@ -257,7 +261,7 @@ namespace d360.model.DataAccessLayer
             companyContext.Entry(existingTag).State = System.Data.Entity.EntityState.Modified;
 
             companyContext.SaveChanges();
-            AddTagAudit(existingTag,"Update");
+            AddTagAudit(existingTag, "Update");
             var updateUser = companyContext.GlobalReportingResources.First(x => x.ResourceID == companyContext.CurrentResourceID);
 
             var createUser = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == existingTag.CreatedBy);
@@ -307,7 +311,7 @@ namespace d360.model.DataAccessLayer
             var result = companyContext.Query<dynamic>(sql, new { uid = tagUid }).ToList();
 
             var ret = new List<AssetTagList>();
-            foreach(var item in result)
+            foreach (var item in result)
             {
                 var atl = new AssetTagList();
                 ret.Add(atl);
@@ -349,15 +353,35 @@ namespace d360.model.DataAccessLayer
                         {sqlUidParams.ToString()}                        
                         declare @consolidateToId int = (select TOP 1 Id from Tag where uid = @parentUid)
                         
-                        ;with CTE as 
-                        (
-                        	select T.Id from AssetTag AT
+						declare @assetTagPending Table (ID int, uid uniqueidentifier, AssetID int, NewTagID int, OldTagID int, AlreadyExists bit);
+						insert into @assetTagPending (ID,uid,AssetID, NewTagID, OldTagID, AlreadyExists)
+							select 
+								AT.ID, 
+								AT.uid, 
+								AT.AssetID, 
+								@consolidateToId, 
+								AT.TagID,
+								ATE.ID
+								from AssetTag AT
                         	inner join Tag T on AT.TagID = T.ID
                         	inner join @children CH on CH.uid = T.uid
-                        ) 
-                        update AssetTag
-                        set TagId = @consolidateToId
-                        where TagId in (select Id from cte)
+							left join AssetTag ATE on ATE.AssetID = AT.AssetID AND ATE.TagID = @consolidateToId
+
+						merge dbo.AssetTag t
+						using @assetTagPending s
+						on t.ID = S.ID and s.alreadyexists is null
+						WHEN MATCHED
+						    THEN update set 
+								t.tagid = s.newtagid;
+						
+						delete from AssetTag where id in (select id from @assetTagPending where AlreadyExists = 1)
+
+                        ;WITH cte AS (
+                          SELECT Id, AssetID, NewTagID, 
+                             row_number() OVER(PARTITION BY assetid, newtagid ORDER BY id) AS [rn]
+                          FROM @assetTagPending where AlreadyExists is null
+                        )DELETE assettag where id in (select Id from cte where rn > 1)
+
 
 
                         update Tag 
@@ -397,7 +421,7 @@ namespace d360.model.DataAccessLayer
         {
             string value = "";
             Guid exceptUid = Guid.Empty;
-            foreach(var queryitem in queryParams)
+            foreach (var queryitem in queryParams)
             {
                 switch (queryitem.Key.ToLower())
                 {
@@ -438,9 +462,9 @@ namespace d360.model.DataAccessLayer
             throw new NotImplementedException();
         }
 
-        public bool DoesAssetTagExists(int tagId,long assetId)
+        public bool DoesAssetTagExists(int tagId, long assetId)
         {
-            return  companyContext.AssetTags.Any(x => x.TagID ==tagId && x.AssetID == assetId);
+            return companyContext.AssetTags.Any(x => x.TagID == tagId && x.AssetID == assetId);
         }
 
 
@@ -451,8 +475,8 @@ namespace d360.model.DataAccessLayer
 
             var assetTag = new AssetTag()
             {
-               TagID=tagId,
-               AssetID=assetId
+                TagID = tagId,
+                AssetID = assetId
 
             };
 
@@ -463,11 +487,11 @@ namespace d360.model.DataAccessLayer
 
         public AssetTag GetAssetTag(int tagId, long assetId)
         {
-            return  companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
+            return companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
         }
         public bool DeleteAssetTag(int tagId, long assetId)
         {
-            AssetTag tag= companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
+            AssetTag tag = companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
             return companyContext.Delete<AssetTag>(tag);
         }
 
@@ -478,7 +502,7 @@ namespace d360.model.DataAccessLayer
             if (!hasPersmission)
             {
                 AssetTag tag = companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
-                if(tag != null)
+                if (tag != null)
                     hasPersmission = tag.CreatedBy == companyContext.CurrentResourceID;
             }
 
@@ -486,7 +510,7 @@ namespace d360.model.DataAccessLayer
             {
                 hasPersmission = companyContext.HasAssetPermission(assetId, Permission.ModifyAsset);
             }
-                return hasPersmission;
+            return hasPersmission;
         }
 
         public TagDetailApiModel GetDetails(Guid tagUid, IEnumerable<KeyValuePair<string, string>> queryParams)
