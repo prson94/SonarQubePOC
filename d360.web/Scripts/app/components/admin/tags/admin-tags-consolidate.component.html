@@ -7,21 +7,24 @@
             <table class="table table-borderless">
                 <thead>
                     <tr>
-                        <th width="20px;"></th>
-                        <th scope="col"></th>
+                        <th></th>
                         <th scope="col"></th>
 
                     </tr>
                 </thead>
                 <tbody>
                     <tr *ngFor="let tag of tags;">
-                        <td><input type="radio" name="radio" (click)="selectItem(tag);" checked="{{selected && tag.uid == selected.uid ? 'checked' : ''}}" /></td>
-                        <td>{{tag.Value}}</td>
-                        <td><d3s-tag-usage [uid]="tag.uid">{{tag.UseCount}} assets</d3s-tag-usage> tagged</td>
+                        <td style="padding-bottom: 4px;">
+                            <label>
+                                <input style="top: 1px;" type="radio" name="radio" (click)="selectItem(tag);" checked="{{selected && tag.uid == selected.uid ? 'checked' : ''}}" />
+                                {{tag.Value}}
+                            </label>
+                        </td>
+                        <td style="padding-bottom: 4px;"><span *ngIf="tag.UseCount > 0" class="tag-desc"><d3s-tag-usage [uid]="tag.uid">{{tag.UseCount}} assets</d3s-tag-usage> tagged</span></td>
                     </tr>
                 </tbody>
             </table>
-            All assets listed above will be tagged with the selected tag.<br/>
+            All assets listed above will be tagged with the selected tag.<br />
             The other tags listed will be deleted.
 
         </div>

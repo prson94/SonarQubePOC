@@ -86,7 +86,7 @@ export class TagService extends BaseObservableService {
     }
 
     searchTags(q: string, exceptId): Observable<any[]> {
-        let url = `api/v2/tags/search/${q}`;
+        let url = `api/v2/tags/search?value=${q}&exceptuid=${exceptId}`;
         return this.http.get(url)
             .pipe(map(response => <any[]>response),
                 catchError(err => this.handleError(err, true)))
