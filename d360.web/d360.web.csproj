@@ -583,16 +583,6 @@
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <Content Include="Scripts\app\31.chunk.js" />
-    <Content Include="Scripts\app\32.chunk.js" />
-    <Content Include="Scripts\app\34.chunk.js" />
-    <Content Include="Scripts\app\35.chunk.js" />
-    <Content Include="Scripts\app\56.chunk.js" />
-    <Content Include="Scripts\app\57.chunk.js" />
-    <Content Include="Scripts\app\58.chunk.js" />
-    <Content Include="Scripts\app\59.chunk.js" />
-    <Content Include="Scripts\app\60.chunk.js" />
-    <Content Include="Scripts\app\61.chunk.js" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
@@ -694,7 +684,11 @@
     <Content Include="Scripts\app\29.chunk.js" />
     <Content Include="Scripts\app\3.chunk.js" />
     <Content Include="Scripts\app\30.chunk.js" />
-    <Content Include="Scripts\app\33.chunk.js" />
+    <Content Include="Scripts\app\31.chunk.js" />
+    <Content Include="Scripts\app\32.chunk.js" />
+	<Content Include="Scripts\app\33.chunk.js" />
+    <Content Include="Scripts\app\34.chunk.js" />
+    <Content Include="Scripts\app\35.chunk.js" />
     <Content Include="Scripts\app\36.chunk.js" />
     <Content Include="Scripts\app\37.chunk.js" />
     <Content Include="Scripts\app\38.chunk.js" />
@@ -717,7 +711,13 @@
     <Content Include="Scripts\app\53.chunk.js" />
     <Content Include="Scripts\app\54.chunk.js" />
     <Content Include="Scripts\app\55.chunk.js" />
+	<Content Include="Scripts\app\56.chunk.js" />
+    <Content Include="Scripts\app\57.chunk.js" />
+    <Content Include="Scripts\app\58.chunk.js" />
+    <Content Include="Scripts\app\59.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />
+	<Content Include="Scripts\app\60.chunk.js" />
+    <Content Include="Scripts\app\61.chunk.js" />
     <Content Include="Scripts\app\7.chunk.js" />
     <Content Include="Scripts\app\8.chunk.js" />
     <Content Include="Scripts\app\9.chunk.js" />
