@@ -87,6 +87,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     private loadAvailableDashboards() {
+        console.log(this.objectType + ' ' + this.objectID + ' ' + this.dashboardName);
         this.isLoading = true;
         this.dashboardService.getDashboards(this.objectID, this.objectType).subscribe(
             result => {
@@ -94,10 +95,14 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
                 if (this.objectType && this.objectID && this.dashboardName) {
                     this.selected = this.dashboards[0];
                     this.showSingle = true;
-                    this.buildBreadcrumb(true);
-                } else {
-                    this.buildBreadcrumb(false);
                 }
+
+                if (this.showSingle || (this.objectType && this.objectID)) {
+                    this.buildBreadcrumb(false);
+                } else {
+                    this.buildBreadcrumb(true);
+                }
+
                 this.isLoading = false;
             }
         );

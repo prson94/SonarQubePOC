@@ -13,9 +13,10 @@ import { ArtifactService } from '../../../services/artifacts.service';
 import { SurveyType } from '../../../models/survey.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Artifact } from '../../../models/artifacts.model';
+import { WorkflowService } from '../../../services/workflow.service';
 
-declare var CompanySettings;
-
+declare var CompanySettings
+declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-right-sidebar',      
@@ -64,7 +65,7 @@ declare var CompanySettings;
                                         (click)="item.active=!item.active;itemClicked(item);">
                                             {{item.title}}
                                         <span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span>
-                                        <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon bad">{{statistics?.IssueCount}}</span>
+                                        <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon" [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
                                 </button>
                             </div>
                             <button *ngIf="showScrollButtons" class="right tab-scroller" (click)="scroll('R')"><i class="fa fa-chevron-circle-right"></i></button>
@@ -73,7 +74,7 @@ declare var CompanySettings;
                 </div>
               `,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [SurveysService, ObjectStatisticsService, ArtifactService],
+    providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
     host: { '(window:resize)': 'checkSize()' }
 })
 
@@ -100,6 +101,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
     private statistics: ObjectStatistics;
     private lastCalculatedDate: number;
+    private actionsAssigned: boolean = false;
+    private currentResouceID: number;
 
     status: string;
     showStatus = false;
@@ -113,6 +116,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         private surveysService: SurveysService,
         private ref: ChangeDetectorRef,
         private artifactService: ArtifactService,
+        private workflowService: WorkflowService,
         private router: Router
     ) {
     }
@@ -165,7 +169,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.items = [];
         this.buttons = [];
         this.showScrollButtons = false;
-
+        this.currentResouceID = +CurrentResourceID;
         this.subscription = this.rightSidebarService.rightSidebar$.subscribe(
             item => {
                 this.items.push(item);
@@ -240,10 +244,16 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
         this.objectStatisticsService.getObjectStatistics(objectID, objectName).subscribe(
             result => {
-                this.statistics = result;
+                this.statistics = result;  
                 this.ref.markForCheck();
             }
         );
+        this.workflowService.getIssues(objectID, objectName)
+            .subscribe(result => {
+                let issues = result;
+                if (issues.length && issues.length > 0)
+                    this.actionsAssigned = issues.find(x => x.ResourceID === this.currentResouceID) !== undefined;
+            });  
 
         this.surveysService.getObjectSurvey(objectTypeID, objectType, objectID, objectName)
             .subscribe(result => {
