@@ -117,28 +117,28 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                     this.rightSidebarService.setCurrentArea(this.resource.FirstName + " " + this.resource.LastName, 'fa-cog', 'User');
                    
                     this.itemsOwn = new RightSidebarItem(
-                        'Ownership', 'itemOwn', ['fa-tasks'],
-                        `/sidebar/itemown/${resourceId}`
+                        'Responsibilities', 'itemOwn', ['fa-tasks'],
+                        `/sidebar/itemown/${resourceId}`, null, 15
                     );
                     this.rightSidebarService.showItem(this.itemsOwn);
                     this.memberGroups = new RightSidebarItem(
                         'Groups', 'memberGroup', ['fa-user-circle'],
-                        `/sidebar/membergroup/${resourceId}`
+                        `/sidebar/membergroup/${resourceId}`,null,5
                     );
                     this.rightSidebarService.showItem(this.memberGroups);
                     this.itemsFollow = new RightSidebarItem(
                         'Following', 'itemFollow', ['fa-user-plus'],
-                        `/sidebar/itemfollow/${resourceId}`
+                        `/sidebar/itemfollow/${resourceId}`, null, 20
                     );
                     this.rightSidebarService.showItem(this.itemsFollow);
                     this.hasRelations = new RightSidebarItem(
                         'Related Assets', 'hasRelations', ['fa-retweet'],
-                        `/sidebar/relationships/resource/${resourceId}`
+                        `/sidebar/relationships/resource/${resourceId}`, null, 10
                     );
                     this.rightSidebarService.showItem(this.hasRelations);
                     this.comments = new RightSidebarItem(
                         'Comments', 'comments', ['fa-comments'],
-                        `/sidebar/comments/Resource/${resourceId}/${this.resource.FirstName}`
+                        `/sidebar/comments/Resource/${resourceId}/${this.resource.FirstName}`, null, 25
                     );
                     this.rightSidebarService.showItem(this.comments);
                 });

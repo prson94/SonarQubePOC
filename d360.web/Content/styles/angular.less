@@ -2821,7 +2821,7 @@ button.tab-scroller {
     }
 
     &.bad {
-        background: @igx-red-light;
+        background: @igx-coral-light;
     }
 
     &.ok {
@@ -2838,6 +2838,7 @@ button.tab-scroller {
 
     .text {
         padding-left: 7px;
+        padding-top: 1px;
     }
 
     &.small-icon {
@@ -3292,6 +3293,15 @@ button.tab-scroller {
                 }
             }
         }
+    }
+}
+
+.no-text-overflow {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    span {
+        display: unset !important;
     }
 }
 

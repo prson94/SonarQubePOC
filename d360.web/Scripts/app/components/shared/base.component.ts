@@ -167,7 +167,7 @@ export class BaseComponent {
 
             if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
                 this.ownershipSidebar = new RightSidebarItem(
-                    'Ownership',
+                    'Responsibilities',
                     'ownership',
                     ['fa-user'],
                     `/sidebar/ownership/${this.assetID}`, null, 25
@@ -198,7 +198,7 @@ export class BaseComponent {
 
             if (hasRelationships) {
                 this.relationsSidebar = new RightSidebarItem(
-                    'Relations',
+                    'Related Assets',
                     'relationship',
                     ['fa-retweet'],
                     `/sidebar/relationships${this.objectContextUrl()}`, null, 20

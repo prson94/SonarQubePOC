@@ -47,7 +47,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
 
-    private buildBreadcrumb() {
+    private buildBreadcrumb(clearInfo: boolean) {
 
         this.headerBreadcrumbService.clearBreadcrumbs();
 
@@ -68,14 +68,16 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
                 );
                 this.headerBreadcrumbService.showBreadcrumb(dashboardCrumb);
             }
-
-            this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
-                this.clearSidebar();
-                this.rightSidebarService.setCurrentArea(res, icon, 'Dashboards');
-                this.rightSidebarService.clearCurrentObject();
-                this.rightSidebarService.clearButtons();
-            });
-            this.rightSidebarService.showHeader(true);
+            console.log(clearInfo);
+            if (clearInfo) {
+                this.headerBreadcrumbService.getFolderIcon(res).then(icon => {
+                        this.clearSidebar();
+                        this.rightSidebarService.setCurrentArea(res, icon, 'Dashboards');
+                        this.rightSidebarService.clearCurrentObject();
+                        this.rightSidebarService.clearButtons();
+                        this.rightSidebarService.showHeader(false);
+                });
+            }
 
         });
     }
@@ -92,8 +94,10 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
                 if (this.objectType && this.objectID && this.dashboardName) {
                     this.selected = this.dashboards[0];
                     this.showSingle = true;
+                    this.buildBreadcrumb(true);
+                } else {
+                    this.buildBreadcrumb(false);
                 }
-                this.buildBreadcrumb();
                 this.isLoading = false;
             }
         );
@@ -101,6 +105,6 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 
     setSelected(dashboard) {
         this.selected = dashboard;
-        this.buildBreadcrumb();
+        this.buildBreadcrumb(false);
     }
 }

@@ -9,8 +9,7 @@
                       [hasFilterMode]="true"
                       [filterMode]="showGridSimpleFilter"
                       (filterModeChange)="resetFilters($event)"></d3s-tile-actions>
-    <div (click)="toggleArtifactDetail()"
-         *ngIf="showArtifactDetails && artifactType && artifactType.Description"
+    <div *ngIf="showArtifactDetails && artifactType && artifactType.Description"
          [innerHtml]="artifactType.Description | safeHtml"
          style="text-transform:none;font-size:12px;font-weight:normal;margin-top:20px;"></div>
     <span *ngIf="artifactType && artifactType.Description"

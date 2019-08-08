@@ -8,7 +8,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
     selector: 'd3s-workflow-issue-details',
     template: `          
             <div class="row" *ngIf="!isLoading && issues.length > 0">
-                <header>Open Actions<d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
+                <header><d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12"> 
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
                     <p-table #dt [value]="issues" [scrollable]="true" scrollWidth="100%" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ActivityName','IssueTypeName','Body','Name','RaisedBy','DateStarted','EllapsedDays']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected">

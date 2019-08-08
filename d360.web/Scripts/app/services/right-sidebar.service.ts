@@ -33,8 +33,17 @@ export class RightSidebarService {
         this.currentAreaSource.next({ title: area, icon: icon, tabTitle:title });
     }
 
-    setCurrentObject(objectType: string, objectTypeID: number, objectName: string, objectID: number, isType: boolean, hasWorkFlow?: boolean) {
-        this.currentObjectSource.next({ objectType, objectTypeID, objectName, objectID, isType, hasWorkFlow: hasWorkFlow == undefined ? false : hasWorkFlow });
+    setCurrentObject(objectType: string, objectTypeID: number, objectName: string, objectID: number, isType: boolean, hasWorkFlow?: boolean, Uid?: string) {
+        this.currentObjectSource.next(
+            {
+                objectType,
+                objectTypeID,
+                objectName,
+                objectID,
+                isType,
+                hasWorkFlow: hasWorkFlow == undefined ? false : hasWorkFlow,
+                Uid: Uid == undefined ? undefined : Uid
+            });
     }
 
     clearCurrentObject() {
