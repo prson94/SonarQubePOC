@@ -9,48 +9,48 @@
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <span *ngIf="!isLoading">
                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                <p-table #dt [value]="tags" [globalFilterFields]="['Value']" [rowsPerPageOptions]="[10,20,50,100,200,500]" sortField="Value" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
-                    <ng-template pTemplate="header">
-                        <tr>
-                            <th style="width: 20px;">
-                                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                            </th>
-                            <th [pSortableColumn]="'Value'" style="width: 60%">
-                                Name
-                                <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
-                            </th>
-                            <th [pSortableColumn]="'UseCount'" style="width: 15%">
-                                Use count
-                                <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
-                            </th>
-                            <th style="width: 80px"></th>
-                        </tr>
-                        <tr [hidden]="showSimpleFilter">
-                            <th></th>
-                            <th><d3s-column-filter [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
-                            <th><d3s-column-filter [field]="'UseCount'" [datatype]="'number'"></d3s-column-filter></th>
-                            <th></th>
-                        </tr>
-                    </ng-template>
-                    <ng-template pTemplate="body" let-item >
-                        <tr [pSelectableRow]="item">
-                            <td class="enable-pointer-events">
-                                <p-tableCheckbox [value]="item"></p-tableCheckbox>
-                            </td>
-                            <td (click)="selectSingleItem(item);">{{item.Value}}</td>
-                            <td (click)="selectSingleItem(item);">{{item.UseCount}}</td>
-                            <td>
-                                <div class="RowTools">
-                                    <a style="cursor:pointer;" (click)="selectSingleItem(item);showEditor=true;"><i class="fa fa-pencil"></i></a>
-                                    <a style="cursor:pointer;" (click)="selectSingleItem(item);openDeleteModal();"><i class="fa fa-trash-o"></i></a>
-                                </div>
-                            </td>
-                        </tr>
-                    </ng-template>
-                    <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
-                        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                    </ng-template>
-                </p-table>
+                    <p-table #dt [value]="tags" [globalFilterFields]="['Value']" [rowsPerPageOptions]="[10,20,50,100,200,500]" sortField="Value" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th style="width: 20px;">
+                                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                                </th>
+                                <th [pSortableColumn]="'Value'" style="width: 60%">
+                                    Name
+                                    <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
+                                </th>
+                                <th [pSortableColumn]="'UseCount'" style="width: 15%">
+                                    Use count
+                                    <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
+                                </th>
+                                <th style="width: 80px"></th>
+                            </tr>
+                            <tr [hidden]="showSimpleFilter">
+                                <th></th>
+                                <th><d3s-column-filter [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'UseCount'" [datatype]="'number'"></d3s-column-filter></th>
+                                <th></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-item>
+                            <tr #el [pSelectableRow]="item">
+                                <td class="enable-pointer-events">
+                                    <p-tableCheckbox [value]="item"></p-tableCheckbox>
+                                </td>
+                                <td (click)="selectSingleItem($event,item, el);">{{item.Value}}</td>
+                                <td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
+                                <td (click)="selectSingleItem($event,item);">
+                                    <div class="RowTools">
+                                        <a style="cursor:pointer;" (click)="showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                        <a style="cursor:pointer;" (click)="openDeleteModal();"><i class="fa fa-trash-o"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+                            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                        </ng-template>
+                    </p-table>
             </span>
 
             <d3s-dynamic-editor [objectID]="selected[0]?.uid"

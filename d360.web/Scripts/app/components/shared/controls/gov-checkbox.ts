@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, SimpleChange, EventEmitter, OnInit, NgModule, OnChanges } from '@angular/core';
+﻿import { Input, Component, Output, SimpleChange, EventEmitter, OnInit, NgModule, OnChanges, ViewChild, ElementRef } from '@angular/core';
 import { SiteModalModule } from '../modal/gov-modal.module';
 
 
@@ -29,9 +29,12 @@ export class D3SCheckbox  {
 
     private isModalVisible: boolean = false;
     private changeInProgress: boolean = false;
+    @ViewChild("switch") _el: ElementRef;
 
     tryChangeValue(val: boolean) {
         this.changeInProgress = false;
+
+        this._el.nativeElement.focus();
 
         if (val == this.value) return;
         this.pendingValue = val;

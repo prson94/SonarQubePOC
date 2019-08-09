@@ -3167,7 +3167,7 @@ button.tab-scroller {
             font-size: 12px;
             padding: 15px;
             max-height: 253px;
-            overflow-y: scroll;
+            overflow-y: auto;
 
             .table-borderless {
                 margin: 0px;
@@ -3443,6 +3443,7 @@ button.tab-scroller {
         padding: 0 10px;
         border-radius: 3px;
         height: 30px;
+        color:black;
 
         &::-ms-clear {
             display: none;
@@ -3542,5 +3543,62 @@ button.tab-scroller {
 .enable-pointer-events {
     .ui-chkbox {
         pointer-events: all;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+// Switch
+///////////////////////////////////////////////////////
+
+.switch {
+    display: inline-flex;
+    position: relative;
+    flex-direction: row;
+    align-items: center;
+    box-sizing: border-box;
+    background: #f1f2f3;
+    border: 1px solid #cccccc;
+    border-radius: 3px;
+    height: 32px;
+    padding-top: 1px;
+
+    &::before {
+        display: inline-block;
+        content: ' ';
+        position: absolute;
+        top: 2px;
+        left: 52px;
+        width: 46px;
+        height: 26px;
+        background: #0971b9;
+        border-radius: 2px;
+        transition: left 150ms ease;
+    }
+
+    button {
+        position: relative;
+        background: none;
+        border: none;
+        height: 26px;
+        width: 50px;
+        text-align: center;
+        color: #202020;
+        cursor: pointer;
+        transition: color 150ms ease;
+
+        &:focus {
+            outline: none;
+            border: none;
+            box-shadow: none;
+        }
+    }
+
+    &.checked button.check, &:not(.checked) button.uncheck {
+        color: white;
+        cursor: default
+    }
+
+    &.checked::before {
+        left: 2px;
     }
 }
