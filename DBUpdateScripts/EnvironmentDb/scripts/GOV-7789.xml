@@ -31,4 +31,19 @@ end
 			]]>
     </rollback>
   </changeSet>
+  <changeSet author="kmcnamee" id="GOV-7789-dbstate">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+      <![CDATA[  
+      Grant view database state to GovernSqlReadOnly
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      Deny view database state to GovernSqlReadOnly
+			]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

@@ -38,7 +38,7 @@ import { Column, Header, MenuItem } from 'primeng/primeng';
         </ng-template>
         <ng-template pTemplate="body" let-item>
             <tr [pSelectableRow]="item">
-                <td>{{item['@FieldName']}}</td>
+                <td>{{item['@FieldName'] ? item['@FieldName'] :  item['@FieldLabel']}}</td>
                 <td>
                     {{(item['@Operator'] == 'C') ? 'value changed' : item['@Operator']}}
                 </td>

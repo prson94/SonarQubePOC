@@ -314,8 +314,8 @@ select	0 as ID,
 		null as AssetID,
         null as ParentID,
 		Name
-from	TaxonomyType
-where	ID = @ID
+from	AssetType
+where	ObjectID = @ID and Object ='TaxonomyType'
 union
 select	A.ObjectID as ID, 
         A.ID as AssetID,
@@ -871,23 +871,23 @@ where s.[object] = @type and s.[objectID] = @id and s.PredicateID = @predicateId
 
         public static string TaxonomySettingsItem = @"
 select	
-	T.ID,
+	T.ObjectID as ID,
 	T.Name,
 	T.Description,
-	T.MaximumDepth,
+	T.HierarchyMaximumDepth as MaximumDepth,
 	T.UpdatedOn,
 	T.UpdatedBy,
 	A.AllowAttributes,
 	S.AllowSynonyms,
     (select cast(count(1) as bit) from report r where r.ObjectType = 'TaxonomyType' and r.ObjectID = @id and r.ReportType != 'legacy') as HasDashboards	
-from	TaxonomyType T
+from	AssetType T
 		cross apply (
 					select	case 
 								when count(1) > 0 then cast(1 as bit)
 								else cast(0 as bit)
 							end as AllowAttributes
 					from	AttributeTypeRelation
-					where	ObjectType = 'TaxonomyType' and ObjectID = T.ID
+					where	ObjectType = 'TaxonomyType' and ObjectID = T.ObjectID
 					) A
 		cross apply (
 					select	case 
@@ -901,7 +901,7 @@ from	TaxonomyType T
 								where	(IT.Subject = 'TaxonomyType' and IT.SubjectID = @id) OR (IT.Object = 'TaxonomyType' and IT.ObjectID = @id)
 							) O
 					) S
-where	T.ID = @id";
+where	T.ObjectID = @id and T.Object='TaxonomyType'";
 
         
 

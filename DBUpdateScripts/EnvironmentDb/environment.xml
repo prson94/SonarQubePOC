@@ -268,5 +268,7 @@
   <include file="scripts/GOV-7831.xml"/>
   <include file="scripts/GOV-7463-3.xml"/>
   <include file="scripts/GOV-7464-5.xml"/>
+  <include file="scripts/GOV-4864.xml"/>
+  <include file="scripts/GOV-4857.xml"/>
   <include file="scripts/GOV-7685.xml"/>
 </databaseChangeLog>
