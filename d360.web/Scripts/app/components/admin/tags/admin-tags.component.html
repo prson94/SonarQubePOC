@@ -23,7 +23,7 @@
                                 Use count
                                 <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
                             </th>
-                            <th style="width: 80px"></th>
+                            <th style="width: 110px"></th>
                         </tr>
                         <tr [hidden]="showSimpleFilter">
                             <th></th>
@@ -41,6 +41,7 @@
                             <td (click)="selectSingleItem(item);">{{item.UseCount}}</td>
                             <td>
                                 <div class="RowTools">
+                                    <a style="cursor:pointer;" (click)="openTagDetails(item);"><i class="fa fa-info"></i></a>
                                     <a style="cursor:pointer;" (click)="selectSingleItem(item);showEditor=true;"><i class="fa fa-pencil"></i></a>
                                     <a style="cursor:pointer;" (click)="selectSingleItem(item);openDeleteModal();"><i class="fa fa-trash-o"></i></a>
                                 </div>
