@@ -14087,12 +14087,12 @@ order by	case
                 var sType = SystemObjects.Taxonomy.ToString();
                 
 
-                //if (parentID > 0)
-                //{
+                if (parentID > 0)
+                {
                     var intersect = Company.Filter<Intersect>(i =>
                         i.Subject == sType &&
                         i.Object == sType &&
-                        i.ObjectID == model.ID &&
+                        i.ObjectID == model.ObjectID &&
                         i.IntersectType.Predicate.Type == PredicateType.IntraTypeHierarchy
                     ).SingleOrDefault();
 
@@ -14126,7 +14126,7 @@ order by	case
                             Company.Add(intersect);
                         }
                     }
-                //}
+                }
 
                 dynamic custom = new
                 {
