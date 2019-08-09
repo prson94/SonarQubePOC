@@ -2752,6 +2752,12 @@ button.tab, button.tab-scroller {
 
     &.selected {
         border-bottom: 3px solid @igx-blue;
+        cursor: default;
+        background: none;
+
+        &:hover {
+            background: none !important;
+        }
     }
 
     &:not(:disabled) {

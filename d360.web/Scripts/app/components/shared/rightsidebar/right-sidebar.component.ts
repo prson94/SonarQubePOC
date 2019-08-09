@@ -62,7 +62,7 @@ declare var CurrentResourceID;
                                 <button class="tab" 
                                         [ngClass]="{'selected':item.active}" 
                                         *ngFor="let item of items; trackBy: trackById" 
-                                        (click)="item.active=!item.active;itemClicked(item);">
+                                        (click)="itemClicked(item);">
                                             {{item.title}}
                                         <span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span>
                                         <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon" [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
@@ -90,7 +90,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     items: RightSidebarItem[];  
     buttons: DynamicButton[];
-    hostUrl: string;
+    homeUrl: string;
     area: any = {icon:'fa-folder',title: ''};
     @Input() menuOpen: boolean;
     @Output() changed = new EventEmitter();
@@ -173,13 +173,13 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.subscription = this.rightSidebarService.rightSidebar$.subscribe(
             item => {
                 this.items.push(item);
-                this.items = _.sortBy(this.items, 'title').reverse(); this.emitChanges();
+                this.items = _.sortBy(this.items, 'orderPriority'); this.emitChanges();
             });
 
         this.buttonSubscription = this.rightSidebarService.rightSidebarButton$.subscribe(
             button => {
                 this.buttons.push(button);
-                this.buttons = _.sortBy(this.buttons, 'orderPriority'); this.emitChanges();
+                this.buttons = _.sortBy(this.buttons, 'text'); this.emitChanges();
             });
         this.buttonSubscriptionClear = this.rightSidebarService.rightSidebarButtonClear$.subscribe(
             item => {
@@ -282,30 +282,17 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         return item.tag;
     }
     
-    itemClicked(item: RightSidebarItem) {   
-
-        if (item.active) {
-            //look for any other already active items and fire click for them
-            let isFirstItemOpen = true;
-            for (let ritem of this.items) {                
-                if (ritem.active && ritem.title != item.title) {
-                    this.rightSidebarService.itemClicked(ritem);
-                    ritem.active = false;
-                    isFirstItemOpen = false;                     
-                }
-            }            
-            if (isFirstItemOpen) this.hostUrl = this.router.url;            
-            this.rightSidebarService.itemClicked(item);
-            if (item.hasDynamicUrl) this.router.navigateByUrl(item.dynamicUrlCallback());
-            else if (item.url) this.router.navigateByUrl(item.url);
-        }        
-        else {
-            //return to previous url if the item is a url otherwise fire click event            
-            if (item.url)
-                this.router.navigateByUrl(this.hostUrl);
-            else
-                this.rightSidebarService.itemClicked(item);
+    itemClicked(item: RightSidebarItem) {
+        if (this.AllClosed()) this.homeUrl = this.router.url;
+        this.closeAll();
+        if (item.title == "homeClick") {
+            this.router.navigateByUrl(this.homeUrl);
+            return;
         }
+        item.active = true;
+        if (item.hasDynamicUrl) this.router.navigateByUrl(item.dynamicUrlCallback());
+        else if (item.url) this.router.navigateByUrl(item.url);
+        this.rightSidebarService.itemClicked(item);        
         this.AllClosed();
     }     
 
@@ -313,6 +300,15 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         let count = this.items.filter(x => x.active == true).length;
         
         return count == 0;
+    }
+
+    closeAll() {
+        for (let ritem of this.items) {
+            if (ritem.active) {
+                ritem.active = false;
+                this.rightSidebarService.itemClicked(ritem);
+            }
+        }
     }
 
     IsIcon(icon: string) {

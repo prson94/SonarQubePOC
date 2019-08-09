@@ -53,6 +53,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
         this.rightSidebarService.clearItems();
         this.rightSidebarService.clearButtons();
+        this.rightSidebarService.clearCurrentObject();
         this.rightSidebarService.setCurrentArea('Search', 'fa-database', null);
         this.rightSidebarService.showHeader(true);
 
