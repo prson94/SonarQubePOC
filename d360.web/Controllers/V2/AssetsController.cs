@@ -384,7 +384,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-      
+
 
         /// <summary>
         /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
@@ -398,11 +398,12 @@ namespace d360.web.Controllers.V2
         /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
+        /// <param name="triggersWorkflow">Optional parameter allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
-            Route("{assetTypeUid:Guid}"),
+            Route("{assetTypeUid:Guid}/{triggersWorkflow:bool?}"),
             SwaggerRequestExample(typeof(AssetInsert), typeof(AssetInsertsExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
@@ -410,13 +411,13 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostAssetsAsync(Guid assetTypeUid, List<AssetInsert> assets)
+        public async Task<IHttpActionResult> PostAssetsAsync(Guid assetTypeUid, List<AssetInsert> assets, bool triggersWorkflow = true)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
 
             var prefix = "Assets.PostBulkAssetsAsync => ";
-            var errorMessage = "";
+            var errorMessage = "";            
 
             try
             {
@@ -445,7 +446,7 @@ namespace d360.web.Controllers.V2
                 {
                 }
 
-                var results = AssetRepository.PostAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel);
+                var results = AssetRepository.PostAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel, triggersWorkflow);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -475,11 +476,12 @@ namespace d360.web.Controllers.V2
         /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
+        /// <param name="triggersWorkflow">Optional parameter allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPut,
-            Route("{assetTypeUid:Guid}"),
+            Route("{assetTypeUid:Guid}/{triggersWorkflow:bool?}"),
             SwaggerRequestExample(typeof(AssetUpdate), typeof(AssetUpdatesExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
@@ -487,14 +489,14 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutAssetsAsync(Guid assetTypeUid, List<AssetUpdate> assets)
+        public async Task<IHttpActionResult> PutAssetsAsync(Guid assetTypeUid, List<AssetUpdate> assets, bool triggersWorkflow = true)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to update assets of this type."));
 
             var prefix = "Assets.PutAssetsAsync => ";
             var errorMessage = "";
-
+            
             try
             {
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
@@ -522,7 +524,7 @@ namespace d360.web.Controllers.V2
                 {
                 }
 
-                var results = AssetRepository.PutAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel);
+                var results = AssetRepository.PutAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel, triggersWorkflow);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
@@ -551,24 +553,25 @@ namespace d360.web.Controllers.V2
         /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
+        /// <param name="triggersWorkflow">Optional parameter allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
-            Route("{assetTypeUid:Guid}"),
+            Route("{assetTypeUid:Guid}/{triggersWorkflow:bool?}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk asset results, including any error messages.", typeof(List<DatabaseBulkAssetResult>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteAssetsAsync(Guid assetTypeUid, AssetDeletes assets)
+        public async Task<IHttpActionResult> DeleteAssetsAsync(Guid assetTypeUid, AssetDeletes assets, bool triggersWorkflow = true)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
 
             var prefix = "Assets.DeleteAssetsAsync => ";
-            var errorMessage = "";
+            var errorMessage = "";            
 
             try
             {
@@ -587,7 +590,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} assets in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
                 var execution = getApiExecution(assets.Count, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid });
-                List<DatabaseBulkAssetResult> results = AssetRepository.DeleteAsset(assets, assetType, execution);
+                List<DatabaseBulkAssetResult> results = AssetRepository.DeleteAsset(assets, assetType, execution, triggersWorkflow);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
