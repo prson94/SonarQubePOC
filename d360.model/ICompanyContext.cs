@@ -312,5 +312,7 @@ namespace d360.model
         Task BulkLoadAssets(Load load, IAssetRepository repository);
 
         void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1);
+
+        void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName);
     }
 }

@@ -7,6 +7,7 @@ import { TagType } from '../../../models/tag.model';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { forEach } from '@angular/router/src/utils/collection';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+declare var CompanySettings;
 
 @Component({
     selector: 'd3s-admin-tags',
@@ -181,7 +182,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.tagsService.setTaggingStatus(state)
             .subscribe(result => {
                 if (result)
-                    this.messagesService.showInfoMessage("Success", "Tagging status successfully changed!");
+                    this.messagesService.showInfoMessage("Success", `Tagging status successfully changed to '${state}'!`);
+                    CompanySettings["EnableTagging"] = state.toString();
             }
                 , err => {
                     this.showMessageForResult(this.messagesService, err);

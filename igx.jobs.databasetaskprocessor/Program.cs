@@ -411,6 +411,10 @@ from    [queue].[Task] T
                                                 case "TagConsolidated":
                                                     addAuditEntry(companyConnection, q.Object, q.ObjectID, "Tag Consolidate", q.Custom, q.AssetID);
                                                     break;
+                                                case "CompanySettingsUpdate":
+                                                    addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update settings", q.Custom, q.AssetID);
+
+                                                    break;
                                             }
 
 
@@ -510,20 +514,42 @@ from    [queue].[Task] T
             {
                 var customXml = XElement.Parse(custom);
 
-                companyConnection.Execute(
-                        "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
-                        new
-                        {
-                            Object = @object,
-                            ObjectID = objectID,
-                            ParentObject = customXml.Element("ActionObject").Value,
-                            date = DateTime.UtcNow,
-                            ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
-                            ResourceID = int.Parse(customXml.Element("ResourceID").Value),
-                            op = oper
-                        },
-                        null,
-                        600);    // 5 minute timeout.
+                //ActionObjectValue holds new value, as target is not in company table
+                if (custom.Contains("ActionObjectValue"))
+                {
+                    companyConnection.Execute(
+                    "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID,@NewValue",
+                    new
+                    {
+                        Object = @object,
+                        ObjectID = objectID,
+                        ParentObject = customXml.Element("ActionObject").Value,
+                        date = DateTime.UtcNow,
+                        ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
+                        ResourceID = int.Parse(customXml.Element("ResourceID").Value),
+                        op = oper,
+                        NewValue = customXml.Element("ActionObjectValue").Value
+                    },
+                    null,
+                    600);
+                }
+                else
+                {
+                    companyConnection.Execute(
+                            "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID",
+                            new
+                            {
+                                Object = @object,
+                                ObjectID = objectID,
+                                ParentObject = customXml.Element("ActionObject").Value,
+                                date = DateTime.UtcNow,
+                                ParentObjectID = int.Parse(customXml.Element("ActionObjectID").Value),
+                                ResourceID = int.Parse(customXml.Element("ResourceID").Value),
+                                op = oper
+                            },
+                            null,
+                            600);    // 5 minute timeout.
+                }
             }
         }
     }

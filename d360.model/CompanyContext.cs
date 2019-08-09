@@ -2870,7 +2870,18 @@ select @err";
             return homePage?.Route ?? "";
         }
 
-
+        public void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName)
+        {
+            string xml = $@"<fields><Action>{actionName}</Action>
+                            <ActionObject>EnableTagging</ActionObject>     
+                            <ActionObjectID>{companySetting.SettingID}</ActionObjectID>  
+                            <ActionObjectValue>{companySetting.Value}</ActionObjectValue>
+                            <ResourceID>{CurrentResourceID}</ResourceID>
+                        </fields>";
+            var sql = $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
+                         VALUES ('{actionName}','CompanySettings',{companySetting.SettingID},'{xml}')";
+            Query<int>(sql).FirstOrDefault();
+        }
         #endregion
 
         #region Dynamic Field Methods

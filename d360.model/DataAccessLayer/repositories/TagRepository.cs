@@ -12,9 +12,11 @@ namespace d360.model.DataAccessLayer
     public class TagRepository : ITagRepository
     {
         ICompanyContext companyContext;
-        public TagRepository(ICompanyContext context)
+        ICommunityContext communityContext;
+        public TagRepository(ICompanyContext company, ICommunityContext community)
         {
-            this.companyContext = context;
+            this.companyContext = company;
+            this.communityContext = community;
         }
 
         public bool DeleteTags(List<TagApiDeleteModel> model)
@@ -207,8 +209,8 @@ namespace d360.model.DataAccessLayer
             }
 
 
-           return await companyContext.QueryAsync<dynamic>(sql, dbArgs);
-  
+            return await companyContext.QueryAsync<dynamic>(sql, dbArgs);
+
         }
 
         public TagApiModel CreateTag(TagApiModel model)
@@ -247,7 +249,7 @@ namespace d360.model.DataAccessLayer
             companyContext.Entry(existingTag).State = System.Data.Entity.EntityState.Modified;
 
             companyContext.SaveChanges();
-            AddTagAudit(existingTag,"Update");
+            AddTagAudit(existingTag, "Update");
             var updateUser = companyContext.GlobalReportingResources.First(x => x.ResourceID == companyContext.CurrentResourceID);
 
             var createUser = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == existingTag.CreatedBy);
@@ -297,7 +299,7 @@ namespace d360.model.DataAccessLayer
             var result = companyContext.Query<dynamic>(sql, new { uid = tagUid }).ToList();
 
             var ret = new List<AssetTagList>();
-            foreach(var item in result)
+            foreach (var item in result)
             {
                 var atl = new AssetTagList();
                 ret.Add(atl);
@@ -387,7 +389,7 @@ namespace d360.model.DataAccessLayer
         {
             string value = "";
             Guid exceptUid = Guid.Empty;
-            foreach(var queryitem in queryParams)
+            foreach (var queryitem in queryParams)
             {
                 switch (queryitem.Key.ToLower())
                 {
@@ -425,12 +427,34 @@ namespace d360.model.DataAccessLayer
 
         public bool SetTaggingStatus(bool state)
         {
-            throw new NotImplementedException();
+            var settingId = communityContext.Settings.FirstOrDefault(x => x.FieldName == "EnableTagging")?.ID;
+            if (settingId == null)
+                throw new Exception("Setting 'EnableTagging' is missing from community database!");
+
+            var companySetting = communityContext.CompanySettings.FirstOrDefault(x => x.CompanyID == companyContext.CurrentCompanyID && x.SettingID == settingId);
+
+            if (companySetting == null)
+            {
+                companySetting = new CompanySetting();
+                companySetting.CompanyID = companyContext.CurrentCompanyID;
+                companySetting.SettingID = (int)settingId;
+                communityContext.CompanySettings.Add(companySetting);
+            }
+
+            companySetting.Value = state.ToString().ToLower();
+            if (communityContext.SaveChanges() > 0)
+            {
+                companyContext.AddAuditForCompanySettingChange(companySetting, "CompanySettingsUpdate");
+            }
+            else return false;
+
+
+            return true;
         }
 
-        public bool DoesAssetTagExists(int tagId,long assetId)
+        public bool DoesAssetTagExists(int tagId, long assetId)
         {
-            return  companyContext.AssetTags.Any(x => x.TagID ==tagId && x.AssetID == assetId);
+            return companyContext.AssetTags.Any(x => x.TagID == tagId && x.AssetID == assetId);
         }
 
 
@@ -441,8 +465,8 @@ namespace d360.model.DataAccessLayer
 
             var assetTag = new AssetTag()
             {
-               TagID=tagId,
-               AssetID=assetId
+                TagID = tagId,
+                AssetID = assetId
 
             };
 
@@ -453,11 +477,11 @@ namespace d360.model.DataAccessLayer
 
         public AssetTag GetAssetTag(int tagId, long assetId)
         {
-            return  companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
+            return companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
         }
         public bool DeleteAssetTag(int tagId, long assetId)
         {
-            AssetTag tag= companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
+            AssetTag tag = companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
             return companyContext.Delete<AssetTag>(tag);
         }
 
@@ -468,7 +492,7 @@ namespace d360.model.DataAccessLayer
             if (!hasPersmission)
             {
                 AssetTag tag = companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
-                if(tag != null)
+                if (tag != null)
                     hasPersmission = tag.CreatedBy == companyContext.CurrentResourceID;
             }
 
@@ -476,7 +500,7 @@ namespace d360.model.DataAccessLayer
             {
                 hasPersmission = companyContext.HasAssetPermission(assetId, Permission.ModifyAsset);
             }
-                return hasPersmission;
+            return hasPersmission;
         }
 
     }
