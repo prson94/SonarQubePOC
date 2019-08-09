@@ -31,7 +31,6 @@
             <span class="content">{{button.text}}</span>
             <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>
         </button>
-
         <div class="asset-actions" *ngIf="assetAction && assetAction.isVisible">
             <span class="grow"></span>
             <button *ngIf="assetAction.showBack" (click)="assetAction.backCallback()" class="button"><i class="fa fa-arrow-left"></i>Back</button>
@@ -74,10 +73,11 @@
                         (click)="item.active=!item.active;itemClicked(item);">
                     {{item.title}}
                     <span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span>
-                    <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon bad">{{statistics?.IssueCount}}</span>
+                    <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon" [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
                 </button>
             </div>
             <button *ngIf="showScrollButtons" class="right tab-scroller" (click)="scroll('R')"><i class="fa fa-chevron-circle-right"></i></button>
         </div>
     </div>
 </div>
+

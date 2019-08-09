@@ -19,60 +19,8 @@ declare var CompanySettings
 declare var CurrentResourceID;
 
 @Component({
-    selector: 'd3s-right-sidebar',      
-    template: ` <div *ngIf="showHeader" class="title-bar" [ngClass]="{'menu-open': menuOpen}">
-                    <div class="title">
-                         <img class="icon" *ngIf="!IsIcon(area.icon)" [src]="GetURL(area.icon)"  height="20" width="20" />
-                         <i *ngIf="IsIcon(area.icon)" [class]="'icon fa ' + area.icon"></i>
-                        <h1 title="{{area.title ? area.title: 'D3S'}}">{{area.title ? area.title: 'D3S'}}</h1>
-                        <span #badge *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon"
-                                title="{{lastCalculatedMessage()}}"
-                                (click)="OpenScoring()"
-                                [ngClass]="{
-                                    'bad':scoreBetween(0,49),
-                                    'ok':scoreBetween(50,89),
-                                    'good':scoreBetween(90,1000)
-                                }">
-                            <d3s-dynamic-percentage [innerCircleColor]="getColor(badge)" [percentage]="statistics?.Score"></d3s-dynamic-percentage> 
-                             <span class="text">{{statistics?.Score}}%</span>
-                        </span> 
-                        <ng-template #noScore>
-                            <span #noScoreBadge *ngIf="currentObject && !currentObject?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon">
-                                <d3s-dynamic-percentage [innerCircleColor]="getColor(noScoreBadge)" [percentage]="0"></d3s-dynamic-percentage> 
-                                <span class="text">N/A</span>
-                            </span>
-                        </ng-template>
-                        <span *ngIf="showStatus" class="d3s-icon large-icon" [style.background-color]="getCertificationStatusColor(status)">
-                            <i class="fa fa-certificate"></i>
-                            <span class="text">{{status}}</span>
-                        </span>
-                        <span class="grow"></span>
-                        <button class="button" *ngIf="showCertify" (click)="requestCertification()"><i class="fa fa-certificate"></i><span>Request Certification</span></button>
-                        <button class="primary button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span>Take Survey</span></button>
-                        <button *ngFor="let button of buttons" (click)="button.dynamicCallback()" [ngClass]="{'loading': button.isLoading}"  class="primary button" [disabled]="button.disabled">
-                            <span class="content">{{button.text}}</span>
-                            <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>    
-                        </button>
-                    </div>
-                    <div *ngIf="items && items.length > 0" class="tab-view">
-                        <div class="tab-bar-outer">
-                            <button *ngIf="showScrollButtons" class="left tab-scroller" (click)="scroll('L')"><i class="fa fa-chevron-circle-left"></i></button>
-                            <div #tabScroller class="tab-bar can-overflow" [ngStyle]="{'margin-left.px': showScrollButtons ? 40 : 0,'margin-right.px': showScrollButtons ? 40 : 0}">
-                                <button class="tab" [ngClass]="{'selected':AllClosed()}" (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">{{area.tabTitle}}</button>
-                                <button class="tab" 
-                                        [ngClass]="{'selected':item.active}" 
-                                        *ngFor="let item of items; trackBy: trackById" 
-                                        (click)="item.active=!item.active;itemClicked(item);">
-                                            {{item.title}}
-                                        <span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span>
-                                        <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon" [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
-                                </button>
-                            </div>
-                            <button *ngIf="showScrollButtons" class="right tab-scroller" (click)="scroll('R')"><i class="fa fa-chevron-circle-right"></i></button>
-                        </div>
-                    </div>
-                </div>
-              `,
+    selector: 'd3s-right-sidebar',
+    templateUrl: 'right-sidebar.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
     host: { '(window:resize)': 'checkSize()' }
