@@ -611,7 +611,7 @@
     <Content Include="Scripts\app\31.chunk.js" />
     <Content Include="Scripts\app\32.chunk.js" />
     <Content Include="Scripts\app\33.chunk.js" />
-    <Content Include="Scripts\app\36.chunk.js" />
+    <Content Include="Scripts\app\34.chunk.js" />
     <Content Include="Scripts\app\37.chunk.js" />
     <Content Include="Scripts\app\38.chunk.js" />
     <Content Include="Scripts\app\39.chunk.js" />
@@ -639,7 +639,6 @@
     <Content Include="Scripts\app\59.chunk.js" />
     <Content Include="Scripts\app\6.chunk.js" />
     <Content Include="Scripts\app\60.chunk.js" />
-    <Content Include="Scripts\app\61.chunk.js" />
     <Content Include="Scripts\app\7.chunk.js" />
     <Content Include="Scripts\app\8.chunk.js" />
     <Content Include="Scripts\app\9.chunk.js" />
