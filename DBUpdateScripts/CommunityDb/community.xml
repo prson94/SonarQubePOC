@@ -7,6 +7,7 @@
 
     <include file="scripts/d3s-schema.xml"/>
 	<include file="scripts/GOV-5832.xml"/>
+	<include file="scripts/GOV-7783.xml"/>
 	<include file="scripts/GOV-6152-FusionTypeDefinitions.xml"/>
 	<include file="scripts/GOV-6180.xml"/>
 	<include file="scripts/GOV-6186-FusionTypeFieldDefinitions.xml"/>
@@ -35,5 +36,4 @@
   <include file="scripts/GOV-7540.xml"/>
   <include file="scripts/GOV-7706.xml"/>
   <include file="scripts/GOV-7730.xml"/>
-  <include file="scripts/GOV-7783.xml"/>
 </databaseChangeLog>
