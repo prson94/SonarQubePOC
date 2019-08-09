@@ -25,7 +25,7 @@ declare var CurrentResourceID;
                          <img class="icon" *ngIf="!IsIcon(area.icon)" [src]="GetURL(area.icon)"  height="20" width="20" />
                          <i *ngIf="IsIcon(area.icon)" [class]="'icon fa ' + area.icon"></i>
                         <h1 title="{{area.title ? area.title: 'D3S'}}">{{area.title ? area.title: 'D3S'}}</h1>
-                        <span #badge *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon"
+                        <span #badge *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon clickable"
                                 title="{{lastCalculatedMessage()}}"
                                 (click)="OpenScoring()"
                                 [ngClass]="{

@@ -121,6 +121,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
                             if (this.impactSidebar) {
                                 this.impactSidebar.hasDynamicUrl = true;
+                                this.impactSidebar.orderPriority = 2;
                                 this.impactSidebar.dynamicUrlCallback = (() => {
                                     return `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceListId}`
                                 });
@@ -128,6 +129,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
                             if (this.relationsSidebar) {
                                 this.relationsSidebar.hasDynamicUrl = true;
+                                this.relationsSidebar.orderPriority = 3;
                                 this.relationsSidebar.dynamicUrlCallback = (() => {
                                     return `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceListId}`
                                 });
@@ -147,6 +149,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                                 fields.tag = 'fields'
                                 fields.title = 'Field Definitions'
                                 fields.url = '/sidebar/fields'
+                                fields.orderPriority = 1;
                                 fields.dynamicUrlCallback = (() => {
                                     return `/sidebar/fields/ReferenceItemType/${this.selectedReferenceListId}`
                                 });
@@ -161,6 +164,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                                 permissions.tag = 'responsibilities'
                                 permissions.title = 'Responsibilities'
                                 permissions.url = '/sidebar/responsibilities'
+                                permissions.orderPriority = 4;
                                 permissions.dynamicUrlCallback = (() => {
                                     return `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`
                                 });
