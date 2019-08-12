@@ -3122,11 +3122,12 @@
             </summary>        
             <returns>A list of tags</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.TagsController.DeleteById(System.Guid)">
+        <member name="M:d360.web.Controllers.V2.TagsController.DeleteById(System.Guid,System.Boolean)">
             <summary>
             Allows you to remove a tag based on its Uid.
             </summary>
             <param name="uid">The public identifier for the tag.</param>
+            <param name="cascade">Cascade delete to all related data.</param>
             <returns>A status for the DELETE request.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.PostTag(d360.core.entities.TagApiModel)">

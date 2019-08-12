@@ -20,26 +20,37 @@ namespace d360.model.DataAccessLayer
 
         public bool DeleteTags(List<TagApiDeleteModel> model)
         {
+            IEnumerable<Guid> tagUids = model.Select(m => m.uid);
+
+            List<Tag> tagsToDelete = companyContext.Tags.Where(x => tagUids.Contains(x.uid)).ToList();
+
             foreach (var item in model)
             {
-                DeleteTag(item.uid);
+                DeleteTag(item.uid, item.cascade, ref tagsToDelete);
             }
-            return true;
+
+            var result = companyContext.SaveChanges() > 0;
+            if (result)
+            {
+                AddTagAudit(tagsToDelete, "Delete");
+            }
+
+            return result;
         }
 
-        public bool DeleteTag(Guid uid)
+        private void DeleteTag(Guid uid, bool cascade, ref List<Tag> tagsToDelete)
         {
-            var model = companyContext.Filter<Tag>(i => i.uid == uid).SingleOrDefault();
-
-            if (model == null && model.State != State.Deleted) return false;
-
-            model.State = State.Deleted;
-            AddTagAudit(model, "Delete");
+            var model = tagsToDelete.FirstOrDefault(i => i.uid == uid);
+            if (model == null && model.State != State.Deleted)
+                throw new Exception($"Tag with uid '{uid}' does not exists!");
 
             var assetTagsForDeletion = companyContext.AssetTags.Where(x => x.TagID == model.ID);
-            companyContext.AssetTags.RemoveRange(assetTagsForDeletion);
 
-            return companyContext.SaveChanges() > 0;
+            if (assetTagsForDeletion.Count() > 0 && !cascade)
+                throw new Exception($"Tag with uid '{uid}' have related assets. Use cascade='true' to delete this tag!");
+
+            model.State = State.Deleted;
+            companyContext.AssetTags.RemoveRange(assetTagsForDeletion);
         }
 
         public async Task<TagApiModelWrapper> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams)
@@ -449,12 +460,25 @@ namespace d360.model.DataAccessLayer
         }
 
 
+        private void AddTagAudit(List<Tag> tags, string action)
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var tag in tags)
+                sb.AppendLine(GetAuditQuery(tag, action));
+
+            companyContext.Query<int>(sb.ToString()).FirstOrDefault();
+        }
 
         private void AddTagAudit(Tag tag, string action)
         {
-            var sql = $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
-                         VALUES ('{action}','Tag',{tag.ID},[queue].WriteIndexXml('', 'Tag', {tag.ID}, coalesce({companyContext.CurrentResourceID}, 0)))";
+            string sql = GetAuditQuery(tag, action);
             companyContext.Query<int>(sql).FirstOrDefault();
+        }
+
+        private string GetAuditQuery(Tag tag, string action)
+        {
+            return $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
+                         VALUES ('{action}','Tag',{tag.ID},[queue].WriteIndexXml('', 'Tag', {tag.ID}, coalesce({companyContext.CurrentResourceID}, 0)))";
         }
 
         public bool SetTaggingStatus(bool state)
