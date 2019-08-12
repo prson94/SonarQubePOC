@@ -405,15 +405,17 @@ begin
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionAttributeType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 
 			
+			delete A
+			from	Asset A
+					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'PolicyType' and A.[Object] = 'Policy'
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.AssetTypeID = ATT.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+					
 			
 			delete T
 			from	AssetType T
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 
-			delete A
-			from	Asset A
-					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'PolicyType' and A.[Object] = 'Policy'
-					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.AssetTypeID = ATT.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
 
 			
 
@@ -435,14 +437,17 @@ begin
 			from	RuleType A
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'RuleType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 
-			delete T
-			from	AssetType T
-					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
+			
 			delete A
 			from	Asset A
 					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType' and A.[Object] = 'Taxonomy'
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.AssetTypeID = ATT.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+					
+			delete T
+			from	AssetType T
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			
 
 			delete	T
 			from	Asset T
