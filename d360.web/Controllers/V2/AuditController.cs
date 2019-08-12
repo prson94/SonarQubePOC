@@ -28,11 +28,28 @@ namespace d360.web.Controllers.V2
         Authorize,
         ApiExplorerSettings(IgnoreApi = true)
     ]
-    public class AuditController: BaseV2ApiController
+    public class AuditController : BaseV2ApiController
     {
         public AuditController(ICommunityContext community, ICompanyContext company) : base(community, company)
         {
 
+        }
+
+        [
+    HttpGet,
+    Route("{type}/{uid}/auditcombined.json")
+]
+        public async Task<IHttpActionResult> AuditCombined(SystemObjects type, Guid uid, string sortDataField, string sortOrder, int pagenum, int pagesize)
+        {
+            try
+            {
+                int id = Company.GetObjectId(uid, type);
+                return await AuditCombined(type, id, sortDataField, sortOrder, pagenum, pagesize);
+            }
+            catch
+            {
+                throw new HttpResponseException(HttpStatusCode.InternalServerError);
+            }
         }
 
         [
@@ -56,17 +73,20 @@ namespace d360.web.Controllers.V2
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
                                      fa.[Version] as 'Version',	                            
-                                  ( select			
+                                 									 CASE 
+									      WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
+										  ELSE ( select			
                                 top 1 fa_sub.value as 'value'			                            
                                from reporting.global_fieldaudit fa_sub
                                 inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
-                               where ga_sub.[object] = ga.[object] and ga_sub.[objectid] = ga.[objectid] and fa_sub.version = (fa.Version -1) and fa_sub.fieldname = fa.FieldName and fa_sub.fieldtypeid = fa.FieldTypeId and ga_sub.actionObjectId=ga.actionObjectId) as 'PreviousValue'
+                               where ga_sub.[object] = ga.[object] and ga_sub.[objectid] = ga.[objectid] and fa_sub.version = (fa.Version -1) and fa_sub.fieldname = fa.FieldName and fa_sub.fieldtypeid = fa.FieldTypeId and ga_sub.actionObjectId=ga.actionObjectId)
+									 END AS 'PreviousValue'    
 
                             from reporting.global_audit ga 
         left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
                                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId";
 
-                if(id == 0)
+                if (id == 0)
                 {
                     querySql = @"select 	                            
                                    ga.*,
@@ -122,8 +142,8 @@ namespace d360.web.Controllers.V2
                 if (type == SystemObjects.ReferenceItemType)
                 {
                     var sqlRefItems = "select a.objectid from [dbo].[asset] a inner join [dbo].[assettype] att on ( a.assettypeid = att.id) where att.[object] = 'ReferenceItemType' and att.ObjectID = @id";
-                    var referenceItemTypeIDs = await Company.Database.Connection.QueryAsync<int>(sqlRefItems, new { id});
-                  
+                    var referenceItemTypeIDs = await Company.Database.Connection.QueryAsync<int>(sqlRefItems, new { id });
+
                     querySql += @" UNION
                                     select 	                            
                                    ga.*,
@@ -161,16 +181,16 @@ namespace d360.web.Controllers.V2
 
                 var stFieldType = sortDataField == null || sortDataField == "Date" ? "DateTime" : "string";
 
-                sql = base.applySortSuffix(sql, Request, "Date","desc", stFieldType);
+                sql = base.applySortSuffix(sql, Request, "Date", "desc", stFieldType);
                 sql = base.applyPagingSuffix(sql, Request);
 
                 var query = Company.Query<dynamic>(sql, dbArgs);
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { total, results = query })));                
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { total, results = query })));
             }
-            catch 
+            catch
             {
-                throw new  HttpResponseException(HttpStatusCode.InternalServerError);
+                throw new HttpResponseException(HttpStatusCode.InternalServerError);
             }
         }
 
@@ -206,14 +226,14 @@ namespace d360.web.Controllers.V2
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
-            sql = base.applyFilteringSuffix(sql, Request);            
+            sql = base.applyFilteringSuffix(sql, Request);
             sql = base.applySortSuffix(sql, Request, "Date", "desc", "DateTime");
 
 
             var dbArgs = new Dapper.DynamicParameters();
             dbArgs.Add("objType", new DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 });
             dbArgs.Add("objId", id);
-                       
+
 
             var query = Company.Query<dynamic>(sql, dbArgs);
 

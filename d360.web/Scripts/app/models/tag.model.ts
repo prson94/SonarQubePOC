@@ -26,4 +26,19 @@ export enum TagTypeState {
     PendingDelete = 2,
     Deleted = 3,
     InActive = 4
+} 
+
+export class TagDetail {
+    DisplayValue: string;
+    AssetId: number;
+    AssetType: string;
+    AssetTypeName: string;
+    Object: string;
+    ObjectID: number;
+    TagsAsString: string;
+    Tags: TagItem[];
+}
+export class TagItem {
+    Uid: number;
+    Value: string;
 }
