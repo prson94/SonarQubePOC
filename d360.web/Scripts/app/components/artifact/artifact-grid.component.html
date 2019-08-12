@@ -11,15 +11,11 @@
                       (filterModeChange)="resetFilters($event)"></d3s-tile-actions>
     <div *ngIf="showArtifactDetails && artifactType && artifactType.Description"
          [innerHtml]="artifactType.Description | safeHtml"
-         style="text-transform:none;font-size:12px;font-weight:normal;margin-top:20px;"></div>
+         class="tile-description"></div>
     <span *ngIf="artifactType && artifactType.Description"
           aria-hidden="true"
           title="Details"
-          style="padding-right: 5px;
-                cursor: pointer;
-                color:#66A9D6;
-                font-weight:normal;
-                font-size: 14px;"
+          class="action-tile-span"
           (click)="toggleArtifactDetail()">
         {{showArtifactDetails ? 'Hide Description':'Show Description'}}
     </span>

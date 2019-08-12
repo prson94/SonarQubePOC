@@ -142,20 +142,20 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                             'Scoring',
                             'Scoring',
                             ['fa-sitemap'],
-                            `/sidebar/score/Artifact/${this.artifact.Uid}`
+                            `/sidebar/score/Artifact/${this.artifact.Uid}`,null,7
 
                         )
                     );
                     this.rightSidebarService.showItem(
                         new RightSidebarItem(
                             'Comments', 'Comments', ['fa-comments'],
-                            `/sidebar/comments/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue.replace("/", "%2F")}`
+                            `/sidebar/comments/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue.replace("/", "%2F")}`,null,33
                         )
                     );
                     this.rightSidebarService.showItem(
                         new RightSidebarItem(
                             'Actions', 'Actions', null,
-                            `/sidebar/actions/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue.replace("/", "%2F")}`
+                            `/sidebar/actions/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue.replace("/", "%2F")}`,null,27
                         )
                     );
                     this.loadItemSurvey(id);
