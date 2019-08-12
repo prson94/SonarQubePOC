@@ -272,4 +272,6 @@
   <include file="scripts/GOV-4857.xml"/>
   <include file="scripts/GOV-7685.xml"/>
   <include file="scripts/GOV-7862.xml"/>
+  
+  <include file="scripts/GOV-7872.xml"/> <!-- Asset Browser - PopulatePathsForAssetType -->
 </databaseChangeLog>
