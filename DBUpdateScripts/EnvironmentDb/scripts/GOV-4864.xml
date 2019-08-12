@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Sebastian Abraham" id="GOV-4864-1,GOV-7869-1">
+  <changeSet author="Sebastian Abraham" id="GOV-4864-1,GOV-7870">
   
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -946,7 +946,7 @@ end
 ]]>
     </rollback>
   </changeSet>
-  <changeSet author="Sebastian Abraham" id="GOV-4864-2,GOV-7869-2">
+  <changeSet author="Sebastian Abraham" id="GOV-4864-2,GOV-7869">
   
     <sql dbms="mssql"
             endDelimiter="\nGO"
