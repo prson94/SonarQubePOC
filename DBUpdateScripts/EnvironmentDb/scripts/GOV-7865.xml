@@ -46,9 +46,12 @@ begin
 		[Path] nvarchar(2500) null,
 		[Segments] xml null,
 		[State] int not null,
+		[UpdatedOn] datetime not null,
 		INDEX IX_GraphAssetNode_Id UNIQUE ($node_id)
 	)
 	AS NODE
+
+	CREATE INDEX IX_GraphAssetNode ON graph.AssetNode ( UpdatedOn )
 end
 ]]>
     </sql>
@@ -78,12 +81,15 @@ begin
 		PredicateType int not null,
 		Properties xml not null,
 		[State] int not null,
+		[UpdatedOn] datetime not null,
 		CONSTRAINT EC_GraphAssetEdge CONNECTION (graph.AssetNode TO graph.AssetNode),
 		INDEX IX_GraphAssetEdge_Id UNIQUE ($edge_id),
 		INDEX IX_GraphAssetEdge_From ($from_id, $to_id),
 		INDEX IX_GraphAssetEdge_To ($to_id, $from_id)
 	)
 	AS EDGE
+
+	CREATE INDEX IX_GraphAssetEdge ON graph.AssetEdge ( UpdatedOn )
 end
 ]]>
     </sql>
