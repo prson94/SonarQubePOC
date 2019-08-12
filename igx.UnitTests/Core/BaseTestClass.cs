@@ -372,6 +372,9 @@ namespace igx.UnitTests
             mock.Setup(x => x.DoesTagExists(It.IsAny<string>()))
                 .Returns((string s) => s == DataConstants.Tags.ValidName ? false : true);
 
+            mock.Setup(x => x.DeleteTags(It.IsAny<List<TagApiDeleteModel>>()))
+                .Returns((List<TagApiDeleteModel> list) => list.Any(x=> x.uid.ToString() == DataConstants.InvalidGUID) ? false : true);
+
             mock.Setup(x => x.GetTagByUid(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new Tag() : null);
 
