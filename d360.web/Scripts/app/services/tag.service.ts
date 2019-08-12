@@ -104,6 +104,10 @@ export class TagService extends BaseObservableService {
         this.http.get('api/v2/tags/export/', { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
     }
 
+    exportTagsByUid(uid: string) {
+        this.http.get(`api/v2/tags/${uid}/export`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
+    }
+
     downloadFile(data: Blob, name: string) {
         var filename = `${name} ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {
@@ -118,6 +122,23 @@ export class TagService extends BaseObservableService {
             anchor.href = url;
             anchor.click();
         }
+    }
+
+    getTagByUid(uid: number): Observable<TagType> {
+        let url = `api/v2/tags?uid=${uid}`;
+
+        return this.http.get(url)
+            .pipe(map(response => <any>response),
+                map(response => <TagType>response.items[0]),
+                catchError(err => this.handleError(err)));
+
+    }
+
+    getTagDetails(uid: string): Observable<any> {
+        let url = `api/v2/tags/${uid}/details`;
+        return this.http.get(url)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err)));
     }
 
 

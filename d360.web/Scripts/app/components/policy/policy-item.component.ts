@@ -137,7 +137,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             this.headerBreadcrumbService.clearBreadcrumbs();
             this.crumbs = [];
             let areaBreadcrumb = new Breadcrumb(
-                this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`
+                this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
             );
             this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
             this.headerBreadcrumbService.showBreadcrumb(
@@ -177,9 +177,9 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                 });
     }
 
-    private checkParent(modelItem: Policy) {
-        if (modelItem.ParentID > 0 && this.policies) {
-            let parentAr = this.policies.filter(x => x.ID == modelItem.ParentID);
+    private checkParent(policyItem: Policy) {
+        if (policyItem.ParentID > 0 && this.policies) {
+            let parentAr = this.policies.filter(x => x.ID == policyItem.ParentID);
             let parent: Policy;
             if (parentAr.length > 0) {
                 parent = parentAr[0];

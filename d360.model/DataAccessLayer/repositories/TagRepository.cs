@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.core.enums;
 using Dapper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,6 +37,9 @@ namespace d360.model.DataAccessLayer
 
             model.State = State.Deleted;
             AddTagAudit(model, "Delete");
+
+            var assetTagsForDeletion = companyContext.AssetTags.Where(x => x.TagID == model.ID);
+            companyContext.AssetTags.RemoveRange(assetTagsForDeletion);
 
             return companyContext.SaveChanges() > 0;
         }
@@ -83,6 +87,16 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "id"))
+            {
+                int id = int.MinValue;
+                var tagIdString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "id").Value;
+                if (int.TryParse(tagIdString, out id))
+                {
+                    dbArgs.Add("@id", id);
+                    queryFilters.Add($"t.[Id] = @id");
+                }
+            }
             if (queryParams.ToList().Any(q => q.Key.ToLower() == "_pagesize"))
             {
 
@@ -341,15 +355,35 @@ namespace d360.model.DataAccessLayer
                         {sqlUidParams.ToString()}                        
                         declare @consolidateToId int = (select TOP 1 Id from Tag where uid = @parentUid)
                         
-                        ;with CTE as 
-                        (
-                        	select T.Id from AssetTag AT
+						declare @assetTagPending Table (ID int, uid uniqueidentifier, AssetID int, NewTagID int, OldTagID int, AlreadyExists bit);
+						insert into @assetTagPending (ID,uid,AssetID, NewTagID, OldTagID, AlreadyExists)
+							select 
+								AT.ID, 
+								AT.uid, 
+								AT.AssetID, 
+								@consolidateToId, 
+								AT.TagID,
+								ATE.ID
+								from AssetTag AT
                         	inner join Tag T on AT.TagID = T.ID
                         	inner join @children CH on CH.uid = T.uid
-                        ) 
-                        update AssetTag
-                        set TagId = @consolidateToId
-                        where TagId in (select Id from cte)
+							left join AssetTag ATE on ATE.AssetID = AT.AssetID AND ATE.TagID = @consolidateToId
+
+						merge dbo.AssetTag t
+						using @assetTagPending s
+						on t.ID = S.ID and s.alreadyexists is null
+						WHEN MATCHED
+						    THEN update set 
+								t.tagid = s.newtagid;
+						
+						delete from AssetTag where id in (select id from @assetTagPending where AlreadyExists = 1)
+
+                        ;WITH cte AS (
+                          SELECT Id, AssetID, NewTagID, 
+                             row_number() OVER(PARTITION BY assetid, newtagid ORDER BY id) AS [rn]
+                          FROM @assetTagPending where AlreadyExists is null
+                        )DELETE assettag where id in (select Id from cte where rn > 1)
+
 
 
                         update Tag 
@@ -421,7 +455,7 @@ namespace d360.model.DataAccessLayer
         private void AddTagAudit(Tag tag, string action)
         {
             var sql = $@"INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
-                         VALUES ('{action}','Tag',{tag.Id},[queue].WriteIndexXml('', 'Tag', {tag.Id}, coalesce({companyContext.CurrentResourceID}, 0)))";
+                         VALUES ('{action}','Tag',{tag.ID},[queue].WriteIndexXml('', 'Tag', {tag.ID}, coalesce({companyContext.CurrentResourceID}, 0)))";
             companyContext.Query<int>(sql).FirstOrDefault();
         }
 
@@ -501,6 +535,72 @@ namespace d360.model.DataAccessLayer
                 hasPersmission = companyContext.HasAssetPermission(assetId, Permission.ModifyAsset);
             }
             return hasPersmission;
+        }
+
+        public TagDetailApiModel GetDetails(Guid tagUid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            TagDetailApiModel result = new TagDetailApiModel();
+            result.pageNum = 1;
+            result.pageSize = 200;
+
+            foreach (var param in queryParams)
+            {
+                switch (param.Key.ToLower())
+                {
+                    case "_pagesize":
+                        int size = 0;
+                        if (int.TryParse(param.Value, out size))
+                        {
+                            result.pageSize = int.Parse(param.Value);
+                        }
+                        else throw new Exception("Invalid value for page size parametar!");
+                        break;
+                    case "_pagenum":
+                        int num = 0;
+                        if (int.TryParse(param.Value, out num))
+                        {
+                            result.pageNum = int.Parse(param.Value);
+                            if (result.pageNum <= 0) result.pageNum = 1;
+                        }
+                        else throw new Exception("Invalid value for page number parametar!");
+                        break;
+                }
+            }
+
+            var countSql = @"select count(*) from AssetTag AT
+	                        inner join Tag T on AT.TagId = T.ID
+	                        where T.uid = @tagUid";
+
+            result.total = companyContext.Query<int>(countSql, new { tagUid }).FirstOrDefault();
+
+            var pagingSql = $"OFFSET {result.pageSize * (result.pageNum - 1)} ROWS FETCH NEXT {result.pageSize} ROWS ONLY";
+            var sql = $@";with cte as (
+                        select AssetID, T.uid as TagUid, T.Value from AssetTag AT
+	                        inner join Tag T on T.ID = at.TagID
+                        )
+                        select 
+                        ADV.*, 
+                        A.Id as AssetID,
+                        AST.Object as AssetType, 
+                        A.Object,
+                        A.ObjectID,
+                        AST.Name  as AssetTypeName,
+                        (select TagUid as Uid, Value from cte where AssetId = A.Id order by Value for json path) as Tags
+                        from Tag T
+	                        inner join AssetTag AT on AT.TagID = T.ID
+	                        inner join Asset A ON A.ID = AT.AssetID
+	                        inner join AssetType AST ON AST.Id = A.AssetTypeId
+	                        cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
+                        where T.uid = @tagUid
+                        order by DisplayValue
+                        {pagingSql}
+                        for json path";
+
+            var data = string.Join("", companyContext.Query<string>(sql, new { tagUid }).ToList());
+
+            result.items = JsonConvert.DeserializeObject<List<TagDetail>>(data);
+            if (result.items == null) result.items = new List<TagDetail>();
+            return result;
         }
 
     }

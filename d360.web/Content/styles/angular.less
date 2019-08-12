@@ -2142,7 +2142,7 @@ div.home-image-title-text {
 
     button.button:disabled {
         opacity: 0.33;
-        cursor: default;
+        cursor: default !important;
     }
 
     .flex {
@@ -3119,6 +3119,7 @@ button.tab-scroller {
 
     .title {
         color: #006FBA;
+        padding: 0px;
     }
 
     .title:hover {
@@ -3167,7 +3168,7 @@ button.tab-scroller {
             font-size: 12px;
             padding: 15px;
             max-height: 253px;
-            overflow-y: scroll;
+            overflow-y: auto;
 
             .table-borderless {
                 margin: 0px;
@@ -3184,6 +3185,7 @@ button.tab-scroller {
                     &.name {
                         color: #006ab3;
                         padding-right: 30px;
+                        max-width: 200px;
                     }
 
                     &.suppressed {
@@ -3196,19 +3198,6 @@ button.tab-scroller {
                         }
                     }
                 }
-            }
-
-            &::-webkit-scrollbar {
-                width: 5px;
-            }
-
-            &::-webkit-scrollbar-track {
-                border-radius: 4px;
-            }
-
-            &::-webkit-scrollbar-thumb {
-                background: #4e5466;
-                border-radius: 4px;
             }
         }
 
@@ -3311,8 +3300,13 @@ button.tab-scroller {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
     span {
-        display: unset !important;
+        display: inherit !important;
+    }
+
+    a {
+        display: inline !important;
     }
 }
 
@@ -3537,5 +3531,55 @@ button.tab-scroller {
 .enable-pointer-events {
     .ui-chkbox {
         pointer-events: all;
+    }
+}
+
+
+.tile-detail {
+    .tag-list {
+        .tag-item {
+            display: inline-block;
+        }
+    }
+}
+
+.gov-detail-page {
+    .tile-detail {
+        padding: 5px 18px;
+
+        header {
+            padding: 0px !important;
+
+            d3s-tile-actions {
+                display: flex;
+
+                .TileTools {
+                    all: unset;
+                    margin-left: 15px;
+
+                    ul {
+                        display: flex;
+
+                        li {
+                            all: unset;
+                            display: inline-block;
+                        }
+                    }
+                }
+
+                input.grid-simple-filter {
+                    margin-bottom: 10px !important;
+                    width: 100%;
+                    font-size: 14px;
+                    height: 32px;
+                    position: relative;
+                    top: 14px;
+
+                    &.hidden {
+                        visibility: hidden;
+                    }
+                }
+            }
+        }
     }
 }

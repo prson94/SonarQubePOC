@@ -270,5 +270,7 @@
   <include file="scripts/GOV-7464-5.xml"/>
   <include file="scripts/GOV-4864.xml"/>
   <include file="scripts/GOV-4857.xml"/>
+  <include file="scripts/GOV-7685.xml"/>
+  <include file="scripts/GOV-7862.xml"/>
   <include file="scripts/GOV-7693.xml" /> <!-- Updates AddAuditEntry, allows additional nullable parameter and allows auditing for company settings -->
 </databaseChangeLog>

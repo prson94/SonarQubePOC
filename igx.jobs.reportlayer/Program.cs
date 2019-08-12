@@ -109,7 +109,7 @@ namespace igx.jobs.reportlayer
         const string timerSettings = "0 */5 * * * *";
 #endif
 
-        public static void Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
+        public static void Run([TimerTrigger(timerSettings, RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
         {
             try
             {
@@ -1265,7 +1265,10 @@ from	[Intersect] I
 
                             #endregion
 
-                            #region All Integration Mappings
+                            #region Integration 
+
+
+                            # region Mappings
 
                             objectName = $"{SCHEMA}.[Integration_Mappings]";
                             viewNames.Add(objectName);
@@ -1333,6 +1336,39 @@ from	(
                             viewSql += $@" VIEW {objectName} AS {selectSql}";
 
                             executeSqlWithTry(companyConnection, viewSql);
+
+                            #endregion
+
+
+                            #region Errors
+
+                            objectName = $"{SCHEMA}.[Integration_ExecutionErrors]";
+                            viewNames.Add(objectName);
+
+                            selectSql = @"
+select	E.Uid,
+		E.ExecutionID,
+		E.SynchedAssetTypeID,
+		S.SourceAssetTypeName,
+		coalesce(D.DisplayValue, F.NAme) as AssetName,
+		E.SourceID,
+		E.ErrorMessages
+from	integration.ExecutionAssetTypeError E
+		inner join integration.ExecutionAssetType Ex on Ex.ExecutionID = E.ExecutionID and Ex.SynchedAssetTypeID = E.SynchedAssetTypeID and Ex.StartedOn > DATEADD(d, -14, getutcdate())
+		inner join integration.SynchedAssetType S on S.ID = E.SynchedAssetTypeID 
+		inner join Asset A on A.AssetTypeID = S.AssetTypeID and A.SourceID = E.SourceID
+		left join AssetDisplayValue D on D.AssetID = A.ID
+		left join FusionAttribute F on F.FusionAttributeTypeID = S.ObjectID and A.Object = 'FusionAttribute' and F.ID = A.ObjectID";
+
+                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
+
+                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
+                            viewSql += $@" VIEW {objectName} AS {selectSql}";
+
+                            executeSqlWithTry(companyConnection, viewSql);
+
+                            #endregion
+
 
                             #endregion
 

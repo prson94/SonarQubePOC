@@ -72,4 +72,31 @@ namespace d360.core.entities
         [DataMember]
         public string Url { get; set; }
     }
+
+
+    public class TagDetailApiModel
+    {
+        public int pageSize { get; set; }
+        public int pageNum { get; set; }
+        public int total { get; set; }
+        public List<TagDetail> items { get; set; } = new List<TagDetail>();
+    }
+
+    public class TagDetail
+    {
+        public string DisplayValue { get; set; }
+        public int AssetID { get; set; }
+        public string AssetType { get; set; }
+        public string AssetTypeName { get; set; }
+        public string Object { get; set; }
+        public int ObjectID { get; set; }
+        public List<TagDetailItem> Tags { get; set; } = new List<TagDetailItem>();
+    }
+
+    public class TagDetailItem
+    {
+        public Guid Uid { get; set; }
+        public string Value { get; set; }
+    }
+
 }
