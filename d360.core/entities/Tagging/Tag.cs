@@ -15,8 +15,6 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class Tag : BaseCreatedAndUpdatedIntObject
     {
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid uid { get; set; }
         [DataMember, StringLength(250)]
@@ -29,7 +27,7 @@ namespace d360.core.entities
             return new EventObjectInfo
             {
                 Object = SystemObjects.Tag,
-                ObjectID = Id,
+                ObjectID = ID,
                 ObjectType = SystemObjects.Tag,
                 ObjectTypeID = 0
             };

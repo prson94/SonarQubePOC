@@ -1,8 +1,8 @@
 import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange, OnChanges, OnDestroy, AfterViewInit, Output, EventEmitter, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { Router } from '@angular/router';
-import { RightSidebarService  } from '../../../services/right-sidebar.service';
-import { RightSidebarItem, DynamicButton } from '../../../models/rightsidebar.model';
-import { Subscription }   from 'rxjs';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { RightSidebarItem, DynamicButton, AssetAction } from '../../../models/rightsidebar.model';
+import { Subscription } from 'rxjs';
 import * as _ from 'lodash';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { ObjectStatistics } from '../../../models/object-statistics.model';
@@ -19,67 +19,15 @@ declare var CompanySettings
 declare var CurrentResourceID;
 
 @Component({
-    selector: 'd3s-right-sidebar',      
-    template: ` <div *ngIf="showHeader" class="title-bar" [ngClass]="{'menu-open': menuOpen}">
-                    <div class="title">
-                         <img class="icon" *ngIf="!IsIcon(area.icon)" [src]="GetURL(area.icon)"  height="20" width="20" />
-                         <i *ngIf="IsIcon(area.icon)" [class]="'icon fa ' + area.icon"></i>
-                        <h1 title="{{area.title ? area.title: 'D3S'}}">{{area.title ? area.title: 'D3S'}}</h1>
-                        <span #badge *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon clickable"
-                                title="{{lastCalculatedMessage()}}"
-                                (click)="OpenScoring()"
-                                [ngClass]="{
-                                    'bad':scoreBetween(0,49),
-                                    'ok':scoreBetween(50,89),
-                                    'good':scoreBetween(90,1000)
-                                }">
-                            <d3s-dynamic-percentage [innerCircleColor]="getColor(badge)" [percentage]="statistics?.Score"></d3s-dynamic-percentage> 
-                             <span class="text">{{statistics?.Score}}%</span>
-                        </span> 
-                        <ng-template #noScore>
-                            <span #noScoreBadge *ngIf="currentObject && !currentObject?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon">
-                                <d3s-dynamic-percentage [innerCircleColor]="getColor(noScoreBadge)" [percentage]="0"></d3s-dynamic-percentage> 
-                                <span class="text">N/A</span>
-                            </span>
-                        </ng-template>
-                        <span *ngIf="showStatus" class="d3s-icon large-icon" [style.background-color]="getCertificationStatusColor(status)">
-                            <i class="fa fa-certificate"></i>
-                            <span class="text">{{status}}</span>
-                        </span>
-                        <span class="grow"></span>
-                        <button class="button" *ngIf="showCertify" (click)="requestCertification()"><i class="fa fa-certificate"></i><span>Request Certification</span></button>
-                        <button class="primary button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span>Take Survey</span></button>
-                        <button *ngFor="let button of buttons" (click)="button.dynamicCallback()" [ngClass]="{'loading': button.isLoading}"  class="primary button" [disabled]="button.disabled">
-                            <span class="content">{{button.text}}</span>
-                            <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>    
-                        </button>
-                    </div>
-                    <div *ngIf="items && items.length > 0" class="tab-view">
-                        <div class="tab-bar-outer">
-                            <button *ngIf="showScrollButtons" class="left tab-scroller" (click)="scroll('L')"><i class="fa fa-chevron-circle-left"></i></button>
-                            <div #tabScroller class="tab-bar can-overflow" [ngStyle]="{'margin-left.px': showScrollButtons ? 40 : 0,'margin-right.px': showScrollButtons ? 40 : 0}">
-                                <button class="tab" [ngClass]="{'selected':AllClosed()}" (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">{{area.tabTitle}}</button>
-                                <button class="tab" 
-                                        [ngClass]="{'selected':item.active}" 
-                                        *ngFor="let item of items; trackBy: trackById" 
-                                        (click)="itemClicked(item);">
-                                            {{item.title}}
-                                        <span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span>
-                                        <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon" [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
-                                </button>
-                            </div>
-                            <button *ngIf="showScrollButtons" class="right tab-scroller" (click)="scroll('R')"><i class="fa fa-chevron-circle-right"></i></button>
-                        </div>
-                    </div>
-                </div>
-              `,
+    selector: 'd3s-right-sidebar',
+    templateUrl: 'right-sidebar.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
     host: { '(window:resize)': 'checkSize()' }
 })
 
-export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewInit{
-        
+export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewInit {
+
     subscription: Subscription;
     buttonSubscription: Subscription;
     buttonSubscriptionClear: Subscription;
@@ -87,8 +35,10 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     areaSub: Subscription;
     objectSub: Subscription;
     hideHeaderSub: Subscription;
+    assetActionSub: Subscription;
+    assetActionClearSub: Subscription;
 
-    items: RightSidebarItem[];  
+    items: RightSidebarItem[];
     buttons: DynamicButton[];
     homeUrl: string;
     area: any = {icon:'fa-folder',title: ''};
@@ -110,6 +60,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     showHeader: boolean = false;
     showSurvey: boolean = false;
     showScrollButtons: boolean = false;
+    assetAction: AssetAction;
     constructor(
         private rightSidebarService: RightSidebarService,
         protected objectStatisticsService: ObjectStatisticsService,
@@ -122,7 +73,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     ngAfterViewInit(): void {
-        this.load();  
+        this.load();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -130,7 +81,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             return;
         if (this.currentObject) {
             this.load();
-        } 
+        }
     }
 
     checkSize() {
@@ -156,13 +107,13 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             }
         };
 
-        let id = window.setInterval(move,5);
+        let id = window.setInterval(move, 5);
 
     }
 
     load() {
         this.showStatus = false;
-        this.statistics = null; 
+        this.statistics = null;
         this.showCertify = false;
         this.showHeader = false;
         this.showSurvey = false;
@@ -185,21 +136,23 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             item => {
                 this.buttons.splice(0, this.buttons.length); this.emitChanges();
             })
+
+
         this.subscriptionClear = this.rightSidebarService.rightSidebarClear$.subscribe(
             item => {
                 this.items.splice(0, this.items.length);
                 this.currentObject = null;
                 this.statistics = null;
-                this.showStatus = false; this.emitChanges(); 
+                this.showStatus = false; this.emitChanges();
             })
         this.areaSub = this.rightSidebarService.currentArea$.subscribe(
             area => {
-                this.area = area; this.emitChanges(); 
+                this.area = area; this.emitChanges();
             }
         );
         this.hideHeaderSub = this.rightSidebarService.hideHeader$.subscribe(result => {
             this.showHeader = result;
-            this.emitChanges(); 
+            this.emitChanges();
         });
 
         this.objectSub = this.rightSidebarService.currentObject$.subscribe(res => {
@@ -208,12 +161,23 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
             } else {
                 this.showStatus = false;
-                this.statistics = null; 
+                this.statistics = null;
                 this.showCertify = false;
                 this.showSurvey = false;
-                this.emitChanges(); 
+                this.emitChanges();
             }
         });
+
+
+        this.assetActionSub = this.rightSidebarService.assetAction$.subscribe(res => {
+            this.assetAction = res;
+        });
+
+        this.assetActionClearSub = this.rightSidebarService.assetActionClear$.subscribe(
+            item => {
+                this.assetAction = null;
+                this.emitChanges();
+            })
         this.emitChanges();
 
     }
@@ -263,11 +227,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     this.showSurvey = true;
                     this.ref.markForCheck();
                 }
-            }); 
+            });
 
     }
 
-    ngOnDestroy() {        
+    ngOnDestroy() {
         // prevent memory leak when component destroyed
         this.subscription.unsubscribe();
         this.subscriptionClear.unsubscribe();
@@ -278,7 +242,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.buttonSubscription.unsubscribe();
     }
 
-    trackById(index, item) {        
+    trackById(index, item) {
         return item.tag;
     }
     
@@ -294,11 +258,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         else if (item.url) this.router.navigateByUrl(item.url);
         this.rightSidebarService.itemClicked(item);        
         this.AllClosed();
-    }     
+    }
 
     AllClosed() {
         let count = this.items.filter(x => x.active == true).length;
-        
+
         return count == 0;
     }
 
@@ -316,7 +280,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     GetURL(icon: string) {
-        if(icon)
+        if (icon)
             return icon.replace(/^URL-+/i, '');
     }
 
@@ -352,7 +316,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.artifactService
                 .requestCertification(this.currentObject.objectID)
                 .subscribe(result => { this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow); });
-    }   
+    }
 
     navigateToSurvey() {
         if (this.currentObject) {
@@ -393,9 +357,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     OpenScoring() {
         if (this.currentObject.Uid) {
-            let scoreItems = this.items.filter(x => x.title === 'Scoring' );
+            let scoreItems = this.items.filter(x => x.title === 'Scoring');
             if (scoreItems.length == 1) {
-                scoreItems[0].active = !scoreItems[0].active; 
+                scoreItems[0].active = !scoreItems[0].active;
                 this.itemClicked(scoreItems[0]);
             }
         }
