@@ -609,7 +609,7 @@ namespace d360.extensions.search
 
                     indx++;
                 }
-                sb.Append("]}}");
+                sb.Append("]");
 
                 if (!string.IsNullOrEmpty(type))
                 {
@@ -626,7 +626,7 @@ namespace d360.extensions.search
                     sb.Append("]}}");
                 }
 
-                sb.Append(", \"size\":" + size + "}");
+                sb.Append("}}, \"size\":" + size + "}");
             }
 
             var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
