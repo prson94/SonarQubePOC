@@ -1377,9 +1377,6 @@ from	IntersectType I
                                                 case "RuleType":
                                                     legacyTable = "[Rule]";
                                                     break;
-                                                case "TaxonomyType":
-                                                    legacyTable = "Taxonomy";
-                                                    break;
                                             }
 
                                             if (!string.IsNullOrEmpty(legacyTable))
@@ -2276,51 +2273,47 @@ from	api.ExecutionAsset T
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
-    create table #ObjectMergeTableResult (ID int, ItemNumber int);
-    CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
+                                                        create table #ObjectMergeTableResult (ID int, ItemNumber int);
+                                                        CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
-    merge   Taxonomy as T
-    using   (
-            select  ItemNumber
-            from    api.ExecutionAsset
-            where   ExecutionID = @ExecutionID
-                    and Success is null
-                    and ItemNumber between {beginItemNumber} and {endItemNumber}
-            ) S
-    on      (T.TaxonomyTypeID = @ObjectID and T.SourceID = @NonExistentUid)
-    when    not matched then
-    insert  (TaxonomyTypeID, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, @R, @D)
-    output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
+                                                        merge   [Asset] as T
+                                                        using   (
+                                                                select  ItemNumber
+                                                                from    api.ExecutionAsset
+                                                                where   ExecutionID = @ExecutionID
+                                                                        and Success is null
+                                                                        and ItemNumber between {beginItemNumber} and {endItemNumber}
+                                                                ) S
+                                                        on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
+                                                        when    not matched then
+                                                        insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+                                                        values  (@AssetTypeID,1,'Taxonomy', @R, @D, @R, @D)
+                                                        output  inserted.ObjectID, S.ItemNumber into #ObjectMergeTableResult;
 
-    update  T
-    set     T.Object = 'Taxonomy',
-            T.ObjectID = S.ID,
-            T.IsNew = 1
-    from    api.ExecutionAsset T
-            inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
+                                                        update  T
+                                                        set     T.Object = 'Taxonomy',
+                                                                T.ObjectID = S.ID,
+                                                                T.IsNew = 1
+                                                        from    api.ExecutionAsset T
+                                                                inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
-    update  T
-    set     T.AssetID = S.ID,
-            T.Uid = S.Uid
-    from    api.ExecutionAsset T
-            inner join Asset S on T.Executionid = @ExecutionID and S.AssetTypeID = @AssetTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID;",
-                                                    new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                }
-                                                else
-                                                {
-                                                    Connection.Execute($@"
-    update	T
-    set		T.UpdatedBy = @R,
-		    T.UpdatedOn = @D
-    from	Taxonomy T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql};
+                                                        {updateAssetInfoOnExecutionRecordsSql}",
+                                                        new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                    }
+                                                    else
+                                                    {
+                                                        Connection.Execute($@"
+                                                        update	T
+                                                        set		T.UpdatedBy = @R,
+                                                        T.UpdatedOn = @D
+                                                        from	[Asset] T
+                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Taxonomy' and {executionAssetWhereSql};
 
-    update	api.ExecutionAsset
-    set		IsNew = 0
-    where	ExecutionID = @ExecutionID and Success is null and ItemNumber between {beginItemNumber} and {endItemNumber};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                }
+                                                        update	api.ExecutionAsset
+                                                        set		IsNew = 0
+                                                        where	{executionAssetWhereSql};",
+                                                        new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                    }
                                                 break;
                                             #endregion
                                             case AssetTypeClass.FusionAttribute:

@@ -161,8 +161,6 @@ namespace d360.model
         DbSet<SurveyType> SurveyTypes { get; set; }
         DbSet<Tag> Tags { get; set; }
         DbSet<AssetTag> AssetTags { get; set; }
-        DbSet<Taxonomy> Taxonomies { get; set; }        
-        DbSet<TaxonomyType> TaxonomyTypes { get; set; }
         DbSet<WorkflowEventRegistration> WorkflowEventRegistrations { get; set; }
         DbSet<WorkflowItemAssignment> WorkflowItemAssignments { get; set; }
         DbSet<WorkflowItem> WorkflowItems { get; set; }
@@ -232,7 +230,7 @@ namespace d360.model
         string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue);
         Dictionary<string, object> GetFusionAsDictionary(int id);
         List<FusionOwnerOption> GetFusionOwnerOptions();
-        List<FusionPromotionOption> GetFusionPromotionOptions();
+        //List<FusionPromotionOption> GetFusionPromotionOptions();
         IntersectType GetHierarchyIntersectType(SystemObjects objectType, int subjectId, int objectId, PredicateType predicateType = PredicateType.InterTypeHierarchy);
         string GetIntersectTypeName(IntersectType intersectType);
         List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? subject = null, int? subjectID = null, SystemObjects? @object = null, int? objectID = null, int? predicateID = null);
