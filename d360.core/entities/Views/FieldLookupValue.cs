@@ -17,7 +17,7 @@ namespace d360.core.entities
         public int? LookupObjectID { get; set; }
 
         [Column(Order = 4), DataMember, Key]
-        public long Value { get; set; }
+        public int Value { get; set; }
 
         [Column(Order = 5), DataMember, Key]
         public string Text { get; set; }

@@ -362,6 +362,8 @@ namespace d360.web.Controllers.V2
 
                 var types = await RelationshipRepository.GetRelationshipTypes(queryParams);
 
+                if (types == null) types = new List<IntersectTypeApiViewModel>(); // Will send back empty list, which matches expectation for API specification.
+
                 return Request.CreateResponse(HttpStatusCode.OK, types);
             }
             catch (Exception ex)

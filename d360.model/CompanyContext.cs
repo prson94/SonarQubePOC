@@ -3093,5 +3093,21 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
         }
 
         #endregion
+
+        public int GetObjectId(Guid objectUid, SystemObjects objectType)
+        {
+            int objectId = -1;
+            switch (objectType)
+            {
+                case SystemObjects.Tag:
+                    objectId = Tags.FirstOrDefault(x => x.uid == objectUid).ID;
+                    break;
+                default:
+                    throw new Exception($"Method not implemented for object type '{objectType.ToString()}'");
+
+            }
+            return objectId;
+        }
+
     }
 }

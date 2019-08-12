@@ -143,7 +143,7 @@
                         type="submit"
                         [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)"
                         label="Done">
-                    {{consolidateToTag ? 'Consolidate' : 'Done'}}
+                    {{this.consolidateToTag ? 'Consolidate' :'Done'}}
                     <span class="loader"><span class="spinner light"></span></span>
                 </button>
             </div>

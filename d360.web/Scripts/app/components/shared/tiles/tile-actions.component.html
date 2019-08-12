@@ -1,4 +1,6 @@
-﻿<div class="TileTools">
+﻿
+<ng-content></ng-content>
+<div class="TileTools">
     <p-menubar *ngIf="hasDate" [model]="dateMenuItems"></p-menubar><!--workaround to position bug in menu-->
     <p-menubar *ngIf="hasMenu" [model]="menuItems"></p-menubar>
     <div *ngIf="!hasDate && !hasMenu">
