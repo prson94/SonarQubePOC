@@ -48,7 +48,7 @@ export class AdminCustomizationsComponent extends AdminBaseComponent implements 
     ) {
 
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = "Style Customizations";
+        this.areaName = "Branding";
         this.setCommonItems();
         
     }
