@@ -206,7 +206,7 @@ namespace d360.web.Controllers.V2
         private static SLDocument GetDocumentFromModels(IEnumerable<string> customColumns, IEnumerable<dynamic> models)
         {
             var document = new SLDocument();
-            document.AddWorksheet("Items");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             int index = 1;
             document.SetCellValue(1, index++, "Intersect ID");
@@ -723,7 +723,7 @@ namespace d360.web.Controllers.V2
             queryParams.Add(new KeyValuePair<string, string>("state", "1"));
             var models = await Company.GetRelationshipTypes(queryParams);
             var document = new SLDocument();
-            document.AddWorksheet("Items");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             #region Create the list sheet
 

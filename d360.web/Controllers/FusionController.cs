@@ -98,7 +98,7 @@ namespace d360.web.Controllers
                 }
             }
 
-            document.DeleteWorksheet("Sheet1");
+            document.DeleteWorksheet(SLDocument.DefaultFirstSheetName);
 
             var stream = new MemoryStream();
             document.SaveAs(stream);

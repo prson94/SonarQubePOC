@@ -2537,8 +2537,7 @@ order by    rnk, [Name]";
             dynamic result = JsonConvert.DeserializeObject<dynamic>(resultString);
 
             var document = new SLDocument();
-            document.AddWorksheet("Items");
-            document.DeleteWorksheet("Sheet1");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             int colIndex = 1;
             for (int i = 0; i < result.Columns.Count; i++)
@@ -7952,8 +7951,7 @@ where	Type = 'ReferenceItemType'
 
 
             var document = new SLDocument();
-            document.AddWorksheet("Items");
-            document.DeleteWorksheet("Sheet1");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             #region Create the list sheet
 

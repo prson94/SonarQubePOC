@@ -381,7 +381,7 @@ namespace d360.web.Controllers.V2
             var tags = await tagRepository.GetTagsWithResourceName(queryParams);
 
             var document = new SLDocument();
-            document.AddWorksheet("Items");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             #region Create the list sheet
 
@@ -503,7 +503,7 @@ namespace d360.web.Controllers.V2
             var tags = tagRepository.GetDetails(uid, queryParams);
 
             var document = new SLDocument();
-            document.AddWorksheet("Items");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             #region Create the list sheet
 

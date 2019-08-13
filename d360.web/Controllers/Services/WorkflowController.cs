@@ -121,7 +121,7 @@ order by wi.StartedOn desc",
             var results = all ? getIssues(null) : getIssues(Company.CurrentResourceID);
 
             var document = new SLDocument();
-            document.AddWorksheet("Items");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             #region Create the list sheet
 
@@ -2368,7 +2368,7 @@ order by wi.StartedOn desc";
             #region Header
 
             var document = new SLDocument();
-            document.AddWorksheet("History");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "History");
 
             int index = 1;
             document.SetCellValue(1, index++, "Object");
@@ -3394,7 +3394,7 @@ order by wi.StartedOn desc";
             var results = Company.Query<dynamic>(QueryConstants.WorkflowItemSteps, new { itemId }).ToList();
 
             var document = new SLDocument();
-            document.AddWorksheet("Steps");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Steps");
 
             #region Create the list sheet
 
