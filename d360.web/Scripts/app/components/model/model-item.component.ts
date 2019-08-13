@@ -123,49 +123,51 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     private buildBreadcrumb() {
-        this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
-            this.crumbs = []; 
-            this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
-                this.lineageShowUsageOnly = true;   
-                this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
-                this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
-                this.rightSidebarService.setCurrentObject('TaxonomyType', this.model.ID, 'Taxonomy', this.selected.ID, false, null, this.selected.Uid);
-                this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Taxonomy/${this.selected.Uid}`, null, 6));
-                this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Taxonomy/${this.selected.ID}/${this.selected.DisplayValue.replace("/", "%2F")}`, null, 31));
-                this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Taxonomy/${this.model.ID}/${this.model.Name.replace("/", "%2F")}`, null, 26));
-            });
-            this.rightSidebarService.showHeader(true);
+        if (this.selected) {
+            this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
+                this.crumbs = []; 
+                this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
+                    this.lineageShowUsageOnly = true;   
+                    this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
+                    this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
+                    this.rightSidebarService.setCurrentObject('TaxonomyType', this.model.ID, 'Taxonomy', this.selected.ID, false, null, this.selected.Uid);
+                    this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Taxonomy/${this.selected.Uid}`, null, 6));
+                    this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Taxonomy/${this.selected.ID}/${this.selected.DisplayValue.replace("/", "%2F")}`, null, 31));
+                    this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Taxonomy/${this.selected.ID}/${this.selected.DisplayValue.replace("/", "%2F")}`, null, 26));
+                });
+                this.rightSidebarService.showHeader(true);
             
-            this.headerBreadcrumbService.clearBreadcrumbs();
-            let areaBreadcrumb = new Breadcrumb(
-                this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`
-            );
-            this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
-            this.headerBreadcrumbService.showBreadcrumb(
-                new Breadcrumb(this.model.Name,
-                    SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID),
-                    undefined,
-                    'TAXONOMYTYPE',
-                    this.model.ID,
-                    undefined,
-                    undefined,
-                    true,
-                    false
-                ));
-
-            if (this.selected && this.selected.ID > 0) {
-                this.checkParent(this.selected);
+                this.headerBreadcrumbService.clearBreadcrumbs();
+                let areaBreadcrumb = new Breadcrumb(
+                    this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`
+                );
+                this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
                 this.headerBreadcrumbService.showBreadcrumb(
-                    new Breadcrumb(this.selected.DisplayValue,
+                    new Breadcrumb(this.model.Name,
+                        SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID),
+                        undefined,
+                        'TAXONOMYTYPE',
+                        this.model.ID,
+                        undefined,
                         undefined,
                         true,
-                        'Taxonomy',
-                        this.selected.ID,
-                        this.buildTreeNodeArray(this.modelHierarchy, this.selected.ParentID,false),
-                        this.findSelectedTreeNode(this.selected.ID),
-                        false));
-            }
-        });
+                        false
+                    ));
+
+                if (this.selected && this.selected.ID > 0) {
+                    this.checkParent(this.selected);
+                    this.headerBreadcrumbService.showBreadcrumb(
+                        new Breadcrumb(this.selected.DisplayValue,
+                            undefined,
+                            true,
+                            'Taxonomy',
+                            this.selected.ID,
+                            this.buildTreeNodeArray(this.modelHierarchy, this.selected.ParentID,false),
+                            this.findSelectedTreeNode(this.selected.ID),
+                            false));
+                }
+            });
+        }
     }
 
     private load(hierarchyId: number): void {

@@ -6,13 +6,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bhoward" id="GOV-7464-A">
+  <changeSet author="bhoward" id="GOV-7464-A-fix">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
-		<![CDATA[
-	ALTER   PROCEDURE [dbo].[GetSiteNavigation]
+	<![CDATA[  
+CREATE OR ALTER PROCEDURE [dbo].[GetSiteNavigation]
 (
 	@ResourceID int = 0
 )
@@ -206,7 +206,7 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 	FROM SiteNav n
 	WHERE n.Name = '#Data Quality' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 
-	/*UNION ALL
+	UNION ALL
 	SELECT	n.Name as MenuID,
 		n.SortOrder,
 		0 as Feature,
@@ -220,13 +220,13 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 				null AS items	
 		FROM	Report R
 		left join ReportResponsibility rs on rs.ReportID = R.ID
-		left join ResponsibilityDetail rd on rd.ResponsibilityTypeID = rs.ResponsibilityTypeID
-		Where @ResourceID = rd.ResourceID or rd.ResourceID is null
+		left join ResponsibilityDetail rd on rd.ResponsibilityTypeID = rs.ResponsibilityTypeID and @ResourceID = rd.ResourceID  
+		WHERE (rs.ResponsibilityTypeID is not null and rd.ResourceID = @ResourceID) or (rd.ResourceID is null and rs.ResponsibilityTypeID is null)
 		Order By R.name
 		FOR XML PATH('nav'), TYPE
 		) AS Items
 	FROM SiteNav n
-	WHERE n.Name = '#Dashboards' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1*/
+	WHERE n.Name = '#Dashboards' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 
 	UNION ALL
 
@@ -242,8 +242,8 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 	where ParentID IS NULL and Name not like '#%' AND dbo.HasSiteNavPermission(s.ID, @ResourceID) = 1
 
 	order by sortorder
-END					
-		]]>
+END
+    ]]>
     </sql>
 	<rollback>
 		<![CDATA[

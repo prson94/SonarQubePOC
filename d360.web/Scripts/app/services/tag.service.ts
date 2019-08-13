@@ -32,8 +32,8 @@ export class TagService extends BaseObservableService {
 
     }
 
-    deleteTagByUid(uid: string): Observable<any> {
-        let url = `api/v2/tags/${uid}`;
+    deleteTagByUid(uid: string, cascade: boolean = true): Observable<any> {
+        let url = `api/v2/tags/${uid}?cascade=${cascade}`;
         return this.http.delete(url)
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
@@ -47,7 +47,7 @@ export class TagService extends BaseObservableService {
 
         let body: any[] = []
         tags.forEach(t => {
-            body.push({ 'uid': t.uid });
+            body.push({ 'uid': t.uid, cascade: true });
         })
 
         const httpHeaders = {
