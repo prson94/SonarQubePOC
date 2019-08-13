@@ -19,6 +19,7 @@
         </div>
         <div class="enable-tags">
             <d3s-checkbox (onchange)="changeTagStatusConfirmation($event)" 
+                          [value]="isEnabled"
                           label="Enable Tagging"
                           trueTitle="Enable Tagging"
                           trueButtonText="Enable Tagging"

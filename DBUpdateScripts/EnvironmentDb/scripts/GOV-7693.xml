@@ -1,0 +1,1103 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-7693">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+ALTER   procedure [utility].[AddAuditEntry]
+	@DependentObject varchar(50),
+	@DependentObjectID int,
+	@ResourceID int,
+	@Date datetime,
+	@Action varchar(15),
+	@MainObject varchar(50),
+	@MainObjectID int,
+	@NewValue varchar(50) = null
+as
+begin
+	set nocount on;
+	declare @DependentObjectName nvarchar(250),
+			@MainObjectTypeName nvarchar(250),
+			@MainObjectName nvarchar(250),
+			@MainDescription nvarchar(max)
+	
+	declare @tbl table (ID int identity, FieldTypeID int, FieldName nvarchar(250), NewValue nvarchar(max), MostRecentVersion int, Updated bit)
+
+	if @DependentObject is not null
+	begin
+		if @DependentObject = 'Fusion'				begin		select @DependentObjectName = Name from Fusion where ID = @DependentObjectID				end		
+		if @DependentObject = 'FusionType'			begin		select @DependentObjectName = Name from FusionType where ID = @DependentObjectID			end
+		if @DependentObject = 'Group'				begin		select @DependentObjectName = Name from [Group] where ID = @DependentObjectID				end				
+		if @DependentObject = 'LookupType'			begin		select @DependentObjectName = Name from LookupType where ID = @DependentObjectID			end
+		if @DependentObject = 'IssueType'			begin		select @DependentObjectName = Name from IssueType where ID = @DependentObjectID				end
+		if @DependentObject = 'IntersectType'		begin		select @DependentObjectName = ITyName.Name from IntersectType O cross apply dbo.getIntersectTypeNames(O.ID) ITyName where O.ID = @DependentObjectID			end
+		
+		if @DependentObject = 'ReferenceItemType'	begin		select @DependentObjectName = Name from AssetType where ObjectID = @DependentObjectID and [Object] = 'ReferenceItemType'		end		
+		if @DependentObject = 'Report'				begin		select @DependentObjectName = Name from Report where ID = @DependentObjectID				end
+		if @DependentObject = 'ResponsibilityType'	begin		select @DependentObjectName = Name from ResponsibilityType where ID = @DependentObjectID	end				
+		if @DependentObject = 'SurveyType'			begin		select @DependentObjectName = Name from SurveyType where ID = @DependentObjectID			end			
+		if @DependentObject = 'Tag'			        begin		select @DependentObjectName = Value from Tag where ID = @DependentObjectID			        end			
+
+		else			
+			begin	
+				select @DependentObjectName = D.[Name]
+				from
+				(
+					select DisplayValue as [Name], [Object], ObjectID from AssetDetail
+					union all
+					select [Name], [Object], ObjectID from AssetType
+				) D where D.ObjectID = @DependentObjectID	and D.[Object] = @DependentObject
+			end
+		
+	end
+		
+	if @MainObject = 'Artifact'
+	begin
+		select	@MainObjectTypeName = A.TypeName,
+				@MainObjectName = A.DisplayValue
+		from	AssetDetail A				
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject
+
+	end
+
+	if @MainObject = 'ArtifactType'
+	begin
+		select	@MainObjectTypeName = 'Artifact Type',
+				@MainObjectName = A.Name 
+		from	AssetType A
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject	
+		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject					
+	end
+	
+	
+	if @MainObject = 'Attribute'
+	begin
+		select	@MainObjectTypeName = A.TypeName,
+				@MainObjectName = A.DisplayValue
+		from	AssetDetail A				
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject
+	end
+
+	
+	if @MainObject = 'AttributeType'
+	begin
+		select	@MainObjectTypeName = 'Attribute Type',
+				@MainObjectName = O.Name
+		from	AttributeType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from AttributeType where ID = @MainObjectID
+		insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from AttributeType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from AttributeType where ID = @MainObjectID		
+		insert into @tbl  select 0, 'AttributeTypeCategoryID', AttributeTypeCategoryID, 0, 0 from AttributeType where ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'FieldType'
+	begin
+		select	@MainObjectTypeName = 'Field Type',
+				@MainObjectName = O.FriendlyName
+		from	FieldType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'FriendlyName', FriendlyName, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', [Description], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'DisplayDescription', DisplayDescription, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'FormDescription', FormDescription, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Type', [Type], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'LookupObjectType', LookupObjectType, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'LookupObjectID', LookupObjectID, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'LookupDisplayFormat', LookupDisplayFormat, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'MinimumLength', MinimumLength, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'MaximumLength', MaximumLength, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Length', [Length], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'SortOrder', [SortOrder], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsRequired', [IsRequired], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsListable', [IsListable], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Category', [Category], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsDisplayable', [IsDisplayable], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsEditable', [IsEditable], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsPartOfKey', [IsPartOfKey], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'AllowMultipleValues', [AllowMultipleValues], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'ColumnOrder', [ColumnOrder], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'ColumnWidth', [ColumnWidth], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsPrimaryFilter', [IsPrimaryFilter], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'DefaultFormattedValue', DefaultFormattedValue, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'ShowIfEmpty', ShowIfEmpty, 0, 0 from FieldType where ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'Fusion'
+	begin
+		select	@MainObjectTypeName = T.Name,
+				@MainObjectName = O.Name 
+		from	Fusion O
+				inner join FusionType T on T.ID = O.FusionTypeID
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'Enabled', Enabled, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'Manual', Manual, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'LockPromotedItems', LockPromotedItems, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'IntervalType', IntervalType, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'Interval', Interval, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'ForceRefresh', ForceRefresh, 0, 0 from Fusion where ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'FusionAttributeType'
+	begin
+		select	@MainObjectTypeName = T.Name,
+				@MainObjectName = O.Name 
+		from	FusionAttributeType O
+				inner join FusionType T on T.ID = O.FusionTypeID
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from FusionAttributeType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Assignable', Assignable, 0, 0 from FusionAttributeType where ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'FusionType'
+	begin
+		select	@MainObjectTypeName = 'Fusion Type',
+				@MainObjectName = O.Name 
+		from	FusionType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from FusionType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from FusionType where ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'Group'
+	begin
+		select	@MainObjectTypeName = 'Group',
+				@MainObjectName = O.Name 
+		from	[Group] O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from [Group] where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from [Group] where ID = @MainObjectID
+		insert into @tbl  select 0, 'PrimaryOwnerResourceID', PrimaryOwnerResourceID, 0, 0 from [Group] where ID = @MainObjectID
+		insert into @tbl  select 0, 'SecondaryOwnerResourceID', SecondaryOwnerResourceID, 0, 0 from [Group] where ID = @MainObjectID
+	end
+	
+	
+	if @MainObject = 'Intersect'
+	begin
+		select	@MainObjectTypeName = ITyName.Name,
+				@MainObjectName = Iname.Name 
+		from	[Intersect] O
+				inner join [IntersectType] T on T.ID = O.IntersectTypeID
+				cross apply dbo.getIntersectNames(O.ID) Iname
+				cross apply dbo.getIntersectTypeNames(T.ID) ITyName
+		where	O.ID = @MainObjectID
+	end
+	
+	
+	if @MainObject = 'IntersectType'
+	begin
+		select	@MainObjectTypeName = 'Intersect Type',
+				@MainObjectName = ITyName.Name 
+		from	IntersectType O
+				cross apply dbo.getIntersectTypeNames(O.ID) ITyName
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', ITyName.Name, 0, 0 from	IntersectType O cross apply dbo.getIntersectTypeNames(O.ID) ITyName where	O.ID = @MainObjectID
+		insert into @tbl  select 0, 'SubjectCardinality', SubjectCardinality, 0, 0 from	IntersectType O where	ID = @MainObjectID
+		insert into @tbl  select 0, 'ObjectCardinality', ObjectCardinality, 0, 0 from	IntersectType O where	ID = @MainObjectID
+		insert into @tbl  select 0, 'Predicate', Name, 0, 0 from predicate where id = (select predicateid from intersecttype where id = @MainObjectID)
+	end
+
+	
+	if @MainObject = 'IssueType'
+	begin
+		select	@MainObjectTypeName = 'Action Type',
+				@MainObjectName = O.Name 
+		from	IssueType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from IssueType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', [Description], 0, 0 from IssueType where ID = @MainObjectID
+	end
+		
+	if @MainObject = 'Lookup'
+	begin
+		select	@MainObjectTypeName = T.Name,
+				@MainObjectName = T.Name + ' Lookup ' + cast(O.ID as nvarchar(15))
+		from	[Lookup] O
+				inner join LookupType T on T.ID = O.LookupTypeID
+		where	O.ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'LookupType'
+	begin
+		select	@MainObjectTypeName = 'Lookup Type',
+				@MainObjectName = O.Name 
+		from	LookupType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from LookupType where ID = @MainObjectID
+	end
+	
+	
+	if @MainObject = 'Policy'
+	begin
+		select	@MainObjectTypeName = 'Policy',
+				@MainObjectName = A.DisplayValue
+		from	AssetDetail A				
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
+
+	end
+
+	
+	if @MainObject = 'QuestionType'
+	begin
+		select	@MainObjectTypeName = T.Name,
+				@MainObjectName = O.Name 
+		from	QuestionType O
+				inner join SurveyType T on T.ID = O.SurveyTypeID
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from QuestionType where ID = @MainObjectID
+		insert into @tbl  select 0, 'DisplayStyle', DisplayStyle, 0, 0 from QuestionType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from QuestionType where ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'ReferenceItem'
+	begin
+		select	@MainObjectTypeName = ATT.Name,
+				@MainObjectName = A.Code 
+		from	Asset A
+				inner join AssetType ATT on ATT.ID = A.AssetTypeID				
+		where	A.ObjectID = @MainObjectID and A.[Object] = 'ReferenceItem'
+		
+		insert into @tbl  select 0, 'Code', Code, 0, 0 from Asset where ObjectID = @MainObjectID and [Object] = 'ReferenceItem'
+		
+	end
+
+	
+	if @MainObject = 'ReferenceItemType'
+	begin
+		select	@MainObjectTypeName = 'Reference Item Type',
+				@MainObjectName = O.Name
+		from	AssetType O
+		where	O.ObjectID = @MainObjectID and O.[Object] = 'ReferenceItemType'
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = 'ReferenceItemType'
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = 'ReferenceItemType'
+		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = 'ReferenceItemType'
+	end
+
+	
+	if @MainObject = 'Report'
+	begin
+		select	@MainObjectTypeName = 'Report',
+				@MainObjectName = O.Name
+		from	Report O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'ObjectType', ObjectType, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'ReportLayoutID', ReportLayoutID, 0, 0 from Report where ID = @MainObjectID
+	end
+
+	if @MainObject = 'Resource'
+	begin
+		select	@MainObjectTypeName = 'Resource',
+				@MainObjectName = A.FirstName + ' ' + A.LastName 
+		from	reporting.Global_Resource A
+		where	A.ResourceID = @MainObjectID
+
+	end
+
+	if @MainObject = 'Tag'
+	begin
+		select	@MainObjectTypeName = 'Tag',
+				@MainObjectName = T.Value
+		from	Tag T
+		where	T.Id = @MainObjectID
+
+		insert into @tbl  select 0, 'Value', Value, 0, 0 from Tag where ID = @MainObjectID
+	end
+	
+	if @MainObject = 'ResponsibilityType'
+	begin
+		select	@MainObjectTypeName = 'Responsibility Type',
+				@MainObjectName = O.Name 
+		from	ResponsibilityType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from ResponsibilityType where ID = @MainObjectID
+		insert into @tbl  select 0, 'ResponsibilityTypeGroup', ResponsibilityTypeGroup, 0, 0 from ResponsibilityType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from ResponsibilityType where ID = @MainObjectID
+	end
+	
+	
+	if @MainObject = 'Rule'
+	begin		
+		select	@MainObjectTypeName = 'Rule',
+				@MainObjectName = A.DisplayValue
+		from	AssetDetail A				
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
+	end
+	
+	
+	if @MainObject = 'SurveyType'
+	begin
+		select	@MainObjectTypeName = 'Survey Type',
+				@MainObjectName = O.Name 
+		from	SurveyType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from SurveyType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Object', Object, 0, 0 from SurveyType where ID = @MainObjectID
+		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from SurveyType where ID = @MainObjectID
+	end
+	
+	
+	if @MainObject = 'Taxonomy'
+	begin
+		select	@MainObjectTypeName = A.TypeName + ' model',
+				@MainObjectName = A.DisplayValue
+		from	AssetDetail A				
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
+
+	end
+
+	
+	if @MainObject = 'TaxonomyType'
+	begin
+		select	@MainObjectTypeName = 'Model Type',
+				@MainObjectName = A.Name 
+		from	AssetType A
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'HierarchyMaximumDepth', hierarchymaximumdepth, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+	end
+
+	
+	if @MainObject = 'PolicyType'
+	begin
+		select	@MainObjectTypeName = 'Policy Type',
+				@MainObjectName = A.Name 
+		from	AssetType A
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'HierarchyMaximumDepth', hierarchymaximumdepth, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+
+		insert into @tbl  select 0, 'IconBackColor', IconBackColor, 0, 0 from objectstyle where ObjectID = @MainObjectID and [ObjectType] = @MainObject		
+		insert into @tbl  select 0, 'IconForeColor', IconForeColor, 0, 0 from objectstyle where ObjectID = @MainObjectID and [ObjectType] = @MainObject		
+ 
+	end
+		
+	if @MainObject in ('Artifact', 'Attribute', 'Fusion', 'FusionAttribute', 'Lookup', 'Resource', 'Rule', 'Policy', 'Taxonomy', 'ReferenceItem') and @DependentObject = @MainObject
+	begin
+		insert into @tbl  
+			select	FieldTypeID, 
+					FriendlyName, 
+					FormattedValue, 
+					0, 
+					0 
+			from	FieldWithRelation
+			where	ObjectType = @MainObject 
+					and ObjectID = @MainObjectID
+	end
+
+	if @MainObject = 'CompanySettings'
+	begin
+		set @MainObjectTypeName = @MainObject
+		set @DependentObjectName = @MainObject
+		set	@MainObjectName = @DependentObject
+		
+		insert into @tbl select 1, @DependentObject, @NewValue, 0, 0 
+
+	end
+	
+	update	T
+	set		T.MostRecentVersion = coalesce(S.[Version], 0),
+			T.Updated = case 
+							when T.NewValue = S.Value then 0
+							when T.NewValue is null and S.Value is null then 0
+							else 1
+						end
+	from	@tbl T
+			left join (
+						select	V.*,
+								F.Value
+						from	reporting.Global_Audit A
+								inner join reporting.Global_FieldAudit F on F.AuditID = A.ID and A.[Object] = @DependentObject and A.ObjectID = @DependentObjectID and A.ActionObject = @MainObject and A.ActionObjectID = @MainObjectID
+								inner join (
+											select		F.FieldTypeID,
+														F.FieldName,
+														max([Version]) as [Version]
+											from		reporting.Global_Audit A
+														inner join reporting.Global_FieldAudit F on F.AuditID = A.ID and A.[Object] = @DependentObject and A.ObjectID = @DependentObjectID and A.ActionObject = @MainObject and A.ActionObjectID = @MainObjectID
+											group by	F.FieldTypeID,
+														F.FieldName
+											) V on V.FieldTypeID = F.FieldTypeID and V.FieldName = F.FieldNAme and V.[Version] = F.[Version]
+						) S on (S.FieldTypeID = 0 and S.FieldTypeID = T.FieldTypeID and S.FieldName = T.FieldName) or (S.FieldTypeID > 0 and S.FieldTypeID = T.FieldTypeID)
+
+	declare	@auditID bigint,
+			@current int = 1, 
+			@max int,
+			@fieldTypeID int,
+			@fieldName nvarchar(250),
+			@version int,
+			@value nvarchar(max),
+			@updated bit
+	select	@max = max(ID) from @tbl
+
+	if @Action = 'Created'
+		begin
+			set @MainDescription = @MainObjectTypeName + ' created'
+		end
+	if @Action = 'Removed'
+		begin
+			set @MainDescription = @MainObjectTypeName + ' removed'
+		end
+	if @Action = 'Updated'
+		begin
+			while @current <= @max
+			begin
+				select	@fieldTypeID = FieldTypeID,
+						@fieldName = FieldName,
+						@version = MostRecentVersion,
+						@value = NewValue,
+						@updated = Updated
+				from	@tbl
+				where	ID = @current
+
+				if @updated = 1
+				begin
+					set @MainDescription = coalesce(@MainDescription + ', ', '') + @fieldName + case when @version > 0 then ' updated' else ' added' end
+				end
+
+				set @current = @current + 1
+			end
+		end
+
+	if @MainObjectName is not null and @DependentObjectName is not null
+	begin
+		set @MainDescription = coalesce(@MainDescription,@MainObject + ' ' + @Action) + '.'
+
+		if @Action = 'Tag Consolidate'
+			begin
+			    set @MainDescription = 'Tag Consolidation'
+			end
+	    if @Action = 'Update settings'
+			begin
+			    set @MainDescription = 'Updating company settings'
+			end
+
+		insert into [reporting].[Global_Audit] values (@DependentObject, @DependentObjectID, @DependentObjectName, coalesce(@ResourceID, 0), @Date, @Action, @MainObject, @MainObjectID, @MainObjectTypeName, @MainObjectName, @MainDescription)
+		select @auditID = SCOPE_IDENTITY()
+		set @current = 1
+		while @current <= @max
+		begin
+			select	@fieldTypeID = FieldTypeID,
+					@fieldName = FieldName,
+					@version = MostRecentVersion,
+					@value = NewValue,
+					@updated = Updated
+			from	@tbl
+			where	ID = @current
+
+			if @Action = 'Tag Consolidate'
+			begin
+				select	@fieldTypeID = '0',
+						@fieldName = 'Tag',
+						@version = MostRecentVersion,
+						@value = @DependentObjectName,
+						@updated = Updated
+				from	@tbl
+				where	ID = @current
+			end
+
+			if @Action = 'Tag Consolidate'
+			begin
+				select	@fieldTypeID = '0',
+						@fieldName = @DependentObjectName,
+						@version = MostRecentVersion,
+						@value = @NewValue,
+						@updated = Updated
+				from	@tbl
+				where	ID = @current
+			end
+
+			if @updated = 1
+			begin
+				insert into [reporting].[Global_FieldAudit] 
+				values	(
+						@auditID, 
+						@fieldTypeID, 
+						@fieldName, 
+						@version + 1, 
+						@value 
+						) 		
+			end
+
+			set @current = @current + 1
+		end
+	end	
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+ALTER   procedure [utility].[AddAuditEntry]
+	@DependentObject varchar(50),
+	@DependentObjectID int,
+	@ResourceID int,
+	@Date datetime,
+	@Action varchar(15),
+	@MainObject varchar(50),
+	@MainObjectID int
+as
+begin
+	set nocount on;
+	declare @DependentObjectName nvarchar(250),
+			@MainObjectTypeName nvarchar(250),
+			@MainObjectName nvarchar(250),
+			@MainDescription nvarchar(max)
+	
+	declare @tbl table (ID int identity, FieldTypeID int, FieldName nvarchar(250), NewValue nvarchar(max), MostRecentVersion int, Updated bit)
+
+	if @DependentObject is not null
+	begin
+		if @DependentObject = 'Fusion'				begin		select @DependentObjectName = Name from Fusion where ID = @DependentObjectID				end		
+		if @DependentObject = 'FusionType'			begin		select @DependentObjectName = Name from FusionType where ID = @DependentObjectID			end
+		if @DependentObject = 'Group'				begin		select @DependentObjectName = Name from [Group] where ID = @DependentObjectID				end				
+		if @DependentObject = 'LookupType'			begin		select @DependentObjectName = Name from LookupType where ID = @DependentObjectID			end
+		if @DependentObject = 'IssueType'			begin		select @DependentObjectName = Name from IssueType where ID = @DependentObjectID				end
+		if @DependentObject = 'IntersectType'		begin		select @DependentObjectName = ITyName.Name from IntersectType O cross apply dbo.getIntersectTypeNames(O.ID) ITyName where O.ID = @DependentObjectID			end
+		
+		if @DependentObject = 'ReferenceItemType'	begin		select @DependentObjectName = Name from AssetType where ObjectID = @DependentObjectID and [Object] = 'ReferenceItemType'		end		
+		if @DependentObject = 'Report'				begin		select @DependentObjectName = Name from Report where ID = @DependentObjectID				end
+		if @DependentObject = 'ResponsibilityType'	begin		select @DependentObjectName = Name from ResponsibilityType where ID = @DependentObjectID	end				
+		if @DependentObject = 'SurveyType'			begin		select @DependentObjectName = Name from SurveyType where ID = @DependentObjectID			end			
+		if @DependentObject = 'Tag'			        begin		select @DependentObjectName = Value from Tag where ID = @DependentObjectID			        end			
+
+		else			
+			begin	
+				select @DependentObjectName = D.[Name]
+				from
+				(
+					select DisplayValue as [Name], [Object], ObjectID from AssetDetail
+					union all
+					select [Name], [Object], ObjectID from AssetType
+				) D where D.ObjectID = @DependentObjectID	and D.[Object] = @DependentObject
+			end
+		
+	end
+		
+	if @MainObject = 'Artifact'
+	begin
+		select	@MainObjectTypeName = A.TypeName,
+				@MainObjectName = A.DisplayValue
+		from	AssetDetail A				
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject
+
+	end
+
+	if @MainObject = 'ArtifactType'
+	begin
+		select	@MainObjectTypeName = 'Artifact Type',
+				@MainObjectName = A.Name 
+		from	AssetType A
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject	
+		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject					
+	end
+	
+	
+	if @MainObject = 'Attribute'
+	begin
+		select	@MainObjectTypeName = A.TypeName,
+				@MainObjectName = A.DisplayValue
+		from	AssetDetail A				
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject
+	end
+
+	
+	if @MainObject = 'AttributeType'
+	begin
+		select	@MainObjectTypeName = 'Attribute Type',
+				@MainObjectName = O.Name
+		from	AttributeType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from AttributeType where ID = @MainObjectID
+		insert into @tbl  select 0, 'ParentID', ParentID, 0, 0 from AttributeType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from AttributeType where ID = @MainObjectID		
+		insert into @tbl  select 0, 'AttributeTypeCategoryID', AttributeTypeCategoryID, 0, 0 from AttributeType where ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'FieldType'
+	begin
+		select	@MainObjectTypeName = 'Field Type',
+				@MainObjectName = O.FriendlyName
+		from	FieldType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'FriendlyName', FriendlyName, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', [Description], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'DisplayDescription', DisplayDescription, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'FormDescription', FormDescription, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Type', [Type], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'LookupObjectType', LookupObjectType, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'LookupObjectID', LookupObjectID, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'LookupDisplayFormat', LookupDisplayFormat, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'MinimumLength', MinimumLength, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'MaximumLength', MaximumLength, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Length', [Length], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'SortOrder', [SortOrder], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsRequired', [IsRequired], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsListable', [IsListable], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Category', [Category], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsDisplayable', [IsDisplayable], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsEditable', [IsEditable], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsPartOfKey', [IsPartOfKey], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'AllowMultipleValues', [AllowMultipleValues], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'ColumnOrder', [ColumnOrder], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'ColumnWidth', [ColumnWidth], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'IsPrimaryFilter', [IsPrimaryFilter], 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'DefaultFormattedValue', DefaultFormattedValue, 0, 0 from FieldType where ID = @MainObjectID
+		insert into @tbl  select 0, 'ShowIfEmpty', ShowIfEmpty, 0, 0 from FieldType where ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'Fusion'
+	begin
+		select	@MainObjectTypeName = T.Name,
+				@MainObjectName = O.Name 
+		from	Fusion O
+				inner join FusionType T on T.ID = O.FusionTypeID
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'Enabled', Enabled, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'Manual', Manual, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'LockPromotedItems', LockPromotedItems, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'IntervalType', IntervalType, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'Interval', Interval, 0, 0 from Fusion where ID = @MainObjectID
+		insert into @tbl  select 0, 'ForceRefresh', ForceRefresh, 0, 0 from Fusion where ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'FusionAttributeType'
+	begin
+		select	@MainObjectTypeName = T.Name,
+				@MainObjectName = O.Name 
+		from	FusionAttributeType O
+				inner join FusionType T on T.ID = O.FusionTypeID
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from FusionAttributeType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Assignable', Assignable, 0, 0 from FusionAttributeType where ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'FusionType'
+	begin
+		select	@MainObjectTypeName = 'Fusion Type',
+				@MainObjectName = O.Name 
+		from	FusionType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from FusionType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from FusionType where ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'Group'
+	begin
+		select	@MainObjectTypeName = 'Group',
+				@MainObjectName = O.Name 
+		from	[Group] O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from [Group] where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from [Group] where ID = @MainObjectID
+		insert into @tbl  select 0, 'PrimaryOwnerResourceID', PrimaryOwnerResourceID, 0, 0 from [Group] where ID = @MainObjectID
+		insert into @tbl  select 0, 'SecondaryOwnerResourceID', SecondaryOwnerResourceID, 0, 0 from [Group] where ID = @MainObjectID
+	end
+	
+	
+	if @MainObject = 'Intersect'
+	begin
+		select	@MainObjectTypeName = ITyName.Name,
+				@MainObjectName = Iname.Name 
+		from	[Intersect] O
+				inner join [IntersectType] T on T.ID = O.IntersectTypeID
+				cross apply dbo.getIntersectNames(O.ID) Iname
+				cross apply dbo.getIntersectTypeNames(T.ID) ITyName
+		where	O.ID = @MainObjectID
+	end
+	
+	
+	if @MainObject = 'IntersectType'
+	begin
+		select	@MainObjectTypeName = 'Intersect Type',
+				@MainObjectName = ITyName.Name 
+		from	IntersectType O
+				cross apply dbo.getIntersectTypeNames(O.ID) ITyName
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', ITyName.Name, 0, 0 from	IntersectType O cross apply dbo.getIntersectTypeNames(O.ID) ITyName where	O.ID = @MainObjectID
+		insert into @tbl  select 0, 'SubjectCardinality', SubjectCardinality, 0, 0 from	IntersectType O where	ID = @MainObjectID
+		insert into @tbl  select 0, 'ObjectCardinality', ObjectCardinality, 0, 0 from	IntersectType O where	ID = @MainObjectID
+		insert into @tbl  select 0, 'Predicate', Name, 0, 0 from predicate where id = (select predicateid from intersecttype where id = @MainObjectID)
+	end
+
+	
+	if @MainObject = 'IssueType'
+	begin
+		select	@MainObjectTypeName = 'Action Type',
+				@MainObjectName = O.Name 
+		from	IssueType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from IssueType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', [Description], 0, 0 from IssueType where ID = @MainObjectID
+	end
+		
+	if @MainObject = 'Lookup'
+	begin
+		select	@MainObjectTypeName = T.Name,
+				@MainObjectName = T.Name + ' Lookup ' + cast(O.ID as nvarchar(15))
+		from	[Lookup] O
+				inner join LookupType T on T.ID = O.LookupTypeID
+		where	O.ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'LookupType'
+	begin
+		select	@MainObjectTypeName = 'Lookup Type',
+				@MainObjectName = O.Name 
+		from	LookupType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from LookupType where ID = @MainObjectID
+	end
+	
+	
+	if @MainObject = 'Policy'
+	begin
+		select	@MainObjectTypeName = 'Policy',
+				@MainObjectName = A.DisplayValue
+		from	AssetDetail A				
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
+
+	end
+
+	
+	if @MainObject = 'QuestionType'
+	begin
+		select	@MainObjectTypeName = T.Name,
+				@MainObjectName = O.Name 
+		from	QuestionType O
+				inner join SurveyType T on T.ID = O.SurveyTypeID
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from QuestionType where ID = @MainObjectID
+		insert into @tbl  select 0, 'DisplayStyle', DisplayStyle, 0, 0 from QuestionType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from QuestionType where ID = @MainObjectID
+	end
+
+	
+	if @MainObject = 'ReferenceItem'
+	begin
+		select	@MainObjectTypeName = ATT.Name,
+				@MainObjectName = A.Code 
+		from	Asset A
+				inner join AssetType ATT on ATT.ID = A.AssetTypeID				
+		where	A.ObjectID = @MainObjectID and A.[Object] = 'ReferenceItem'
+		
+		insert into @tbl  select 0, 'Code', Code, 0, 0 from Asset where ObjectID = @MainObjectID and [Object] = 'ReferenceItem'
+		
+	end
+
+	
+	if @MainObject = 'ReferenceItemType'
+	begin
+		select	@MainObjectTypeName = 'Reference Item Type',
+				@MainObjectName = O.Name
+		from	AssetType O
+		where	O.ObjectID = @MainObjectID and O.[Object] = 'ReferenceItemType'
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = 'ReferenceItemType'
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = 'ReferenceItemType'
+		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = 'ReferenceItemType'
+	end
+
+	
+	if @MainObject = 'Report'
+	begin
+		select	@MainObjectTypeName = 'Report',
+				@MainObjectName = O.Name
+		from	Report O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'ObjectType', ObjectType, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from Report where ID = @MainObjectID
+		insert into @tbl  select 0, 'ReportLayoutID', ReportLayoutID, 0, 0 from Report where ID = @MainObjectID
+	end
+
+	if @MainObject = 'Resource'
+	begin
+		select	@MainObjectTypeName = 'Resource',
+				@MainObjectName = A.FirstName + ' ' + A.LastName 
+		from	reporting.Global_Resource A
+		where	A.ResourceID = @MainObjectID
+
+	end
+
+	if @MainObject = 'Tag'
+	begin
+		select	@MainObjectTypeName = 'Tag',
+				@MainObjectName = T.Value
+		from	Tag T
+		where	T.Id = @MainObjectID
+
+		insert into @tbl  select 0, 'Value', Value, 0, 0 from Tag where ID = @MainObjectID
+	end
+	
+	if @MainObject = 'ResponsibilityType'
+	begin
+		select	@MainObjectTypeName = 'Responsibility Type',
+				@MainObjectName = O.Name 
+		from	ResponsibilityType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from ResponsibilityType where ID = @MainObjectID
+		insert into @tbl  select 0, 'ResponsibilityTypeGroup', ResponsibilityTypeGroup, 0, 0 from ResponsibilityType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from ResponsibilityType where ID = @MainObjectID
+	end
+	
+	
+	if @MainObject = 'Rule'
+	begin		
+		select	@MainObjectTypeName = 'Rule',
+				@MainObjectName = A.DisplayValue
+		from	AssetDetail A				
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
+	end
+	
+	
+	if @MainObject = 'SurveyType'
+	begin
+		select	@MainObjectTypeName = 'Survey Type',
+				@MainObjectName = O.Name 
+		from	SurveyType O
+		where	O.ID = @MainObjectID
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from SurveyType where ID = @MainObjectID
+		insert into @tbl  select 0, 'Object', Object, 0, 0 from SurveyType where ID = @MainObjectID
+		insert into @tbl  select 0, 'ObjectID', ObjectID, 0, 0 from SurveyType where ID = @MainObjectID
+	end
+	
+	
+	if @MainObject = 'Taxonomy'
+	begin
+		select	@MainObjectTypeName = A.TypeName + ' model',
+				@MainObjectName = A.DisplayValue
+		from	AssetDetail A				
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
+
+	end
+
+	
+	if @MainObject = 'TaxonomyType'
+	begin
+		select	@MainObjectTypeName = 'Model Type',
+				@MainObjectName = A.Name 
+		from	AssetType A
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'HierarchyMaximumDepth', hierarchymaximumdepth, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+	end
+
+	
+	if @MainObject = 'PolicyType'
+	begin
+		select	@MainObjectTypeName = 'Policy Type',
+				@MainObjectName = A.Name 
+		from	AssetType A
+		where	A.ObjectID = @MainObjectID and A.[Object] = @MainObject;
+
+		insert into @tbl  select 0, 'Name', Name, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'Description', Description, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'DisplayFormat', DisplayFormat, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+		insert into @tbl  select 0, 'HierarchyMaximumDepth', hierarchymaximumdepth, 0, 0 from AssetType where ObjectID = @MainObjectID and [Object] = @MainObject		
+
+		insert into @tbl  select 0, 'IconBackColor', IconBackColor, 0, 0 from objectstyle where ObjectID = @MainObjectID and [ObjectType] = @MainObject		
+		insert into @tbl  select 0, 'IconForeColor', IconForeColor, 0, 0 from objectstyle where ObjectID = @MainObjectID and [ObjectType] = @MainObject		
+ 
+	end
+		
+	if @MainObject in ('Artifact', 'Attribute', 'Fusion', 'FusionAttribute', 'Lookup', 'Resource', 'Rule', 'Policy', 'Taxonomy', 'ReferenceItem') and @DependentObject = @MainObject
+	begin
+		insert into @tbl  
+			select	FieldTypeID, 
+					FriendlyName, 
+					FormattedValue, 
+					0, 
+					0 
+			from	FieldWithRelation
+			where	ObjectType = @MainObject 
+					and ObjectID = @MainObjectID
+	end
+	
+	update	T
+	set		T.MostRecentVersion = coalesce(S.[Version], 0),
+			T.Updated = case 
+							when T.NewValue = S.Value then 0
+							when T.NewValue is null and S.Value is null then 0
+							else 1
+						end
+	from	@tbl T
+			left join (
+						select	V.*,
+								F.Value
+						from	reporting.Global_Audit A
+								inner join reporting.Global_FieldAudit F on F.AuditID = A.ID and A.[Object] = @DependentObject and A.ObjectID = @DependentObjectID and A.ActionObject = @MainObject and A.ActionObjectID = @MainObjectID
+								inner join (
+											select		F.FieldTypeID,
+														F.FieldName,
+														max([Version]) as [Version]
+											from		reporting.Global_Audit A
+														inner join reporting.Global_FieldAudit F on F.AuditID = A.ID and A.[Object] = @DependentObject and A.ObjectID = @DependentObjectID and A.ActionObject = @MainObject and A.ActionObjectID = @MainObjectID
+											group by	F.FieldTypeID,
+														F.FieldName
+											) V on V.FieldTypeID = F.FieldTypeID and V.FieldName = F.FieldNAme and V.[Version] = F.[Version]
+						) S on (S.FieldTypeID = 0 and S.FieldTypeID = T.FieldTypeID and S.FieldName = T.FieldName) or (S.FieldTypeID > 0 and S.FieldTypeID = T.FieldTypeID)
+
+	declare	@auditID bigint,
+			@current int = 1, 
+			@max int,
+			@fieldTypeID int,
+			@fieldName nvarchar(250),
+			@version int,
+			@value nvarchar(max),
+			@updated bit
+	select	@max = max(ID) from @tbl
+
+	if @Action = 'Created'
+		begin
+			set @MainDescription = @MainObjectTypeName + ' created'
+		end
+	if @Action = 'Removed'
+		begin
+			set @MainDescription = @MainObjectTypeName + ' removed'
+		end
+	if @Action = 'Updated'
+		begin
+			while @current <= @max
+			begin
+				select	@fieldTypeID = FieldTypeID,
+						@fieldName = FieldName,
+						@version = MostRecentVersion,
+						@value = NewValue,
+						@updated = Updated
+				from	@tbl
+				where	ID = @current
+
+				if @updated = 1
+				begin
+					set @MainDescription = coalesce(@MainDescription + ', ', '') + @fieldName + case when @version > 0 then ' updated' else ' added' end
+				end
+
+				set @current = @current + 1
+			end
+		end
+
+	if @MainObjectName is not null and @DependentObjectName is not null
+	begin
+		set @MainDescription = coalesce(@MainDescription,@MainObject + ' ' + @Action) + '.'
+
+		if @Action = 'Tag Consolidate'
+			begin
+			    set @MainDescription = 'Tag Consolidation'
+			end
+
+		insert into [reporting].[Global_Audit] values (@DependentObject, @DependentObjectID, @DependentObjectName, coalesce(@ResourceID, 0), @Date, @Action, @MainObject, @MainObjectID, @MainObjectTypeName, @MainObjectName, @MainDescription)
+		select @auditID = SCOPE_IDENTITY()
+
+		set @current = 1
+		while @current <= @max
+		begin
+			select	@fieldTypeID = FieldTypeID,
+					@fieldName = FieldName,
+					@version = MostRecentVersion,
+					@value = NewValue,
+					@updated = Updated
+			from	@tbl
+			where	ID = @current
+
+			if @Action = 'Tag Consolidate'
+			begin
+				select	@fieldTypeID = '0',
+						@fieldName = 'Tag',
+						@version = MostRecentVersion,
+						@value = @DependentObjectName,
+						@updated = Updated
+				from	@tbl
+				where	ID = @current
+			end
+
+			if @updated = 1
+			begin
+				insert into [reporting].[Global_FieldAudit] 
+				values	(
+						@auditID, 
+						@fieldTypeID, 
+						@fieldName, 
+						@version + 1, 
+						@value 
+						) 		
+			end
+
+			set @current = @current + 1
+		end
+	end	
+end
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
