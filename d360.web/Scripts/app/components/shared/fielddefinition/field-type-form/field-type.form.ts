@@ -495,6 +495,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.LookupDisplayFormat = null;
                 break;
+            case 'tag':
+                this.model.FieldType.IsListable = true;
+                break;
             default:
                 this.model.FieldType.LookupDisplayFormat = null;
                 this.model.FieldType.LookupObjectID = null;

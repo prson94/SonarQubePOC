@@ -1,0 +1,17 @@
+﻿
+<div #container class="tag-list-container" *ngIf="tags">
+    <ng-container *ngFor="let tag of tags;let i = index;">
+
+        <a [attr.href]="getTagUrl(tag)" [attr.target]="'_blank'" class="link-button {{i > 9 && isShowAll == false ? 'hide' : ''}}">
+            <div #el (mouseenter)="enter($event.target)" (mouseleave)="leave($event.target)" class="tag-item-wrapper">
+                {{tag.Value}}
+            </div>
+        </a>
+    </ng-container>
+    <ng-container *ngIf="tags.length > 10">
+        <a (click)="showAllToggle($event);" style="display:block;margin-left:6px;">
+            <ng-container *ngIf="isShowAll">Hide all</ng-container>
+            <ng-container *ngIf="!isShowAll">Show all {{tags.length}} tags</ng-container>
+        </a>
+    </ng-container>
+</div>
