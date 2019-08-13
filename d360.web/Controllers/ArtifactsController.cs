@@ -473,7 +473,7 @@ where   A.Type = 'ArtifactType'
             else
             {
                 document = new SLDocument();
-                document.RenameWorksheet("Sheet1", worksheetName);
+                document.RenameWorksheet(SLDocument.DefaultFirstSheetName, worksheetName);
 
                 if (!string.IsNullOrEmpty(template.UsageNotes))
                 {

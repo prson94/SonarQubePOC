@@ -7457,7 +7457,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var loadItemColumns = Company.Query<dynamic>(itemColumnSql, new { id }).ToList();
 
             var document = new SLDocument();
-            document.RenameWorksheet("Sheet1", "Items");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             #region Create the list sheet
 
