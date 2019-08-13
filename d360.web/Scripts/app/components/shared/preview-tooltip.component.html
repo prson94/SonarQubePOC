@@ -49,8 +49,8 @@
                         <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
                     </span>
                 </ng-container>
-                <ng-container *ngIf="field.Type == 'Tag'">
-                    <ng-container *ngFor="let tag of GetJSON(field.Value); let i = index">
+                <ng-container *ngIf="field.Type == 'Tag' && field.Value.length > 2">
+                    <ng-container  *ngFor="let tag of GetJSON(field.Value); let i = index">
                         <span>{{i != 0 ? ',' : ''}}<a style="margin:0px;" href="tag/{{tag.uid}}">{{tag.Value}}</a></span>
                     </ng-container>
                 </ng-container>
