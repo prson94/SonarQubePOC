@@ -424,6 +424,24 @@ namespace d360.model
 
             public string Value { get; set; }
         }
+
+        public T GetCompanySettingByKey<T>(string key)
+        {
+            var settings = GetCompanySettings();
+            if (settings.ContainsKey(key))
+            {
+                var value = settings[key];
+                try
+                {
+                    return (T)(Convert.ChangeType(value, typeof(T)));
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+            }
+            else return default(T);
+        }
         
         public Dictionary<string, string> GetCompanySettings()
         {

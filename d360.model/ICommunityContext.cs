@@ -40,11 +40,13 @@ namespace d360.model
         bool Delete<T>(T entity) where T : BaseObject;
         string GetCompanyConnectionString(bool skipCacheCheck = false);
         Dictionary<string, string> GetCompanySettings();
+        T GetCompanySettingByKey<T>(string key);
         string HashPassword(string value);
         IEnumerable<T> Query<T>(string sql, object param = null);
         int SaveChanges();
         bool Update<T>(T item) where T : BaseObject;
         Resource ValidateResource(string username, string password);
         bool IsCompanySettingActive(string settingName);
+
     }
 }
