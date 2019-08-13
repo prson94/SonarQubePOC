@@ -2894,6 +2894,8 @@
             * If you provide ExecutionItemUids, values must be a unique across the entire request body.
             * You do not have to provide ExecutionItemUid values for all entries in a request.
             * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            
+            Workflows - This endpoint will trigger any associated workflows for the add actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
@@ -2910,6 +2912,8 @@
             * If you provide ExecutionItemUids, values must be a unique across the entire request body.
             * You do not have to provide ExecutionItemUid values for all entries in a request.
             * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            
+            Workflows - This endpoint will trigger any associated workflows for the update actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
@@ -2926,6 +2930,8 @@
             * If you provide ExecutionItemUids, values must be a unique across the entire request body.
             * You do not have to provide ExecutionItemUid values for all entries in a request.
             * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            
+            Workflows - This endpoint will trigger any associated workflows for the delete actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
@@ -2942,6 +2948,8 @@
             * If you provide ExecutionItemUids, values must be a unique across the entire request body.
             * You do not have to provide ExecutionItemUid values for all entries in a request.
             * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            
+            Workflows - This endpoint will trigger any associated workflows for the add actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
@@ -2958,6 +2966,8 @@
             * If you provide ExecutionItemUids, values must be a unique across the entire request body.
             * You do not have to provide ExecutionItemUid values for all entries in a request.
             * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            
+            Workflows - This endpoint will trigger any associated workflows for the update actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
@@ -2974,6 +2984,8 @@
             * If you provide ExecutionItemUids, values must be a unique across the entire request body.
             * You do not have to provide ExecutionItemUid values for all entries in a request.
             * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+            
+            Workflows - This endpoint will trigger any associated workflows for the delete actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="assets">The payload of your request.</param>
@@ -3161,6 +3173,19 @@
             GET a list of tags.
             </summary>
             <returns>A excel file containing tags.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.GetTagDetails(System.String)">
+            <summary>
+            Gets tag details.
+            </summary>
+            <param name="uid">The unique identifier of the tag.</param>        
+            <returns>Tag details.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.ExportTagToExcel(System.String)">
+            <summary>
+            GET a list of tagged assets by tag Uid.
+            </summary>
+            <returns>A excel file containing tagged assets.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowTypeAsync(System.Nullable{d360.core.enums.Workflow.ChangeType},System.Nullable{d360.core.enums.State})">
             <summary>
