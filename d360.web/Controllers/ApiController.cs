@@ -790,6 +790,11 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             var sType = type.ToString();
             var skippedFieldTypes = DataType.Text.GetNonlistableFields();
 
+            var isTaggingEnabled = Community.GetCompanySettingByKey<bool>("EnableTagging");
+
+            if (!isTaggingEnabled)
+                skippedFieldTypes.Add(DataType.Tag.ToString());
+
             var totalItems = Company
                 .Filter<FieldType>(i => i.Object == sType && i.ObjectID == id && !skippedFieldTypes.Contains(i.Type))
                 .ToList();

@@ -1,8 +1,8 @@
 ﻿
 <div #container class="tag-list-container" *ngIf="tags">
-    <ng-container *ngFor="let tag of tags;let i = index;">
+    <ng-container *ngFor="let tag of tags;">
 
-        <a [attr.href]="getTagUrl(tag)" [attr.target]="'_blank'" class="link-button {{i > 9 && isShowAll == false ? 'hide' : ''}}">
+        <a (click)="openTagPage($event, getTagUrl(tag))" [attr.target]="'_blank'" class="link-button">
             <div #el (mouseenter)="enter($event.target)" (mouseleave)="leave($event.target)" class="tag-item-wrapper">
                 {{tag.Value}}
             </div>

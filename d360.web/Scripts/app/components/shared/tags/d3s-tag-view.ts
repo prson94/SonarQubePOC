@@ -1,6 +1,6 @@
 import { map } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { container } from '@angular/core/src/render3';
 
@@ -37,14 +37,28 @@ export class TagView implements OnInit {
     showAllToggle(event: MouseEvent) {
         this.isShowAll = !this.isShowAll;
         event.stopPropagation();
+        this.setVisibility();
     }
+
+    setVisibility() {
+        this.container.nativeElement.querySelectorAll('.tag-item-wrapper')
+            .forEach((x, index) => {
+                if (!this.isShowAll && index > 9) {
+                    x.closest('a').classList.add('hide');
+                }
+                else {
+                    x.closest('a').classList.remove('hide');
+                }
+            });
+    }
+
     ngAfterViewInit() {
         if (this.container) {
             var parentWidth = this.container.nativeElement.closest('td').offsetWidth - 10;
 
             this.container.nativeElement.style.width = parentWidth + 'px';
             this.container.nativeElement.querySelectorAll('.tag-item-wrapper')
-                .forEach(x => {
+                .forEach((x) => {
                     if (x.offsetWidth > parentWidth) {
                         x.setAttribute('original-width', x.offsetWidth);
                         x.style.maxWidth = (parentWidth - 30) + 'px';
@@ -52,8 +66,16 @@ export class TagView implements OnInit {
                         x.setAttribute('max-width', parentWidth - 30);
                     }
                 });
+
+            this.setVisibility();
+
         }
 
+    }
+
+    openTagPage(event: MouseEvent, url: string) {
+        window.open(url, "_blank");
+        event.stopPropagation();
     }
 
     //Transition speed is set in .less
