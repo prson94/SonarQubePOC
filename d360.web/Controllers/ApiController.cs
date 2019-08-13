@@ -168,7 +168,7 @@ namespace d360.web.Controllers
                                                     TooltipID = item.Value,
                                                     Value = item.Text,
                                                     TooltipType = ft.LookupObjectType,
-                                                    TooltipUrl = (detail == null ? "" : detail.NgUrl)
+                                                    TooltipUrl = (detail == null ? "" : detail.Url)
                                                 });
                                             }
                                         }
@@ -221,7 +221,22 @@ namespace d360.web.Controllers
 
                                         ro.TooltipType = ft.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : ft.LookupObjectType;
                                         if (k != null)
-                                            ro.TooltipUrl = k.LookupUrl;
+                                        {
+                                            if (!string.IsNullOrEmpty(k.LookupUrl))
+                                            {
+                                                ro.TooltipUrl = k.LookupUrl;
+                                            }
+                                            else if (int.TryParse(value, out int val))
+                                            {
+                                                var det = Company.GetObjectDetail(k.LookupObjectType, val);
+
+                                                if (det != null)
+                                                {
+                                                    ro.TooltipUrl = det.Url;
+                                                }
+                                            }
+
+                                        }
                                     }
                                 }
                             }
