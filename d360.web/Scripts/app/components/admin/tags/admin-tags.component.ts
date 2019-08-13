@@ -1,4 +1,4 @@
-﻿import { Component, HostListener } from '@angular/core';
+﻿import { Component, HostListener, ChangeDetectionStrategy, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { TagService } from '../../../services/tag.service';
 import { AdminBaseComponent } from '../admin-base.component'
@@ -7,6 +7,7 @@ import { TagType, TagItem } from '../../../models/tag.model';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { forEach } from '@angular/router/src/utils/collection';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { Node } from '@angular/compiler/src/render3/r3_ast';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 declare var CompanySettings;
@@ -14,7 +15,7 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-admin-tags',
     templateUrl: 'admin-tags.component.html',
-    providers: [TagService],
+    providers: [TagService]
 })
 
 export class AdminTagsComponent extends AdminBaseComponent {
@@ -34,6 +35,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     public theDeleteCallback: Function;
     public theConsolidateCallback: Function;
+
+    @ViewChild('dt') tableEl: any;
+    private lastSelectedElement: TagType;
 
     constructor(private router: Router, private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title, rightSidebarService: RightSidebarService, ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
@@ -74,19 +78,91 @@ export class AdminTagsComponent extends AdminBaseComponent {
         }, err => this.error = err);
     }
 
+    private deselectElement(element: any) {
+        element.classList.remove('ui-state-highlight');
+        element.querySelector('span.ui-chkbox-icon').classList.remove('pi-check');
+        element.querySelector('span.ui-chkbox-icon').classList.remove('pi');
+        element.querySelector('div.ui-chkbox-box').classList.remove('ui-state-active');
+
+    }
+    private selectElement(element: any) {
+        element.classList.add('ui-state-highlight');
+        element.querySelector('span.ui-chkbox-icon').classList.add('pi-check');
+        element.querySelector('span.ui-chkbox-icon').classList.add('pi');
+        element.querySelector('div.ui-chkbox-box').classList.add('ui-state-active');
+
+    }
+
+    private clearAllSelectedItems() {
+        this.tableEl.el.nativeElement.querySelectorAll("tr.ui-state-highlight")
+            .forEach(x => {
+                this.deselectElement(x);
+            });
+
+    }
+
+    selectSingleItem(event: MouseEvent, item: TagType, element: ElementRef = null) {
+        this.editPopupTitle = 'Edit Tag';
 
 
-    selectSingleItem(item: TagType) {
+        //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
+        if (event && element) {
+            if (event.ctrlKey && !event.shiftKey) {
+                if (this.selected.filter(x => x.uid == item.uid).length > 0) {
+                    this.selected = this.selected.filter(x => x.uid != item.uid);
+                    var el = (<any>(event.target)).parentNode;
+                    this.deselectElement(el);
+                }
+                else {
+                    this.selected.push(item);
+                    var el = (<any>(event.target)).parentNode;
+                    this.selectElement(el);
+                }
+
+                this.lastSelectedElement = item;
+                return;
+            }
+            if (event.shiftKey) {
+                var lastIndex = this.tags.indexOf(this.lastSelectedElement);
+                if (lastIndex == -1 && this.selected.length == 1) {
+                    lastIndex = this.tags.indexOf(this.selected[0]);
+                }
+                var currentIndex = this.tags.indexOf(item);
+
+                if (lastIndex > currentIndex) {
+                    lastIndex += currentIndex;
+                    currentIndex = lastIndex - currentIndex;
+                    lastIndex -= currentIndex;
+                }
+
+                var tableRows = (<any>this.tableEl).el.nativeElement.querySelectorAll('table tbody tr');
+                for (var i = lastIndex; i <= currentIndex; i++) {
+                    if (!tableRows[i].classList.contains('ui-state-highlight')) {
+                        this.selected.push(this.tags[i]);
+                        this.selectElement(tableRows[i]);
+                    }
+                }
+
+                this.lastSelectedElement = item;
+                return;
+            }
+
+        }
+
+        if (element)
+            this.clearAllSelectedItems();
+
         this.selected = [];
         this.selected.push(item);
-        this.editPopupTitle = 'Edit Tag';
+
+        this.lastSelectedElement = item;
     }
 
 
     closeEditor() {
         this.showEditor = false;
         if (this.selected.length == 0 && this.tags.length > 0)
-            this.selectSingleItem(this.tags[0]);
+            this.selectSingleItem(null, this.tags[0]);
     }
 
     add() {

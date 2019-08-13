@@ -384,7 +384,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-      
+
 
         /// <summary>
         /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
@@ -396,6 +396,8 @@ namespace d360.web.Controllers.V2
         /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
         /// * You do not have to provide ExecutionItemUid values for all entries in a request.
         /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// 
+        /// Workflows - This endpoint will trigger any associated workflows for the add actions taken on assets as part of this API call.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
@@ -473,6 +475,8 @@ namespace d360.web.Controllers.V2
         /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
         /// * You do not have to provide ExecutionItemUid values for all entries in a request.
         /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// 
+        /// Workflows - This endpoint will trigger any associated workflows for the update actions taken on assets as part of this API call.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
@@ -549,6 +553,8 @@ namespace d360.web.Controllers.V2
         /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
         /// * You do not have to provide ExecutionItemUid values for all entries in a request.
         /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// 
+        /// Workflows - This endpoint will trigger any associated workflows for the delete actions taken on assets as part of this API call.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
@@ -616,6 +622,8 @@ namespace d360.web.Controllers.V2
         /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
         /// * You do not have to provide ExecutionItemUid values for all entries in a request.
         /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// 
+        /// Workflows - This endpoint will trigger any associated workflows for the add actions taken on assets as part of this API call.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
@@ -689,6 +697,8 @@ namespace d360.web.Controllers.V2
         /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
         /// * You do not have to provide ExecutionItemUid values for all entries in a request.
         /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// 
+        /// Workflows - This endpoint will trigger any associated workflows for the update actions taken on assets as part of this API call.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>
@@ -764,6 +774,8 @@ namespace d360.web.Controllers.V2
         /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
         /// * You do not have to provide ExecutionItemUid values for all entries in a request.
         /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// 
+        /// Workflows - This endpoint will trigger any associated workflows for the delete actions taken on assets as part of this API call.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="assets">The payload of your request.</param>

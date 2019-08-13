@@ -44,6 +44,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.title));
         this.setBrowserTitle(this.titleService, this.title);
         this.clearSidebar();
+        this.rightSidebarService.clearCurrentObject();
         this.rightSidebarService.setCurrentArea('Shopping Cart', 'fa-shopping-cart', null);
         this.rightSidebarService.showHeader(true);
         this.load();
