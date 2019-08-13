@@ -1,56 +1,61 @@
 <span #item
-        (click)="click.emit()"
+      (click)="click.emit()"
       (mouseenter)="show(item, tip)"
       (mouseleave)="hideDebounce.next(); mouseIn = false"
       [ngClass]="{ 'd3s-tooltip-active': active }"
       class="d3s-tooltip">
-  <i *ngIf="icon && icon != ''"
-     [ngClass]="['fa-' + this.icon, class ? class : '']"
-     [ngStyle]="{ color: iconColor }"
-     class="fa"></i>
-  <ng-content></ng-content>
-  <div *ngIf="innerHtmlContent != null" [innerHtml]="innerHtmlContent"></div>
-  <div #tip class="tooltip-child tooltip-panel">
-      <h3 style="position: relative">
-          <a *ngIf="data && data.Url" [routerLink]="data?.Url">{{data?.DisplayName}}</a>
-          <span *ngIf="data && !data.Url && data.DisplayName"
-                style="background-color: #fff;">{{ data?.DisplayName }}</span>
-          <small *ngIf="data && data.TypeName && data.DisplayName"
-                 style="background-color: #fff; float:right;font-size:65%;">{{ data.TypeName }}</small>
-          <span *ngIf="data && !data.DisplayName && data.TypeName"
-                style="background-color: #fff;">{{ data.TypeName }}</span>
-      </h3>
-      <div>&nbsp;</div>
-      <div *ngFor="let field of data?.Levels; let ii = index">
-          <div *ngIf="ii == 0"><b>Path:</b></div>
-          <div>
-              <span *ngIf="field.Level">{{ field.Level }}&nbsp;{{ field.LevelName }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="float:center;"><b><a [routerLink]="formattedUrl(field?.Url)">{{ field?.Path }}</a></b></span>
-          </div>
-      </div>
-      <p *ngIf="data?.Description" [innerHtml]="data?.Description"></p>
-      <div *ngIf="data?.AssetID && data?.AssetID > 0">
-          <b>Asset ID</b>: <span [innerHtml]="data.AssetID"></span>
-      </div>
-      <div *ngIf="data?.UID">
-          <b>UID</b>: <span [innerHtml]="data.UID"></span>
-      </div>
-      <div *ngIf="data?.WorkflowTypeUID">
-          <b>Workflow Type UID</b>: <span [innerHtml]="data.WorkflowTypeUID"></span>
-      </div>
-      <div *ngIf="data?.WorkflowVersionUID">
-          <b>Version UID</b>: <span [innerHtml]="data.WorkflowVersionUID"></span>
-      </div>
-      <div *ngFor="let field of data?.FieldValues">
-          <ng-container *ngIf="field.Value">
-              <b>{{ field.Name }}</b>:
-              <span *ngIf="field.Type == 'Html' || field.Type == 'Link'" [innerHtml]="field.Value"></span>
-              <ng-container *ngIf="field.Type == 'JSON'">
-                  <span (click)="$event.stopPropagation()">
-                      <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
-                  </span>
-              </ng-container>
-              <span  *ngIf="field.Type != 'Html' && field.Type !='Link' && field.Type != 'JSON'" [innerText]="field.Value"></span>
-          </ng-container>
-      </div>
-  </div>
+    <i *ngIf="icon && icon != ''"
+       [ngClass]="['fa-' + this.icon, class ? class : '']"
+       [ngStyle]="{ color: iconColor }"
+       class="fa"></i>
+    <ng-content></ng-content>
+    <div *ngIf="innerHtmlContent != null" [innerHtml]="innerHtmlContent"></div>
+    <div #tip class="tooltip-child tooltip-panel">
+        <h3 style="position: relative">
+            <a *ngIf="data && data.Url" [routerLink]="data?.Url">{{data?.DisplayName}}</a>
+            <span *ngIf="data && !data.Url && data.DisplayName"
+                  style="background-color: #fff;">{{ data?.DisplayName }}</span>
+            <small *ngIf="data && data.TypeName && data.DisplayName"
+                   style="background-color: #fff; float:right;font-size:65%;">{{ data.TypeName }}</small>
+            <span *ngIf="data && !data.DisplayName && data.TypeName"
+                  style="background-color: #fff;">{{ data.TypeName }}</span>
+        </h3>
+        <div>&nbsp;</div>
+        <div *ngFor="let field of data?.Levels; let ii = index">
+            <div *ngIf="ii == 0"><b>Path:</b></div>
+            <div>
+                <span *ngIf="field.Level">{{ field.Level }}&nbsp;{{ field.LevelName }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="float:center;"><b><a [routerLink]="formattedUrl(field?.Url)">{{ field?.Path }}</a></b></span>
+            </div>
+        </div>
+        <p *ngIf="data?.Description" [innerHtml]="data?.Description"></p>
+        <div *ngIf="data?.AssetID && data?.AssetID > 0">
+            <b>Asset ID</b>: <span [innerHtml]="data.AssetID"></span>
+        </div>
+        <div *ngIf="data?.UID">
+            <b>UID</b>: <span [innerHtml]="data.UID"></span>
+        </div>
+        <div *ngIf="data?.WorkflowTypeUID">
+            <b>Workflow Type UID</b>: <span [innerHtml]="data.WorkflowTypeUID"></span>
+        </div>
+        <div *ngIf="data?.WorkflowVersionUID">
+            <b>Version UID</b>: <span [innerHtml]="data.WorkflowVersionUID"></span>
+        </div>
+        <div *ngFor="let field of data?.FieldValues">
+            <ng-container *ngIf="field.Value">
+                <b>{{ field.Name }}</b>:
+                <span *ngIf="field.Type == 'Html' || field.Type == 'Link'" [innerHtml]="field.Value"></span>
+                <ng-container *ngIf="field.Type == 'JSON'">
+                    <span (click)="$event.stopPropagation()">
+                        <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
+                    </span>
+                </ng-container>
+                <ng-container *ngIf="field.Type == 'Tag'">
+                    <ng-container *ngFor="let tag of GetJSON(field.Value); let i = index">
+                        <span>{{i != 0 ? ',' : ''}}<a style="margin:0px;" href="tag/{{tag.uid}}">{{tag.Value}}</a></span>
+                    </ng-container>
+                </ng-container>
+                <span *ngIf="field.Type != 'Html' && field.Type !='Link' && field.Type != 'JSON' && field.Type != 'Tag'" [innerText]="field.Value"></span>
+            </ng-container>
+        </div>
+    </div>
 </span>
