@@ -1345,7 +1345,7 @@ from	IntersectType I
 
 
 			                update S set S.Success = 0 ,
-			                [Message] ='Cascade is disabled, yet there are  asset(s) associated for this asset.'
+			                [Message] ='You have not enabled Cascade, yet there are relationships or workflows for this asset.'
 			                from api.ExecutionDeletedAsset S 
 			                inner join (select [Root] as UID,ExecutionID,ItemNumber  from #ExecutionDeletedAsset
 			                group by [Root],ExecutionID,ItemNumber
