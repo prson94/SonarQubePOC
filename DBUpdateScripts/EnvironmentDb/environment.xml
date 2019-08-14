@@ -275,5 +275,6 @@
   <include file="scripts/GOV-7693.xml" /> <!-- Updates AddAuditEntry, allows additional nullable parameter and allows auditing for company settings -->
   <include file="scripts/GOV-7865.xml"/> <!-- graph tables for asset browser -->
   <include file="scripts/GOV-7872.xml"/> <!-- Asset Browser - PopulatePathsForAssetType -->
+  <include file="scripts/GOV-7888.xml"/> <!-- Batch API - ShouldAllowNewBatchCall -->
   <include file="scripts/GOV-7861.xml"/> <!-- IGC - ExecutionAssetType index -->
 </databaseChangeLog>

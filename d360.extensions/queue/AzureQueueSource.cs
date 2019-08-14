@@ -32,10 +32,10 @@ namespace d360.extensions.queue
             CreateMessages(queueName, list);
         }
 
-        public async Task CreateMessageAsync<T>(string queueName, T item)
+        public async Task CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null)
         {
             var list = new List<T>() { item };
-            await CreateMessagesAsync(queueName, list);
+            await CreateMessagesAsync(queueName, list, initialVisibilityDelay);
         }
 
         public void CreateMessages<T>(string queueName, List<T> items)
@@ -65,7 +65,7 @@ namespace d360.extensions.queue
             }
         }
 
-        public async Task CreateMessagesAsync<T>(string queueName, List<T> items)
+        public async Task CreateMessagesAsync<T>(string queueName, List<T> items, TimeSpan? initialVisibilityDelay = null)
         {
             try
             {
@@ -79,8 +79,8 @@ namespace d360.extensions.queue
                 await Task.Run(() => {
                      items.ForEach(item =>
                      {
-                         var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
-                         queue.AddMessage(msg);
+                         var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));                         
+                         queue.AddMessage(msg,initialVisibilityDelay: initialVisibilityDelay);
                      });
                 });
 

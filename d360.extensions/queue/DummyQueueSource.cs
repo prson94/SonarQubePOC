@@ -2,6 +2,7 @@
 using d360.core.queue;
 using Microsoft.Azure;
 using Microsoft.ServiceBus.Messaging;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -20,12 +21,12 @@ namespace d360.extensions.queue
 
         }
 
-        public async Task CreateMessageAsync<T>(string queueName, T item)
+        public async Task CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null)
         {
             await Task.Run(() => { });
         }
 
-        public async Task CreateMessagesAsync<T>(string queueName, List<T> items)
+        public async Task CreateMessagesAsync<T>(string queueName, List<T> items, TimeSpan? initialVisibilityDelay = null)
         {
             await Task.Run(() => { });
         }
