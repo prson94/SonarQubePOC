@@ -274,4 +274,5 @@
   <include file="scripts/GOV-7862.xml"/>
   <include file="scripts/GOV-7865.xml"/> <!-- graph tables for asset browser -->
   <include file="scripts/GOV-7872.xml"/> <!-- Asset Browser - PopulatePathsForAssetType -->
+  <include file="scripts/GOV-7713.xml"/> <!-- GetDynamicAssets -->
 </databaseChangeLog>
