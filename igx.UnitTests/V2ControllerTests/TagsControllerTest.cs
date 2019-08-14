@@ -46,7 +46,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Theory]
         [InlineData(DataConstants.ValidGUID)]
         [InlineData(DataConstants.InvalidGUID)]
-        public async void DeleteTagS(string uid)
+        public async void DeleteTags(string uid)
         {
 
             var actionResult = tagsController.DeleteById(Guid.Parse(uid));

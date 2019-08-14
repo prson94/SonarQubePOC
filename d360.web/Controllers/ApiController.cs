@@ -168,7 +168,7 @@ namespace d360.web.Controllers
                                                     TooltipID = item.Value,
                                                     Value = item.Text,
                                                     TooltipType = ft.LookupObjectType,
-                                                    TooltipUrl = (detail == null ? "" : detail.NgUrl)
+                                                    TooltipUrl = (detail == null ? "" : detail.Url)
                                                 });
                                             }
                                         }
@@ -221,7 +221,22 @@ namespace d360.web.Controllers
 
                                         ro.TooltipType = ft.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : ft.LookupObjectType;
                                         if (k != null)
-                                            ro.TooltipUrl = k.LookupUrl;
+                                        {
+                                            if (!string.IsNullOrEmpty(k.LookupUrl))
+                                            {
+                                                ro.TooltipUrl = k.LookupUrl;
+                                            }
+                                            else if (int.TryParse(value, out int val))
+                                            {
+                                                var det = Company.GetObjectDetail(k.LookupObjectType, val);
+
+                                                if (det != null)
+                                                {
+                                                    ro.TooltipUrl = det.Url;
+                                                }
+                                            }
+
+                                        }
                                     }
                                 }
                             }
@@ -710,6 +725,9 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     case "Link":
                         fieldType = "html";
                         break;
+                    case "Tag":
+                        fieldType = "tag";
+                        break;
                 }
             }
 
@@ -771,9 +789,16 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
 
             var sType = type.ToString();
             var skippedFieldTypes = DataType.Text.GetNonlistableFields();
+
+            var isTaggingEnabled = Community.GetCompanySettingByKey<bool>("EnableTagging");
+
+            if (!isTaggingEnabled)
+                skippedFieldTypes.Add(DataType.Tag.ToString());
+
             var totalItems = Company
                 .Filter<FieldType>(i => i.Object == sType && i.ObjectID == id && !skippedFieldTypes.Contains(i.Type))
                 .ToList();
+
             var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
             var columns = new List<GridColumn>();
@@ -2522,8 +2547,7 @@ order by    rnk, [Name]";
             dynamic result = JsonConvert.DeserializeObject<dynamic>(resultString);
 
             var document = new SLDocument();
-            document.AddWorksheet("Items");
-            document.DeleteWorksheet("Sheet1");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             int colIndex = 1;
             for (int i = 0; i < result.Columns.Count; i++)
@@ -7937,8 +7961,7 @@ where	Type = 'ReferenceItemType'
 
 
             var document = new SLDocument();
-            document.AddWorksheet("Items");
-            document.DeleteWorksheet("Sheet1");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             #region Create the list sheet
 

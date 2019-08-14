@@ -938,10 +938,11 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         int issueId = 0;
 
                         List<dynamic> issueRes = Company.Query<dynamic>(sql, new { ty = objectType, obj = objectID }).ToList();
-                        issueRes.ForEach((item) => {
+                        issueRes.ForEach((item) =>
+                        {
                             issueId = item.IssueId;
-                            FieldTooltipValueModel resItem = new FieldTooltipValueModel{ Name = item.Name, Value = item.Value, Type = item.Type };
-                            if(item.AllowMultipleValues)
+                            FieldTooltipValueModel resItem = new FieldTooltipValueModel { Name = item.Name, Value = item.Value, Type = item.Type };
+                            if (item.AllowMultipleValues)
                             {
                                 var items = ((item.OriginalValue != null) ? item.OriginalValue.Split(',') : new string[] { });
                                 var itemIds = new List<long>();
@@ -959,14 +960,14 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                             }
                             res.Add(resItem);
                         });
-                        var fieldTypes = Company.Filter<FieldType>(i => i.Object == "IssueType" && i.ObjectID == issueId && i.IsDisplayable   && i.Name != "Description" && i.ShowIfEmpty).OrderBy(i => i.ColumnOrder).ToList();
-                        var f = fieldTypes.Where(x => !res.Any(y => y.Name == x.FriendlyName) ).ToList();
+                        var fieldTypes = Company.Filter<FieldType>(i => i.Object == "IssueType" && i.ObjectID == issueId && i.IsDisplayable && i.Name != "Description" && i.ShowIfEmpty).OrderBy(i => i.ColumnOrder).ToList();
+                        var f = fieldTypes.Where(x => !res.Any(y => y.Name == x.FriendlyName)).ToList();
                         f.ForEach(x =>
                         {
                             res.Add(new FieldTooltipValueModel { Name = x.FriendlyName, Value = " ", Type = x.Type });
                         });
 
-                        
+
                     }
                     else if (det != null)
                     {
@@ -1039,7 +1040,7 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
                         uid = predicate?.UID.ToString();
                     }
                     else if (objectType == "ResponsibilityTypeRelationRule")
-                    {                       
+                    {
                         var responbilityReleationRule = Company.GetById<ResponsibilityTypeRelationRule>(objectID);
                         uid = responbilityReleationRule?.UID.ToString();
                     }
@@ -1056,7 +1057,7 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
                         uid = null;
                         dispName = null;
                         typeName = null;
- 
+
                     }
                     else if (objectType == "QuestionType")
                     {
@@ -1068,6 +1069,40 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
                         uid = qType.Uid.ToString();
                         desc = qType.Description ?? "";
                         dispName = qType.Name.ToString();
+                    }
+
+
+                    var tagFieldType = Company.FieldTypes.Where(x => x.Object == det.Type && x.ObjectID == det.TypeID && x.Type == "Tag").Select(x => new { x.ID, x.ShowIfEmpty, x.FriendlyName }).FirstOrDefault();
+                    var taggingEnabled = Community.GetCompanySettingByKey<bool>("EnableTagging");
+                    if (tagFieldType != null && taggingEnabled)
+                    {
+                        string assetTagSql = @"select T.Value, T.uid from Asset A
+                                                 inner join AssetTag AT on AT.AssetId = A.Id
+                                                 inner join Tag T on AT.TagId = T.Id
+                                                where Object = @object and ObjectID = @objectID";
+                        var tags = Company.Query<dynamic>(assetTagSql, new { @object = objectType, objectID }).ToList();
+                        
+
+                        var tagTooltip = new FieldTooltipValueModel()
+                        {
+                            Name = tagFieldType.FriendlyName,
+                            Type = "Tag",
+                            Value = JsonConvert.SerializeObject(tags)
+                        };
+
+
+                        if (tags.Count > 0)
+                        {
+                            if (!tagFieldType.ShowIfEmpty)
+                            {
+                                res.Add(tagTooltip);
+                            }
+                            else
+                            {
+                                int idx = res.FindIndex(x => x.Type == "Tag");
+                                res[idx] = tagTooltip;
+                            }
+                        }
                     }
                 }
 
@@ -1084,7 +1119,7 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
                         FieldValues = res,
                         Description = desc,
                         WorkflowTypeUID = workflowTypeUid,
-                        WorkflowVersionUID= workflowVersionUid
+                        WorkflowVersionUID = workflowVersionUid
 
                     },
                     JsonRequestBehavior.AllowGet);

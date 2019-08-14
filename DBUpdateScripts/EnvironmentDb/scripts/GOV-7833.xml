@@ -5,13 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="GOV-7833-B">
+  <changeSet author="kmcnamee" id="GOV-7833-C">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="true">
 		<![CDATA[  
-CREATE OR ALTER   procedure [dbo].[GetDynamicAssets]
+CREATE OR ALTER procedure [dbo].[GetDynamicAssets]
 	@assetTypeId int,
 	@userId int,
 	@filter nvarchar(250),
@@ -147,7 +147,8 @@ begin
 
 	declare @relationIsSubject bit = 0;
 	declare @relationIsObject bit = 0;
-	--check if there are relationship fields
+	declare @relationSidesAreSame bit = 0;
+	
 	if(exists (select 1 from #ft where IsListable = @listableFieldsOnly and [Type] = 'Relationship'))
 	begin
 		print 'Artifact list page contains relationship field types checking if all are of one side'
@@ -167,12 +168,20 @@ begin
 			and it.object != ft.[object] and it.objectid != ft.objectid and it.subject = ft.[object] and it.subjectid = ft.objectid
 			and it.object != it.[subject] and it.objectid != it.subjectid
 
-		print '- relationship field type target is subject is :' + cast(@relationIsSubject as varchar)
-		print '- relationship field type target is object is :' + cast(@relationIsObject as varchar)
+		select @relationSidesAreSame = cast (count(1) as bit)
+		from [intersecttype] it  
+			inner join #ft ft on it.id = ft.lookupobjectid 
+		where 
+			ft.IsListable = @listableFieldsOnly and ft.[type] = 'relationship'
+			and it.object = ft.[object] and it.objectid = ft.objectid and it.subject = ft.[object] and it.subjectid = ft.objectid			
+
+		print '- relationship field type target is subject is (1 true, 0 false) :' + cast(@relationIsSubject as varchar)
+		print '- relationship field type target is object is (1 true, 0 false) :' + cast(@relationIsObject as varchar)
+		print '- relationship field type target has same asset type both sides is (1 true, 0 false) :' + cast(@relationSidesAreSame as varchar)
 	end
 
-	--relationships where other object is only subject
-	if (@relationIsSubject = 1 and @relationIsObject = 0)
+	
+	if (@relationIsSubject = 1 and @relationIsObject = 0 and @relationSidesAreSame = 0)
 	begin
 		update	#ft
 		set		JoinStatement = ' left join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' and FT'+TxtId+'.LookupObjectType = ''IntersectType''' 
@@ -199,7 +208,7 @@ begin
 									end
 		where	[Type] = 'Relationship';
 	end
-	else if (@relationIsObject =1 and @relationIsSubject = 0 ) -- relationship where target is always object
+	else if (@relationIsObject =1 and @relationIsSubject = 0 and @relationSidesAreSame = 0 ) 
 	begin
 		update	#ft
 		set		JoinStatement = ' left join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' and FT'+TxtId+'.LookupObjectType = ''IntersectType''' 
@@ -226,7 +235,7 @@ begin
 									end
 		where	[Type] = 'Relationship';
 	end
-	else -- relationship where subject or object can be target
+	else 
 	begin	
 		update	#ft
 		set		JoinStatement = ' left join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' and FT'+TxtId+'.LookupObjectType = ''IntersectType''' 
@@ -496,12 +505,12 @@ end as P_CanDelete, '
 	declare @parameters nvarchar(max)
 	set @parameters = '@assetTypeId int, @filter nvarchar(250), @userId int, @pageNumber int, @pageSize int, @filters [dbo].[AssetFiltersTable] readonly'
 
-	--For debug
+	
 	print 'count sql [' + @countSql + ']'
 
 	exec sp_executesql @countSql, @parameters, @assetTypeId = @assetTypeId, @filter = @filter, @userId = @userId, @pageNumber = @pageNumber, @pageSize = @pageSize, @filters = @filters
 
-	--For debug
+	
 	print 'sql [' + @sql + ']'
 
 	exec sp_executesql @sql, @parameters, @assetTypeId = @assetTypeId, @filter = @filter, @userId = @userId, @pageNumber = @pageNumber, @pageSize = @pageSize, @filters = @filters

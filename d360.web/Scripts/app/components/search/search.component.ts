@@ -46,15 +46,15 @@ export class SearchComponent extends BaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.setBrowserTitle(this.titleService, 'Search');
+        this.setBrowserTitle(this.titleService, 'Search Results');
 
         this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Search'));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Search Results'));
 
         this.rightSidebarService.clearItems();
         this.rightSidebarService.clearButtons();
         this.rightSidebarService.clearCurrentObject();
-        this.rightSidebarService.setCurrentArea('Search', 'fa-database', null);
+        this.rightSidebarService.setCurrentArea('Search Results', 'fa-database', null);
         this.rightSidebarService.showHeader(true);
 
         this.sub = this.route.queryParams.subscribe(params => {

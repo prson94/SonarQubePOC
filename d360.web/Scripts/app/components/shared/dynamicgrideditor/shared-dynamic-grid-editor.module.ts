@@ -36,6 +36,7 @@ import { DirectivesModule } from '../../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
+import { TagViewModule } from '../tags/d3s-tag-view';
 
 @NgModule({
     imports: [CommonModule,
@@ -72,6 +73,9 @@ import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 
         //JSON Viewer module
         NgxJsonViewModule,
+
+        //Tag viewer module
+        TagViewModule
     ],
     declarations: [
         DynamicEditorComponent,

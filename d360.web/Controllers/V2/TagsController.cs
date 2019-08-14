@@ -105,6 +105,7 @@ namespace d360.web.Controllers.V2
         /// Allows you to remove a tag based on its Uid.
         /// </summary>
         /// <param name="uid">The public identifier for the tag.</param>
+        /// <param name="cascade">Cascade delete to all related data.</param>
         /// <returns>A status for the DELETE request.</returns>
         [
             HttpDelete,
@@ -114,13 +115,13 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
         ]
-        public IHttpActionResult DeleteById(Guid uid)
+        public IHttpActionResult DeleteById(Guid uid, bool cascade = false)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             try
             {
-                if (!tagRepository.DeleteTag(uid))
+                if (!tagRepository.DeleteTags(new List<TagApiDeleteModel>() { new TagApiDeleteModel { uid = uid, cascade = cascade } }))
                 {
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", "Tag not found.");
                 }
@@ -380,7 +381,7 @@ namespace d360.web.Controllers.V2
             var tags = await tagRepository.GetTagsWithResourceName(queryParams);
 
             var document = new SLDocument();
-            document.AddWorksheet("Items");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             #region Create the list sheet
 
@@ -502,7 +503,7 @@ namespace d360.web.Controllers.V2
             var tags = tagRepository.GetDetails(uid, queryParams);
 
             var document = new SLDocument();
-            document.AddWorksheet("Items");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             #region Create the list sheet
 

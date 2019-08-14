@@ -1812,6 +1812,7 @@ from	IntersectType I
 		                inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4)
             ) A 
     where	T.ExecutionID = @ExecutionID
+            and T.Object not in ('PolicyType', 'TaxonomyType')
             and T.[Cascade] = 0
             and A.ChildCount > 0;",
                         new { execution.ExecutionID }, commandTimeout: timeout);
