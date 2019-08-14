@@ -1248,7 +1248,7 @@ a.breadcrumb {
         &:hover, &.hover {
             cursor: pointer;
         }
-        
+
 
         &:hover {
             icon {
@@ -2505,7 +2505,7 @@ modal-overlay .modal-dialog .content {
 // Panel Button
 ///////////////////////////////////////////////////////////////////////////////////
 
-button.button {
+button.button, a.link-button {
     display: inline-flex;
     position: relative;
     box-sizing: border-box;
@@ -2638,10 +2638,19 @@ button.button {
     }
 }
 
+a.link-button {
+    border-radius: 2px;
+    height: 24px;
+    padding: 0px 8px !important;
+    margin-bottom: 6px;
+
+    &:hover {
+        text-decoration: none;
+    }
+}
 ///////////////////////////////////////////////////////////////////////////////////
 // Tab View
 ///////////////////////////////////////////////////////////////////////////////////
-
 .tab-view {
     display: inline-flex;
     flex-direction: column;
@@ -2825,8 +2834,8 @@ button.tab-scroller {
         line-height: 1.1;
     }
 
-    &.clickable{
-        cursor:pointer;
+    &.clickable {
+        cursor: pointer;
     }
 
     &.bad {
@@ -2916,11 +2925,9 @@ button.tab-scroller {
         font-size: 12px;
     }
 }
-
 ///////////////////////////////////////////////////////////////////////////////////
 // Spinner
 ///////////////////////////////////////////////////////////////////////////////////
-
 @keyframes spin {
     from {
         transform: rotate(0deg);
@@ -3319,11 +3326,9 @@ button.tab-scroller {
         display: inline !important;
     }
 }
-
 ///////////////////////////////////////////////////////////////////////////////////
 // Popup Menu
 ///////////////////////////////////////////////////////////////////////////////////
-
 .popup-menu {
     display: inline-block;
     position: relative;
@@ -3414,12 +3419,9 @@ button.tab-scroller {
         }
     }
 }
-
-
 ///////////////////////////////////////////////////////////////////////////////////
 // Field
 ///////////////////////////////////////////////////////
-
 .field {
     display: inline-flex;
     flex-direction: row;
@@ -3442,7 +3444,7 @@ button.tab-scroller {
         padding: 0 10px;
         border-radius: 3px;
         height: 30px;
-        color:black;
+        color: black;
 
         &::-ms-clear {
             display: none;
@@ -3544,11 +3546,9 @@ button.tab-scroller {
         pointer-events: all;
     }
 }
-
 ///////////////////////////////////////////////////////////////////////////////////
 // Switch
 ///////////////////////////////////////////////////////
-
 .switch {
     display: inline-flex;
     position: relative;
@@ -3606,6 +3606,7 @@ button.tab-scroller {
 .tile-detail {
     .tag-list {
         .tag-item {
+            margin-bottom: 4px;
             display: inline-block;
         }
     }
@@ -3658,10 +3659,24 @@ button.tab-scroller {
     font-weight: normal;
     margin-top: 30px;
 }
+
 .action-tile-span {
     padding-right: 5px;
     cursor: pointer;
     color: #66A9D6;
     font-weight: normal;
     font-size: 14px;
+}
+
+.tag-list-container {
+
+    .tag-item-wrapper {
+        display: inline-block;
+        overflow: hidden;
+        transition-duration: 0.1s;
+
+        &.too-long {
+            text-overflow: ellipsis;
+        }
+    }
 }

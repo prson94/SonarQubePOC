@@ -2,6 +2,7 @@
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.queue;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -13,9 +14,9 @@ namespace d360.extensions
 
         void CreateMessages<T>(string queueName, List<T> items);
 
-        Task CreateMessageAsync<T>(string queueName, T item);
+        Task CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null);
 
-        Task CreateMessagesAsync<T>(string queueName, List<T> items);
+        Task CreateMessagesAsync<T>(string queueName, List<T> items, TimeSpan? initialVisibilityDelay = null);
 
         void CreateTopicMessage(EventInfo e);
         void CreateTopicMessage(string topicName, EventInfo e);

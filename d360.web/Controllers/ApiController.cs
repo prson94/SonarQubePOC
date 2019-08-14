@@ -725,6 +725,9 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     case "Link":
                         fieldType = "html";
                         break;
+                    case "Tag":
+                        fieldType = "tag";
+                        break;
                 }
             }
 
@@ -786,9 +789,16 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
 
             var sType = type.ToString();
             var skippedFieldTypes = DataType.Text.GetNonlistableFields();
+
+            var isTaggingEnabled = Community.GetCompanySettingByKey<bool>("EnableTagging");
+
+            if (!isTaggingEnabled)
+                skippedFieldTypes.Add(DataType.Tag.ToString());
+
             var totalItems = Company
                 .Filter<FieldType>(i => i.Object == sType && i.ObjectID == id && !skippedFieldTypes.Contains(i.Type))
                 .ToList();
+
             var items = totalItems.Where(i => i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
             var columns = new List<GridColumn>();
