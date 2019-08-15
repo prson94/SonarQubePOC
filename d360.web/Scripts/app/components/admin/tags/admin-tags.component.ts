@@ -28,7 +28,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     showEditor: boolean = false;
     showConsolidate: boolean = false
-    filters: any = { globalSearch: '', Value: '' };
+    filters: any = { globalSearch: '', Value: '', UseCount: '' };
     sort: any;
 
     private deletePopupTitle: string = 'Delete Tag';

@@ -161,19 +161,40 @@ namespace d360.model.DataAccessLayer
 
             var dbArgs = new DynamicParameters();
             List<string> whereClauses = new List<string>();
-            whereClauses.Add($"t.[state] = @state");
-            dbArgs.Add("@state", State.Active);
-
             string sortField = "";
             string sortOrder = "";
+            string whereOperater = " and ";
+            int useCount = 0;
 
             foreach (var qitem in queryParams)
             {
                 switch (qitem.Key.ToLower())
                 {
                     case "value":
-                        dbArgs.Add("value", $"%{qitem.Value.ToLower()}%");
-                        whereClauses.Add("LOWER(t.Value) like @value");
+                        if (!string.IsNullOrEmpty(qitem.Value))
+                        {
+                            dbArgs.Add("value", $"%{qitem.Value.ToLower()}%");
+                            whereClauses.Add("LOWER(t.Value) like @value");
+
+                            if (int.TryParse(qitem.Value, out useCount))
+                            {
+                                dbArgs.Add("useCount", useCount);
+                                whereClauses.Add("Tags.count = @useCount");
+                                whereOperater = " or ";
+
+                            }
+                        }
+                        break;
+                    case "usecount":
+                        if (!string.IsNullOrEmpty(qitem.Value))
+                        {
+                            if (int.TryParse(qitem.Value, out useCount))
+                            {
+                                dbArgs.Add("useCount", useCount);
+                                whereClauses.Add("Tags.count = @useCount");
+                            }
+                        }
+
                         break;
                     case "sortby":
                         if (qitem.Value.ToLower() == "usecount") sortField = "usecount";
@@ -189,7 +210,11 @@ namespace d360.model.DataAccessLayer
 
             string sortClause = $"ORDER BY {sortField} {sortOrder}";
 
-            string whereClause = $"WHERE {string.Join(" and ", whereClauses)}";
+            string whereClause = $"WHERE t.State = 1";
+            if(whereClauses.Count> 0)
+            {
+                whereClause += $"and {string.Join(whereOperater, whereClauses)}";
+            }
             var sql = $@"select t.uid,
 	                        t.Value,
                             Tags.count as UseCount,
@@ -208,6 +233,7 @@ namespace d360.model.DataAccessLayer
                             from[tag] t
                                 left join reporting.Global_Resource grc on t.CreatedBy = grc.ResourceID
                                 left join reporting.Global_Resource gru on t.UpdatedBy = gru.ResourceID
+                                cross apply (select count(*) from AssetTag where TagId = t.Id)Tags (count)
                             {whereClause}";
 
 
