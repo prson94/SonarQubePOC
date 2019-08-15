@@ -21,9 +21,9 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                                 placeholder="Search..."  
                                 [minLength]="1"  
                                 (onSelect)="selectItem()">                       
-                            <ng-template let-result>
-                                <div style="padding:10px 0;">                                
-                                   <div class="search-typeahead-suggestion"><span style="color:#999;">{{result.Type}}:</span> {{result.DisplayName}}</div>
+                            <ng-template let-result pTemplate="item">
+                                <div>                                
+                                   <div class="search-typeahead-suggestion"><i *ngIf="result.Icon" class="icon fa {{result.Icon}}"></i><span style="color:#999;">{{result.Type}}:</span> {{result.DisplayName}}</div>
                                 </div>                            
                             </ng-template>
                         </p-autoComplete>
