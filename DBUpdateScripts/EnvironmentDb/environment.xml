@@ -277,4 +277,5 @@
   <include file="scripts/GOV-7872.xml"/> <!-- Asset Browser - PopulatePathsForAssetType -->
   <include file="scripts/GOV-7888.xml"/> <!-- Batch API - ShouldAllowNewBatchCall -->
   <include file="scripts/GOV-7861.xml"/> <!-- IGC - ExecutionAssetType index -->
+  <include file="scripts/GOV-7798.xml"/>
 </databaseChangeLog>
