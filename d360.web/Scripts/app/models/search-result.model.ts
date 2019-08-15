@@ -5,6 +5,7 @@
     Url: string;
     Type: string; 
     ID: string;
+    Icon: string;
 }
 
 export class SearchFullResult {
@@ -16,7 +17,7 @@ export class SearchFullResult {
     Score: number;
     Type: string;
     Url: string;
-
+    Icon: string;
     
 }
 
