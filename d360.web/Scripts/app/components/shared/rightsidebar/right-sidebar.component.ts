@@ -14,6 +14,8 @@ import { SurveyType } from '../../../models/survey.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Artifact } from '../../../models/artifacts.model';
 import { WorkflowService } from '../../../services/workflow.service';
+import { ModalService } from '../../../services/modal-dialog-service';
+import { D3SModal } from '../modal/gov-modal.component';
 
 declare var CompanySettings
 declare var CurrentResourceID;
@@ -68,7 +70,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         private ref: ChangeDetectorRef,
         private artifactService: ArtifactService,
         private workflowService: WorkflowService,
-        private router: Router
+        private router: Router,
+        private modalService: ModalService
     ) {
     }
 
@@ -312,6 +315,17 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     private requestCertification() {
+        this.modalService.open(
+            { component: D3SModal },
+            'Click Confirm to send a certification request to the term owner',
+            true).subscribe(action => {
+                if (action === 'confirm') {
+                    this.certify();
+                }
+            });
+    }
+
+    certify() {
         if (this.currentObject && this.currentObject.objectID)
             this.artifactService
                 .requestCertification(this.currentObject.objectID)
