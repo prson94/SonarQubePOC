@@ -278,4 +278,5 @@
   <include file="scripts/GOV-7870.xml"/>
   <include file="scripts/GOV-7888.xml"/> <!-- Batch API - ShouldAllowNewBatchCall -->
   <include file="scripts/GOV-7861.xml"/> <!-- IGC - ExecutionAssetType index -->
+  <include file="scripts/GOV-7896.xml"/> <!--IGC proc-->
 </databaseChangeLog>
