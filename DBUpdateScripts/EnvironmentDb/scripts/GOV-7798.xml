@@ -13,6 +13,8 @@
             stripComments="true">
 <![CDATA[
 
+
+
 ALTER TRIGGER [dbo].[Field_AfterUpsert]
 	ON [dbo].[Field]
 	FOR INSERT, UPDATE
@@ -37,22 +39,25 @@ AS
 	insert into #insertedFields
 	select
 		FieldTypeID,
-		ObjectType,
-		ObjectID
-	from inserted;
+		replace(FT.[Object],'Type',''),
+		FT.ObjectID
+	from inserted
+	inner join FieldType FT on FT.ID = FieldTypeID;
+
 
 	if exists(
-		select 1 from Field TF 
-		inner join FieldType FT on FT.ID = TF.FieldTypeID
-		inner join Field F on FT.LookupObjectType = F.ObjectType and FT.LookupObjectID = F.ObjectID and F.ObjectType <> 'FusionAttribute' and F.ObjectType <> 'FusionQueryAttribute'
-		inner join #insertedFields SF on SF.FieldTypeID = F.FieldTypeID and SF.ObjectType = F.ObjectType and SF.ObjectID = F.ObjectID)
+		select 1 from 	Field TF
+				inner join FieldType FT on FT.ID = TF.FieldTypeID
+				inner join	#insertedFields SF on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID 
+				where SF.ObjectType <> 'FusionAttribute' and SF.ObjectType <> 'FusionQueryAttribute')
 	begin
 		
 		UPDATE	TF
 		SET		TF.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value, FT.AllowMultipleValues)
 		from	Field TF
 				inner join FieldType FT on FT.ID = TF.FieldTypeID
-				inner join	#insertedFields SF on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID and SF.ObjectType <> 'FusionAttribute' and SF.ObjectType <> 'FusionQueryAttribute';
+				inner join	#insertedFields SF on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID 
+				where  SF.ObjectType <> 'FusionAttribute' and SF.ObjectType <> 'FusionQueryAttribute';
 	end
 
 	UPDATE	T
