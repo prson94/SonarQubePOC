@@ -1,0 +1,59 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="kmcnamee" id="GOV-7888">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION api.ShouldAllowNewBatchCall
+(    
+)
+RETURNS bit
+AS
+BEGIN    
+	declare @runCount int = 0;
+	-- never ran a batch api execution
+	if ( not exists (select count(1) from api.execution))
+	begin
+		return 1;
+	end
+
+	-- all jobs have completed
+	if ( not exists (select count(1) from api.execution where completedOn is null))
+	begin
+		return 1;
+	end
+
+	-- all the jobs that have not completed are older than 24 hours
+	-- all jobs have completed
+	if ( not exists (select count(1) from api.execution where completedOn is null and startedon < DATEADD(day, -1, GETDATE()) ) )
+	begin
+		return 1;
+	end
+
+	select @runCount = count(1) from api.execution where completedOn is null and startedon < DATEADD(day, -1, GETDATE())
+
+	if ( @runCount > 1 )
+	begin
+		return 0;
+	end
+
+    -- Return the result of the function
+    RETURN 1;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+drop function if exists api.ShouldAllowNewBatchCall
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

@@ -1,0 +1,76 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-7861">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+		<![CDATA[
+ALTER TABLE [integration].[ExecutionAssetTypeError]  DROP  CONSTRAINT [FK_IntegrationExecutionAssetTypeError_IntegrationExecutionAssetType]
+GO
+ALTER TABLE [integration].[ExecutionAssetTypeLog]  DROP CONSTRAINT [FK_IntegrationExecutionAssetTypeLog_IntegrationExecutionAssetType]
+GO
+ALTER TABLE [integration].[ExecutionAssetType] DROP  CONSTRAINT [PK_IntegrationExecutionAssetType]
+GO
+ALTER TABLE [integration].[ExecutionAssetType] ADD  CONSTRAINT PK_IntegrationExecutionAssetType PRIMARY KEY CLUSTERED 
+(
+	[ExecutionID] DESC,
+	[SynchedAssetTypeID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [integration].[ExecutionAssetTypeError]  WITH NOCHECK ADD  CONSTRAINT [FK_IntegrationExecutionAssetTypeError_IntegrationExecutionAssetType] FOREIGN KEY([ExecutionID], [SynchedAssetTypeID])
+REFERENCES [integration].[ExecutionAssetType] ([ExecutionID], [SynchedAssetTypeID])
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [integration].[ExecutionAssetTypeError] CHECK CONSTRAINT [FK_IntegrationExecutionAssetTypeError_IntegrationExecutionAssetType]
+GO
+ALTER TABLE [integration].[ExecutionAssetTypeLog]  WITH NOCHECK ADD  CONSTRAINT [FK_IntegrationExecutionAssetTypeLog_IntegrationExecutionAssetType] FOREIGN KEY([ExecutionID], [SynchedAssetTypeID])
+REFERENCES [integration].[ExecutionAssetType] ([ExecutionID], [SynchedAssetTypeID])
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [integration].[ExecutionAssetTypeLog] CHECK CONSTRAINT [FK_IntegrationExecutionAssetTypeLog_IntegrationExecutionAssetType]
+GO
+			
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+		ALTER TABLE [integration].[ExecutionAssetTypeError]  DROP  CONSTRAINT [FK_IntegrationExecutionAssetTypeError_IntegrationExecutionAssetType]
+GO
+ALTER TABLE [integration].[ExecutionAssetTypeLog]  DROP CONSTRAINT [FK_IntegrationExecutionAssetTypeLog_IntegrationExecutionAssetType]
+GO
+ALTER TABLE [integration].[ExecutionAssetType] DROP  CONSTRAINT [PK_IntegrationExecutionAssetType]
+GO
+ALTER TABLE [integration].[ExecutionAssetType] ADD  CONSTRAINT [PK_IntegrationExecutionAssetType] PRIMARY KEY NONCLUSTERED 
+(
+	[ExecutionID] DESC,
+	[SynchedAssetTypeID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [integration].[ExecutionAssetTypeError]  WITH NOCHECK ADD  CONSTRAINT [FK_IntegrationExecutionAssetTypeError_IntegrationExecutionAssetType] FOREIGN KEY([ExecutionID], [SynchedAssetTypeID])
+REFERENCES [integration].[ExecutionAssetType] ([ExecutionID], [SynchedAssetTypeID])
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [integration].[ExecutionAssetTypeError] CHECK CONSTRAINT [FK_IntegrationExecutionAssetTypeError_IntegrationExecutionAssetType]
+GO
+ALTER TABLE [integration].[ExecutionAssetTypeLog]  WITH NOCHECK ADD  CONSTRAINT [FK_IntegrationExecutionAssetTypeLog_IntegrationExecutionAssetType] FOREIGN KEY([ExecutionID], [SynchedAssetTypeID])
+REFERENCES [integration].[ExecutionAssetType] ([ExecutionID], [SynchedAssetTypeID])
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [integration].[ExecutionAssetTypeLog] CHECK CONSTRAINT [FK_IntegrationExecutionAssetTypeLog_IntegrationExecutionAssetType]
+GO
+		
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
