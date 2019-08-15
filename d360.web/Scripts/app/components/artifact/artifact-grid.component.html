@@ -208,15 +208,11 @@
   (saveClick)="saveItem($event)"
   (closeClick)="closeEditor()"
 ></d3s-dynamic-editor>
-<d3s-delete-form
-  *ngIf="showDelete"
-  [callback]="theDeleteCallback"
-  [itemId]="selected?.ObjectID"
-  method="callback"
-  [prompt]="
-    'Are you sure you want to delete [' +
-    (selected?.DisplayValue ? selected?.DisplayValue : 'Artifact') +
-    ']?'
-  "
-  (onCancel)="showDelete = false"
-></d3s-delete-form>
+<d3s-asset-delete-editor
+    *ngIf="showDelete"
+    [uid]="selected?.Uid"
+    [assetTypeUid]="artifactType?.AssetTypeUID"
+    [displayValue]="(selected?.DisplayValue ? selected?.DisplayValue : 'Artifact')"
+    (onCancel)="showDelete = false"
+    (onDeleted)="onDeleted()">
+</d3s-asset-delete-editor>
