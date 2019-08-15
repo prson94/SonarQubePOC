@@ -45,14 +45,14 @@ namespace igx.jobs.apiexecutionprocessor
 
     public class ApiExecutionProcessor
     {
-#if DEBUG
-        public static void Run([TimerTrigger("0 0 */5 * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
-#else
+//#if DEBUG
+        //public static async Task Run([TimerTrigger("0 0 */5 * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
+//#else
         public async static Task Run([QueueTrigger("%ApiExecutionQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
-#endif
+//#endif
         {
             ApiExecutionInfo info = null;
-#if DEBUG
+/*#if DEBUG
             info = new ApiExecutionInfo
             {
                 Action = ApiExecutionAction.PostAssets,
@@ -61,12 +61,14 @@ namespace igx.jobs.apiexecutionprocessor
                 ResourceID = 3,
                 ExecutionID = new Guid("d04067cc-18e4-44d9-a817-c13dfbc6c6a7")
             };
-#else
+#else*/
             info = JsonConvert.DeserializeObject<ApiExecutionInfo>(myQueueItem);
-#endif
+//#endif
+
+            //Should this job be allowed to run?
 
             var job = new ApiJobProcessor();
-            job.Run(info, log);
+            await job.Run(info, log);
         }
     }
 
@@ -81,7 +83,7 @@ namespace igx.jobs.apiexecutionprocessor
         AzureStorageProvider storage;
         ApiExecutionInfo Info;
 
-        public void Run(ApiExecutionInfo info, TextWriter log)
+        public async Task Run(ApiExecutionInfo info, TextWriter log)
         {
             Info = info;
 
@@ -109,6 +111,19 @@ namespace igx.jobs.apiexecutionprocessor
 
             try
             {
+                //check if this client should / can run an api load
+                if (!(await ShouldRunApiJob(company)))
+                {
+                    int delaySeconds = int.Parse(CoreFunction.GetConfigValueByKey("RunningJobDelay")??"300");
+
+                    TimeSpan delay = new TimeSpan(0, 0, delaySeconds);
+
+                    await queue.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), info, delay);
+
+                    return;
+                }
+
+
                 if (dbExecutionItem != null)
                 {
                     AssetType assetType = null;
@@ -252,6 +267,18 @@ namespace igx.jobs.apiexecutionprocessor
                     log.WriteLine($"{cex.GetFullExceptionData()}");
                 }                
             }
+        }
+
+
+        /// <summary>
+        /// Checks if the current company should permit a new api job to start
+        /// </summary>
+        /// <param name="company"></param>
+        /// <returns></returns>
+        private async Task<bool> ShouldRunApiJob(CompanyContext company)
+        {
+            // call function in db to see if the api job should run
+            return await company.Database.Connection.QueryFirstOrDefaultAsync<bool>("select api.ShouldAllowNewBatchCall()");
         }
 
         private void Company_AssetsPartiallyProcessed(object sender, AssetsPartiallyProcessedEventArgs e)

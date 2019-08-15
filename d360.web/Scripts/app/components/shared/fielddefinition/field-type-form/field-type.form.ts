@@ -64,6 +64,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Output() onCancel = new EventEmitter();
     @Input() showIsListable: boolean = true;
     @Input() showIsPartOfKey: boolean = true;
+    @Input() showIsEditable: boolean = true;
 
     private lookups: Lookups = new Lookups();
     private lookupDefaultValueOptions: SelectItem[];
@@ -494,6 +495,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsPartOfKey = false;
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.LookupDisplayFormat = null;
+                break;
+            case 'tag':
+                this.model.FieldType.IsPartOfKey = false;
+                this.model.FieldType.ShowIfEmpty = true;
+                this.showIsEditable = false;
                 break;
             default:
                 this.model.FieldType.LookupDisplayFormat = null;
@@ -1502,21 +1508,21 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup','FieldFromRelationship', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
+                return (['ComplexRelationLookup','FieldFromRelationship', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement','Tag'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsListable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.model.FieldType.Type) > -1
                     || (this.model.FieldType.Type == 'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
                 return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsPartOfKey':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement','Tag'].indexOf(this.model.FieldType.Type) > -1
                     || this.model.FieldType.AllowMultipleValues || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
                 return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.model.FieldType.Type) == -1);
             case 'ShowIfEmpty':
-                return (!this.model.FieldType.IsDisplayable);
+                return (['Tag'].indexOf(this.model.FieldType.Type) > -1);
             default:
                 console.warn(`invalid setting [${val}] passed to isSettingDisabled`);
         }
