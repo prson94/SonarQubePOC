@@ -15,7 +15,7 @@ import {BaseComponent} from '../../shared/base.component';
             <div class="col s12">
                 <div class="tile tile-detail">
                     <d3s-people-responsibilities-tile [assetID]="assetID"
-                                                      [title]="'Ownership of ' + [objectName]"></d3s-people-responsibilities-tile>
+                                                      [title]="'Responsibilities of ' + [objectName]"></d3s-people-responsibilities-tile>
                 </div>
             </div>
         </div>
