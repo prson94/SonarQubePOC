@@ -7,11 +7,21 @@ import * as _ from 'lodash';
 @Component({
 	selector: 'd3s-dynamic-percentage',
 	template: `
-				<div #self class="d3s-dynamic-percentage">
-					<div class="d3s-dynamic-percentageInner" [ngStyle]="{'background': innerCircleColor}">
-						<div class="d3s-dynamic-percentage-text"></div>
-					</div>
-				</div>
+				  <div class="d3s-chart">
+                    <svg viewBox="0 0 38 38" class="d3s-circular-chart">
+                      <path class="d3s-circle-bg"
+                        d="M18 2.0845
+                          a 15.9155 15.9155 0 0 1 0 31.831
+                          a 15.9155 15.9155 0 0 1 0 -31.831"
+                      />
+                      <path *ngIf="percentage > 0" class="d3s-circle"
+                        [attr.stroke-dasharray]="percentage + ', 100'"
+                        d="M18 2.0845
+                          a 15.9155 15.9155 0 0 1 0 31.831
+                          a 15.9155 15.9155 0 0 1 0 -31.831"
+                      />
+                    </svg>
+                  </div>
 			  `,
 	changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -19,9 +29,7 @@ import * as _ from 'lodash';
 export class DynamicPercentageComponent implements AfterViewInit, OnChanges {
 
     @Input() percentage: number;
-    @Input() innerCircleColor: string = "rgb(0, 0, 0)";
 
-    @ViewChild("self") self: ElementRef;
     private changeWait: any;
     constructor(
         ref: ChangeDetectorRef,
@@ -29,40 +37,12 @@ export class DynamicPercentageComponent implements AfterViewInit, OnChanges {
     ) {
     }
 
-    ngAfterViewInit(): void {
-        //allow time for items to render before animation begins
-        setTimeout(() => {
-            this.calculatePercent(this.self, this.percentage, 0);
-        }, 200);
+    ngAfterViewInit(): void {       
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        clearTimeout(this.changeWait);
-        this.changeWait = setTimeout(() => {
-            this.calculatePercent(this.self, this.percentage, 0);
-        }, 200);
+     
     }
 
-    private calculatePercent(event, end, i) {
-        if (end < 0)
-            end = 0;
-        else if (end > 100)
-            end = 100;
-        if (typeof i === 'undefined')
-            i = 0;
-        var curr = (100 * i) / 360;
-        if (i <= 180) {
-            var m = event.nativeElement, c = m.style;
-            c.backgroundImage = 'linear-gradient(' + (90 + i) + 'deg, transparent 50%, #ccc 50%),linear-gradient(90deg, #ccc 50%, transparent 50%)';
-        } else {
-            var m = event.nativeElement, c = m.style;
-            c.backgroundImage = 'linear-gradient(' + (i - 90) + 'deg, transparent 50%, #ffffff 50%),linear-gradient(90deg, #ccc 50%, transparent 50%)';
-        }
-        if (curr < end) {
-            setTimeout(() => {
-                this.calculatePercent(event, end, 2 + i);
-            }, 1);
-        }
-    }
 
 };
