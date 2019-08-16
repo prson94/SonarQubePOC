@@ -82,7 +82,19 @@ namespace d360.extensions.search
     {
         public string _index { get; set; }
         public string _type { get; set; }
-        public string d3sGroup { get; set; }
+        public string d3sGroup {
+            get
+            {
+                if (_source != null && _source.TryGetValue("d3sGroup", out JToken jToken))
+                {
+                    return jToken.Value<string>();
+                }
+                return null;
+            }
+            set
+            {
+            }
+        }
         public string _id { get; set; }
         public float _score { get; set; }
         public JObject _source { get; set; }
@@ -526,15 +538,17 @@ namespace d360.extensions.search
             var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
             result.Results = searchResults.hits.hits.Select(h => new IndexResult {
-                    Description = GetHighlightedPropertyValueIfExists(h, "Description"),
-                    Group = GetPropertyValue<string>(h._source, "d3sGroup"),
-                    ID = h._id,
-                    Name = GetHighlightedNameValueIfExists(h),
-                    NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score/searchResults.hits.max_score.GetValueOrDefault()*100)),
-                    Score = h._score,
-                    Type = GetHighlightedPropertyValueIfExists(h, "Type"),
-                    Url = GetHighlightedPropertyValueIfExists(h, "Url")
-                }).ToList();
+                Description = GetHighlightedPropertyValueIfExists(h, "Description"),
+                Group = h.d3sGroup,
+                ID = h._id,
+                Name = GetHighlightedNameValueIfExists(h),
+                NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score/searchResults.hits.max_score.GetValueOrDefault()*100)),
+                Score = h._score,
+                Type = GetHighlightedPropertyValueIfExists(h, "Type"),
+                Url = GetHighlightedPropertyValueIfExists(h, "Url"),
+                Uid = GetUid(h, "Uid"),
+                Icon = GetIcon(h)
+            }).ToList();
 
 
             if (searchResults.aggregations != null && searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
@@ -558,6 +572,11 @@ namespace d360.extensions.search
                 result.Matches = searchResults.hits.total;
 
             return result;
+        }
+
+        private string GetIcon(SearchResultsHitModel hit)
+        {
+            return "fa-search";
         }
 
         private string MapTypeToFriendlyName(string key)
@@ -644,6 +663,8 @@ namespace d360.extensions.search
                 Desc = GetHighlightedPropertyValueIfExists(h, "Description"),
                 Type = GetTypeAheadDisplayType(h),//mapTypeToFriendlyName(h._type),
                 Url = GetPropertyValue<string>(h._source, "Url"),
+                Uid = GetUid(h, "Uid"),
+                Icon = GetIcon(h)
             });
         }
 
@@ -715,7 +736,9 @@ namespace d360.extensions.search
                 NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score / searchResults.hits.max_score.GetValueOrDefault() * 100)),
                 Score = h._score,
                 Type = GetPropertyValue<string>(h._source, "Type"),
-                Url = GetPropertyValue<string>(h._source, "Url")
+                Url = GetPropertyValue<string>(h._source, "Url"),
+                Uid = GetUid(h, "Uid"),
+                Icon = GetIcon(h)
             }).ToList();
             
             result.ElapsedMS = searchResults.took;
@@ -783,6 +806,15 @@ namespace d360.extensions.search
             if (!string.IsNullOrEmpty(highlightVal)) return highlightVal;
 
             return GetPropertyValue<string>(h._source, propName);
+        }
+
+        private Guid? GetUid(SearchResultsHitModel h, string propName)
+        {
+            Guid result = new Guid();
+            Guid.TryParse(GetPropertyValue<string>(h._source, "Uid"), out result);
+            if (result == Guid.Empty)
+                return null;
+            return result;
         }
 
 

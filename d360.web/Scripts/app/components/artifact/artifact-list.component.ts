@@ -96,9 +96,9 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                             true,
                             x.ParentID > 0));
 
-                        this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
-                        this.rightSidebarService.setCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true);
                         this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : this.folderTitle).then(res => {
+                            this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
+                            this.rightSidebarService.setCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true);
                             this.rightSidebarService.setCurrentArea(this.artifactType.Name, res, 'Assets');
                             if (this.artifactType.HasV2Workflows) {
                                 this.rightSidebarService

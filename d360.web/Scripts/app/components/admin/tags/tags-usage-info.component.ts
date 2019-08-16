@@ -8,7 +8,7 @@ import { TagService } from '../../../services/tag.service';
     providers: [TagService]
 })
 
-export class TagUsageInfoBox implements OnInit {
+export class TagUsageInfoBox {
     @Input() uid: string = '';
     private tooltipHTML: string = ``;
     private loadedUid: string = '';
@@ -19,11 +19,6 @@ export class TagUsageInfoBox implements OnInit {
 
     }
 
-    ngOnInit() {
-        if (this.uid) {
-            this.load();
-        }
-    }
 
     load() {
         this.tooltipHTML = `<i class="fa fa-spinner fa-spin fa-2x"></i>`;

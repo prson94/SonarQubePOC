@@ -8,8 +8,8 @@
             </header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <span *ngIf="!isLoading">
-                <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="tags" [globalFilterFields]="['Value']" [rowsPerPageOptions]="[10,20,50,100,200,500]" sortField="Value" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
+                <input  [(ngModel)]="filters.globalSearch" type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+                    <p-table #dt [value]="tags" [globalFilterFields]="['Value','UseCount']" [rowsPerPageOptions]="[10,20,50,100,200,500]" sortField="Value" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th style="width: 20px;">
@@ -17,18 +17,18 @@
                                 </th>
                                 <th [pSortableColumn]="'Value'" style="width: 60%">
                                     Name
-                                    <d3s-sortIcon [field]="'Value'"></d3s-sortIcon>
+                                    <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'Value'"></d3s-sortIcon>
                                 </th>
                                 <th [pSortableColumn]="'UseCount'" style="width: 15%">
                                     Use count
-                                    <d3s-sortIcon [field]="'UseCount'"></d3s-sortIcon>
+                                    <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'UseCount'"></d3s-sortIcon>
                                 </th>
                                 <th style="width: 110px"></th>
                             </tr>
                             <tr [hidden]="showSimpleFilter">
                                 <th></th>
-                                <th><d3s-column-filter [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
-                                <th><d3s-column-filter [field]="'UseCount'" [datatype]="'number'"></d3s-column-filter></th>
+                                <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'Value'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter (onChangeCallback)="onFilterChange($event)" [field]="'UseCount'" [datatype]="'number'"></d3s-column-filter></th>
                                 <th></th>
                             </tr>
                         </ng-template>
