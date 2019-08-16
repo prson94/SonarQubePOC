@@ -223,7 +223,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                 this.fieldsService.getFormData(this.id)
                                     .subscribe(formData => {
                                         this.getFormDataHandler(formData);
-                                        this.loadDataType(this.model.FieldType.Type)
+                                        this.loadDataType(this.model.FieldType.Type, true);
                                         this.isLoading = false;
                                     });
                             }
@@ -363,7 +363,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
-    private loadDataType(value: string) {
+    private loadDataType(value: string, isFromLoad: boolean = false) {
         let observables: Array<Observable<any>> = [];
 
         if (value == null) {
@@ -494,6 +494,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsPartOfKey = false;
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.LookupDisplayFormat = null;
+                break;
+            case 'tag':
+                if (!isFromLoad)
+                    this.model.FieldType.IsListable = true;
                 break;
             default:
                 this.model.FieldType.LookupDisplayFormat = null;
@@ -1502,7 +1506,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup','FieldFromRelationship', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsListable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.model.FieldType.Type) > -1
                     || (this.model.FieldType.Type == 'Relationship' && !this.isListableRelationship));
