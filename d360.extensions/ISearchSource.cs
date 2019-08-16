@@ -51,6 +51,8 @@ namespace d360.extensions
         public string Url { get; set; }
 
         public string Desc { get; set; }
+        public string Icon { get; set; }
+        public Guid? Uid { get; set; }
     }
 
     public class IndexResult
@@ -63,6 +65,8 @@ namespace d360.extensions
         public string AbsoluteUrl { get; set; }
         public string Url { get; set; }
         public float Score { get; set; }
+        public string Icon { get; set; }
+        public Guid? Uid { get; set; }
         /// <summary>
         /// score ranging between 1 and 0 adjusted based on max value.
         /// </summary>

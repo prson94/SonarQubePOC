@@ -2831,6 +2831,30 @@ order by    rnk, [Name]";
                             //Add here, only after you determine if this should be a link ABOVE.
                             columnModels.Add(fc);
                         }
+                        else if (ft.Type == "FieldFromRelationship" && ft.LookupObjectFieldTypeID.HasValue)
+                        {
+                            var relatedField = Company.GetById<FieldType>(((int)ft.LookupObjectFieldTypeID));
+                            int intersectTypeId = ft.LookupObjectID.HasValue ? ((int)ft.LookupObjectID) : -1;
+
+                            if (relatedField != null && intersectTypeId > -1)
+                            {
+                                join.JoinStatement += $" left join [Intersect] {tbPrefix}_FRI on {tbPrefix}_FRI.IntersectTypeID = {intersectTypeId} and (({tbPrefix}_FRI.Subject = {joinObj} and {tbPrefix}_FRI.SubjectID = {joinCol}) or ({tbPrefix}_FRI.[Object] = {joinObj} and {tbPrefix}_FRI.ObjectID = {joinCol}))";
+                                join.JoinStatement += $" left join Field {tbPrefix} on {tbPrefix}.FieldTypeID = {relatedField.ID} and {tbPrefix}.ObjectType = case when {tbPrefix}_FRI.Subject = {joinObj} then {tbPrefix}_FRI.[Object] else {tbPrefix}_FRI.Subject end" +
+                                    $" and {tbPrefix}.ObjectID = case when {tbPrefix}_FRI.Subject = {joinObj} and {tbPrefix}_FRI.SubjectID = {joinCol} then {tbPrefix}_FRI.ObjectID else {tbPrefix}_FRI.SubjectID end ";
+
+                                var fc = new ComplexColumnModel
+                                {
+                                    DisplayColumn = $"{tbPrefix}.[Value]",
+                                    text = i.OverrideDisplayName ?? ft.FriendlyName,
+                                    datafield = $"{dataField}",
+                                    OutputColumn = true,
+                                    Width = i.Width
+                                };
+
+                                setColumnTypeInfo(relatedField, i, fc);
+                                columnModels.Add(fc);
+                            }
+                        }
                         else
                         {
                             // Determine the join syntax for the eventual query.

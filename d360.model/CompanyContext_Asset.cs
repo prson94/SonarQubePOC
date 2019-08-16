@@ -180,10 +180,11 @@ namespace d360.model
                     if (filter is UiRequestRelationshipFieldFilterValue)
                     {
                         var f = filter as UiRequestRelationshipFieldFilterValue;
-                        if (!usedFilters.Contains($"F{f.FieldTypeID}"))
+                        if (!usedFilters.Contains($"I{f.FieldTypeID}"))
                         {
-                            filterTable.Rows.Add("F", f.Operator, f.FieldTypeID, null, $"{wildcardValue(f.RawValue)}");
-                            usedFilters.Add($"F{f.FieldTypeID}");
+                            var rfValue = f.RawValue ?? f.Value;
+                            filterTable.Rows.Add("I", f.Operator, f.FieldTypeID, null, $"{wildcardValue(rfValue)}");
+                            usedFilters.Add($"I{f.FieldTypeID}");
                         }
                     }
                 }

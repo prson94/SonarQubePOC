@@ -1094,7 +1094,7 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
                     }
 
 
-                    var tagFieldType = Company.FieldTypes.Where(x => x.Object == det.Type && x.ObjectID == det.TypeID && x.Type == "Tag").Select(x => new { x.ID, x.ShowIfEmpty, x.FriendlyName }).FirstOrDefault();
+                    var tagFieldType = det == null ? null : Company.FieldTypes.Where(x => x.Object == det.Type && x.ObjectID == det.TypeID && x.Type == "Tag").Select(x => new { x.ID, x.ShowIfEmpty, x.FriendlyName }).FirstOrDefault();
                     var taggingEnabled = Community.GetCompanySettingByKey<bool>("EnableTagging");
                     if (tagFieldType != null && taggingEnabled)
                     {
@@ -1103,7 +1103,7 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
                                                  inner join Tag T on AT.TagId = T.Id
                                                 where Object = @object and ObjectID = @objectID";
                         var tags = Company.Query<dynamic>(assetTagSql, new { @object = objectType, objectID }).ToList();
-                        
+
 
                         var tagTooltip = new FieldTooltipValueModel()
                         {

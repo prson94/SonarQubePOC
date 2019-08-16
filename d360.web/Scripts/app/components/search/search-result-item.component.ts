@@ -13,7 +13,7 @@ declare var CompanySettings;
     template: `       
                 <div class="search-res-container">
                     <h4 class="search-result-name">
-                        <a (click)="navigateLink()" class="search-result-link" [innerHtml]="result?.Name"></a>
+                        <i *ngIf="result?.Icon" class="icon fa {{result?.Icon}}"></i> <a (click)="navigateLink()" class="search-result-link" [innerHtml]="result?.Name"></a>
                         <span *ngIf="showShoppingCart && result.Group != 'Synonym' && result.Group != 'Attribute'" style="float: right; cursor: pointer; padding-right: 10px;" (click)="add()">
                             <i class="fa fa-cart-plus"></i>
                         </span>

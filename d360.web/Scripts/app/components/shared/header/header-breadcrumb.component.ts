@@ -9,7 +9,7 @@ import { clearLine } from 'readline';
 @Component({
     selector: 'd3s-header-breadcrumb',
     template: ` <div #bread class="breadcrumbs" (window:resize)="onResize($event)">
-                <span (mouseleave)="smallPanel.hide()" (mouseenter)="FixHeight($event,smallPanel)"> 
+                <span (mouseleave)="smallPanel.hide()" (click)="smallPanel.hide()" (mouseenter)="FixHeight($event,smallPanel)"> 
                     <i #collapseIcon *ngIf="showLastOnly" class="fa fa-ellipsis-h breadcrumb-collapse" aria-hidden="true"></i>
                     <p-overlayPanel #smallPanel ngClass="collapsed-overlay">
                         <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index" class="collapsed-crumb-container">

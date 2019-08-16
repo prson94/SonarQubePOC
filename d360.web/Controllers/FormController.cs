@@ -568,9 +568,7 @@ namespace d360.web.Controllers
             form.Add("ID", objectID.ToString());
 
             switch ((objectType ?? "").ToUpper())
-            {
-                case "ARTIFACT":
-                    return DeleteArtifact(form);
+            {                
                 case "APIFIELD":
                     return DeleteApiField(form);
                 case "ARTIFACTTYPE":
@@ -914,34 +912,7 @@ namespace d360.web.Controllers
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [Route("DeleteArtifact"), HttpDelete]
-        public JsonResult DeleteArtifact(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("artifact");
-
-                var id = parseIntField(form, "ID");
-
-                if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.Artifact, id);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
+                
         [Route("EditArtifact"), HttpPut, ValidateInput(false)]
         public JsonResult EditArtifact(FormCollection form)
         {

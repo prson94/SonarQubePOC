@@ -112,7 +112,7 @@
                                     [disabled]="isSettingDisabled('IsDisplayable')">
                         </p-checkbox>
                     </div>
-                    <div>
+                    <div *ngIf="showIsEditable">
                         <p-checkbox binary="true"
                                     [(ngModel)]="model.FieldType.IsEditable"
                                     label="Is Editable?"

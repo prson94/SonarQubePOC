@@ -83,8 +83,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     selected: any = null;
     itemUrl: string;
 
-    theDeleteCallback: Function;
-
     public simpleSearch = new Subject<any>();
 
     get globalFilterFields(): string[] {
@@ -103,8 +101,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         private objectDetailService: ObjectDetailService
     ) {
         super();
-
-        this.theDeleteCallback = this.deleteItem.bind(this);
+                
         var me = this;
 
         const subscription = this.simpleSearch.pipe(
@@ -165,22 +162,13 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.filterGridData();
     }
 
-    deleteItem(id: number) {
-        this
-            .artifactService
-            .deleteArtifact(id)
-            .subscribe(
-                result => {
-                    this.showMessageForResult(this.messagesService, result);
-                    this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed
-                    this.showDelete = false;
-                    this.getData();
-                    this.changeDetectorRef.markForCheck();
-                }
-            )
-        ;
+    onDeleted() {
+        this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
+        this.getData();
+        this.showDelete = false;
+        this.changeDetectorRef.markForCheck();
     }
-
+    
     getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(this.artifactType.ID, StringConstants.ObjectArtifactType).subscribe(
             result => {
