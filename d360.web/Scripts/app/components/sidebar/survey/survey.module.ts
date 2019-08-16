@@ -1,7 +1,6 @@
 ﻿import { NgModule, Component } from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpModule, XHRBackend } from '@angular/http';
 import { RouterModule } from '@angular/router';
 
 import {
@@ -22,7 +21,6 @@ import { GovernRequestInterceptor } from '../../../http-interceptors/govern-requ
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
-        HttpModule,
         RouterModule,
         SocialModule,
 
