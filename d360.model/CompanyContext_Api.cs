@@ -2193,7 +2193,7 @@ from	IntersectType I
                         #region Generate proposed key hash and compare against existing data.
 
                         string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
-                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(100)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
+                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
                         string keyComparisonUpdateStatement = $@"
 update  T 
 set     T.Success = 0, 

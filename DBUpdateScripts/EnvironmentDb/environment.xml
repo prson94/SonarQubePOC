@@ -281,4 +281,5 @@
   <include file="scripts/GOV-7896.xml"/> <!--IGC proc-->
   <include file="scripts/GOV-7798.xml"/>
   <include file="scripts/GOV-7713.xml"/> <!-- GetDynamicAssets -->
+  <include file="scripts/GOV-7933.xml"/> <!-- api.ExecutionAsset changes to ProposedKey column -->
 </databaseChangeLog>
