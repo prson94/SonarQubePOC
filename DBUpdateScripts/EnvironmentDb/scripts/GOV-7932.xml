@@ -453,14 +453,15 @@ begin
 		COMMIT TRANSACTION [Tran1];
 	END TRY
 	BEGIN CATCH
+
+		ROLLBACK TRANSACTION [Tran1]
+
 		update	api.ExecutionDeletedAssetType
 		set		[Message] = 'Error occurred: ' + ERROR_MESSAGE(),
 				Success = 0
 		where	ExecutionID = @executionUid 
 				and ItemNumber = @itemNumber
 				and FromHierarchy = 0;
-
-		ROLLBACK TRANSACTION [Tran1]
 	END CATCH
 
 	select	*
