@@ -51,15 +51,15 @@
             splitStatements="true"
             stripComments="true">
 <![CDATA[
-CREATE OR ALTER   procedure [dbo].[GetDynamicAssets]
+ALTER procedure [dbo].[GetDynamicAssets]
 	@assetTypeId int,
 	@userId int,
 	@filter nvarchar(250),
 	@apiNamesInOutput bit = 0,
 	@listableFieldsOnly bit = 1,
 	@pagingEnabled bit = 1,
-	@pageNumber int,
-	@pageSize int,
+	@pageNumber int = 0,
+	@pageSize int = 10,
 	@sortField nvarchar(250),
 	@sortDirection nvarchar(10),
 	@filters [dbo].[AssetFiltersTable] readonly
@@ -67,6 +67,15 @@ as
 begin
 	set nocount on;
 
+	/*Filter Types:
+		A: Attribute
+		F: Single-value field
+		I: Field ON a relationship (inferred)
+		M: Multi-value field
+		O: Responsibility
+		P: Parent relationship
+		R: Relationship
+	*/
 	if @sortField = ''
 	begin
 		set @sortField = null
@@ -119,6 +128,7 @@ begin
 							when @apiNamesInOutput = 1 then REPLACE(REPLACE(Name, ' ', ''), '''', '') 
 							else 'Field' + cast(ID as nvarchar) 
 						 end;
+
 	update	T
 	set		T.JoinStatement = ' inner join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' inner join FieldType FT'+TxtId+'R on FT'+TxtId+'R.ID = FT'+TxtId+'.LookupObjectFieldTypeID'
 				+ ' cross apply openjson(FT'+TxtId+'R.Definition) with (FieldTypeID int ''$.FieldTypeID'', DataType varchar(50) ''$.DataType'', [Path] varchar(250) ''$.Path'') FT'+TxtId+'RD'
@@ -143,7 +153,6 @@ begin
 			inner join FieldType S on S.ID = T.LookupObjectFieldTypeID and S.[Type] = 'JsonElement' 
 	where	T.[Type] = 'FieldFromRelationship';
 
-	
 	update	T
 	set		T.JoinStatement = ' inner join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId
 				+ ' left join [Intersect] FT'+TxtId+'_REL with(nolock) on FT'+TxtId+'.LookupObjectType = ''IntersectType'' and FT'+TxtId+'_REL.IntersectTypeID = FT'+TxtId+'.LookupObjectID and' 
@@ -165,7 +174,6 @@ begin
 	from	#ft T
 			inner join FieldType S on S.ID = T.LookupObjectFieldTypeID and S.[Type] <> 'JsonElement' 
 	where	T.[Type] = 'FieldFromRelationship';
-
 	
 	update	T
 	set		T.JoinStatement = ' inner join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId
@@ -218,7 +226,6 @@ begin
 		print '- relationship field type target has same asset type both sides is (1 true, 0 false) :' + cast(@relationSidesAreSame as varchar)
 	end
 
-	
 	if (@relationIsSubject = 1 and @relationIsObject = 0 and @relationSidesAreSame = 0)
 	begin
 		update	#ft
@@ -335,7 +342,7 @@ begin
 							  end
 	where	JoinStatement is null
 			and [Type] = 'Tag'
-			
+
 	declare @countSql nvarchar(max),
 			@sql nvarchar(max),
 			@orderSql nvarchar(max),
@@ -372,7 +379,6 @@ end as P_CanDelete, '
 		end
 	end;
 	
-	
 	if @sortField is not null
 	begin
 		declare @sort nvarchar(250) = null
@@ -408,7 +414,6 @@ end as P_CanDelete, '
 		end
 	end
 
-	
 	if @parentIntersectTypeId is not null
 	begin
 		set @parentColumns = 'arp.ParentArtifactID as ParentID, parp.DisplayValue as Parent, '''' as ParentUrl, '
@@ -422,7 +427,6 @@ end as P_CanDelete, '
 	where	(coalesce(JoinStatement,'') <> '') and (IsListable = 1 OR coalesce(FilterStatement,'') <> '')
 	set @countSql = @countSql + @parentJoin + @displayValueJoin
 	set @countSql = @countSql + ' where A.AssetTypeID = @assetTypeId and A.State = 1'
-
 	
 	if exists(select 1 from #ft where coalesce(FilterStatement,'') <> '')
 	begin
@@ -440,13 +444,11 @@ end as P_CanDelete, '
 		set @hasFilters = 1
 	end;
 
-	
 	if exists(select 1 from @filters where FilterType = 'A')
 	begin
 		set @hasFilters = 1
 		set @filterSql = iif(@filterSql is not null, @filterSql, '') + ' and A.ObjectID in (select ObjectID from AttributeDetail A inner join @filters F on F.FilterType = ''A'' and F.TypeID = A.AttributeTypeID and A.FormattedValue like F.FilterValues)'
 	end
-
 	
 	if exists(select 1 from @filters where FilterType = 'P') and @parentIntersectTypeId is not null
 	begin
@@ -454,7 +456,6 @@ end as P_CanDelete, '
 		set @filterSql = iif(@filterSql is not null, @filterSql, '') + ' and parp.DisplayValue like (select top 1 FilterValues from @filters where FilterType = ''P'')'
 	end
 
-	
 	if exists(select 1 from @filters where FilterType = 'O')
 	begin
 		set @hasFilters = 1
@@ -504,6 +505,41 @@ end as P_CanDelete, '
 			end
 
 			set @current = @current + 1
+		end
+	end
+
+	if exists(select 1 from @filters where FilterType = 'I') -- Field ON a relationship
+	begin
+		set @hasFilters = 1
+
+		declare @relationFieldFilters table (RowId int identity, [Operator] varchar(25) NULL, [TypeID] [int] NOT NULL, [OptionalIdentifier] varchar(50) NULL, [FilterValues] [nvarchar](max) NOT NULL)
+
+		insert into @relationFieldFilters
+			select	[Operator], [TypeID], [OptionalIdentifier], [FilterValues]
+			from	@filters 
+			where	FilterType = 'I'
+
+		declare @iCurrent int = 1,
+				@iMax int,
+				@iOperator varchar(25),
+				@iTypeID nvarchar(30),
+				@iOptionalIdentifier varchar(50),
+				@iFilterValues nvarchar(max)
+		select @iMax = max(RowId) from @relationFieldFilters
+		while @iCurrent <= @iMax
+		begin
+			select	@iOperator = [Operator], 
+					@iTypeID = cast(TypeID as nvarchar), 
+					@iOptionalIdentifier = OptionalIdentifier, 
+					@iFilterValues = FilterValues 
+			from	@relationFieldFilters 
+			where	RowId = @iCurrent
+
+			set @filterSql = iif(@filterSql is not null, @filterSql, '') + ' and exists(select	F.ID from Field F 
+					inner join FieldType FT on FT.ID = F.FieldTypeID and FT.ID = ' + @iTypeID + ' and F.FormattedValue like ''' + REPLACE(@iFilterValues, '''', '''''') + '''' +
+					' inner join [Intersect] I on F.ObjectType = ''Intersect'' and I.ID = F.ObjectID and ( (I.Subject = A.Object and I.SubjectID = A.ObjectID) or (I.Object = A.Object and I.ObjectID = A.ObjectID) ) )'
+
+			set @iCurrent = @iCurrent + 1
 		end
 	end
 
@@ -559,12 +595,10 @@ end as P_CanDelete, '
 
 	declare @parameters nvarchar(max)
 	set @parameters = '@assetTypeId int, @filter nvarchar(250), @userId int, @pageNumber int, @pageSize int, @filters [dbo].[AssetFiltersTable] readonly'
-
 	
 	print 'count sql [' + @countSql + ']'
 
 	exec sp_executesql @countSql, @parameters, @assetTypeId = @assetTypeId, @filter = @filter, @userId = @userId, @pageNumber = @pageNumber, @pageSize = @pageSize, @filters = @filters
-
 	
 	print 'sql [' + @sql + ']'
 
@@ -574,15 +608,15 @@ end
     </sql>
     <rollback>
 <![CDATA[
-CREATE OR ALTER   procedure [dbo].[GetDynamicAssets]
+ALTER procedure [dbo].[GetDynamicAssets]
 	@assetTypeId int,
 	@userId int,
 	@filter nvarchar(250),
 	@apiNamesInOutput bit = 0,
 	@listableFieldsOnly bit = 1,
 	@pagingEnabled bit = 1,
-	@pageNumber int,
-	@pageSize int,
+	@pageNumber int = 0,
+	@pageSize int = 10,
 	@sortField nvarchar(250),
 	@sortDirection nvarchar(10),
 	@filters [dbo].[AssetFiltersTable] readonly
@@ -590,6 +624,15 @@ as
 begin
 	set nocount on;
 
+	/*Filter Types:
+		A: Attribute
+		F: Single-value field
+		I: Field ON a relationship (inferred)
+		M: Multi-value field
+		O: Responsibility
+		P: Parent relationship
+		R: Relationship
+	*/
 	if @sortField = ''
 	begin
 		set @sortField = null
@@ -643,7 +686,6 @@ begin
 							else 'Field' + cast(ID as nvarchar) 
 						 end;
 
-	
 	update	T
 	set		T.JoinStatement = ' inner join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' inner join FieldType FT'+TxtId+'R on FT'+TxtId+'R.ID = FT'+TxtId+'.LookupObjectFieldTypeID'
 				+ ' cross apply openjson(FT'+TxtId+'R.Definition) with (FieldTypeID int ''$.FieldTypeID'', DataType varchar(50) ''$.DataType'', [Path] varchar(250) ''$.Path'') FT'+TxtId+'RD'
@@ -668,7 +710,6 @@ begin
 			inner join FieldType S on S.ID = T.LookupObjectFieldTypeID and S.[Type] = 'JsonElement' 
 	where	T.[Type] = 'FieldFromRelationship';
 
-	
 	update	T
 	set		T.JoinStatement = ' inner join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId
 				+ ' left join [Intersect] FT'+TxtId+'_REL with(nolock) on FT'+TxtId+'.LookupObjectType = ''IntersectType'' and FT'+TxtId+'_REL.IntersectTypeID = FT'+TxtId+'.LookupObjectID and' 
@@ -690,7 +731,6 @@ begin
 	from	#ft T
 			inner join FieldType S on S.ID = T.LookupObjectFieldTypeID and S.[Type] <> 'JsonElement' 
 	where	T.[Type] = 'FieldFromRelationship';
-
 	
 	update	T
 	set		T.JoinStatement = ' inner join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId
@@ -743,7 +783,6 @@ begin
 		print '- relationship field type target has same asset type both sides is (1 true, 0 false) :' + cast(@relationSidesAreSame as varchar)
 	end
 
-	
 	if (@relationIsSubject = 1 and @relationIsObject = 0 and @relationSidesAreSame = 0)
 	begin
 		update	#ft
@@ -880,7 +919,6 @@ end as P_CanDelete, '
 		end
 	end;
 	
-	
 	if @sortField is not null
 	begin
 		declare @sort nvarchar(250) = null
@@ -916,7 +954,6 @@ end as P_CanDelete, '
 		end
 	end
 
-	
 	if @parentIntersectTypeId is not null
 	begin
 		set @parentColumns = 'arp.ParentArtifactID as ParentID, parp.DisplayValue as Parent, '''' as ParentUrl, '
@@ -930,7 +967,6 @@ end as P_CanDelete, '
 	where	(coalesce(JoinStatement,'') <> '') and (IsListable = 1 OR coalesce(FilterStatement,'') <> '')
 	set @countSql = @countSql + @parentJoin + @displayValueJoin
 	set @countSql = @countSql + ' where A.AssetTypeID = @assetTypeId and A.State = 1'
-
 	
 	if exists(select 1 from #ft where coalesce(FilterStatement,'') <> '')
 	begin
@@ -948,13 +984,11 @@ end as P_CanDelete, '
 		set @hasFilters = 1
 	end;
 
-	
 	if exists(select 1 from @filters where FilterType = 'A')
 	begin
 		set @hasFilters = 1
 		set @filterSql = iif(@filterSql is not null, @filterSql, '') + ' and A.ObjectID in (select ObjectID from AttributeDetail A inner join @filters F on F.FilterType = ''A'' and F.TypeID = A.AttributeTypeID and A.FormattedValue like F.FilterValues)'
 	end
-
 	
 	if exists(select 1 from @filters where FilterType = 'P') and @parentIntersectTypeId is not null
 	begin
@@ -962,7 +996,6 @@ end as P_CanDelete, '
 		set @filterSql = iif(@filterSql is not null, @filterSql, '') + ' and parp.DisplayValue like (select top 1 FilterValues from @filters where FilterType = ''P'')'
 	end
 
-	
 	if exists(select 1 from @filters where FilterType = 'O')
 	begin
 		set @hasFilters = 1
@@ -1012,6 +1045,41 @@ end as P_CanDelete, '
 			end
 
 			set @current = @current + 1
+		end
+	end
+
+	if exists(select 1 from @filters where FilterType = 'I') -- Field ON a relationship
+	begin
+		set @hasFilters = 1
+
+		declare @relationFieldFilters table (RowId int identity, [Operator] varchar(25) NULL, [TypeID] [int] NOT NULL, [OptionalIdentifier] varchar(50) NULL, [FilterValues] [nvarchar](max) NOT NULL)
+
+		insert into @relationFieldFilters
+			select	[Operator], [TypeID], [OptionalIdentifier], [FilterValues]
+			from	@filters 
+			where	FilterType = 'I'
+
+		declare @iCurrent int = 1,
+				@iMax int,
+				@iOperator varchar(25),
+				@iTypeID nvarchar(30),
+				@iOptionalIdentifier varchar(50),
+				@iFilterValues nvarchar(max)
+		select @iMax = max(RowId) from @relationFieldFilters
+		while @iCurrent <= @iMax
+		begin
+			select	@iOperator = [Operator], 
+					@iTypeID = cast(TypeID as nvarchar), 
+					@iOptionalIdentifier = OptionalIdentifier, 
+					@iFilterValues = FilterValues 
+			from	@relationFieldFilters 
+			where	RowId = @iCurrent
+
+			set @filterSql = iif(@filterSql is not null, @filterSql, '') + ' and exists(select	F.ID from Field F 
+					inner join FieldType FT on FT.ID = F.FieldTypeID and FT.ID = ' + @iTypeID + ' and F.FormattedValue like ''' + REPLACE(@iFilterValues, '''', '''''') + '''' +
+					' inner join [Intersect] I on F.ObjectType = ''Intersect'' and I.ID = F.ObjectID and ( (I.Subject = A.Object and I.SubjectID = A.ObjectID) or (I.Object = A.Object and I.ObjectID = A.ObjectID) ) )'
+
+			set @iCurrent = @iCurrent + 1
 		end
 	end
 
@@ -1067,12 +1135,10 @@ end as P_CanDelete, '
 
 	declare @parameters nvarchar(max)
 	set @parameters = '@assetTypeId int, @filter nvarchar(250), @userId int, @pageNumber int, @pageSize int, @filters [dbo].[AssetFiltersTable] readonly'
-
 	
 	print 'count sql [' + @countSql + ']'
 
 	exec sp_executesql @countSql, @parameters, @assetTypeId = @assetTypeId, @filter = @filter, @userId = @userId, @pageNumber = @pageNumber, @pageSize = @pageSize, @filters = @filters
-
 	
 	print 'sql [' + @sql + ']'
 
