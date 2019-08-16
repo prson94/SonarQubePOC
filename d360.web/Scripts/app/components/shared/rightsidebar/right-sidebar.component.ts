@@ -316,6 +316,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             'Click Confirm to send a certification request to the term owner',
             true).subscribe(action => {
                 if (action === 'confirm') {
+                    this.showCertify = false;
+                    this.ref.markForCheck();
                     this.certify();
                 }
             });
@@ -325,7 +327,12 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         if (this.currentObject && this.currentObject.objectID)
             this.artifactService
                 .requestCertification(this.currentObject.objectID)
-                .subscribe(result => { this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow); });
+                .subscribe(result => {
+                    window.setTimeout(
+                        x => {
+                                this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
+                    },5000);
+            });
     }
 
     navigateToSurvey() {
