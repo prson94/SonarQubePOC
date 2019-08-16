@@ -265,10 +265,6 @@ export class ArtifactService extends BaseObservableService {
             ;
     }
 
-    deleteArtifact(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'artifact', id);
-    }
-
     saveArtifact(artifact: any): Observable<JsonResult> {
         let methodName;
 

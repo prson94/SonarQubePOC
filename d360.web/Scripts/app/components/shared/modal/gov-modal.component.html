@@ -5,7 +5,13 @@
             <span class="grow"></span>
             <button (click)="closePopUp()" class="light bar button close" title="Close"><i class="fa fa-times"></i></button>
         </div>
-       <ng-content></ng-content>
-
+        <ng-content></ng-content>
+        <div *ngIf="showConfirm" class="action-bar">
+            <button class="button" (click)="closePopUp()">Cancel</button>
+            <span class="grow"></span>
+            <button class="button primary" (click)="confirm()">Confirm
+                <span class="loader"><span class="spinner light"></span></span>
+            </button>
+        </div>
     </div>
 </div>
