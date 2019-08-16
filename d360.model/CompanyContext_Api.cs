@@ -2199,7 +2199,13 @@ update  T
 set     T.Success = 0, 
         T.Message = {keyErrorMessage}
 from    api.ExecutionAsset T 
-        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and ((S.AssetID <> T.AssetID and T.AssetID is not null) OR (T.AssetID is null)); ";
+        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and S.AssetID <> T.AssetID and T.AssetID is not null; 
+
+update  T 
+set     T.Success = 0, 
+        T.Message = {keyErrorMessage}
+from    api.ExecutionAsset T 
+        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and T.AssetID is null; ";
 
                         if (at.Object == "FusionAttributeType")
                         {
