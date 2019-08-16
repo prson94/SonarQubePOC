@@ -1,0 +1,282 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-7624">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+ALTER PROCEDURE [dbo].[GetReferenceItemValues]   
+ @listid int,  
+ @resourceID int = 0,  
+ @useApiName bit = 0  
+AS  
+BEGIN  
+ SET NOCOUNT ON;  
+   
+ declare @isAdmin bit = 0;  
+  
+ select top 1  
+   @isAdmin = [IsAdministrator]  
+ from [reporting].[Global_Resource]  
+ where [ResourceID] = @resourceID;  
+  
+ drop table if exists #fieldtypes  
+ drop table if exists #parentTypes  
+ create table #fieldtypes (ID int, Name nvarchar(250))  
+ create table #parentTypes (IntersectTypeID int, Name nvarchar(250), ReferenceListTypeID int, ParentLevel int)  
+  
+   
+ if @useApiName = 1  
+  begin  
+   insert into #fieldtypes  
+    select ID, [Name] from fieldtype where object = 'ReferenceItemType' and objectid = @listid order by ColumnOrder  
+  end  
+ else  
+  begin  
+   insert into #fieldtypes  
+    select ID, 'Field' + cast(id as varchar(100)) as [Name] from fieldtype where object = 'ReferenceItemType' and objectid = @listid order by ColumnOrder  
+  end  
+  
+ declare @parentLevel int = 0;  
+ declare @currentReferenceListID int = @listid;   
+   
+ while exists (select 1 from intersecttypedetail where [object] = 'ReferenceItemType' and objectid = @currentReferenceListID and predicatetype = 3 and @parentLevel < 20)  
+ begin  
+    
+  insert into #parentTypes   
+   select id, subjectname, subjectid, @parentLevel from intersecttypedetail where [object] = 'ReferenceItemType' and objectid = @currentReferenceListID and predicatetype = 3;  
+  
+  select @currentReferenceListID =subjectid from intersecttypedetail where [object] = 'ReferenceItemType' and objectid = @currentReferenceListID and predicatetype = 3;  
+    
+  set @parentLevel = @parentLevel +1;  
+ end  
+   
+   
+ DECLARE @tsqlSelect nvarchar(max);  
+ DECLARE @tsqlFrom nvarchar(max);  
+ DECLARE @tsqlWhere nvarchar(max);  
+ DECLARE @tsql nvarchar(max);  
+  
+ set @tsqlSelect = 'select ri.id as [ID] , ri.code as [Code], o.id as [AssetID], o.uid as [UID]';  
+ set @tsqlFrom = 'from ReferenceItem ri inner join Asset O on O.Object = ''ReferenceItem'' and O.ObjectID = ri.ID ';  
+ set @tsqlWhere = ' where ri.visible = 1 and ri.referenceitemtypeid = ' + cast(@listid as nvarchar(20));  
+ if @resourceID > 0  
+ begin  
+  set @tsqlWhere = @tsqlWhere + ' and O.ID not in (select AssetID from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = ' +  cast(@resourceID as varchar) + ') ';  
+  set @tsqlWhere = @tsqlWhere + ' and O.AssetTypeID not in (select AssetTypeID from ResponsibilityDetail where AssetID = 0 and PermissionsBitMask & 1 = 0 and ResourceID = ' +  cast(@resourceID as varchar) + ') ';  
+ end   
+  
+ DECLARE @name nvarchar(250);  
+ DECLARE @id int = 0;  
+ DECLARE @intersectTypeId int;  
+ DECLARE @parentName nvarchar(250);  
+ DECLARE @parentListTypeID int = 0;   
+ DECLARE @index int = 0;  
+ DECLARE @previousRelation varchar(200) = 'ri.ID';  
+  
+   
+ DECLARE relCur CURSOR FOR SELECT IntersectTypeId, Name, ReferenceListTypeID, ParentLevel FROM #parentTypes  
+ OPEN relCur  
+  
+ FETCH NEXT FROM relCur INTO @intersectTypeId, @parentName, @parentListTypeID, @parentLevel  
+  
+ WHILE @@FETCH_STATUS = 0 BEGIN  
+   
+  SET @tsqlSelect = @tsqlSelect + ', REL_' + cast(@index as nvarchar(10)) + '.DisplayValue as [Rel' + cast(@parentListTypeID as varchar(20)) + ']';  
+        SET @tsqlFrom = @tsqlFrom +' outer apply (  
+        select ID.DisplayValue, I.SubjectID                              
+        from [PredicateIntersect] I  
+                            inner join Asset IA on I.Object = ''ReferenceItem'' and I.ObjectID = ' + @previousRelation + ' and IA.Object = ''ReferenceItem'' and IA.ObjectID = I.SubjectID and I.PredicateType = 3  
+                            inner join AssetType IAT on IAT.ID = IA.AssetTypeID  
+                            cross apply dbo.GetAssetDisplayValueById(IA.ID) ID  
+        ) REL_' + cast(@index as nvarchar(10));  
+  
+  set @previousRelation = 'REL_' + cast(@index as nvarchar(10)) + '.SubjectID';  
+  SET @index = @index + 1;  
+  FETCH NEXT FROM relCur INTO @intersectTypeId, @parentName, @parentListTypeID, @parentLevel  
+ END  
+  
+ CLOSE relCur      
+ DEALLOCATE relCur  
+  
+ set @index = 0;  
+   
+ DECLARE cur CURSOR FOR SELECT id, name FROM #fieldtypes  
+ OPEN cur  
+  
+ FETCH NEXT FROM cur INTO @id, @name  
+  
+ WHILE @@FETCH_STATUS = 0 BEGIN  
+    
+  SET @tsqlSelect = @tsqlSelect + ', f'+ cast(@index as nvarchar(10)) + '.formattedvalue as [' + @name + ']';  
+  SET @tsqlFrom = @tsqlFrom + ' left outer join [dbo].[field] f' + cast(@index as nvarchar(10)) + ' on (ri.id = f' + cast(@index as nvarchar(10)) + '.objectid and f' + cast(@index as nvarchar(10)) + '.[objecttype] = ''ReferenceItem'' and f' + cast(@index 
+as nvarchar(10)) + '.fieldtypeid = ' + cast(@id as nvarchar(20)) + ')';  
+  
+  SET @index = @index + 1;  
+  FETCH NEXT FROM cur INTO @id, @name  
+ END  
+  
+ CLOSE cur      
+ DEALLOCATE cur  
+  
+ if @isAdmin = 0  
+ begin  
+  SET @tsqlSelect = @tsqlSelect + ', IIF(S_E.AssetID is null, 0, 1) as P_CanEdit, IIF(S_D.AssetID is null, 0, 1) as P_CanDelete '  
+  set @tsqlFrom = @tsqlFrom + '  
+outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = O.ID and ResourceID = ' + cast(@resourceID as varchar) + ' and (PermissionsBitMask & 2) = 2) S_E   
+outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = O.ID and ResourceID = ' + cast(@resourceID as varchar) + ' and (PermissionsBitMask & 4) = 4) S_D'  
+ end  
+ else  
+ begin   
+  SET @tsqlSelect = @tsqlSelect + ', cast(1 as bit) as P_CanEdit, cast(1 as bit) as P_CanDelete '  
+ end  
+  
+ SET @tsql = @tsqlSelect + @tsqlFrom + @tsqlWhere;  
+    print(@tsql);
+ EXEC sp_executesql @tsql;  
+END
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+ALTER PROCEDURE [dbo].[GetReferenceItemValues]   
+ @listid int,  
+ @resourceID int = 0,  
+ @useApiName bit = 0  
+AS  
+BEGIN  
+ SET NOCOUNT ON;  
+   
+ declare @isAdmin bit = 0;  
+  
+ select top 1  
+   @isAdmin = [IsAdministrator]  
+ from [reporting].[Global_Resource]  
+ where [ResourceID] = @resourceID;  
+  
+ drop table if exists #fieldtypes  
+ drop table if exists #parentTypes  
+ create table #fieldtypes (ID int, Name nvarchar(250))  
+ create table #parentTypes (IntersectTypeID int, Name nvarchar(250), ReferenceListTypeID int, ParentLevel int)  
+  
+   
+ if @useApiName = 1  
+  begin  
+   insert into #fieldtypes  
+    select ID, [Name] from fieldtype where object = 'ReferenceItemType' and objectid = @listid order by ColumnOrder  
+  end  
+ else  
+  begin  
+   insert into #fieldtypes  
+    select ID, 'Field' + cast(id as varchar(100)) as [Name] from fieldtype where object = 'ReferenceItemType' and objectid = @listid order by ColumnOrder  
+  end  
+  
+ declare @parentLevel int = 0;  
+ declare @currentReferenceListID int = @listid;   
+   
+ while exists (select 1 from intersecttypedetail where [object] = 'ReferenceItemType' and objectid = @currentReferenceListID and predicatetype = 3 and @parentLevel < 20)  
+ begin  
+    
+  insert into #parentTypes   
+   select id, subjectname, subjectid, @parentLevel from intersecttypedetail where [object] = 'ReferenceItemType' and objectid = @currentReferenceListID and predicatetype = 3;  
+  
+  select @currentReferenceListID =subjectid from intersecttypedetail where [object] = 'ReferenceItemType' and objectid = @currentReferenceListID and predicatetype = 3;  
+    
+  set @parentLevel = @parentLevel +1;  
+ end  
+   
+   
+ DECLARE @tsqlSelect nvarchar(max);  
+ DECLARE @tsqlFrom nvarchar(max);  
+ DECLARE @tsqlWhere nvarchar(max);  
+ DECLARE @tsql nvarchar(max);  
+  
+ set @tsqlSelect = 'select ri.id as [ID] , ri.code as [Code], o.id as [AssetID], o.uid as [UID]';  
+ set @tsqlFrom = 'from ReferenceItem ri inner join Asset O on O.Object = ''ReferenceItem'' and O.ObjectID = ri.ID ';  
+ set @tsqlWhere = ' where ri.visible = 1 and ri.referenceitemtypeid = ' + cast(@listid as nvarchar(20));  
+ if @resourceID > 0  
+ begin  
+  set @tsqlWhere = @tsqlWhere + ' and O.ID not in (select AssetID from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = ' +  cast(@resourceID as varchar) + ') ';  
+  set @tsqlWhere = @tsqlWhere + ' and O.AssetTypeID not in (select AssetTypeID from ResponsibilityDetail where AssetID = 0 and PermissionsBitMask & 1 = 0 and ResourceID = ' +  cast(@resourceID as varchar) + ') ';  
+ end   
+  
+ DECLARE @name nvarchar(250);  
+ DECLARE @id int = 0;  
+ DECLARE @intersectTypeId int;  
+ DECLARE @parentName nvarchar(250);  
+ DECLARE @parentListTypeID int = 0;   
+ DECLARE @index int = 0;  
+ DECLARE @previousRelation varchar(200) = 'ri.ID';  
+  
+   
+ DECLARE relCur CURSOR FOR SELECT IntersectTypeId, Name, ReferenceListTypeID, ParentLevel FROM #parentTypes  
+ OPEN relCur  
+  
+ FETCH NEXT FROM relCur INTO @intersectTypeId, @parentName, @parentListTypeID, @parentLevel  
+  
+ WHILE @@FETCH_STATUS = 0 BEGIN  
+   
+  SET @tsqlSelect = @tsqlSelect + ', REL_' + cast(@index as nvarchar(10)) + '.DisplayValue as [Rel' + cast(@parentListTypeID as varchar(20)) + ']';  
+        SET @tsqlFrom = @tsqlFrom +' outer apply (  
+        select ID.DisplayValue, I.SubjectID                              
+        from [PredicateIntersect] I  
+                            inner join Asset IA on I.Object = ''ReferenceItem'' and I.ObjectID = ' + @previousRelation + ' and IA.Object = ''ReferenceItem'' and IA.ObjectID = I.SubjectID and I.PredicateType = 3  
+                            inner join AssetType IAT on IAT.ID = IA.AssetTypeID  
+                            cross apply dbo.GetAssetDisplayValueById(IA.ID) ID  
+        ) REL_' + cast(@index as nvarchar(10));  
+  
+  set @previousRelation = 'REL_' + cast(@index as nvarchar(10)) + '.SubjectID';  
+  SET @index = @index + 1;  
+  FETCH NEXT FROM relCur INTO @intersectTypeId, @parentName, @parentListTypeID, @parentLevel  
+ END  
+  
+ CLOSE relCur      
+ DEALLOCATE relCur  
+  
+ set @index = 0;  
+   
+ DECLARE cur CURSOR FOR SELECT id, name FROM #fieldtypes  
+ OPEN cur  
+  
+ FETCH NEXT FROM cur INTO @id, @name  
+  
+ WHILE @@FETCH_STATUS = 0 BEGIN  
+    
+  SET @tsqlSelect = @tsqlSelect + ', f'+ cast(@index as nvarchar(10)) + '.formattedvalue as [' + @name + ']';  
+  SET @tsqlFrom = @tsqlFrom + ' left outer join [dbo].[field] f' + cast(@index as nvarchar(10)) + ' on (ri.id = f' + cast(@index as nvarchar(10)) + '.objectid and f' + cast(@index as nvarchar(10)) + '.[objecttype] = ''ReferenceItem'' and f' + cast(@index 
+as nvarchar(10)) + '.fieldtypeid = ' + cast(@id as nvarchar(20)) + ')';  
+  
+  SET @index = @index + 1;  
+  FETCH NEXT FROM cur INTO @id, @name  
+ END  
+  
+ CLOSE cur      
+ DEALLOCATE cur  
+  
+ if @isAdmin = 0  
+ begin  
+  SET @tsqlSelect = @tsqlSelect + ', IIF(S_E.AssetID is null, 0, 1) as P_CanEdit, IIF(S_D.AssetID is null, 0, 1) as P_CanDelete '  
+  set @tsqlFrom = @tsqlFrom + '  
+outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = O.ID and ResourceID = ' + cast(@resourceID as varchar) + ' and (PermissionsBitMask & 2) = 2) S_E   
+outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = O.ID and ResourceID = ' + cast(@resourceID as varchar) + ' and (PermissionsBitMask & 4) = 4) S_D'  
+ end  
+ else  
+ begin   
+  SET @tsqlSelect = @tsqlSelect + ', cast(1 as bit) as P_CanEdit, cast(1 as bit) as P_CanDelete '  
+ end  
+  
+ SET @tsql = @tsqlSelect + @tsqlFrom + @tsqlWhere;  
+    print(@tsql);
+ EXEC sp_executesql @tsql;  
+END
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
