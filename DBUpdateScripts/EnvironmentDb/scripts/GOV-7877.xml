@@ -51,7 +51,7 @@
             splitStatements="true"
             stripComments="true">
 <![CDATA[
-ALTER procedure [dbo].[GetDynamicAssets]
+CREATE OR ALTER procedure [dbo].[GetDynamicAssets]
 	@assetTypeId int,
 	@userId int,
 	@filter nvarchar(250),
@@ -608,7 +608,7 @@ end
     </sql>
     <rollback>
 <![CDATA[
-ALTER procedure [dbo].[GetDynamicAssets]
+CREATE OR ALTER procedure [dbo].[GetDynamicAssets]
 	@assetTypeId int,
 	@userId int,
 	@filter nvarchar(250),
