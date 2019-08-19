@@ -161,7 +161,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     formatValue(item: TagDetail) {
-        return item.AssetType.replace(/\s/g, ` <i class='fa fa-angle-right'></i> `);
+        return item.AssetType.replace(' ', ` <i class='fa fa-angle-right'></i> `);
     }
 
     openTagPage(item: TagItem) {
