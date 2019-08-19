@@ -593,9 +593,9 @@ namespace d360.model.DataAccessLayer
                     case "assettype":
                         if (!hasGlobalSearch)
                         {
-                            dbArgs.Add("assettype", $"%{param.Value.ToLower()}%");
-                            whereClauses.Add("LOWER(AST.Object) like @assettype");
-                            whereClauses.Add("LOWER(AST.Name) like @assettype");
+                            dbArgs.Add("assetname", $"%{param.Value.ToLower()}%");
+                            whereClauses.Add("LOWER(AST.Name) like @assetname");
+                            AddAssetTypeParam(dbArgs, whereClauses, param.Value);
                         }
                         break;
                     case "tagsasstring":
@@ -609,8 +609,10 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("globalsearch", $"%{param.Value.ToLower()}%");
                         whereClauses.Add("LOWER(AssetTags.Tags) like @globalsearch");
                         whereClauses.Add("LOWER(ADV.DisplayValue) like @globalsearch");
-                        whereClauses.Add("LOWER(AST.Object) like @globalsearch");
                         whereClauses.Add("LOWER(AST.Name) like @globalsearch");
+
+                        AddAssetTypeParam(dbArgs, whereClauses, param.Value);
+
                         whereConnector = " or ";
                         break;
                     case "_pagesize":
@@ -632,7 +634,7 @@ namespace d360.model.DataAccessLayer
                         break;
                     case "sortby":
                         if (param.Value.ToLower() == "displayvalue") sortField = "displayvalue";
-                        if (param.Value.ToLower() == "assettype") sortField = "AST.Object";
+                        if (param.Value.ToLower() == "assettype") sortField = "assettype";
                         if (param.Value.ToLower() == "tagsasstring") sortField = "AssetTags.Tags";
                         break;
                     case "sortorder":
@@ -653,8 +655,8 @@ namespace d360.model.DataAccessLayer
             }
 
             //var countSql = $@"select count(*) from AssetTag AT
-	           //             inner join Tag T on AT.TagId = T.ID
-	           //             {whereClause}";
+            //             inner join Tag T on AT.TagId = T.ID
+            //             {whereClause}";
 
             //result.total = companyContext.Query<int>(countSql, dbArgs).FirstOrDefault();
 
@@ -694,5 +696,26 @@ namespace d360.model.DataAccessLayer
             return result;
         }
 
+        private static void AddAssetTypeParam(DynamicParameters dbArgs, List<string> whereClauses, string value)
+        {
+            string paramValue = "";
+            if ("model".Contains(value.ToLower()))
+                paramValue = "TaxonomyType";
+
+            if ("glossary".Contains(value.ToLower()))
+                paramValue = "ArtifactType";
+
+            if ("policy".Contains(value.ToLower()))
+                paramValue = "PolicyType";
+
+            if ("rule".Contains(value.ToLower()))
+                paramValue = "RuleType";
+
+            if (!string.IsNullOrEmpty(paramValue))
+            {
+                dbArgs.Add("assettype", paramValue);
+                whereClauses.Add("AST.Object = @assettype");
+            }
+        }
     }
 }

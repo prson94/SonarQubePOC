@@ -23,7 +23,7 @@
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'AssetType'"></d3s-sortIcon>
 
                         </th>
-                        <th [pSortableColumn]="'TagsAsString'" style="width: 50%">
+                        <th [pSortableColumn]="'TagsAsString'" style="width: 50%;">
                             Tags
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'TagsAsString'"></d3s-sortIcon>
 
@@ -44,7 +44,9 @@
                         <td>
                             <div class="tag-list">
                                 <div class="tag-item" *ngFor="let tag of item.Tags">
-                                    <button class="button" (click)="openTagPage(tag)" [disabled]="tag.Uid == tagUid">{{tag.Value}}</button>
+                                    <button class="button" (click)="openTagPage(tag)" [disabled]="tag.Uid == tagUid">
+                                        <span>{{tag.Value}}</span>
+                                    </button>
                                 </div>
                             </div>
                         </td>
