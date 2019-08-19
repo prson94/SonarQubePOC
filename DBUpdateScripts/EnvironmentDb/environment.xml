@@ -279,4 +279,5 @@
   <include file="scripts/GOV-7888.xml"/> <!-- Batch API - ShouldAllowNewBatchCall -->
   <include file="scripts/GOV-7861.xml"/> <!-- IGC - ExecutionAssetType index -->
   <include file="scripts/GOV-7713.xml"/> <!-- GetDynamicAssets -->
+  <include file="scripts/GOV-7851.xml"/> <!-- Add columns to integration.SynchedAssetType and integration.ExecutionAssetType -->
 </databaseChangeLog>
