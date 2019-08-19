@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="GOV-7933-cleanup">
+  <changeSet author="MDonato" id="GOV-7933-cleanup2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -16,7 +16,7 @@
 	
 	update api.ExecutionAsset
 	set ProposedKey = utility.GetHash(ProposedKey)
-	where len(ProposedKey) > 32
+	where len(ProposedKey) <> 32
 ]]>
     </sql>
     <rollback>
