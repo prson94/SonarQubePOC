@@ -904,7 +904,12 @@ namespace d360.extensions.search
             var bulkResponse = client.Bulk<StringResponse>(GetCompanyIndexName(companyId), sb.ToString());
 
             if (!bulkResponse.Success)
-                throw new ApplicationException(bulkResponse.OriginalException.Message);
+            {
+                ApplicationException bulkEx = new ApplicationException(bulkResponse.OriginalException.Message);
+                bulkEx.Data.Add("ES_DebugInformation", bulkResponse.DebugInformation);
+                bulkEx.Data.Add("ES_RequestBody", sb.ToString());
+                throw bulkEx;
+            }
 
             var result = JObject.Parse(bulkResponse.Body);
 
