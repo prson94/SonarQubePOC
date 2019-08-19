@@ -166,33 +166,34 @@ namespace d360.model.DataAccessLayer
             string whereOperater = " and ";
             int useCount = 0;
 
-            foreach (var qitem in queryParams)
+            foreach (var qitem in queryParams.Where(x=> !string.IsNullOrEmpty(x.Value)))
             {
                 switch (qitem.Key.ToLower())
                 {
-                    case "value":
-                        if (!string.IsNullOrEmpty(qitem.Value))
+                    case "globalsearch":
+                        dbArgs.Add("value", $"%{qitem.Value.ToLower()}%");
+                        whereClauses.Add("LOWER(t.Value) like @value");
+
+                        if (int.TryParse(qitem.Value, out useCount))
                         {
-                            dbArgs.Add("value", $"%{qitem.Value.ToLower()}%");
-                            whereClauses.Add("LOWER(t.Value) like @value");
+                            dbArgs.Add("useCount", useCount);
+                            whereClauses.Add("Tags.count = @useCount");
+                            whereOperater = " or ";
 
-                            if (int.TryParse(qitem.Value, out useCount))
-                            {
-                                dbArgs.Add("useCount", useCount);
-                                whereClauses.Add("Tags.count = @useCount");
-                                whereOperater = " or ";
-
-                            }
                         }
+                        whereOperater = " or ";
+
+                        break;
+                    case "value":
+                        dbArgs.Add("value", $"%{qitem.Value.ToLower()}%");
+                        whereClauses.Add("LOWER(t.Value) like @value");
+
                         break;
                     case "usecount":
-                        if (!string.IsNullOrEmpty(qitem.Value))
+                        if (int.TryParse(qitem.Value, out useCount))
                         {
-                            if (int.TryParse(qitem.Value, out useCount))
-                            {
-                                dbArgs.Add("useCount", useCount);
-                                whereClauses.Add("Tags.count = @useCount");
-                            }
+                            dbArgs.Add("useCount", useCount);
+                            whereClauses.Add("Tags.count = @useCount");
                         }
 
                         break;
@@ -211,9 +212,9 @@ namespace d360.model.DataAccessLayer
             string sortClause = $"ORDER BY {sortField} {sortOrder}";
 
             string whereClause = $"WHERE t.State = 1";
-            if(whereClauses.Count> 0)
+            if (whereClauses.Count > 0)
             {
-                whereClause += $"and {string.Join(whereOperater, whereClauses)}";
+                whereClause += $" and ({string.Join(whereOperater, whereClauses)})";
             }
             var sql = $@"select t.uid,
 	                        t.Value,
