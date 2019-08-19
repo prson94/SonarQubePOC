@@ -284,4 +284,5 @@
   <include file="scripts/GOV-7933.xml"/> <!-- api.ExecutionAsset changes to ProposedKey column -->
   <include file="scripts/GOV-7932.xml"/> <!-- api.DeleteAssetType -->
   <include file="scripts/GOV-7781.xml"/> <!-- api.DeleteAssetType -->
+  <include file="scripts/GOV-7949.xml"/> <!-- GetFormattedFieldLookupValue -->
 </databaseChangeLog>
