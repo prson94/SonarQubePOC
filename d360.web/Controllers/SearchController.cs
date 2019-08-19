@@ -126,7 +126,7 @@ namespace d360.web.Controllers
                     siteNavName = "#Reference";
                     break;
                 case "Rule":
-                    siteNavName = "#Policy";
+                    siteNavName = "#Data Quality";
                     break;
             }
             //For typeahead results, Type is a concatenation of Type and subtype for Artifacts
