@@ -34,6 +34,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     private isAdmin: boolean = false;
     private backUrl: string;
 
+    filters: any = { globalSearch: '', DisplayValue: '', AssetType: '', TagsAsString: '' };
+    sort: any;
 
     private sub: any;
     actions: AssetAction;
@@ -53,6 +55,13 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         super();
         this.rightSidebarService = rightSidebarService;
 
+    }
+
+    updateSort(event) {
+        this.sort = event;
+    }
+    onFilterChange(event) {
+        this.filters[event.prop] = event.value;
     }
 
     ngOnInit() {
@@ -151,16 +160,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
     }
 
-    getAssetType(item: TagDetail) {
-
-        switch (item.AssetType) {
-            case 'ArtifactType': return `Glossary <i class='fa fa-angle-right'></i> ${item.AssetTypeName}`;
-            case 'PolicyType': return `Policy <i class='fa fa-angle-right'></i> ${item.AssetTypeName}`;
-            case 'TaxonomyType': return `Model <i class='fa fa-angle-right'></i> ${item.AssetTypeName}`;
-            case 'RuleType': return `Rule <i class='fa fa-angle-right'></i> ${item.AssetTypeName}`;
-            default: return '';
-        }
-
+    formatValue(item: TagDetail) {
+        return item.AssetType.replace(/\s/g, ` <i class='fa fa-angle-right'></i> `);
     }
 
     openTagPage(item: TagItem) {
@@ -174,7 +175,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     export() {
-        this.tagsService.exportTagsByUid(this.tag.uid);
+        this.tagsService.exportTagsByUid(this.tag.uid, this.sort, this.filters);
     }
 
     setActions() {
