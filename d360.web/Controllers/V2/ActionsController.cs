@@ -120,8 +120,7 @@ namespace d360.web.Controllers.V2
                                                     WHEN @OrderBy='CreatedOn' THEN 'CreatedOn'
                                                     WHEN @OrderBy='CreatedByUid' THEN 'CreatedByUid'
                                                     WHEN @OrderBy='UpdatedOn' THEN 'UpdatedOn'
-                                                    WHEN @OrderBy='UpdatedByUid' THEN 'UpdatedByUid'
-                                                END ";
+                                                    WHEN @OrderBy='UpdatedByUid' THEN 'UpdatedByUid'";
                             }
                             break;
                     }
@@ -160,6 +159,7 @@ namespace d360.web.Controllers.V2
                                 var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
                                 queries.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
                                 dbArgs.Add($"@field{customField.ID}", paramval);
+                                orderBySQL += @" Else @field{customField.ID}";
                             }
                         }
                     }
@@ -226,6 +226,8 @@ namespace d360.web.Controllers.V2
                 model.pageSize = pageSize;
 
                 string offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+                if (orderBySQL != " order By AssetUid ")
+                    orderBySQL += " END ";
                 finalSql += orderBySQL + offsetSql;
             }
             var count = await Company.QueryAsync<int>(countSql, dbArgs);
