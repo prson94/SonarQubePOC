@@ -115,10 +115,12 @@ namespace d360.web.Controllers
                 case "FusionType":
                     siteNavName = "#Fusion";
                     break;
+                case "Artifact":
                 case "Glossary":
                 case "Grammatic Type":
                     siteNavName = "#Glossary";
                     break;
+                case "Model":
                 case "Taxonomy":
                     siteNavName = "#Models";
                     break;
@@ -126,11 +128,11 @@ namespace d360.web.Controllers
                     siteNavName = "#Reference";
                     break;
                 case "Rule":
-                    siteNavName = "#Policy";
+                    siteNavName = "#Data Quality";
                     break;
             }
             //For typeahead results, Type is a concatenation of Type and subtype for Artifacts
-            if (siteNavName == null && type.Substring(0, 8) == "Glossary")
+            if (siteNavName == null && type.Length >= 8 && type.Substring(0, 8) == "Glossary")
                 siteNavName = "#Glossary";
 
             if (siteNavName != null)
@@ -150,7 +152,7 @@ namespace d360.web.Controllers
         }
         private IndexResult AddIcon(IndexResult result)
         {
-            result.Icon = GetIcon(result.Uid, result.Type);
+            result.Icon = GetIcon(result.Uid, result.Group);
             return result;
         }
 

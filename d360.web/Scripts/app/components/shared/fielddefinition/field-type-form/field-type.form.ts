@@ -588,7 +588,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         //update the model to have correct lookuptype object and id
         this.model.FieldType.LookupObjectID = value;
         this.model.FieldType.LookupObjectType = "IntersectType";
-
+        
         return this.fieldsService.getRelationObjectFields(this.objectType, this.objectID, value)
             .pipe(map(
                 d => {
@@ -1469,7 +1469,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.displayFieldSelected = true;
 
             if (this.lookups.Field_FieldFromRelRelationships.length > 0) {
-                this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
+                this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value)).subscribe();
             }
 
             return;

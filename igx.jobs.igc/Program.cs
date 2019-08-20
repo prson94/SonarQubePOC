@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.entities.Integration;
 using d360.core.enums.Workflow;
 using d360.core.queue;
 using d360.extensions;
@@ -234,7 +235,7 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
 #if DEBUG
-            var queueModel = new IntegrationQueueModel { CompanyID = 1, ExecutionID = 50003, IntegrationSettingID = 1, SynchedAssetTypeID = 1, To = QueueAction.Integration, UrlPrefix = "integration.eng" };
+            var queueModel = new IntegrationQueueModel { CompanyID = 1, ExecutionID = 57756, IntegrationSettingID = 1, SynchedAssetTypeID = 1, To = QueueAction.Integration, UrlPrefix = "integration.eng" };
 #else
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 #endif
@@ -751,6 +752,43 @@ where	[AllowChangeDetection] = 0").ToList();
                 }
 
                 ExecutionAssetType.IsFullRefresh = !checkForChangesOnly;
+
+                // Check to see if we need to clear any hashes based on hash limits for synched asset type, but only IF this is a full refresh
+                if (ExecutionAssetType.IsFullRefresh)
+                {
+                    if (SynchedAssetType.ClearFieldHashInterval.HasValue || SynchedAssetType.ClearOwnershipHashInterval.HasValue || SynchedAssetType.ClearRelationshipHashInterval.HasValue)
+                    {
+                        try
+                        {
+                            var hashClearModel = Company.Query<ExecutionsSinceClearedHashes>(ExecutionsSinceClearedHashes.Query, new { QueueModel.SynchedAssetTypeID }).Single();
+                            Func<int, int?, int, bool> clearHashes = delegate (int executionCount, int? interval, int section)
+                            {
+                                var cleared = false;
+                                if (executionCount >= interval && interval.HasValue)
+                                {
+                                    try
+                                    {
+                                        cnn.Execute("update integration.AssetHash set [Hash] = '123' where SynchedAssetTypeID = @SynchedAssetTypeID and [Section] = @section", new { QueueModel.SynchedAssetTypeID, section }, commandTimeout: 600, commandType: System.Data.CommandType.Text);
+                                        cleared = true;
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        ExecutionAssetType.ErrorMessage += $"Unable to clear out hashes for Section {section} ({ex.GetFullExceptionData(false)}). ";
+                                    }
+                                }
+
+                                return cleared;
+                            };
+                            ExecutionAssetType.FieldHashesCleared = clearHashes(hashClearModel.FieldExecutionCount, SynchedAssetType.ClearFieldHashInterval, 1);
+                            ExecutionAssetType.RelationshipHashesCleared = clearHashes(hashClearModel.RelationExecutionCount, SynchedAssetType.ClearRelationshipHashInterval, 2);
+                            ExecutionAssetType.OwnershipHashesCleared = clearHashes(hashClearModel.OwnerExecutionCount, SynchedAssetType.ClearOwnershipHashInterval, 3);
+                        }
+                        catch (Exception oex)
+                        {
+                            ExecutionAssetType.ErrorMessage += $"Unable to execution calculate count since last hash clearance ({oex.GetFullExceptionData(false)}). ";
+                        }
+                    }
+                }
 
                 #endregion
 

@@ -69,6 +69,15 @@ namespace d360.core.entities
         public string EnumFieldValues { get; set; }
 
         [DataMember]
+        public bool FieldHashesCleared { get; set; }
+
+        [DataMember]
+        public bool OwnershipHashesCleared { get; set; }
+
+        [DataMember]
+        public bool RelationshipHashesCleared { get; set; }
+
+        [DataMember]
         public string RetryLog { get; set; } = "{ \"RetryCount\":0, \"LastRetryInError\": false, \"LastStepCompleted\": 0, \"Begins\":{\"Fields\":0,\"Relations\":0,\"Responsibilities\":0}}";
 
         [DataMember]
