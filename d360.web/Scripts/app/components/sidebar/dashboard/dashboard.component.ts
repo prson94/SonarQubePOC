@@ -41,8 +41,8 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
             this.dashboardName = params['name'];
-            this.loadAvailableDashboards();
-           
+            this.loadAvailableDashboards();      
+            
         });
     }
 
@@ -95,10 +95,10 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
                     this.showSingle = true;
                 }
 
-                if (this.showSingle || (this.objectType && this.objectID)) {
-                    this.buildBreadcrumb(false);
-                } else {
+                if (this.showSingle || this.objectType == undefined) {
                     this.buildBreadcrumb(true);
+                } else {
+                    this.buildBreadcrumb(false);
                 }
 
                 this.isLoading = false;
