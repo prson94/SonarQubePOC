@@ -79,7 +79,7 @@ namespace igx.jobs.databasetaskprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 1).ToList();
+                companies = companies.Where(i => i.CompanyID == 12).ToList();
 #endif
 
                 companies.Shuffle(); //Randomize
