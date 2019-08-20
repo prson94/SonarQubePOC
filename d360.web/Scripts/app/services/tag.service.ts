@@ -101,12 +101,15 @@ export class TagService extends BaseObservableService {
     }
 
     exportTags(filters: any, sort) {
-        var value = filters.globalSearch.length > 0 ? filters.globalSearch : filters.Value;
-        this.http.get(`api/v2/tags/export?value=${value}&useCount=${filters.UseCount}&sortBy=${sort.field}&sortOrder=${sort.order}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
+        this.http.get(`api/v2/tags/export?globalSearch=${filters.globalSearch}&value=${filters.Value}&useCount=${filters.UseCount}&sortBy=${sort.field}&sortOrder=${sort.order}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
     }
 
-    exportTagsByUid(uid: string) {
-        this.http.get(`api/v2/tags/${uid}/export`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
+    exportTagsByUid(uid: string, sort: any, filters: any) {
+        var params = new URLSearchParams(filters).toString();
+        params += "&sortBy=" + sort.field;
+        params += "&sortOrder=" + sort.order;
+
+        this.http.get(`api/v2/tags/${uid}/export?${params}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
     }
 
     downloadFile(data: Blob, name: string) {

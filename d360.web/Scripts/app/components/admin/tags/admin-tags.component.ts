@@ -73,6 +73,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.sort = event;
     }
     onFilterChange(event) {
+        if (event != 'globalSearch')
+            this.filters.globalSearch = '';
+
         this.filters[event.prop] = event.value;
     }
     getTags() {

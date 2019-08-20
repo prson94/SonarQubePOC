@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Tomislav Duric" id="GOV-7693">
+  <changeSet author="Tomislav Duric" id="GOV-7693-A">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -499,15 +499,20 @@ begin
 
 				set @current = @current + 1
 			end
+
+			if @MainObjectTypeName = 'Tag'
+			begin
+				set @MainDescription = @MainObjectTypeName + ' updated'
+			end
 		end
 
 	if @MainObjectName is not null and @DependentObjectName is not null
 	begin
-		set @MainDescription = coalesce(@MainDescription,@MainObject + ' ' + @Action) + '.'
+		set @MainDescription = coalesce(@MainDescription,@MainObject + ' ' + @Action)
 
 		if @Action = 'Tag Consolidate'
 			begin
-			    set @MainDescription = 'Tag Consolidation'
+			    set @MainDescription = 'Tag consolidated'
 			end
 	    if @Action = 'Update settings'
 			begin

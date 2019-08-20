@@ -523,7 +523,7 @@ namespace d360.web.Controllers.V2
                 index = 1;
                 rowNumber++;
                 document.SetCellValue(rowNumber, index++, row.DisplayValue);
-                document.SetCellValue(rowNumber, index++, $"{row.AssetType.ToString()}>{row.AssetTypeName.ToString()}");
+                document.SetCellValue(rowNumber, index++, $"{row.AssetType.ToString()}");
                 document.SetCellValue(rowNumber, index++, $"{string.Join("|", row.Tags.Select(x => x.Value))}");
             }
 

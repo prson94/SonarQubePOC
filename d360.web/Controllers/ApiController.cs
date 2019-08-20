@@ -3401,6 +3401,16 @@ outer apply (
                     break;
             }
 
+            switch(previousObj.ToLower())
+            {
+                case "policy":
+                case "artifact":
+                case "taxonomy":
+                    previousObjIdColumn = "ObjectID";
+                    break;
+            }
+
+
             switch (join.RelationType)
             {
                 case ComplexLookupRelationType.StandardRelationhip:
@@ -3505,7 +3515,7 @@ outer apply (
                             default:
                                 if (useAssetJoin)
                                 {
-                                    join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                    join.JoinStatement += $" {joinType} join Asset A{i} on A{i}.Object = '{currentObj}' and A{i}.ObjectID = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 }
                                 else
                                 {
