@@ -287,4 +287,5 @@
   <include file="scripts/GOV-7949.xml"/> <!-- GetFormattedFieldLookupValue -->
   <include file="scripts/GOV-7851.xml"/> <!-- Add columns to integration.SynchedAssetType and integration.ExecutionAssetType -->
   <include file="scripts/GOV-7624.xml"/>
+  <include file="scripts/GOV-7625.xml"/>
 </databaseChangeLog>
