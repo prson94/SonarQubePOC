@@ -571,10 +571,51 @@ namespace d360.model.DataAccessLayer
             result.pageNum = 1;
             result.pageSize = 200;
 
-            foreach (var param in queryParams)
+            var dbArgs = new DynamicParameters();
+            string whereConnector = " and ";
+            string sortField = "DisplayValue";
+            string sortOrder = "ASC";
+            List<string> whereClauses = new List<string>();
+            //?globalSearch = &DisplayValue = &AssetType = &TagsAsString = &sortBy = DisplayValue & sortOrder = 1
+
+            bool hasGlobalSearch = queryParams.Any(x => x.Key.ToLower() == "globalsearch" && !string.IsNullOrEmpty(x.Value));
+
+            foreach (var param in queryParams.Where(x => !string.IsNullOrEmpty(x.Value)))
             {
                 switch (param.Key.ToLower())
                 {
+                    case "displayvalue":
+                        if (!hasGlobalSearch)
+                        {
+                            dbArgs.Add("displayvalue", $"%{param.Value.ToLower()}%");
+                            whereClauses.Add("LOWER(ADV.DisplayValue) like @displayvalue");
+                        }
+                        break;
+                    case "assettype":
+                        if (!hasGlobalSearch)
+                        {
+                            dbArgs.Add("assetname", $"%{param.Value.ToLower()}%");
+                            whereClauses.Add("LOWER(AST.Name) like @assetname");
+                            AddAssetTypeParam(dbArgs, whereClauses, param.Value);
+                        }
+                        break;
+                    case "tagsasstring":
+                        if (!hasGlobalSearch)
+                        {
+                            dbArgs.Add("tagsasstring", $"%{param.Value.ToLower()}%");
+                            whereClauses.Add("LOWER(AssetTags.Tags) like @tagsasstring");
+                        }
+                        break;
+                    case "globalsearch":
+                        dbArgs.Add("globalsearch", $"%{param.Value.ToLower()}%");
+                        whereClauses.Add("LOWER(AssetTags.Tags) like @globalsearch");
+                        whereClauses.Add("LOWER(ADV.DisplayValue) like @globalsearch");
+                        whereClauses.Add("LOWER(AST.Name) like @globalsearch");
+
+                        AddAssetTypeParam(dbArgs, whereClauses, param.Value);
+
+                        whereConnector = " or ";
+                        break;
                     case "_pagesize":
                         int size = 0;
                         if (int.TryParse(param.Value, out size))
@@ -592,14 +633,33 @@ namespace d360.model.DataAccessLayer
                         }
                         else throw new Exception("Invalid value for page number parametar!");
                         break;
+                    case "sortby":
+                        if (param.Value.ToLower() == "displayvalue") sortField = "displayvalue";
+                        if (param.Value.ToLower() == "assettype") sortField = "assettype";
+                        if (param.Value.ToLower() == "tagsasstring") sortField = "AssetTags.Tags";
+                        break;
+                    case "sortorder":
+                        int val = int.Parse(param.Value);
+                        if (val >= 0) sortOrder = "ASC";
+                        else sortOrder = "DESC";
+                        break;
                 }
             }
 
-            var countSql = @"select count(*) from AssetTag AT
-	                        inner join Tag T on AT.TagId = T.ID
-	                        where T.uid = @tagUid";
+            string sortClause = $"ORDER BY {sortField} {sortOrder}";
 
-            result.total = companyContext.Query<int>(countSql, new { tagUid }).FirstOrDefault();
+            dbArgs.Add("tagUid", tagUid);
+            string whereClause = $"WHERE T.uid = @tagUid";
+            if (whereClauses.Count > 0)
+            {
+                whereClause += $" and ({string.Join(whereConnector, whereClauses)})";
+            }
+
+            //var countSql = $@"select count(*) from AssetTag AT
+            //             inner join Tag T on AT.TagId = T.ID
+            //             {whereClause}";
+
+            //result.total = companyContext.Query<int>(countSql, dbArgs).FirstOrDefault();
 
             var pagingSql = $"OFFSET {result.pageSize * (result.pageNum - 1)} ROWS FETCH NEXT {result.pageSize} ROWS ONLY";
             var sql = $@";with cte as (
@@ -609,27 +669,54 @@ namespace d360.model.DataAccessLayer
                         select 
                         ADV.*, 
                         A.Id as AssetID,
-                        AST.Object as AssetType, 
+						CASE 
+							WHEN AST.Object = 'TaxonomyType' THEN 'Model ' + AST.Name
+							WHEN AST.Object = 'ArtifactType' THEN 'Glossary ' + AST.Name
+							WHEN AST.Object = 'PolicyType' THEN 'Policy ' + AST.Name
+							WHEN AST.Object = 'RuleType' THEN 'Rule ' + AST.Name
+							ELSE AST.Name
+						END AS AssetType, 
                         A.Object,
                         A.ObjectID,
-                        AST.Name  as AssetTypeName,
-                        (select TagUid as Uid, Value from cte where AssetId = A.Id order by Value for json path) as Tags
+                        AssetTags.Tags as Tags
                         from Tag T
 	                        inner join AssetTag AT on AT.TagID = T.ID
 	                        inner join Asset A ON A.ID = AT.AssetID
 	                        inner join AssetType AST ON AST.Id = A.AssetTypeId
 	                        cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
-                        where T.uid = @tagUid
-                        order by DisplayValue
+							cross apply (select Value,TagUid as Uid from cte where AssetId = A.Id order by Value for json path)AssetTags(Tags)
+                        {whereClause}
+                        {sortClause}
                         {pagingSql}
                         for json path";
 
-            var data = string.Join("", companyContext.Query<string>(sql, new { tagUid }).ToList());
+            var data = string.Join("", companyContext.Query<string>(sql, dbArgs).ToList());
 
             result.items = JsonConvert.DeserializeObject<List<TagDetail>>(data);
             if (result.items == null) result.items = new List<TagDetail>();
             return result;
         }
 
+        private static void AddAssetTypeParam(DynamicParameters dbArgs, List<string> whereClauses, string value)
+        {
+            string paramValue = "";
+            if ("model".Contains(value.ToLower()))
+                paramValue = "TaxonomyType";
+
+            if ("glossary".Contains(value.ToLower()))
+                paramValue = "ArtifactType";
+
+            if ("policy".Contains(value.ToLower()))
+                paramValue = "PolicyType";
+
+            if ("rule".Contains(value.ToLower()))
+                paramValue = "RuleType";
+
+            if (!string.IsNullOrEmpty(paramValue))
+            {
+                dbArgs.Add("assettype", paramValue);
+                whereClauses.Add("AST.Object = @assettype");
+            }
+        }
     }
 }

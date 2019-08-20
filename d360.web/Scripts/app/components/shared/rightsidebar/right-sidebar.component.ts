@@ -1,5 +1,5 @@
 import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange, OnChanges, OnDestroy, AfterViewInit, Output, EventEmitter, ViewChild, ViewChildren, QueryList } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, NavigationEnd } from '@angular/router';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { RightSidebarItem, DynamicButton, AssetAction } from '../../../models/rightsidebar.model';
 import { Subscription } from 'rxjs';
@@ -16,6 +16,8 @@ import { Artifact } from '../../../models/artifacts.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { ModalService } from '../../../services/modal-dialog-service';
 import { D3SModal } from '../modal/gov-modal.component';
+import { setInterval } from 'timers';
+import { map } from 'rxjs/operators';
 
 declare var CompanySettings
 declare var CurrentResourceID;
@@ -63,6 +65,10 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     showSurvey: boolean = false;
     showScrollButtons: boolean = false;
     assetAction: AssetAction;
+
+    //keep record of previous url, sometimes we dont need to clear all items (ie. asset -> asset audit page)
+    private previousUrl: string = '';
+
     constructor(
         private rightSidebarService: RightSidebarService,
         protected objectStatisticsService: ObjectStatisticsService,
@@ -73,6 +79,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         private router: Router,
         private modalService: ModalService
     ) {
+        router.events.subscribe(event => {
+            if (event instanceof NavigationEnd) {
+                this.previousUrl = event.url;
+            }
+        });
     }
 
     ngAfterViewInit(): void {
@@ -178,11 +189,13 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
         this.assetActionClearSub = this.rightSidebarService.assetActionClear$.subscribe(
             item => {
-                this.assetAction = null;
-                this.emitChanges();
+                //check if router is navigated to asset paga audit
+                if (!this.previousUrl || this.router.url.toLowerCase().indexOf(this.previousUrl.toLowerCase()) <= 0) {
+                    this.assetAction = null;
+                    this.emitChanges();
+                }
             })
         this.emitChanges();
-
     }
 
     private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number, hasWorkFlow: boolean) {
