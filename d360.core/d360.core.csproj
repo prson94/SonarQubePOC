@@ -124,8 +124,6 @@
     <Compile Include="entities\Organization\Organization.cs" />
     <Compile Include="entities\Quality\RuleResultFusionAttribute.cs" />
     <Compile Include="entities\Quality\RuleType.cs" />
-    <Compile Include="entities\Reference\ReferenceItemType.cs" />
-    <Compile Include="entities\Reference\ReferenceItem.cs" />
     <Compile Include="entities\Relation\MapGroup.cs" />
     <Compile Include="entities\Relation\MapGroupItem.cs" />
     <Compile Include="entities\Relation\MapType.cs" />

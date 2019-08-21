@@ -212,7 +212,6 @@ namespace d360.model.DataAccessLayer
                 select
                     count(*)
                 from Asset A
-                {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", string.IsNullOrWhiteSpace(whereSql) ? countJoins : fieldJoins)}
                 {whereSql}";
@@ -224,12 +223,11 @@ namespace d360.model.DataAccessLayer
                     A.AssetTypeId,
                     T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
-                    A.CreatedOn
-                    {(assetType.Object == "ReferenceItemType" ? " , RI.Code" : "")} 
+                    A.CreatedOn,
+                    A.Code
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
                     {fieldsSql}
                 from Asset A
-                {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", fieldJoins)}
                 {whereSql}
@@ -407,18 +405,25 @@ namespace d360.model.DataAccessLayer
                     break;
                 case AssetTypeClass.Reference:
                     #region
-                    var rt = new ReferenceItemType
+                    var rt = new AssetType
                     {
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
-                        SourceNotes = model.Notes
+                        Notes = model.Notes,
+                        Object = SystemObjects.ReferenceItemType.ToString(),
+                        State = State.Active,
+                        UpdatedBy = resourceId,
+                        UpdatedOn = DateTime.UtcNow,
+                        CreatedBy = resourceId,
+                        CreatedOn = DateTime.UtcNow,
+                        Class = AssetTypeClass.Reference
                     };
                     isNamePartOfKey = false;
                     nameFriendlyName = "Long Description";
                     CompanyContext.Add(rt);
                     parentType = SystemObjects.ReferenceItemType;
-                    model.ObjectID = rt.ID;
+                    model.ObjectID = rt.ObjectID;
                     model.Object = SystemObjects.ReferenceItemType.ToString();
                     #endregion
                     break;
@@ -522,15 +527,13 @@ namespace d360.model.DataAccessLayer
 
                     break;
                 case AssetTypeClass.Reference:
-                    var rt = CompanyContext.GetById<ReferenceItemType>(model.ObjectID);
-                    if (rt == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.ReferenceItemType.ToString()}", $"Not valid {AssetTypeClass.ReferenceItemType.ToString()} provided.Please check your request and try again.");
+                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Reference.ToString()}", $"Not valid {AssetTypeClass.Reference.ToString()} provided.Please check your request and try again.");
+                    assetType.Name = model.Name;
+                    assetType.DisplayFormat = model.DisplayFormat;
+                    assetType.Description = model.Description;
+                    assetType.Notes = model.Notes;
 
-                    rt.Name = model.Name;
-                    rt.DisplayFormat = model.DisplayFormat;
-                    rt.Description = model.Description;
-                    rt.SourceNotes = model.Notes;
-
-                    CompanyContext.Update(rt);
+                    CompanyContext.Update(assetType);
 
                     shouldRemoveOldRelationshipType = true;
                     shouldRemoveExistingParentChildRelationshipType = true;

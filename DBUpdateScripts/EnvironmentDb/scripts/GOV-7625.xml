@@ -415,16 +415,15 @@ begin
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.AssetTypeID = ATT.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 
 			
-
-			delete	T
-			from	ReferenceItem T
-					inner join ReferenceItemType A on A.ID = T.ReferenceItemTypeID
-					inner join api.ExecutionDeletedAssetType S on S.Object = 'ReferenceItemType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
-			delete	A
-			from	ReferenceItemType A
-					inner join api.ExecutionDeletedAssetType S on S.Object = 'ReferenceItemType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
+			delete A
+			from	Asset A
+					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'ReferenceItemType' and A.[Object] = 'ReferenceItem'
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'ReferenceItemType' and S.AssetTypeID = ATT.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+					
+			delete T
+			from	AssetType T
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'ReferenceItemType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
 			delete	T
 			from	[Rule] T
 					inner join RuleType A on A.ID = T.RuleTypeID
@@ -433,6 +432,15 @@ begin
 			delete	A
 			from	RuleType A
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'RuleType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete A
+			from	Asset A
+					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType' and A.[Object] = 'Taxonomy'
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.AssetTypeID = ATT.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+					
+			delete T
+			from	AssetType T
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 
 			
 			delete	T
@@ -1462,7 +1470,7 @@ begin
    set @ClearNyms = 1    
    set @ClearResponsibilities = 1    
     
-   delete ReferenceItem where ID = @ObjectID       
+  delete [Asset] where [Object] = 'ReferenceItem' and ObjectID in (select ObjectID from @h)      
   end    
     
   if @Object = 'ReferenceItemType'    
@@ -1477,8 +1485,9 @@ begin
    set @ClearNyms = 1    
    set @ClearResponsibilities = 1    
     
-   delete ReferenceItem where ReferenceItemTypeID = @ObjectID    
-   delete ReferenceItemType where ID = @ObjectID    
+   delete [Asset] where AssetTypeID in (Select ID from AssetType where object='ReferenceItemType' and objectId in (select ObjectID from @ht))      
+   delete AssetType where ID in (Select ID from AssetType where object='ReferenceItemType' and objectId in (select ObjectID from @ht))   
+    
   end    
     
   if @Object = 'ResponsibilityType'    
@@ -2670,11 +2679,10 @@ RETURN
 					inner join dbo.AssetType T on T.ID = A.AssetTypeID 					
 					outer apply (
 								select	TF.value,
-										coalesce(case when TF.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, FA.Name, GRP.Name) as FormattedValue
+										coalesce(case when TF.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, A.Code, FA.Name, GRP.Name) as FormattedValue
 								from	string_split(replace(replace(T.DisplayFormat, '{', '|'),'}','|'), '|') TF									
 										left join dbo.FieldType FT on FT.AssetTypeID = T.ID and FT.Name = TF.Value
 										left join dbo.Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
-										left join dbo.ReferenceItem RI on TF.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ObjectID
 										left join dbo.FusionAttribute FA on TF.Value = 'Name' and A.Object = 'FusionAttribute' and FA.ID = A.ObjectID
 										left join reporting.Global_resource R on TF.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
 										left join dbo.[Group] GRP on A.Object = 'Group' and GRP.ID = A.ObjectID
@@ -2726,6 +2734,7 @@ RETURN
             stripComments="true">
 <![CDATA[
 
+
 ALTER FUNCTION [dbo].[GetAssetKeyHashById](
       @Id bigint
       )
@@ -2742,24 +2751,13 @@ ALTER FUNCTION [dbo].[GetAssetKeyHashById](
       SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32),
       2) as KeyHash
       from		Asset A
-      inner join Field F on F.ObjectType = A.Object and F.ObjectID = A.ObjectID and A.Object != 'ReferenceItem'
+      inner join Field F on F.ObjectType = A.Object and F.ObjectID = A.ObjectID 
       inner join FieldType FT on FT.ID = F.FieldTypeID
       and FT.AssetTypeID = A.AssetTypeID
       and FT.IsPartOfKey = 1
       where a.id = @id
       group by	A.AssetTypeID, A.ID
-      union
-      select		A.AssetTypeID,
-      A.ID,
-      CONVERT(
-      varchar(32),
-      SUBSTRING(HASHBYTES('SHA1', STRING_AGG(r.code, char(59))), 3, 32),
-      2) as KeyHash
-      from		Asset A
-      inner join referenceitem r on (a.object = 'ReferenceItem' and r.id = a.objectid)
-      where a.id = @id
-      group by	A.AssetTypeID, A.ID
-
+    
       )
 ]]>
     </sql>
@@ -3031,7 +3029,10 @@ BEGIN
 			declare @MyRefTypeID int
 			if @Type = 'ReferenceItem'
 				begin
-					select @MyRefTypeID = ReferenceItemTypeID from ReferenceItem where ID = @ID 
+					Select @MyRefTypeID = AST.[ObjectId] from Asset A 
+						inner join AssetType AST on
+						AST.ID = A.AssetTypeID
+						Where A.[Object]='ReferenceItem' and A.[ObjectId]=@ID
 
 					
 					select  @isHierarchy = count(1) from intersecttypedetail where [object] = 'ReferenceItemType' and [objectid] = @MyRefTypeID and predicatetype = 3
@@ -3045,27 +3046,29 @@ BEGIN
 				begin
 				insert into @refs 					
 					select	top 500 
-							ri.ID 
-					from	[ReferenceItem] ri
-							inner join Asset ast on (ri.id = ast.objectid and ast.[object] = 'ReferenceItem')
-							inner join [intersect] id on (id.objectid = ri.id and id.[object] = 'ReferenceItem')
+							A.objectid 
+					from	 Asset A
+							inner join AssetType AST on (AST.ID = A.AssetTypeID)
+							inner join AssetDisplayValue AD on AD.AssetID =A.ID
+							inner join [intersect] id on (id.objectid = A.objectid and id.[object] = A.[object])
 							inner join [intersect] id_2 on (id_2.[object] = 'ReferenceItem' and id_2.[objectid] = @id and id_2.subjectid = id.subjectid)
 							inner join [intersecttypedetail] it on (it.id = id.intersecttypeid and it.id = id_2.intersecttypeid and it.[object]='ReferenceItemType' and it.predicatetype = 3)
-					where	ri.ReferenceItemTypeID = @MyRefTypeID 
-							and ast.[State] = 1 
-							and ast.ID not in (select AssetID from ResponsibilityDetail where ((PermissionsBitMask & 1) = 0) and ResourceID = @resourceId)
+					where	AST.objectid = @MyRefTypeID and  AST.[object] = 'ReferenceItemType'
+							and A.[State] = 1 
+							and A.ID not in (select AssetID from ResponsibilityDetail where ((PermissionsBitMask & 1) = 0) and ResourceID = @resourceId)
 					order by DisplayValue asc
 				end
 			else
 				begin
 				insert into @refs 
 					select	top 500 
-							ri.ID 
-					from	[ReferenceItem] ri
-							inner join Asset ast on (ri.id = ast.objectid and ast.[object] = 'ReferenceItem')
-					where	ri.ReferenceItemTypeID = @MyRefTypeID 
-							and ast.[State] = 1 
-							and ast.ID not in (select AssetID from ResponsibilityDetail where ((PermissionsBitMask & 1) = 0) and ResourceID = @resourceId)
+							A.objectid
+					from	Asset A 
+							inner join AssetType AST on AST.ID = A.AssetTypeID
+							inner join AssetDisplayValue AD on AD.AssetID =A.ID
+					where	AST.ObjectId = @MyRefTypeID and AST.[object] = 'ReferenceItemType'
+							and A.[State] = 1 
+							and A.ID not in (select AssetID from ResponsibilityDetail where ((PermissionsBitMask & 1) = 0) and ResourceID = @resourceId)
 					order by DisplayValue asc
 				end
 
@@ -3112,7 +3115,7 @@ BEGIN
 				select	@refID = ID from @refs where RowID = @current
 
 				insert into @refFields
-					select	'Code', Code from ReferenceItem where ID = @refID
+					select	'Code', Code from Asset  where [ObjectID] = @refID and [object]='ReferenceItem'
 
 				insert into @refFields
 					select		FriendlyName,
@@ -3197,7 +3200,10 @@ BEGIN
 
 			declare @myReferenceListID int
 
-			select	@myReferenceListID = ReferenceItemTypeID from ReferenceItem where ID = @ID
+
+			Select @myReferenceListID=AST.ObjectId from Asset A 
+						inner join AssetType AST on AST.ID = A.AssetTypeId
+						Where A.[ObjectId]=@ID and A.[Object]='ReferenceItem'
 			
 			declare @referenceItemHtml nvarchar(max)
 
@@ -3905,6 +3911,7 @@ END
             splitStatements="true"
             stripComments="true">
 <![CDATA[
+
 ALTER FUNCTION [dbo].[GetWorkflowConditionLabels]
 (
 	@conditions xml
@@ -3950,14 +3957,14 @@ BEGIN
 				declare @valueLabel varchar(max), @fieldLabel varchar(max);
 
 				select 
-					@valueLabel = coalesce(RI.DisplayValue, R.[Value]),
+					@valueLabel = coalesce(AD.DisplayValue, R.[Value]),
 					@fieldLabel = FT.FriendlyName
 				from 
 					FieldType FT
 				inner join @results R on R.id = @recordCount and FT.ID = R.FieldTypeID
 				left join LookupType LT on FT.LookupObjectType = 'Lookup' and LT.ID = FT.LookupObjectID
 				left join [Lookup] L on L.ID = (select top 1 [Value] from @results where id = @recordCount)
-				left join ReferenceItem RI on FT.LookupObjectType = 'ReferenceItem' and FT.LookupObjectID = RI.ReferenceItemTypeID and RI.ID = R.[Value]
+				left join AssetDetail AD on FT.LookupObjectType = 'ReferenceItem' and FT.LookupObjectID = AD.TypeID and AD.[Object]='ReferenceItem' and AD.[ObjectID] = R.[Value]
 
 				update r
 				set 
@@ -3978,13 +3985,13 @@ BEGIN
 
 
 				select 
-					@valueLabel2 = coalesce(RI.DisplayValue, R.[Value])
+					@valueLabel2 = coalesce(AD.DisplayValue, R.[Value])
 				from @fields.nodes('fields/form/field') f(x)
 				inner join @results R on R.id = @recordCount
 				inner join FieldType FT on FT.ID = x.value('@referenceFieldId', 'int')
 				left join LookupType LT on FT.LookupObjectType = 'Lookup' and LT.ID = FT.LookupObjectID
 				left join [Lookup] L on L.ID = (select top 1 [Value] from @results where id = @recordCount)
-				left join ReferenceItem RI on FT.LookupObjectType = 'ReferenceItem' and FT.LookupObjectID = RI.ReferenceItemTypeID and RI.ID = R.[Value]
+				left join AssetDetail AD on FT.LookupObjectType = 'ReferenceItem' and FT.LookupObjectID = AD.TypeID and AD.[Object]='ReferenceItem' and AD.[ObjectID] = R.[Value]
 				where x.value('@id', 'varchar(max)') = R.FormInputID;
 
 
@@ -4228,8 +4235,8 @@ BEGIN
 		insert into @fieldValues
 			SELECT 'Code',
 					Code
-			FROM	ReferenceItem
-			WHERE	ID = @ObjectID
+			FROM	Asset 
+			WHERE	[Object]='ReferenceItem'  and [ObjectID] = @ObjectID
 	end
 	if @Object = 'Rule'
 	begin		

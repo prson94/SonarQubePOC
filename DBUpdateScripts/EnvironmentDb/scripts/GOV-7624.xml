@@ -12,6 +12,7 @@
             splitStatements="true"
             stripComments="true">
 <![CDATA[
+
 ALTER PROCEDURE [dbo].[GetReferenceItemValues]   
  @listid int,  
  @resourceID int = 0,  
@@ -64,9 +65,9 @@ BEGIN
  DECLARE @tsqlWhere nvarchar(max);  
  DECLARE @tsql nvarchar(max);  
   
- set @tsqlSelect = 'select ri.id as [ID] , ri.code as [Code], o.id as [AssetID], o.uid as [UID]';  
- set @tsqlFrom = 'from ReferenceItem ri inner join Asset O on O.Object = ''ReferenceItem'' and O.ObjectID = ri.ID ';  
- set @tsqlWhere = ' where ri.visible = 1 and ri.referenceitemtypeid = ' + cast(@listid as nvarchar(20));  
+ set @tsqlSelect = 'select O.ObjectID as [ID] , O.code as [Code], o.id as [AssetID], o.uid as [UID]';  
+ set @tsqlFrom = 'from AssetType AT inner join Asset O on O.AssetTypeID = AT.ID ';  
+ set @tsqlWhere = ' where AT.[Object] = ''ReferenceItemType'' and AT.ObjectID  = ' + cast(@listid as nvarchar(20));  
  if @resourceID > 0  
  begin  
   set @tsqlWhere = @tsqlWhere + ' and O.ID not in (select AssetID from ResponsibilityDetail where PermissionsBitMask & 1 = 0 and ResourceID = ' +  cast(@resourceID as varchar) + ') ';  
@@ -79,7 +80,7 @@ BEGIN
  DECLARE @parentName nvarchar(250);  
  DECLARE @parentListTypeID int = 0;   
  DECLARE @index int = 0;  
- DECLARE @previousRelation varchar(200) = 'ri.ID';  
+ DECLARE @previousRelation varchar(200) = 'O.ObjectID';  
   
    
  DECLARE relCur CURSOR FOR SELECT IntersectTypeId, Name, ReferenceListTypeID, ParentLevel FROM #parentTypes  
@@ -116,7 +117,7 @@ BEGIN
  WHILE @@FETCH_STATUS = 0 BEGIN  
     
   SET @tsqlSelect = @tsqlSelect + ', f'+ cast(@index as nvarchar(10)) + '.formattedvalue as [' + @name + ']';  
-  SET @tsqlFrom = @tsqlFrom + ' left outer join [dbo].[field] f' + cast(@index as nvarchar(10)) + ' on (ri.id = f' + cast(@index as nvarchar(10)) + '.objectid and f' + cast(@index as nvarchar(10)) + '.[objecttype] = ''ReferenceItem'' and f' + cast(@index 
+  SET @tsqlFrom = @tsqlFrom + ' left outer join [dbo].[field] f' + cast(@index as nvarchar(10)) + ' on (O.ObjectID = f' + cast(@index as nvarchar(10)) + '.objectid and f' + cast(@index as nvarchar(10)) + '.[objecttype] = ''ReferenceItem'' and f' + cast(@index 
 as nvarchar(10)) + '.fieldtypeid = ' + cast(@id as nvarchar(20)) + ')';  
   
   SET @index = @index + 1;  
