@@ -337,28 +337,6 @@ namespace d360.web.Controllers.V2
 
         }
 
-        [HttpPut, MapToApiVersion("2.0"), Route("settaggingstatus"), ApiExplorerSettings(IgnoreApi = true)]
-        public IHttpActionResult SetTaggingStatus(TagStatusModel model)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-
-            try
-            {
-
-                var result = tagRepository.SetTaggingStatus(model.IsTaggingEnabled);
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
-
-            }
-            catch (Exception e)
-            {
-
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting assets path", e.Message);
-            }
-
-        }
-
         /// <summary>
         /// GET a list of tags.
         /// </summary>
