@@ -560,6 +560,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             string filterType = GridColumn.FILTER_TYPE_STRING;
             List<string> filterItems = new List<string>();
 
+            bool canHaveMultipleFilterItems = false;
             var columnDataType = item.Type;
 
             if (columnDataType == DataType.JsonElement.ToString())
@@ -660,6 +661,9 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     filterType = GridColumn.FILTER_TYPE_LIST;
                     filterItems = new List<string> { "True", "False" };
                     break;
+                case "Tag":
+                    canHaveMultipleFilterItems = true;
+                    break;
             }
 
             var width = item.ColumnWidth;
@@ -667,7 +671,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             {
                 width = (int)dynamicFieldWidth;
             }
-            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID };
+            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID, canHaveMultipleFilters = canHaveMultipleFilterItems };
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
