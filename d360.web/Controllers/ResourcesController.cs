@@ -1073,8 +1073,7 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
 
 
                     var tagFieldType = det == null ? null : Company.FieldTypes.Where(x => x.Object == det.Type && x.ObjectID == det.TypeID && x.Type == "Tag").Select(x => new { x.ID, x.ShowIfEmpty, x.FriendlyName }).FirstOrDefault();
-                    var taggingEnabled = Community.GetCompanySettingByKey<bool>("EnableTagging");
-                    if (tagFieldType != null && taggingEnabled)
+                    if (tagFieldType != null)
                     {
                         string assetTagSql = @"select T.Value, T.uid from Asset A
                                                  inner join AssetTag AT on AT.AssetId = A.Id

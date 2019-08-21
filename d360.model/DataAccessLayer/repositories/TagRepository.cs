@@ -481,32 +481,6 @@ namespace d360.model.DataAccessLayer
                          VALUES ('{action}','Tag',{tag.ID},[queue].WriteIndexXml('', 'Tag', {tag.ID}, coalesce({companyContext.CurrentResourceID}, 0)))";
         }
 
-        public bool SetTaggingStatus(bool state)
-        {
-            var settingId = communityContext.Settings.FirstOrDefault(x => x.FieldName == "EnableTagging")?.ID;
-            if (settingId == null)
-                throw new Exception("Setting 'EnableTagging' is missing from community database!");
-
-            var companySetting = communityContext.CompanySettings.FirstOrDefault(x => x.CompanyID == companyContext.CurrentCompanyID && x.SettingID == settingId);
-
-            if (companySetting == null)
-            {
-                companySetting = new CompanySetting();
-                companySetting.CompanyID = companyContext.CurrentCompanyID;
-                companySetting.SettingID = (int)settingId;
-                communityContext.CompanySettings.Add(companySetting);
-            }
-
-            companySetting.Value = state.ToString().ToLower();
-            if (communityContext.SaveChanges() > 0)
-            {
-                companyContext.AddAuditForCompanySettingChange(companySetting, "CompanySettingsUpdate");
-            }
-            else return false;
-
-
-            return true;
-        }
 
         public bool DoesAssetTagExists(int tagId, long assetId)
         {
