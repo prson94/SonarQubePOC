@@ -9,6 +9,7 @@ using Xunit;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
+using SpreadsheetLight;
 
 namespace igx.IntegrationTests.ApiTests
 {
@@ -440,7 +441,7 @@ namespace igx.IntegrationTests.ApiTests
             var parsedData = JsonConvert.DeserializeObject<JArray>(content);
 
 
-            Assert.True(parsedData.Count == TagTestData.TagsCount -2, XMsg.InvalidCount);
+            Assert.True(parsedData.Count == TagTestData.TagsCount - 2, XMsg.InvalidCount);
 
             var item = parsedData.First as JObject;
             List<string> mustHaveFields = new List<string>() { "name", "code", "count" };
@@ -487,13 +488,77 @@ namespace igx.IntegrationTests.ApiTests
             TagTestData.AllItems = parsedData["items"] as JArray;
         }
 
-
-        [Fact, Priority(220)]
-        public async void ExcelExportTest()
+        [InlineData("ab","","","Value","1")]
+        [InlineData("ab","","","Value","0")]
+        [InlineData("ab","","","UseCount","1")]
+        [InlineData("ab","","", "UseCount", "0")]
+        [Theory, Priority(220)]
+        public async void ExcelExportTest(string globalSearch, string value, string useCount, string sortBy, string sortOrder)
         {
-            string endpointUrl = $"{URIHelper.TagUri}/export?value=&useCount=&sortBy=Value&sortOrder=1";
+            string endpointUrl = $"{URIHelper.TagUri}/export?globalSearch={globalSearch}&value={value}&useCount={useCount}&sortBy={sortBy}&sortOrder={sortOrder}";
             var response = await httpClient.GetAsync(endpointUrl);
-            var content = await response.Content.ReadAsStringAsync();
+            var content = await response.Content.ReadAsStreamAsync();
+            List<JToken> filtered = TagTestData.AllItems.ToList();
+
+            if (!string.IsNullOrEmpty(globalSearch))
+            {
+                filtered = filtered.Where(x => x["Value"].ToString().ToLower().Contains(globalSearch.ToLower()) || x["UseCount"].ToString().ToLower().Contains(globalSearch.ToLower())).ToList();
+            }
+
+            if (sortOrder == "1") {
+                filtered = filtered.OrderBy(x => x[sortBy]).ToList();
+            }
+            else
+            {
+                filtered = filtered.OrderByDescending(x => x[sortBy]).ToList();
+            }
+
+
+
+            using (SLDocument doc = new SLDocument(content))
+            {
+                doc.SelectWorksheet("Items");
+                var cells = doc.GetCells();
+
+                Assert.True(cells.Count == filtered.Count + 1, XMsg.InvalidCount);
+
+                int row = 1;
+                int cell = 1;
+                int uid_cell = 1;
+                List<string> existingHeaders = new List<string>() { "Uid", "Name", "Use Count", "Created On", "Created By", "Updated On", "Updated By" };
+                List<string> parsedHeaders = new List<string>();
+
+                foreach (var item in cells)
+                {
+                    cell = 1;
+                    var rowData = item.Value.Values;
+
+                    //check header
+                    if(row == 1)
+                    {
+                        foreach(SLCell c in rowData)
+                        {
+                            var cell_value = doc.GetCellValueAsString(row, cell);
+                            parsedHeaders.Add(cell_value);
+                            cell++;
+                        }
+                    }
+                    else
+                    {
+                        var cell_value = doc.GetCellValueAsString(row, uid_cell);
+                        Assert.True(filtered[row - 2]["uid"].ToString() == cell_value, XMsg.InvalidFieldValue("Uid"));
+                    }
+                    row++;
+                }
+
+                for(int i = 0; i< existingHeaders.Count; i++)
+                {
+                    Assert.True(existingHeaders[i] == parsedHeaders[i], "Invalid header order!");
+                }
+
+
+            }
+
 
         }
 
