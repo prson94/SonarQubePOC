@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using SpreadsheetLight;
+using System.IO;
 
 namespace igx.IntegrationTests.ApiTests
 {
@@ -528,6 +529,10 @@ namespace igx.IntegrationTests.ApiTests
                 List<string> existingHeaders = new List<string>() { "Uid", "Name", "Use Count", "Created On", "Created By", "Updated On", "Updated By" };
                 List<string> parsedHeaders = new List<string>();
 
+                List<string> existingUids = new List<string>();
+                List<string> excelUids = new List<string>();
+                existingUids.AddRange(filtered.Select(x => x["uid"].ToString()));
+
                 foreach (var item in cells)
                 {
                     cell = 1;
@@ -546,7 +551,7 @@ namespace igx.IntegrationTests.ApiTests
                     else
                     {
                         var cell_value = doc.GetCellValueAsString(row, uid_cell);
-                        Assert.True(filtered[row - 2]["uid"].ToString() == cell_value, XMsg.InvalidFieldValue("Uid"));
+                        excelUids.Add(cell_value);
                     }
                     row++;
                 }
@@ -554,6 +559,16 @@ namespace igx.IntegrationTests.ApiTests
                 for(int i = 0; i< existingHeaders.Count; i++)
                 {
                     Assert.True(existingHeaders[i] == parsedHeaders[i], "Invalid header order!");
+                }
+
+                using (StreamWriter file =  new StreamWriter(@"test.txt"))
+                {
+
+                    for(int i = 0; i< excelUids.Count; i++)
+                    {
+                        file.WriteLine(existingUids[i] + "-" + excelUids[i]);
+                    }
+
                 }
 
 
