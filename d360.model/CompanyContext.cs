@@ -2870,10 +2870,10 @@ select @err";
             return homePage?.Route ?? "";
         }
 
-        public void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName)
+        public void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName, string key)
         {
             string xml = $@"<fields><Action>{actionName}</Action>
-                            <ActionObject>EnableTagging</ActionObject>     
+                            <ActionObject>{key}</ActionObject>     
                             <ActionObjectID>{companySetting.SettingID}</ActionObjectID>  
                             <ActionObjectValue>{companySetting.Value}</ActionObjectValue>
                             <ResourceID>{CurrentResourceID}</ResourceID>
