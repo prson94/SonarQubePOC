@@ -20,6 +20,7 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
 import { TagComponent } from './tag.component';
 import { TagItemComponent } from './tag-item.component';
 import { TagRoutingModule } from './tag.routes';
+import { TagViewModule } from '../shared/tags/d3s-tag-view';
 
 @NgModule({
     imports: [CommonModule,
@@ -38,6 +39,7 @@ import { TagRoutingModule } from './tag.routes';
         D3SSharedModule,
         PipesModule,
         TilesModule,
+        TagViewModule,
         
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,        
