@@ -75,7 +75,8 @@ namespace d360.web.Controllers
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id)
         {
             var list = new List<DetailReadOnlyRowModel>();
-
+            var tagList = new List<ReadOnlyFieldValue>();
+            string tagString = "";
             var details = Company.GetObjectDetail(type.ToString(), id);
             if (details != null)
             {
@@ -253,6 +254,18 @@ namespace d360.web.Controllers
                     {
                         //look at fusionlookup field and figure out what to show
                         list.AddRange(RenderFilteredLookupField(type.ToString(), id, ft.ID));
+                    }
+                    else if (ft.Type == DataType.Tag.ToString())
+                    {
+                        var ro = new ReadOnlyFieldValue
+                        {
+                            Value = ft.FriendlyName,
+                            TooltipType = "tag",
+                            TooltipID = ft.ObjectID,
+                            TooltipContext = "Preview",
+                            TooltipUrl = ""
+                        };
+                        tagList.Add(ro);
                     }
                     else if (ft.Type == DataType.Attribute.ToString())
                     {
@@ -479,7 +492,22 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 });
             }
 
+            if (tagList.Count > 0)
+            {
+                var title = new ReadOnlyField
+                {
+                    Name = "Tags",
+                    ShowIfEmpty = true,
+                    DataType = "tag",
+                    Values = tagList
+                };
+                list.Add(new DetailReadOnlyRowModel
+                {
+                    columns = 1,
+                    FirstColumnFields = new List<ReadOnlyField> { title }
+                });
 
+            }
             return list;
         }
 
@@ -1486,8 +1514,8 @@ order by 'Name'";
                 )
             );
         }
-        
-      
+
+
 
         [Route("fusion/promotion/QueryAttributes"), HttpGet]
         public HttpResponseMessage GetPromotionFusionQueryAttributes(int ruleID)
@@ -1497,15 +1525,15 @@ order by 'Name'";
             return Request.CreateResponse(HttpStatusCode.OK, results);
 
         }
-                
 
 
 
 
 
 
- 
-        
+
+
+
         [Route("fusion/technicalmapping")]
         public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings()
         {
@@ -3050,8 +3078,8 @@ outer apply (
                         idColumn = "ResourceID";
                     else if (@object == "Artifact" || @object == "Policy" || @object == "Taxonomy")
                         idColumn = "ObjectID";
-                        
-                    
+
+
                     if (i.FieldTypeID == 0)
                     {
                         if (isReferenceType)
