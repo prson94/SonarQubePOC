@@ -5,11 +5,11 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="GOV-7896">
+  <changeSet author="Pappas" id="GOV-7896-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
-            stripComments="true">
+            stripComments="false">
 		<![CDATA[  
 ALTER procedure [integration].[ProcessExecutionAssetType]
 	@ExecutionID bigint,
@@ -536,14 +536,12 @@ begin
 			values  (S.FieldTypeID, S.Object, S.ObjectID, S.NewValue, S.NewValue, @ResourceID, @date);
 		
 		update	T
-		set		T.[Hash] = T.UpdateHash,
-				T.UpdateHash = null
+		set		T.[Hash] = T.UpdateHash
 		from	integration.AssetHash T
 				inner join #ObjectsToUpdateDateOn S on T.SynchedAssetTypeID = @SynchedAssetTypeID and S.SourceID = T.SourceID and T.Section = @section and T.RequestNumber = @RequestNumber;
 				
 		update	T
-		set		T.[Hash] = T.UpdateHash,
-				T.UpdateHash = null
+		set		T.[Hash] = T.UpdateHash
 		from	integration.AssetHash T
 				inner join #Field_Step1 F on F.SourceID = T.SourceID and T.Section = @section and T.RequestNumber = @RequestNumber 
 					and T.SynchedAssetTypeID = @SynchedAssetTypeID and F.FieldTypeID is null and F.SourceFieldName = '_name';
@@ -776,8 +774,7 @@ begin
 		
 		BEGIN
 			update	T
-			set		T.[Hash] = T.UpdateHash,
-					T.UpdateHash = null
+			set		T.[Hash] = T.UpdateHash
 			from	integration.AssetHash T
 					inner join	(
 								select		SourceID
@@ -956,8 +953,7 @@ begin
 				inner join ResponsibilityTypeRelationOverrideItem S on S.AssetID = T.AssetID and S.ResponsibilityTypeID = T.ResponsibilityTypeID and S.SecurityAsset = 'R' and S.SecurityAssetID = T.ResourceID;
 		
 		update	T
-		set		T.[Hash] = T.UpdateHash,
-				T.UpdateHash = null
+		set		T.[Hash] = T.UpdateHash
 		from	integration.AssetHash T
 				inner join #Resp_Step1 S on T.SynchedAssetTypeID = @SynchedAssetTypeID and S.SourceID = T.SourceID and T.Section = @section and T.RequestNumber = @RequestNumber and S.[Action] in ('A', 'U', 'D') and S.OverrideItemID is not null;
 	end
@@ -1314,7 +1310,7 @@ begin
 													or (H.[Hash] is not null and H.[Action] is null)
 													);
 
-			-- Clear out pure orphans from the hash table. Those that do not even tie to an existing asset.
+			
 			delete	H
 			from	integration.AssetHash H
 					left join Asset A on A.AssetTypeID = @AssetTypeID and A.SourceID = H.SourceID 
