@@ -2658,16 +2658,7 @@ button.button, a.link-button {
     }
 }
 
-a.link-button {
-    border-radius: 2px;
-    height: 24px;
-    padding: 0px 8px !important;
-    margin-bottom: 6px;
 
-    &:hover {
-        text-decoration: none;
-    }
-}
 ///////////////////////////////////////////////////////////////////////////////////
 // Tab View
 ///////////////////////////////////////////////////////////////////////////////////
@@ -2887,8 +2878,8 @@ button.tab-scroller {
     }
 }
 
-.d3s-chart{
-    width:25px;
+.d3s-chart {
+    width: 25px;
 }
 
 .d3s-circular-chart {
@@ -3154,7 +3145,7 @@ button.tab-scroller {
     .title {
         color: #006FBA;
         padding: 0px;
-        display:inline-block;
+        display: inline-block;
     }
 
     .title:hover {
@@ -3630,10 +3621,10 @@ button.tab-scroller {
 
             button {
                 max-width: 100%;
-                transition-duration:0.2s;
-                &:hover{
-                    max-width:none;
+                transition-duration: 0.2s;
 
+                &:hover {
+                    max-width: none;
                 }
 
                 span {
@@ -3715,13 +3706,46 @@ button.tab-scroller {
         }
     }
 
-    .RowTools {
-        position: absolute;
+    a.link-button {
+        margin-bottom: 6px;
 
-        .d3s-tooltip {
+        &:hover {
+            text-decoration: none;
+        }
+
+        &.small {
+            border-radius: 2px;
+            height: 24px;
+            padding: 0px 8px !important;
+        }
+
+        .tag-tooltip {
+            display: none;
+            font-size: 12px;
+            text-align: left;
+            padding: 4px 6px;
+            line-height: 13px;
+            max-width: 400px;
             position: absolute;
-            height: 100%;
-            width: 100%;
+            background-color: #fffedc;
+            border: 1px solid #adadad;
+            z-index: 1000;
+            top: -40px;
+
+            span {
+                display: block;
+
+                &.span-break {
+                    white-space: normal;
+                    word-break: break-word;
+                }
+            }
+        }
+
+        &:hover {
+            .tag-tooltip {
+                display: block;
+            }
         }
     }
 }

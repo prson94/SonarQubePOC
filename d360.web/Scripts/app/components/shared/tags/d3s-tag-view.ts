@@ -1,27 +1,30 @@
-import { CommonModule } from '@angular/common';
-import { NgModule, Input, Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { TagService } from '../../../services/tag.service';
 import { CoreModule } from '../core.module';
 
 
 @Component({
     selector: 'd3s-tag-view',
+    providers: [TagService],
     templateUrl: './d3s-tag-view.html',
 })
 
 export class TagView implements OnInit {
-    @Input() data: string;
+    @Input() data: any;
 
     private tags: any[];
     private isShowAll: boolean = false;
     @ViewChild("container") container: ElementRef;
 
-    constructor() { }
+    constructor(private tagService: TagService) { }
 
     ngOnInit() {
         try {
-            if (this.data)
+            if (this.data && (typeof this.data == 'string'))
                 this.tags = JSON.parse(this.data);
+            else this.tags = this.data;
         }
         catch
         {
@@ -52,6 +55,7 @@ export class TagView implements OnInit {
     }
 
     ngAfterViewInit() {
+
         if (this.container) {
             var parentWidth = this.container.nativeElement.closest('td').offsetWidth - 10;
             this.container.nativeElement.closest('td').classList.remove('no-text-overflow');
@@ -77,17 +81,57 @@ export class TagView implements OnInit {
         event.stopPropagation();
     }
 
-    //Transition speed is set in .less
-    enter(el: HTMLElement) {
-        el.classList.remove('too-long');
-        var setTo = el.getAttribute('original-width');
-        el.style.maxWidth = setTo + 'px';
+    enter(tag: any, el: HTMLElement) {
+        this.tagService.getTagTooltip(tag.uid)
+            .subscribe(t => {
+                var x = t[0];
+                var date = this.formatDate(x.CreatedOn);
+                let template = `<span class="span-break">${x.Value}</span>
+                                <span>Tag added by ${x.CreatedBy} on ${date}</span>`;
+                el.querySelector('.tag-tooltip').innerHTML = template;
+
+            });
     }
 
-    leave(el: HTMLElement) {
-        var setTo = el.getAttribute('max-width');
-        el.style.maxWidth = setTo + 'px';
-        el.classList.add('too-long');
+    formatDate(str: string) {
+        var date = new Date(str);
+
+        var monthNames = [
+            'January', 'February', 'March',
+            'April', 'May', 'June', 'July',
+            'August', 'September', 'October',
+            'November', 'December'
+        ];
+
+        var partOfDay = "am";
+        var day = date.getDate();
+        var monthIndex = date.getMonth();
+        var year = date.getFullYear();
+
+        var hour = date.getHours();
+        var minutes = date.getMinutes()
+
+        let shour: string;
+        let smin: string;
+
+        if (hour > 11) {
+            partOfDay = 'pm';
+            hour -= 12;
+        }
+        if (hour == 0) hour = 12;
+
+        shour = hour.toString();
+        smin = minutes.toString();
+
+        if (hour < 10) {
+            shour = '0' + hour;
+        }
+
+        if (minutes < 10) {
+            smin = '0' + smin;
+        }
+
+        return `${day} ${monthNames[monthIndex]} ${year} at ${shour}:${smin}${partOfDay}`;
 
     }
 }

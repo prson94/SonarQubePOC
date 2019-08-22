@@ -26,5 +26,7 @@ namespace d360.model.DataAccessLayer
         IEnumerable<TagApiModel> ConsolidateTags(string parentUid, List<string> childrenUids);
         List<dynamic> SearchTags(IEnumerable<KeyValuePair<string,string>> queryParams);
         TagDetailApiModel GetDetails(Guid tagUid, IEnumerable<KeyValuePair<string,string>> keyValuePairs);
+
+        IEnumerable<dynamic> GetTooltip(Guid guid);
     }
 }

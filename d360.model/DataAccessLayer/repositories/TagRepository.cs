@@ -652,7 +652,7 @@ namespace d360.model.DataAccessLayer
 	                        inner join Asset A ON A.ID = AT.AssetID
 	                        inner join AssetType AST ON AST.Id = A.AssetTypeId
 	                        cross apply dbo.GetAssetDisplayValueById(A.ID)ADV
-							cross apply (select Value,TagUid as Uid from cte where AssetId = A.Id order by Value for json path)AssetTags(Tags)
+							cross apply (select Value,TagUid as uid from cte where AssetId = A.Id order by Value for json path)AssetTags(Tags)
                         {whereClause}
                         {sortClause}
                         {pagingSql}
@@ -662,6 +662,17 @@ namespace d360.model.DataAccessLayer
 
             result.items = JsonConvert.DeserializeObject<List<TagDetail>>(data);
             if (result.items == null) result.items = new List<TagDetail>();
+            return result;
+        }
+
+        public IEnumerable<dynamic> GetTooltip(Guid guid)
+        {
+            string sql = @"select T.Value, T.CreatedOn, ADV.DisplayValue as CreatedBy from Tag T 
+                            inner join Asset R on R.Object = 'Resource' and R.ObjectID = T.CreatedBy
+                            cross apply dbo.GetAssetDisplayValueById(R.ID)ADV
+                            where T.Uid = @uid";
+
+            var result = companyContext.Query<dynamic>(sql, new { uid = guid });
             return result;
         }
 
@@ -686,5 +697,6 @@ namespace d360.model.DataAccessLayer
                 whereClauses.Add("AST.Object = @assettype");
             }
         }
+
     }
 }

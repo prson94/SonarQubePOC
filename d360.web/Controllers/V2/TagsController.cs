@@ -524,6 +524,30 @@ namespace d360.web.Controllers.V2
             return ResponseMessage(result);
         }
 
+        [HttpGet, MapToApiVersion("2.0"), Route("{uid}/tooltip"), ApiExplorerSettings(IgnoreApi = true)]
+        public async  Task<IHttpActionResult> GetTagTooltipData(string uid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+                Guid guid = Guid.Parse(uid);
+
+                IEnumerable<dynamic> result = tagRepository.GetTooltip(guid);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+
+            }
+            catch (Exception e)
+            {
+
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting assets path", e.Message);
+            }
+
+        }
+
+
     }
 }
 
