@@ -287,4 +287,5 @@
   <include file="scripts/GOV-7781.xml"/> <!-- api.DeleteAssetType -->
   <include file="scripts/GOV-7949.xml"/> <!-- GetFormattedFieldLookupValue -->
   <include file="scripts/GOV-7851.xml"/> <!-- Add columns to integration.SynchedAssetType and integration.ExecutionAssetType -->
+  <include file="scripts/GOV-7966.xml"/> <!-- Add UseAsTransformation boolean field on dbo.AssetType table-->
 </databaseChangeLog>
