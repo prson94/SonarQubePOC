@@ -402,7 +402,7 @@ from    [queue].[Task] T
                                                 #endregion
                                                 case "Update":
                                                     #region
-                                                    addAuditEntry(companyConnection, q.Object, q.ObjectID, "Update", q.Custom, q.AssetID);
+                                                    addAuditEntry(companyConnection, q.Object, q.ObjectID, "Updated", q.Custom, q.AssetID);
 
                                                     if (q.Object != "PolicyType" && q.Object != "TaxonomyType")
                                                         resolveIndexItem(companyConnection, q.Object, q.ObjectID, "U", q.AssetID);

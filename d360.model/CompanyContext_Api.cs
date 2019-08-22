@@ -562,6 +562,11 @@ from	#LookupValues T
 		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 0
 		inner join FieldLookupValue S on S.FieldTypeID = T.FieldTypeID and S.[Text] = T.FieldValue;
 
+update	T
+set		T.[Value] = '0'
+from	#LookupValues T
+		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowAllValue = 1 and ST.AllowAllLabel = T.FieldValue;
+
 drop table if exists #MvLookupValues
 create table #MvLookupValues (ItemNumber int, FieldTypeID int not null, [RawValue] nvarchar(250) null, [Value] nvarchar(max) null)
 CREATE CLUSTERED INDEX CIX_TempMvLookupValues ON #MvLookupValues ( ItemNumber ASC, FieldTypeID ASC );
@@ -1027,6 +1032,7 @@ from	IntersectType I
                         table.Columns.Add("AssetID", typeof(long));
                         table.Columns.Add("Message", typeof(string));
                         table.Columns.Add("Success", typeof(bool));
+                        table.Columns.Add("Cascade", typeof(bool));
 
                         #endregion
 
@@ -1044,6 +1050,7 @@ from	IntersectType I
                                 row["ItemNumber"] = i;
                                 if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
                                 row["Uid"] = model.Uid;
+                                row["Cascade"] = model.Cascade;
 
                                 table.Rows.Add(row);
                             }
@@ -1066,6 +1073,7 @@ from	IntersectType I
                         bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
                         bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
                         bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                        bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
 
                         bulkCopy.WriteToServer(table);
 
@@ -1233,23 +1241,143 @@ from	IntersectType I
                                         }
                                         else
                                         {
+
+                                            //Cascade behaviour
+                                            #region Cascade Behaviour
+                                            Connection.Execute($@" 
+                if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
+                    Truncate TABLE #ExecutionDeletedAsset
+                else
+                  create   table #ExecutionDeletedAsset (
+                                    ExecutionID	uniqueidentifier,
+                                    [Root] uniqueidentifier,
+                                    ItemNumber	int,
+                                    Uid	uniqueidentifier,
+                                    AssetID	bigint,
+                                    IntersectID	int,
+                                    FromHierarchy	bit,
+                                    WorkflowItemId bigint
+                            );
+
+                 with h as (
+	                    select	D.ExecutionID,
+			                    D.ItemNumber,
+			                    D.AssetID,
+			                    D.[Uid],
+			                    A.Object,
+			                    A.ObjectID, 
+			                    D.IntersectID,
+                                0 as [Level],
+                                D.Uid as Root
+	                    from	api.ExecutionDeletedAsset D
+			                    inner join Asset A on D.ExecutionID = @ExecutionID and A.ID = D.AssetID
+	                    where	D.AssetID is not null
+                                and D.ItemNumber between {beginItemNumber} and {endItemNumber}
+	                    union all
+	                    select	P.ExecutionID,
+			                    P.ItemNumber,
+			                    C.ID as AssetID,
+			                    C.[Uid],
+			                    C.Object,
+			                    C.ObjectID, 
+			                    I.IntersectID,
+                                P.[Level] + 1 as [Level],
+                                P.[Root] as Root
+	                    from	PredicateIntersect I 
+			                    inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = {(int)predicateType} and P.Object = I.Subject and P.ObjectID = I.SubjectID
+			                    inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+                        where   P.ItemNumber between {beginItemNumber} and {endItemNumber} and P.[Level] <= 15
+                    )
+                   insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy],[Root])
+                        select   
+                                ExecutionID, 
+                                ItemNumber, 
+                                [Uid], 
+                                AssetID, 
+                                IntersectID, 
+                                1 as Hiearchy,
+                                h.[Root]
+                        from    h 
+                        where   IntersectID is not null 
+                                and [Level] > 0 
+                             and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = h.ExecutionID and ItemNumber = h.ItemNumber )
+			                 and  ExecutionID = @ExecutionID
+
+                 insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root],WorkflowItemId)
+                        select distinct 
+                                ExecutionID, 
+                                ItemNumber, 
+                                S.[Uid],
+                                 wi.ID
+	                    from	workflow.[Type] wt
+			                    inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
+			                    inner join workflow.[Version] wv on wt.id = wv.typeId
+			                    inner join workflow.Item wi on 	wv.id = wi.VersionID
+			                    inner join api.ExecutionDeletedAsset S on S.Object = wi.Object and S.ObjectID = wi.ObjectID 
+                                where {querySuffix} ;
+
+                     insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root],WorkflowItemId)
+                        select distinct 
+                                ExecutionID, 
+                                ItemNumber, 
+                                S.[Uid],
+                                 wi.ID
+	                    from	workflow.Item wi
+			                    inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
+			                    inner join api.ExecutionDeletedAsset S on S.ObjectID = i.ObjectID 
+                                 where {querySuffix} ;
+
+                 insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root],IntersectID)
+		                Select distinct ExecutionID, 
+                                ItemNumber, 
+                                S.[Uid],
+                                T.ID 			
+	                   from	[Intersect] T
+                            inner join api.ExecutionDeletedAsset S on S.Object = T.Subject and S.ObjectID = T.SubjectID 
+			                and  {querySuffix}
+			                and not exists (Select 1 from #ExecutionDeletedAsset where ExecutionID = S.ExecutionID and ItemNumber = S.ItemNumber and IntersectID =T.ID );
+
+
+                insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root],IntersectID)
+		                Select distinct ExecutionID, 
+                                ItemNumber, 
+                                S.[Uid],
+                                T.ID 			
+	                   from	[Intersect] T
+                            inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID 
+			                and {querySuffix}
+			                and not exists (Select 1 from #ExecutionDeletedAsset where ExecutionID = S.ExecutionID and ItemNumber = S.ItemNumber and IntersectID =T.ID );
+
+
+			                update S set S.Success = 0 ,
+			                [Message] ='You have not enabled Cascade, yet there are relationships or workflows for this asset.'
+			                from api.ExecutionDeletedAsset S 
+			                inner join (select [Root] as UID,ExecutionID,ItemNumber  from #ExecutionDeletedAsset
+			                group by [Root],ExecutionID,ItemNumber
+			                having (count (*) > 1))   E on
+			                S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
+			                where	{querySuffix}  and AssetId is not null
+			                and S.[Cascade]=0
+                                                ", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            #endregion
+
                                             // Get the hierarchy items we also need to remove
                                             if (predicateType.HasValue)
                                             {
                                                 Connection.Execute($@"
     with h as (
-	    select	D.ExecutionID,
-			    D.ItemNumber,
-			    D.AssetID,
-			    D.[Uid],
+	    select	S.ExecutionID,
+			    S.ItemNumber,
+			    S.AssetID,
+			    S.[Uid],
 			    A.Object,
 			    A.ObjectID, 
-			    D.IntersectID,
+			    S.IntersectID,
                 0 as [Level]
-	    from	api.ExecutionDeletedAsset D
-			    inner join Asset A on D.ExecutionID = @ExecutionID and A.ID = D.AssetID
-	    where	D.AssetID is not null
-                and D.ItemNumber between {beginItemNumber} and {endItemNumber}
+	    from	api.ExecutionDeletedAsset S
+			    inner join Asset A on  A.ID = S.AssetID
+	    where	S.AssetID is not null
+                and {querySuffix}
 	    union all
 	    select	P.ExecutionID,
 			    P.ItemNumber,
@@ -2070,13 +2198,19 @@ from	IntersectType I
                         #region Generate proposed key hash and compare against existing data.
 
                         string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
-                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(100)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
+                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
                         string keyComparisonUpdateStatement = $@"
 update  T 
 set     T.Success = 0, 
         T.Message = {keyErrorMessage}
 from    api.ExecutionAsset T 
-        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and ((S.AssetID <> T.AssetID and T.AssetID is not null) OR (T.AssetID is null)); ";
+        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and S.AssetID <> T.AssetID and T.AssetID is not null; 
+
+update  T 
+set     T.Success = 0, 
+        T.Message = {keyErrorMessage}
+from    api.ExecutionAsset T 
+        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and T.AssetID is null; ";
 
                         if (at.Object == "FusionAttributeType")
                         {

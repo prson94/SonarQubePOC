@@ -1,0 +1,719 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-7949">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+
+ALTER   FUNCTION [utility].[GetFormattedFieldLookupValue]
+(
+	@Type varchar(25),
+	@DisplayFormat nvarchar(250),
+	@LookupObjectType varchar(25),
+	@LookupObjectID int,
+	@Value nvarchar(max)	
+)
+RETURNS nvarchar(max)
+AS
+BEGIN
+	declare @formattedValue nvarchar(max)
+	
+	if @Value is null
+	begin
+		return null
+	end
+
+	if @LookupObjectType is null
+	begin
+		set @formattedValue  = @Value
+
+		if @Type = 'Link' OR @Type = 'UncLink'
+		begin
+			SET @formattedValue = [utility].[GetFormattedFieldLinkValue](@Value);
+		end
+	end	
+	else
+		begin
+			if @LookupObjectType = 'ReferenceItemType'
+				begin
+					select @formattedValue = Name from AssetType where Objectid = @Value and [Object] = 'ReferenceItemType';		
+				end
+			else if @LookupObjectType = 'TaxonomyType'
+				begin
+					select @formattedValue = Name from AssetType where Objectid = @Value and [Object] = 'TaxonomyType';		
+				end
+		else
+			begin
+				declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
+				declare @fieldValues table(Field nvarchar(100), Value nvarchar(max), LookupObjectType nvarchar(250), LookupObjectID int, LookupDisplayFormat nvarchar(250), AllowMultipleValues bit)
+
+				set @formattedValue = @DisplayFormat
+		
+						while patindex('%{%',@formattedValue) > 0
+						 begin
+							declare @txt nvarchar(100) = SUBSTRING(@formattedValue, patindex('%{%',@formattedValue), PATINDEX('%}%', @formattedValue))
+							insert into @tokens Values (@txt, REPLACE(REPLACE(@txt,'{',''),'}',''))
+							set @formattedValue = replace(@formattedValue, @txt, '')
+						end
+						
+						
+						if @LookupObjectType = 'Artifact'
+								begin
+									insert into @fieldValues
+									select	distinct
+											V.Name,
+											V.Value,
+											V.LookupObjectType,
+											V.LookupObjectID,
+											V.LookupDisplayFormat,
+											V.AllowMultipleValues
+									from	(
+											SELECT	IT.Name,
+													[IF].Value,
+													[IT].LookupObjectType,
+													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+													[IT].LookupDisplayFormat,
+													[IT].AllowMultipleValues
+											FROM	Field [IF]
+													inner join FieldType IT 
+													ON [IF].FieldTypeID = IT.ID 
+													and [IF].ObjectType = @LookupObjectType
+													and [IF].ObjectID = case 
+																		when TRY_CAST(@Value AS int) IS NULL  then 0 
+																		else @Value 
+																		end
+											UNION ALL
+											SELECT	P.FieldName as Name,
+												p.FieldValue as Value,
+												NULL as LookupObjectType,
+												NULL as LookupObjectID,
+												NULL as LookupDisplayFormat,
+												cast(0 as bit) as AllowMultipleValues
+											FROM	(
+												SELECT	A.ObjectID as AID,
+														CAST(A.ObjectID as nvarchar(max)) as ID,
+														CAST(TP.TextPath as nvarchar(max)) as TextPath
+												FROM	asset A											
+														cross apply dbo.GetAssetTextPathById(A.ID, '/') TP 
+												WHERE	A.ObjectID = CAST(@Value as int) and A.[Object] = 'Artifact' 																						
+												) A
+												unpivot	(
+														FieldValue for FieldName in (ID, TextPath)
+														) p
+											) V
+								end
+						else if @LookupObjectType = 'Taxonomy'
+								begin
+									insert into @fieldValues
+									select	distinct
+											V.Name,
+											V.Value,
+											V.LookupObjectType,
+											V.LookupObjectID,
+											V.LookupDisplayFormat,
+											V.AllowMultipleValues
+									from	(
+											SELECT	IT.Name,
+													[IF].Value,
+													[IT].LookupObjectType,
+													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+													[IT].LookupDisplayFormat,
+													[IT].AllowMultipleValues
+											FROM	Field [IF]
+													inner join FieldType IT 
+													ON [IF].FieldTypeID = IT.ID 
+													and [IF].ObjectType = @LookupObjectType
+													and [IF].ObjectID = case 
+																		when TRY_CAST(@Value AS int) IS NULL  then 0 
+																		else @Value 
+																		end
+											UNION ALL
+											
+											SELECT	P.FieldName as Name,
+													p.FieldValue as Value,
+													NULL as LookupObjectType,
+													NULL as LookupObjectID,
+													NULL as LookupDisplayFormat,
+													cast(0 as bit) as AllowMultipleValues
+											FROM	(											
+													SELECT	A.ObjectID as ID,													
+															CAST(TP.TextPath as nvarchar(max)) as TextPath
+													FROM	asset A													
+															cross apply dbo.GetAssetTextPathById(A.ID, '/') TP 
+													WHERE	A.ObjectID = CAST(@Value as int) and A.[Object] = 'Taxonomy' 
+													) A
+													unpivot	(
+															FieldValue for FieldName in (TextPath)
+															) p
+											) V
+								end
+						else if @LookupObjectType = 'ReferenceItem'
+							begin
+								insert into @fieldValues
+								select	distinct
+										V.Name,
+										V.Value,
+										V.LookupObjectType,
+										V.LookupObjectID,
+										V.LookupDisplayFormat,
+										V.AllowMultipleValues
+								from	( 
+										SELECT	IT.Name,
+												[IF].Value,
+												[IT].LookupObjectType,
+												COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+												[IT].LookupDisplayFormat,
+												[IT].AllowMultipleValues
+										FROM	Field [IF]
+												inner join FieldType IT 
+												ON [IF].FieldTypeID = IT.ID 
+												and [IF].ObjectType = @LookupObjectType
+												and [IF].ObjectID = case 
+																	when TRY_CAST(@Value AS int) IS NULL  then 0 
+																	else @Value 
+																	end
+										UNION ALL
+										SELECT	P.FieldName as Name,
+												p.FieldValue as Value,
+												NULL as LookupObjectType,
+												NULL as LookupObjectID,
+												NULL as LookupDisplayFormat,
+												cast(0 as bit) as AllowMultipleValues
+										FROM	(
+												SELECT	ObjectID as ID,
+														CAST(Code as nvarchar(max)) as Code
+												FROM	Asset A
+												WHERE	A.ObjectID = @Value and A.[Object] = 'ReferenceItem'
+												) A
+												unpivot	(
+														FieldValue for FieldName in (Code)
+														) p
+										) V
+								end
+						else if @LookupObjectType = 'ReferenceItemType'
+								begin
+									insert into @fieldValues
+									select	distinct
+											V.Name,
+											V.Value,
+											V.LookupObjectType,
+											V.LookupObjectID,
+											V.LookupDisplayFormat,
+											V.AllowMultipleValues
+									from	(
+											SELECT	IT.Name,
+													[IF].Value,
+													[IT].LookupObjectType,
+													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+													[IT].LookupDisplayFormat,
+													[IT].AllowMultipleValues
+											FROM	Field [IF]
+													inner join FieldType IT 
+													ON [IF].FieldTypeID = IT.ID 
+													and [IF].ObjectType = @LookupObjectType
+													and [IF].ObjectID = case 
+																		when TRY_CAST(@Value AS int) IS NULL  then 0 
+																		else @Value 
+																		end
+											UNION ALL
+											SELECT	P.FieldName as Name,
+													p.FieldValue as Value,
+													NULL as LookupObjectType,
+													NULL as LookupObjectID,
+													NULL as LookupDisplayFormat,
+													cast(0 as bit) as AllowMultipleValues
+											FROM	(
+													SELECT	ObjectID as ID,
+															CAST(Name as nvarchar(max)) as Name,
+															CAST(Description as nvarchar(max)) as Description
+													FROM	AssetType A
+													WHERE	A.ObjectID = @Value and A.[Object] = 'ReferenceItemType'
+													) A
+													unpivot	(
+															FieldValue for FieldName in (Name, Description)
+															) p
+											) V
+								end
+						else if @LookupObjectType = 'Resource'
+								begin
+									insert into @fieldValues
+									select	distinct
+											V.Name,
+											V.Value,
+											V.LookupObjectType,
+											V.LookupObjectID,
+											V.LookupDisplayFormat,
+											V.AllowMultipleValues
+									from	(
+											SELECT	IT.Name,
+													[IF].Value,
+													[IT].LookupObjectType,
+													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+													[IT].LookupDisplayFormat,
+													[IT].AllowMultipleValues
+											FROM	Field [IF]
+													inner join FieldType IT 
+													ON [IF].FieldTypeID = IT.ID 
+													and [IF].ObjectType = @LookupObjectType
+													and [IF].ObjectID = case 
+																		when TRY_CAST(@Value AS int) IS NULL  then 0 
+																		else @Value 
+																		end
+											UNION ALL
+											SELECT	P.FieldName as Name,
+													p.FieldValue as Value,
+													NULL as LookupObjectType,
+													NULL as LookupObjectID,
+													NULL as LookupDisplayFormat,
+													cast(0 as bit) as AllowMultipleValues
+											FROM	(
+													SELECT	ResourceID as ID,
+															CAST(FirstName as nvarchar(max)) as FirstName,
+															CAST(LastName as nvarchar(max)) as LastName,
+															CAST(Email as nvarchar(max)) as Email
+													FROM	reporting.Global_Resource A
+													WHERE	A.ResourceID = @Value
+													) A
+													unpivot	(
+															FieldValue for FieldName in (FirstName, LastName, Email)
+															) p
+											) V
+								end					
+						else
+							begin
+								insert into @fieldValues
+								select	distinct
+										V.Name,
+										V.Value,
+										V.LookupObjectType,
+										V.LookupObjectID,
+										V.LookupDisplayFormat,
+										V.AllowMultipleValues
+								from	(
+										SELECT	IT.Name,
+												[IF].Value,
+												[IT].LookupObjectType,
+												COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+												[IT].LookupDisplayFormat,
+												[IT].AllowMultipleValues
+										FROM	Field [IF]
+												inner join FieldType IT 
+												ON [IF].FieldTypeID = IT.ID 
+												and [IF].ObjectType = @LookupObjectType
+												and [IF].ObjectID = case 
+																	when TRY_CAST(@Value AS int) IS NULL  then 0 
+																	else @Value 
+																	end
+										
+
+										
+										) V
+							end
+							
+						declare @current int,
+							@max int
+
+						set @current = 1
+						select @max = Max(ID) from @tokens
+
+						set @formattedValue = @DisplayFormat
+
+						while(@current <= @max)
+						begin
+							declare @currentToken nvarchar(100) = null,
+									@currentField nvarchar(100) = null,
+									@currentValue nvarchar(max) = null,
+									@lkpType nvarchar(250) = null, 
+									@lkpID int = null, 
+									@lkpFormat nvarchar(250) = null,
+									@allowMultiple bit = 0
+
+							select	@currentField = Field, 
+									@currentToken = Token 
+							from	@tokens
+							where	ID = @current
+
+							select	@currentValue = Value,
+									@lkpType = LookupObjectType,
+									@lkpID = LookupObjectID,
+									@lkpFormat = LookupDisplayFormat,
+									@allowMultiple = AllowMultipleValues
+							from	@fieldValues 
+							where	Field = @currentField
+
+							if @currentValue is not null
+							begin
+								if @lookupObjectType is not null and @lkpID is not null
+								begin
+									select @currentValue = utility.GetFormattedFieldLookupValueWithMultiple(@Type, @lkpFormat, @lkpType, @lkpID, @currentValue, @allowMultiple)
+								end
+
+								SET @formattedValue = REPLACE(@formattedValue, @currentToken, @currentValue)
+							end
+							else
+							begin
+								SET @formattedValue = REPLACE(@formattedValue, @currentToken, '')
+							end
+
+							SET @current = @current + 1
+						end
+				end
+			end
+
+		return @formattedValue
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+	ALTER   FUNCTION [utility].[GetFormattedFieldLookupValue]
+(
+	@Type varchar(25),
+	@DisplayFormat nvarchar(250),
+	@LookupObjectType varchar(25),
+	@LookupObjectID int,
+	@Value nvarchar(max)	
+)
+RETURNS nvarchar(max)
+AS
+BEGIN
+	declare @formattedValue nvarchar(max)
+	
+	if @Value is null
+	begin
+		return null
+	end
+
+	if @LookupObjectType is null
+	begin
+		set @formattedValue  = @Value
+
+		if @Type = 'Link' OR @Type = 'UncLink'
+		begin
+			SET @formattedValue = [utility].[GetFormattedFieldLinkValue](@Value);
+		end
+	end	
+	else
+		begin
+			if @LookupObjectType = 'ReferenceItemType'
+				begin
+					select @formattedValue = Name from AssetType where Objectid = @Value and [Object] = 'ReferenceItemType';		
+				end
+			else if @LookupObjectType = 'TaxonomyType'
+				begin
+					select @formattedValue = Name from AssetType where Objectid = @Value and [Object] = 'TaxonomyType';		
+				end
+		else
+			begin
+				declare @tokens table(ID int identity(1,1), Token nvarchar(100), Field nvarchar(100))
+				declare @fieldValues table(Field nvarchar(100), Value nvarchar(max), LookupObjectType nvarchar(250), LookupObjectID int, LookupDisplayFormat nvarchar(250))
+
+				set @formattedValue = @DisplayFormat
+		
+						while patindex('%{%',@formattedValue) > 0
+						 begin
+							declare @txt nvarchar(100) = SUBSTRING(@formattedValue, patindex('%{%',@formattedValue), PATINDEX('%}%', @formattedValue))
+							insert into @tokens Values (@txt, REPLACE(REPLACE(@txt,'{',''),'}',''))
+							set @formattedValue = replace(@formattedValue, @txt, '')
+						end
+						
+						
+						if @LookupObjectType = 'Artifact'
+								begin
+									insert into @fieldValues
+									select	distinct
+											V.Name,
+											V.Value,
+											V.LookupObjectType,
+											V.LookupObjectID,
+											V.LookupDisplayFormat
+									from	(
+											SELECT	IT.Name,
+													[IF].Value,
+													[IT].LookupObjectType,
+													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+													[IT].LookupDisplayFormat
+											FROM	Field [IF]
+													inner join FieldType IT 
+													ON [IF].FieldTypeID = IT.ID 
+													and [IF].ObjectType = @LookupObjectType
+													and [IF].ObjectID = case 
+																		when TRY_CAST(@Value AS int) IS NULL  then 0 
+																		else @Value 
+																		end
+											UNION ALL
+											SELECT	P.FieldName as Name,
+												p.FieldValue as Value,
+												NULL as LookupObjectType,
+												NULL as LookupObjectID,
+												NULL as LookupDisplayFormat
+											FROM	(
+												SELECT	A.ObjectID as AID,
+														CAST(A.ObjectID as nvarchar(max)) as ID,
+														CAST(TP.TextPath as nvarchar(max)) as TextPath
+												FROM	asset A											
+														cross apply dbo.GetAssetTextPathById(A.ID, '/') TP 
+												WHERE	A.ObjectID = CAST(@Value as int) and A.[Object] = 'Artifact' 																						
+												) A
+												unpivot	(
+														FieldValue for FieldName in (ID, TextPath)
+														) p
+											) V
+								end
+						else if @LookupObjectType = 'Taxonomy'
+								begin
+									insert into @fieldValues
+									select	distinct
+											V.Name,
+											V.Value,
+											V.LookupObjectType,
+											V.LookupObjectID,
+											V.LookupDisplayFormat
+									from	(
+											SELECT	IT.Name,
+													[IF].Value,
+													[IT].LookupObjectType,
+													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+													[IT].LookupDisplayFormat
+											FROM	Field [IF]
+													inner join FieldType IT 
+													ON [IF].FieldTypeID = IT.ID 
+													and [IF].ObjectType = @LookupObjectType
+													and [IF].ObjectID = case 
+																		when TRY_CAST(@Value AS int) IS NULL  then 0 
+																		else @Value 
+																		end
+											UNION ALL
+											
+											SELECT	P.FieldName as Name,
+													p.FieldValue as Value,
+													NULL as LookupObjectType,
+													NULL as LookupObjectID,
+													NULL as LookupDisplayFormat
+											FROM	(											
+													SELECT	A.ObjectID as ID,													
+															CAST(TP.TextPath as nvarchar(max)) as TextPath
+													FROM	asset A													
+															cross apply dbo.GetAssetTextPathById(A.ID, '/') TP 
+													WHERE	A.ObjectID = CAST(@Value as int) and A.[Object] = 'Taxonomy' 
+													) A
+													unpivot	(
+															FieldValue for FieldName in (TextPath)
+															) p
+											) V
+								end
+						else if @LookupObjectType = 'ReferenceItem'
+							begin
+								insert into @fieldValues
+								select	distinct
+										V.Name,
+										V.Value,
+										V.LookupObjectType,
+										V.LookupObjectID,
+										V.LookupDisplayFormat
+								from	(
+										SELECT	IT.Name,
+												[IF].Value,
+												[IT].LookupObjectType,
+												COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+												[IT].LookupDisplayFormat
+										FROM	Field [IF]
+												inner join FieldType IT 
+												ON [IF].FieldTypeID = IT.ID 
+												and [IF].ObjectType = @LookupObjectType
+												and [IF].ObjectID = case 
+																	when TRY_CAST(@Value AS int) IS NULL  then 0 
+																	else @Value 
+																	end
+										UNION ALL
+										SELECT	P.FieldName as Name,
+												p.FieldValue as Value,
+												NULL as LookupObjectType,
+												NULL as LookupObjectID,
+												NULL as LookupDisplayFormat
+										FROM	(
+												SELECT	ObjectID as ID,
+														CAST(Code as nvarchar(max)) as Code
+												FROM	Asset A
+												WHERE	A.ObjectID = @Value and A.[Object] = 'ReferenceItem'
+												) A
+												unpivot	(
+														FieldValue for FieldName in (Code)
+														) p
+										) V
+								end
+						else if @LookupObjectType = 'ReferenceItemType'
+								begin
+									insert into @fieldValues
+									select	distinct
+											V.Name,
+											V.Value,
+											V.LookupObjectType,
+											V.LookupObjectID,
+											V.LookupDisplayFormat
+									from	(
+											SELECT	IT.Name,
+													[IF].Value,
+													[IT].LookupObjectType,
+													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+													[IT].LookupDisplayFormat
+											FROM	Field [IF]
+													inner join FieldType IT 
+													ON [IF].FieldTypeID = IT.ID 
+													and [IF].ObjectType = @LookupObjectType
+													and [IF].ObjectID = case 
+																		when TRY_CAST(@Value AS int) IS NULL  then 0 
+																		else @Value 
+																		end
+											UNION ALL
+											SELECT	P.FieldName as Name,
+													p.FieldValue as Value,
+													NULL as LookupObjectType,
+													NULL as LookupObjectID,
+													NULL as LookupDisplayFormat
+											FROM	(
+													SELECT	ObjectID as ID,
+															CAST(Name as nvarchar(max)) as Name,
+															CAST(Description as nvarchar(max)) as Description
+													FROM	AssetType A
+													WHERE	A.ObjectID = @Value and A.[Object] = 'ReferenceItemType'
+													) A
+													unpivot	(
+															FieldValue for FieldName in (Name, Description)
+															) p
+											) V
+								end
+						else if @LookupObjectType = 'Resource'
+								begin
+									insert into @fieldValues
+									select	distinct
+											V.Name,
+											V.Value,
+											V.LookupObjectType,
+											V.LookupObjectID,
+											V.LookupDisplayFormat
+									from	(
+											SELECT	IT.Name,
+													[IF].Value,
+													[IT].LookupObjectType,
+													COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+													[IT].LookupDisplayFormat
+											FROM	Field [IF]
+													inner join FieldType IT 
+													ON [IF].FieldTypeID = IT.ID 
+													and [IF].ObjectType = @LookupObjectType
+													and [IF].ObjectID = case 
+																		when TRY_CAST(@Value AS int) IS NULL  then 0 
+																		else @Value 
+																		end
+											UNION ALL
+											SELECT	P.FieldName as Name,
+													p.FieldValue as Value,
+													NULL as LookupObjectType,
+													NULL as LookupObjectID,
+													NULL as LookupDisplayFormat
+											FROM	(
+													SELECT	ResourceID as ID,
+															CAST(FirstName as nvarchar(max)) as FirstName,
+															CAST(LastName as nvarchar(max)) as LastName,
+															CAST(Email as nvarchar(max)) as Email
+													FROM	reporting.Global_Resource A
+													WHERE	A.ResourceID = @Value
+													) A
+													unpivot	(
+															FieldValue for FieldName in (FirstName, LastName, Email)
+															) p
+											) V
+								end					
+						else
+							begin
+								insert into @fieldValues
+								select	distinct
+										V.Name,
+										V.Value,
+										V.LookupObjectType,
+										V.LookupObjectID,
+										V.LookupDisplayFormat
+								from	(
+										SELECT	IT.Name,
+												[IF].Value,
+												[IT].LookupObjectType,
+												COALESCE([IT].LookupObjectID, 0) as LookupObjectID,
+												[IT].LookupDisplayFormat
+										FROM	Field [IF]
+												inner join FieldType IT 
+												ON [IF].FieldTypeID = IT.ID 
+												and [IF].ObjectType = @LookupObjectType
+												and [IF].ObjectID = case 
+																	when TRY_CAST(@Value AS int) IS NULL  then 0 
+																	else @Value 
+																	end
+										
+
+										
+										) V
+							end
+							
+						declare @current int,
+							@max int
+
+						set @current = 1
+						select @max = Max(ID) from @tokens
+
+						set @formattedValue = @DisplayFormat
+
+						while(@current <= @max)
+						begin
+							declare @currentToken nvarchar(100) = null,
+									@currentField nvarchar(100) = null,
+									@currentValue nvarchar(max) = null,
+									@lkpType nvarchar(250) = null, 
+									@lkpID int = null, 
+									@lkpFormat nvarchar(250) = null
+
+							select	@currentField = Field, 
+									@currentToken = Token 
+							from	@tokens
+							where	ID = @current
+
+							select	@currentValue = Value,
+									@lkpType = LookupObjectType,
+									@lkpID = LookupObjectID,
+									@lkpFormat = LookupDisplayFormat
+							from	@fieldValues 
+							where	Field = @currentField
+
+							if @currentValue is not null
+							begin
+								if @lookupObjectType is not null and @lkpID is not null
+								begin
+									select @currentValue = utility.GetFormattedFieldLookupValue(@Type, @lkpFormat, @lkpType, @lkpID, @currentValue)
+								end
+
+								SET @formattedValue = REPLACE(@formattedValue, @currentToken, @currentValue)
+							end
+							else
+							begin
+								SET @formattedValue = REPLACE(@formattedValue, @currentToken, '')
+							end
+
+							SET @current = @current + 1
+						end
+				end
+			end
+
+		return @formattedValue
+END
+		
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

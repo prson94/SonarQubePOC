@@ -11,12 +11,12 @@
                                     'ok':scoreBetween(50,89),
                                     'good':scoreBetween(90,1000)
                                 }">
-			<d3s-dynamic-percentage [innerCircleColor]="getColor(badge)" [percentage]="statistics?.Score"></d3s-dynamic-percentage>
+			<d3s-dynamic-percentage [percentage]="statistics?.Score"></d3s-dynamic-percentage>
 			<span class="text">{{statistics?.Score}}%</span>
 		</span>
 		<ng-template #noScore>
 			<span #noScoreBadge *ngIf="currentObject && !currentObject?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon clickable">
-				<d3s-dynamic-percentage [innerCircleColor]="getColor(noScoreBadge)" [percentage]="0"></d3s-dynamic-percentage>
+				<d3s-dynamic-percentage [percentage]="0"></d3s-dynamic-percentage>
 				<span class="text">N/A</span>
 			</span>
 		</ng-template>

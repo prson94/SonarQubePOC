@@ -1,8 +1,7 @@
-import { map } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
-import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { NgModule, Input, Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { container } from '@angular/core/src/render3';
+import { CoreModule } from '../core.module';
 
 
 @Component({
@@ -104,6 +103,7 @@ export class TagView implements OnInit {
     ]
     , imports: [
         CommonModule,
+        CoreModule
     ]
 
 })

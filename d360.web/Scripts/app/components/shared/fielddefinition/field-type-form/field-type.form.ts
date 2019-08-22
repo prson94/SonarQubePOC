@@ -64,6 +64,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Output() onCancel = new EventEmitter();
     @Input() showIsListable: boolean = true;
     @Input() showIsPartOfKey: boolean = true;
+    @Input() showIsEditable: boolean = true;
 
     private lookups: Lookups = new Lookups();
     private lookupDefaultValueOptions: SelectItem[];
@@ -223,7 +224,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                 this.fieldsService.getFormData(this.id)
                                     .subscribe(formData => {
                                         this.getFormDataHandler(formData);
-                                        this.loadDataType(this.model.FieldType.Type)
+                                        this.loadDataType(this.model.FieldType.Type, true);
                                         this.isLoading = false;
                                     });
                             }
@@ -363,7 +364,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
 
-    private loadDataType(value: string) {
+    private loadDataType(value: string, isFromLoad: boolean = false) {
         let observables: Array<Observable<any>> = [];
 
         if (value == null) {
@@ -495,6 +496,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.LookupDisplayFormat = null;
                 break;
+            case 'tag':
+                if (!isFromLoad)
+                    this.model.FieldType.IsListable = true;
+
+                this.model.FieldType.IsRequired = false;
+                this.model.FieldType.IsPartOfKey = false;
+                this.model.FieldType.ShowIfEmpty = true;
+                this.showIsEditable = false;
+                break;
             default:
                 this.model.FieldType.LookupDisplayFormat = null;
                 this.model.FieldType.LookupObjectID = null;
@@ -578,7 +588,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         //update the model to have correct lookuptype object and id
         this.model.FieldType.LookupObjectID = value;
         this.model.FieldType.LookupObjectType = "IntersectType";
-
+        
         return this.fieldsService.getRelationObjectFields(this.objectType, this.objectID, value)
             .pipe(map(
                 d => {
@@ -1459,7 +1469,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.displayFieldSelected = true;
 
             if (this.lookups.Field_FieldFromRelRelationships.length > 0) {
-                this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value));
+                this.cardinalFieldFromRelationshipSelected(parseInt(this.lookups.Field_FieldFromRelRelationships[0].value)).subscribe();
             }
 
             return;
@@ -1502,21 +1512,21 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup','FieldFromRelationship', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
+                return (['ComplexRelationLookup','FieldFromRelationship', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement','Tag'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsListable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.model.FieldType.Type) > -1
                     || (this.model.FieldType.Type == 'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JsonElement','Tag'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsPartOfKey':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement','Tag'].indexOf(this.model.FieldType.Type) > -1
                     || this.model.FieldType.AllowMultipleValues || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
                 return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.model.FieldType.Type) == -1);
             case 'ShowIfEmpty':
-                return (!this.model.FieldType.IsDisplayable);
+                return (['Tag'].indexOf(this.model.FieldType.Type) > -1);
             default:
                 console.warn(`invalid setting [${val}] passed to isSettingDisabled`);
         }

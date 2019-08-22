@@ -92,20 +92,16 @@ export class TagService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)))
     }
 
-    setTaggingStatus(state: boolean): Observable<any> {
-        let url = `api/v2/tags/settaggingstatus`;
-        let body = { IsTaggingEnabled: state };
-        return this.http.put(url, body)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)))
+    exportTags(filters: any, sort) {
+        this.http.get(`api/v2/tags/export?globalSearch=${filters.globalSearch}&value=${filters.Value}&useCount=${filters.UseCount}&sortBy=${sort.field}&sortOrder=${sort.order}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
     }
 
-    exportTags() {
-        this.http.get('api/v2/tags/export/', { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
-    }
+    exportTagsByUid(uid: string, sort: any, filters: any) {
+        var params = new URLSearchParams(filters).toString();
+        params += "&sortBy=" + sort.field;
+        params += "&sortOrder=" + sort.order;
 
-    exportTagsByUid(uid: string) {
-        this.http.get(`api/v2/tags/${uid}/export`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
+        this.http.get(`api/v2/tags/${uid}/export?${params}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
     }
 
     downloadFile(data: Blob, name: string) {

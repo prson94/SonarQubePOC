@@ -28,6 +28,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     showEditor: boolean = false;
     showConsolidate: boolean = false
+    filters: any = { globalSearch: '', Value: '', UseCount: '' };
+    sort: any;
 
     private deletePopupTitle: string = 'Delete Tag';
     private editPopupTitle: string = 'Edit Tag';
@@ -67,6 +69,15 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.clearSidebar();
     }
 
+    updateSort(event) {
+        this.sort = event;
+    }
+    onFilterChange(event) {
+        if (event != 'globalSearch')
+            this.filters.globalSearch = '';
+
+        this.filters[event.prop] = event.value;
+    }
     getTags() {
         this.isLoading = true;
         this.tagsService.getTagsList().subscribe(res => {
@@ -258,19 +269,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
             });
     }
 
-    tagStateChanged(state: boolean) {
-        this.tagsService.setTaggingStatus(state)
-            .subscribe(result => {
-                if (result)
-                    this.messagesService.showInfoMessage("Success", `Tagging status successfully changed to '${state}'!`);
-                    CompanySettings["EnableTagging"] = state.toString();
-            }
-                , err => {
-                    this.showMessageForResult(this.messagesService, err);
-                })
-    }
-
-
     findTagIndex(uid: string) {
         var index: number = -1;
         for (var tag of this.tags) {
@@ -284,7 +282,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     private export() {
-        this.tagsService.exportTags();
+        this.tagsService.exportTags(this.filters, this.sort);
     }
 
 };

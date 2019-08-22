@@ -141,7 +141,11 @@ namespace d360.model
                             }
                             else
                             {
-                                if (!usedFilters.Contains($"F{f.FieldName.Replace("Field", "")}"))
+                                int fieldTypeId = 0;
+                                int.TryParse(f.FieldName.Replace("Field", ""), out fieldTypeId);
+                                var fieldType = FieldTypes.FirstOrDefault(x => x.ID == fieldTypeId)?.Type;
+
+                                if (!usedFilters.Contains($"F{f.FieldName.Replace("Field", "")}") || fieldType == SystemObjects.Tag.ToString())
                                 {
                                     filterTable.Rows.Add("F", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{wildcardValue(f.RawValue)}");
 
@@ -176,10 +180,11 @@ namespace d360.model
                     if (filter is UiRequestRelationshipFieldFilterValue)
                     {
                         var f = filter as UiRequestRelationshipFieldFilterValue;
-                        if (!usedFilters.Contains($"F{f.FieldTypeID}"))
+                        if (!usedFilters.Contains($"I{f.FieldTypeID}"))
                         {
-                            filterTable.Rows.Add("F", f.Operator, f.FieldTypeID, null, $"{wildcardValue(f.RawValue)}");
-                            usedFilters.Add($"F{f.FieldTypeID}");
+                            var rfValue = f.RawValue ?? f.Value;
+                            filterTable.Rows.Add("I", f.Operator, f.FieldTypeID, null, $"{wildcardValue(rfValue)}");
+                            usedFilters.Add($"I{f.FieldTypeID}");
                         }
                     }
                 }

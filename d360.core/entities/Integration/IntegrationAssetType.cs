@@ -41,10 +41,16 @@ namespace d360.core.entities
         public int? OptionalID { get; set; } = null;
 
         [DataMember]
+        public DateTime? LastSynchOn { get; set; } = null;
+
+        [DataMember]
+        public int? LastSuccessfulCount { get; set; }
+
+        [DataMember]
         public bool AllowChangeDetection { get; set; } = false;
 
         [DataMember]
-        public DateTime? LastSynchOn { get; set; } = null;
+        public int? Level { get; set; }
 
         [DataMember]
         public bool TriggerTopicMessage { get; set; }
@@ -69,6 +75,15 @@ namespace d360.core.entities
 
         [DataMember]
         public bool EnableAppInsightsVerboseLogging { get; set; }
+
+        [DataMember]
+        public int? ClearFieldHashInterval { get; set; }
+
+        [DataMember]
+        public int? ClearOwnershipHashInterval { get; set; }
+
+        [DataMember]
+        public int? ClearRelationshipHashInterval { get; set; }
 
         [IgnoreDataMember, ForeignKey("IntegrationSettingID")]
         public virtual ICollection<IntegrationSetting> IntegrationSetting { get; set; }

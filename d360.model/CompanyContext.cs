@@ -2870,10 +2870,10 @@ select @err";
             return homePage?.Route ?? "";
         }
 
-        public void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName)
+        public void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName, string key)
         {
             string xml = $@"<fields><Action>{actionName}</Action>
-                            <ActionObject>EnableTagging</ActionObject>     
+                            <ActionObject>{key}</ActionObject>     
                             <ActionObjectID>{companySetting.SettingID}</ActionObjectID>  
                             <ActionObjectValue>{companySetting.Value}</ActionObjectValue>
                             <ResourceID>{CurrentResourceID}</ResourceID>
@@ -3057,14 +3057,13 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
                 }
                 else if (f.Type == DataType.Tag.ToString())
                 {
-                    string assetIdSql = "O.Id";
-                    if(type == SystemObjects.Policy.ToString() || type == SystemObjects.Taxonomy.ToString())
-                    {
-                        assetIdSql = "A.Id";
-                    }
+                    string assetIdPath = "A.Id";
+
+                    if (type == SystemObjects.Rule.ToString())
+                        assetIdPath = "O.Id";
 
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
-                    columns += $@"(select T.uid, T.Value from AssetTag AT inner join Tag T on T.ID = AT.TagID where AssetId = {assetIdSql} order by T.Value for json path) as [{(useFriendlyName ? friendlyName : name)}], ";
+                    columns += $@"(select T.Value,T.uid from AssetTag AT inner join Tag T on T.ID = AT.TagID where AssetId = {assetIdPath} order by T.Value for json path) as [{(useFriendlyName ? friendlyName : name)}], ";
 
                     joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";

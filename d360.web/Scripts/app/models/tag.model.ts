@@ -32,7 +32,6 @@ export class TagDetail {
     DisplayValue: string;
     AssetId: number;
     AssetType: string;
-    AssetTypeName: string;
     Object: string;
     ObjectID: number;
     TagsAsString: string;

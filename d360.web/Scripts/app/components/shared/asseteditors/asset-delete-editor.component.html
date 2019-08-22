@@ -1,0 +1,7 @@
+﻿<d3s-delete-form
+                 [callback]="theDeleteCallback"
+                 [itemId]="0"
+                 method="callback"
+                 [prompt]="'Are you sure you want to delete [' +(displayValue ? displayValue : '(unknown)') +']?'" 
+                 (onCancel)="onCancel.emit();">
+</d3s-delete-form>

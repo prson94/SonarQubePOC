@@ -1,4 +1,5 @@
 ﻿import { Component, Input, Output, HostListener, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
+import { ModalService } from '../../../services/modal-dialog-service';
 
 
 @Component({
@@ -10,8 +11,10 @@ export class D3SModal implements OnChanges {
     @Input() title: string = 'Default Title';
     @Input() additionalClasses: string = '';
     @Input() isVisible: false;
+    @Input() showConfirm: false;
 
     @Output() onClose = new EventEmitter();
+    @Output() onConfirm = new EventEmitter();
 
     @ViewChild('popupBox') modalDiv: ElementRef; 
 
@@ -60,10 +63,13 @@ export class D3SModal implements OnChanges {
             this.onClose.emit(null);
         }.bind(this), 250);
         this.display = false;
-
+      
     }
 
-
+    confirm() {
+        this.onConfirm.emit('confirm');
+        this.closePopUp();
+    }
 
 }
 

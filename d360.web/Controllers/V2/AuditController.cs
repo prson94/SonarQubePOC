@@ -91,12 +91,6 @@ namespace d360.web.Controllers.V2
                 //get all auditing by type (introduced in tagging)
                 if(id == 0)
                 {
-                    string additionalObjects = string.Empty;
-                    if (type == SystemObjects.Tag)
-                    {
-                        additionalObjects += @" or ga.[Object] = 'EnableTagging'";
-                    }
-
                     querySql = $@"select                   
 	                               ga.*,
 	                                case when R.State = 1 then
@@ -120,9 +114,9 @@ namespace d360.web.Controllers.V2
 							                                 and ga_sub.actionObjectId=ga.actionObjectId)
 		                                 END AS 'PreviousValue'                  
 	                                from reporting.global_audit ga 
-                                       left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
+                                       left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) and ga.Action != 'Removed'
                                        inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
-	                               where ga.[Object] = @objType {additionalObjects}";
+	                               where ga.[Object] = @objType";
                 }
 
 
@@ -206,6 +200,14 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        [Route("{type}/{uid}/download/excel/audit.xls"), FileDownload, HttpGet]
+        public IHttpActionResult GetAuditToExcel(SystemObjects type, string uid)
+        {
+            Guid guid = Guid.Parse(uid);
+            var objectId = Company.GetObjectId(guid, type);
+
+            return GetAuditToExcel(type, objectId);
+        }
 
         [Route("{type}/{id:int}/download/excel/audit.xls"), FileDownload, HttpGet]
         public IHttpActionResult GetAuditToExcel(SystemObjects type, int id)
@@ -235,6 +237,38 @@ namespace d360.web.Controllers.V2
         left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
                                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId                        
             ";
+
+            //get all auditing by type (introduced in tagging)
+            if (id == 0)
+            {
+                querySql = $@"select                   
+	                               ga.*,
+	                                case when R.State = 1 then
+	                                    R.FirstName + ' ' + R.LastName
+	                                else
+	                                    R.FirstName + ' ' + R.LastName + ' (deleted)'
+	                                end as ResourceName,
+	                                 fa.FieldName as Field, 
+	                                 fa.Value as NewValue, 
+	                                 fa.[Version] as 'Version',	    
+	                                CASE 
+	                                     WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
+		                                 ELSE ( select top 1 fa_sub.value as 'value'			                            
+                                                       from reporting.global_fieldaudit fa_sub
+                                                       inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
+							                               where ga_sub.[object] = ga.[object] 
+							                                 and ga_sub.[objectid] = ga.[objectid]
+							                                 and fa_sub.version = (fa.Version -1) 
+							                                 and fa_sub.fieldname = fa.FieldName 
+							                                 and fa_sub.fieldtypeid = fa.FieldTypeId 
+							                                 and ga_sub.actionObjectId=ga.actionObjectId)
+		                                 END AS 'PreviousValue'                  
+	                                from reporting.global_audit ga 
+                                       left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
+                                       inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
+	                               where ga.[Object] = @objType";
+            }
+
 
             var sql = string.Format(@"select * from ({0}) A", querySql);
 

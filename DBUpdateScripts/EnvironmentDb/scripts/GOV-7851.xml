@@ -1,0 +1,75 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-7851">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'integration' and table_name = 'SynchedAssetType'and column_name = 'ClearFieldHashInterval' )
+BEGIN
+	alter table integration.SynchedAssetType add ClearFieldHashInterval int null
+END
+IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'integration' and table_name = 'SynchedAssetType'and column_name = 'ClearOwnershipHashInterval' )
+BEGIN
+	alter table integration.SynchedAssetType add ClearOwnershipHashInterval int null
+END
+IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'integration' and table_name = 'SynchedAssetType'and column_name = 'ClearRelationshipHashInterval' )
+BEGIN
+	alter table integration.SynchedAssetType add ClearRelationshipHashInterval int null
+END
+
+IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'integration' and table_name = 'ExecutionAssetType'and column_name = 'FieldHashesCleared' )
+BEGIN
+	alter table integration.ExecutionAssetType add FieldHashesCleared bit constraint DF_IntegrationExecutionAssetType_FieldHashesCleared default(0) not null
+END
+IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'integration' and table_name = 'ExecutionAssetType'and column_name = 'OwnershipHashesCleared' )
+BEGIN
+	alter table integration.ExecutionAssetType add OwnershipHashesCleared bit constraint DF_IntegrationExecutionAssetType_OwnershipHashesCleared default(0) not null
+END
+IF NOT EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'integration' and table_name = 'ExecutionAssetType'and column_name = 'RelationshipHashesCleared' )
+BEGIN
+	alter table integration.ExecutionAssetType add RelationshipHashesCleared bit constraint DF_IntegrationExecutionAssetType_RelationshipHashesCleared default(0) not null
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'integration' and table_name = 'SynchedAssetType'and column_name = 'ClearFieldHashInterval' )
+BEGIN
+	alter table integration.SynchedAssetType drop column ClearFieldHashInterval
+END
+IF EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'integration' and table_name = 'SynchedAssetType'and column_name = 'ClearOwnershipHashInterval' )
+BEGIN
+	alter table integration.SynchedAssetType drop column ClearOwnershipHashInterval
+END
+IF EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'integration' and table_name = 'SynchedAssetType'and column_name = 'ClearRelationshipHashInterval' )
+BEGIN
+	alter table integration.SynchedAssetType drop column ClearRelationshipHashInterval
+END
+
+IF EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'integration' and table_name = 'ExecutionAssetType'and column_name = 'FieldHashesCleared' )
+BEGIN
+	alter table integration.ExecutionAssetType drop constraint [DF_IntegrationExecutionAssetType_FieldHashesCleared]
+	alter table integration.ExecutionAssetType drop column FieldHashesCleared
+END
+IF EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'integration' and table_name = 'ExecutionAssetType'and column_name = 'OwnershipHashesCleared' )
+BEGIN
+	alter table integration.ExecutionAssetType drop constraint [DF_IntegrationExecutionAssetType_OwnershipHashesCleared]
+	alter table integration.ExecutionAssetType drop column OwnershipHashesCleared
+END
+IF EXISTS ( SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE table_schema = 'integration' and table_name = 'ExecutionAssetType'and column_name = 'RelationshipHashesCleared' )
+BEGIN
+	alter table integration.ExecutionAssetType drop constraint [DF_IntegrationExecutionAssetType_RelationshipHashesCleared]
+	alter table integration.ExecutionAssetType drop column RelationshipHashesCleared
+END	
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
