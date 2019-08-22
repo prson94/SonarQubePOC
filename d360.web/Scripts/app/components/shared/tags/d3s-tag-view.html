@@ -9,6 +9,12 @@
             <div #el class="tag-item-wrapper">
                 {{tag.Value}}
             </div>
+            <div class="RowTools">
+                <d3s-preview-tooltip *ngIf="tag"
+                                     [objectType]="'Tag'"
+                                     [objectId]="tag.uid">
+                </d3s-preview-tooltip>
+            </div>
         </a>
     </ng-container>
     <ng-container *ngIf="tags.length > 10">

@@ -146,6 +146,7 @@ export class TagView implements OnInit {
     ]
     , imports: [
         CommonModule,
+        CoreModule
     ]
 
 })
