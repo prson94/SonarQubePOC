@@ -489,24 +489,53 @@ namespace igx.IntegrationTests.ApiTests
             TagTestData.AllItems = parsedData["items"] as JArray;
         }
 
-        [InlineData("ab","","","Value","1")]
-        [InlineData("ab","","","Value","0")]
-        [InlineData("ab","","","UseCount","1")]
-        [InlineData("ab","","", "UseCount", "0")]
+        [InlineData("", "", "", "Value", "1")]
+        [InlineData("", "", "", "Value", "-1")]
+        [InlineData("", "", "", "UseCount", "1")]
+        [InlineData("", "", "", "UseCount", "-1")]
+        [InlineData("ab", "", "", "Value", "1")]
+        [InlineData("ab", "", "", "Value", "-1")]
+        [InlineData("ab", "", "", "UseCount", "1")]
+        [InlineData("ab", "", "", "UseCount", "-1")]
+        [InlineData("", "ab", "", "Value", "1")]
+        [InlineData("", "ab", "", "Value", "-1")]
+        [InlineData("", "ab", "", "UseCount", "1")]
+        [InlineData("", "ab", "", "UseCount", "-1")]
+        [InlineData("", "", "1", "Value", "1")]
+        [InlineData("", "", "2", "Value", "-1")]
+        [InlineData("", "", "3", "UseCount", "1")]
+        [InlineData("", "", "4", "UseCount", "-1")]
+        [InlineData("", "ab", "1", "Value", "1")]
+        [InlineData("", "ab", "2", "Value", "-1")]
+        [InlineData("", "ab", "3", "UseCount", "1")]
+        [InlineData("", "ab", "4", "UseCount", "-1")]
         [Theory, Priority(220)]
-        public async void ExcelExportTest(string globalSearch, string value, string useCount, string sortBy, string sortOrder)
+        public async void AllTagsExcelExportTest(string globalSearch, string value, string useCount, string sortBy, string sortOrder)
         {
             string endpointUrl = $"{URIHelper.TagUri}/export?globalSearch={globalSearch}&value={value}&useCount={useCount}&sortBy={sortBy}&sortOrder={sortOrder}";
             var response = await httpClient.GetAsync(endpointUrl);
             var content = await response.Content.ReadAsStreamAsync();
-            List<JToken> filtered = TagTestData.AllItems.ToList();
+            List<JToken> filtered = TagTestData.AllItems.OrderBy(x=> x["Value"]).ToList();
 
             if (!string.IsNullOrEmpty(globalSearch))
             {
                 filtered = filtered.Where(x => x["Value"].ToString().ToLower().Contains(globalSearch.ToLower()) || x["UseCount"].ToString().ToLower().Contains(globalSearch.ToLower())).ToList();
             }
 
-            if (sortOrder == "1") {
+            if (!string.IsNullOrEmpty(value))
+            {
+                filtered = filtered.Where(x => x["Value"].ToString().ToLower().Contains(value.ToLower())).ToList();
+            }
+            if (!string.IsNullOrEmpty(useCount))
+            {
+                filtered = filtered.Where(x => x["UseCount"].ToString().ToLower().Contains(useCount.ToLower())).ToList();
+            }
+            if (!string.IsNullOrEmpty(useCount) && !string.IsNullOrEmpty(value))
+            {
+                filtered = filtered.Where(x => x["Value"].ToString().ToLower().Contains(value.ToLower()) && x["UseCount"].ToString().ToLower().Contains(useCount.ToLower())).ToList();
+            }
+            if (sortOrder == "1")
+            {
                 filtered = filtered.OrderBy(x => x[sortBy]).ToList();
             }
             else
@@ -539,9 +568,9 @@ namespace igx.IntegrationTests.ApiTests
                     var rowData = item.Value.Values;
 
                     //check header
-                    if(row == 1)
+                    if (row == 1)
                     {
-                        foreach(SLCell c in rowData)
+                        foreach (SLCell c in rowData)
                         {
                             var cell_value = doc.GetCellValueAsString(row, cell);
                             parsedHeaders.Add(cell_value);
@@ -556,19 +585,16 @@ namespace igx.IntegrationTests.ApiTests
                     row++;
                 }
 
-                for(int i = 0; i< existingHeaders.Count; i++)
+                for (int i = 0; i < existingHeaders.Count; i++)
                 {
                     Assert.True(existingHeaders[i] == parsedHeaders[i], "Invalid header order!");
                 }
 
-                using (StreamWriter file =  new StreamWriter(@"test.txt"))
+                Assert.True(excelUids.Count == existingUids.Count, XMsg.InvalidCount);
+
+                for (int i = 0; i < excelUids.Count; i++)
                 {
-
-                    for(int i = 0; i< excelUids.Count; i++)
-                    {
-                        file.WriteLine(existingUids[i] + "-" + excelUids[i]);
-                    }
-
+                    Assert.True(excelUids.Contains(existingUids[i]), "Invalid filtering result!");
                 }
 
 
