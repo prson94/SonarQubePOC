@@ -2,6 +2,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { TagService } from '../../../services/tag.service';
+import { CoreModule } from '../core.module';
 
 
 @Component({
