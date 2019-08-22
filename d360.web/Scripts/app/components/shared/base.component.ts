@@ -327,7 +327,6 @@ export class BaseComponent {
 
     public filterTreeTable(originalArray: TreeNode[], search: string, tree: any) {
         var arrDeepCopy = JSON.parse(JSON.stringify(originalArray));
-        console.log(originalArray);
         if (search.length == 0) {
             tree.value = arrDeepCopy;
             return;
