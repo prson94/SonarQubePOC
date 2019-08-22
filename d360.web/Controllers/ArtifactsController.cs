@@ -262,6 +262,32 @@ where   A.Type = 'ArtifactType'
 
             var results = Company.Query<dynamic>(sql, dbArgs);
 
+            var data = results.ToList();
+
+            //Tags are returned as array containing uid and value, if asset has tags, lets parse it to readable format
+            if (fields.Any(x => x.Type == "Tag"))
+            {
+                var ft = fields.FirstOrDefault(x => x.Type == "Tag");
+                data.ForEach(row =>
+                {
+                    var rowDic = (IDictionary<string, object>)row;
+                    string tagKey = "Field" + ft.ID;
+
+                    if (rowDic.ContainsKey(tagKey) && rowDic[tagKey] != null)
+                    {
+                        string value = rowDic[tagKey].ToString();
+                        if (!string.IsNullOrEmpty(value))
+                        {
+                            var parsed = JsonConvert.DeserializeObject<List<TagDetailItem>>(value);
+                            if (parsed != null)
+                                rowDic[tagKey] = string.Join("|", parsed.Select(x => x.Value));
+                        }
+                    }
+                });
+            }
+
+
+
             SLDocument document = null;
             if (template.IncludeParent)
             {
@@ -271,16 +297,17 @@ where   A.Type = 'ArtifactType'
 
             if (template.IncludeUrl) fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
 
+
             switch (template.ExportViewType)
             {
                 case core.enums.ExportView.None:
-                    document = GenerateDefaultSpreadsheet(fields, results, template, "Items");
+                    document = GenerateDefaultSpreadsheet(fields, data, template, "Items");
                     break;
                 case core.enums.ExportView.Pivot:
-                    document = GeneratePivotedSpreadsheet(fields, results, template, "Items");
+                    document = GeneratePivotedSpreadsheet(fields, data, template, "Items");
                     break;
                 case core.enums.ExportView.Grouped:
-                    document = GenerateGroupedSpreadsheet(fields, results, template, "Items");
+                    document = GenerateGroupedSpreadsheet(fields, data, template, "Items");
                     break;
                 default:
                     throw new Exception("INVALID EXPORT VIEW TYPE SPECIFIED");
