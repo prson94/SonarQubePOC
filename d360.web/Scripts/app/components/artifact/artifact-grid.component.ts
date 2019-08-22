@@ -320,6 +320,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         isLoading = true;
         if (dt) {
             dt.reset();
+            this.previousEvent = null;
         }
     }
 
