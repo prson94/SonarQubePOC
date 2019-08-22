@@ -36,6 +36,7 @@ import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
 import {ObjectDetailService} from '../../services/object-detail.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-artifact-grid',
@@ -63,7 +64,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     showArtifactDetails: boolean = false;
     showCertificationStatus: boolean = false;
     certificationStatusIndex: string = null;
-
+    previousEvent: LazyLoadEvent;
     totalRecords: number;
 
     searchValue: string = "";
@@ -293,11 +294,16 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     private loadArtifactsLazy(event: LazyLoadEvent) {
+        //if its the same filter then no need to load same data 
+        if (_.isEqual(event, this.previousEvent)) {
+            return;
+        }
+        this.previousEvent = event;
         //event.first = First row offset
         //event.rows = Number of rows per page
         //event.sortField = Field name to sort with
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
-        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value        
+        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value  
         this.stateService.artifactTypeFilters.sortOrder = event.sortOrder;
         this.stateService.artifactTypeFilters.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
