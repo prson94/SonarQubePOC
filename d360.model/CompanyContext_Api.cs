@@ -562,6 +562,11 @@ from	#LookupValues T
 		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 0
 		inner join FieldLookupValue S on S.FieldTypeID = T.FieldTypeID and S.[Text] = T.FieldValue;
 
+update	T
+set		T.[Value] = '0'
+from	#LookupValues T
+		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowAllValue = 1 and ST.AllowAllLabel = T.FieldValue;
+
 drop table if exists #MvLookupValues
 create table #MvLookupValues (ItemNumber int, FieldTypeID int not null, [RawValue] nvarchar(250) null, [Value] nvarchar(max) null)
 CREATE CLUSTERED INDEX CIX_TempMvLookupValues ON #MvLookupValues ( ItemNumber ASC, FieldTypeID ASC );
@@ -2193,13 +2198,19 @@ from	IntersectType I
                         #region Generate proposed key hash and compare against existing data.
 
                         string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
-                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(100)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
+                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
                         string keyComparisonUpdateStatement = $@"
 update  T 
 set     T.Success = 0, 
         T.Message = {keyErrorMessage}
 from    api.ExecutionAsset T 
-        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and ((S.AssetID <> T.AssetID and T.AssetID is not null) OR (T.AssetID is null)); ";
+        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and S.AssetID <> T.AssetID and T.AssetID is not null; 
+
+update  T 
+set     T.Success = 0, 
+        T.Message = {keyErrorMessage}
+from    api.ExecutionAsset T 
+        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and T.AssetID is null; ";
 
                         if (at.Object == "FusionAttributeType")
                         {

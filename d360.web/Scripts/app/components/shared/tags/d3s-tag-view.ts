@@ -1,4 +1,3 @@
-import { map } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -13,6 +12,7 @@ import { AdminBaseComponent } from '../../admin/admin-base.component';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { CoreModule } from '../core.module';
 
 
 @Component({
@@ -119,3 +119,20 @@ export class TagView extends AdminBaseComponent implements OnInit {
         }
     }
 }
+
+
+
+@NgModule({
+    declarations: [
+        TagView,
+    ],
+    exports: [
+        TagView,
+    ]
+    , imports: [
+        CommonModule,
+    ]
+
+})
+
+export class TagViewModule { }

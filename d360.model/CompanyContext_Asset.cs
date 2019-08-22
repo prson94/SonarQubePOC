@@ -141,7 +141,11 @@ namespace d360.model
                             }
                             else
                             {
-                                if (!usedFilters.Contains($"F{f.FieldName.Replace("Field", "")}"))
+                                int fieldTypeId = 0;
+                                int.TryParse(f.FieldName.Replace("Field", ""), out fieldTypeId);
+                                var fieldType = FieldTypes.FirstOrDefault(x => x.ID == fieldTypeId)?.Type;
+
+                                if (!usedFilters.Contains($"F{f.FieldName.Replace("Field", "")}") || fieldType == SystemObjects.Tag.ToString())
                                 {
                                     filterTable.Rows.Add("F", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{wildcardValue(f.RawValue)}");
 

@@ -73,6 +73,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.sort = event;
     }
     onFilterChange(event) {
+        if (event != 'globalSearch')
+            this.filters.globalSearch = '';
+
         this.filters[event.prop] = event.value;
     }
     getTags() {
@@ -265,19 +268,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
             });
     }
-
-    tagStateChanged(state: boolean) {
-        this.tagsService.setTaggingStatus(state)
-            .subscribe(result => {
-                if (result)
-                    this.messagesService.showInfoMessage("Success", `Tagging status successfully changed to '${state}'!`);
-                CompanySettings["EnableTagging"] = state.toString();
-            }
-                , err => {
-                    this.showMessageForResult(this.messagesService, err);
-                })
-    }
-
 
     findTagIndex(uid: string) {
         var index: number = -1;

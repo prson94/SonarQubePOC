@@ -611,6 +611,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             string filterType = GridColumn.FILTER_TYPE_STRING;
             List<string> filterItems = new List<string>();
 
+            bool canHaveMultipleFilterItems = false;
             var columnDataType = item.Type;
 
             if (columnDataType == DataType.JsonElement.ToString())
@@ -711,6 +712,9 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     filterType = GridColumn.FILTER_TYPE_LIST;
                     filterItems = new List<string> { "True", "False" };
                     break;
+                case "Tag":
+                    canHaveMultipleFilterItems = true;
+                    break;
             }
 
             var width = item.ColumnWidth;
@@ -718,7 +722,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             {
                 width = (int)dynamicFieldWidth;
             }
-            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID };
+            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID, canHaveMultipleFilters = canHaveMultipleFilterItems };
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
@@ -840,11 +844,6 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
 
             var sType = type.ToString();
             var skippedFieldTypes = DataType.Text.GetNonlistableFields();
-
-            var isTaggingEnabled = Community.GetCompanySettingByKey<bool>("EnableTagging");
-
-            if (!isTaggingEnabled)
-                skippedFieldTypes.Add(DataType.Tag.ToString());
 
             var totalItems = Company
                 .Filter<FieldType>(i => i.Object == sType && i.ObjectID == id && !skippedFieldTypes.Contains(i.Type))
@@ -3452,6 +3451,16 @@ outer apply (
                     break;
             }
 
+            switch(previousObj.ToLower())
+            {
+                case "policy":
+                case "artifact":
+                case "taxonomy":
+                    previousObjIdColumn = "ObjectID";
+                    break;
+            }
+
+
             switch (join.RelationType)
             {
                 case ComplexLookupRelationType.StandardRelationhip:
@@ -3556,7 +3565,7 @@ outer apply (
                             default:
                                 if (useAssetJoin)
                                 {
-                                    join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                    join.JoinStatement += $" {joinType} join Asset A{i} on A{i}.Object = '{currentObj}' and A{i}.ObjectID = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 }
                                 else
                                 {

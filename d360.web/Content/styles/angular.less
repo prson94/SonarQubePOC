@@ -1989,7 +1989,7 @@ div.home-image-title-text {
         user-select: none;
         cursor: pointer;
         height: 32px;
-        font-family: 'Nunito Sans';
+        font-family: 'Nunito Sans' !important;
         font-size: 14px;
         text-align: center;
         white-space: nowrap;
@@ -2535,7 +2535,7 @@ button.button, a.link-button {
     user-select: none;
     cursor: pointer;
     height: 32px;
-    font-family: 'Nunito Sans';
+    font-family: 'Nunito Sans' !important;
     font-size: 14px;
     text-align: center;
     white-space: nowrap;
@@ -2887,49 +2887,42 @@ button.tab-scroller {
     }
 }
 
-.d3s-dynamic-percentage {
-    position: relative;
-    text-align: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 100%;
-    background-color: white;
-    background-image: linear-gradient(91deg, transparent 50%, #ccc 50%), linear-gradient(90deg, #ccc 50%, transparent 50%);
+.d3s-chart{
+    width:25px;
 }
 
-.d3s-dynamic-percentage .d3s-dynamic-percentageInner {
-    position: relative;
-    top: 4px;
-    left: 4px;
-    text-align: center;
-    width: 12px;
-    height: 12px;
-    border-radius: 100%;
-    background-color: @igx-grey-light;
+.d3s-circular-chart {
+    display: block;
+    margin: 10px auto;
+    max-width: 80%;
+    max-height: 250px;
+    background-color: transparent;
+}
 
-    &.bad {
-        background: @igx-red-light;
+.d3s-circle-bg {
+    fill: none;
+    stroke: rgba(255,255,255,.5);
+    stroke-width: 5;
+}
+
+.d3s-circle {
+    fill: none;
+    stroke-width: 5;
+    stroke-linecap: round;
+    animation: progress 1s ease-out forwards;
+    stroke: white;
+}
+
+@keyframes progress {
+    0% {
+        stroke-dasharray: 0 100;
     }
-
-    &.ok {
-        background: @igx-orange-light;
-    }
-
-    &.good {
-        background: @igx-green-light;
-    }
 }
 
-.d3s-dynamic-percentage .d3s-dynamic-percentageInner div {
-    position: relative;
-    top: 22px;
-    color: @igx-grey-light;
+.d3s-circular-chart.white .circle {
+    stroke: #ffffff;
 }
 
-.d3s-dynamic-percentage .d3s-dynamic-percentage-text {
-    font-size: 30px;
-    line-height: 1em;
-}
 
 .d3s-content-pane {
     overflow: auto;
@@ -3131,6 +3124,10 @@ button.tab-scroller {
                     display: inline-block;
                     top: 12px;
                     right: 9px;
+
+                    &.place-left {
+                        right: 110px;
+                    }
                 }
             }
 
@@ -3157,6 +3154,7 @@ button.tab-scroller {
     .title {
         color: #006FBA;
         padding: 0px;
+        display:inline-block;
     }
 
     .title:hover {
@@ -3626,8 +3624,26 @@ button.tab-scroller {
 .tile-detail {
     .tag-list {
         .tag-item {
+            max-width: 100%;
             margin-bottom: 4px;
             display: inline-block;
+
+            button {
+                max-width: 100%;
+                transition-duration:0.2s;
+                &:hover{
+                    max-width:none;
+
+                }
+
+                span {
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    width: 100%;
+                    display: inline-block;
+                    overflow: hidden;
+                }
+            }
         }
     }
 }
@@ -3693,10 +3709,19 @@ button.tab-scroller {
     .tag-item-wrapper {
         display: inline-block;
         overflow: hidden;
-        transition-duration: 0.1s;
 
         &.too-long {
             text-overflow: ellipsis;
+        }
+    }
+
+    .RowTools {
+        position: absolute;
+
+        .d3s-tooltip {
+            position: absolute;
+            height: 100%;
+            width: 100%;
         }
     }
 }
