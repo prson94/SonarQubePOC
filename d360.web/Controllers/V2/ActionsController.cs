@@ -117,9 +117,9 @@ namespace d360.web.Controllers.V2
                                                     WHEN @OrderBy='AssetTypeUid' THEN CAST(AT.uid AS VARCHAR(36))
                                                     WHEN @OrderBy='ActionTypeName' THEN IT.Name
                                                     WHEN @OrderBy='ActionTypeUid' THEN CAST(IT.uid AS VARCHAR(36))
-                                                    WHEN @OrderBy='CreatedOn' THEN I.CreatedOn
+                                                    WHEN @OrderBy='CreatedOn' THEN TRY_CONVERT(VARCHAR, I.CreatedOn, 120)
                                                     WHEN @OrderBy='CreatedByUid' THEN CAST(R.uid AS VARCHAR(36))
-                                                    WHEN @OrderBy='UpdatedOn' THEN I.UpdatedON
+                                                    WHEN @OrderBy='UpdatedOn' THEN TRY_CONVERT(VARCHAR, I.UpdatedOn, 120)
                                                     WHEN @OrderBy='UpdatedByUid' THEN CAST(GR.uid AS VARCHAR(36))";
                             }
                             break;
