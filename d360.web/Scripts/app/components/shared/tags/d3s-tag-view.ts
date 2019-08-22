@@ -25,12 +25,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
     public theDeleteCallback: Function;
     @Input() data: string;
     @Input() isEditable: boolean = false;
-    showEditor: boolean = false;
-    showDelete: boolean = false;
     private tags: any[];
     selected: TagType[] = [];
-    private editPopupTitle: string = 'Edit Tag';
-    private deletePopupTitle: string = 'Delete Tag';
     private isShowAll: boolean = false;
     @ViewChild("container") container: ElementRef;
 
@@ -39,7 +35,6 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.theDeleteCallback = this.deleteTags.bind(this);
         try {
             if (this.data)
                 this.tags = JSON.parse(this.data);
@@ -52,80 +47,13 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     getTagUrl(tag: any, event: MouseEvent) {
-        if (this.isEditable != true && this.showDelete == false)
-            this.openTagPage(event, `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${tag.uid.toString().toLowerCase()}`);
-        else if (this.showDelete !=true) {
-            this.showEditor = true;
-        }
-    }
-
-    openDeleteModal(tag: any) {
-        if (this.isEditable == true) {
-            this.showDelete = true;
-            this.selected.push(tag);
-            this.deletePopupTitle = this.selected.length == 1 ? 'Delete Tag' : 'Delete Tags';
-        }
-    }
-
-    deleteTags() {
-        this.tagsService.deleteTags(this.selected).
-            subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                //remove the template with this id from the grid
-                if (result.type != 'error') {
-                    this.selected.forEach(t => {
-                        this.tags.splice(this.findTagIndex(t.uid), 1);
-                    })
-                    this.selected = [];
-                }
-                this.showDelete = false;
-            }, err => this.showMessageForResult(this.messagesService, err));
+        this.openTagPage(event, `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${tag.uid.toString().toLowerCase()}`);
     }
 
     showAllToggle(event: MouseEvent) {
         this.isShowAll = !this.isShowAll;
         event.stopPropagation();
         this.setVisibility();
-    }
-
-    closeEditor() {
-        this.showEditor = false;
-        this.editPopupTitle = 'Edit Tag';
-        this.selected = [];
-    }
-
-    add() {
-        this.selected = [];
-        this.editPopupTitle = 'Add Tag';
-        this.showEditor = true;
-    }
-
-    saveTag(event) {
-        this.tagsService.saveTag(event.item)
-            .subscribe(result => {
-                let msg: string = '';
-                if (event.item.uid == undefined) {
-                    msg = `${result.Value} succesfully created`;
-                }
-                else {
-                    msg = `${result.Value} succesfully updated`;
-                }
-                this.showMessageForResult(this.messagesService, result, msg);
-                if (event.item.uid == undefined) {
-                    this.tags.push(result);
-                }
-                else {
-                    this.tags[this.findTagIndex(event.item.uid)].Value = event.item.Value;
-                }
-                this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
-
-                this.selected = [];
-                event.item.UseCount = 0;
-                this.selected.push(event.item);
-
-                this.showEditor = false;
-
-            });
     }
 
     setVisibility() {

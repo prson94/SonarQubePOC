@@ -26,6 +26,7 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
 using d360.core.resources;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers
 {
@@ -35,14 +36,15 @@ namespace d360.web.Controllers
         #region DI
 
         ISecurityContextProvider SecProvider;
-
-        public D3SApiController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider)
+        ITagRepository tagRepository;
+        public D3SApiController(ICommunityContext community, ICompanyContext company,ITagRepository tagRepository, ISecurityContextProvider secProvider)
             : base(community, company)
         {
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
             SecProvider = secProvider;
+            this.tagRepository = tagRepository;
         }
 
         #endregion
@@ -499,7 +501,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     Name = "Tags",
                     ShowIfEmpty = true,
                     DataType = "tag",
-                    Values = tagList
+                    Values = GetTagsValues(type,id)
                 };
                 list.Add(new DetailReadOnlyRowModel
                 {
@@ -509,6 +511,27 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
 
             }
             return list;
+        }
+
+        private List<ReadOnlyFieldValue> GetTagsValues(SystemObjects type, int id)
+        {
+            List<ReadOnlyFieldValue> tagsFields = new List<ReadOnlyFieldValue>();
+            var asset = Company.Assets.SingleOrDefault(x => x.Object == type.ToString() && x.ObjectID == id);
+            var tags = tagRepository.GetTagsForAsset(asset.ID);
+            tags.ToList().ForEach(x=>
+            {
+                var roField = new ReadOnlyFieldValue
+                {
+                    Value = x.Value,
+                    TooltipType = "tag",
+                    TooltipID = x.ID,
+                    TooltipContext = "Preview",
+                    TooltipUrl = ""
+                };
+                tagsFields.Add(roField);
+            });
+
+            return tagsFields;
         }
 
         private List<AssetWithoutReadPermission> GetObjectsWithoutReadAccess(List<BasicAsset> objectsToCheckAccesFor)

@@ -28,5 +28,6 @@ namespace d360.model.DataAccessLayer
         List<dynamic> SearchTags(IEnumerable<KeyValuePair<string,string>> queryParams);
         bool SetTaggingStatus(bool state);
         TagDetailApiModel GetDetails(Guid tagUid, IEnumerable<KeyValuePair<string,string>> keyValuePairs);
+        IEnumerable<Tag> GetTagsForAsset(long assetId);
     }
 }

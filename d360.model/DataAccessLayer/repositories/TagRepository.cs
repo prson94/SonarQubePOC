@@ -540,6 +540,20 @@ namespace d360.model.DataAccessLayer
         {
             return companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
         }
+
+        public IEnumerable<Tag> GetTagsForAsset(long assetId)
+        {
+            var assetTags = companyContext.AssetTags.Where(x => x.AssetID == assetId).ToList();
+            List<Tag> tags = new List<Tag>();
+            assetTags.ForEach(x =>
+            {
+                var tag = companyContext.Tags.FirstOrDefault(y => y.ID == x.TagID);
+                if(tag != null)
+                    tags.Add(tag);
+            });
+            return tags;
+        }
+
         public bool DeleteAssetTag(int tagId, long assetId)
         {
             AssetTag tag = companyContext.AssetTags.Where(x => x.TagID == tagId && x.AssetID == assetId).SingleOrDefault();
