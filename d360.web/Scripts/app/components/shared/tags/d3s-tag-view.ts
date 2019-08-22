@@ -119,20 +119,3 @@ export class TagView extends AdminBaseComponent implements OnInit {
         }
     }
 }
-
-
-
-@NgModule({
-    declarations: [
-        TagView,
-    ],
-    exports: [
-        TagView,
-    ]
-    , imports: [
-        CommonModule,
-    ]
-
-})
-
-export class TagViewModule { }
