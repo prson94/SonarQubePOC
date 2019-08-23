@@ -283,6 +283,7 @@
   <include file="scripts/GOV-7713.xml"/> <!-- GetDynamicAssets -->
   <include file="scripts/GOV-7933.xml"/> <!-- api.ExecutionAsset changes to ProposedKey column -->
   <include file="scripts/GOV-7932.xml"/> <!-- api.DeleteAssetType -->
+  <include file="scripts/GOV-7877.xml"/> <!-- GetDynamicAssets procedure -->
   <include file="scripts/GOV-7781.xml"/> <!-- api.DeleteAssetType -->
   <include file="scripts/GOV-7949.xml"/> <!-- GetFormattedFieldLookupValue -->
   <include file="scripts/GOV-7851.xml"/> <!-- Add columns to integration.SynchedAssetType and integration.ExecutionAssetType -->

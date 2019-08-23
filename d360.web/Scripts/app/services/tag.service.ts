@@ -1,4 +1,4 @@
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { Tag, TagType } from '../models/tag.model';
 import { Observable } from 'rxjs';
@@ -9,6 +9,7 @@ import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class TagService extends BaseObservableService {
+
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
@@ -92,14 +93,6 @@ export class TagService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)))
     }
 
-    setTaggingStatus(state: boolean): Observable<any> {
-        let url = `api/v2/tags/settaggingstatus`;
-        let body = { IsTaggingEnabled: state };
-        return this.http.put(url, body)
-            .pipe(map(response => <any>response),
-                catchError(err => this.handleError(err, true)))
-    }
-
     exportTags(filters: any, sort) {
         this.http.get(`api/v2/tags/export?globalSearch=${filters.globalSearch}&value=${filters.Value}&useCount=${filters.UseCount}&sortBy=${sort.field}&sortOrder=${sort.order}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
     }
@@ -143,6 +136,27 @@ export class TagService extends BaseObservableService {
         return this.http.get(url)
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err)));
+    }
+
+    private tagTooltipsCache: any[] = [];
+
+    getTagTooltip(uid: string): Observable<any> {
+
+        var cachedItem = this.tagTooltipsCache.find(x => x.uid == uid);
+        if (cachedItem)
+            return cachedItem.obs;
+
+        let url = `api/v2/tags/${uid}/tooltip`;
+        var obs = this.http.get(url)
+            .pipe(map(response => <any>response),
+                publishReplay(1),
+                refCount(),
+                catchError(err => this.handleError(err)));
+
+        var data = { uid: uid, obs: obs };
+        this.tagTooltipsCache.push(data);
+
+        return obs;
     }
 
 

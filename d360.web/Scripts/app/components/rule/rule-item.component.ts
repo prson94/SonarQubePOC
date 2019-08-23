@@ -117,8 +117,8 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 this.rightSidebarService.setCurrentArea(this.rule.Name, icon, 'Definition');
                 this.rightSidebarService.setCurrentObject('RuleType', this.ruleType.ID, 'Rule', this.rule.ID, false, null, this.rule.UID);
                 this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Rule/${this.rule.UID}`, null, 6));
-                this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Rule/${this.rule.ID}/${this.rule.Name.replace("/", "%2F"), null, 31}`));
-                this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Rule/${this.rule.ID}/${this.rule.Name.replace("/", "%2F")}`, null, 26));
+                this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Rule/${this.rule.ID}`, null, 31));
+                this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Rule/${this.rule.ID}`, null, 26));
             });
             this.rightSidebarService.showHeader(true);
 

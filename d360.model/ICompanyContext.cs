@@ -313,7 +313,7 @@ namespace d360.model
 
         void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1);
 
-        void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName);
+        void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName, string key);
 
         int GetObjectId(Guid uid, SystemObjects objectType);
     }

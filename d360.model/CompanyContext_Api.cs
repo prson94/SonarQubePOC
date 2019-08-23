@@ -562,6 +562,11 @@ from	#LookupValues T
 		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 0
 		inner join FieldLookupValue S on S.FieldTypeID = T.FieldTypeID and S.[Text] = T.FieldValue;
 
+update	T
+set		T.[Value] = '0'
+from	#LookupValues T
+		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowAllValue = 1 and ST.AllowAllLabel = T.FieldValue;
+
 drop table if exists #MvLookupValues
 create table #MvLookupValues (ItemNumber int, FieldTypeID int not null, [RawValue] nvarchar(250) null, [Value] nvarchar(max) null)
 CREATE CLUSTERED INDEX CIX_TempMvLookupValues ON #MvLookupValues ( ItemNumber ASC, FieldTypeID ASC );
@@ -1322,34 +1327,13 @@ from	IntersectType I
 			                    inner join api.ExecutionDeletedAsset S on S.ObjectID = i.ObjectID 
                                  where {querySuffix} ;
 
-                 insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root],IntersectID)
-		                Select distinct ExecutionID, 
-                                ItemNumber, 
-                                S.[Uid],
-                                T.ID 			
-	                   from	[Intersect] T
-                            inner join api.ExecutionDeletedAsset S on S.Object = T.Subject and S.ObjectID = T.SubjectID 
-			                and  {querySuffix}
-			                and not exists (Select 1 from #ExecutionDeletedAsset where ExecutionID = S.ExecutionID and ItemNumber = S.ItemNumber and IntersectID =T.ID );
-
-
-                insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root],IntersectID)
-		                Select distinct ExecutionID, 
-                                ItemNumber, 
-                                S.[Uid],
-                                T.ID 			
-	                   from	[Intersect] T
-                            inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID 
-			                and {querySuffix}
-			                and not exists (Select 1 from #ExecutionDeletedAsset where ExecutionID = S.ExecutionID and ItemNumber = S.ItemNumber and IntersectID =T.ID );
-
-
+            
 			                update S set S.Success = 0 ,
 			                [Message] ='You have not enabled Cascade, yet there are relationships or workflows for this asset.'
 			                from api.ExecutionDeletedAsset S 
 			                inner join (select [Root] as UID,ExecutionID,ItemNumber  from #ExecutionDeletedAsset
 			                group by [Root],ExecutionID,ItemNumber
-			                having (count (*) > 1))   E on
+			                having (count (*) > 0))   E on
 			                S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
 			                where	{querySuffix}  and AssetId is not null
 			                and S.[Cascade]=0
