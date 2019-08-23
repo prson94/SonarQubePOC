@@ -58,7 +58,7 @@ export class TagView implements OnInit {
 
         if (this.container) {
             var parentWidth = this.container.nativeElement.closest('td').offsetWidth - 10;
-
+            this.container.nativeElement.closest('td').classList.remove('no-text-overflow');
             this.container.nativeElement.style.width = parentWidth + 'px';
             this.container.nativeElement.querySelectorAll('.tag-item-wrapper')
                 .forEach((x) => {

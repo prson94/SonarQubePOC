@@ -12,7 +12,7 @@
         </a>
     </ng-container>
     <ng-container *ngIf="tags.length > 10">
-        <a (click)="showAllToggle($event);" style="display:block;margin-left:6px;cursor:pointer;">
+        <a (click)="showAllToggle($event);" class="show-all-tags">
             <ng-container *ngIf="isShowAll">Hide all</ng-container>
             <ng-container *ngIf="!isShowAll">Show all {{tags.length}} tags</ng-container>
         </a>
