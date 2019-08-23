@@ -37,7 +37,7 @@ namespace d360.model.DataAccessLayer
         {
             return AssetTypeClass.Glossary.GetAsList();
         }
-        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(AssetTypeClass? Class)
+        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(AssetTypeClass? Class, Guid? fusionTypeUid)
         {
             var dbArgs = new DynamicParameters();
             string condition = "";
@@ -46,6 +46,20 @@ namespace d360.model.DataAccessLayer
                 var Id = (int)Class;
                 dbArgs.Add("@Id", Id.ToString());
                 condition = "and A.[Class]=@Id";
+
+                if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty && (Class == AssetTypeClass.FusionAttribute || Class == AssetTypeClass.FusionQuery))
+                {
+                    dbArgs.Add("@uid", fusionTypeUid);
+                    condition += " and A.[uid]=@uid";
+
+                }
+            }
+            else if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty)
+            {
+                condition = string.Format("and (A.[Class] = @class1 OR A.[Class] = @class2) AND A.[uid] = @uid");
+                dbArgs.Add("@class1", (int)AssetTypeClass.FusionAttribute);
+                dbArgs.Add("@class2", (int)AssetTypeClass.FusionQuery);
+                dbArgs.Add("@uid", fusionTypeUid);
             }
 
             var sql = $@"
@@ -510,7 +524,7 @@ namespace d360.model.DataAccessLayer
 
 
                     break;
-                case AssetTypeClass.Policy:                    
+                case AssetTypeClass.Policy:
                     if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Policy.ToString()}", $"Not valid {AssetTypeClass.Policy.ToString()} provided.Please check your request and try again.");
 
                     assetType.Name = model.Name;
