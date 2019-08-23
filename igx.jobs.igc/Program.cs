@@ -235,7 +235,7 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
 #if DEBUG
-            var queueModel = new IntegrationQueueModel { CompanyID = 1, ExecutionID = 57756, IntegrationSettingID = 1, SynchedAssetTypeID = 1, To = QueueAction.Integration, UrlPrefix = "integration.eng" };
+            var queueModel = new IntegrationQueueModel { CompanyID = 1, ExecutionID = 57763, IntegrationSettingID = 1, SynchedAssetTypeID = 6, To = QueueAction.Integration, UrlPrefix = "integration.eng" };
 #else
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 #endif
@@ -620,7 +620,7 @@ where	[AllowChangeDetection] = 0").ToList();
                     writeLogEntry($"Getting type definition for: {SynchedAssetType.SourceAssetTypeName}", currentStep);
 
                     // First, get the type definition of the asset type, to pull enum values.
-                    url = $"{baseUri}types/{SynchedAssetType.SourceAssetTypeName}?showEditProperties=true";
+                    url = $"{baseUri}types/{SynchedAssetType.SourceAssetTypeName}?showEditProperties=true&showViewProperties=true";
 
                     var igcType = GetFromApi<IgcTypeModel>(url).Result;
 
@@ -878,7 +878,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 int totalPageCount = 0;
                 string path = "";
                 List<StorageFileInfo> pages = null;
-                var procedureCommand = "exec integration.ProcessExecutionAssetType @ExecutionID, @SynchedAssetTypeID, @requestNumber, @AssetTypeID, @r, @section";
+                var procedureCommand = "exec integration.ProcessExecutionAssets @ExecutionID, @SynchedAssetTypeID, @requestNumber, @AssetTypeID, @r, @section";
 
                 #endregion
 
@@ -1151,83 +1151,25 @@ where	[AllowChangeDetection] = 0").ToList();
 
                 #endregion
 
-                #region Metrics
+                #region Complete execution
 
                 currentStep = 8;
-                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !fatalError)
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
-
-                    Log.WriteLine($"Process metrics");
 
                     if (cnn.State != System.Data.ConnectionState.Open)
                         cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                    // Gather metric on this run
-                    writeLogEntry($"Executing section 4 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
                     cnn.Query<dynamic>(
-                        procedureCommand,
-                        new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 4 },
-                        commandTimeout: 3600);
+                        "exec integration.CompleteExecution @ExecutionID, @SynchedAssetTypeID, @AssetTypeID, @r",
+                        new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, SynchedAssetType.AssetTypeID, r = DefaultResourceID },
+                        commandTimeout: 7200);
 
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
 
                 #endregion
-
-                #region Perform asset deletions, if full refresh
-
-                currentStep = 9;
-                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !checkForChangesOnly && !fatalError)
-                {
-                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
-
-                    writeLogEntry($"Process deletions", currentStep);
-
-                    // You can do a delete based on asset hash missing attributes.
-                    if (cnn.State != System.Data.ConnectionState.Open)
-                        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-                    writeLogEntry($"Executing section 5 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
-                    cnn.Query<dynamic>(
-                        procedureCommand,
-                        new { ExecutionAssetType.ExecutionID, ExecutionAssetType.SynchedAssetTypeID, requestNumber, SynchedAssetType.AssetTypeID, r = DefaultResourceID, section = 5 },
-                        commandTimeout: 3600);
-
-                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
-                }
-
-                #endregion
-
-                // Clear out execution asset json table.
-                currentStep = 10;
-                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
-                {
-                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
-
-                    writeLogEntry($"Do final clearing of execution data like fields", currentStep);
-
-                    if (cnn.State != System.Data.ConnectionState.Open)
-                        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                    cnn.Execute("delete integration.ExecutionAssetField where SynchedAssetTypeID = @at", new { at = ExecutionAssetType.SynchedAssetTypeID }, commandTimeout: 7200);
-
-                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
-                }
-
-                // Clean up asset hash table.
-                currentStep = 11;
-                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
-                {
-                    OnStepStarted(new StepStartedEventArgs { Step = currentStep });
-
-                    writeLogEntry($"Do final clearing of execution data like hash", currentStep);
-
-                    if (cnn.State != System.Data.ConnectionState.Open)
-                        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                    cnn.Execute("update integration.AssetHash set RequestNumber = null, [Action] = null, UpdateHash = null where SynchedAssetTypeID = @at", new { at = ExecutionAssetType.SynchedAssetTypeID }, commandTimeout: 7200);
-
-                    OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
-                }
 
                 // Set the last synch time so we can start the next delta check from this date.
                 SynchedAssetType.LastSynchOn = now;
@@ -1519,77 +1461,76 @@ where	[AllowChangeDetection] = 0").ToList();
                             propertiesToRemove.ForEach(pr => { obj.Remove(pr); });
                         }
 
-                        foreach (var prop in obj.Properties())
-                        {
-                            if (fieldsToKeep.Contains(prop.Name))
-                            {
-                                switch (section)
-                                {
-                                    case 2:
-                                        #region
-                                        if (prop.Value.ToString() != "{}" && !string.IsNullOrEmpty(prop.Value.ToString()))
-                                        {
-                                            var relationshipCollection = JsonConvert.DeserializeObject<IgcRelationshipCollection>(prop.Value.ToString());
-                                            if (relationshipCollection.items != null && relationshipCollection.paging != null)
-                                            {
-                                                if (relationshipCollection.paging.numTotal > 0)
-                                                {
-                                                    OnRelationshipBreakdownModelsUpdated(new RelationshipBreakdownModelsUpdatedEventArgs
-                                                    {
-                                                        Updates = (
-                                                                    from rci in relationshipCollection.items
-                                                                    join rtc in RelationshipTargetComparisons on rci._type equals rtc.SourceAssetType
-                                                                    where rtc.SourceField == prop.Name
-                                                                    group rtc by new { rtc.SourceAssetType, rtc.IntersectTypeID } into g
-                                                                    select new IGCAssetRelationshipBreakdownModel
-                                                                    {
-                                                                        AssetTypeName = g.Key.SourceAssetType,
-                                                                        FieldName = prop.Name,
-                                                                        IntersectTypeID = g.Key.IntersectTypeID,
-                                                                        Count = g.Count()
-                                                                    }).ToList()
-                                                    });
-                                                }
-                                            }
-                                            else
-                                            {
-                                                var relationshipItem = JsonConvert.DeserializeObject<GenericIgcContextModel>(prop.Value.ToString());
-                                                if (relationshipItem != null)
-                                                {
-                                                    var rtc = RelationshipTargetComparisons.FirstOrDefault(r => r.SourceField == prop.Name);
-                                                    if (rtc != null)
-                                                    {
-                                                        OnRelationshipBreakdownModelsUpdated(new RelationshipBreakdownModelsUpdatedEventArgs
-                                                        {
-                                                            Updates = new List<IGCAssetRelationshipBreakdownModel>() {
-                                                                new IGCAssetRelationshipBreakdownModel { AssetTypeName = relationshipItem._type, Count = 1, FieldName = prop.Name, IntersectTypeID = rtc.IntersectTypeID }
-                                                            }
-                                                        });
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        #endregion
-                                        break;
-                                    case 3:
-                                        #region
-                                        if (!string.IsNullOrEmpty(prop.Value.ToString()))
-                                        {
-                                            OnResponsibilityBreakdownModelsUpdated(new ResponsibilityBreakdownModelsUpdatedEventArgs
-                                            {
-                                                Update = new IGCAssetResponsibilityBreakdownModel
-                                                {
-                                                    Role = prop.Name,
-                                                    Count = 1
-                                                }
-                                            });
-                                        }
-                                        #endregion
-                                        break;
-                                }
-
-                            }
-                        }
+                        //foreach (var prop in obj.Properties())
+                        //{
+                        //    if (fieldsToKeep.Contains(prop.Name))
+                        //    {
+                        //        switch (section)
+                        //        {
+                        //            case 2:
+                        //                #region
+                        //                if (prop.Value.ToString() != "{}" && !string.IsNullOrEmpty(prop.Value.ToString()))
+                        //                {
+                        //                    var relationshipCollection = JsonConvert.DeserializeObject<IgcRelationshipCollection>(prop.Value.ToString());
+                        //                    if (relationshipCollection.items != null && relationshipCollection.paging != null)
+                        //                    {
+                        //                        if (relationshipCollection.paging.numTotal > 0)
+                        //                        {
+                        //                            OnRelationshipBreakdownModelsUpdated(new RelationshipBreakdownModelsUpdatedEventArgs
+                        //                            {
+                        //                                Updates = (
+                        //                                            from rci in relationshipCollection.items
+                        //                                            join rtc in RelationshipTargetComparisons on rci._type equals rtc.SourceAssetType
+                        //                                            where rtc.SourceField == prop.Name
+                        //                                            group rtc by new { rtc.SourceAssetType, rtc.IntersectTypeID } into g
+                        //                                            select new IGCAssetRelationshipBreakdownModel
+                        //                                            {
+                        //                                                AssetTypeName = g.Key.SourceAssetType,
+                        //                                                FieldName = prop.Name,
+                        //                                                IntersectTypeID = g.Key.IntersectTypeID,
+                        //                                                Count = g.Count()
+                        //                                            }).ToList()
+                        //                            });
+                        //                        }
+                        //                    }
+                        //                    else
+                        //                    {
+                        //                        var relationshipItem = JsonConvert.DeserializeObject<GenericIgcContextModel>(prop.Value.ToString());
+                        //                        if (relationshipItem != null)
+                        //                        {
+                        //                            var rtc = RelationshipTargetComparisons.FirstOrDefault(r => r.SourceField == prop.Name);
+                        //                            if (rtc != null)
+                        //                            {
+                        //                                OnRelationshipBreakdownModelsUpdated(new RelationshipBreakdownModelsUpdatedEventArgs
+                        //                                {
+                        //                                    Updates = new List<IGCAssetRelationshipBreakdownModel>() {
+                        //                                        new IGCAssetRelationshipBreakdownModel { AssetTypeName = relationshipItem._type, Count = 1, FieldName = prop.Name, IntersectTypeID = rtc.IntersectTypeID }
+                        //                                    }
+                        //                                });
+                        //                            }
+                        //                        }
+                        //                    }
+                        //                }
+                        //                #endregion
+                        //                break;
+                        //            case 3:
+                        //                #region
+                        //                if (!string.IsNullOrEmpty(prop.Value.ToString()))
+                        //                {
+                        //                    OnResponsibilityBreakdownModelsUpdated(new ResponsibilityBreakdownModelsUpdatedEventArgs
+                        //                    {
+                        //                        Update = new IGCAssetResponsibilityBreakdownModel
+                        //                        {
+                        //                            Role = prop.Name,
+                        //                            Count = 1
+                        //                        }
+                        //                    });
+                        //                }
+                        //                #endregion
+                        //                break;
+                        //        }
+                        //    }
+                        //}
 
                         var json = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter());
 
@@ -1826,12 +1767,6 @@ delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetT
                     jsonToReturn = rdr.ReadToEnd();
                     rdr.Dispose();
                     stream.Dispose();
-                    //byte[] bytes = await response.Content.ReadAsByteArrayAsync();
-                    //byte[] convertedBytes = Encoding.Convert(Encoding.UTF8, Encoding.Unicode, bytes);
-                    //jsonToReturn = Encoding.Unicode.GetString(convertedBytes);
-
-
-                    //jsonToReturn = await response.Content.ReadAsStringAsync();
 
                     cookies = (from c in response.Headers.Where(c => c.Key == "Set-Cookie")
                                from cv in c.Value
