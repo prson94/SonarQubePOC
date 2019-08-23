@@ -333,7 +333,7 @@ from	IntersectType I
         }
 
 
-        public async Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, Func<int, object, int, int, ApiExecution> getApiExecution)
+        public async Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool triggerWorkflow = false)
         {
             var executionInfo = new ApiExecutionInfo
             {
@@ -343,6 +343,11 @@ from	IntersectType I
                 ExecutionID = Guid.NewGuid(),
                 Action = ApiExecutionAction.PostRelationships
             };
+
+            if (triggerWorkflow)
+            {
+                executionInfo.SendWorkflowEvents = true;
+            }
 
             Storage.CreateFolder(executionInfo.StorageFolder);
             Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));

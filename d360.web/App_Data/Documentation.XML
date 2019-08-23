@@ -2789,15 +2789,16 @@
             <param name="type">The legacy object type of the asset type (ArtifactType, FusioAttributeType, TaxonomyType, etc.).</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts,System.Boolean)">
             <summary>
             Takes a given set of relationships and inserts/updates them. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
             <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
             <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
+            <param name="TriggerWorkflow">Set this flag to 'true' to trigger workflows with this action.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostBulkRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostBulkRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts,System.Boolean)">
             <summary>
             Inserts or updates a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
             </summary>

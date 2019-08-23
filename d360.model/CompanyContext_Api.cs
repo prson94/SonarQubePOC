@@ -2945,6 +2945,18 @@ from	api.ExecutionRelationship T
 		left join AssetWithType S on T.ExecutionID = @ExecutionID and S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
 		left join AssetWithType O on T.ExecutionID = @ExecutionID and O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid;
 
+declare @intersectId int = (select ID from [Intersect] where IntersectTypeID = @it and SubjectId= @stid and ObjectId = @otid and Subject = @st and Object = @ot)
+
+if @intersectId is not null
+begin
+    update	T
+    set		T.IsNew = 1
+    from	api.ExecutionRelationship T
+		    left join AssetWithType S on T.ExecutionID = @ExecutionID and S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
+		    left join AssetWithType O on T.ExecutionID = @ExecutionID and O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid;
+end
+
+
 if @st = 'ReferenceItemType' and @stid = 0
 begin
 	update	T
