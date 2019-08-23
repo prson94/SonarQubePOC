@@ -321,7 +321,8 @@ namespace d360.model.DataAccessLayer
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
-                        Class = AssetTypeClass.Glossary
+                        Class = AssetTypeClass.Glossary,
+                        UseAsTransformation = model.UseAsTransformation
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
@@ -362,6 +363,7 @@ namespace d360.model.DataAccessLayer
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
+                        UseAsTransformation = model.UseAsTransformation,
                         Class = AssetTypeClass.Policy
                     };
                     CompanyContext.Add(p);
@@ -385,6 +387,7 @@ namespace d360.model.DataAccessLayer
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
+                        UseAsTransformation = model.UseAsTransformation,
                         Class = AssetTypeClass.Model
                     };
 
@@ -496,7 +499,7 @@ namespace d360.model.DataAccessLayer
                     assetType.Description = model.Description;
                     assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
-
+                    assetType.UseAsTransformation = model.UseAsTransformation;
                     CompanyContext.Update(assetType);
 
                     break;
@@ -517,7 +520,7 @@ namespace d360.model.DataAccessLayer
                     assetType.DisplayFormat = model.DisplayFormat;
                     assetType.Description = model.Description;
                     assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
-
+                    assetType.UseAsTransformation = model.UseAsTransformation;
                     CompanyContext.Update(assetType);
 
                     break;
@@ -543,6 +546,7 @@ namespace d360.model.DataAccessLayer
                     assetType.DisplayFormat = model.DisplayFormat;
                     assetType.Description = model.Description;
                     assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
+                    assetType.UseAsTransformation = model.UseAsTransformation;
 
                     if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
                         return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", "Invalid Maximum Depth,Model level specified must be a value between 1 and 10.");
