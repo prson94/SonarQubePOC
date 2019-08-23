@@ -1989,7 +1989,7 @@ div.home-image-title-text {
         user-select: none;
         cursor: pointer;
         height: 32px;
-        font-family: 'Nunito Sans';
+        font-family: 'Nunito Sans' !important;
         font-size: 14px;
         text-align: center;
         white-space: nowrap;
@@ -2535,7 +2535,7 @@ button.button, a.link-button {
     user-select: none;
     cursor: pointer;
     height: 32px;
-    font-family: 'Nunito Sans';
+    font-family: 'Nunito Sans' !important;
     font-size: 14px;
     text-align: center;
     white-space: nowrap;
@@ -2658,16 +2658,7 @@ button.button, a.link-button {
     }
 }
 
-a.link-button {
-    border-radius: 2px;
-    height: 24px;
-    padding: 0px 8px !important;
-    margin-bottom: 6px;
 
-    &:hover {
-        text-decoration: none;
-    }
-}
 ///////////////////////////////////////////////////////////////////////////////////
 // Tab View
 ///////////////////////////////////////////////////////////////////////////////////
@@ -2887,8 +2878,8 @@ button.tab-scroller {
     }
 }
 
-.d3s-chart{
-    width:25px;
+.d3s-chart {
+    width: 25px;
 }
 
 .d3s-circular-chart {
@@ -3124,6 +3115,10 @@ button.tab-scroller {
                     display: inline-block;
                     top: 12px;
                     right: 9px;
+
+                    &.place-left {
+                        right: 110px;
+                    }
                 }
             }
 
@@ -3150,6 +3145,7 @@ button.tab-scroller {
     .title {
         color: #006FBA;
         padding: 0px;
+        display: inline-block;
     }
 
     .title:hover {
@@ -3619,8 +3615,26 @@ button.tab-scroller {
 .tile-detail {
     .tag-list {
         .tag-item {
+            max-width: 100%;
             margin-bottom: 4px;
             display: inline-block;
+
+            button {
+                max-width: 100%;
+                transition-duration: 0.2s;
+
+                &:hover {
+                    max-width: none;
+                }
+
+                span {
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                    width: 100%;
+                    display: inline-block;
+                    overflow: hidden;
+                }
+            }
         }
     }
 }
@@ -3682,14 +3696,72 @@ button.tab-scroller {
 }
 
 .tag-list-container {
-
     .tag-item-wrapper {
         display: inline-block;
         overflow: hidden;
-        transition-duration: 0.1s;
 
         &.too-long {
             text-overflow: ellipsis;
         }
+    }
+
+    a.link-button {
+        margin-bottom: 6px;
+
+        &:hover {
+            text-decoration: none;
+        }
+
+        &.small {
+            border-radius: 2px;
+            height: 24px;
+            padding: 0px 8px !important;
+        }
+
+        .tag-tooltip {
+            display: none;
+            font-size: 12px;
+            text-align: left;
+            padding: 4px 6px;
+            line-height: 13px;
+            max-width: 400px;
+            position: absolute;
+            background-color: #fffedc;
+            border: 1px solid #adadad;
+            z-index: 1000;
+            top: -40px;
+
+            span {
+                display: block;
+
+                &.span-break {
+                    white-space: normal;
+                    word-break: break-word;
+                }
+            }
+        }
+
+        &:hover {
+            .tag-tooltip {
+                display: block;
+            }
+        }
+    }
+
+    a.show-all-tags {
+        display: block;
+        margin-left: 6px;
+        cursor: pointer;
+        color: #006FBA;
+    }
+}
+
+.ui-treetable-table {
+    th {
+        background-color: #252c41 !important;
+    }
+
+    tbody > tr:nth-child(odd):not(.ui-state-highlight) {
+        background: #f7f7f7 !important;
     }
 }

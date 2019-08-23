@@ -150,7 +150,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             let currentIndex = this.internalFilters.indexOf(internalFilter);
 
             if (internalFilter.Type == FilterFieldType.Field) {
-                if (usedFilters.indexOf(internalFilter.Data.field) !== -1) {
+                if (usedFilters.indexOf(internalFilter.Data.field) !== -1 && !internalFilter.Field.Data.canHaveMultipleFilters) {
                     filterIndicesToRemove.push(currentIndex);
                 }
                 else {

@@ -1,28 +1,30 @@
 ﻿import {
     Component,
     OnInit,
-    OnDestroy
+    OnDestroy,
+    ViewChild,
+    OnChanges
 } from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {Title} from '@angular/platform-browser';
-import {TreeNode} from 'primeng/primeng';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Title } from '@angular/platform-browser';
+import { TreeNode } from 'primeng/primeng';
 
-import {Breadcrumb} from '../../models/breadcrumb.model';
-import {Policy, PolicyType, PolicyStatus} from '../../models/policy.model';
-import {GridColumn, GridField} from '../../models/grid-definition.model';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
+import { GridColumn, GridField } from '../../models/grid-definition.model';
 
-import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
-import {PoliciesService} from '../../services/policies.service';
-import {RightSidebarService} from '../../services/right-sidebar.service';
-import {HeaderActionsService} from '../../services/header-actions.service';
-import {PermissionsService} from '../../services/permissions.service';
-import {LevelsService} from '../../services/levels.service';
-import {GridDefinitionService} from '../../services/grid-definition.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { PoliciesService } from '../../services/policies.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
+import { PermissionsService } from '../../services/permissions.service';
+import { LevelsService } from '../../services/levels.service';
+import { GridDefinitionService } from '../../services/grid-definition.service';
 
-import {BaseComponent} from '../shared/base.component';
+import { BaseComponent } from '../shared/base.component';
 
-import {SiteUrlHelpers} from '../../static/site-url-helpers';
-import {StringConstants} from '../../static/string-constants';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
@@ -59,6 +61,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     showEditor = false;
 
     theDeleteCallback: Function;
+    @ViewChild("treeTable") treeTable: any;
+    unfilteredTreeNode: TreeNode[] = [];
 
 
     constructor(
@@ -84,12 +88,16 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         );
     }
 
+    filter(event) {
+        this.filterTreeTable(this.unfilteredTreeNode, event.target.value, this.treeTable);
+    }
+
     ngOnInit() {
         this.routeParamsSubscription = this.route.params.subscribe(
             params => {
                 this.policyTypeId = +params['policyTypeId'];
                 this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', this.policyTypeId);
-               
+
 
                 this.setObjectInfo('PolicyType', this.policyTypeId);
                 this.clearSidebar();
@@ -160,6 +168,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
                 this.policies = result;
                 this.treeNodeArray = this.buildTreeNodeArray(this.policies, 1);
+                this.unfilteredTreeNode = JSON.parse(JSON.stringify(this.treeNodeArray));
             }
         );
     }

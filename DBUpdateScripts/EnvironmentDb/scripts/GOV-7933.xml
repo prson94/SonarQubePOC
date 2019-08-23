@@ -1,0 +1,63 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-7933-cleanup2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+	--cleanup old non-hash values
+	
+	update api.ExecutionAsset
+	set ProposedKey = utility.GetHash(ProposedKey)
+	where len(ProposedKey) <> 32
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+
+]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="MDonato" id="GOV-7933-column">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+DROP INDEX [IX_ApiExecutionAsset_ProposedKey] ON [api].[ExecutionAsset]
+GO
+alter table api.ExecutionAsset alter column ProposedKey varchar(32)
+GO
+CREATE NONCLUSTERED INDEX [IX_ApiExecutionAsset_ProposedKey] ON [api].[ExecutionAsset]
+(
+	[ExecutionID] DESC,
+	[ProposedKey] ASC
+)
+INCLUDE ( 	[ItemNumber]) WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+GO
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+DROP INDEX [IX_ApiExecutionAsset_ProposedKey] ON [api].[ExecutionAsset]
+GO
+alter table api.ExecutionAsset alter column ProposedKey nvarchar(500)
+GO
+CREATE NONCLUSTERED INDEX [IX_ApiExecutionAsset_ProposedKey] ON [api].[ExecutionAsset]
+(
+	[ExecutionID] DESC,
+	[ProposedKey] ASC
+)
+INCLUDE ( 	[ItemNumber]) WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+GO
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

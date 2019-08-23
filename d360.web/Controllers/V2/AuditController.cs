@@ -91,12 +91,6 @@ namespace d360.web.Controllers.V2
                 //get all auditing by type (introduced in tagging)
                 if(id == 0)
                 {
-                    string additionalObjects = string.Empty;
-                    if (type == SystemObjects.Tag)
-                    {
-                        additionalObjects += @" or ga.[Object] = 'EnableTagging'";
-                    }
-
                     querySql = $@"select                   
 	                               ga.*,
 	                                case when R.State = 1 then
@@ -122,7 +116,7 @@ namespace d360.web.Controllers.V2
 	                                from reporting.global_audit ga 
                                        left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) and ga.Action != 'Removed'
                                        inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
-	                               where ga.[Object] = @objType {additionalObjects}";
+	                               where ga.[Object] = @objType";
                 }
 
 
@@ -247,12 +241,6 @@ namespace d360.web.Controllers.V2
             //get all auditing by type (introduced in tagging)
             if (id == 0)
             {
-                string additionalObjects = string.Empty;
-                if (type == SystemObjects.Tag)
-                {
-                    additionalObjects += @" or ga.[Object] = 'EnableTagging'";
-                }
-
                 querySql = $@"select                   
 	                               ga.*,
 	                                case when R.State = 1 then
@@ -278,7 +266,7 @@ namespace d360.web.Controllers.V2
 	                                from reporting.global_audit ga 
                                        left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
                                        inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
-	                               where ga.[Object] = @objType {additionalObjects}";
+	                               where ga.[Object] = @objType";
             }
 
 
