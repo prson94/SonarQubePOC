@@ -113,15 +113,14 @@ namespace d360.web.Controllers.V2
                                 order = q.Value;
                                 dbArgs.Add("OrderBy", order);
                                 orderBySQL = @" ORDER BY CASE 
-                                                    WHEN @OrderBy='AssetUid' THEN 'AssetUid'
-                                                    WHEN @OrderBy='AssetTypeUid' THEN 'AssetTypeUid'
-                                                    WHEN @OrderBy='ActionTypeName' THEN 'ActionTypeName'
-                                                    WHEN @OrderBy='ActionTypeUid' THEN 'ActionTypeUid'
-                                                    WHEN @OrderBy='CreatedOn' THEN 'CreatedOn'
-                                                    WHEN @OrderBy='CreatedByUid' THEN 'CreatedByUid'
-                                                    WHEN @OrderBy='UpdatedOn' THEN 'UpdatedOn'
-                                                    WHEN @OrderBy='UpdatedByUid' THEN 'UpdatedByUid'
-                                                END ";
+                                                    WHEN @OrderBy='AssetUid' THEN CAST(A.uid AS VARCHAR(36))
+                                                    WHEN @OrderBy='AssetTypeUid' THEN CAST(AT.uid AS VARCHAR(36))
+                                                    WHEN @OrderBy='ActionTypeName' THEN IT.Name
+                                                    WHEN @OrderBy='ActionTypeUid' THEN CAST(IT.uid AS VARCHAR(36))
+                                                    WHEN @OrderBy='CreatedOn' THEN TRY_CONVERT(VARCHAR, I.CreatedOn, 120)
+                                                    WHEN @OrderBy='CreatedByUid' THEN CAST(R.uid AS VARCHAR(36))
+                                                    WHEN @OrderBy='UpdatedOn' THEN TRY_CONVERT(VARCHAR, I.UpdatedOn, 120)
+                                                    WHEN @OrderBy='UpdatedByUid' THEN CAST(GR.uid AS VARCHAR(36))";
                             }
                             break;
                     }
@@ -160,6 +159,8 @@ namespace d360.web.Controllers.V2
                                 var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
                                 queries.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
                                 dbArgs.Add($"@field{customField.ID}", paramval);
+                                if(customField.Name.ToLower() == order.ToLower())
+                                    orderBySQL += @" Else @field{customField.ID}";
                             }
                         }
                     }
@@ -226,6 +227,8 @@ namespace d360.web.Controllers.V2
                 model.pageSize = pageSize;
 
                 string offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+                if (orderBySQL != " order By AssetUid ")
+                    orderBySQL += " END ";
                 finalSql += orderBySQL + offsetSql;
             }
             var count = await Company.QueryAsync<int>(countSql, dbArgs);
