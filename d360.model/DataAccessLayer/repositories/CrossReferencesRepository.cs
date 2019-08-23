@@ -1,4 +1,7 @@
 ﻿using d360.core.entities;
+using d360.core.queue;
+using d360.extensions;
+using d360.core;
 using Dapper;
 using System;
 using System.Collections.Generic;
@@ -7,15 +10,21 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace d360.model.DataAccessLayer
 {
     public class CrossReferencesRepository : ICrossReferencesRepository
     {
         ICompanyContext CompanyContext;
-        public CrossReferencesRepository(ICompanyContext compCtx)
+        internal IQueueSource QueueSource;
+        internal IStorageProvider StorageProvider;
+
+        public CrossReferencesRepository(ICompanyContext compCtx, IQueueSource queueSource, IStorageProvider storageProvider)
         {
             this.CompanyContext = compCtx;
+            this.QueueSource = queueSource;
+            this.StorageProvider = storageProvider;
         }
         public async Task<IEnumerable<AssetCrossReference>> GetCrossReferences(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
@@ -190,5 +199,29 @@ namespace d360.model.DataAccessLayer
 
         }
 
+        public async Task<ApiExecutionInfo> PostBulkCrossReference(List<AssetCrossReference> crossReferences, ApiExecution execution, bool sendWorkflowEvents = true)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = CompanyContext.CurrentCompanyID,
+                CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = CompanyContext.CurrentResourceID,
+                Action = ApiExecutionAction.PostCrossReferences,
+                SendWorkflowEvents = sendWorkflowEvents
+            };
+
+            // Save to storage container.
+            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(crossReferences));
+
+            // Save to queue.
+            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+
+            // Save to the database.
+            execution.ExecutionID = executionInfo.ExecutionID;
+
+            CompanyContext.Add(execution);
+            return executionInfo;
+        }
     }
 }

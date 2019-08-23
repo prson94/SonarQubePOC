@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using d360.core.entities;
+using d360.core.queue;
 
 namespace d360.model.DataAccessLayer
 {
@@ -21,5 +22,6 @@ namespace d360.model.DataAccessLayer
         Task<int> PutCrossReference(Guid uid, AssetCrossReference model);
         Task<int> PutCrossReference(Guid uid, string dataSource, string type, AssetCrossReference model);
         Task<bool> XrefExists(AssetCrossReference model);
+        Task<ApiExecutionInfo> PostBulkCrossReference(List<AssetCrossReference> crossReferences, ApiExecution execution, bool sendWorkflowEvents = true);
     }
 }

@@ -1,8 +1,10 @@
 ﻿using d360.core.entities;
 using d360.model;
+using d360.web.Models;
 using d360.model.DataAccessLayer;
 using d360.web.Controllers.V2;
 using d360.web.Filters;
+using d360.core.queue;
 using Dapper;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
@@ -436,6 +438,57 @@ namespace d360.web.Controllers.V2
         }
 
 
+        [
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            Route("batch"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add asset cross reference.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+
+        ]
+        public async Task<IHttpActionResult> PostBulkCrossReferenceAsync(List<AssetCrossReference> crossReferences)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add asset cross reference"));
+
+            var prefix = "CrossReferences.PostBulkCrossReference => ";
+            var errorMessage = "";
+            try
+            {
+                if (crossReferences == null)
+                    crossReferences = readRequestJsonContent<List<AssetCrossReference>>(Request).Result;
+
+                if (crossReferences == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                var execution = getApiExecution(crossReferences.Count);
+
+                ApiExecutionInfo executionInfo = await crossReferencesRepository.PostBulkCrossReference(crossReferences, execution);
+
+                var result = Request.CreateResponse(
+                                 HttpStatusCode.OK,
+                                new ApiExecutionRecievedResponse
+                                {
+                                    ExecutionID = executionInfo.ExecutionID,
+                                    Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                    Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/crossreferences/executions/{executionInfo.ExecutionID}/status"
+                                });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                   { "CrossReferencesCount", $"{((crossReferences != null) ? crossReferences.Count : 0)}" }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
 
 
 

@@ -13,7 +13,10 @@ namespace d360.core.queue
         PutRelationships,
         DeleteAssetTypes,
         PostAssetTypes,
-        PutAssetTypes
+        PutAssetTypes,
+        DeleteCrossReferences,
+        PostCrossReferences,
+        PutCrossReferences
     }
     public class ApiExecutionInfo
     {
