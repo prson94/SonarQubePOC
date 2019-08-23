@@ -469,7 +469,13 @@ namespace d360.web.Controllers.V2
                 try
                 {
                     results = Company.ImportRelationships(execution, intersectType, relationships);
-
+                    var events = new List<EventObjectInfo>();
+                    var relationship = Company.Intersects.Where(x => results.Select(r => r.ObjectID).Contains(x.ID)).ToList();
+                    foreach(var item in relationship)
+                    {
+                        item.GetEventObjectInfo();
+                        events.Add(item.GetEventObjectInfo());
+                    }
                     // Close execution record.
                     execution.Processed = results.Count;
                     execution.Error = results.Count(i => !i.Success);
