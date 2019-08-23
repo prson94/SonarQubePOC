@@ -77,7 +77,6 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
         this.socialService.getComments(this.objectID, this.objectType, this.daysToLookBack, (this.pageNumber) * this.rowCount, this.rowCount, this.limitToType)
             .subscribe(res => {
                 this.isLoading = false;
-                console.log(res);
                 this.comments = this.comments.concat(res);
                 this.hasMore = (res.length && res.length > 0);
             });
