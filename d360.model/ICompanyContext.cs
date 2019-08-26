@@ -132,8 +132,6 @@ namespace d360.model
         DbSet<Question> Questions { get; set; }
         DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
         DbSet<QuestionType> QuestionTypes { get; set; }
-        DbSet<ReferenceItem> ReferenceItems { get; set; }
-        DbSet<ReferenceItemType> ReferenceItemTypes { get; set; }
         DbSet<ReportLayout> ReportLayouts { get; set; }
         DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
         DbSet<Report> Reports { get; set; }

@@ -1407,16 +1407,21 @@ namespace d360.web.Controllers
                         break;
                     case SystemObjects.ReferenceItemType:
                         #region
-                        var rt = new ReferenceItemType
+                        var rt = new AssetType
                         {
                             Name = model.AssetType.Name,
                             DisplayFormat = model.AssetType.DisplayFormat,
                             Description = model.AssetType.Description,     
-                            SourceNotes = model.AssetType.Notes
+                            Notes = model.AssetType.Notes,
+                            Object = SystemObjects.ReferenceItemType.ToString(),
+                            State = State.Active,
+                            UpdatedBy = Company.CurrentResourceID,
+                            UpdatedOn = DateTime.UtcNow,
+                            Class = AssetTypeClass.Reference
                         };                                            
                         Company.Add(rt);
                         parentType = SystemObjects.ReferenceItemType;
-                        model.AssetType.ObjectID = rt.ID;
+                        model.AssetType.ObjectID = rt.ObjectID;
                         #endregion
                         break;                        
                 }
@@ -1557,13 +1562,13 @@ namespace d360.web.Controllers
                         parentType = SystemObjects.PolicyType;
                         break;
                     case SystemObjects.ReferenceItemType:
-                        var rt = Company.GetById<ReferenceItemType>(model.AssetType.ObjectID);
+                        var rt = Company.GetById<AssetType>(model.AssetType.ID);
                         if (rt == null) throw new NotFoundException("reference item type");
 
                         rt.Name = model.AssetType.Name;
                         rt.DisplayFormat = model.AssetType.DisplayFormat;
                         rt.Description = model.AssetType.Description;
-                        rt.SourceNotes = model.AssetType.Notes;
+                        rt.Notes = model.AssetType.Notes;
                         rt.UpdatedBy = Company.CurrentResourceID;
                         rt.UpdatedOn = DateTime.UtcNow;
 
@@ -2430,7 +2435,7 @@ namespace d360.web.Controllers
             model.HomePageBackgroundImage = (settings.Any(i => i.SettingID == 45) ? settings.Single(i => i.SettingID == 45).Value : "");
             model.BrowserTitlePrefix = (settings.Any(i => i.SettingID == 33) ? settings.Single(i => i.SettingID == 33).Value : "D3S");
 
-            model.UseLegacyLineage = (settings.Any(i => i.SettingID == 46) ? bool.Parse(settings.Single(i => i.SettingID == 46).Value) : true);
+            model.LineageVersion = (settings.Any(i => i.SettingID == 68) ? int.Parse(settings.Single(i => i.SettingID == 68).Value) : 1);
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -3573,7 +3578,9 @@ namespace d360.web.Controllers
                 { "Public Url", @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
                 { "US Zip Code", @"^(\d{5}(?:\-\d{4})?)$" }
             };
-            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type).Where(i => i.CompanySettingActive != null && !i.ReadOnly && Community.IsCompanySettingActive(i.CompanySettingActive)).Select(i => new
+            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type)
+                    .Where(i => !i.ReadOnly)
+                    .Select(i => new
                     {
                         title = i.Description,
                         value = i.Name
@@ -9306,28 +9313,34 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 if (Company.Any<Asset>(r => r.AssetTypeID == type.ID && r.Code == code))
                     return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
 
-                var a = new ReferenceItem
-                {
-                    Code = code,
-                    ReferenceItemTypeID = typeID,
+                int? parentId = parseNullableIntField(form, "ParentID");
+
+
+                var model = new Asset {
+                    AssetTypeID = type.ID,
+                    Object = SystemObjects.ReferenceItem.ToString(),
+                    State = State.Active,
                     CreatedBy = Company.CurrentResourceID,
+                    Code = code,
                     CreatedOn = DateTime.UtcNow,
                     UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow                    
+                    UpdatedOn = DateTime.UtcNow
                 };
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, a.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
-                Company.SaveOrUpdate(a, fields);
-                
-                if (!string.IsNullOrEmpty(form["ParentID"]))
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
+                Company.SaveOrUpdateAsset(model, fields, parentId.GetValueOrDefault());
+
+
+
+                if (parentId.HasValue)
                 {
-                    if (!Company.AddObjectParentRelationship(SystemObjects.ReferenceItemType, typeID, SystemObjects.ReferenceItem, parseIntField(form, "ParentID"), a.ID))
+                    if (!Company.AddObjectParentRelationship(SystemObjects.ReferenceItemType, typeID, SystemObjects.ReferenceItem, parentId.Value, model.ObjectID))
                     {
                         return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
                     }
                 }
 
-                return jsonSuccess(type.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess(type.Name + " successfully created.", model.ObjectID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -9348,10 +9361,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 if (!form.HasKeys()) throw new NoFormDataException("ReferenceItem");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<ReferenceItem>(id);
+                var model = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
                 if (model == null) throw new NotFoundException("ReferenceItem");
 
-                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, model.ID, Permission.DeleteAsset))
+                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, model.ObjectID, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
                 Company.Delete(SystemObjects.ReferenceItem, id);
@@ -9377,26 +9390,26 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 if (!form.HasKeys()) throw new NoFormDataException("referenceitem");
 
                 var id = parseIntField(form, "ID");
-                var model = Company.GetById<ReferenceItem>(id);
+                var model = Company.Assets.Include(x => x.AssetType).FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
 
                 if (model == null) throw new NotFoundException("referenceitem");
 
-                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, model.ID, Permission.ModifyAsset))
+                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, model.ObjectID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
                 var code = form["Code"].ToString();
 
-                if (Company.Any<ReferenceItem>(r => r.ReferenceItemTypeID == model.ReferenceItemTypeID && r.Code == code && r.ID != model.ID))
+                if (Company.Any<Asset>(r => r.AssetTypeID == model.AssetTypeID && r.Code == code && r.ID != model.ID))
                     return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
 
                 model.Code = code;
 
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID).ToList(), form, Server, false);
-                Company.SaveOrUpdate<ReferenceItem>(model, fields);
+                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, model.AssetType.ObjectID).ToList(), form, Server, false);
+                Company.SaveOrUpdateAsset(model, fields);
                 
                 if (!string.IsNullOrEmpty(form["ParentID"]))
                 {
-                    if (!Company.UpdateObjectParentRelationship(SystemObjects.ReferenceItemType, model.ReferenceItemTypeID, SystemObjects.ReferenceItem, parseIntField(form, "ParentID"), model.ID))
+                    if (!Company.UpdateObjectParentRelationship(SystemObjects.ReferenceItemType, model.AssetType.ObjectID, SystemObjects.ReferenceItem, parseIntField(form, "ParentID"), model.ObjectID))
                     {
                         return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
                     }
@@ -9664,7 +9677,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 targetTypeID = relationshipType.SubjectID;
             }
 
-            if (targetType == SystemObjects.ArtifactType.ToString())
+            if (targetType == SystemObjects.ArtifactType.ToString() || targetType == SystemObjects.ReferenceItemType.ToString())
             {
                 useAssetJoin = true;
             }
@@ -9836,10 +9849,10 @@ order by D.LastName, D.FirstName";
                     {
                         sql = $@"
 select	'ReferenceItemType' as [Object], 
-        r.ID as ObjectID, 
+        r.ObjectID as ObjectID, 
         r.Name as Name
-from	[dbo].[referenceitemtype] r with(nolock)
-where   r.ID not in (
+from	[dbo].[AssetType] r with(nolock)
+where   r.[objectId] not in (
 					select	case 
                                 when SubjectType = 'ReferenceItemType' then SubjectID
                                 else ObjectID
@@ -9850,30 +9863,32 @@ where   r.ID not in (
 							 ( (SubjectType = 'ReferenceItemType') AND (Object = @source and ObjectID = @id) )
 							)
 					)
-        and r.ID != @id
+        and r.[ObjectId] != @id
+        and r.[Object]='ReferenceItemType'
 order by r.Name";
                     }
                     else
                     {
                         sql = $@"
 select	'ReferenceItem' as [Object], 
-        r.ID as ObjectID, 
-        r.DisplayValue as Name
-from	ReferenceItem r with(nolock)
-where   r.ID not in (
+        AD.ObjectID as ObjectID, 
+        AD.DisplayValue as Name
+from	AssetDetail AD with(nolock)
+where   AD.[ObjectId] not in (
 					select	case 
                                 when SubjectType = 'ReferenceItemType' then SubjectID
                                 else ObjectID
                             end
 					from	[IntersectDetail]
 					where	IntersectTypeID = @it and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItem' and ObjectTypeID = r.ReferenceItemTypeID) ) OR
-							 ( (SubjectType = 'ReferenceItem' and SubjectTypeID = r.ReferenceItemTypeID) AND (Object = @source and ObjectID = @id) )
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItem' and ObjectTypeID = AD.TypeId) ) OR
+							 ( (SubjectType = 'ReferenceItem' and SubjectTypeID = AD.TypeId) AND (Object = @source and ObjectID = @id) )
 							)
 					)
-        and r.ReferenceItemTypeID = @targetTypeID
-        and r.ID != @id
-order by r.DisplayValue";
+        and AD.[Object]='ReferenceItem'
+        and AD.TypeId = @targetTypeID
+        and AD.[ObjectId] != @id
+order by AD.DisplayValue";
                     }
                     break;
                 #endregion
@@ -9954,7 +9969,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                             sql = $@"select C.Object, C.ObjectID, O.Name from [LookupType] O inner join {sql} order by O.Name";
                             break;                            
                         case "ReferenceItemType":
-                            sql = $@"select C.Object, C.ObjectID, O.Name from [ReferenceItemType] O inner join {sql} order by O.Name";
+                            sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue as Name from AssetDetail O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'ReferenceItem') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
                             break;
                         case "ResourceType":
                             sql = $@"select C.Object, C.ObjectID, O.LastName + ', ' + O.FirstName as Name from reporting.[Global_Resource] O inner join {sql} order by O.LastName + ', ' + O.FirstName";

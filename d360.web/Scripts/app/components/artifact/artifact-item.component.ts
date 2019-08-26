@@ -149,13 +149,13 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     this.rightSidebarService.showItem(
                         new RightSidebarItem(
                             'Comments', 'Comments', ['fa-comments'],
-                            `/sidebar/comments/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue.replace("/", "%2F")}`,null,33
+                            `/sidebar/comments/Artifact/${this.artifact.ID}`,null,33
                         )
                     );
                     this.rightSidebarService.showItem(
                         new RightSidebarItem(
                             'Actions', 'Actions', null,
-                            `/sidebar/actions/Artifact/${this.artifact.ID}/${this.artifact.DisplayValue.replace("/", "%2F")}`,null,27
+                            `/sidebar/actions/Artifact/${this.artifact.ID}`,null,27
                         )
                     );
                     this.loadItemSurvey(id);

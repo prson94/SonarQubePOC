@@ -90,6 +90,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private initialNodes: go.Node[] = [];
     private selectedData = null;
     private conditions: any[] = [];
+    private newKey = -1;
 
 
     private menuItems: MenuItem[] = [];
@@ -217,6 +218,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.diagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
         this.diagram.addDiagramListener('PartCreated', () => this.checkHasMultipleInputs());
         this.diagram.addDiagramListener('ExternalObjectsDropped', e => this.ExternalObjectsDropped(e));
+        this.diagram.addDiagramListener('ClipboardPasted', e => this.ClipboardPasted(e));
 
         this.diagram.grid.visible = false;
         this.diagram.grid.gridCellSize = new go.Size(24, 24);
@@ -1519,6 +1521,23 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         });
 
         this.validateDiagram();
+    }
+
+    private ClipboardPasted(e) {
+        if (e != null && e.subject != null) {
+            let nodes = e.subject.toArray();
+            for (let i = 0; i < nodes.length; i++) {
+
+                if (nodes[i].data.DiagramObjectType == DiagramObjectType.Link) {
+                    continue;
+                }
+
+                this.diagram.model.setKeyForNodeData(nodes[i].data, (--this.newKey).toString());
+                //move the copy slightly so it's not directly on top of the original
+                nodes[i].location = new go.Point(nodes[i].location.x - (Math.random() * 30), nodes[i].location.y - (Math.random() * 30));
+            }
+            this.ExternalObjectsDropped(null);
+        }
     }
 
     //#endregion

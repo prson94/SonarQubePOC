@@ -45,7 +45,7 @@ namespace d360.web.Controllers.V2
         IAssetRepository AssetRepository;
         ITagRepository tagRepository;
 
-        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository,ITagRepository tagRepository)
+        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository)
             : base(community, company)
         {
             QueueSource = queueSource;
@@ -71,7 +71,7 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "Assets.GetAssetTypeClassesAsync => ";
             var errorMessage = "";
-            
+
             try
             {
                 var classes = AssetRepository.GetAssetTypeList();
@@ -92,6 +92,7 @@ namespace d360.web.Controllers.V2
         /// GET a list of asset types.
         /// </summary>
         /// <param name="Class">Allows for filtering the Asset type's by Class.</param>
+        /// <param name="FusionTypeUID">Filter by Fusion type UID. Only applicable for FusionQuery and FusionAttribute classes.</param>
         /// <returns></returns>
         [
             HttpGet,
@@ -100,21 +101,38 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetTypesAsync(core.enums.AssetTypeClass? Class = null)
+        public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null, string FusionTypeUID = null)
         {
             var prefix = "Assets.GetAssetTypesAsync => ";
             var errorMessage = "";
 
             try
             {
+                Guid? fusionTypeGuid = Guid.Empty;
+                if (!string.IsNullOrEmpty(FusionTypeUID))
+                {
+                    if(Class == null || (Class == AssetTypeClass.FusionQuery || Class == AssetTypeClass.FusionAttribute))
+                    {
+                        fusionTypeGuid = Guid.Parse(FusionTypeUID);
+                    }
+                    else
+                    {
+                        throw new Exception("Invalid class type for Fusion type UID.");
+                    }
+                }
 
-                var assetTypes = await AssetRepository.GetAssetType(Class);
+                var assetTypes = await AssetRepository.GetAssetType(Class, fusionTypeGuid);
 
                 return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
             }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                if (ex is FormatException)
+                {
+                    errorMessage = errorMessage.Replace("Guid", "Uid");
+                }
+
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix }
                 });
@@ -223,7 +241,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeInsert model)
         {
-            
+
 
             var prefix = "Assets.PostAssetTypeAsync => ";
             var errorMessage = "";
@@ -234,7 +252,7 @@ namespace d360.web.Controllers.V2
 
 
                 var validator = new AssetTypeValidator(this.Company);
-                
+
                 AssetType parentAssetType = null;
                 if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
                 {
@@ -369,7 +387,7 @@ namespace d360.web.Controllers.V2
                 var result = new AssetTypeSuccess { Uid = model.Uid, Message = $"{model.Name} successfully updated.", Success = true };
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
-               
+
             }
             catch (BaseException ex)
             {
@@ -1010,11 +1028,11 @@ namespace d360.web.Controllers.V2
                 if (existingTag == null)
                 {
                     result = new AssetTagSuccessApiModel()
-                    { 
+                    {
                         Message = $"Invalid TagUid {assetTagApi.TagUID} ,no tag exists with the specified uid.",
                         Success = false
                     };
-             
+
                     resultList.Add(result);
                     continue;
                 }
@@ -1023,7 +1041,7 @@ namespace d360.web.Controllers.V2
                 if (asset == null)
                 {
                     result = new AssetTagSuccessApiModel()
-                    { 
+                    {
                         Message = $"Invalid uid {assetTagApi.AssetUID} no asset exists with the specified uid.",
                         Success = false
                     };
@@ -1044,9 +1062,9 @@ namespace d360.web.Controllers.V2
                 if (!Company.HasAssetDefaultReadPermission(asset.Object, asset.ObjectID))
                 {
                     result = new AssetTagSuccessApiModel()
-                    { 
-                         Message = $"A regular user can only create a tag association to assets {assetTagApi.AssetUID} they have access to",
-                         Success = false
+                    {
+                        Message = $"A regular user can only create a tag association to assets {assetTagApi.AssetUID} they have access to",
+                        Success = false
                     };
                     resultList.Add(result);
                     continue;

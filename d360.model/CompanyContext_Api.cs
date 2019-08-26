@@ -158,10 +158,11 @@ insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldVal
 			R.Code,
 			1
 	from	[api].[ExecutionAsset] A
-            inner join ReferenceItem R on A.Object = 'ReferenceItem' and R.ID = A.ObjectID
+            inner join Asset R on A.Object =  R.Object and R.ObjectID = A.ObjectID
 			left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Code'
 	where	A.ExecutionID = @executionID 
-            and F.ItemNumber is null;",
+	and A.Object = 'ReferenceItem' 
+    and F.ItemNumber is null;",
                 new { executionID }, commandTimeout: timeout);
             }
 
@@ -1327,34 +1328,13 @@ from	IntersectType I
 			                    inner join api.ExecutionDeletedAsset S on S.ObjectID = i.ObjectID 
                                  where {querySuffix} ;
 
-                 insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root],IntersectID)
-		                Select distinct ExecutionID, 
-                                ItemNumber, 
-                                S.[Uid],
-                                T.ID 			
-	                   from	[Intersect] T
-                            inner join api.ExecutionDeletedAsset S on S.Object = T.Subject and S.ObjectID = T.SubjectID 
-			                and  {querySuffix}
-			                and not exists (Select 1 from #ExecutionDeletedAsset where ExecutionID = S.ExecutionID and ItemNumber = S.ItemNumber and IntersectID =T.ID );
-
-
-                insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root],IntersectID)
-		                Select distinct ExecutionID, 
-                                ItemNumber, 
-                                S.[Uid],
-                                T.ID 			
-	                   from	[Intersect] T
-                            inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID 
-			                and {querySuffix}
-			                and not exists (Select 1 from #ExecutionDeletedAsset where ExecutionID = S.ExecutionID and ItemNumber = S.ItemNumber and IntersectID =T.ID );
-
-
+            
 			                update S set S.Success = 0 ,
 			                [Message] ='You have not enabled Cascade, yet there are relationships or workflows for this asset.'
 			                from api.ExecutionDeletedAsset S 
 			                inner join (select [Root] as UID,ExecutionID,ItemNumber  from #ExecutionDeletedAsset
 			                group by [Root],ExecutionID,ItemNumber
-			                having (count (*) > 1))   E on
+			                having (count (*) > 0))   E on
 			                S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
 			                where	{querySuffix}  and AssetId is not null
 			                and S.[Cascade]=0
@@ -2282,9 +2262,8 @@ from    api.ExecutionAsset T
 
 insert into #Keys
     select		A.ID,
-                utility.GetHash(O.Code) as ActiveKey
+                utility.GetHash(A.Code) as ActiveKey
     from		Asset A 
-			    inner join ReferenceItem O on A.Object = 'ReferenceItem' and O.ID = A.ObjectID
     where	    A.AssetTypeID = @ID;
 
 {keyComparisonUpdateStatement}",
@@ -2536,10 +2515,14 @@ from	api.ExecutionAsset T
                                             #endregion
                                             case AssetTypeClass.Policy:
                                             case AssetTypeClass.Glossary:
+                                            case AssetTypeClass.Reference:
                                                 #region
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)
                                                     @object = "Policy";
+                                                else if (at.Class == AssetTypeClass.Reference)
+                                                    @object = "ReferenceItem";
+
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
@@ -2641,58 +2624,7 @@ from	api.ExecutionAsset T
                                                 }
                                                 break;
                                             #endregion
-                                            case AssetTypeClass.Reference:
-                                                #region
-                                                if (isInsert)
-                                                {
-                                                    Connection.Execute($@"
-    create table #ObjectMergeTableResult (ID int, ItemNumber int);
-    CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
-
-    merge   ReferenceItem as T
-    using   (
-            select  A.ItemNumber,
-                    C.FieldValue as [Code]
-            from    api.ExecutionAsset A
-                    inner join api.ExecutionField C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code'
-            where   A.ExecutionID = @ExecutionID
-                    and A.Success is null
-                    and A.ItemNumber between {beginItemNumber} and {endItemNumber}
-            ) S
-    on      (T.ReferenceItemTypeID = @ObjectID and T.[Code] = @NonExistentUid)
-    when    not matched then
-    insert  (ReferenceItemTypeID, [Code], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, S.[Code], @R, @D, @R, @D)
-    output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
-
-    update  T
-    set     T.Object = 'ReferenceItem',
-            T.ObjectID = S.ID,
-            T.IsNew = 1
-    from    api.ExecutionAsset T
-            inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
-
-    {updateAssetInfoOnExecutionRecordsSql}",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
-                                                }
-                                                else
-                                                {
-                                                    Connection.Execute($@"
-    update	T
-    set		T.[Code] = C.FieldValue,
-            T.UpdatedBy = @R,
-            T.UpdatedOn = @D
-    from	ReferenceItem T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between {beginItemNumber} and {endItemNumber}
-            inner join api.ExecutionField C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code';
-
-    update	api.ExecutionAsset
-    set		IsNew = 0
-    where	{executionAssetWhereSql};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                }
-                                                break;
-                                                #endregion
+                                           
                                         }
 
                                         #region Parent/Child Relationship

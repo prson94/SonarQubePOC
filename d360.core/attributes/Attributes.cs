@@ -152,14 +152,4 @@ namespace d360.core
         }
     }
 
-    public class CompanySettingActive : Attribute
-    {
-        public String Setting { get; set; }
-
-        public CompanySettingActive(string setting)
-        {
-            this.Setting = setting;
-        }
-    }
-
 }
