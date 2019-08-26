@@ -65,6 +65,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() showIsListable: boolean = true;
     @Input() showIsPartOfKey: boolean = true;
     @Input() showIsEditable: boolean = true;
+    @Input() showDescription: boolean = true;
 
     private lookups: Lookups = new Lookups();
     private lookupDefaultValueOptions: SelectItem[];
@@ -366,6 +367,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private loadDataType(value: string, isFromLoad: boolean = false) {
         let observables: Array<Observable<any>> = [];
+        this.showDescription = true;
 
         if (value == null) {
             return;
@@ -504,6 +506,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsPartOfKey = false;
                 this.model.FieldType.ShowIfEmpty = true;
                 this.showIsEditable = false;
+                this.showDescription = false;
                 break;
             default:
                 this.model.FieldType.LookupDisplayFormat = null;
