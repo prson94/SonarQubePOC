@@ -11,17 +11,17 @@
             splitStatements="true"
             stripComments="true">
       <![CDATA[
-IF NOT EXISTS (SELECT 1 FROM [Setting] where ID = 67)
+IF NOT EXISTS (SELECT 1 FROM [Setting] where ID = 69)
 BEGIN
-	insert into [dbo].[Setting]([ID],[FieldName],[Name],[Description],[DefaultValue]) values(67,'UseAsTransformationLimit','Use As Transformation Limit','Whole number community setting ','3')
+	insert into [dbo].[Setting]([ID],[FieldName],[Name],[Description],[DefaultValue]) values(67,'UseAsTransformationLimit','Use As Transformation Limit','Maximum number of asset types that can be marked as a transformation asset type ','3')
 END
 ]]>
     </sql>
     <rollback>
       <![CDATA[
-IF EXISTS (SELECT 1 FROM [Setting] where ID = 67)
+IF EXISTS (SELECT 1 FROM [Setting] where ID = 69)
 BEGIN
-	Delete from [dbo].[Setting] where [ID] = 67
+	Delete from [dbo].[Setting] where [ID] = 69
 END
 ]]>
     </rollback>
