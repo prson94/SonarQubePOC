@@ -3573,7 +3573,9 @@ namespace d360.web.Controllers
                 { "Public Url", @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
                 { "US Zip Code", @"^(\d{5}(?:\-\d{4})?)$" }
             };
-            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type).Where(i => i.CompanySettingActive != null && !i.ReadOnly && Community.IsCompanySettingActive(i.CompanySettingActive)).Select(i => new
+            var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type)
+                    .Where(i => !i.ReadOnly)
+                    .Select(i => new
                     {
                         title = i.Description,
                         value = i.Name
