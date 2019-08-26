@@ -13,7 +13,6 @@ import { BaseComponent } from '../../shared/base.component';
                      <d3s-workflow-issue-details *ngIf="showBoard"
                                         [objectType]="objectType"
                                         [objectID]="objectID"
-                                        [objectName]="objectName"
                                         (countsChanged)="updateCounts()"></d3s-workflow-issue-details>
                     </div>
                 </div>
@@ -41,7 +40,6 @@ export class ActionsComponent extends BaseComponent implements OnInit, OnDestroy
 
             this.objectType = params['objectType'];
             this.objectID = +params['objectId'];
-            this.objectName = params['objectName'];
             
             this.isLoading = false;
             this.showBoard = true;

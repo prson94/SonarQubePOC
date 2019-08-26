@@ -12,7 +12,7 @@ import { ToolTipService } from '../../../../services/tooltip.service';
             <p *ngIf="data?.Description" [innerHtml]="data?.Description"></p>
             <div *ngFor="let field of data?.FieldValues">
                 <span *ngIf="field.Value">
-                  <b>{{ field.Name }}</b>:<span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON" [innerHtml]="field.Value"></span>
+                  <b>{{ field.Name }}</b>: <span *ngIf="field.Type !== 'JSON'; else showJSON" [innerHtml]="field.Value"></span>
                   <ng-template #showJSON >
 		                  <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
                   </ng-template>
@@ -49,6 +49,7 @@ export class LineageObjectDetailComponent implements OnInit, OnChanges {
 
     private GetJSON(value: string) {
         try {
+            console.log(JSON.parse(value));
             return JSON.parse(value);
         } catch {
             return "Error";

@@ -7,6 +7,8 @@ import { Router, NavigationEnd } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 
+declare var CompanySettings;
+
 @Component({
     selector: 'd3s-header-typeahead-search',    
     template: ` <span #item class="header-search header-table" [ngClass]="{'header-search-active':active}" (keyup)="checkKey($event)" >
@@ -27,7 +29,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                                 </div>                            
                             </ng-template>
                         </p-autoComplete>
-                    <i class="fa fa-search"></i>
+                    <i class="fa fa-search" (click)="openSearch()"></i>
                     </div>
                 <span>`,
     providers: [TypeaheadSearchService],
@@ -42,12 +44,15 @@ export class HeaderTypeaheadSearchComponent implements OnDestroy {
     public active: boolean = false;
     private hideHandle: number = 0;
     private searchSub: ISubscription
+    private defaultSearchOptions: string[];
 
     constructor(
         private router: Router,
         private typeaheadSearchService: TypeaheadSearchService,
         private ref: ChangeDetectorRef
-    ) { }
+    ) {
+        this.defaultSearchOptions = CompanySettings.DefaultSearchTypes ? CompanySettings.DefaultSearchTypes.split(',') : [];
+    }
 
 
     ngOnDestroy(): void {
@@ -56,13 +61,17 @@ export class HeaderTypeaheadSearchComponent implements OnDestroy {
 
     search(event) {
         this.searchText = event.query;
-        this.searchSub = this.typeaheadSearchService.getResults(20, event.query).pipe(
+        this.searchSub = this.typeaheadSearchService.getResults(20, event.query, this.defaultSearchOptions).pipe(
             debounceTime(400))
             .subscribe(data => {
                 this.results = data;
                 this.ref.markForCheck();
             });
         
+    }
+
+    openSearch() {
+        this.router.navigateByUrl(SiteUrlHelpers.SITE_URL_SEARCH_ROOT);
     }
 
     show(item) {

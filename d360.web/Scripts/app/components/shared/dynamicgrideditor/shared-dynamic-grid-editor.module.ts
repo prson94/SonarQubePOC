@@ -36,7 +36,8 @@ import { DirectivesModule } from '../../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
-import { TagViewModule } from '../tags/d3s-tag-view';
+import { TagView } from "../../shared/tags/d3s-tag-view";
+
 
 @NgModule({
     imports: [CommonModule,
@@ -74,10 +75,9 @@ import { TagViewModule } from '../tags/d3s-tag-view';
         //JSON Viewer module
         NgxJsonViewModule,
 
-        //Tag viewer module
-        TagViewModule
     ],
     declarations: [
+        TagView,
         DynamicEditorComponent,
         DynamicFieldComponent,
         DynamicFieldValueComponent,
@@ -85,6 +85,7 @@ import { TagViewModule } from '../tags/d3s-tag-view';
         MultiSelectGridComponent,
     ],
     exports: [
+        TagView,
         DynamicEditorComponent,
         DynamicFieldValueComponent,
         DynamicGridComponent,
