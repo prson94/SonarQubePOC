@@ -457,7 +457,7 @@ from    Field F
                     });
                     collectionFieldroperties.AddRange(assetFieldProperties);
                 }
-               
+
             }
 
             #region Build data tables for bulk load.
@@ -1213,11 +1213,11 @@ from	IntersectType I
                                                     
                                                     	insert into @result values(1,'Success')
                                                     end
-                                                    select * from @result", 
+                                                    select * from @result",
                                                     new { execution.ExecutionID, isCascade = fusion.Cascade.HasValue ? fusion.Cascade.Value : false }, transaction: trans, commandTimeout: timeout).FirstOrDefault();
 
                                             bool IsDeleted = false;
-                                            if(bool.TryParse(data.Status.ToString(), out IsDeleted))
+                                            if (bool.TryParse(data.Status.ToString(), out IsDeleted))
                                             {
                                                 if (!IsDeleted)
                                                 {
@@ -2434,10 +2434,10 @@ from	api.ExecutionAsset T
 
                                                         {updateAssetInfoOnExecutionRecordsSql}",
                                                         new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                    }
-                                                    else
-                                                    {
-                                                        Connection.Execute($@"
+                                                }
+                                                else
+                                                {
+                                                    Connection.Execute($@"
                                                         update	T
                                                         set		T.UpdatedBy = @R,
                                                         T.UpdatedOn = @D
@@ -2447,8 +2447,8 @@ from	api.ExecutionAsset T
                                                         update	api.ExecutionAsset
                                                         set		IsNew = 0
                                                         where	{executionAssetWhereSql};",
-                                                        new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                    }
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                }
                                                 break;
                                             #endregion
                                             case AssetTypeClass.FusionAttribute:
@@ -2794,7 +2794,7 @@ from	api.ExecutionAsset T
             return results;
         }
 
-        public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600)
+        public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false)
         {
             var results = new List<DatabaseBulkRelationshipResult>();
             bool generalChecksCompleted = false;
@@ -2940,22 +2940,16 @@ update	T
 set		T.Subject = S.Object,
 		T.SubjectID = S.ObjectID,
 		T.Object = O.Object,
-		T.ObjectID = O.ObjectID
+		T.ObjectID = O.ObjectID,
+        T.IsNew = CASE
+                    WHEN I.Id is null THEN 1
+                    ELSE 0
+                  END
 from	api.ExecutionRelationship T
 		left join AssetWithType S on T.ExecutionID = @ExecutionID and S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
-		left join AssetWithType O on T.ExecutionID = @ExecutionID and O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid;
-
-declare @intersectId int = (select ID from [Intersect] where IntersectTypeID = @it and SubjectId= @stid and ObjectId = @otid and Subject = @st and Object = @ot)
-
-if @intersectId is not null
-begin
-    update	T
-    set		T.IsNew = 1
-    from	api.ExecutionRelationship T
-		    left join AssetWithType S on T.ExecutionID = @ExecutionID and S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
-		    left join AssetWithType O on T.ExecutionID = @ExecutionID and O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid;
-end
-
+		left join AssetWithType O on T.ExecutionID = @ExecutionID and O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid
+        left join IntersectType IT on IT.uid = @uid
+        left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectId= S.ObjectId and I.ObjectId = O.ObjectId and I.Subject = S.Object and I.Object = O.Object;
 
 if @st = 'ReferenceItemType' and @stid = 0
 begin
@@ -3179,7 +3173,6 @@ end",
 
         update	T
         set		T.IntersectID = S.ID,
-		        T.IsNew = IIF(S.[Action] = 'I', 1, 0),
                 T.uid = IT.uid
         from	api.ExecutionRelationship T
 		        inner join #ObjectMergeTableResult S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber
@@ -3231,10 +3224,22 @@ end",
 
                 Connection.Close();
 
-                SendWorkflowEvents("IntersectType", rt.ID, results);
+                if (sendWorkflowEvents)
+                    SendWorkflowEvents("IntersectType", rt.ID, results);
             }
 
             return results;
+        }
+
+        public void DeleteRelationships(List<int> parentRelationships, List<int> childrenRelationships, bool sendWorkflowEvents)
+        {
+            if (!sendWorkflowEvents)
+                this.IsEventingEnabled = false;
+
+            Delete<Intersect>(x => childrenRelationships.Contains(x.ID));
+            Delete<Intersect>(x => parentRelationships.Contains(x.ID));
+
+            this.IsEventingEnabled = true;
         }
     }
 }

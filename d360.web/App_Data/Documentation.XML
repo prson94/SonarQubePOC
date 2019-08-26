@@ -2804,6 +2804,7 @@
             </summary>
             <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
             <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
+            <param name="TriggerWorkflow">Set this flag to 'true' to trigger workflows with this action..</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetExecutionStatus(System.Guid)">
@@ -2813,12 +2814,13 @@
             <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeleteRelationship(System.Guid,d360.core.entities.RelationshipDeletes)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeleteRelationship(System.Guid,d360.core.entities.RelationshipDeletes,System.Boolean)">
             <summary>
             Deletes a relationship and children of a given uid.
             </summary>
             <param name="intersectTypeUid">The unique identifier of the relationship type.</param>
             <param name="relationships">The list of relationships for deletions.</param>
+            <param name="TriggerWorkflow">Set this flag to 'true' to trigger workflows with this action.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.ExportTypesToExcel">

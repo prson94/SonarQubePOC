@@ -24,7 +24,7 @@ namespace d360.model.DataAccessLayer
         IEnumerable<dynamic> GetExportModelWithCustomFields(int id, IEnumerable<string> customColumns);
         IEnumerable<dynamic> GetExportModel(int id);
         List<DatabaseBulkAssetResult> GetBulkResults(ApiExecutionInfo info);
-        Task<RelationshipDeleteResult> DeleteRelationships(IntersectType intersectType, RelationshipDeletes relationships);
+        Task<RelationshipDeleteResult> DeleteRelationships(IntersectType intersectType, RelationshipDeletes relationships, bool triggerWorkflow = false);
         bool AnyExists(Guid uid);
         bool AnyPredicateExists(Guid uid);
      }

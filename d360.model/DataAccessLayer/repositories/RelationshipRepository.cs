@@ -341,13 +341,9 @@ from	IntersectType I
                 ResourceID = companyContext.CurrentResourceID,
                 CompanyDomainPrefix = companyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                Action = ApiExecutionAction.PostRelationships
+                Action = ApiExecutionAction.PostRelationships,
+                SendWorkflowEvents = triggerWorkflow
             };
-
-            if (triggerWorkflow)
-            {
-                executionInfo.SendWorkflowEvents = true;
-            }
 
             Storage.CreateFolder(executionInfo.StorageFolder);
             Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
@@ -421,7 +417,7 @@ from	IntersectType I
             return results;
         }
 
-        public async Task<RelationshipDeleteResult> DeleteRelationships(IntersectType intersectType, RelationshipDeletes relationships)
+        public async Task<RelationshipDeleteResult> DeleteRelationships(IntersectType intersectType, RelationshipDeletes relationships, bool triggerWorkflow = false)
         {
             var response = new List<RelationshipDeleteApiStatus>();
             StringBuilder relationshipUids = new StringBuilder();
@@ -492,8 +488,7 @@ from	IntersectType I
                 response.Add(status);
             }
 
-            companyContext.Delete<Intersect>(x => childrenRelationships.Contains(x.ID));
-            companyContext.Delete<Intersect>(x => parentRelationships.Contains(x.ID));
+            companyContext.DeleteRelationships(parentRelationships, childrenRelationships, triggerWorkflow);
 
             return new RelationshipDeleteResult(HttpStatusCode.OK, "", "", response);
 
