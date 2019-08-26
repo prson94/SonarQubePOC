@@ -27,7 +27,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                                 </div>                            
                             </ng-template>
                         </p-autoComplete>
-                    <i class="fa fa-search"></i>
+                    <i class="fa fa-search" (click)="openSearch()"></i>
                     </div>
                 <span>`,
     providers: [TypeaheadSearchService],
@@ -63,6 +63,10 @@ export class HeaderTypeaheadSearchComponent implements OnDestroy {
                 this.ref.markForCheck();
             });
         
+    }
+
+    openSearch() {
+        this.router.navigateByUrl(SiteUrlHelpers.SITE_URL_SEARCH_ROOT);
     }
 
     show(item) {
