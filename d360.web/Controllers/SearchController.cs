@@ -134,6 +134,9 @@ namespace d360.web.Controllers
                 case "Rule":
                     siteNavName = "#Data Quality";
                     break;
+                case "Policy":
+                    siteNavName = "#Policy";
+                    break;
             }
             //For typeahead results, Type is a concatenation of Type and subtype for Artifacts
             if (siteNavName == null && type.Length >= 8 && type.Substring(0, 8) == "Glossary")
