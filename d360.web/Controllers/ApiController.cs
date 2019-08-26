@@ -26,6 +26,7 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
 using d360.core.resources;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers
 {
@@ -35,14 +36,15 @@ namespace d360.web.Controllers
         #region DI
 
         ISecurityContextProvider SecProvider;
-
-        public D3SApiController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider)
+        ITagRepository tagRepository;
+        public D3SApiController(ICommunityContext community, ICompanyContext company,ITagRepository tagRepository, ISecurityContextProvider secProvider)
             : base(community, company)
         {
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
             SecProvider = secProvider;
+            this.tagRepository = tagRepository;
         }
 
         #endregion
@@ -75,7 +77,8 @@ namespace d360.web.Controllers
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id)
         {
             var list = new List<DetailReadOnlyRowModel>();
-
+            var tagList = new List<ReadOnlyFieldValue>();
+            string tagString = "";
             var details = Company.GetObjectDetail(type.ToString(), id);
             if (details != null)
             {
@@ -253,6 +256,18 @@ namespace d360.web.Controllers
                     {
                         //look at fusionlookup field and figure out what to show
                         list.AddRange(RenderFilteredLookupField(type.ToString(), id, ft.ID));
+                    }
+                    else if (ft.Type == DataType.Tag.ToString())
+                    {
+                        var ro = new ReadOnlyFieldValue
+                        {
+                            Value = ft.FriendlyName,
+                            TooltipType = "tag",
+                            TooltipID = ft.ObjectID,
+                            TooltipContext = "Preview",
+                            TooltipUrl = ""
+                        };
+                        tagList.Add(ro);
                     }
                     else if (ft.Type == DataType.Attribute.ToString())
                     {
@@ -479,8 +494,44 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 });
             }
 
+            if (tagList.Count > 0)
+            {
+                var title = new ReadOnlyField
+                {
+                    Name = "Tags",
+                    ShowIfEmpty = true,
+                    DataType = "tag",
+                    Values = GetTagsValues(type,id)
+                };
+                list.Add(new DetailReadOnlyRowModel
+                {
+                    columns = 1,
+                    FirstColumnFields = new List<ReadOnlyField> { title }
+                });
 
+            }
             return list;
+        }
+
+        private List<ReadOnlyFieldValue> GetTagsValues(SystemObjects type, int id)
+        {
+            List<ReadOnlyFieldValue> tagsFields = new List<ReadOnlyFieldValue>();
+            var asset = Company.Assets.SingleOrDefault(x => x.Object == type.ToString() && x.ObjectID == id);
+            var tags = tagRepository.GetTagsForAsset(asset.ID);
+            tags.ToList().ForEach(x=>
+            {
+                var roField = new ReadOnlyFieldValue
+                {
+                    Value = x.Value,
+                    TooltipType = "tag",
+                    TooltipID = x.ID,
+                    TooltipContext = "Preview",
+                    TooltipUrl = ""
+                };
+                tagsFields.Add(roField);
+            });
+
+            return tagsFields;
         }
 
         private List<AssetWithoutReadPermission> GetObjectsWithoutReadAccess(List<BasicAsset> objectsToCheckAccesFor)
@@ -1485,8 +1536,8 @@ order by 'Name'";
                 )
             );
         }
-        
-      
+
+
 
         [Route("fusion/promotion/QueryAttributes"), HttpGet]
         public HttpResponseMessage GetPromotionFusionQueryAttributes(int ruleID)
@@ -1496,15 +1547,15 @@ order by 'Name'";
             return Request.CreateResponse(HttpStatusCode.OK, results);
 
         }
-                
 
 
 
 
 
 
- 
-        
+
+
+
         [Route("fusion/technicalmapping")]
         public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings()
         {
@@ -3049,8 +3100,8 @@ outer apply (
                         idColumn = "ResourceID";
                     else if (@object == "Artifact" || @object == "Policy" || @object == "Taxonomy")
                         idColumn = "ObjectID";
-                        
-                    
+
+
                     if (i.FieldTypeID == 0)
                     {
                         if (isReferenceType)
