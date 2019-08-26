@@ -11,7 +11,7 @@ declare var CurrentResourceID;
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail" style="margin-top: 5px; margin-bottom: 5px;">
-                        <d3s-social-board *ngIf="showBoard" [objectType]="objectType" [objectID]="objectId" [objectName]="objectName" [daysToLookBack]="daysToLookBack"></d3s-social-board>
+                        <d3s-social-board *ngIf="showBoard" [objectType]="objectType" [objectID]="objectId" [daysToLookBack]="daysToLookBack"></d3s-social-board>
                     </div>
                 </div>
             </div>
@@ -21,7 +21,6 @@ declare var CurrentResourceID;
 export class CommentsComponent extends BaseComponent implements OnInit, OnDestroy {
     @Input() objectId: number = 0;
     @Input() objectType: string="";
-    @Input() objectName: string="";
 
     private sub: any;
     daysToLookBack: number = 365;
@@ -37,7 +36,6 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
 
         this.sub = this.route.params.subscribe(params => {
             this.objectId = +params['objectId'];
-            this.objectName = params['objectName'];
             this.objectType = params['objectType'];
             this.isLoading = false;
             this.showBoard = true;

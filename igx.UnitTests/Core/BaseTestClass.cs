@@ -108,7 +108,7 @@ namespace igx.UnitTests
             var mockRepo = new Mock<IAssetRepository>();
             var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage());
 
-            mockRepo.Setup(x => x.GetAssetType(It.IsAny<AssetTypeClass?>()))
+            mockRepo.Setup(x => x.GetAssetType(It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>()))
                 .Returns(
                 Task.FromResult<IEnumerable<AssetTypeApiViewModel>>(new List<AssetTypeApiViewModel>() { new AssetTypeApiViewModel() })
             );
@@ -373,7 +373,7 @@ namespace igx.UnitTests
                 .Returns((string s) => s == DataConstants.Tags.ValidName ? false : true);
 
             mock.Setup(x => x.DeleteTags(It.IsAny<List<TagApiDeleteModel>>()))
-                .Returns((List<TagApiDeleteModel> list) => list.Any(x=> x.uid.ToString() == DataConstants.InvalidGUID) ? false : true);
+                .Returns((List<TagApiDeleteModel> list) => list.Any(x => x.uid.ToString() == DataConstants.InvalidGUID) ? false : true);
 
             mock.Setup(x => x.GetTagByUid(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new Tag() : null);
