@@ -51,7 +51,6 @@ export class HeaderTypeaheadSearchComponent implements OnDestroy {
         private typeaheadSearchService: TypeaheadSearchService,
         private ref: ChangeDetectorRef
     ) {
-        console.log(CompanySettings);
         this.defaultSearchOptions = CompanySettings.DefaultSearchTypes ? CompanySettings.DefaultSearchTypes.split(',') : [];
     }
 
