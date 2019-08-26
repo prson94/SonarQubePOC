@@ -68,6 +68,7 @@ namespace d360.model.DataAccessLayer
         {
             var assetTypeID = 0;
             var includeRelationships = false;
+            var fusionAttributeWithParent = false;
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
@@ -199,6 +200,12 @@ namespace d360.model.DataAccessLayer
 
             getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
+            if(assetType.Class == AssetTypeClass.FusionAttribute)
+            {
+                if ((await CompanyContext.Database.Connection.QueryFirstOrDefaultAsync<int>("select ISNULL(parentId,0) from fusionattributetype where id = @id", new { id = assetType.ObjectID })) > 0)
+                    fusionAttributeWithParent = true;                
+            }
+
             var whereSql = "";
             if (whereStatements.Any())
                 whereSql = $"where {string.Join(" and ", whereStatements)}";
@@ -214,6 +221,8 @@ namespace d360.model.DataAccessLayer
                 from Asset A
                 {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
+                {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
+                {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", string.IsNullOrWhiteSpace(whereSql) ? countJoins : fieldJoins)}
                 {whereSql}";
 
@@ -227,10 +236,13 @@ namespace d360.model.DataAccessLayer
                     A.CreatedOn
                     {(assetType.Object == "ReferenceItemType" ? " , RI.Code" : "")} 
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
+                    {(fusionAttributeWithParent ? " , ATP.uid as ParentUid": "")}
                     {fieldsSql}
                 from Asset A
                 {(assetType.Object == "ReferenceItemType" ? " inner join ReferenceItem RI on RI.ID = A.ObjectID" : "")} 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
+                {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
+                {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", fieldJoins)}
                 {whereSql}
                 {string.Join("\n", pagingSql)}
@@ -1060,6 +1072,15 @@ namespace d360.model.DataAccessLayer
                             {
                                 whereStatements.Add($"FA.[TextPath] = @textpath");
                                 dbArgs.Add($"@textpath", q.Value);
+                            }
+                            else if (assetType.Object == "FusionAttributeType" && key == "parentuid")
+                            {
+                                if ((CompanyContext.Database.Connection.QueryFirstOrDefault<int>("select ISNULL(parentId,0) from fusionattributetype where id = @id", new { id = assetType.ObjectID })) > 0)
+                                {
+                                    whereStatements.Add($"ATP.[uid] = @parentuid");
+                                    dbArgs.Add($"@parentuid", q.Value);
+                                }
+                                
                             }
                             else if (assetType.Object == "ReferenceItemType" && key == "code")
                             {

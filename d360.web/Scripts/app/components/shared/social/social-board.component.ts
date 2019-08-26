@@ -29,7 +29,6 @@ import { MessagesObservableService } from '../../../services/messages-observable
 export class SocialBoardComponent extends BaseComponent implements OnInit {
     @Input() objectID: number = 0;
     @Input() objectType: string;
-    @Input() objectName: string;
     @Input() hasCloseButton: boolean = false;
     @Input() hasNewInput: boolean = true;
     @Input() daysToLookBack: number = -1;
@@ -53,7 +52,7 @@ export class SocialBoardComponent extends BaseComponent implements OnInit {
     ngOnInit() {
 
         if (this.objectID > 0) {
-            this.socialMessage = `Comments for ${this.objectName}`;
+            this.socialMessage = null;
         }
         else {
             if (this.limitToType == SocialCommentType.Social)

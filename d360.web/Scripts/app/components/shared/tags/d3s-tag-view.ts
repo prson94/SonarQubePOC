@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { container } from '@angular/core/src/render3';
@@ -23,21 +23,22 @@ import { CoreModule } from '../core.module';
 
 export class TagView extends AdminBaseComponent implements OnInit {
     public theDeleteCallback: Function;
-    @Input() data: string;
+    @Input() data: any;
     @Input() isEditable: boolean = false;
     private tags: any[];
     selected: TagType[] = [];
     private isShowAll: boolean = false;
     @ViewChild("container") container: ElementRef;
 
-    constructor(private tagsService: TagService, private messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, rightSidebarService: RightSidebarService) {
+    constructor(private tagService: TagService, private messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, rightSidebarService: RightSidebarService) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
     }
 
     ngOnInit() {
         try {
-            if (this.data)
+            if (this.data && (typeof this.data == 'string'))
                 this.tags = JSON.parse(this.data);
+            else this.tags = this.data;
         }
         catch
         {
@@ -69,6 +70,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     ngAfterViewInit() {
+
         if (this.container) {
             let parent = this.container.nativeElement.closest('td')
                 ? this.container.nativeElement.closest('td') : this.container.nativeElement.closest('div');
@@ -97,17 +99,57 @@ export class TagView extends AdminBaseComponent implements OnInit {
         event.stopPropagation();
     }
 
-    //Transition speed is set in .less
-    enter(el: HTMLElement) {
-        el.classList.remove('too-long');
-        var setTo = el.getAttribute('original-width');
-        el.style.maxWidth = setTo + 'px';
+    enter(tag: any, el: HTMLElement) {
+        this.tagService.getTagTooltip(tag.uid)
+            .subscribe(t => {
+                var x = t[0];
+                var date = this.formatDate(x.CreatedOn);
+                let template = `<span class="span-break">${x.Value}</span>
+                                <span>Tag added by ${x.CreatedBy} on ${date}</span>`;
+                el.querySelector('.tag-tooltip').innerHTML = template;
+
+            });
     }
 
-    leave(el: HTMLElement) {
-        var setTo = el.getAttribute('max-width');
-        el.style.maxWidth = setTo + 'px';
-        el.classList.add('too-long');
+    formatDate(str: string) {
+        var date = new Date(str);
+
+        var monthNames = [
+            'January', 'February', 'March',
+            'April', 'May', 'June', 'July',
+            'August', 'September', 'October',
+            'November', 'December'
+        ];
+
+        var partOfDay = "am";
+        var day = date.getDate();
+        var monthIndex = date.getMonth();
+        var year = date.getFullYear();
+
+        var hour = date.getHours();
+        var minutes = date.getMinutes()
+
+        let shour: string;
+        let smin: string;
+
+        if (hour > 11) {
+            partOfDay = 'pm';
+            hour -= 12;
+        }
+        if (hour == 0) hour = 12;
+
+        shour = hour.toString();
+        smin = minutes.toString();
+
+        if (hour < 10) {
+            shour = '0' + hour;
+        }
+
+        if (minutes < 10) {
+            smin = '0' + smin;
+        }
+
+        return `${day} ${monthNames[monthIndex]} ${year} at ${shour}:${smin}${partOfDay}`;
 
     }
 

@@ -1176,7 +1176,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-board.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-issues.component.ts" />

@@ -1,0 +1,32 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-8025">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+alter table integration.ExecutionAssetType alter column IGCAssetRelationshipBreakdown nvarchar(max) null
+alter table integration.ExecutionAssetType alter column GovernAssetRelationshipBreakdown nvarchar(max) null
+alter table integration.ExecutionAssetType alter column IGCAssetResponsibilityBreakdown nvarchar(max) null
+alter table integration.ExecutionAssetType alter column GovernAssetResponsibilityBreakdown nvarchar(max) null
+alter table integration.ExecutionAssetType alter column StepExecutionTimes varchar(max) null
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+alter table integration.ExecutionAssetType alter column IGCAssetRelationshipBreakdown nvarchar(2500) null
+alter table integration.ExecutionAssetType alter column GovernAssetRelationshipBreakdown nvarchar(2500) null
+alter table integration.ExecutionAssetType alter column IGCAssetResponsibilityBreakdown nvarchar(2500) null
+alter table integration.ExecutionAssetType alter column GovernAssetResponsibilityBreakdown nvarchar(2500) null
+alter table integration.ExecutionAssetType alter column StepExecutionTimes varchar(2500) null
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
