@@ -706,7 +706,7 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
-        public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution)
+        public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
             {
@@ -714,7 +714,8 @@ namespace d360.model.DataAccessLayer
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
                 ResourceID = CompanyContext.CurrentResourceID,
-                Action = ApiExecutionAction.DeleteAssets
+                Action = ApiExecutionAction.DeleteAssets,
+                SendWorkflowEvents = sendWorkflowEvents
             };
 
             // Save to storage container.

@@ -2896,7 +2896,7 @@
             * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
-            <param name="triggersWorkflow" required="false">Optional parameter allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
@@ -2913,7 +2913,7 @@
             * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
-            <param name="triggersWorkflow">Optional parameter allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
@@ -2930,11 +2930,11 @@
             * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
-            <param name="triggersWorkflow">Optional parameter allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert})">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert},System.Boolean)">
             <summary>
             Adds a given set of assets based on the specific asset type unique identifier. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
@@ -2947,10 +2947,11 @@
             * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PutBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate})">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PutBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate},System.Boolean)">
             <summary>
             Updates a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
@@ -2963,10 +2964,11 @@
             * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteBulkAssetsAsync(System.Guid,d360.core.entities.AssetDeletes)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteBulkAssetsAsync(System.Guid,d360.core.entities.AssetDeletes,System.Boolean)">
             <summary>
             Removes a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
@@ -2979,6 +2981,7 @@
             * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
