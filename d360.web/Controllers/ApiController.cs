@@ -3893,7 +3893,7 @@ outer apply (
                 foreach (var f in fieldTypes)
                 {
                     sqlColumns += $", F{f.ID}.FormattedValue as [{f.Name}]";
-                    sqlJoins += $" left join Field F{f.ID} on F{f.ID}.FieldTypeID = {f.ID} and F{f.ID}.ObjectType = 'ReferenceItem' and F{f.ID}.ObjectID = R.ID";
+                    sqlJoins += $" left join Field F{f.ID} on F{f.ID}.FieldTypeID = {f.ID} and F{f.ID}.ObjectType = 'ReferenceItem' and F{f.ID}.ObjectID = O.ObjectID";
 
                     var gc = new GridColumn { datafield = f.Name, text = f.FriendlyName };
                     if (f.ColumnWidth.HasValue)
@@ -3914,12 +3914,12 @@ outer apply (
                 }
 
                 var sqlQuery = $@"
-select  R.Code
+select  O.Code
         {sqlColumns} 
-from    ReferenceItem R 
-        inner join Asset O on O.Object = 'ReferenceItem' and O.ObjectID = R.ID 
+from    Asset O 
+        inner join AssetType AT on O.AssetTypeId = AT.ID
         {sqlJoins} 
-where   R.ReferenceItemTypeID = {id} 
+where    AT.Object = 'ReferenceItemType' and AT.ObjectID= {id}  
         and O.ID not in ({Company.GetNoReadSqlStatement()})
 {sqlOrderBy}";
 
@@ -3944,7 +3944,11 @@ where   R.ReferenceItemTypeID = {id}
 
         private bool AnyReferenceListItemsFieldValues(int id)
         {
-            var sqlQuery = $"select case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end from ReferenceItem where ReferenceItemTypeID = {id}";
+            var sqlQuery = $@"select case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end 
+                            from Asset A 
+                            inner join AssetType AST on
+                            AST.ID = A.AssetTypeID
+                            where AST.ObjectID = { id} and AST.[Object]='ReferenceItemType'";
             return Company.Query<bool>(sqlQuery).First();
         }
 
@@ -4237,10 +4241,13 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                             order by disp.TextPath";
                     break;
                 case SystemObjects.ReferenceItemType:
-                    sql = @"select distinct A.DisplayValue as Name, A.ID, 'ReferenceItem' as [Type] 
-                            from ReferenceItem A 
-                            inner join [Intersect] I on A.ReferenceItemTypeID = @id and ( (I.Subject = 'ReferenceItem' and A.ID = I.SubjectID) OR (I.Object = 'ReferenceItem' and A.ID = I.ObjectID) ) 
-                            order by A.DisplayValue";
+                    sql = @"select distinct AD.DisplayValue as Name, A.ID, 'ReferenceItem' as [Type] 
+                            from Asset A 
+                            inner join AssetType AST on AST.ID = A.AssetTypeID
+                            inner join AssetDisplayValue AD on AD.AssetID =A.ID
+                            inner join [Intersect] I on  ( (I.Subject = 'ReferenceItem' and A.ObjectID = I.SubjectID) OR (I.Object = 'ReferenceItem' and A.ObjectID = I.ObjectID) ) 
+                            where AST.ObjectID= @id and AST.[Object]='ReferenceItemType'
+                            order by AD.DisplayValue";
                     break;
                 case SystemObjects.ResourceType:
                     sql = @"select distinct A.LastName + ', ' + A.FirstName as Name, A.ResourceID as ID, 'Resource' as [Type] 
@@ -8251,18 +8258,19 @@ where	Type = 'ReferenceItemType'
 
                 if ((fieldType.LookupObjectType ?? "").ToUpper() != "REFERENCEITEM") throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
-                var referenceListType = Company.ReferenceItemTypes.Where(x => x.ID == fieldType.LookupObjectID).FirstOrDefault();
+                var referenceListType = Company.Filter<AssetType>(i => i.Object == "ReferenceItemType" && i.ObjectID == fieldType.LookupObjectID).FirstOrDefault();
+
 
                 if (referenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
-                var parentReferenceListType = Company.GetParentType(referenceListType.ID, SystemObjects.ReferenceItemType);
+                var parentReferenceListType = Company.GetParentType(referenceListType.ObjectID, SystemObjects.ReferenceItemType);
 
                 if (parentReferenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
                 var sql = @"select flv.Text, flv.Value from fieldlookupvalue flv 
                         inner join[intersectdetail] id on(id.subjecttype = 'ReferenceItemType' and id.objecttype = 'ReferenceItemType' and id.predicatetype = @predicate and id.objectid = flv.value and id.objecttypeid = flv.lookupobjectid and id.subjecttypeid = @parentReferenceListTypeId)
-                        inner join[referenceitem] ri on(ri.referenceitemtypeid = id.subjecttypeid and ri.id = id.subjectid and ri.id in @parentReferenceItemId)
-                        where flv.fieldTypeID = @id";
+                        inner join AssetDetail ad on(ad.TypeId = id.subjecttypeid and ad.Type='ReferenceItemType' and ad.[ObjectId] = id.subjectid  and ad.[Object]='ReferenceItem' )
+                        where flv.fieldTypeID = @id and  ad.[ObjectId] in ( @parentReferenceItemId)";
 
                 items = Company.Query<SelectListInfoItem>(sql, new { id = fieldTypeID, predicate = predicateTypeId, parentReferenceItemId = parents, parentReferenceListTypeId = parentReferenceListType.ObjectID }).ToList();
             }

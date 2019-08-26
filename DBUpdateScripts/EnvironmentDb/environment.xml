@@ -285,7 +285,9 @@
   <include file="scripts/GOV-7932.xml"/> <!-- api.DeleteAssetType -->
   <include file="scripts/GOV-7877.xml"/> <!-- GetDynamicAssets procedure -->
   <include file="scripts/GOV-7781.xml"/> <!-- api.DeleteAssetType -->
-  <include file="scripts/GOV-7949.xml"/> <!-- GetFormattedFieldLookupValue -->
+  <include file="scripts/GOV-7949.xml"/> <!-- GetFormattedFieldLookupValue  -->
   <include file="scripts/GOV-7851.xml"/> <!-- Add columns to integration.SynchedAssetType and integration.ExecutionAssetType -->
+  <include file="scripts/GOV-7624.xml"/>
+  <include file="scripts/GOV-7625.xml"/>
   <include file="scripts/GOV-8025.xml"/> <!-- Inmcrease size of some IGC breakdown columns dues to truncation errors -->
 </databaseChangeLog>
