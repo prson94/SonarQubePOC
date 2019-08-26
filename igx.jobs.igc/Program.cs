@@ -773,6 +773,7 @@ where	[AllowChangeDetection] = 0").ToList();
                                     }
                                     catch (Exception ex)
                                     {
+                                        // Error Code = 8
                                         ExecutionAssetType.ErrorMessage += $"Unable to clear out hashes for Section {section} ({ex.GetFullExceptionData(false)}). ";
                                     }
                                 }
@@ -785,7 +786,8 @@ where	[AllowChangeDetection] = 0").ToList();
                         }
                         catch (Exception oex)
                         {
-                            ExecutionAssetType.ErrorMessage += $"Unable to execution calculate count since last hash clearance ({oex.GetFullExceptionData(false)}). ";
+                            // Error Code = 9
+                            ExecutionAssetType.ErrorMessage += $"Unable to calculate the execution count since last hash clearance ({oex.GetFullExceptionData(false)}). ";
                         }
                     }
                 }
@@ -1186,6 +1188,7 @@ where	[AllowChangeDetection] = 0").ToList();
 
                     if (oex is TaskCanceledException)
                     {
+                        // Error Code = 10
                         ExecutionAssetType.ErrorMessage += $"Task cancellation requested: {((TaskCanceledException)oex).CancellationToken.IsCancellationRequested}.";
                     }
 
@@ -1194,6 +1197,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 }
                 catch (Exception cex)
                 {
+                    // Error Code = 11
                     writeLogEntry(cex.GetFullExceptionData(false), 99);
                     CoreFunction.AITrackException(functionName, cex);
                 }
@@ -1796,12 +1800,14 @@ delete integration.ExecutionAssetField where SynchedAssetTypeID = @SynchedAssetT
 
                     if (errorModel == null && model == null)
                     {
+                        // Error Code = 12
                         OnPageErrorCaptured(new PageErrorCapturedEventArgs { ErrorMessage = "IGC HTML Error recieved", StatusCode = System.Net.HttpStatusCode.InternalServerError });
                         Storage.CreateFile($"igc", $@"{folderName}/{begin ?? 0}_error.html", jsonToReturn, "text/html");
                     }
                 }
                 catch
                 {
+                    // Error Code = 12
                     OnPageErrorCaptured(new PageErrorCapturedEventArgs { ErrorMessage = "IGC HTML Error recieved", StatusCode = System.Net.HttpStatusCode.InternalServerError });
                     Storage.CreateFile($"igc", $@"{folderName}/{begin ?? 0}_error.html", jsonToReturn, "text/html");
                 }

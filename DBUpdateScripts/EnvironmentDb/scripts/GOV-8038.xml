@@ -1,0 +1,30 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-8008">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'IntegrationAssetTypeError' AND COLUMN_NAME = 'ErrorCode'))
+BEGIN
+	alter table integration.ExecutionAssetTypeError add ErrorCode int null
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'IntegrationAssetTypeError' AND COLUMN_NAME = 'ErrorCode'))
+BEGIN
+	alter table integration.ExecutionAssetTypeError drop column ErrorCode
+END
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

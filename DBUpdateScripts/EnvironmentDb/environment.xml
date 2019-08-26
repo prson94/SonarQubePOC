@@ -287,4 +287,6 @@
   <include file="scripts/GOV-7781.xml"/> <!-- api.DeleteAssetType -->
   <include file="scripts/GOV-7949.xml"/> <!-- GetFormattedFieldLookupValue -->
   <include file="scripts/GOV-7851.xml"/> <!-- Add columns to integration.SynchedAssetType and integration.ExecutionAssetType -->
+  <include file="scripts/GOV-8038.xml"/> <!-- IGC: [integration].[ExecutionAssetTypeError] - new column -->
+  <include file="scripts/GOV-8008.xml"/> <!-- IGC: [integration].[CompleteExecution] -->
 </databaseChangeLog>
