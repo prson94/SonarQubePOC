@@ -12,16 +12,24 @@
             splitStatements="true"
             stripComments="true">
 <![CDATA[
-ALTER TABLE dbo.AssetType
-ADD UseAsTransformation bit NOT NULL 
-CONSTRAINT DF_AssetType_UseAsTransformation DEFAULT 0
-WITH VALUES
+IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'dbo' 
+AND TABLE_NAME = 'AssetType' AND COLUMN_NAME = 'UseAsTransformation'))
+BEGIN
+	ALTER TABLE dbo.AssetType
+	ADD UseAsTransformation bit NOT NULL 
+	CONSTRAINT DF_AssetType_UseAsTransformation DEFAULT 0
+	WITH VALUES
+END
 ]]>
     </sql>
     <rollback>
 <![CDATA[
-ALTER table dbo.AssetType Drop CONSTRAINT DF_AssetType_UseAsTransformation
-ALTER table dbo.AssetType Drop Column  UseAsTransformation
+IF ( EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'dbo' 
+AND TABLE_NAME = 'AssetType' AND COLUMN_NAME = 'UseAsTransformation'))
+BEGIN
+	ALTER table dbo.AssetType Drop CONSTRAINT DF_AssetType_UseAsTransformation
+	ALTER table dbo.AssetType Drop Column  UseAsTransformation
+END
 ]]>
     </rollback>
   </changeSet>
