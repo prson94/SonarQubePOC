@@ -36,4 +36,5 @@
   <include file="scripts/GOV-7540.xml"/>
   <include file="scripts/GOV-7706.xml"/>
   <include file="scripts/GOV-7897.xml"/> <!--system setting for LineageVersion-->
+  <include file="scripts/GOV-7943.xml"/> <!--system setting for UseAsTransformationLimit-->
 </databaseChangeLog>
