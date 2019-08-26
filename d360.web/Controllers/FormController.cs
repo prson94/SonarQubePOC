@@ -9675,7 +9675,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 targetTypeID = relationshipType.SubjectID;
             }
 
-            if (targetType == SystemObjects.ArtifactType.ToString())
+            if (targetType == SystemObjects.ArtifactType.ToString() || targetType == SystemObjects.ReferenceItemType.ToString())
             {
                 useAssetJoin = true;
             }
@@ -9847,10 +9847,10 @@ order by D.LastName, D.FirstName";
                     {
                         sql = $@"
 select	'ReferenceItemType' as [Object], 
-        r.ID as ObjectID, 
+        r.ObjectID as ObjectID, 
         r.Name as Name
-from	[dbo].[referenceitemtype] r with(nolock)
-where   r.ID not in (
+from	[dbo].[AssetType] r with(nolock)
+where   r.[objectId] not in (
 					select	case 
                                 when SubjectType = 'ReferenceItemType' then SubjectID
                                 else ObjectID
@@ -9861,30 +9861,32 @@ where   r.ID not in (
 							 ( (SubjectType = 'ReferenceItemType') AND (Object = @source and ObjectID = @id) )
 							)
 					)
-        and r.ID != @id
+        and r.[ObjectId] != @id
+        and r.[Object]='ReferenceItemType'
 order by r.Name";
                     }
                     else
                     {
                         sql = $@"
 select	'ReferenceItem' as [Object], 
-        r.ID as ObjectID, 
-        r.DisplayValue as Name
-from	ReferenceItem r with(nolock)
-where   r.ID not in (
+        AD.ObjectID as ObjectID, 
+        AD.DisplayValue as Name
+from	AssetDetail AD with(nolock)
+where   AD.[ObjectId] not in (
 					select	case 
                                 when SubjectType = 'ReferenceItemType' then SubjectID
                                 else ObjectID
                             end
 					from	[IntersectDetail]
 					where	IntersectTypeID = @it and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItem' and ObjectTypeID = r.ReferenceItemTypeID) ) OR
-							 ( (SubjectType = 'ReferenceItem' and SubjectTypeID = r.ReferenceItemTypeID) AND (Object = @source and ObjectID = @id) )
+							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItem' and ObjectTypeID = AD.TypeId) ) OR
+							 ( (SubjectType = 'ReferenceItem' and SubjectTypeID = AD.TypeId) AND (Object = @source and ObjectID = @id) )
 							)
 					)
-        and r.ReferenceItemTypeID = @targetTypeID
-        and r.ID != @id
-order by r.DisplayValue";
+        and AD.[Object]='ReferenceItem'
+        and AD.TypeId = @targetTypeID
+        and AD.[ObjectId] != @id
+order by AD.DisplayValue";
                     }
                     break;
                 #endregion
@@ -9965,7 +9967,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                             sql = $@"select C.Object, C.ObjectID, O.Name from [LookupType] O inner join {sql} order by O.Name";
                             break;                            
                         case "ReferenceItemType":
-                            sql = $@"select C.Object, C.ObjectID, O.Name from [ReferenceItemType] O inner join {sql} order by O.Name";
+                            sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue as Name from AssetDetail O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'ReferenceItem') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
                             break;
                         case "ResourceType":
                             sql = $@"select C.Object, C.ObjectID, O.LastName + ', ' + O.FirstName as Name from reporting.[Global_Resource] O inner join {sql} order by O.LastName + ', ' + O.FirstName";
