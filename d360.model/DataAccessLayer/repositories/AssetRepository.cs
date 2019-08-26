@@ -40,26 +40,53 @@ namespace d360.model.DataAccessLayer
         public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(AssetTypeClass? Class, Guid? fusionTypeUid)
         {
             var dbArgs = new DynamicParameters();
-            string condition = "";
+            string condition = string.Empty;
+            string optionalJoin = string.Empty;
             if (Class.HasValue)
             {
-                var Id = (int)Class;
-                dbArgs.Add("@Id", Id.ToString());
-                condition = "and A.[Class]=@Id";
-
                 if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty && (Class == AssetTypeClass.FusionAttribute || Class == AssetTypeClass.FusionQuery))
                 {
-                    dbArgs.Add("@uid", fusionTypeUid);
-                    condition += " and A.[uid]=@uid";
+                    if(Class == AssetTypeClass.FusionAttribute)
+                    {
+                        optionalJoin = @"inner join FusionAttributeType FAT on A.[Object] = 'FusionAttributeType' and A.Objectid = FAT.ID 
+                                          inner join AssetType ATTFusionType on ATTFusionType.[Object] = 'FusionType' and ATTFusionType.ObjectID = FAT.FusionTypeID";
+                        dbArgs.Add("@fusionTypeUid", fusionTypeUid);
+                        condition += " and ATTFusionType.uid = @fusionTypeUid";
+                    }
 
+                    if(Class == AssetTypeClass.FusionQuery)
+                    {
+                        optionalJoin = @"inner join FusionQueryAttributeType FQAT ON A.Object = 'FusionQueryAttributeType' AND FQAT.ID = a.ObjectID
+                                         inner join Fusion F on F.ID = FQAT.FusionID
+                                         inner join AssetType ATQFusionType on ATQFusionType.[Object] = 'FusionType' and ATQFusionType.ObjectID = F.FusionTypeID";
+
+                        dbArgs.Add("@fusionTypeUid", fusionTypeUid);
+                        condition += " and ATQFusionType.uid = @fusionTypeUid";
+                    }
+                }
+                else
+                {
+                    var Id = (int)Class;
+                    dbArgs.Add("@Id", Id.ToString());
+                    condition = "and A.[Class]=@Id";
                 }
             }
             else if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty)
             {
-                condition = string.Format("and (A.[Class] = @class1 OR A.[Class] = @class2) AND A.[uid] = @uid");
+
+
+                optionalJoin += @"left join FusionAttributeType FAT on A.[Object] = 'FusionAttributeType' and A.Objectid = FAT.ID 
+                                  left join AssetType ATTFusionType on ATTFusionType.[Object] = 'FusionType' and ATTFusionType.ObjectID = FAT.FusionTypeID 
+                                  left join FusionQueryAttributeType FQAT ON A.Object = 'FusionQueryAttributeType' AND FQAT.ID = a.ObjectID
+                                  left join Fusion F on F.ID = FQAT.FusionID
+                                  left join AssetType ATQFusionType on ATQFusionType.[Object] = 'FusionType' and ATQFusionType.ObjectID = F.FusionTypeID ";
+
                 dbArgs.Add("@class1", (int)AssetTypeClass.FusionAttribute);
                 dbArgs.Add("@class2", (int)AssetTypeClass.FusionQuery);
-                dbArgs.Add("@uid", fusionTypeUid);
+                dbArgs.Add("@fusionTypeUid", fusionTypeUid);
+
+                condition = string.Format("and (A.[Class] = @class1 OR A.[Class] = @class2) AND (ATQFusionType.uid = @fusionTypeUid or ATTFusionType.uid = @fusionTypeUid)");
+
             }
 
             var sql = $@"
@@ -70,6 +97,7 @@ namespace d360.model.DataAccessLayer
                                     ,A.[uid],
                                     P.[Path]
                         FROM        AssetType A
+                                    {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
                         where       A.[State] = 1
                         {condition}
