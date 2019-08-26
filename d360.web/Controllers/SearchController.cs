@@ -110,6 +110,11 @@ namespace d360.web.Controllers
                     return "fa-user";
                 case "Group":
                     return "fa-users";
+                case "Grammatic Type":
+                case "Synonym":
+                    return "fa-comments";
+                case "Attribute":
+                    return "fa-pencil-square-o";
                 case "Fusion":
                 case "FusionAttributes":
                 case "FusionType":
@@ -117,7 +122,6 @@ namespace d360.web.Controllers
                     break;
                 case "Artifact":
                 case "Glossary":
-                case "Grammatic Type":
                     siteNavName = "#Glossary";
                     break;
                 case "Model":
@@ -129,6 +133,9 @@ namespace d360.web.Controllers
                     break;
                 case "Rule":
                     siteNavName = "#Data Quality";
+                    break;
+                case "Policy":
+                    siteNavName = "#Policy";
                     break;
             }
             //For typeahead results, Type is a concatenation of Type and subtype for Artifacts

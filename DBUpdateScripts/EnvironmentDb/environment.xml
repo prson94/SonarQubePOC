@@ -291,4 +291,5 @@
   <include file="scripts/GOV-7625.xml"/>
   <include file="scripts/GOV-8025.xml"/> <!-- Inmcrease size of some IGC breakdown columns dues to truncation errors -->
   <include file="scripts/GOV-7966.xml"/> <!-- Add UseAsTransformation boolean field on dbo.AssetType table-->
+  <include file="scripts/GOV-8035.xml"/> <!-- Trigger on FusionQueryAttribute table is incorrect missing type name-->
 </databaseChangeLog>
