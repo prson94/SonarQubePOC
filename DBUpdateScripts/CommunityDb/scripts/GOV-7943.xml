@@ -13,7 +13,7 @@
       <![CDATA[
 IF NOT EXISTS (SELECT 1 FROM [Setting] where ID = 69)
 BEGIN
-	insert into [dbo].[Setting]([ID],[FieldName],[Name],[Description],[DefaultValue]) values(67,'UseAsTransformationLimit','Use As Transformation Limit','Maximum number of asset types that can be marked as a transformation asset type ','3')
+	insert into [dbo].[Setting]([ID],[FieldName],[Name],[Description],[DefaultValue]) values(69,'UseAsTransformationLimit','Use As Transformation Limit','Maximum number of asset types that can be marked as a transformation asset type ','3')
 END
 ]]>
     </sql>
