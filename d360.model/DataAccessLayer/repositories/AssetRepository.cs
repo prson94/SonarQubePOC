@@ -474,6 +474,7 @@ namespace d360.model.DataAccessLayer
                         UpdatedOn = DateTime.UtcNow,
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
+                        UseAsTransformation = model.UseAsTransformation,
                         Class = AssetTypeClass.Reference
                     };
                     isNamePartOfKey = false;
