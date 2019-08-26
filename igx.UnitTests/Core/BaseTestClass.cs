@@ -131,7 +131,7 @@ namespace igx.UnitTests
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Predicate() { UID = uid, Type = PredicateType.InterTypeHierarchy } : null);
 
             mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true,true))
-                .Returns((List<AssetInsert> assetInsertList, object o2, object o3, object o4) =>
+                .Returns((List<AssetInsert> assetInsertList, object o2, object o3, object o4, object o5) =>
                  {
                      if (assetInsertList.Count == 0) return null;
                      else return new List<DatabaseBulkAssetResult>() { };
@@ -139,7 +139,7 @@ namespace igx.UnitTests
                 );
 
             mockRepo.Setup(x => x.PutAssets(It.IsAny<List<AssetUpdate>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true,true))
-                .Returns((List<AssetUpdate> assetUpdateList, object o2, object o3, object o4) =>
+                .Returns((List<AssetUpdate> assetUpdateList, object o2, object o3, object o4, object o5) =>
                 {
                     if (assetUpdateList.Count == 0) return null;
                     else return new List<DatabaseBulkAssetResult>() { };
@@ -147,7 +147,7 @@ namespace igx.UnitTests
                 );
 
             mockRepo.Setup(x => x.DeleteAsset(It.IsAny<AssetDeletes>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true))
-                .Returns((AssetDeletes assetDeletes, object o2, object o3) =>
+                .Returns((AssetDeletes assetDeletes, object o2, object o3, object o4) =>
                 {
                     if (assetDeletes == null) return null;
                     else return new List<DatabaseBulkAssetResult>() { };
