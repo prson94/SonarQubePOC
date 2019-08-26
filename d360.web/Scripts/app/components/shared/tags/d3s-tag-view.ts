@@ -100,15 +100,17 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     enter(tag: any, el: HTMLElement) {
-        this.tagService.getTagTooltip(tag.uid)
-            .subscribe(t => {
-                var x = t[0];
-                var date = this.formatDate(x.CreatedOn);
-                let template = `<span class="span-break">${x.Value}</span>
+        if (!this.isEditable) {
+            this.tagService.getTagTooltip(tag.uid)
+                .subscribe(t => {
+                    var x = t[0];
+                    var date = this.formatDate(x.CreatedOn);
+                    let template = `<span class="span-break">${x.Value}</span>
                                 <span>Tag added by ${x.CreatedBy} on ${date}</span>`;
-                el.querySelector('.tag-tooltip').innerHTML = template;
+                    el.querySelector('.tag-tooltip').innerHTML = template;
 
-            });
+                });
+        }
     }
 
     formatDate(str: string) {
@@ -163,10 +165,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
 }
 @NgModule({
     declarations: [
-        TagView,
     ],
     exports: [
-        TagView,
     ]
     , imports: [
         CommonModule,
