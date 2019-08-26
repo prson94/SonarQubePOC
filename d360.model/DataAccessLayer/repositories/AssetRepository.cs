@@ -327,14 +327,14 @@ namespace d360.model.DataAccessLayer
                 i.Type
             }).ToList();
         }
-        public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true)
         {
             CompanyContext.Add(execution);
 
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.ImportAssets(execution, assetType, assets, true, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel);
+                results = CompanyContext.ImportAssets(execution, assetType, assets, true, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel, sendWorkflowEvents: sendWorkflowEvents);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -518,14 +518,14 @@ namespace d360.model.DataAccessLayer
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
-        public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true)
         {
             CompanyContext.Add(execution);
 
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.ImportAssets(execution, assetType, assets, false, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel);
+                results = CompanyContext.ImportAssets(execution, assetType, assets, false, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel, sendWorkflowEvents:sendWorkflowEvents);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -722,14 +722,14 @@ namespace d360.model.DataAccessLayer
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
-        public List<DatabaseBulkAssetResult> DeleteAsset(AssetDeletes assets, AssetType assetType, ApiExecution execution)
+        public List<DatabaseBulkAssetResult> DeleteAsset(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             CompanyContext.Add(execution);
 
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.RemoveAssets(execution, assetType, assets);
+                results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents:sendWorkflowEvents);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -768,7 +768,7 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
-        public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution)
+        public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
             {
@@ -776,7 +776,8 @@ namespace d360.model.DataAccessLayer
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
                 ResourceID = CompanyContext.CurrentResourceID,
-                Action = ApiExecutionAction.DeleteAssets
+                Action = ApiExecutionAction.DeleteAssets,
+                SendWorkflowEvents = sendWorkflowEvents
             };
 
             // Save to storage container.

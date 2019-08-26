@@ -995,7 +995,7 @@ from	IntersectType I
             return models;
         }
 
-        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600)
+        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true)
         {
             var results = new List<DatabaseBulkAssetResult>();
             var dt = DateTime.UtcNow;
@@ -1645,7 +1645,10 @@ from	IntersectType I
 
                         Connection.Close();
 
-                        SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
+                        if (sendWorkflowEvents)
+                        {
+                            SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
+                        }
                     }
                 }
             }

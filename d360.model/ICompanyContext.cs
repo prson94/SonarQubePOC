@@ -282,7 +282,7 @@ namespace d360.model
         Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90);
         void RebuildDisplayValuesRequest();
         void RebuildIndexRequest();
-        List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600);
+        List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true);
         void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation);
         string RenderTooltip(string action, SystemObjects type, int id);
         void RequestObjectCertification(SystemObjects @object, int objectId, SystemObjects objectType, int objectTypeId);
