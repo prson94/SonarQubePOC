@@ -247,7 +247,7 @@ namespace d360.core.enums
                         ReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly,
                         LineageVersionsSupported = tm.IsDefined(typeof(LineageVersionsSupportedAttribute), false) ? 
                                                     ((LineageVersionsSupportedAttribute)tm.GetCustomAttribute(typeof(LineageVersionsSupportedAttribute))).Versions :
-                                                    new int[3] { 1,2,3 },
+                                                    new int[4] { 0, 1, 2, 3 }, //0 accounts for unit tests
                     });
                 }
             }
