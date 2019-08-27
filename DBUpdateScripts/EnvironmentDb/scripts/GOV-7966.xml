@@ -1,0 +1,36 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-7966">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'dbo' 
+AND TABLE_NAME = 'AssetType' AND COLUMN_NAME = 'UseAsTransformation'))
+BEGIN
+	ALTER TABLE dbo.AssetType
+	ADD UseAsTransformation bit NOT NULL 
+	CONSTRAINT DF_AssetType_UseAsTransformation DEFAULT 0
+	WITH VALUES
+END
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+IF ( EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'dbo' 
+AND TABLE_NAME = 'AssetType' AND COLUMN_NAME = 'UseAsTransformation'))
+BEGIN
+	ALTER table dbo.AssetType Drop CONSTRAINT DF_AssetType_UseAsTransformation
+	ALTER table dbo.AssetType Drop Column  UseAsTransformation
+END
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

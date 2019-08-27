@@ -988,7 +988,7 @@
                               [(ngModel)]="model.FieldType.DisplayDescription"
                               [ngModelOptions]="{standalone: true}"></textarea>
                 </div>
-                <div class="col s6">
+                <div *ngIf="showDescription" class="col s6">
                     <div id='FormDescriptionTip'
                          class="FieldName">
                         Form Description

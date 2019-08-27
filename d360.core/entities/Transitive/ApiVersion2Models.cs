@@ -63,6 +63,11 @@ namespace d360.core.entities
         [JsonIgnore]
         public string Object { get; set; }
 
+        [DataMember]
+        public bool UseAsTransformation { get; set; }
+
+
+
     }
 
     public class AssetTypeSuccess

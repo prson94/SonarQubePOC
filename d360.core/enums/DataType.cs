@@ -64,7 +64,7 @@ namespace d360.core
         JSON = 1 << 24,
         [Description("JSON Attribute")]
         JsonElement = 1 << 25,
-        [Description("Tag"), CompanySettingActive("EnableTagging")]
+        [Description("Tag")]
         Tag = 1 << 26
     } 
 
@@ -92,7 +92,6 @@ namespace d360.core
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
                 var aReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute)));
-                var aCompanySetting = ((CompanySettingActive)tm.GetCustomAttribute(typeof(CompanySettingActive)));
                 if ((DataType)Enum.Parse(typeof(DataType), tm.Name) == DataType.None)
                     continue;
                 var info = new DataTypeInfo
@@ -100,8 +99,7 @@ namespace d360.core
                     ReadOnly = (aReadOnly != null) ? aReadOnly.IsReadOnly : false,
                     Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                     ID = (DataType)Enum.Parse(typeof(DataType), tm.Name),
-                    Name = tm.Name,
-                    CompanySettingActive = (aCompanySetting != null) ? aCompanySetting.Setting : "None"
+                    Name = tm.Name
                 };
                 list.Add(info);
             }
@@ -118,7 +116,6 @@ namespace d360.core
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
                 var aReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute)));
-                var aCompanySetting = ((CompanySettingActive)tm.GetCustomAttribute(typeof(CompanySettingActive)));
                 if (((excludes & (DataType)Enum.Parse(typeof(DataType), tm.Name)) != DataType.None) || ((DataType)Enum.Parse(typeof(DataType), tm.Name) == DataType.None))
                     continue;
 
@@ -127,8 +124,7 @@ namespace d360.core
                     ReadOnly = (aReadOnly != null) ? aReadOnly.IsReadOnly : false,
                     Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
                     ID = (DataType)Enum.Parse(typeof(DataType), tm.Name),
-                    Name = tm.Name,
-                    CompanySettingActive = (aCompanySetting != null) ? aCompanySetting.Setting : "None"
+                    Name = tm.Name
                 };
                 list.Add(info);
             }

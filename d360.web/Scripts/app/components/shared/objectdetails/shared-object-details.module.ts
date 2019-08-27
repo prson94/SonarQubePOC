@@ -25,6 +25,7 @@ import { ObjectDetailFieldComponent } from './object-detail-field.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { NgxJsonViewModule } from 'ng-json-view';
 
+
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,

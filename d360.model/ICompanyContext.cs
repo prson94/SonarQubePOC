@@ -132,8 +132,6 @@ namespace d360.model
         DbSet<Question> Questions { get; set; }
         DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
         DbSet<QuestionType> QuestionTypes { get; set; }
-        DbSet<ReferenceItem> ReferenceItems { get; set; }
-        DbSet<ReferenceItemType> ReferenceItemTypes { get; set; }
         DbSet<ReportLayout> ReportLayouts { get; set; }
         DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
         DbSet<Report> Reports { get; set; }
@@ -284,7 +282,7 @@ namespace d360.model
         Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90);
         void RebuildDisplayValuesRequest();
         void RebuildIndexRequest();
-        List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600);
+        List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true);
         void RemoveResponsibilityTypeRelation(ResponsibilityTypeRelation relation);
         string RenderTooltip(string action, SystemObjects type, int id);
         void RequestObjectCertification(SystemObjects @object, int objectId, SystemObjects objectType, int objectTypeId);

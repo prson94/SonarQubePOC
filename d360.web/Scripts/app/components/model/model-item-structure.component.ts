@@ -1,4 +1,4 @@
-﻿import {Input, Component, EventEmitter, Output, OnInit, OnDestroy} from '@angular/core';
+﻿import {Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild} from '@angular/core';
 import {Router, ActivatedRoute} from '@angular/router';
 import {BaseComponent} from '../shared/base.component';
 import {Title} from '@angular/platform-browser';
@@ -48,6 +48,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     selectedLevel: number = 0;
 
     theDeleteCallback: Function;
+    @ViewChild("treeTable") treeTable: any;
+    unfilteredTreeNode: TreeNode[] = [];
 
     constructor(
         private headerActionsService: HeaderActionsService,
@@ -71,6 +73,10 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 this.showEditor = false;
             }
         );
+    }
+
+    filter(event) {
+        this.filterTreeTable(this.unfilteredTreeNode, event.target.value, this.treeTable);
     }
 
     ngOnInit() {
@@ -141,6 +147,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 this.modelHierarchy = result;
 
                 this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy, 1);
+                this.unfilteredTreeNode = JSON.parse(JSON.stringify(this.treeNodeArray));
+
                 this.isLoading = false;
             }
         );

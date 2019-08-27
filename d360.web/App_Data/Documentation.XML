@@ -2837,11 +2837,12 @@
             </summary>
             <returns>Returns a list of asset type classes.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetTypesAsync(System.Nullable{d360.core.enums.AssetTypeClass})">
+        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetTypesAsync(System.Nullable{d360.core.enums.AssetTypeClass},System.String)">
             <summary>
             GET a list of asset types.
             </summary>
             <param name="Class">Allows for filtering the Asset type's by Class.</param>
+            <param name="FusionTypeUID">Filter by Fusion type UID. Only applicable for FusionQuery and FusionAttribute classes.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsAsync(System.Guid)">
@@ -2883,7 +2884,7 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert})">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert},System.Boolean)">
             <summary>
             Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
@@ -2898,10 +2899,11 @@
             Workflows - This endpoint will trigger any associated workflows for the add actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate})">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate},System.Boolean)">
             <summary>
             Updates a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
@@ -2916,10 +2918,11 @@
             Workflows - This endpoint will trigger any associated workflows for the update actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetsAsync(System.Guid,d360.core.entities.AssetDeletes)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetsAsync(System.Guid,d360.core.entities.AssetDeletes,System.Boolean)">
             <summary>
             Removes a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
@@ -2934,10 +2937,11 @@
             Workflows - This endpoint will trigger any associated workflows for the delete actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert})">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert},System.Boolean)">
             <summary>
             Adds a given set of assets based on the specific asset type unique identifier. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
@@ -2952,10 +2956,11 @@
             Workflows - This endpoint will trigger any associated workflows for the add actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PutBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate})">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PutBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate},System.Boolean)">
             <summary>
             Updates a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
@@ -2970,10 +2975,11 @@
             Workflows - This endpoint will trigger any associated workflows for the update actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteBulkAssetsAsync(System.Guid,d360.core.entities.AssetDeletes)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteBulkAssetsAsync(System.Guid,d360.core.entities.AssetDeletes,System.Boolean)">
             <summary>
             Removes a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
@@ -2988,6 +2994,7 @@
             Workflows - This endpoint will trigger any associated workflows for the delete actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>

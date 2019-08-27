@@ -812,7 +812,7 @@ from AssetDetail d
 															    )
 						) O on O.Object = D.Type and O.ObjectID = D.TypeID and D.Object + '|' + cast(D.ObjectID as varchar) <> @object + '|' + cast(@objectId as varchar)
             inner join [Predicate] P on P.ID = @predicateId
-			where (@query = '') or (@query != '' and d.DisplayValue like '%'+@query+'%')
+			where (@query = '') or (@query != '' and d.DisplayValue like '%'+@query+'%') and d.Type = @type and d.typeid = @typeid
 order by	D.TypeName,
 			D.DisplayValue
 ";
