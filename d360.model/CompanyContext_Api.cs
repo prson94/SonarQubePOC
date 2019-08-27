@@ -689,6 +689,8 @@ from	api.ExecutionField T
             DataTable fieldTable, out bool success, out string errorMessage)
         {
             List<DataRow> fieldRows = new List<DataRow>();
+            List<string> errorMessages = new List<string>();
+            string errorDelimiter = ". ";
 
             success = true;
             errorMessage = string.Empty;
@@ -702,7 +704,7 @@ from	api.ExecutionField T
             {
                 success = false;
                 bool isSinglar = (missingFields.Count() == 1);
-                errorMessage += $"{string.Join(",", missingFields)} {(isSinglar ? "is a" : "are")} required field{(isSinglar ? "" : "s")};";
+                errorMessages.Add($"{string.Join(",", missingFields)} {(isSinglar ? "is a" : "are")} required field{(isSinglar ? "" : "s")}");
             }
 
             foreach (var k in fields)
@@ -710,6 +712,8 @@ from	api.ExecutionField T
                 string fieldName = k.Key.Trim();
                 string fieldValue = (k.Value + "").Trim();
                 int? fieldTypeId = null;
+                string decimalFormatString = $"#.{string.Join("", Enumerable.Repeat("#", 18))}";
+                
 
                 // Validation of field and value;
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
@@ -730,7 +734,7 @@ from	api.ExecutionField T
                     else
                     {
                         success = false;
-                        errorMessage += $"{fieldName} is not a valid field; ";
+                        errorMessages.Add($"{fieldName} is not a valid field");
                     }
                 }
                 else
@@ -742,7 +746,7 @@ from	api.ExecutionField T
                         if (string.IsNullOrEmpty(fieldValue))
                         {
                             success = false;
-                            errorMessage += $"{fieldName} is a required field; ";
+                            errorMessages.Add($"{fieldName} is a required field");
                         }
                     }
 
@@ -754,7 +758,7 @@ from	api.ExecutionField T
                                 if ((fieldValue.ToLower() != "true" && fieldValue.ToLower() != "false") && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} is a boolean field and may only be 'false' or 'true'; ";
+                                    errorMessages.Add($"{fieldName} is a boolean field and may only be 'false' or 'true'");
                                 }
                                 break;
                             case "Date":
@@ -762,7 +766,7 @@ from	api.ExecutionField T
                                 if (!DateTime.TryParse(fieldValue, out dTest) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must be a valid date; ";
+                                    errorMessages.Add($"{fieldName} must be a valid date");
                                 }
                                 break;
                             case "DateTime":
@@ -770,7 +774,7 @@ from	api.ExecutionField T
                                 if (!DateTime.TryParse(fieldValue, out dtTest) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must be a valid datetime value; ";
+                                    errorMessages.Add($"{fieldName} must be a valid datetime value");
                                 }
                                 break;
                             case "Decimal":
@@ -778,14 +782,14 @@ from	api.ExecutionField T
                                 if (!decimal.TryParse(fieldValue, out decTest) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must be a valid decimal; ";
+                                    errorMessages.Add($"{fieldName} must be a valid decimal");
                                 }
                                 break;
                             case "Link":
                                 if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must be a valid link, using the format name|url; ";
+                                    errorMessages.Add($"{fieldName} must be a valid link, using the format name|url");
                                 }
                                 break;
                             case "Lookup":
@@ -795,7 +799,7 @@ from	api.ExecutionField T
                                 if (!int.TryParse(fieldValue, out intTest) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must be a valid whole number; ";
+                                    errorMessages.Add($"{fieldName} must be a valid whole number");
                                 }
                                 break;
                             case "Percentage":
@@ -803,7 +807,7 @@ from	api.ExecutionField T
                                 if (!decimal.TryParse(fieldValue, out pctTest) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must be a valid percentage; ";
+                                    errorMessages.Add($"{fieldName} must be a valid percentage");
                                 }
                                 break;
                             default: // Html, Text
@@ -812,7 +816,7 @@ from	api.ExecutionField T
                                     if (!System.Text.RegularExpressions.Regex.IsMatch(fieldValue, fieldType.Pattern))
                                     {
                                         success = false;
-                                        errorMessage += $"{fieldName} must match regular expression pattern defined for this field; ";
+                                        errorMessages.Add($"{fieldName} must match regular expression pattern defined for this field");
                                     }
                                 }
                                 break;
@@ -823,7 +827,7 @@ from	api.ExecutionField T
                             if (fieldValue.Length < fieldType.Length.Value)
                             {
                                 success = false;
-                                errorMessage += $"{fieldName} must have an exact length of {fieldType.Length.Value}; ";
+                                errorMessages.Add($"{fieldName} must have an exact length of {fieldType.Length.Value}");
                             }
                         }
                         if (fieldType.MinimumLength.HasValue)
@@ -833,7 +837,7 @@ from	api.ExecutionField T
                                 if (decimal.TryParse(fieldValue, out var fieldDecimalValue) && fieldDecimalValue < fieldType.MinimumLength.Value)
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must have a minimum value of {fieldType.MinimumLength.Value}; ";
+                                    errorMessages.Add($"{fieldName} must have a minimum value of {fieldType.MinimumLength.Value.ToString(decimalFormatString)}");
                                 }
                             }
                             else
@@ -841,7 +845,7 @@ from	api.ExecutionField T
                                 if (fieldValue.Length < fieldType.MinimumLength.Value)
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must have a minimum length of {fieldType.MinimumLength.Value}; ";
+                                    errorMessages.Add($"{fieldName} must have a minimum length of {fieldType.MinimumLength.Value.ToString(decimalFormatString)}");
                                 }
                             }
 
@@ -853,7 +857,7 @@ from	api.ExecutionField T
                                 if (decimal.TryParse(fieldValue, out var fieldDecimalValue) && fieldDecimalValue > fieldType.MaximumLength.Value)
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must have a maximum value of {fieldType.MaximumLength.Value}; ";
+                                    errorMessages.Add($"{fieldName} must have a maximum value of {fieldType.MaximumLength.Value.ToString(decimalFormatString)}");
                                 }
                             }
                             else
@@ -861,12 +865,17 @@ from	api.ExecutionField T
                                 if (fieldValue.Length > fieldType.MaximumLength.Value)
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} may only have a maximum length of {fieldType.MaximumLength.Value}; ";
+                                    errorMessages.Add($"{fieldName} may only have a maximum length of {fieldType.MaximumLength.Value.ToString(decimalFormatString)}");
                                 }
                             }
 
                         }
                     }
+                }
+
+                if (errorMessages.Any())
+                {
+                    errorMessage = string.Join(errorDelimiter, errorMessages);
                 }
 
                 var fieldRow = fieldTable.NewRow();
@@ -986,7 +995,7 @@ from	IntersectType I
             return models;
         }
 
-        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600)
+        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true)
         {
             var results = new List<DatabaseBulkAssetResult>();
             var dt = DateTime.UtcNow;
@@ -1636,7 +1645,10 @@ from	IntersectType I
 
                         Connection.Close();
 
-                        SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
+                        if (sendWorkflowEvents)
+                        {
+                            SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
+                        }
                     }
                 }
             }

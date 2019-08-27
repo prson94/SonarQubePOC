@@ -384,7 +384,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     } else if (this.lookups.Field_Relationships.length > 0) {
                         observables.push(this.cardinalRelationshipSelected(this.lookups.Field_Relationships[0].value));
                     }
-                    this.model.FieldType.IsListable = false;
+                    if (!isFromLoad)
+                        this.model.FieldType.IsListable = false;
+
                     this.model.FieldType.IsRequired = false;
                     this.model.FieldType.IsPartOfKey = false;
                     this.model.FieldType.IsPartOfKey = false;

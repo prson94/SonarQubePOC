@@ -327,14 +327,14 @@ namespace d360.model.DataAccessLayer
                 i.Type
             }).ToList();
         }
-        public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        public List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true)
         {
             CompanyContext.Add(execution);
 
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.ImportAssets(execution, assetType, assets, true, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel);
+                results = CompanyContext.ImportAssets(execution, assetType, assets, true, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel, sendWorkflowEvents: sendWorkflowEvents);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -373,7 +373,8 @@ namespace d360.model.DataAccessLayer
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
-                        Class = AssetTypeClass.Glossary
+                        Class = AssetTypeClass.Glossary,
+                        UseAsTransformation = model.UseAsTransformation
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
@@ -414,6 +415,7 @@ namespace d360.model.DataAccessLayer
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
+                        UseAsTransformation = model.UseAsTransformation,
                         Class = AssetTypeClass.Policy
                     };
                     CompanyContext.Add(p);
@@ -437,6 +439,7 @@ namespace d360.model.DataAccessLayer
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
+                        UseAsTransformation = model.UseAsTransformation,
                         Class = AssetTypeClass.Model
                     };
 
@@ -471,6 +474,7 @@ namespace d360.model.DataAccessLayer
                         UpdatedOn = DateTime.UtcNow,
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
+                        UseAsTransformation = model.UseAsTransformation,
                         Class = AssetTypeClass.Reference
                     };
                     isNamePartOfKey = false;
@@ -514,14 +518,14 @@ namespace d360.model.DataAccessLayer
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
-        public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true)
+        public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true)
         {
             CompanyContext.Add(execution);
 
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.ImportAssets(execution, assetType, assets, false, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel);
+                results = CompanyContext.ImportAssets(execution, assetType, assets, false, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel, sendWorkflowEvents:sendWorkflowEvents);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -555,7 +559,7 @@ namespace d360.model.DataAccessLayer
                     assetType.Description = model.Description;
                     assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
-
+                    assetType.UseAsTransformation = model.UseAsTransformation;
                     CompanyContext.Update(assetType);
 
                     break;
@@ -576,7 +580,7 @@ namespace d360.model.DataAccessLayer
                     assetType.DisplayFormat = model.DisplayFormat;
                     assetType.Description = model.Description;
                     assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
-
+                    assetType.UseAsTransformation = model.UseAsTransformation;
                     CompanyContext.Update(assetType);
 
                     break;
@@ -600,6 +604,7 @@ namespace d360.model.DataAccessLayer
                     assetType.DisplayFormat = model.DisplayFormat;
                     assetType.Description = model.Description;
                     assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
+                    assetType.UseAsTransformation = model.UseAsTransformation;
 
                     if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
                         return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", "Invalid Maximum Depth,Model level specified must be a value between 1 and 10.");
@@ -717,14 +722,14 @@ namespace d360.model.DataAccessLayer
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
-        public List<DatabaseBulkAssetResult> DeleteAsset(AssetDeletes assets, AssetType assetType, ApiExecution execution)
+        public List<DatabaseBulkAssetResult> DeleteAsset(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             CompanyContext.Add(execution);
 
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.RemoveAssets(execution, assetType, assets);
+                results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents:sendWorkflowEvents);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -763,7 +768,7 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
-        public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution)
+        public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
             {
@@ -771,7 +776,8 @@ namespace d360.model.DataAccessLayer
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
                 ResourceID = CompanyContext.CurrentResourceID,
-                Action = ApiExecutionAction.DeleteAssets
+                Action = ApiExecutionAction.DeleteAssets,
+                SendWorkflowEvents = sendWorkflowEvents
             };
 
             // Save to storage container.
