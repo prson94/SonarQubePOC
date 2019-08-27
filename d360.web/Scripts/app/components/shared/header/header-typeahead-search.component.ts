@@ -25,7 +25,7 @@ declare var CompanySettings;
                                 (onSelect)="selectItem()">                       
                             <ng-template let-result pTemplate="item">
                                 <div>                                
-                                   <div class="search-typeahead-suggestion"><i *ngIf="result.Icon" class="icon fa {{result.Icon}}"></i><span style="color:#999;">{{result.Type}}:</span> {{result.DisplayName}}</div>
+                                   <div class="search-typeahead-suggestion"><i *ngIf="result?.Icon" class="icon fa {{result.Icon}}"></i><span *ngIf="result?.ImageUrl" class="icon"><img [src]="result.ImageUrl" /></span> {{result.DisplayName}}</div>
                                 </div>                            
                             </ng-template>
                         </p-autoComplete>
