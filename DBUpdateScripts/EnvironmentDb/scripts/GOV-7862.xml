@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="GOV-7862-2">
+  <changeSet author="MDonato" id="GOV-7862-3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -132,8 +132,7 @@ begin
 						inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
 						inner join workflow.[Version] wv on wt.id = wv.typeId
 						inner join workflow.Item wi on 	wv.id = wi.VersionID
-						inner join Asset A on A.Object = wi.Object and A.ObjectID = wi.ObjectID
-						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+						inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 
 			insert into #w
 				select	wi.id 
@@ -478,7 +477,6 @@ begin
 			and ItemNumber = @itemNumber
 			and FromHierarchy = 0;
 end
-			
 		]]>
     </sql>
 	<rollback>
