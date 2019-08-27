@@ -937,10 +937,14 @@ namespace d360.extensions.search
 
             if (!bulkResponse.Success)
             {
-                ApplicationException bulkEx = new ApplicationException(bulkResponse.OriginalException.Message);
-                bulkEx.Data.Add("ES_DebugInformation", bulkResponse.DebugInformation);
-                bulkEx.Data.Add("ES_RequestBody", sb.ToString());
-                throw bulkEx;
+                StringBuilder exMessage = new StringBuilder();
+                exMessage.AppendLine(bulkResponse.OriginalException.Message);
+                exMessage.Append("ES_DebugInformation: ");
+                exMessage.AppendLine(bulkResponse.DebugInformation);
+                exMessage.Append("ES_RequestBody: ");
+                exMessage.AppendLine(sb.ToString());
+
+                throw new ApplicationException(exMessage.ToString()); ;
             }
 
             var result = JObject.Parse(bulkResponse.Body);
