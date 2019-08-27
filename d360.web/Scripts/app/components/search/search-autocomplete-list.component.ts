@@ -19,7 +19,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 <div *ngIf="showResults && autocompletions.length > 0" class="search-typeahead-menu" style="position:absolute;top:-3px;left:0;min-width:400px;max-height:400px;overflow:auto;" [ngStyle]="{'width':width}">                         
                     <div class="header">Select an item from the dropdown to go directly to it, or to see more search results type in the text you want to search by.</div>
                     <div *ngFor="let autocomplete of autocompletions" class="search-typeahead-suggestion" (click)="goTo(autocomplete)">
-                        <i *ngIf="autocomplete.Icon" class="icon fa {{autocomplete.Icon}}"></i><span class="type">{{autocomplete.Type}}</span>&nbsp;<span [innerHtml]="highlightedResult(autocomplete.DisplayName)"></span>
+                        <i *ngIf="autocomplete.Icon" class="icon fa {{autocomplete.Icon}}"></i><span *ngIf="autocomplete.ImageUrl" class="icon"><img [src]="autocomplete.ImageUrl" /></span><span class="type">{{autocomplete.Type}}</span>&nbsp;<span [innerHtml]="highlightedResult(autocomplete.DisplayName)"></span>
                     </div>                    
                 </div>
                 
