@@ -9,7 +9,7 @@
     SimpleChanges
 } from '@angular/core';
 import {MenuItem} from 'primeng/primeng';
-import * as go from 'gojs/release/go';
+import * as go from 'gojs';
 import * as _ from 'lodash';
 import {Observable, Subject} from 'rxjs';
 

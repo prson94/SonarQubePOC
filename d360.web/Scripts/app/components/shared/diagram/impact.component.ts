@@ -1,4 +1,4 @@
-﻿import * as go from 'gojs/release/go';
+﻿import * as go from 'gojs';
 import * as _ from 'lodash';
 import {AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {MenuItem} from 'primeng/primeng';
