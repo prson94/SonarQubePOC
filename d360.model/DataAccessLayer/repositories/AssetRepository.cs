@@ -374,6 +374,7 @@ namespace d360.model.DataAccessLayer
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
                         Class = AssetTypeClass.Glossary,
+                        AutoDisplayDescription = model.AutoDisplayDescription,
                         UseAsTransformation = model.UseAsTransformation
                     };
                     CompanyContext.Add(a);
