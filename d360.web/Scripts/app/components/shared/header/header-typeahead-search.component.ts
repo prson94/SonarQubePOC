@@ -71,7 +71,7 @@ export class HeaderTypeaheadSearchComponent implements OnDestroy {
     }
 
     openSearch() {
-        this.router.navigateByUrl(SiteUrlHelpers.SITE_URL_SEARCH_ROOT);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&advanced=0&types=${this.defaultSearchOptions ? this.defaultSearchOptions.join(',') : ''}`);
     }
 
     show(item) {
@@ -117,7 +117,7 @@ export class HeaderTypeaheadSearchComponent implements OnDestroy {
     checkKey(event) {        
         if (event.keyCode == 13) {
             this.active = false;
-            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${encodeURIComponent(event.srcElement.value)}`);
+            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${event.srcElement.value ? encodeURIComponent(event.srcElement.value) : ''}&advanced=0&types=${this.defaultSearchOptions ? this.defaultSearchOptions.join(',') : ''}`);
         }
     }   
 }
