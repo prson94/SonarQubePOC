@@ -9077,8 +9077,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             var list = new List<EditableField>();
 
+            var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+
             var functionalTypes = PredicateType.DataLineage.GetAsList()
-                .Where(f => f.AllowEditFromRelationshipEditor && f.AllowIntersectTypeAssignment)
+                .Where(f => f.AllowEditFromRelationshipEditor && f.AllowIntersectTypeAssignment && f.LineageVersionsSupported.Contains(lineageVersion))
                 .Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
                 .ToList();
 
@@ -9096,8 +9098,11 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var list = new List<EditableField>();
             var a = Company.GetById<Predicate>(id);
             var any = Company.Any<IntersectType>(i => i.PredicateID == id);
+
+            var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+
             var functionalTypes = PredicateType.DataLineage.GetAsList()
-                .Where(f =>  f.AllowEditFromRelationshipEditor && f.AllowIntersectTypeAssignment)
+                .Where(f => f.AllowEditFromRelationshipEditor && f.AllowIntersectTypeAssignment && f.LineageVersionsSupported.Contains(lineageVersion))
                 .Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
                 .ToList();
 
