@@ -9406,7 +9406,8 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
                 var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, model.AssetType.ObjectID).ToList(), form, Server, false);
                 Company.SaveOrUpdateAsset(model, fields);
-                
+                Company.SaveChanges();
+
                 if (!string.IsNullOrEmpty(form["ParentID"]))
                 {
                     if (!Company.UpdateObjectParentRelationship(SystemObjects.ReferenceItemType, model.AssetType.ObjectID, SystemObjects.ReferenceItem, parseIntField(form, "ParentID"), model.ObjectID))
