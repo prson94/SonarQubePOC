@@ -13,7 +13,7 @@ export class DiagramBaseComponent extends BaseComponent {
     }
 
     protected getLicenseKey(): string {
-        let licenseKey = "73fe41e0ba1c28c702d95d76423d6cbc5cf07f21de824aa0055116a7ee5b69172699eb7003d78dc8d1f84efa1b7d93ded8d7792f911f0c3be161d18b41e080f8bb6776b74401438aac0574c39bfd2ba2f82f74f691e222a1da6a9cf4bef8c59c0eb8f2c658c90fbb2f670e2e557a";
+        let licenseKey = "73f146e2b20537c702d90776423d6bf919a17564ce8418a30d0415f6e8083d06329fee2b58d38d90d0af4cfe1c7cc989d8c0392093480d3db531d1db42e182aeb73320e5410b479cb40573939ffa78f1fd6a61f1c3b57fbdd3678ff5";
         return licenseKey;
     }
 
