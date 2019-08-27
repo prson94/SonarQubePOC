@@ -275,6 +275,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.isEditing = false;
                 this.showMessageForResult(this.messagesService, result);
                 if (event.item.ID) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
+                this.getData();
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
             });
