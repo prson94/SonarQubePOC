@@ -281,6 +281,7 @@
     <Compile Include="entities\Workflow\WorkflowTaskProcedure.cs" />
     <Compile Include="enums\ApiUriType.cs" />
     <Compile Include="enums\BulkRelationshipOperation.cs" />
+    <Compile Include="enums\IntegrationErrorCode.cs" />
     <Compile Include="enums\Permission.cs" />
     <Compile Include="enums\EnvironmentLevel.cs" />
     <Compile Include="enums\HelpResourceType.cs" />

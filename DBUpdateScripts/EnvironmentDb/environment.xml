@@ -292,4 +292,6 @@
   <include file="scripts/GOV-7966.xml"/> <!-- Add UseAsTransformation boolean field on dbo.AssetType table-->
   <include file="scripts/GOV-8035.xml"/> <!-- Trigger on FusionQueryAttribute table is incorrect missing type name-->
   <include file="scripts/GOV-7862.xml"/> <!-- api.DeleteAssetType fix workflow join -->
+  <include file="scripts/GOV-8038.xml"/> <!-- IGC: [integration].[ExecutionAssetTypeError] - new column -->
+  <include file="scripts/GOV-8008.xml"/> <!-- IGC: [integration].[CompleteExecution] -->
 </databaseChangeLog>
