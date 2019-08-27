@@ -1,9 +1,9 @@
 ﻿
-<div #container class="tag-list-container">
+<div #container class="tag-list-container" *ngIf="tags">
     <ng-container *ngFor="let tag of tags;">
 
         <a (click)="openTagPage($event, getTagUrl(tag))" (mouseenter)="enter(tag, $event.target)" [attr.target]="'_blank'" class="link-button">
-            <div class="tooltip-wrapper">
+            <div *ngIf="!isEditable" class="tooltip-wrapper">
                 <div class="tag-tooltip">
                     <i class="fa fa-spinner fa-spin fa-2x"></i>
                 </div>
