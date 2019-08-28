@@ -68,7 +68,7 @@ outer apply (
 outer apply (
 			select	top 1
 					'Artifact' as Object,
-					O.ID as ObjectID
+					O.ObjectID as ObjectID
 			from	AssetDetail O
 					where O.[Object] = 'Artifact' and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'ArtifactType' and O.TypeID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
 			) R_A
@@ -76,14 +76,15 @@ outer apply (
 			select	top 1
 					'ReferenceItem' as Object,
 					O.ObjectID as ObjectID
-			from	Asset O
-					inner join AssetType AT on AT.ID = O.AssetTypeID 
-					where  QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'ReferenceItemType'  and AT.[Object]='ReferenceItemType' and AT.ObjectID = QT.ResolutionObjectID and (O.DisplayValue = Q.Value OR O.Code = Q.Value)
+			from	AssetDetail O
+                    inner join Asset A on
+                    O.ID = A.ID
+					where O.[Object] = 'ReferenceItem' and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'ReferenceItemType' and O.TypeID = QT.ResolutionObjectID and (O.DisplayValue = Q.Value OR A.Code = Q.Value)
 			) R_R
 outer apply (
 			select	top 1
 					'Taxonomy' as Object,
-					O.ID as ObjectID
+					O.ObjectID as ObjectID
 			from	AssetDetail O
 					where O.[Object] = 'Taxonomy' and QT.ResolutionFieldTypeID = 0 and QT.ResolutionFieldTypeName = 'Name' and QT.ResolutionObject = 'TaxonomyType' and O.TypeID = QT.ResolutionObjectID and O.DisplayValue = Q.Value
 			) R_T
