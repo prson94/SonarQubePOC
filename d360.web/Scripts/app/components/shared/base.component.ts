@@ -187,7 +187,7 @@ export class BaseComponent {
                 );
             }
 
-            if (hasImpact && CompanySettings.LineageVersion != 3) {
+            if (hasImpact && CompanySettings.ShowImpactSidebar != 'false' && CompanySettings.LineageVersion != 3) {
                 this.impactSidebar = new RightSidebarItem(
                     'Impact',
                     'impact',
