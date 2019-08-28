@@ -192,8 +192,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         );
     }
 
-    getData() {
-        if (!this.columns || this.columns.length == 0) return;
+    getData() {        
         this.isLoading = true;        
         this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners).pipe(debounceTime(3000))
             .subscribe(result => {
