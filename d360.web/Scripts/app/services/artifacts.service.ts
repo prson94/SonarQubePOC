@@ -31,7 +31,7 @@ export class ArtifactService extends BaseObservableService {
     }
 
     getArtifacts(
-        artifactTypeId: number,
+        assetTypeId: number,
         pagesize: number,
         pagenum: number,
         sortfield: string,
@@ -43,7 +43,7 @@ export class ArtifactService extends BaseObservableService {
         owner?: GridOwnerFilter
     ): Observable<Artifacts> {
         let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
-        let uri = `internal/artifacts/ArtifactsByType?id=${artifactTypeId}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
+        let uri = `internal/artifacts/ArtifactsByType?id=${assetTypeId}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}`;
 
         if (filters != undefined) {
             //#region regular fields

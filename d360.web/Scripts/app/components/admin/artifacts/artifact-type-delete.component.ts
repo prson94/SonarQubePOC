@@ -16,6 +16,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 export class ArtifactTypeDeleteComponent extends BaseComponent implements OnInit {
     @Input() callback: Function;
     @Input() artifactTypeId: number;
+    @Input() assetTypeId: number;
     @Output() onCancel = new EventEmitter();
 
     public artifactType: ArtifactType;
@@ -37,7 +38,7 @@ export class ArtifactTypeDeleteComponent extends BaseComponent implements OnInit
     private load() {
         forkJoin(
             this.artifactTypeService.getArtifactTypeDetails(this.artifactTypeId),
-            this.artifactService.getArtifacts(this.artifactTypeId, 10, 1, '', SortOrder.Ascending)
+            this.artifactService.getArtifacts(this.assetTypeId, 10, 1, '', SortOrder.Ascending)
         )
         .subscribe(
             (
