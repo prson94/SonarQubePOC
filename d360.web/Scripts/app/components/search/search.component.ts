@@ -9,13 +9,15 @@ import { TypeaheadSearchService } from '../../services/typeahead-search.service'
 import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
 import { RightSidebarService } from '../../services/right-sidebar.service';
+import { DynamicButton } from '../../models/rightsidebar.model';
+
 
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-search',
     template: `               
-                <d3s-search-input (search)="doSearch()" [isAdvancedMode]="showAdvanced" (isAdvancedModeChange)="showAdvanced=$event;searchResults=null;" [(advancedFilters)]="advancedFilters" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [hasAdvanced]="true" [(searchText)]="searchText"></d3s-search-input>                              
+                <d3s-search-input (search)="doSearch()" [isAdvancedMode]="showAdvanced" (isAdvancedModeChange)="showAdvanced=$event;searchResults=null;" [(advancedFilters)]="advancedFilters" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [hasAdvanced]="true" [(searchText)]="searchText"></d3s-search-input>
                 <d3s-search-results [from]="pageNumber" [loading]="isLoading" [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (selectedCategoryChange)="filterByCategory($event);"></d3s-search-results>
                 `,
     providers: [SearchService, TypeaheadSearchService],
@@ -68,6 +70,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
         });
     }
+
 
     public doSearch(filterCategory?: SearchCategories) {
         this.isLoading = true;

@@ -2,6 +2,9 @@
 import { DetailRow, DetailField, DetailModel, DetailFieldType, DetailSubField } from '../../../models/object-detail.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
+import { TagService } from '../../../services/tag.service';
+import { TagType, TagDetail, TagItem } from '../../../models/tag.model';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'object-detail-field',
@@ -32,6 +35,9 @@ export class ObjectDetailFieldComponent {
             return "Error";
         }
     }
+    private getJSONString(obj: any): string {
+        return JSON.stringify(obj)
+    }
 
     private get isArrayValue(): boolean {
         return this.field != null
@@ -51,6 +57,31 @@ export class ObjectDetailFieldComponent {
             && this.field.Name != null
             && ['name', 'implementation name'].indexOf(this.field.Name.toLowerCase()) > -1;
     }
+
+    
+
+    //deleteTags() {
+    //    let tagForDelete: TagType[] = [];
+    //    //this.tagsService.deleteTags(tagForDelete).
+    //    //    subscribe(result => {
+    //    //        this.showMessageForResult(this.messagesService, result);
+    //    //        this.onActionBackClick();
+
+    //    //    }, err => this.showMessageForResult(this.messagesService, err));
+    //}
+
+    //saveTag(event) {
+    //    this.tagsService.saveTag(event.item)
+    //        .subscribe(result => {
+    //            let msg: string = '';
+    //            if (event.item.uid == undefined) {
+    //                msg = `${result.Value} succesfully created`;
+    //            }
+    //            else {
+    //                msg = `${result.Value} succesfully updated`;
+    //            }
+    //        });
+    //}
 
 
     private get fieldDataType(): string {

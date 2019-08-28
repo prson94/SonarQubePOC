@@ -52,6 +52,7 @@ namespace d360.extensions
 
         public string Desc { get; set; }
         public string Icon { get; set; }
+        public string ImageUrl { get; set; }
         public Guid? Uid { get; set; }
     }
 
@@ -66,6 +67,7 @@ namespace d360.extensions
         public string Url { get; set; }
         public float Score { get; set; }
         public string Icon { get; set; }
+        public string ImageUrl { get; set; }
         public Guid? Uid { get; set; }
         /// <summary>
         /// score ranging between 1 and 0 adjusted based on max value.

@@ -124,6 +124,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
         { value: "Artifact", label: "Glossary" },
         { value: "Group", label: "Group" },
         { value: "Taxonomy", label: "Model" },
+        { value: "Policy", label: "Policy" },
         { value: "Reference", label: "Reference" },
         { value: "Resource", label: "User" },
         { value: "Synonym", label: "Grammatic Type" },

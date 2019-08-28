@@ -14,7 +14,7 @@ declare var CompanySettings: any;
 @Injectable()
 export class LoadService extends BaseObservableService {
 
-    lineageFlag: string = '';
+    lineageVersion: number = 1;
     aOptions: any[] = [];
 
     constructor(
@@ -53,10 +53,10 @@ export class LoadService extends BaseObservableService {
             {label: 'Unrelation', value: 'U'},
             {label: 'Users/Groups', value: 'M'}
         ];
-        if (CompanySettings != null && CompanySettings.UseLegacyLineage != null) {
-            this.lineageFlag = CompanySettings.UseLegacyLineage;
+        if (CompanySettings != null && CompanySettings.LineageVersion != null) {
+            this.lineageVersion = CompanySettings.LineageVersion;
         }
-        if (this.lineageFlag == 'true') {
+        if (this.lineageVersion == 1) {
             this.aOptions.push({label: 'Lineage : Business', value: 'BL'});
             this.aOptions.push({label: 'Lineage : Technical', value: 'TL'});
         }

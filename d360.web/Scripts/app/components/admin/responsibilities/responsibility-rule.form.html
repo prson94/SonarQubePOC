@@ -100,8 +100,7 @@
         <simple-accordion header="When Filters" active="true" *ngIf="model.Object && !model.ApplyToType" >
             <div class="row">
                 <div class="col s12 form-instructions">
-                    The filters you define below will apply filters based on the Selected Type above. Items that are of the
-                    selected type, and meet the criteria you specify below, will have responsibilities applied to them.
+                    You can define "When" filters to limit when the rule applies. Responsibilities will be applied to any items which match the Selected Type and meet the filter criteria that you specify below.
                 </div>
             </div>
             <div class="row" *ngIf="model.Object">
@@ -165,8 +164,7 @@
         <simple-accordion header="Then Filters" active="true" *ngIf="model.Object">
             <div class="row">
                 <div class="col s12 form-instructions">
-                    The filters you define below will apply filters based on the Security Object Type below. Items that are of the
-                    selected type, and meet the criteria you specify below, will be assigned as resposible parties to the selected items above.
+                    You can define "Then" filters to specify to whom the objects are assigned. Responsibilities will be assigned to users who match the Security Object Type criteria specified below for objects that meet the filter criteria specified above.
                 </div>
             </div>
             <div class="row" *ngIf="model.Object">

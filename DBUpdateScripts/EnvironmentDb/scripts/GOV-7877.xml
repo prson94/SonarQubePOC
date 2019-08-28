@@ -45,7 +45,7 @@
   </changeSet>
 
 
-  <changeSet author="Tomislav Duric" id="GOV-7877-AlterGetDynamicAssets">
+  <changeSet author="Tomislav Duric" id="GOV-7877-AlterGetDynamicAssets-2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -338,7 +338,8 @@ begin
 								+' inner join Tag T on T.Value LIKE AFT.FilterValues'
 								+' inner join AssetTag AT on AT.TagId = T.Id AND AT.AssetID = A.Id'
 								+' where AFT.TypeID = '+TxtId 
-								+' group by TypeID ))'
+								+' group by TypeID '
+								+' having count(*) = (select count(*) from @filters where TypeID= '+TxtId+')))'
 							  end
 	where	JoinStatement is null
 			and [Type] = 'Tag'

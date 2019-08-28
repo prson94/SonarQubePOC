@@ -28,5 +28,6 @@ namespace d360.model.DataAccessLayer
         TagDetailApiModel GetDetails(Guid tagUid, IEnumerable<KeyValuePair<string,string>> keyValuePairs);
 
         IEnumerable<dynamic> GetTooltip(Guid guid);
+        IEnumerable<Tag> GetTagsForAsset(long assetId);
     }
 }

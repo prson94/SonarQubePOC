@@ -20,10 +20,11 @@ namespace d360.model.DataAccessLayer
         IntersectType GetIntersectTypeByUid(Guid intersectTypeUid);
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
         Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type);
-        Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, Func<int, object, int, int, ApiExecution> getApiExecution);        IEnumerable<dynamic> GetExportModelWithCustomFields(int id, IEnumerable<string> customColumns);
+        Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool sendWorkflow = false);
+        IEnumerable<dynamic> GetExportModelWithCustomFields(int id, IEnumerable<string> customColumns);
         IEnumerable<dynamic> GetExportModel(int id);
         List<DatabaseBulkAssetResult> GetBulkResults(ApiExecutionInfo info);
-        Task<RelationshipDeleteResult> DeleteRelationships(IntersectType intersectType, RelationshipDeletes relationships);
+        Task<RelationshipDeleteResult> DeleteRelationships(IntersectType intersectType, RelationshipDeletes relationships, bool triggerWorkflow = false);
         bool AnyExists(Guid uid);
         bool AnyPredicateExists(Guid uid);
      }
