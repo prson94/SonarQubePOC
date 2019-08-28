@@ -52,7 +52,7 @@ namespace d360.web.Controllers
                 fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
 
             var filters = GetFilterValuesFromRequest(Request, true);
-            //var filters = new List<UiRequestFilterValue>();
+            
             if (!string.IsNullOrEmpty(ownerUsers))
             {
                 try
@@ -102,7 +102,7 @@ namespace d360.web.Controllers
                 }
             }
 
-            var results = await Company.GetDynamicAssets(assetType, filters, 0, 0, sortDataField, sortOrder, filter, false, false, false);
+            var results = await Company.GetDynamicAssets(assetType.ID, filters, 0, 0, sortDataField, sortOrder, filter, false, false, false);
 
             var data = results.Results.ToList();
 
@@ -285,9 +285,7 @@ where   A.Type = 'ArtifactType'
                     }
                 });
             }
-
-
-
+                       
             SLDocument document = null;
             if (template.IncludeParent)
             {
@@ -757,15 +755,9 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
         public async Task<ActionResult> ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
             try
-            {
-                var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == id).SingleOrDefault();
-                if (assetType == null)
-                {
-                    return jsonNetResult(new { message = "Asset Type not found" });
-                }
-
+            {                
                 var filters = GetFilterValuesFromRequest(Request, true);
-                var results = await Company.GetDynamicAssets(assetType, filters, pagenum, pagesize, sortDataField, sortOrder, filter);
+                var results = await Company.GetDynamicAssets(id, filters, pagenum, pagesize, sortDataField, sortOrder, filter);
                 return jsonNetResult(new { results = results.Results, total = results.Count });
             }
             catch (Exception ex)
@@ -813,17 +805,7 @@ order by    AT.Name").AsQueryable();
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-
-        [Route("typeswithstatistics")]
-        public JsonNetResult GetTypesWithStatistics()
-        {
-            return new JsonNetResult
-            {
-                Data = Company.Query<dynamic>(QueryConstants.ArtifactTypeStatisticsList),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
+        
         #endregion
     }
 }

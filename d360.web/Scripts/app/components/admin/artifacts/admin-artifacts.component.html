@@ -57,7 +57,7 @@
     </div>    
     <div *ngIf="isDeleting" class="col s12 m7 l8">
         <div class="tile tile-detail">            
-            <d3s-artifact-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeId]="selectedRow.data.ID"></d3s-artifact-type-delete>
+            <d3s-artifact-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeId]="selectedRow.data.ID" [assetTypeId]="selectedRow.data.AssetTypeID"></d3s-artifact-type-delete>
         </div>
     </div>
     <div *ngIf="!isEditing && !isAdding && !isDeleting" class="col s12 m7 l8">
