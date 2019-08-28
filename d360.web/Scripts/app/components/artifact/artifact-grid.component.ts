@@ -80,6 +80,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     showDelete: boolean = false;
     showEditor: boolean = false;
     isLoading: boolean = false;
+    hasNoListableColumns: boolean = false;
 
     selected: any = null;
     itemUrl: string;
@@ -185,6 +186,13 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 if (statusField != null) {
                     this.showCertificationStatus = true;
                     this.certificationStatusIndex = statusField.name;
+                }
+
+                if (result.Columns && result.Columns.length == 0) {
+                    this.hasNoListableColumns = true;
+                }
+                else {
+                    this.hasNoListableColumns = false;
                 }
 
                 this.changeDetectorRef.markForCheck();
