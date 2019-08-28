@@ -114,7 +114,7 @@ namespace igx.UnitTests.V2ControllerTests
             var data = JsonConvert.DeserializeObject<List<PredicateTypeApiViewModel>>(str);
 
             Assert.True(actionResult.IsSuccessStatusCode);
-            Assert.True(data.Count == PredicateType.DataLineage.GetAsList().Count);
+            Assert.True(data.Count > 0); // Count is variable, depending on lineage version.
 
         }
 

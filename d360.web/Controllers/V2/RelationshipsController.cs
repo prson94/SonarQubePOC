@@ -139,12 +139,17 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var types = PredicateType.DataLineage.GetAsList().Select(i => new PredicateTypeApiViewModel
-                {
-                    Type = i.ID,
-                    Name = i.Name,
-                    Description = i.Description
-                }).OrderBy(i => i.Name).ToList();
+                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+
+                var types = PredicateType.DataLineage.GetAsList()
+                    .Where(i => i.LineageVersionsSupported.Contains(lineageVersion))
+                    .Select(i => new PredicateTypeApiViewModel {
+                        Type = i.ID,
+                        Name = i.Name,
+                        Description = i.Description
+                    })
+                    .OrderBy(i => i.Name)
+                    .ToList();
                 return Request.CreateResponse(HttpStatusCode.OK, types);
             }
             catch (Exception ex)
