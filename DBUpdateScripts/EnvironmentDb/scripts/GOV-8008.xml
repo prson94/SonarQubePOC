@@ -359,6 +359,16 @@ begin
 					where	SynchedAssetTypeID = @SynchedAssetTypeID 
 							and Present = 0;
 
+					-- Do final removal of defunct relationships that are not even listed in assetrelationship integration table.
+					delete	[Intersect] 
+					where	IntersectTypeID in (select distinct RIT.IntersectTypeID from integration.SynchedAssetTypeRelationItem RI inner join integration.SynchedAssetTypeRelationItemTarget RIT on RIT.SynchedAssetTypeRelationItemID = RI.ID and RI.SynchedAssetTypeID = @SynchedAssetTypeID)
+							and ID not in ( select IntersectID from [integration].[AssetFieldRelationship] where SynchedAssetTypeID = @SynchedAssetTypeID )
+							and ID not in	(
+											select	I.ID
+											from	[Intersect] I
+													inner join [integration].[AssetFieldRelationship] AR on AR.SynchedAssetTypeID <> @SynchedAssetTypeID and AR.IntersectID = I.ID
+											);
+
 					-- Reset the staging table relationships to be listed as NOT present, to prepare for the next full refresh execution.
 					update	[integration].[AssetFieldRelationship]
 					set		[Present] = 0
