@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27004.2010
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.core", "d360.core\d360.core.csproj", "{9341CCA8-D3F2-467A-AE9C-0581054B8DE2}"
 EndProject
@@ -95,6 +95,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.IntegrationTests", "igx.IntegrationTests\igx.IntegrationTests.csproj", "{D74644D1-99A6-49B4-AB4A-4263CC69BFE0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.genericcommandprocessor", "igx.jobs.genericcommandprocessor\igx.jobs.genericcommandprocessor.csproj", "{D919EFEC-A104-4FE7-B22C-B7FEE5A4DE16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.assetsyncprocessor", "igx.jobs.assetsyncprocessor\igx.jobs.assetsyncprocessor.csproj", "{525B0538-1169-44AE-901F-6EF4161D9C8C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -254,6 +256,10 @@ Global
 		{D919EFEC-A104-4FE7-B22C-B7FEE5A4DE16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D919EFEC-A104-4FE7-B22C-B7FEE5A4DE16}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D919EFEC-A104-4FE7-B22C-B7FEE5A4DE16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{525B0538-1169-44AE-901F-6EF4161D9C8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{525B0538-1169-44AE-901F-6EF4161D9C8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{525B0538-1169-44AE-901F-6EF4161D9C8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{525B0538-1169-44AE-901F-6EF4161D9C8C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -299,9 +305,10 @@ Global
 		{4A87CC3D-B318-4ED7-8E5E-60EB27527B2E} = {F2954AF7-C35D-4A24-8D64-CFF2D2030528}
 		{D74644D1-99A6-49B4-AB4A-4263CC69BFE0} = {F2954AF7-C35D-4A24-8D64-CFF2D2030528}
 		{D919EFEC-A104-4FE7-B22C-B7FEE5A4DE16} = {757CF48D-6728-4702-AC12-754629196548}
+		{525B0538-1169-44AE-901F-6EF4161D9C8C} = {757CF48D-6728-4702-AC12-754629196548}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
 	EndGlobalSection
 EndGlobal
