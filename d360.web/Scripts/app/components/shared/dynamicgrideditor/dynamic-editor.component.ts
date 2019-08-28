@@ -52,6 +52,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() copy: boolean;
     @Input() selectedObject: string;
     @Input() selectedObjectID: number;
+    @Input() adding: boolean = false;
 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
@@ -74,6 +75,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     hasIconFields = false;
     fore: EditorField;
     back: EditorField;
+    selectedTagID: number;
 
     constructor(
         private ref: ChangeDetectorRef,
@@ -106,8 +108,15 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
     }
     autoCompleteSelected(event) {
-        if (this.objectType == 'Tag') {
+        if (this.objectType == 'Tag' && !this.adding) {
             this.consolidateToTag = event;
+        } else if (this.objectType == 'Tag' && this.adding) {
+            console.log(event);
+            if (event) {
+                this.consolidateToTag = null;
+                this.selectedTagID = event.ID;
+            }
+
         }
         
     }

@@ -294,6 +294,11 @@ namespace d360.model.DataAccessLayer
             return companyContext.Tags.FirstOrDefault(x => x.uid == uid);
         }
 
+        public Tag GetTagByName(string name)
+        {
+            return companyContext.Tags.FirstOrDefault(x => x.Value == name);
+        }
+
         public bool DoesTagExists(string value)
         {
             return companyContext.Tags.Any(x => x.Value == value && x.State == State.Active);
@@ -452,7 +457,7 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            string sql = @"select T.Value as name, T.uid as code, Results.count from Tag T 
+            string sql = @"select T.Value as name, T.uid as code, Results.count, T.ID from Tag T 
                             cross apply (select count(*) from AssetTag where TagID = T.ID)Results(count)
                             where State = 1 and LOWER(T.Value) like '%'+@value+'%' and T.uid != @exceptUid";
 

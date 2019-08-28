@@ -13,12 +13,16 @@ import { MessagesObservableService } from '../../../services/messages-observable
 
 export class ObjectDetailFieldComponent {
     @Input() field: DetailField;
+    @Input() assetID: number;
     DetailFieldType = DetailFieldType;
+    
 
     constructor(private router: Router) {}
     ngOnInit() {
           if ((this.field.DataType == 'date' || this.field.DataType == 'datetime') && isNaN(Date.parse(this.field.Value)))
-                this.field.Value = null;
+            this.field.Value = null;
+        
+
     }
 
     private formatAsNumber(fieldValue): string {

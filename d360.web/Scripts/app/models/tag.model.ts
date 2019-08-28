@@ -17,6 +17,7 @@ export class TagType {
     CreatedBy: string;
     UpdatedOn: Date;
     UpdatedBy: string;
+    TooltipID: number;
 }
 
 export enum TagTypeState {

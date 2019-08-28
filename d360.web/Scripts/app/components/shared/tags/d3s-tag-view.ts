@@ -1,5 +1,5 @@
 import { CommonModule, DatePipe } from '@angular/common';
-import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
+import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef, OnChanges, SimpleChange } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { container } from '@angular/core/src/render3';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
@@ -25,16 +25,24 @@ export class TagView extends AdminBaseComponent implements OnInit {
     public theDeleteCallback: Function;
     @Input() data: any;
     @Input() isEditable: boolean = false;
+    @Input() assetID: number;
+    showEditor: boolean = false;
+    showDelete: boolean = false;
     private tags: any[];
+    private tagID: any;
     selected: TagType[] = [];
+    private editPopupTitle: string = 'Edit Tag';
+    private deletePopupTitle: string = 'Delete Tag';
     private isShowAll: boolean = false;
     @ViewChild("container") container: ElementRef;
+    error: any;
 
     constructor(private tagService: TagService, private messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, rightSidebarService: RightSidebarService) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
     }
 
     ngOnInit() {
+        this.theDeleteCallback = this.deleteTags.bind(this);
         try {
             if (this.data && (typeof this.data == 'string'))
                 this.tags = JSON.parse(this.data);
@@ -44,11 +52,82 @@ export class TagView extends AdminBaseComponent implements OnInit {
         {
             console.warn("d3s-tag-view::Error while parsing tags!");
         }
+        //this.getTags();
         this.selected = this.tags;
     }
 
     getTagUrl(tag: any, event: MouseEvent) {
-        this.openTagPage(event, `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${tag.uid.toString().toLowerCase()}`);
+        if (this.isEditable != true && this.showDelete == false)
+            this.openTagPage(event, `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${tag.uid.toString().toLowerCase()}`);
+    }
+
+    getTags() {
+        this.isLoading = true;
+        this.tagService.getTagsList().subscribe(res => {
+            if (res && res.length > 0) {
+                this.tags = res.sort((a, b) => a.Value.localeCompare(b.Value));
+                if (this.tags.length > 0) this.selected.push(this.tags[0]);
+            }
+            this.isLoading = false;
+        }, err => this.error = err);
+    }
+
+    openDeleteModal(tag: any) {
+        if (this.isEditable == true) {
+            this.showDelete = true;
+            this.selected.push(tag);
+            this.deletePopupTitle = this.selected.length == 1 ? 'Delete Tag' : 'Delete Tags';
+        }
+    }
+
+    closeEditor() {
+        this.showEditor = false;
+        this.editPopupTitle = 'Edit Tag';
+        this.selected = [];
+    }
+
+    add() {
+        this.selected = [];
+        this.editPopupTitle = 'Add Tag';
+        this.showEditor = true;
+    }
+
+    saveTag(event) {
+        this.tagService.createAssetTag(event.item.Value, this.assetID)
+            .subscribe(result => {
+                let msg: string = '';
+                if (event.item.uid == undefined) {
+                    msg = `${result.Value} succesfully created`;
+                }
+                this.showMessageForResult(this.messagesService, result, msg);
+                if (event.item.uid == undefined) {
+                    this.tags.push(["Value", event.item.Value]);
+                }
+                this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
+
+                this.selected = [];
+                event.item.UseCount = 0;
+                this.selected.push(event.item);
+
+                this.showEditor = false;
+
+            });
+    }
+
+    deleteTags() {
+        this.tagID = this.selected[0].TooltipID;
+        this.tagService.deleteAssetTag(this.tagID, this.assetID).
+            subscribe(result => {
+                this.showMessageForResult(this.messagesService, result);
+                //remove the template with this id from the grid
+                if (result.type != 'error') {
+                    this.selected.forEach(t => {
+                        this.tags.splice(this.findTagIndex(t.TooltipID), 1);
+                    })
+                    this.selected = [];
+                }
+                this.showDelete = false;
+            }, err => this.showMessageForResult(this.messagesService, err));
     }
 
     showAllToggle(event: MouseEvent) {
@@ -155,11 +234,18 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
     }
 
-    findTagIndex(uid: string) {
+    findTagIndex1(uid: string) {
         var index: number = -1;
         for (var tag of this.tags) {
             index++;
             if (tag.uid == uid) return index;
+        }
+    }
+    findTagIndex(id: number) {
+        var index: number = -1;
+        for (var tag of this.tags) {
+            index++;
+            if (tag.TooltipID == id) return index;
         }
     }
 }

@@ -16,7 +16,7 @@ declare var CompanySettings;
 export class ObjectDetailComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
-
+    private assetID: number;
     private isLoading = false;
     DetailFieldType = DetailFieldType;
 
@@ -26,7 +26,6 @@ export class ObjectDetailComponent implements OnChanges {
     private categories: Category[] = new Array<Category>();
 
     rows = new Array<DetailRow>();
-
     constructor(private objectDetailService: ObjectDetailService, protected messagesService: MessagesObservableService) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -72,6 +71,9 @@ export class ObjectDetailComponent implements OnChanges {
                                         }
                                     });
                             }
+                            if (f.Name == 'Asset ID') {
+                                this.assetID = +f.Value;
+                            }
 
                         });
                         r.FirstColumnFields = r.FirstColumnFields.filter(f => f.Type != DetailFieldType.None);
@@ -93,6 +95,9 @@ export class ObjectDetailComponent implements OnChanges {
                                             r.SecondColumnFields.splice(r.SecondColumnFields.indexOf(s), 1);
                                         }
                                     });
+                            }
+                            if (s.Name == 'Asset ID') {
+                                this.assetID = +s.Value;
                             }
                         });
 

@@ -99,6 +99,69 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Adds one tag to an Asset.
+        /// </summary>        
+        /// <returns>The created tag.</returns>
+        [
+            HttpPost,
+            Route("createAssetTag"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "The specified tag was saved, returns the properties of the created tag.", typeof(TagApiModel)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult CreateAssetTag(string tagName, int assetID)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to create tags."));
+            try
+            {
+                var tag = tagRepository.GetTagByName(tagName);
+                tagRepository.CreateAssetTag(tag.ID,assetID);
+            }
+            catch (Exception e)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while creating tag for asset", e.Message);
+            }
+
+            return successMessageResponse(HttpStatusCode.OK, "Tag to Asset.", "Tag successfully added to Asset.");
+        }
+
+
+        /// <summary>
+        /// Allows you to remove a tag from an asset.
+        /// </summary>
+        /// <returns>A status for the DELETE request.</returns>
+        [
+            HttpDelete,
+            Route("deleteAssetTag"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult DeleteAssetTag(int tagID, int assetID)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            try
+            {
+                if (!tagRepository.DeleteAssetTag(tagID,assetID))
+                {
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", "Tag not found.");
+                }
+            }
+            catch (Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while deleting tag", ex.Message);
+
+            }
+
+
+            return successMessageResponse(HttpStatusCode.OK, "Tag removed from Asset.", "Tag successfully removed from Asset.");
+        }
+
 
 
         /// <summary>

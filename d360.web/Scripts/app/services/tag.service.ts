@@ -72,6 +72,18 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
+    createAssetTag(tagName: string, assetID: number): Observable<any> {
+        let url = `api/v2/tags/createAssetTag?tagName=${tagName}&assetID=${assetID}`;
+        return this.http.post(url, tagName)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
+    deleteAssetTag(tagID: number, assetID: number): Observable<any> {
+        let url = `api/v2/tags/deleteAssetTag?tagID=${tagID}&assetID=${assetID}`;
+        return this.http.delete(url)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
     consolidateTags(parentTag: string, childrenTags: string[]): Observable<any[]> {
         let url = `api/v2/tags/consolidate/${parentTag}`;
         return this.http.post(url, childrenTags)

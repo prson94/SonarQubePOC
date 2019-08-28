@@ -11,7 +11,7 @@
     </div>
     <div *ngIf="field.Values && fieldDataType == 'tag'">
         <ng-container >
-            <d3s-tag-view [data]="getJSONString(field.Values)" [isEditable]="true"></d3s-tag-view>
+            <d3s-tag-view [data]="getJSONString(field.Values)" [assetID]="assetID" [isEditable]="true"></d3s-tag-view>
         </ng-container>
     </div>
 </div> 
