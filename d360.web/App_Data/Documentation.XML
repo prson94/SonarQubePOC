@@ -2789,20 +2789,22 @@
             <param name="type">The legacy object type of the asset type (ArtifactType, FusioAttributeType, TaxonomyType, etc.).</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts,System.Boolean)">
             <summary>
             Takes a given set of relationships and inserts/updates them. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
             <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
             <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
+            <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostBulkRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostBulkRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts,System.Boolean)">
             <summary>
             Inserts or updates a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
             </summary>
             <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
             <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
+            <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetExecutionStatus(System.Guid)">
@@ -2812,12 +2814,13 @@
             <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeleteRelationship(System.Guid,d360.core.entities.RelationshipDeletes)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeleteRelationship(System.Guid,d360.core.entities.RelationshipDeletes,System.Boolean)">
             <summary>
             Deletes a relationship and children of a given uid.
             </summary>
             <param name="intersectTypeUid">The unique identifier of the relationship type.</param>
             <param name="relationships">The list of relationships for deletions.</param>
+            <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.ExportTypesToExcel">

@@ -431,6 +431,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
         /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
+        /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
@@ -441,7 +442,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships)
+        public async Task<IHttpActionResult> PostRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships, bool triggerWorkflow = false)
         {
             var prefix = "Relationships.PostRelationshipsAsync => ";
             var errorMessage = "";
@@ -463,12 +464,13 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationships in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
                 var execution = getApiExecution(relationships.Count, new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid });
+
                 Company.Add(execution);
 
                 List<DatabaseBulkRelationshipResult> results = null;
                 try
                 {
-                    results = Company.ImportRelationships(execution, intersectType, relationships);
+                    results = Company.ImportRelationships(execution, intersectType, relationships, 3600, triggerWorkflow);
 
                     // Close execution record.
                     execution.Processed = results.Count;
@@ -501,6 +503,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
         /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
+        /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
@@ -511,7 +514,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostBulkRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships)
+        public async Task<IHttpActionResult> PostBulkRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships, bool triggerWorkflow = false)
         {
             var prefix = "Relationships.PostBulkRelationshipsAsync => ";
             var errorMessage = "";
@@ -529,7 +532,7 @@ namespace d360.web.Controllers.V2
                 if (relationships == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
-                ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPostRelationships(intersectTypeUid, relationships, this.getApiExecution);
+                ApiExecutionInfo executionInfo = await RelationshipRepository.BulkPostRelationships(intersectTypeUid, relationships, this.getApiExecution, triggerWorkflow);
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -623,6 +626,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="intersectTypeUid">The unique identifier of the relationship type.</param>
         /// <param name="relationships">The list of relationships for deletions.</param>
+        /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
@@ -635,7 +639,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete relationship of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteRelationship(Guid intersectTypeUid, RelationshipDeletes relationships)
+        public async Task<IHttpActionResult> DeleteRelationship(Guid intersectTypeUid, RelationshipDeletes relationships, bool triggerWorkflow = false)
         {
             var prefix = "Relationships.DeleteRelationship => ";
             var errorMessage = "";
@@ -676,7 +680,7 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                var result = await RelationshipRepository.DeleteRelationships(intersectType, relationships);
+                var result = await RelationshipRepository.DeleteRelationships(intersectType, relationships, triggerWorkflow);
                 if (result.StatusCode != HttpStatusCode.OK)
                 {
                     return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message));
