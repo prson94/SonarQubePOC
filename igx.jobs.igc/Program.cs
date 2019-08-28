@@ -49,7 +49,7 @@ namespace igx.jobs
     public static class IgcIntegration
     {
 #if DEBUG
-        [Disable]
+   //     [Disable]
 #endif
         public static void RunScheduleViaTimer([TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         {
@@ -114,12 +114,12 @@ declare @dt datetime
 set @dt = getutcdate()
 
 update  T
-set     T.CompletedOn = getutcdate()
+set     T.CompletedOn = @dt
 from	integration.ExecutionAssetType T
 		inner join integration.SynchedAssetType A on A.ID = T.SynchedAssetTypeID
 		inner join integration.Setting S on S.ID = A.IntegrationSettingID
 where	T.CompletedOn is null
-		and T.StartedOn < DATEADD(hh, -(coalesce(A.DeleteExecutionTimeoutHours, S.DeleteExecutionTimeoutHours)), @dt)", new List<SqlParameter>());
+		and T.StartedOn < DATEADD(hh, -(coalesce(A.DeleteExecutionTimeoutHours, S.DeleteExecutionTimeoutHours)), @dt)");
                             }
                             catch (Exception cex)
                             {
