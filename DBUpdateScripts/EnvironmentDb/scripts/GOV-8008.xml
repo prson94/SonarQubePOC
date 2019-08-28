@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="GOV-8008-CompleteExecution">
+  <changeSet author="Pappas" id="GOV-8008-CompleteExecution-2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -90,7 +90,8 @@ begin
 								inner join Asset A on A.AssetTypeID = @AssetTypeID and A.SourceID = J.SourceID
 								inner join [integration].[SynchedAssetTypeRoleItem] R on R.SynchedAssetTypeID = J.SynchedAssetTypeID and R.SourceIdField = J.FieldName and R.ResolutionType = 1
 						where	H.SynchedAssetTypeID = @SynchedAssetTypeID
-								and H.Section = 3;
+								and H.Section = 3
+								and substring(rtrim(ltrim(J.FieldValue)), 1, 250) <> '';
 
 					-- Resolution Type = 2
 					insert into #StagingOwners (AssetID, SourceID, ResponsibilityTypeID, ResourceIdentifier, ResolutionFieldTypeID)
