@@ -108,7 +108,7 @@ namespace igx.UnitTests
             var mockRepo = new Mock<IAssetRepository>();
             var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage());
 
-            mockRepo.Setup(x => x.GetAssetType(It.IsAny<AssetTypeClass?>()))
+            mockRepo.Setup(x => x.GetAssetType(It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>()))
                 .Returns(
                 Task.FromResult<IEnumerable<AssetTypeApiViewModel>>(new List<AssetTypeApiViewModel>() { new AssetTypeApiViewModel() })
             );
@@ -130,24 +130,24 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.GetPredicateByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Predicate() { UID = uid, Type = PredicateType.InterTypeHierarchy } : null);
 
-            mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true))
-                .Returns((List<AssetInsert> assetInsertList, object o2, object o3, object o4) =>
+            mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true,true))
+                .Returns((List<AssetInsert> assetInsertList, object o2, object o3, object o4, object o5) =>
                  {
                      if (assetInsertList.Count == 0) return null;
                      else return new List<DatabaseBulkAssetResult>() { };
                  }
                 );
 
-            mockRepo.Setup(x => x.PutAssets(It.IsAny<List<AssetUpdate>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true))
-                .Returns((List<AssetUpdate> assetUpdateList, object o2, object o3, object o4) =>
+            mockRepo.Setup(x => x.PutAssets(It.IsAny<List<AssetUpdate>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true,true))
+                .Returns((List<AssetUpdate> assetUpdateList, object o2, object o3, object o4, object o5) =>
                 {
                     if (assetUpdateList.Count == 0) return null;
                     else return new List<DatabaseBulkAssetResult>() { };
                 }
                 );
 
-            mockRepo.Setup(x => x.DeleteAsset(It.IsAny<AssetDeletes>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>()))
-                .Returns((AssetDeletes assetDeletes, object o2, object o3) =>
+            mockRepo.Setup(x => x.DeleteAsset(It.IsAny<AssetDeletes>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true))
+                .Returns((AssetDeletes assetDeletes, object o2, object o3, object o4) =>
                 {
                     if (assetDeletes == null) return null;
                     else return new List<DatabaseBulkAssetResult>() { };
@@ -160,7 +160,7 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.PutBulkAssets(It.IsAny<Guid>(), It.IsAny<List<AssetUpdate>>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
                .Returns(Task.FromResult(new ApiExecutionInfo()));
 
-            mockRepo.Setup(x => x.BulkDeleteAssets(It.IsAny<Guid>(), It.IsAny<AssetDeletes>(), It.IsAny<ApiExecution>()))
+            mockRepo.Setup(x => x.BulkDeleteAssets(It.IsAny<Guid>(), It.IsAny<AssetDeletes>(), It.IsAny<ApiExecution>(),true))
                .Returns(Task.FromResult(new ApiExecutionInfo()));
 
             mockRepo.Setup(x => x.GetExecutionItemByUid(It.IsAny<Guid>()))
@@ -373,7 +373,7 @@ namespace igx.UnitTests
                 .Returns((string s) => s == DataConstants.Tags.ValidName ? false : true);
 
             mock.Setup(x => x.DeleteTags(It.IsAny<List<TagApiDeleteModel>>()))
-                .Returns((List<TagApiDeleteModel> list) => list.Any(x=> x.uid.ToString() == DataConstants.InvalidGUID) ? false : true);
+                .Returns((List<TagApiDeleteModel> list) => list.Any(x => x.uid.ToString() == DataConstants.InvalidGUID) ? false : true);
 
             mock.Setup(x => x.GetTagByUid(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new Tag() : null);

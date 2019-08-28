@@ -20,7 +20,6 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 
 import { ArtifactStatusComponent } from './artifact-status.component';
 import { ObjectBoardComponent } from './object-board.component';
-import { ObjectGovernanceComponent } from './object-governance.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { ObjectHealthComponent } from './object-health.component';
 import { ObjectIssuesComponent } from './object-issues.component';
@@ -58,14 +57,12 @@ export function highchartsFactory() {
     declarations: [    
         ArtifactStatusComponent,
         ObjectBoardComponent,
-        ObjectGovernanceComponent,
         ObjectHealthDetailsComponent,
         ObjectHealthComponent,
         ObjectIssuesComponent,
     ],
     exports: [
         ObjectBoardComponent,        
-        ObjectGovernanceComponent,
         ObjectHealthComponent,
         ObjectHealthDetailsComponent,     
     ],

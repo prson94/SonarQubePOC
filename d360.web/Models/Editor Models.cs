@@ -143,11 +143,12 @@ namespace d360.web.Models
         public string HomePageTitleColor { get; set; }
         public string HomePageBackgroundImage { get; set; }
         public bool ClearHomePageBackgroundImage { get; set; } = false;
-        public bool UseLegacyLineage { get; set; } = true;
         public string BrowserTitlePrefix { get; set; }
         public bool WorkflowDigestEmailEnabled { get; set; }
         public int MaxDropdownItems { get; set; }
         public bool WriteActionDescription { get; set; }
+
+        public int LineageVersion { get; set; } = 1;
 
     }
 

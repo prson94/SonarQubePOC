@@ -1,4 +1,5 @@
-﻿using d360.extensions;
+﻿using d360.core.entities;
+using d360.extensions;
 using d360.model;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -89,57 +90,71 @@ namespace d360.web.Controllers
 
         private string GetIcon(Guid? Uid, string type)
         {
-            string icon = null;
+            TopNavigationItem menuItem = null;
+
             if (Uid != null)
             {
-                icon = Company.Query<string>($@" select Icon FROM [dbo].[SiteNav] WHERE ID = (
+                menuItem = Company.Query<TopNavigationItem>($@" select Icon, ImageIconUrl FROM [dbo].[SiteNav] WHERE ID = (
                     SELECT TOP 1 s.ParentId
                     FROM [dbo].[Asset] a
                     INNER JOIN [dbo].[AssetType] at on a.AssetTypeID = at.ID
                     INNER JOIN [dbo].[SiteNav] s on at.Object = s.Object and at.ObjectID = s.ObjectID
                     WHERE a.uid = '{Uid.ToString()}');").FirstOrDefault();
-                if (icon != null)
-                    return icon;
             }
 
-            string siteNavName = null;
+            if (menuItem == null) {
+                string siteNavName = null;
 
-            switch (type)
-            {
-                case "Resource":
-                    return "fa-user";
-                case "Group":
-                    return "fa-users";
-                case "Fusion":
-                case "FusionAttributes":
-                case "FusionType":
-                    siteNavName = "#Fusion";
-                    break;
-                case "Artifact":
-                case "Glossary":
-                case "Grammatic Type":
+                switch (type)
+                {
+                    case "Resource":
+                        return "fa-user";
+                    case "Group":
+                        return "fa-users";
+                    case "Grammatic Type":
+                    case "Synonym":
+                        return "fa-comments";
+                    case "Attribute":
+                        return "fa-pencil-square-o";
+                    case "Fusion":
+                    case "FusionAttributes":
+                    case "FusionType":
+                        siteNavName = "#Fusion";
+                        break;
+                    case "Artifact":
+                    case "Glossary":
+                        siteNavName = "#Glossary";
+                        break;
+                    case "Model":
+                    case "Taxonomy":
+                        siteNavName = "#Models";
+                        break;
+                    case "Reference":
+                        siteNavName = "#Reference";
+                        break;
+                    case "Rule":
+                        siteNavName = "#Data Quality";
+                        break;
+                    case "Policy":
+                        siteNavName = "#Policy";
+                        break;
+                }
+                //For typeahead results, Type is a concatenation of Type and subtype for Artifacts
+                if (siteNavName == null && type.Length >= 8 && type.Substring(0, 8) == "Glossary")
                     siteNavName = "#Glossary";
-                    break;
-                case "Model":
-                case "Taxonomy":
-                    siteNavName = "#Models";
-                    break;
-                case "Reference":
-                    siteNavName = "#Reference";
-                    break;
-                case "Rule":
-                    siteNavName = "#Data Quality";
-                    break;
-            }
-            //For typeahead results, Type is a concatenation of Type and subtype for Artifacts
-            if (siteNavName == null && type.Length >= 8 && type.Substring(0, 8) == "Glossary")
-                siteNavName = "#Glossary";
 
-            if (siteNavName != null)
+                if (siteNavName != null)
+                {
+                    menuItem = Company.Query<TopNavigationItem>($@" select Icon FROM [dbo].[SiteNav] WHERE Name = '{siteNavName}';").FirstOrDefault();
+                }
+            }
+
+            if (menuItem != null)
             {
-                icon = Company.Query<string>($@" select Icon FROM [dbo].[SiteNav] WHERE Name = '{siteNavName}';").FirstOrDefault();
-                if (icon != null)
-                    return icon;
+                if (menuItem.FullURL != null)
+                    return menuItem.FullURL;
+                else if (menuItem.Icon != null)
+                    return menuItem.Icon;
             }
 
             return "fa-circle-o";
@@ -147,12 +162,29 @@ namespace d360.web.Controllers
 
         private TypeaheadResult AddIcon(TypeaheadResult result)
         {
-            result.Icon = GetIcon(result.Uid, result.Type);
+            string icon = GetIcon(result.Uid, result.Type);
+            if(icon.Substring(0, 3) == "fa-")
+            {
+                result.Icon = icon;
+            } else
+            {
+                result.Icon = null;
+                result.ImageUrl = icon;
+            }
             return result;
         }
         private IndexResult AddIcon(IndexResult result)
         {
-            result.Icon = GetIcon(result.Uid, result.Group);
+            string icon = GetIcon(result.Uid, result.Group);
+            if (icon.Substring(0, 3) == "fa-")
+            {
+                result.Icon = icon;
+            }
+            else
+            {
+                result.Icon = null;
+                result.ImageUrl = icon;
+            }
             return result;
         }
 
