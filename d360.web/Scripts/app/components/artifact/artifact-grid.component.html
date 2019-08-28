@@ -1,5 +1,5 @@
 <d3s-loading [isLoading]="isEditing"></d3s-loading>
-<header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing">
+<header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns">
     <d3s-tile-actions [hasAdd]="showAddButton && hasModifyAssetPermissions()"
                       [hasExport]="!artifactType.HasCustomExportTemplates"
                       [hasCustomExport]="artifactType.HasCustomExportTemplates"
@@ -20,7 +20,7 @@
         {{showArtifactDetails ? 'Hide Description':'Show Description'}}
     </span>
 </header>
-<div class="row" *ngIf="!showDelete && !showEditor && !isEditing">
+<div class="row" *ngIf="!showDelete && !showEditor && !isEditing && !hasNoListableColumns">
   <div
     #rightMenu
     [ngClass]="{
@@ -216,3 +216,6 @@
     (onCancel)="showDelete = false"
     (onDeleted)="onDeleted()">
 </d3s-asset-delete-editor>
+<div *ngIf="hasNoListableColumns" style="font-weight:bold;padding:25px;">
+    The current artifact type has no listable fields types configured.  Please configure at least one field type as listable in order to see data on the artifact list page.  For further information how to configure a field type as listable see the product guide.
+</div>
