@@ -431,7 +431,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
         /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
-        /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action.</param>
+        /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
@@ -503,7 +503,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
         /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
-        /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action..</param>
+        /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
@@ -626,7 +626,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="intersectTypeUid">The unique identifier of the relationship type.</param>
         /// <param name="relationships">The list of relationships for deletions.</param>
-        /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action.</param>
+        /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
