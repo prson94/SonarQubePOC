@@ -1568,9 +1568,40 @@ where	R.SourceObject = 'FusionAttribute'
         public List<IntersectTypeOption> GetIntersectTypeOptions(
             SystemObjects? subject = null, int? subjectID = null, 
             SystemObjects? @object = null, int? objectID = null,
-            int? predicateID = null)
+            int? predicateID = null,
+            List<AssetTypeClass> limitToClasses = null)
         {
-            var sql = @"
+            string noClassLimitSql = "";
+            string classLimitSql = "";
+            if (limitToClasses == null)
+            {
+                noClassLimitSql = @"
+                UNION
+                SELECT	CAST(IT.ID as int) ID,
+		                'Relationship :: ' + ITypeName.Name AS Name,
+		                'IntersectType' AS Type
+                FROM	IntersectType IT    
+		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
+                UNION
+                SELECT	ID,
+		                'Rule Implementation :: ' + DisplayValue as Name,
+		                'RuleImplementationType' as Type
+                FROM    [Rule]
+                UNION
+                SELECT	0 as ID,
+		                'Reference :: List' as Name,
+		                'ReferenceItemType' as Type	";
+            }
+            else
+            {
+                if (limitToClasses.Count > 0)
+                {
+                    classLimitSql = " and T.[Class] in ("  + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
+                }
+            }
+
+
+            var sql = $@"
     SELECT		I.ID,
 				I.Name,
 				I.Type
@@ -1592,22 +1623,8 @@ where	R.SourceObject = 'FusionAttribute'
 		                cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
                         left join FusionAttributeType FAT on T.Object = 'FusionAttributeType' and FAT.ID = T.ObjectID 
                         left join FusionType FT on FT.ID = FAT.FusionTypeID 
-                where	T.Object not in ('AttributeType', 'FusionType', 'OrganizationType')
-                UNION
-                SELECT	CAST(IT.ID as int) ID,
-		                'Relationship :: ' + ITypeName.Name AS Name,
-		                'IntersectType' AS Type
-                FROM	IntersectType IT    
-		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
-                UNION
-                SELECT	ID,
-		                'Rule Implementation :: ' + DisplayValue as Name,
-		                'RuleImplementationType' as Type
-                FROM    [Rule]
-                UNION
-                SELECT	0 as ID,
-		                'Reference :: List' as Name,
-		                'ReferenceItemType' as Type				 				
+                where	T.Object not in ('AttributeType', 'FusionType', 'OrganizationType'){classLimitSql}
+			 	{noClassLimitSql}
                 ) I";
 
             if (subject.HasValue && subjectID.HasValue)
@@ -1640,6 +1657,115 @@ where	R.SourceObject = 'FusionAttribute'
             sql += " ORDER BY I.Name";
 
             return Database.Connection.Query<IntersectTypeOption>(sql).ToList();
+        }
+
+        public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
+        {
+            var sSubject = subject.ToString();
+            var subjectAssetType = Filter<AssetType>(i => i.Object == sSubject && i.ObjectID == subjectID).FirstOrDefault();
+            if (subjectAssetType == null)
+            {
+                throw new ApplicationException("Subject asset type does not exist.");
+            }
+
+            var sql = @"
+select	P.*
+from	[Predicate] P
+		left join IntersectType I on I.PredicateID = P.ID 
+			and I.Subject = @s and I.SubjectID = @sid 
+			and ( (@o is null) or (@o is not null and I.Object = @o and I.ObjectID = @oid) )
+			and ( (@pid is null) or (@pid is not null and I.PredicateID <> @pid) )
+where	I.ID is null";
+
+            var predicates = Query<Predicate>(sql, new
+            {
+                s = new DbString { IsAnsi = true, Value = subject.ToString() },
+                sid = subjectID,
+                o = new DbString { IsAnsi = true, Value = @object.ToString() },
+                oid = objectID,
+                pid = predicateID
+            }).ToList()
+            .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment &&
+                        i.Type.AsInfoModel().AllowEditFromRelationshipEditor &&
+                        i.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion)
+                  );
+
+            if (
+                subjectAssetType.Class != AssetTypeClass.Glossary &&
+                subjectAssetType.Class != AssetTypeClass.Model &&
+                subjectAssetType.Class != AssetTypeClass.Policy &&
+                subjectAssetType.Class != AssetTypeClass.Rule
+                )
+            {
+                predicates = predicates.Where(i => i.Type != PredicateType.BusinessToTechnical && i.Type != PredicateType.FusionMapping);
+            }
+
+            return predicates.ToList();
+        }
+
+        public IntersectType UpsertIntersectType(IntersectType model, int lineageVersion)
+        {
+            var predicateModel = GetById<Predicate>(model.PredicateID.Value);
+
+            if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", "Not allowed to add a relationship type with this predicate.");
+            }
+            if (($"{model.Subject}{model.SubjectID}" != $"{model.Object}{model.ObjectID}") && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
+            }
+            if (($"{model.Subject}{model.SubjectID}" == $"{model.Object}{model.ObjectID}") && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
+            }
+
+            if (!predicateModel.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {predicateModel.Type.AsInfoModel().Name}.");
+            }
+
+            AssetType subjectAssetType = null;
+            AssetType objectAssetType = null;
+            if (predicateModel.Type == PredicateType.BusinessToTechnical || predicateModel.Type == PredicateType.Transformation)
+            {
+                subjectAssetType = Filter<AssetType>(i => i.Object == model.Subject && i.ObjectID == model.SubjectID).FirstOrDefault();
+                objectAssetType = Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).FirstOrDefault();
+
+                if (predicateModel.Type == PredicateType.BusinessToTechnical)
+                {
+                    if (subjectAssetType.Class != AssetTypeClass.Glossary && subjectAssetType.Class != AssetTypeClass.Model && subjectAssetType.Class != AssetTypeClass.Policy && subjectAssetType.Class != AssetTypeClass.Rule)
+                    {
+                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : Glossary, Model Policy, or Rule.");
+                    }
+                    if (objectAssetType.Class != AssetTypeClass.FusionAttribute)
+                    {
+                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your object must be a Technical Asset class.");
+                    }
+                }
+                else if (predicateModel.Type == PredicateType.Transformation)
+                {
+                    if (!subjectAssetType.UseAsTransformation && !objectAssetType.UseAsTransformation)
+                    {
+                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate either your subject or object must support being used as a transformation.");
+                    }
+                    if (subjectAssetType.UseAsTransformation && objectAssetType.UseAsTransformation)
+                    {
+                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate either your subject or object must support being used as a transformation, but not both.");
+                    }
+                }
+            }
+
+            if (model.ID > 0)
+            {
+                Update(model);
+            }
+            else
+            {
+                Add(model);
+            }
+
+            return model;
         }
 
         #endregion
