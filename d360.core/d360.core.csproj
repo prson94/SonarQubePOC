@@ -124,8 +124,6 @@
     <Compile Include="entities\Organization\Organization.cs" />
     <Compile Include="entities\Quality\RuleResultFusionAttribute.cs" />
     <Compile Include="entities\Quality\RuleType.cs" />
-    <Compile Include="entities\Reference\ReferenceItemType.cs" />
-    <Compile Include="entities\Reference\ReferenceItem.cs" />
     <Compile Include="entities\Relation\MapGroup.cs" />
     <Compile Include="entities\Relation\MapGroupItem.cs" />
     <Compile Include="entities\Relation\MapType.cs" />
@@ -283,6 +281,7 @@
     <Compile Include="entities\Workflow\WorkflowTaskProcedure.cs" />
     <Compile Include="enums\ApiUriType.cs" />
     <Compile Include="enums\BulkRelationshipOperation.cs" />
+    <Compile Include="enums\IntegrationErrorCode.cs" />
     <Compile Include="enums\Permission.cs" />
     <Compile Include="enums\EnvironmentLevel.cs" />
     <Compile Include="enums\HelpResourceType.cs" />

@@ -4,13 +4,15 @@ import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SearchResultsObject, SearchCategories, SearchResult } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { Router } from '@angular/router';
 
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-home-search',
     template: `               
-                <d3s-search-input (search)="doSearch()" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [(searchText)]="searchText"></d3s-search-input>                
+                <d3s-search-input (keydown.enter)="navigateSearch()" (search)="doSearch()" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [(searchText)]="searchText"></d3s-search-input>                
                 <d3s-search-results
                     *ngIf="hasResults=='true'" 
                     [itemsPerPage]="resultsPerPage" 
@@ -37,7 +39,7 @@ export class HomeSearchComponent extends BaseComponent {
     private resultsPerPage: number = 5;
     private pageNumber: number = 0;
        
-    constructor(private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
+    constructor(private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService, private router: Router) {
         super();        
     }
 
@@ -58,6 +60,10 @@ export class HomeSearchComponent extends BaseComponent {
         this.selectedCategory = category;
         this.pageNumber = 0;
         this.doSearch(this.selectedCategory);
+    }
+
+    private navigateSearch() {
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&advanced=0&types=${this.searchTypes ? this.searchTypes.join(',') : ''}`);
     }
 
     private paginate(event) {        

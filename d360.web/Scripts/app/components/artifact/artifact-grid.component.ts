@@ -80,6 +80,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     showDelete: boolean = false;
     showEditor: boolean = false;
     isLoading: boolean = false;
+    hasNoListableColumns: boolean = false;
 
     selected: any = null;
     itemUrl: string;
@@ -187,13 +188,20 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                     this.certificationStatusIndex = statusField.name;
                 }
 
+                if (result.Columns && result.Columns.length == 0) {
+                    this.hasNoListableColumns = true;
+                }
+                else {
+                    this.hasNoListableColumns = false;
+                }
+
                 this.changeDetectorRef.markForCheck();
             }
         );
     }
 
-    getData() {
-        this.isLoading = true;
+    getData() {        
+        this.isLoading = true;        
         this.artifactService.getArtifacts(this.artifactType.ID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners).pipe(debounceTime(3000))
             .subscribe(result => {
                     this.items = result.results;
@@ -274,6 +282,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.isEditing = false;
                 this.showMessageForResult(this.messagesService, result);
                 if (event.item.ID) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
+                this.getData();
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
             });

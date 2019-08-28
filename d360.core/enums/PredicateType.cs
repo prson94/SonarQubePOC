@@ -19,7 +19,8 @@ namespace d360.core.enums
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(false),
-            AllowEditFromRelationshipEditor(true)
+            AllowEditFromRelationshipEditor(true),
+            LineageVersionsSupported(1,2)
         ]
         DataLineage = 1,
         [
@@ -30,7 +31,8 @@ namespace d360.core.enums
             AllowMultiplePredicates(true), 
             AllowDifferentSubjectObject(true), 
             ForceDifferentSubjectObject(true),
-            AllowEditFromRelationshipEditor(false)
+            AllowEditFromRelationshipEditor(false),
+            LineageVersionsSupported(2)
         ]
         ReferenceLineage = 2,
         [
@@ -57,13 +59,14 @@ namespace d360.core.enums
         IntraTypeHierarchy = 4,
         [
             Name("User Ownership - NOT USED YET"),
-            Description("This allows owners to be ssociated with owned items."),
+            Description("This allows owners to be associated with owned items."),
             ReadOnly(true),
             AllowIntersectTypeAssignment(false),            
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
-            AllowEditFromRelationshipEditor(true)
+            AllowEditFromRelationshipEditor(true),
+            LineageVersionsSupported(1)
         ]
         UserOwnership = 5,
         [
@@ -96,7 +99,8 @@ namespace d360.core.enums
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false),
-            AllowEditFromRelationshipEditor(true)
+            AllowEditFromRelationshipEditor(true),
+            LineageVersionsSupported(1, 2)
         ]
         FusionMapping = 8,
         [
@@ -118,7 +122,8 @@ namespace d360.core.enums
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
-            AllowEditFromRelationshipEditor(true)
+            AllowEditFromRelationshipEditor(true),
+            LineageVersionsSupported(1)
         ]
         Usage = 10,
         [
@@ -129,9 +134,34 @@ namespace d360.core.enums
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
-            AllowEditFromRelationshipEditor(false)
+            AllowEditFromRelationshipEditor(false),
+            LineageVersionsSupported(1, 2)
         ]
-        ObjectOwnerhip = 11            
+        ObjectOwnerhip = 11,
+        [
+            Name("Transformation"),
+            Description("This type of predicate enforces relationships to or from an asset whose type is marked as supporting transformations. When configuring relationship types, either the subject or object must be a transformation asset type, but not both."),
+            ReadOnly(false),
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(true),
+            ForceDifferentSubjectObject(true),
+            AllowEditFromRelationshipEditor(true),
+            LineageVersionsSupported(3)
+        ]
+        Transformation = 12,
+        [
+            Name("Business To Technical"),
+            Description("This type of predicate enforces relationships to or from an asset whose type is classified as a Technical Asset. When configuring relationship types, the subject must be a Glossary asset while the object must be a Technical asset."),
+            ReadOnly(false),
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(true),
+            ForceDifferentSubjectObject(true),
+            AllowEditFromRelationshipEditor(true),
+            LineageVersionsSupported(3)
+        ]
+        BusinessToTechnical = 13
     }
 
     public class PredicateTypeInfo : BaseObject
@@ -162,6 +192,9 @@ namespace d360.core.enums
 
         [JsonIgnore]
         public bool ReadOnly { get; set; }
+
+        [JsonIgnore]
+        public int[] LineageVersionsSupported { get; set; }
     }
 
     public class PredicateTypeApiViewModel : BaseObject
@@ -211,7 +244,10 @@ namespace d360.core.enums
                         AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
                         AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditorAttribute)tm.GetCustomAttribute(typeof(AllowEditFromRelationshipEditorAttribute))).Allowed,
                         ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
-                        ReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly
+                        ReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly,
+                        LineageVersionsSupported = tm.IsDefined(typeof(LineageVersionsSupportedAttribute), false) ? 
+                                                    ((LineageVersionsSupportedAttribute)tm.GetCustomAttribute(typeof(LineageVersionsSupportedAttribute))).Versions :
+                                                    new int[4] { 0, 1, 2, 3 }, //0 accounts for unit tests
                     });
                 }
             }

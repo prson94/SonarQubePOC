@@ -211,7 +211,7 @@ namespace igx.jobs.apiexecutionprocessor
                             var postRelationships = JsonConvert.DeserializeObject<RelationshipInserts>(postRelationshipsJson);
 
                             log.WriteLine($"POST Relationships (DB Start): Total raw assets: {postRelationships.Count}. Intersect Type Uid: {postRelationshipsFields.IntersectTypeUid}.");
-                            var postRelationshipsResults = company.ImportRelationships(dbExecutionItem, intersectType, postRelationships, dbExecutionTimeout);
+                            var postRelationshipsResults = company.ImportRelationships(dbExecutionItem, intersectType, postRelationships, dbExecutionTimeout, Info.SendWorkflowEvents);
                             dbExecutionItem.Processed = postRelationshipsResults.Count(i => i.Success);
                             dbExecutionItem.Error = postRelationshipsResults.Count(i => !i.Success);
                             log.WriteLine($"POST Relationships (DB Complete): Total results: {postRelationshipsResults.Count}.");

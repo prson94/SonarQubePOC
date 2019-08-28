@@ -1,13 +1,9 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef, OnChanges, SimpleChange } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { container } from '@angular/core/src/render3';
-import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { DynamicEditorComponent } from '../dynamicgrideditor/dynamic-editor.component';
-import { Tag, TagType } from '../../../models/tag.model';
+import { TagType } from '../../../models/tag.model';
 import { TagService } from '../../../services/tag.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { Router } from '@angular/router';
 import { AdminBaseComponent } from '../../admin/admin-base.component';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { Title } from '@angular/platform-browser';
@@ -18,7 +14,8 @@ import { CoreModule } from '../core.module';
 @Component({
     selector: 'd3s-tag-view',
     templateUrl: './d3s-tag-view.html',
-    providers: [TagService]
+    providers: [TagService],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class TagView extends AdminBaseComponent implements OnInit {
@@ -37,7 +34,10 @@ export class TagView extends AdminBaseComponent implements OnInit {
     @ViewChild("container") container: ElementRef;
     error: any;
 
-    constructor(private tagService: TagService, private messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, rightSidebarService: RightSidebarService) {
+    private tagTooltip: TagType;
+    private isTooltipLoaded: boolean = false;
+
+    constructor(private tagService: TagService, private messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, rightSidebarService: RightSidebarService, private ref: ChangeDetectorRef) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
     }
 
@@ -153,7 +153,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
         if (this.container) {
             let parent = this.container.nativeElement.closest('td')
                 ? this.container.nativeElement.closest('td') : this.container.nativeElement.closest('div');
-            
+
             let ofWidth = parent ? parent.offsetWidth - 10 : 500;
 
             this.container.nativeElement.style.width = ofWidth + 'px';
@@ -179,60 +179,17 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     enter(tag: any, el: HTMLElement) {
+        this.isTooltipLoaded = false;
         if (!this.isEditable) {
             this.tagService.getTagTooltip(tag.uid)
                 .subscribe(t => {
-                    var x = t[0];
-                    var date = this.formatDate(x.CreatedOn);
-                    let template = `<span class="span-break">${x.Value}</span>
-                                <span>Tag added by ${x.CreatedBy} on ${date}</span>`;
-                    el.querySelector('.tag-tooltip').innerHTML = template;
-
+                    this.tagTooltip = t[0];
+                    this.isTooltipLoaded = true;
+                    this.ref.markForCheck();
                 });
         }
     }
 
-    formatDate(str: string) {
-        var date = new Date(str);
-
-        var monthNames = [
-            'January', 'February', 'March',
-            'April', 'May', 'June', 'July',
-            'August', 'September', 'October',
-            'November', 'December'
-        ];
-
-        var partOfDay = "am";
-        var day = date.getDate();
-        var monthIndex = date.getMonth();
-        var year = date.getFullYear();
-
-        var hour = date.getHours();
-        var minutes = date.getMinutes()
-
-        let shour: string;
-        let smin: string;
-
-        if (hour > 11) {
-            partOfDay = 'pm';
-            hour -= 12;
-        }
-        if (hour == 0) hour = 12;
-
-        shour = hour.toString();
-        smin = minutes.toString();
-
-        if (hour < 10) {
-            shour = '0' + hour;
-        }
-
-        if (minutes < 10) {
-            smin = '0' + smin;
-        }
-
-        return `${day} ${monthNames[monthIndex]} ${year} at ${shour}:${smin}${partOfDay}`;
-
-    }
 
     findTagIndex1(uid: string) {
         var index: number = -1;

@@ -305,12 +305,13 @@ export class LineageEditorPreviewComponent extends DiagramBaseComponent implemen
             "undoManager.isEnabled": false
         });
 
-        dg.model.class = go.GraphLinksModel;
-        dg.model.nodeCategoryProperty = "template";
-        dg.model.linkFromPortIdProperty = "frompid";
-        dg.model.linkToPortIdProperty = "topid";
-        dg.model.nodeDataArray = [];
-        dg.model.linkDataArray = [];
+        let model = (dg.model as go.GraphLinksModel);
+
+        model.nodeCategoryProperty = "template";
+        model.linkFromPortIdProperty = "frompid";
+        model.linkToPortIdProperty = "topid";
+        model.nodeDataArray = [];
+        model.linkDataArray = [];
         dg.toolManager.hoverDelay = 250;
         dg.toolManager.linkingTool.isEnabled = false;
         dg.model.isReadOnly = true;

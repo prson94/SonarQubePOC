@@ -212,11 +212,14 @@ namespace d360.model
             parameters.Add("listableFieldsOnly", listableFieldsOnly);
             parameters.Add("pagingEnabled", pagingEnabled);
 
-            var multi = await QueryMultipleAsync(
+            using (var multi = await QueryMultipleAsync(
                 "exec GetDynamicAssets @assetTypeId, @userId, @filter, @apiNamesInOutput, @listableFieldsOnly, @pagingEnabled, @pageNumber, @pageSize, @sortField, @sortDirection, @filters",
-                parameters);
-            results.Count = multi.Read<int>().First();
-            results.Results = multi.Read<dynamic>().ToList();
+                parameters))
+            {                
+                results.Count = multi.Read<int>().First();
+                results.Results = multi.Read<dynamic>().ToList();
+            }
+                
 
             return results;
         }

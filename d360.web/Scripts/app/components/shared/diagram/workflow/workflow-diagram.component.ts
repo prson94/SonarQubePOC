@@ -1232,7 +1232,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         this.diagram.startTransaction('changeStep');
 
-        let n = this.diagram.model.findNodeDataForKey(e.key);
+        let n = this.diagram.model.findNodeDataForKey(e.key) as NodeModel;
 
         //TODO: just set n = e??
 
@@ -1302,8 +1302,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (!e.hasMultipleInputs && n.settings.WaitForAllTransitions != null)
             delete n.settings.WaitForAllTransitions;
 
-        this.diagram.model.setDataProperty(n, 'name', e.name);
-        this.diagram.model.setDataProperty(n, 'valid', this.validateNode(n));
+        this.diagram.model.setDataProperty(n as go.ObjectData, 'name', e.name);
+        this.diagram.model.setDataProperty(n as go.ObjectData, 'valid', this.validateNode(n));
         this.validateDiagram();
 
         this.diagram.commitTransaction('changeStep');
@@ -1634,12 +1634,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             "undoManager.isEnabled": !this.isReadOnly
         });
 
-        dg.model.class = go.GraphLinksModel;
-        dg.model.nodeCategoryProperty = "category";
-        dg.model.linkFromPortIdProperty = "frompid";
-        dg.model.linkToPortIdProperty = "topid";
-        dg.model.nodeDataArray = [];
-        dg.model.linkDataArray = [];
+        let model = (dg.model as go.GraphLinksModel);
+
+        model.nodeCategoryProperty = "category";
+        model.linkFromPortIdProperty = "frompid";
+        model.linkToPortIdProperty = "topid";
+        model.nodeDataArray = [];
+        model.linkDataArray = [];
         dg.toolManager.hoverDelay = 250;
 
         return dg;
@@ -1830,11 +1831,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 reshapable: true,
                 resegmentable: true,
                 // mouse-overs subtly highlight links:
-                mouseEnter: function (e, link) {
-                    link.findObject("HIGHLIGHT").stroke = "rgba(30,144,255,0.2)";
+                mouseEnter: function (e, link: go.Part) {
+                    (link.findObject("HIGHLIGHT") as go.Shape).stroke = "rgba(30,144,255,0.2)";
                 },
-                mouseLeave: function (e, link) {
-                    link.findObject("HIGHLIGHT").stroke = "transparent";
+                mouseLeave: function (e, link: go.Part) {
+                    (link.findObject("HIGHLIGHT") as go.Shape).stroke = "transparent";
                 }
             },
             new go.Binding("points").makeTwoWay(),
