@@ -632,9 +632,7 @@ namespace d360.web.Controllers
                 case "SURVEYQUESTIONTYPE":
                     return DeleteQuestionType(form);
                 case "SYNONYM":
-                    return DeleteSynonym(form);
-                case "TAXONOMY":
-                    return DeleteTaxonomy(form);
+                    return DeleteSynonym(form);                
                 case "TAXONOMYTYPE":
                     return DeleteTaxonomyType(form);
                 case "TAXONOMYTYPELEVEL":
@@ -5241,10 +5239,7 @@ offset 0 rows fetch next 25 rows only
         #endregion
 
         #endregion
-
-
-
-
+                     
         #region FusionType
 
         #region Form Get/Post
@@ -13930,9 +13925,7 @@ order by	case
             }
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        
-        
+                
         #endregion
 
         #region Form Get/Post
@@ -14015,43 +14008,7 @@ order by	case
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [HttpDelete, Route("DeleteTaxonomy")]
-        public JsonResult DeleteTaxonomy(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("taxonomy");
-
-                var id = parseIntField(form, "ID");
-
-                if (!Company.HasAssetPermission(SystemObjects.Taxonomy, id, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                var model = Company.Assets.Where(x => (x.Object == "Taxonomy" && x.ObjectID == id)).Include(x => x.AssetType).FirstOrDefault();
-                if (model == null) throw new NotFoundException("taxonomy");
                 
-                dynamic custom = new
-                {
-                    model.AssetType.ObjectID,
-                    Context = form["_context"]
-                };
-
-                Company.Delete(SystemObjects.Taxonomy, id);
-                
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         [HttpPut, ValidateInput(false), Route("EditTaxonomy")]
         public JsonResult EditTaxonomy(FormCollection form)
         {

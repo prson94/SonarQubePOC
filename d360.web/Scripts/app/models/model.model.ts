@@ -4,8 +4,7 @@ export class Model {
     Name: string;
     Description: string;
     MaximumDepth: number;
-    TaxonomyTypeClass: string;
-    ClassificationName: string;
+    TaxonomyTypeClass: string;    
     HasDashboards: boolean;
     AllowAttributes: boolean;
     AllowSynonyms: boolean;

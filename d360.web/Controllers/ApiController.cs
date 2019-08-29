@@ -7774,9 +7774,9 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
-                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-                    { "ClassificationName", row.ClassificationName },
-                    { "HasDashboards", row.HasDashboards }
+                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },                    
+                    { "HasDashboards", row.HasDashboards },
+                    { "UID", row.Uid }
                 }
             );
         }

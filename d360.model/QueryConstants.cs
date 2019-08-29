@@ -855,6 +855,7 @@ select
 	T.UpdatedBy,
 	A.AllowAttributes,
 	S.AllowSynonyms,
+    T.Uid,
     (select cast(count(1) as bit) from report r where r.ObjectType = 'TaxonomyType' and r.ObjectID = @id and r.ReportType != 'legacy') as HasDashboards	
 from	AssetType T
 		cross apply (
