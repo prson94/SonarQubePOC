@@ -4772,8 +4772,8 @@ select	top 100 percent
 from	
         Asset A
         inner join AssetType ATT on ATT.ID = A.AssetTypeID and ATT.ObjectID = @id  and A.Object = 'Policy'
-        {joins} 
-        left join dbo.GetAssetDisplayValue() TD on TD.ID = A.ID
+        {joins}         
+        inner join dbo.AssetDisplayValue TD on TD.AssetID = A.ID
         outer apply (
 					select	I.SubjectID
 					from	[Intersect] I
