@@ -634,7 +634,7 @@ from	api.ExecutionField T
                         from    api.ExecutionAsset T
                                 inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Threshold' and ISNUMERIC(S.FieldValue) = 0;
                         ", new { executionID }, commandTimeout: timeout);
-        }
+        } 
 
         private void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null)
         {
