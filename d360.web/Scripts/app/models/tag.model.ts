@@ -20,6 +20,12 @@ export class TagType {
     TooltipID: number;
 }
 
+export class TagApiModel {
+    TagUID: string;
+    AssetUID: string;
+    TagName: string;
+}
+
 export enum TagTypeState {
     Unknown = -1,
     PendingAdd = 0,

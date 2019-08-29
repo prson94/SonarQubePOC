@@ -457,7 +457,7 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            string sql = @"select T.Value as name, T.uid as code, Results.count, T.ID from Tag T 
+            string sql = @"select T.Value as name, T.uid as code, Results.count from Tag T 
                             cross apply (select count(*) from AssetTag where TagID = T.ID)Results(count)
                             where State = 1 and LOWER(T.Value) like '%'+@value+'%' and T.uid != @exceptUid";
 

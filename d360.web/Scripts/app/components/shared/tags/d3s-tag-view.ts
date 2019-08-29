@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { TagType } from '../../../models/tag.model';
+import { TagType, TagApiModel } from '../../../models/tag.model';
 import { TagService } from '../../../services/tag.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AdminBaseComponent } from '../../admin/admin-base.component';
@@ -22,7 +22,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     public theDeleteCallback: Function;
     @Input() data: any;
     @Input() isEditable: boolean = false;
-    @Input() assetID: number;
+    @Input() assetUID: string;
     showEditor: boolean = false;
     showDelete: boolean = false;
     private tags: any[];
@@ -93,11 +93,16 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     saveTag(event) {
-        this.tagService.createAssetTag(event.item.Value, this.assetID)
+        var tags = Array<TagApiModel>();
+        let tag = new TagApiModel();
+        tag.AssetUID = this.assetUID;
+        tag.TagName = event.item.Value;
+        tags.push(tag);
+        this.tagService.createAssetTag(tags)
             .subscribe(result => {
                 let msg: string = '';
                 if (event.item.uid == undefined) {
-                    msg = `${result.Value} succesfully created`;
+                    msg = `${event.item.Value} succesfully added`;
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
                 if (event.item.uid == undefined) {
@@ -109,24 +114,30 @@ export class TagView extends AdminBaseComponent implements OnInit {
                 event.item.UseCount = 0;
                 this.selected.push(event.item);
 
-                this.showEditor = false;
-
             });
+        this.showEditor = false;
     }
 
     deleteTags() {
-        this.tagID = this.selected[0].TooltipID;
-        this.tagService.deleteAssetTag(this.tagID, this.assetID).
+        this.tagID = this.selected[0].uid;
+        var tags = Array<TagApiModel>();
+        let tag = new TagApiModel();
+        tag.AssetUID = this.assetUID;
+        tag.TagUID = this.tagID;
+        tags.push(tag);
+        this.tagService.deleteAssetTag(tags).
             subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
+                let msg: string = '';
+                msg = `Tag succesfully removed`;
+                this.showMessageForResult(this.messagesService, result,msg);    
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
                     this.selected.forEach(t => {
                         this.tags.splice(this.findTagIndex(t.TooltipID), 1);
+                        this.closebox();
                     })
                     this.selected = [];
                 }
-                this.showDelete = false;
             }, err => this.showMessageForResult(this.messagesService, err));
     }
 
@@ -146,6 +157,9 @@ export class TagView extends AdminBaseComponent implements OnInit {
                     x.closest('a').classList.remove('hide');
                 }
             });
+    }
+    closebox() {
+        this.showDelete = false;
     }
 
     ngAfterViewInit() {

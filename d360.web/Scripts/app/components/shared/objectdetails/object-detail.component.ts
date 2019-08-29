@@ -16,7 +16,7 @@ declare var CompanySettings;
 export class ObjectDetailComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
-    private assetID: number;
+    private assetUID: string;
     private isLoading = false;
     DetailFieldType = DetailFieldType;
 
@@ -71,8 +71,8 @@ export class ObjectDetailComponent implements OnChanges {
                                         }
                                     });
                             }
-                            if (f.Name == 'Asset ID') {
-                                this.assetID = +f.Value;
+                            if (f.Name == 'UID') {
+                                this.assetUID = f.Value;
                             }
 
                         });
@@ -96,8 +96,8 @@ export class ObjectDetailComponent implements OnChanges {
                                         }
                                     });
                             }
-                            if (s.Name == 'Asset ID') {
-                                this.assetID = +s.Value;
+                            if (s.Name == 'UID') {
+                                this.assetUID = s.Value;
                             }
                         });
 

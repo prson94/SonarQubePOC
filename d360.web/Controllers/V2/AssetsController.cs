@@ -1026,12 +1026,19 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult PostAssetTag(List<AssetTagApiModel> assetTags)
         {
             List<AssetTagSuccessApiModel> resultList = new List<AssetTagSuccessApiModel>();
+            Tag currentTag;
             foreach (var assetTagApi in assetTags)
             {
                 AssetTagSuccessApiModel result;
-
-                var existingTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
-                if (existingTag == null)
+                if(assetTagApi.TagUID == Guid.Empty)
+                {
+                    currentTag = tagRepository.GetTagByName(assetTagApi.TagName);
+                }
+                else
+                {
+                    currentTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
+                }
+                if (currentTag == null)
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1055,7 +1062,7 @@ namespace d360.web.Controllers.V2
                     continue;
                 }
 
-                if (this.tagRepository.DoesAssetTagExists(existingTag.ID, asset.ID))
+                if (this.tagRepository.DoesAssetTagExists(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1075,7 +1082,7 @@ namespace d360.web.Controllers.V2
                     resultList.Add(result);
                     continue;
                 }
-                AssetTag assetTag = this.tagRepository.CreateAssetTag(existingTag.ID, asset.ID);
+                AssetTag assetTag = this.tagRepository.CreateAssetTag(currentTag.ID, asset.ID);
                 if (assetTag != null)
                 {
                     result = new AssetTagSuccessApiModel()
@@ -1123,8 +1130,8 @@ namespace d360.web.Controllers.V2
             {
                 AssetTagSuccessApiModel result;
 
-                var existingTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
-                if (existingTag == null)
+                var currentTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
+                if (currentTag == null)
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1147,7 +1154,7 @@ namespace d360.web.Controllers.V2
                     continue;
                 }
 
-                if (!this.tagRepository.DoesAssetTagExists(existingTag.ID, asset.ID))
+                if (!this.tagRepository.DoesAssetTagExists(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel
                     {
@@ -1158,7 +1165,7 @@ namespace d360.web.Controllers.V2
                     continue;
                 }
 
-                if (!this.tagRepository.IsAuthorizedToDeleteAssetTag(existingTag.ID, asset.ID))
+                if (!this.tagRepository.IsAuthorizedToDeleteAssetTag(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1168,8 +1175,8 @@ namespace d360.web.Controllers.V2
                     resultList.Add(result);
                     continue;
                 }
-                AssetTag assetTag = this.tagRepository.GetAssetTag(existingTag.ID, asset.ID);
-                if (assetTag != null && this.tagRepository.DeleteAssetTag(existingTag.ID, asset.ID))
+                AssetTag assetTag = this.tagRepository.GetAssetTag(currentTag.ID, asset.ID);
+                if (assetTag != null && this.tagRepository.DeleteAssetTag(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel()
                     {

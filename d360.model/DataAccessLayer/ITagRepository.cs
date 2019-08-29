@@ -18,7 +18,6 @@ namespace d360.model.DataAccessLayer
         bool DoesTagExists(TagApiModel model);
         Tag GetTagByUid(Guid uid);
         Tag GetTagByName(string name);
-
         bool DoesAssetTagExists(int tagId, long assetId);
         AssetTag CreateAssetTag(int tagId, long assetId);
         bool IsAuthorizedToDeleteAssetTag(int tagId, long assetId);

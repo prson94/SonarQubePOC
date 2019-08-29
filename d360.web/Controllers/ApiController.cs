@@ -526,7 +526,8 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     TooltipType = "tag",
                     TooltipID = x.ID,
                     TooltipContext = "Preview",
-                    TooltipUrl = ""
+                    TooltipUrl = "",
+                    uid = x.uid
                 };
                 tagsFields.Add(roField);
             });
