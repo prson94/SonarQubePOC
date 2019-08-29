@@ -14,7 +14,9 @@ import { SearchResultItemComponent } from './search-result-item.component'
 import { SearchComponent } from './search.component'
 import { SearchAutocompleteListComponent } from './search-autocomplete-list.component';
 import { SearchInputComponent } from './search-input.component';
+import { DynamicPercentageModule } from '../shared/small-widgets/dynamic-percentage/dynamic-percentage-module';
 
+import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SearchRoutingModule} from './search.routes';
 
 import {    
@@ -50,6 +52,8 @@ import {
         //d3s        
         CoreModule,
         TilesModule,
+        DynamicPercentageModule,
+        SharedDynamicGridEditorModule,
     ],
     declarations: [
         HomeSearchComponent,

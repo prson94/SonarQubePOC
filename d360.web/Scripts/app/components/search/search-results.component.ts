@@ -44,8 +44,7 @@ import { Paginator } from 'primeng/primeng';
                             </div>
                         </div>                        
                         <div class="col l9 m7">                            
-                            <div class="tile tile-detail">                                
-                                <header>Search results - <span style="color:#999;font-size:75%">found {{ results?.Result?.Matches }} matches in ({{results?.Result?.ElapsedMS /1000}} seconds)</span></header>
+                            <div class="tile tile-detail search-result-tile">                                
                                 <span *ngIf="!loading">
                                     <div *ngFor="let result of results?.Result?.Results">
                                         <d3s-search-result-item [result]="result"></d3s-search-result-item>

@@ -19,6 +19,7 @@ declare var CompanySettings;
     template: `               
                 <d3s-search-input (search)="doSearch()" [isAdvancedMode]="showAdvanced" (isAdvancedModeChange)="showAdvanced=$event;searchResults=null;" [(advancedFilters)]="advancedFilters" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [hasAdvanced]="true" [(searchText)]="searchText"></d3s-search-input>
                 <d3s-search-results [from]="pageNumber" [loading]="isLoading" [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (selectedCategoryChange)="filterByCategory($event);"></d3s-search-results>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 `,
     providers: [SearchService, TypeaheadSearchService],
 })
