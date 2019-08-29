@@ -106,7 +106,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
                 }
                 this.showMessageForResult(this.messagesService, result, msg);
                 if (event.item.uid == undefined) {
-                    this.tags.push(["Value", event.item.Value]);
+                    this.tags.push(event.item);
                 }
                 this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
 
