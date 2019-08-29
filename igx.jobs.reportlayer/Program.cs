@@ -1307,12 +1307,13 @@ from	(
 				F.SourceField,
 				ST.Object as TargetType,
 				T.Name as TargetAssetTypeName,
-				cast(FT.IntersectTypeID as nvarchar) as TargetField,
+				I.SubjectName + ' ' + I.PredicateName + ' ' + I.ObjectName as TargetField,
 				null as DefaultValue
 		from	[integration].[SynchedAssetType] ST
 				inner join AssetType T on T.ID = ST.AssetTypeID
 				inner join [integration].[SynchedAssetTypeRelationItem] F on F.SynchedAssetTypeID = ST.ID
 				inner join [integration].[SynchedAssetTypeRelationItemTarget] FT on FT.[SynchedAssetTypeRelationItemID] = F.ID
+				inner join IntersectTypeDetail I on I.ID = FT.IntersectTypeID
 		union
 		select	ST.IntegrationSettingID,
 				F.Active,
