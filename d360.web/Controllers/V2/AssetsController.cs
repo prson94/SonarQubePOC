@@ -335,19 +335,19 @@ namespace d360.web.Controllers.V2
         /// <param name="model"></param>
         /// <returns></returns>
         [
-        HttpPut,
-    Route(""),
-    SwaggerRequestExample(typeof(AssetTypeInsert), typeof(Models.AssetTypeInsertExample)),
-    SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-    SwaggerResponse(HttpStatusCode.OK, "Update asset type and success / failure message.", typeof(AssetTypeSuccess)),
-    SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.BadRequest, "Assets already exist with assigned parents. You may not change the parent of this asset type.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.BadRequest, "You have not provided a proper predicate based on its asset type class.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.BadRequest, "Display Format contains invalid field references.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.Conflict, "If attempting to alter certain properties of a child asset type and there is a conflict within your Govern environment. For example, changing the predicate between a parent a child asset type", typeof(ErrorResponse))
-]
+            HttpPut,
+            Route(""),
+            SwaggerRequestExample(typeof(AssetTypeInsert), typeof(Models.AssetTypeInsertExample)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Update asset type and success / failure message.", typeof(AssetTypeSuccess)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Assets already exist with assigned parents. You may not change the parent of this asset type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "You have not provided a proper predicate based on its asset type class.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Display Format contains invalid field references.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Conflict, "If attempting to alter certain properties of a child asset type and there is a conflict within your Govern environment. For example, changing the predicate between a parent a child asset type", typeof(ErrorResponse))
+        ]
         public async Task<IHttpActionResult> PutAssetTypeAsync(AssetTypeInsert model)
         {
             var prefix = "Assets.PutAssetTypeAsync => ";
@@ -401,8 +401,6 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
             }
         }
-
-
 
         /// <summary>
         /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
@@ -513,9 +511,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutAssetsAsync(Guid assetTypeUid, List<AssetUpdate> assets, bool triggersWorkflow = true)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to update assets of this type."));
-
             var prefix = "Assets.PutAssetsAsync => ";
             var errorMessage = "";
             
@@ -591,9 +586,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> DeleteAssetsAsync(Guid assetTypeUid, AssetDeletes assets, bool triggersWorkflow = true)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
-
             var prefix = "Assets.DeleteAssetsAsync => ";
             var errorMessage = "";            
 
@@ -662,9 +654,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostBulkAssetsAsync(Guid assetTypeUid, List<AssetInsert> assets, bool triggersWorkflow = true)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
-
             var prefix = "Assets.PostBulkAssetsAsync => ";
             var errorMessage = "";
 
@@ -738,9 +727,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutBulkAssetsAsync(Guid assetTypeUid, List<AssetUpdate> assets, bool triggersWorkflow = true)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to update assets of this type."));
-
             var prefix = "Assets.PutBulkAssetsAsync => ";
             var errorMessage = "";
 
@@ -815,9 +801,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> DeleteBulkAssetsAsync(Guid assetTypeUid, AssetDeletes assets, bool triggersWorkflow = true)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
-
             var prefix = "Assets.DeleteBulkAssetsAsync => ";
             var errorMessage = "";
 
@@ -930,8 +913,6 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
-
-
 
         /// <summary>
         /// GETs the status of an execution record, including the results for the execution.
