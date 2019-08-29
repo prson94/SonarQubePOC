@@ -1433,6 +1433,7 @@ where   h.ID <> @t order by h.[Level] desc;
             var hasV2WorkflowsAssigned = (Company.Query<int>(sql).FirstOrDefault() > 0);
             model.Add("HasV2Workflows", hasV2WorkflowsAssigned);
             model.Add("AssetTypeUID", assetType.uid);
+            model.Add("AssetTypeID", assetType.ID);
 
             return model;
         }
