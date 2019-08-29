@@ -78,7 +78,7 @@ namespace d360.web.Controllers
         {
             var list = new List<DetailReadOnlyRowModel>();
             var tagList = new List<ReadOnlyFieldValue>();
-            string tagString = "";
+            
             var details = Company.GetObjectDetail(type.ToString(), id);
             if (details != null)
             {

@@ -457,7 +457,7 @@ from	FollowDetail F
             {
                 rowIndex++;
                 colIndex = 1;
-                int i = 0;
+                
                 foreach (var f in fields)
                 {
                     var val = (((row as IDictionary<string, object>)[$"{f.datafield}"]) ?? "").ToString();
