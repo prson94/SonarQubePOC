@@ -207,8 +207,7 @@ namespace d360.core.entities
     [DataContract]
     public class BulkAssetCrossReferenceResult
     {
-        public Guid ExecutionId { get; set; }
-
+       
         [DataMember]
         public int Total { get; set; }
 
@@ -219,13 +218,14 @@ namespace d360.core.entities
         [DataMember]
         public DateTime StartedOn { get; set; }
         [DataMember]
-        public DateTime CompletedOn { get; set; }
+        public DateTime? CompletedOn { get; set; }
         [DataMember]
-        public List<ExecutionAssetCrossReferenceResult> Results { get; set; }
+        public List<AssetCrossReferenceResult> Results { get; set; }
 
     }
 
-    public class ExecutionAssetCrossReferenceResult
+    [DataContract]
+    public class AssetCrossReferenceResult
     {
         [DataMember]
         public int ItemNumber { get; set; }

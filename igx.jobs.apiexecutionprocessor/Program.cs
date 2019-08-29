@@ -245,10 +245,15 @@ namespace igx.jobs.apiexecutionprocessor
 
                             log.WriteLine($"POST Cross References (DB Start): Total raw Cross References: {postCrossReferences.Count}");
                             var postCrossReferenceResult = company.ImportCrossRefernces(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
-                            dbExecutionItem.Processed = postCrossReferenceResult.Processed;
-                            dbExecutionItem.Error = postCrossReferenceResult.Error;
-                            log.WriteLine($"POST Cross References (DB Complete): Total Processed: {postCrossReferenceResult.Processed}.");
-                            log.WriteLine($"POST Cross References (DB Complete): Total Error: {postCrossReferenceResult.Error}.");
+                            dbExecutionItem.Processed = postCrossReferenceResult.Count(i => i.Success);
+                            dbExecutionItem.Error = postCrossReferenceResult.Count(i => !i.Success);
+                            log.WriteLine($"POST Cross References (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+                            log.WriteLine($"POST Cross References (DB Complete): Total Error: {dbExecutionItem.Error}.");
+
+                            log.WriteLine($"Post Cross References (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                            storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postCrossReferenceResult));
+                            log.WriteLine($"Post Cross References (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+
                             break;
                     }
 

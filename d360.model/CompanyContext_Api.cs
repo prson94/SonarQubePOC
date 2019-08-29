@@ -3221,10 +3221,10 @@ end",
                             Where ECR.Success is null  and ExecutionID=@executionID ",
                         new { executionID = execution.ExecutionID }, commandTimeout: timeout);
         }
-        public BulkAssetCrossReferenceResult ImportCrossRefernces(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600)
+        public List<AssetCrossReferenceResult> ImportCrossRefernces(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600)
         {
 
-            BulkAssetCrossReferenceResult bulkResult = new BulkAssetCrossReferenceResult() { ExecutionId=execution.ExecutionID};
+            List<AssetCrossReferenceResult> bulkResult = new List<AssetCrossReferenceResult>();
             #region Build data tables for bulk load
 
             var table = new DataTable();
@@ -3292,13 +3292,11 @@ end",
                             Where ExecutionID=@executionID and Success is null; ",
                 new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
-            bulkResult.Processed = Query<int>(
-                                    $"select count(*) from api.ExecutionAssetCrossReference where ExecutionID = @ExecutionID and Success=1",
-                                    new { ExecutionID = execution.ExecutionID }).SingleOrDefault();
+                bulkResult = Query<AssetCrossReferenceResult>(
+                                        $"select ItemNumber,Uid,Message,Success from api.ExecutionAssetCrossReference where ExecutionID = @ExecutionID",
+                                        new { ExecutionID = execution.ExecutionID }).ToList();
+           
 
-            bulkResult.Error = Query<int>(
-                                    $"select count(*) from api.ExecutionAssetCrossReference where ExecutionID = @ExecutionID and Success=0",
-                                    new { ExecutionID = execution.ExecutionID }).SingleOrDefault();
             }
             finally
             {

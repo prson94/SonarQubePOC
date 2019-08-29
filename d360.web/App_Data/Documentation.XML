@@ -2415,6 +2415,13 @@
             <param name="crossReferences">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.CrossReferencesController.GetExecutionStatus(System.Guid)">
+            <summary>
+            GETs the status of an execution record, including the results for the execution.
+            </summary>
+            <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.CustomEndpointsController.CustomAPIVersionFieldEditor_GetFieldTypes(System.Int32)">
             <summary>
             Gets the field types

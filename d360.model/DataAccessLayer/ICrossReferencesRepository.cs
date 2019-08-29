@@ -23,5 +23,6 @@ namespace d360.model.DataAccessLayer
         Task<int> PutCrossReference(Guid uid, string dataSource, string type, AssetCrossReference model);
         Task<bool> XrefExists(AssetCrossReference model);
         Task<ApiExecutionInfo> PostBulkCrossReference(List<AssetCrossReference> crossReferences, ApiExecution execution, bool sendWorkflowEvents = true);
+        BulkAssetCrossReferenceResult GetExecutionStatus(ApiExecution execution);
     }
 }

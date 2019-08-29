@@ -28,13 +28,14 @@ namespace d360.web.Controllers.V2
     {
 
         private ICrossReferencesRepository crossReferencesRepository;
-
+        private IAssetRepository assetRepository;
         #region DI
 
-        public CrossReferencesController(ICommunityContext community, ICompanyContext company, ICrossReferencesRepository crossReferencesRepository)
+        public CrossReferencesController(ICommunityContext community, ICompanyContext company, ICrossReferencesRepository crossReferencesRepository,IAssetRepository assetRepository)
             : base(community, company)
         {
             this.crossReferencesRepository = crossReferencesRepository;
+            this.assetRepository = assetRepository;
         }
 
         #endregion
@@ -494,7 +495,51 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// GETs the status of an execution record, including the results for the execution.
+        /// </summary>
+        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("executions/{executionUid:Guid}/status"),
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json", "application/xml"), 
+            SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of Asset Cross References.", typeof(BulkAssetCrossReferenceResult)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Execution unique identifier not found.", typeof(ErrorResponse)),
+            ]
+        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionUid)
+        {
+            var prefix = "CrossReferences.GetExecutionStatus => ";
+            var errorMessage = "";
+            try {
+                ApiExecution execution = assetRepository.GetExecutionItemByUid(executionUid);
 
+                if (execution == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
+                }
+
+                var bulkResult = crossReferencesRepository.GetExecutionStatus(execution);
+                return await Task.FromResult<IHttpActionResult>(
+                        ResponseMessage(
+                                    Request.CreateResponse(HttpStatusCode.OK,bulkResult)
+                                )
+                             );
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "ExecutionUid", executionUid.ToString() }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+
+        }
 
     }
 }

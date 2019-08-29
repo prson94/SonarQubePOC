@@ -223,5 +223,39 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
+
+        public BulkAssetCrossReferenceResult GetExecutionStatus(ApiExecution execution)
+        {
+            BulkAssetCrossReferenceResult bulkResult = new BulkAssetCrossReferenceResult() {
+                Total = execution.Total,
+                Processed = execution.Processed,
+                Error = execution.Error,
+                CompletedOn = execution.CompletedOn,
+                StartedOn = execution.StartedOn
+            };
+
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = CompanyContext.CurrentCompanyID,
+                CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
+                ExecutionID =execution.ExecutionID,
+                ResourceID = CompanyContext.CurrentResourceID,
+                Action = ApiExecutionAction.PostCrossReferences
+
+            };
+
+            try
+            {
+                var resultsJson = StorageProvider.GetFileContentsAsString(executionInfo.StorageFolder, executionInfo.ResponseFileName);
+                bulkResult.Results = JsonConvert.DeserializeObject<List<AssetCrossReferenceResult>>(resultsJson);
+            }
+            catch (Exception e)
+            {
+               
+            }
+           
+
+            return bulkResult;
+        }
     }
 }
