@@ -8155,16 +8155,24 @@ where	Type = 'ReferenceItemType'
                 cross apply (select count(*) as Allocations from IssueTypeRelation R where R.IssueTypeID = I.ID) C
                 where C.Allocations = 0
                 {0}";
+
             if (@object != null && objectID != null)
-                sql = string.Format(sql, @"union all
+            {
+                bool isType = @object.EndsWith("Type");
+
+                sql = string.Format(sql, $@"union all
                     select I.ID, I.Name, I.Description, I.IsSystem, I.UpdatedBy, I.UpdatedOn from IssueType I
                     inner join IssueTypeRelation R on R.IssueTypeID = I.ID
                     inner join AssetType T on T.ID = R.AssetTypeID
-                    inner join Asset A on A.AssetTypeID = T.ID
-                    where A.Object = @object and A.ObjectID = @objectID
+                    {(isType ? "" : "inner join Asset A on A.AssetTypeID = T.ID")}
+                    where {(isType ? "T.Object = @object and T.ObjectID = @objectID" : "A.Object = @object and A.ObjectID = @objectID")}
                     order by name asc");
+            }
             else
+            {
                 sql = string.Format(sql, "order by name asc");
+
+            }
 
             return Company.Query<IssueType>(sql, new { @object, objectID }).AsQueryable();
         }
