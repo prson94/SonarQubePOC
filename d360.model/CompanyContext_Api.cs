@@ -214,6 +214,36 @@ where	ExecutionID = @executionID
             new { executionID }, commandTimeout: timeout);
         }
 
+        private void LogAssetPermissionErrors(Guid executionID, bool isInsert, AssetType at, Permission p, int timeout = 3600)
+        {
+            var permissionsSql = "";
+            if (isInsert)
+            {
+                permissionsSql = "and not exists (select AssetTypeID from UserAssetPermissions(E.ResourceID, @assetTypeID) where PermissionsBitMask & @p = @p and AssetID = 0)";
+            }
+            else
+            {
+                if (p == Permission.ModifyAsset)
+                {
+                    permissionsSql = "T.AssetID not in (select AssetID from UserAssetPermissions(E.ResourceID,@assetTypeID) where PermissionsBitMask & @p = @p)";
+                }
+                else
+                {
+                    permissionsSql = "and not exists (select AssetTypeID from UserAssetPermissions(E.ResourceID, @assetTypeID) where PermissionsBitMask & @p = @p and AssetID = 0)";
+                }
+            }
+
+            Connection.Execute($@"
+update	T
+set		T.Success = 0,
+		T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this asset'
+from    api.ExecutionAsset T
+        inner join api.Execution E on E.ExecutionID = T.ExecutionID 
+                                        and E.ExecutionID = @executionID 
+                                        and T.AssetID is not null {permissionsSql}",
+            new { executionID, assetTypeID = at.ID, p = (int)p }, commandTimeout: timeout);
+        }
+
         private void LogParentErrors(Guid executionID, int timeout = 3600)
         {
             Connection.Execute(@"
@@ -1118,6 +1148,12 @@ from	IntersectType I
 		    [Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
     where	ExecutionID = @ExecutionID and AssetID is null;",
                         new { execution.ExecutionID }, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Validate permissions
+
+                        LogAssetUpdatePermissionErrors(execution.ExecutionID, at, Permission.DeleteAsset);
 
                         #endregion
 
@@ -2346,6 +2382,12 @@ from	api.ExecutionAsset T
 					group by ProposedKey
 					) S on T.ExecutionID = @ExecutionID and S.ProposedKey = T.ProposedKey and S.ItemNumber < T.ItemNumber;",
                         new { execution.ExecutionID }, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Validate permissions
+
+                        LogAssetUpdatePermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset);
 
                         #endregion
 
