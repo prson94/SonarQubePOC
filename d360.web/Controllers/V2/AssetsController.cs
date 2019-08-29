@@ -1011,17 +1011,16 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <remarks>
         /// An Administrator can create  any tag association. 
-        ///A regular user can only create a tag association to assets they have access to.
+        /// A regular user can only create a tag association to assets they have access to.
         /// </remarks>
-        /// <param name="assetTags">AssetTag</param>
+        /// <param name="assetTags">Collection of assets and tags to associate.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
             Route("tags"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Creates association between an existing Asset and an existing tag, returns the UID of asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse)),
-             ApiExplorerSettings(IgnoreApi = true)
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))             
         ]
         public IHttpActionResult PostAssetTag(List<AssetTagApiModel> assetTags)
         {
@@ -1106,15 +1105,14 @@ namespace d360.web.Controllers.V2
         /// <remarks>An Administrator can remove any tag association. 
         /// A regular user can only remove a tag association to an asset they initially created the association for.
         /// </remarks>
-        /// <param name="assetTags">AssetTag</param>
+        /// <param name="assetTags">Collection of assets and tags to remove tag associations for.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
             Route("tags"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Delete association between an existing Asset and an exiting Tag,returns the UID of deleted asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse)),
-             ApiExplorerSettings(IgnoreApi = true)
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))             
         ]
         public IHttpActionResult DeleteAssetTag(List<AssetTagApiModel> assetTags)
         {
