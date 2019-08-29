@@ -4727,7 +4727,8 @@ from    ResponsibilityTypeRelationRule R
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-                    { "MaximumDepth", row.HierarchyMaximumDepth }
+                    { "MaximumDepth", row.HierarchyMaximumDepth },
+                    { "AssetTypeUID", row.Uid }
                 }
             );
         }
@@ -7776,7 +7777,7 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
                     { "AllowAttributes", (bool)row.AllowAttributes },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },                    
                     { "HasDashboards", row.HasDashboards },
-                    { "UID", row.Uid }
+                    { "AssetTypeUID", row.Uid }
                 }
             );
         }

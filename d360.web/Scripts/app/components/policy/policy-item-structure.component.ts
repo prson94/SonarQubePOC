@@ -59,8 +59,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     showDelete = false;
     showEditor = false;
-
-    theDeleteCallback: Function;
+        
     @ViewChild("treeTable") treeTable: any;
     unfilteredTreeNode: TreeNode[] = [];
 
@@ -79,8 +78,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         private gridDefinitionService: GridDefinitionService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
-        this.theDeleteCallback = this.deletePolicyItem.bind(this);
+        this.rightSidebarService = rightSidebarService;        
         router.events.subscribe(
             (value) => {
                 this.showEditor = false;
@@ -222,23 +220,10 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         return styles;
     }
 
-    deletePolicyItem(id: number) {
-        this.isLoading = true;
-
-        this.policiesService.deletePolicy(id).subscribe(
-            res => {
-                this.showMessageForResult(this.messagesService, res);
-
-                if (res.type != 'error') {
-                    this.deleteSelectedTreeNode(id);
-                    this.headerActionsService.emitFavoritesChange();
-                    this.selected = null;
-                }
-
-                this.isLoading = false;
-            }
-        );
-
+    public onDeleted() {
+        this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
+        this.deleteSelectedTreeNode(this.selected.data.ID);
+        this.selected = null;
         this.showDelete = false;
     }
 

@@ -618,9 +618,7 @@ namespace d360.web.Controllers
                 case "RULE":
                     return DeleteRule(form);
                 case "RULETYPE":
-                    return DeleteRuleType(form);
-                case "POLICY":
-                    return DeletePolicy(form);                
+                    return DeleteRuleType(form);                
                 case "POLICYTYPELEVEL":
                     return DeletePolicyTypeLevel(form);
                 case "RULEIMPLEMENTATION":
@@ -8833,41 +8831,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             }
         }
 
-        [HttpDelete, Route("DeletePolicy")]
-        public JsonResult DeletePolicy(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("Policy");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "Policy");
-                if (model == null) throw new NotFoundException("Policy");
-
-                if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.Policy, id);
-
-                dynamic custom = new
-                {                    
-                    action = "delete",
-                    Context = form["_context"]
-                };                
-
-                return jsonSuccess("Policy successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-        
         [HttpPut, ValidateInput(false), Route("EditPolicy"), NonNullableParameters]
         public JsonResult EditPolicy(FormCollection form)
         {
@@ -8983,7 +8946,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             form.Add("ID", policyTypeId.ToString());
             return DeletePolicyTypeLevel(form);
         }
-
 
         [HttpDelete, Route("DeletePolicyTypeLevel")]
         public JsonResult DeletePolicyTypeLevel(FormCollection form)

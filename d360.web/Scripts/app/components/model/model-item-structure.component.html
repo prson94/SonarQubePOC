@@ -83,7 +83,7 @@
     </p-treeTable>
     <d3s-asset-delete-editor *ngIf="showDelete"
                              [uid]="selected?.data?.Uid"
-                             [assetTypeUid]="model?.Uid"
+                             [assetTypeUid]="model?.AssetTypeUID"
                              [displayValue]="(selected?.data?.DisplayValue ? selected?.data?.DisplayValue : 'Model')"
                              (onCancel)="showDelete = false"
                              (onDeleted)="onDeleted()">

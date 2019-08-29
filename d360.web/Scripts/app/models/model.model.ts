@@ -12,7 +12,7 @@ export class Model {
     NymTypes: NymType[];
     P_CanDelete: boolean;
     P_CanEdit: boolean;
-    UID: string;
+    AssetTypeUID: string;
 }
 
 export class ModelHierarchy {

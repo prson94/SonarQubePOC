@@ -8,6 +8,7 @@ export class PolicyType {
     AllowAttributes: boolean;
     NymTypes: NymType[];
     MaximumDepth: number;
+    AssetTypeUID: string;
 }
 
 export enum PolicyStatus {
