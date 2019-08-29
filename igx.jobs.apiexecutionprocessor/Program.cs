@@ -238,7 +238,18 @@ namespace igx.jobs.apiexecutionprocessor
                             storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(deleteAssetTypesResults));
                             log.WriteLine($"DELETE Asset Types (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                             break;
-                            #endregion
+                        #endregion
+                        case ApiExecutionAction.PostCrossReferences:
+                            string postCrossReferencesJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
+                            var postCrossReferences = JsonConvert.DeserializeObject<List<AssetCrossReference>>(postCrossReferencesJson);
+
+                            log.WriteLine($"POST Cross References (DB Start): Total raw Cross References: {postCrossReferences.Count}");
+                            var postCrossReferenceResult = company.ImportCrossRefernces(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
+                            dbExecutionItem.Processed = postCrossReferenceResult.Processed;
+                            dbExecutionItem.Error = postCrossReferenceResult.Error;
+                            log.WriteLine($"POST Cross References (DB Complete): Total Processed: {postCrossReferenceResult.Processed}.");
+                            log.WriteLine($"POST Cross References (DB Complete): Total Error: {postCrossReferenceResult.Error}.");
+                            break;
                     }
 
                     dbExecutionItem.CompletedOn = DateTime.UtcNow;

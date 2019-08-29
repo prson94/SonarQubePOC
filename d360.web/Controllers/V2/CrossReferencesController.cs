@@ -437,14 +437,18 @@ namespace d360.web.Controllers.V2
             return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
         }
 
-
+        /// <summary>
+        /// Creates new asset cross references.  This endpoint is meant for batch processing.
+        /// </summary>
+        /// <param name="crossReferences">The payload of your request.</param>
+        /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             Route("batch"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add asset cross reference.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add Asset Cross Reference", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
 
         ]
