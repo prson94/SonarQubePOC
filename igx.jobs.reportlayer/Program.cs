@@ -1307,7 +1307,7 @@ from	(
 				F.SourceField,
 				ST.Object as TargetType,
 				T.Name as TargetAssetTypeName,
-				I.SubjectName + ' ' + I.PredicateName + ' ' + I.ObjectName as TargetField,
+				I.SubjectName + ' ' + coalesce(I.PredicateName,'') + ' ' + I.ObjectName as TargetField,
 				null as DefaultValue
 		from	[integration].[SynchedAssetType] ST
 				inner join AssetType T on T.ID = ST.AssetTypeID
