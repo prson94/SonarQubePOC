@@ -608,9 +608,7 @@ namespace d360.web.Controllers
                 case "ORGANIZATIONINVITATION":
                     return DeleteOrganizationInvitation(objectID);
                 case "PREDICATE":
-                    return DeletePredicate(form);
-                case "REFERENCEITEM":
-                    return DeleteReferenceItem(form);
+                    return DeletePredicate(form);                
                 case "REPORT":
                     return await DeleteReport(form);
                 case "REPORTTILE":
@@ -9303,35 +9301,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 }
 
                 return jsonSuccess(type.Name + " successfully created.", model.ObjectID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteReferenceItem")]
-        public JsonResult DeleteReferenceItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItem");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
-                if (model == null) throw new NotFoundException("ReferenceItem");
-
-                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, model.ObjectID, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.ReferenceItem, id);
-                
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
