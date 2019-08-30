@@ -612,9 +612,7 @@ namespace d360.web.Controllers
                 case "REPORT":
                     return await DeleteReport(form);
                 case "REPORTTILE":
-                    return DeleteReportTile(form);
-                case "RULE":
-                    return DeleteRule(form);
+                    return DeleteReportTile(form);                
                 case "RULETYPE":
                     return DeleteRuleType(form);                
                 case "POLICYTYPELEVEL":
@@ -12277,42 +12275,7 @@ order by	case
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [HttpDelete, Route("DeleteRule")]
-        public JsonResult DeleteRule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("Rule");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Rule>(id);
-                if (model == null) throw new NotFoundException("Rule");
-
-                if (!Company.HasAssetPermission(SystemObjects.Rule, model.ID, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.Rule, model.ID);
-
-                dynamic custom = new
-                {
-                    action = "delete",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
+                
         [HttpPut, ValidateInput(false), Route("EditRule")]
         public JsonResult EditRule(FormCollection form)
         {
