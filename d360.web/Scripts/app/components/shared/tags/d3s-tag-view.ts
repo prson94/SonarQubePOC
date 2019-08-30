@@ -27,6 +27,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     showDelete: boolean = false;
     private tags: any[];
     private tagID: any;
+    existingTag: boolean = false;
     selected: TagType[] = [];
     private editPopupTitle: string = 'Edit Tag';
     private deletePopupTitle: string = 'Delete Tag';
@@ -93,28 +94,39 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     saveTag(event) {
+        this.existingTag = false;
         var tags = Array<TagApiModel>();
         let tag = new TagApiModel();
         tag.AssetUID = this.assetUID;
         tag.TagName = event.item.Value;
         tags.push(tag);
-        this.tagService.createAssetTag(tags)
-            .subscribe(result => {
-                let msg: string = '';
-                if (event.item.uid == undefined) {
-                    msg = `${event.item.Value} succesfully added`;
-                }
-                this.showMessageForResult(this.messagesService, result, msg);
-                if (event.item.uid == undefined) {
-                    this.tags.push(event.item);
-                }
-                this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
+        this.tags.forEach(x => {
+            if (x.Value == event.item.Value) {
+                this.existingTag = true;
+                this.showEditor = false;
+                this.messagesService.showError('Error', 'Tag already assigned to Asset');
+            }
+        })
+        if (this.existingTag == false) {
+            this.tagService.createAssetTag(tags)
+                .subscribe(result => {
+                    let msg: string = '';
+                    if (event.item.uid == undefined) {
+                        msg = `${event.item.Value} succesfully added`;
+                    }
+                    this.showMessageForResult(this.messagesService, result, msg);
+                    if (event.item.uid == undefined) {
+                        event.item.uid = result[0].Uid;
+                        this.tags.push(event.item);
+                    }
+                    this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
 
-                this.selected = [];
-                event.item.UseCount = 0;
-                this.selected.push(event.item);
+                    this.selected = [];
+                    event.item.UseCount = 0;
+                    this.selected.push(event.item);
 
-            });
+                });
+        }
         this.showEditor = false;
     }
 
