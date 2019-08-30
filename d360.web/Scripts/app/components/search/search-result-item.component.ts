@@ -14,21 +14,20 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-search-result-item',
     template: `       
-                <div class="search-res-container">
-                        <div class="col s8">
-                            <h4 class="search-result-name">
-                                <i *ngIf="result?.Icon" class="folder-icon fa {{result?.Icon}}"></i><span *ngIf="result?.ImageUrl" class="folder-icon"><img [src]="result.ImageUrl" /></span> <a (click)="navigateLink()" class="search-result-link" [innerHtml]="result?.Name"></a>
-                            </h4>
-                            <h5 class="search-result-attributes">
-                                <span class="result-type">{{displayType}}</span>
-                                <span *ngIf="result?.Type">
-                                        &nbsp; <i class="fa fa-angle-right"></i> &nbsp;<span class="result-category" [innerHtml]="result?.Type"></span>
-                                </span>
-                             </h5>
-                            <p class="search-result-desc" *ngIf="result?.Description" [innerHtml]="result.Description"></p>
+                <div class="card-res">
+                        <div class="left">
+                            <span class="title">
+                                <span class="d3s-icon large-icon"><i class="fa {{result?.Icon}}"></i></span>
+                                <span *ngIf="result?.ImageUrl" class="folder-icon"><img [src]="result.ImageUrl" /></span> 
+                                <span (click)="navigateLink()" class="name"><span class="inner" [innerHtml]="result?.Name"></span></span>
+                            </span>
+                            <span class="category">
+                                {{displayType}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
+                            </span>
+                            <span class="description" *ngIf="result?.Description" [innerHtml]="result.Description"></span>
                         </div>
-                        <div class="col s4 search-result-details">
-                            <div class="search-result-details-line"> 
+                        <div class="right">
+                            <div class="badges"> 
                                 <span #badge *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon clickable"
                                       title="{{lastCalculatedMessage()}}"
                                       [ngClass]="{
@@ -56,8 +55,8 @@ declare var CompanySettings;
                                     <i class="fa fa-info-circle"></i>
                                 </span>
                             </div>
-                            <span class="spacer"></span>
-                            <div class="search-result-details-line">
+                            <span class="grow"></span>
+                            <div class="tags">
                                 <d3s-tag-view [data]="tags"></d3s-tag-view>
                             </div>
                         </div>
