@@ -1284,7 +1284,7 @@ from	IntersectType I
 
                                             //Cascade behaviour
                                             #region Cascade Behaviour
-                                            Connection.Execute($@" 
+                                           Connection.Execute($@" 
                 if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
                     Truncate TABLE #ExecutionDeletedAsset
                 else
@@ -1298,7 +1298,8 @@ from	IntersectType I
                                     FromHierarchy	bit,
                                     WorkflowItemId bigint
                             );
-
+            if( @hasPredicate = 1)
+            begin
                  with h as (
 	                    select	D.ExecutionID,
 			                    D.ItemNumber,
@@ -1324,7 +1325,7 @@ from	IntersectType I
                                 P.[Level] + 1 as [Level],
                                 P.[Root] as Root
 	                    from	PredicateIntersect I 
-			                    inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = {(int)predicateType} and P.Object = I.Subject and P.ObjectID = I.SubjectID
+			                    inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = @predicateTypeValue and P.Object = I.Subject and P.ObjectID = I.SubjectID
 			                    inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
                         where   P.ItemNumber between {beginItemNumber} and {endItemNumber} and P.[Level] <= 15
                     )
@@ -1342,7 +1343,7 @@ from	IntersectType I
                                 and [Level] > 0 
                              and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = h.ExecutionID and ItemNumber = h.ItemNumber )
 			                 and  ExecutionID = @ExecutionID
-
+        end
                  insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root],WorkflowItemId)
                         select distinct 
                                 ExecutionID, 
@@ -1377,7 +1378,10 @@ from	IntersectType I
 			                S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
 			                where	{querySuffix}  and AssetId is not null
 			                and S.[Cascade]=0
-                                                ", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                                ", new { ExecutionID = execution.ExecutionID,
+                                                        predicateTypeValue = predicateType.HasValue ? (int)predicateType : -1,
+                                                        hasPredicate = predicateType.HasValue ? 1 : 0
+                                                        }, transaction: trans, commandTimeout: timeout);
                                             #endregion
 
                                             // Get the hierarchy items we also need to remove
