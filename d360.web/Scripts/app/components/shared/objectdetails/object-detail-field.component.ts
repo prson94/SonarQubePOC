@@ -13,12 +13,16 @@ import { MessagesObservableService } from '../../../services/messages-observable
 
 export class ObjectDetailFieldComponent {
     @Input() field: DetailField;
+    @Input() assetUID: string;
     DetailFieldType = DetailFieldType;
+    
 
     constructor(private router: Router) {}
     ngOnInit() {
           if ((this.field.DataType == 'date' || this.field.DataType == 'datetime') && isNaN(Date.parse(this.field.Value)))
-                this.field.Value = null;
+            this.field.Value = null;
+        
+
     }
 
     private formatAsNumber(fieldValue): string {
@@ -57,32 +61,6 @@ export class ObjectDetailFieldComponent {
             && this.field.Name != null
             && ['name', 'implementation name'].indexOf(this.field.Name.toLowerCase()) > -1;
     }
-
-    
-
-    //deleteTags() {
-    //    let tagForDelete: TagType[] = [];
-    //    //this.tagsService.deleteTags(tagForDelete).
-    //    //    subscribe(result => {
-    //    //        this.showMessageForResult(this.messagesService, result);
-    //    //        this.onActionBackClick();
-
-    //    //    }, err => this.showMessageForResult(this.messagesService, err));
-    //}
-
-    //saveTag(event) {
-    //    this.tagsService.saveTag(event.item)
-    //        .subscribe(result => {
-    //            let msg: string = '';
-    //            if (event.item.uid == undefined) {
-    //                msg = `${result.Value} succesfully created`;
-    //            }
-    //            else {
-    //                msg = `${result.Value} succesfully updated`;
-    //            }
-    //        });
-    //}
-
 
     private get fieldDataType(): string {
         if (this.field == null || this.field.DataType == null)

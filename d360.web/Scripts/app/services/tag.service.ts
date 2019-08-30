@@ -1,6 +1,6 @@
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { Tag, TagType } from '../models/tag.model';
+import { Tag, TagType, TagApiModel } from '../models/tag.model';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
@@ -69,6 +69,22 @@ export class TagService extends BaseObservableService {
         }
         url = `api/v2/tags/${tag.uid}`;
         return this.http.put(url, tag)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
+    createAssetTag(tags: TagApiModel[]): Observable<any> {
+        let url = `api/v2/assets/tags`;
+        return this.http.post(url, tags)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
+    deleteAssetTag(tags: TagApiModel[]): Observable<any> {
+                
+        const httpHeaders = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: tags
+        };
+        let url = `api/v2/assets/tags`;
+        return this.http.delete(url, httpHeaders)
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
