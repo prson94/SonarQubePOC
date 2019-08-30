@@ -80,7 +80,7 @@ namespace d360.model
         /// <summary>
         /// This is the stored procedure version of getting both the count and paged assets with relevant dynamic fields.
         /// </summary>
-        public async Task<AssetResults> GetDynamicAssets(AssetType at, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null, bool apiNamesInOutput = false, bool listableFieldsOnly = true, bool pagingEnabled = true)
+        public async Task<AssetResults> GetDynamicAssets(int assetTypeId, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null, bool apiNamesInOutput = false, bool listableFieldsOnly = true, bool pagingEnabled = true)
         {
             var results = new AssetResults
             {
@@ -200,7 +200,7 @@ namespace d360.model
             sortField = sortField.Replace("'", "").Replace(" ", "").Replace("-","");
             sortOrder = string.IsNullOrEmpty(sortOrder) ? "" : (sortOrder.ToLower().Equals("asc") ? "asc" : "desc");
 
-            parameters.Add("assetTypeId", at.ID);
+            parameters.Add("assetTypeId", assetTypeId);
             parameters.Add("userId", CurrentResourceID);
             parameters.Add("filter", simpleFilter);
             parameters.Add("pageNumber", pageNumber);

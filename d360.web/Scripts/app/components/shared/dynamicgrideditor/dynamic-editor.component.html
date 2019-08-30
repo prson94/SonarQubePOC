@@ -117,16 +117,22 @@
                     <div *ngIf="hasIconFields && fore.Value == back.Value"
                          class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
 
-                    <div *ngIf="this.consolidateToTag && editedItem" class="warningMessage">
+                    <div *ngIf="this.consolidateToTag && editedItem && !adding" class="warningMessage">
                         <h4>Consolidate Tags?</h4>
                         <p>
                             A tag with the name '{{consolidateToTag.name}}' already exists<ng-container *ngIf="consolidateToTag.count > 0">, used to tag <d3s-tag-usage [uid]="consolidateToTag.code">{{consolidateToTag.count}} items</d3s-tag-usage>.</ng-container> <br />
-                            Choose <strong>Consolidate</strong> to replace the tag '{{editedItem.Value}}' with '{{consolidateToTag.name}}' 
-                                   <ng-container *ngIf="editedItem.UseCount > 0">
-                                       , for <d3s-tag-usage [uid]="editedItem.uid">{{editedItem.UseCount}} items</d3s-tag-usage>
-                                   </ng-container>
+                            Choose <strong>Consolidate</strong> to replace the tag '{{editedItem.Value}}' with '{{consolidateToTag.name}}'
+                            <ng-container *ngIf="editedItem.UseCount > 0">
+                                , for <d3s-tag-usage [uid]="editedItem.uid">{{editedItem.UseCount}} items</d3s-tag-usage>
+                            </ng-container>
                             .<br />
                             The tag '{{editedItem.Value}}' will then be deleted.
+                        </p>
+                    </div>
+                    <div *ngIf="adding && !selectedTagID" class="warningMessage">
+                        <h4>No Tag Selected</h4>
+                        <p>
+                            Start typing to see list of tags.
                         </p>
                     </div>
                 </div>

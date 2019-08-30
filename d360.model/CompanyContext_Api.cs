@@ -214,6 +214,33 @@ where	ExecutionID = @executionID
             new { executionID }, commandTimeout: timeout);
         }
 
+        private void LogAssetPermissionErrors(Guid executionID, AssetType at, Permission p, string apiTableName, int timeout = 3600)
+        {
+            if (string.IsNullOrEmpty(apiTableName))
+            {
+                throw new ApplicationException("Endpoint logic is misconfigured, and is missing an API table name.");
+            }
+            if (!CurrentResourceIsAdmin)
+            {
+                Connection.Execute($@"
+    declare @hasAssetTypePermission bit = 0
+
+    select @hasAssetTypePermission = case when exists (select AssetTypeID from UserAssetPermissions(3, @assetTypeID) where PermissionsBitMask & @p = @p and AssetID = 0) then 1 else 0 end
+
+    if @hasAssetTypePermission = 0
+    begin
+	    update	T
+	    set		T.Success = 0,
+			    T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this asset.'
+	    from    api.{apiTableName} T
+			    inner join api.Execution E on E.ExecutionID = T.ExecutionID 
+											    and E.ExecutionID = @executionID 
+											    and T.AssetID is not null
+											    and T.AssetID not in (select AssetID from UserAssetPermissions(E.ResourceID, @assetTypeID) where PermissionsBitMask & @p = @p)
+    end", new { executionID, assetTypeID = at.ID, p = (int)p }, commandTimeout: timeout);
+            }
+        }
+
         private void LogParentErrors(Guid executionID, int timeout = 3600)
         {
             Connection.Execute(@"
@@ -1120,6 +1147,9 @@ from	IntersectType I
                         new { execution.ExecutionID }, commandTimeout: timeout);
 
                         #endregion
+
+                        // Validate permissions
+                        LogAssetPermissionErrors(execution.ExecutionID, at, Permission.DeleteAsset, "ExecutionDeletedAsset");
 
                         generalChecksCompleted = true;
                     }
@@ -2348,6 +2378,9 @@ from	api.ExecutionAsset T
                         new { execution.ExecutionID }, commandTimeout: timeout);
 
                         #endregion
+
+                        // Validate permissions
+                        LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, "ExecutionAsset");
 
                         generalChecksCompleted = true;
                     }

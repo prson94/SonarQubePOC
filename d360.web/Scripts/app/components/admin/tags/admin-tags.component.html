@@ -37,7 +37,11 @@
                                 <td class="enable-pointer-events">
                                     <p-tableCheckbox [value]="item"></p-tableCheckbox>
                                 </td>
-                                <td (click)="selectSingleItem($event,item, el);">{{item.Value}}</td>
+                                <td (click)="selectSingleItem($event,item, el);">
+                                    <a class="mid-blue" (click)="openTagDetails(item);">
+                                        {{item.Value}}
+                                    </a>
+                                </td>
                                 <td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
                                 <td (click)="selectSingleItem($event,item);">
                                     <div class="RowTools">

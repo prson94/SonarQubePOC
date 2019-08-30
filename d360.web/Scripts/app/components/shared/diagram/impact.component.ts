@@ -102,7 +102,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         this.diagram.linkTemplateMap.add("", this.createLinkTemplate());
         this.diagram.linkTemplateMap.add("Category", this.createCategoryLinkTemplate());
 
-        this.diagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
+        this.diagram.addDiagramListener('ViewportBoundsChanged', () => this.ViewportBoundsChanged());
         this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
         this.diagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
         this.diagram.addDiagramListener('InitialLayoutCompleted', () => this.InitialLayoutCompleted());
@@ -678,7 +678,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
         this.populateDiagram();
     }
 
-    private ViewPortBoundsChanged() {
+    private ViewportBoundsChanged() {
         /* FIXME: what this code do? */
         var s = this.diagram.scale;
         var h = 500;
