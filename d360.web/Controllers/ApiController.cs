@@ -67,13 +67,7 @@ namespace d360.web.Controllers
                 }
             }
         }
-
-        public class TypeCheckModel
-        {
-            public string Type { get; set; }
-            public int ID { get; set; }
-        }
-
+        
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id)
         {
             var list = new List<DetailReadOnlyRowModel>();
@@ -5133,7 +5127,8 @@ order by    Name
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-                    { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") }
+                    { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") },
+                    { "AssetTypeUID", row.uid }
                 }
             );
         }

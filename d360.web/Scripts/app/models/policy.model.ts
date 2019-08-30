@@ -11,20 +11,12 @@ export class PolicyType {
     AssetTypeUID: string;
 }
 
-export enum PolicyStatus {
-    Draft = 1,
-    Active = 2,
-    Inactive = 3
-}
-
 export class Policy {
     ID: number;
     Uid: string;
     AssetID: number;
     ParentID: number;
-    DisplayValue: string;
-    Status: PolicyStatus;
-    StatusName: string;
+    DisplayValue: string;    
     Description: string;
     Level: number;
 }

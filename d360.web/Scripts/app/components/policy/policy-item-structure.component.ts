@@ -10,7 +10,7 @@ import { Title } from '@angular/platform-browser';
 import { TreeNode } from 'primeng/primeng';
 
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
+import { Policy, PolicyType } from '../../models/policy.model';
 import { GridColumn, GridField } from '../../models/grid-definition.model';
 
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -158,12 +158,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     private loadPolicyHierarchy(policyTypeId: number) {
         this.policiesService.getPolicies(policyTypeId, true).subscribe(
-            result => {
-
-                for (let policy of result) {
-                    policy.StatusName = PolicyStatus[policy.Status];
-                }
-
+            result => {                
                 this.policies = result;
                 this.treeNodeArray = this.buildTreeNodeArray(this.policies, 1);
                 this.unfilteredTreeNode = JSON.parse(JSON.stringify(this.treeNodeArray));
