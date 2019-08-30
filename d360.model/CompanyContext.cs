@@ -3088,9 +3088,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.Tag:
                     objectId = Tags.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
+                case SystemObjects.IntersectType:
+                    objectId = IntersectTypes.FirstOrDefault(x => x.uid == objectUid).ID;
+                    break;
                 default:
-                    throw new Exception($"Method not implemented for object type '{objectType.ToString()}'");
-
+                    objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString()).ObjectID;
+                    if (objectId <= 0)
+                        throw new Exception($"Method not implemented for object type '{objectType.ToString()}'");
+                    break;
             }
             return objectId;
         }

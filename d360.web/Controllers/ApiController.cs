@@ -824,6 +824,14 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             });
         }
 
+        [HttpGet, Route("{type}/{uid}/grid/definition")]
+        public HttpResponseMessage GetGridDefinitionByType(SystemObjects type, string uid)
+        {
+            Guid guid = Guid.Parse(uid);
+            int objectId = Company.GetObjectId(guid, type);
+            return GetGridDefinitionByType(type, objectId);
+        }
+
         [HttpGet, Route("{type}/{id:int}/grid/definition")]
         public HttpResponseMessage GetGridDefinitionByType(SystemObjects type, int id)
         {
@@ -7180,6 +7188,14 @@ where v.id = {0}", id)).FirstOrDefault();
             return Company.Query<dynamic>(QueryConstants.ObjectRelationships, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, id });
         }
 
+        [Route("{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeUID}"), HttpGet]
+        public IEnumerable<dynamic> RelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, string intersectTypeUID, bool includeInverse = true)
+        {
+            Guid guid = Guid.Parse(intersectTypeUID);
+            int ID = Company.GetObjectId(guid, SystemObjects.IntersectType);
+            return RelationshipsForObjectByTargetType(type, id, targetType, targetID, ID, includeInverse);
+        }
+
         [Route("{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}"), HttpGet]
         public IEnumerable<dynamic> RelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool includeInverse = true)
         {
@@ -7245,6 +7261,7 @@ where v.id = {0}", id)).FirstOrDefault();
 		                        case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end as Type,
 		                        case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
 		                        AST.Name as TypeName,
+                                IA.uid as ObjectUid,
 		                        T.HasTechnicalRelationships
                         from	[Intersect] I
                                 inner join IntersectType IT on IT.ID = I.IntersectTypeID
@@ -7293,6 +7310,7 @@ where v.id = {0}", id)).FirstOrDefault();
                         else
                             I.SubjectID
                         end as ObjectID,
+                        IA.uid as ObjectUid,
 		                P.TextPath as Name,        
 		                IT.Object Type,
 		                IT.ObjectID TypeID,
@@ -7343,12 +7361,13 @@ where v.id = {0}", id)).FirstOrDefault();
                     else
                         I.ObjectID
                     end as ObjectID,
+                    IA.uid as ObjectUid,
 		            P.TextPath as Name,        
 		            IT.Subject as Type,
 		            IT.SubjectID as TypeID,
 		            AST.Name as TypeName,
 		            T.HasTechnicalRelationships
-            from [Intersect] I
+                    from [Intersect] I
                 inner join IntersectType IT on IT.ID = I.IntersectTypeID
                     {assetJoin}
                     cross apply(
