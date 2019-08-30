@@ -7989,7 +7989,8 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
 		                AT.Description,
 		                AT.DisplayFormat,
 		                AT.AutoDisplayDescription,
-		                AT.id as AssetTypeID
+		                AT.id as AssetTypeID,
+                        AT.uid as AssetTypeUID
 		                from
                   Assettype AT 
                   where  AT.[object] = 'ReferenceItemType' and AT.ObjectID > 0";
