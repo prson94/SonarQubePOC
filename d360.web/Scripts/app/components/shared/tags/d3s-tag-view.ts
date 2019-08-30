@@ -149,11 +149,13 @@ export class TagView extends AdminBaseComponent implements OnInit {
     setVisibility() {
         this.container.nativeElement.querySelectorAll('.tag-item-wrapper')
             .forEach((x, index) => {
-                if (!this.isShowAll && index > 9) {
-                    x.closest('a').classList.add('hide');
-                }
-                else {
-                    x.closest('a').classList.remove('hide');
+                if (x.innerText != "Click to add...") {
+                    if (!this.isShowAll && index > 9) {
+                        x.closest('a').classList.add('hide');
+                    }
+                    else {
+                        x.closest('a').classList.remove('hide');
+                    }
                 }
             });
     }
