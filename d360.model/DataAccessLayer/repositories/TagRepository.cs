@@ -296,7 +296,7 @@ namespace d360.model.DataAccessLayer
 
         public Tag GetTagByName(string name)
         {
-            return companyContext.Tags.FirstOrDefault(x => x.Value == name);
+            return companyContext.Tags.FirstOrDefault(x => x.Value == name && x.State == State.Active);
         }
 
         public bool DoesTagExists(string value)

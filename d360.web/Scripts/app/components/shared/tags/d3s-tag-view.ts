@@ -74,8 +74,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
     openDeleteModal(tag: any) {
         if (this.isEditable == true) {
-            this.showDelete = true;
             this.selected.push(tag);
+            this.deleteTags(tag);
             this.deletePopupTitle = this.selected.length == 1 ? 'Delete Tag' : 'Delete Tags';
         }
     }
@@ -118,7 +118,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.showEditor = false;
     }
 
-    deleteTags() {
+    deleteTags(selectedTag) {
         this.tagID = this.selected[0].uid;
         var tags = Array<TagApiModel>();
         let tag = new TagApiModel();
@@ -134,7 +134,6 @@ export class TagView extends AdminBaseComponent implements OnInit {
                 if (result.type != 'error') {
                     this.selected.forEach(t => {
                         this.tags.splice(this.findTagIndex(t.TooltipID), 1);
-                        this.closebox();
                     })
                     this.selected = [];
                 }
@@ -157,9 +156,6 @@ export class TagView extends AdminBaseComponent implements OnInit {
                     x.closest('a').classList.remove('hide');
                 }
             });
-    }
-    closebox() {
-        this.showDelete = false;
     }
 
     ngAfterViewInit() {
@@ -194,14 +190,12 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
     enter(tag: any, el: HTMLElement) {
         this.isTooltipLoaded = false;
-        if (!this.isEditable) {
-            this.tagService.getTagTooltip(tag.uid)
-                .subscribe(t => {
-                    this.tagTooltip = t[0];
-                    this.isTooltipLoaded = true;
-                    this.ref.markForCheck();
-                });
-        }
+        this.tagService.getTagTooltip(tag.uid)
+            .subscribe(t => {
+                this.tagTooltip = t[0];
+                this.isTooltipLoaded = true;
+                this.ref.markForCheck();
+            });
     }
 
 

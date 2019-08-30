@@ -15,7 +15,7 @@
             <div #el class="tag-item-wrapper">
                 {{tag.Value}}
             </div>
-            <div *ngIf="isEditable" (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
+            <div *ngIf="isEditable" [pTooltip]="'Remove Tag'" tooltipPosition="top"  (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
                 <i style="padding-left:10px" class="fa fa-close"></i>
             </div>
         </a>
@@ -27,16 +27,16 @@
             </div>
         </a>
     </ng-container>
-    <ng-container *ngIf="tags?.length > 10">
+    <ng-container *ngIf="tags && tags.length > 10">
         <a (click)="showAllToggle($event);" class="show-all-tags">
             <ng-container *ngIf="isShowAll">Hide all</ng-container>
             <ng-container *ngIf="!isShowAll">Show all {{tags.length}} tags</ng-container>
         </a>
     </ng-container>
-    <d3s-dynamic-editor [objectID]="-1"
+    <d3s-dynamic-editor
+                        [objectID]="-1"
                         [objectType]="'Tag'"
                         [title]="'Tag'"
-                        [selection]="selected[0]"
                         (saveClick)="saveTag($event)"
                         [showAsModal]="true"
                         [modalTitle]="editPopupTitle"
@@ -44,30 +44,4 @@
                         (closeClick)="closeEditor()"
                         [adding]="true">
     </d3s-dynamic-editor>
-    <d3s-delete-form *ngIf="selected.length != 0"
-                     [callback]="theDeleteCallback"
-                     [method]="'callback'"
-                     [items]="selected"
-                     [showAsModal]="true"
-                     [modalTitle]="deletePopupTitle"
-                     [isModalVisible]="showDelete"
-                     (onCancel)="showDelete=false;selected = [];">
-        <div prompt>
-            <div *ngIf="selected.length == 1">
-                Please confirm that you wish to delete the tag '{{this.selected[0].Value}}' from Asset
-                <ng-container *ngIf="this.selected[0].UseCount > 0">
-                    (<d3s-tag-usage [uid]="this.selected[0].uid">{{this.selected[0].UseCount}} assets</d3s-tag-usage> tagged)
-                </ng-container>
-            </div>
-            <div *ngIf="selected.length > 1">
-                Please confirm that you wish to delete following tags:
-                <table class="table-borderless table">
-                    <tr *ngFor="let t of selected">
-                        <td>{{t.Value}}</td>
-                        <td *ngIf="t.UseCount > 0"><span class="tag-desc"><d3s-tag-usage [uid]="t.uid">{{t.UseCount}} assets</d3s-tag-usage> tagged</span></td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-    </d3s-delete-form>
 </div>
