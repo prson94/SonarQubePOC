@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 
-namespace igx.jobs.assetsyncprocessor
+namespace igx.jobs.assetprocessor
 {
     class Program
     {
