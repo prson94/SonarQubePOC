@@ -2541,7 +2541,7 @@ button.button, a.link-button {
     user-select: none;
     cursor: pointer;
     height: 32px;
-    font-family: 'Nunito Sans' !important;
+    font-family: "Nunito Sans",sans-serif;
     font-size: 14px;
     text-align: center;
     white-space: nowrap;
@@ -3723,11 +3723,6 @@ button.tab-scroller {
             height: 24px;
             padding: 0px 8px !important;
         }
-
-        .tooltip-wrapper{
-            position:fixed;
-
-        } 
         
         .tag-tooltip {
             display: none;
@@ -3740,7 +3735,7 @@ button.tab-scroller {
             background-color: #fffedc;
             border: 1px solid #adadad;
             z-index: 1000;
-            top: -56px;
+            top: -45px;
             transform: translateX(-50%);
 
             span {
@@ -3776,4 +3771,11 @@ button.tab-scroller {
     tbody > tr:nth-child(odd):not(.ui-state-highlight) {
         background: #f7f7f7 !important;
     }
+}
+.ui-table-scrollable-body{
+    overflow:inherit;
+}
+a.mid-blue {
+    cursor: pointer;
+    color: #0971b9 !important;
 }

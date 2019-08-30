@@ -9,6 +9,7 @@ import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CoreModule } from '../core.module';
+import { Router } from '@angular/router';
 
 
 @Component({
@@ -30,7 +31,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     private tagTooltip: TagType;
     private isTooltipLoaded: boolean = false;
 
-    constructor(private tagService: TagService, private messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, rightSidebarService: RightSidebarService, private ref: ChangeDetectorRef) {
+    constructor(private router: Router, private tagService: TagService, private messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, rightSidebarService: RightSidebarService, private ref: ChangeDetectorRef) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
     }
 
@@ -47,10 +48,6 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.selected = this.tags;
     }
 
-    getTagUrl(tag: any, event: MouseEvent) {
-        this.openTagPage(event, `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${tag.uid.toString().toLowerCase()}`);
-    }
-
     showAllToggle(event: MouseEvent) {
         this.isShowAll = !this.isShowAll;
         event.stopPropagation();
@@ -58,35 +55,62 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     setVisibility() {
-        this.container.nativeElement.querySelectorAll('.tag-item-wrapper')
-            .forEach((x, index) => {
+
+        var items = Array.prototype.slice.call(this.container.nativeElement.querySelectorAll('.tag-item-wrapper'), 0);
+        if (items.length > 0) {
+            for (let index = 0; index < items.length; index++) {
+                var aElement = this.getParentForResizing(items[index], 'A');
                 if (!this.isShowAll && index > 9) {
-                    x.closest('a').classList.add('hide');
+                    aElement.classList.add('hide');
                 }
                 else {
-                    x.closest('a').classList.remove('hide');
+                    aElement.classList.remove('hide');
                 }
-            });
+            }
+        }
+    }
+
+    private getParentForResizing(element: HTMLElement, tags: string) {
+        var searchFor = tags.split(',');
+        var el = null;
+        searchFor.forEach(tagName => {
+            if (element.parentElement.tagName == tagName) {
+                el = element.parentElement;
+            }
+        });
+
+        if (el) return el;
+
+        if (element.parentElement) {
+            return this.getParentForResizing(element.parentElement, tags);
+        }
+        return null;
     }
 
     ngAfterViewInit() {
 
         if (this.container) {
-            let parent = this.container.nativeElement.closest('td')
-                ? this.container.nativeElement.closest('td') : this.container.nativeElement.closest('div');
+            let parent = this.getParentForResizing(this.container.nativeElement, 'TD,DIV');
+            if (!parent) {
+                console.warn("No suitable parent fount for tag resizing!");
+            }
 
             let ofWidth = parent ? parent.offsetWidth - 10 : 500;
-
+            parent.classList.remove('no-text-overflow')
             this.container.nativeElement.style.width = ofWidth + 'px';
-            this.container.nativeElement.querySelectorAll('.tag-item-wrapper')
-                .forEach((x) => {
+
+            var items = Array.prototype.slice.call(this.container.nativeElement.querySelectorAll('.tag-item-wrapper'), 0);
+            if (items.length > 0) {
+                for (let i = 0; i < items.length; i++) {
+                    var x = items[i];
                     if (x.offsetWidth > ofWidth) {
                         x.setAttribute('original-width', x.offsetWidth);
                         x.style.maxWidth = (ofWidth - 30) + 'px';
                         x.classList.add('too-long');
                         x.setAttribute('max-width', ofWidth - 30);
                     }
-                });
+                }
+            }
 
             this.setVisibility();
 
@@ -94,8 +118,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
     }
 
-    openTagPage(event: MouseEvent, url: string) {
-        window.open(url, "_blank");
+    openTagPage(event: MouseEvent, item: any) {
+        this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid}`]);
         event.stopPropagation();
     }
 
