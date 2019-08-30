@@ -212,6 +212,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     openTagPage(event: MouseEvent, item: any) {
+        if (this.isEditable) return;
         this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid}`]);
         event.stopPropagation();
     }
