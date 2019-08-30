@@ -3272,7 +3272,16 @@ end",
                 BulkCopyTimeout = timeout
             };
 
-            bulkCopy.WriteToServer(table);
+                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                bulkCopy.ColumnMappings.Add("uid", "uid");
+                bulkCopy.ColumnMappings.Add("DataSource", "DataSource");
+                bulkCopy.ColumnMappings.Add("Type", "Type");
+                bulkCopy.ColumnMappings.Add("ExternalID", "ExternalID");
+                bulkCopy.ColumnMappings.Add("FieldHash", "FieldHash");
+
+
+                bulkCopy.WriteToServer(table);
 
             bulkCopy = null;
 
