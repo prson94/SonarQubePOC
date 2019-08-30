@@ -86,8 +86,8 @@ select	A.ObjectID as ID,
         hch.HasChildren
 from	AssetWithType A        
         {joins} 
-        cross apply [dbo].[GetAssetHasChildrenByAssetID](a.id,4) hch
-        cross apply dbo.GetAssetDisplayValueById(A.ID)  D 
+        cross apply [dbo].[GetAssetHasChildrenByAssetID](a.id,4) hch        
+        inner join dbo.AssetDisplayValue D on A.ID = D.AssetID
         {editRightsJoinStatement}
         outer apply (
 					select	I.SubjectID

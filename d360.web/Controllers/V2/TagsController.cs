@@ -25,8 +25,7 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/tags"),
-        Authorize,
-        ApiExplorerSettings(IgnoreApi = true)
+        Authorize
     ]
     public class TagsController : BaseV2ApiController
     {
@@ -40,7 +39,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Returns all tags that are defined in Govern.          
+        /// Returns all tags that are defined in Govern that match the search criteria.          
         /// </summary>        
         /// <returns>A list of tags</returns>
         [
@@ -66,15 +65,14 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Returns all tags that are defined in Govern.          
-        /// </summary>        
-        /// <returns>A list of tags</returns>
+        /// Retrieves a list of all tags defined in Govern.
+        /// </summary>                
         [
             HttpGet, MapToApiVersion("2.0"), Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("uid", "The uid of a specific tag to return.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("uid", "The Uid of a specific tag to return.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(List<TagApiModelWrapper>)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
@@ -100,26 +98,26 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Allows you to remove a tag based on its Uid.
+        /// Deletes a tag from Govern.
         /// </summary>
-        /// <param name="uid">The public identifier for the tag.</param>
-        /// <param name="cascade">Cascade delete to all related data.</param>
+        /// <param name="tagUid">The uid of the tag to be removed.</param>
+        /// <param name="cascade">Cascade, if true a tag that is applied to an asset will be deleted along with the association.  If false a tag that is in use will not be deleted.  The default is false for the cascade setting.</param>
         /// <returns>A status for the DELETE request.</returns>
         [
             HttpDelete,
-            Route("{uid}"),
+            Route("{tagUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
         ]
-        public IHttpActionResult DeleteById(Guid uid, bool cascade = false)
+        public IHttpActionResult DeleteById(Guid tagUid, bool cascade = false)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             try
             {
-                if (!tagRepository.DeleteTags(new List<TagApiDeleteModel>() { new TagApiDeleteModel { uid = uid, cascade = cascade } }))
+                if (!tagRepository.DeleteTags(new List<TagApiDeleteModel>() { new TagApiDeleteModel { uid = tagUid, cascade = cascade } }))
                 {
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", "Tag not found.");
                 }
@@ -129,14 +127,13 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error while deleting tag", ex.Message);
 
             }
-
-
+            
             return successMessageResponse(HttpStatusCode.OK, "Tag removed.", "Tag successfully removed.");
         }
 
 
         /// <summary>
-        /// Adds one tag to Govern.
+        /// Adds a tag to Govern with the properties provided in the model.
         /// </summary>        
         /// <param name="model">The tag to be created.</param>
         /// <returns>The created tag.</returns>
@@ -181,22 +178,22 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Updates the specified tag.
+        /// Updates the specified tag with the values provided in the model.
         /// </summary>
-        /// <param name="uid">The unique identifier of the asset cross reference.</param>        
-        /// <param name="model">The tag to be updated.</param>
-        /// <returns>The updated tag.</returns>
+        /// <param name="tagUid">The Uid of the tag to be updated.</param>        
+        /// <param name="model">The new definition of the tag to be used for the update.</param>
+        /// <returns>A tag model representing the updated tag.</returns>
         [
             HttpPut,
             MapToApiVersion("2.0"),
-            Route("{uid:Guid}"),
+            Route("{tagUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "The specified tag was updated, returns the properties of the created tag.", typeof(TagApiModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
-        public IHttpActionResult Put(Guid uid, TagApiModel model)
+        public IHttpActionResult Put(Guid tagUid, TagApiModel model)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update tags."));
@@ -205,9 +202,9 @@ namespace d360.web.Controllers.V2
             try
             {
 
-                TagValidator.ValidateForPut(uid, model);
+                TagValidator.ValidateForPut(tagUid, model);
 
-                var existingTag = tagRepository.GetTagByUid(uid);
+                var existingTag = tagRepository.GetTagByUid(tagUid);
 
                 if (existingTag == null)
                 {
@@ -219,7 +216,7 @@ namespace d360.web.Controllers.V2
                     throw new Exception("Invalid tag specified [same tag already exists].");
                 }
 
-                result = tagRepository.UpdateTag(uid, model, existingTag);
+                result = tagRepository.UpdateTag(tagUid, model, existingTag);
             }
             catch (Exception e)
             {
@@ -233,6 +230,9 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Allows you to remove a tags based on tag lists.
         /// </summary>
+        /// <remarks>
+        /// Use the cascade flag set to true to delete a tag that is applied to an asset that tag will be deleted along with the association.  If false a tag that is in use will not be deleted.  The default is false for the cascade setting.
+        /// </remarks>
         /// <returns>A status for the DELETE request.</returns>
         [
             HttpDelete,
@@ -277,7 +277,8 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(TagApiModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult ConsolidateTags(string parentUid, List<string> childrenUids)
         {
@@ -460,13 +461,13 @@ namespace d360.web.Controllers.V2
         /// <returns>A excel file containing tagged assets.</returns>
         [
             HttpGet,
-            MapToApiVersion("2.0"),
-            ApiExplorerSettings(IgnoreApi = true),
+            MapToApiVersion("2.0"),            
             Route("{tagUid}/export"),
             FileDownload,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
             SwaggerResponse(HttpStatusCode.OK, "Exported tags to Excel.", typeof(List<TagApiModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> ExportTagToExcel(string tagUid)
         {
