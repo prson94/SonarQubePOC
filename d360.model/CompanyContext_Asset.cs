@@ -80,7 +80,7 @@ namespace d360.model
         /// <summary>
         /// This is the stored procedure version of getting both the count and paged assets with relevant dynamic fields.
         /// </summary>
-        public async Task<AssetResults> GetDynamicAssets(AssetType at, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null, bool apiNamesInOutput = false, bool listableFieldsOnly = true, bool pagingEnabled = true)
+        public async Task<AssetResults> GetDynamicAssets(int assetTypeId, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null, bool apiNamesInOutput = false, bool listableFieldsOnly = true, bool pagingEnabled = true)
         {
             var results = new AssetResults
             {
@@ -141,7 +141,11 @@ namespace d360.model
                             }
                             else
                             {
-                                if (!usedFilters.Contains($"F{f.FieldName.Replace("Field", "")}"))
+                                int fieldTypeId = 0;
+                                int.TryParse(f.FieldName.Replace("Field", ""), out fieldTypeId);
+                                var fieldType = FieldTypes.FirstOrDefault(x => x.ID == fieldTypeId)?.Type;
+
+                                if (!usedFilters.Contains($"F{f.FieldName.Replace("Field", "")}") || fieldType == SystemObjects.Tag.ToString())
                                 {
                                     filterTable.Rows.Add("F", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{wildcardValue(f.RawValue)}");
 
@@ -196,7 +200,7 @@ namespace d360.model
             sortField = sortField.Replace("'", "").Replace(" ", "").Replace("-","");
             sortOrder = string.IsNullOrEmpty(sortOrder) ? "" : (sortOrder.ToLower().Equals("asc") ? "asc" : "desc");
 
-            parameters.Add("assetTypeId", at.ID);
+            parameters.Add("assetTypeId", assetTypeId);
             parameters.Add("userId", CurrentResourceID);
             parameters.Add("filter", simpleFilter);
             parameters.Add("pageNumber", pageNumber);
@@ -208,11 +212,14 @@ namespace d360.model
             parameters.Add("listableFieldsOnly", listableFieldsOnly);
             parameters.Add("pagingEnabled", pagingEnabled);
 
-            var multi = await QueryMultipleAsync(
+            using (var multi = await QueryMultipleAsync(
                 "exec GetDynamicAssets @assetTypeId, @userId, @filter, @apiNamesInOutput, @listableFieldsOnly, @pagingEnabled, @pageNumber, @pageSize, @sortField, @sortDirection, @filters",
-                parameters);
-            results.Count = multi.Read<int>().First();
-            results.Results = multi.Read<dynamic>().ToList();
+                parameters))
+            {                
+                results.Count = multi.Read<int>().First();
+                results.Results = multi.Read<dynamic>().ToList();
+            }
+                
 
             return results;
         }

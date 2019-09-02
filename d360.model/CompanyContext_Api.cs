@@ -158,10 +158,11 @@ insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldVal
 			R.Code,
 			1
 	from	[api].[ExecutionAsset] A
-            inner join ReferenceItem R on A.Object = 'ReferenceItem' and R.ID = A.ObjectID
+            inner join Asset R on A.Object =  R.Object and R.ObjectID = A.ObjectID
 			left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Code'
 	where	A.ExecutionID = @executionID 
-            and F.ItemNumber is null;",
+	and A.Object = 'ReferenceItem' 
+    and F.ItemNumber is null;",
                 new { executionID }, commandTimeout: timeout);
             }
 
@@ -211,6 +212,33 @@ where	ExecutionID = @executionID
         and AssetID is null
 		and Uid is not null;",
             new { executionID }, commandTimeout: timeout);
+        }
+
+        private void LogAssetPermissionErrors(Guid executionID, AssetType at, Permission p, string apiTableName, int timeout = 3600)
+        {
+            if (string.IsNullOrEmpty(apiTableName))
+            {
+                throw new ApplicationException("Endpoint logic is misconfigured, and is missing an API table name.");
+            }
+            if (!CurrentResourceIsAdmin)
+            {
+                Connection.Execute($@"
+    declare @hasAssetTypePermission bit = 0
+
+    select @hasAssetTypePermission = case when exists (select AssetTypeID from UserAssetPermissions(3, @assetTypeID) where PermissionsBitMask & @p = @p and AssetID = 0) then 1 else 0 end
+
+    if @hasAssetTypePermission = 0
+    begin
+	    update	T
+	    set		T.Success = 0,
+			    T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this asset.'
+	    from    api.{apiTableName} T
+			    inner join api.Execution E on E.ExecutionID = T.ExecutionID 
+											    and E.ExecutionID = @executionID 
+											    and T.AssetID is not null
+											    and T.AssetID not in (select AssetID from UserAssetPermissions(E.ResourceID, @assetTypeID) where PermissionsBitMask & @p = @p)
+    end", new { executionID, assetTypeID = at.ID, p = (int)p }, commandTimeout: timeout);
+            }
         }
 
         private void LogParentErrors(Guid executionID, int timeout = 3600)
@@ -457,7 +485,7 @@ from    Field F
                     });
                     collectionFieldroperties.AddRange(assetFieldProperties);
                 }
-               
+
             }
 
             #region Build data tables for bulk load.
@@ -561,6 +589,11 @@ set		T.[Value] = S.[Value]
 from	#LookupValues T
 		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 0
 		inner join FieldLookupValue S on S.FieldTypeID = T.FieldTypeID and S.[Text] = T.FieldValue;
+
+update	T
+set		T.[Value] = '0'
+from	#LookupValues T
+		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowAllValue = 1 and ST.AllowAllLabel = T.FieldValue;
 
 drop table if exists #MvLookupValues
 create table #MvLookupValues (ItemNumber int, FieldTypeID int not null, [RawValue] nvarchar(250) null, [Value] nvarchar(max) null)
@@ -683,6 +716,8 @@ from	api.ExecutionField T
             DataTable fieldTable, out bool success, out string errorMessage)
         {
             List<DataRow> fieldRows = new List<DataRow>();
+            List<string> errorMessages = new List<string>();
+            string errorDelimiter = ". ";
 
             success = true;
             errorMessage = string.Empty;
@@ -696,7 +731,7 @@ from	api.ExecutionField T
             {
                 success = false;
                 bool isSinglar = (missingFields.Count() == 1);
-                errorMessage += $"{string.Join(",", missingFields)} {(isSinglar ? "is a" : "are")} required field{(isSinglar ? "" : "s")};";
+                errorMessages.Add($"{string.Join(",", missingFields)} {(isSinglar ? "is a" : "are")} required field{(isSinglar ? "" : "s")}");
             }
 
             foreach (var k in fields)
@@ -704,6 +739,8 @@ from	api.ExecutionField T
                 string fieldName = k.Key.Trim();
                 string fieldValue = (k.Value + "").Trim();
                 int? fieldTypeId = null;
+                string decimalFormatString = $"#.{string.Join("", Enumerable.Repeat("#", 18))}";
+                
 
                 // Validation of field and value;
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
@@ -724,7 +761,7 @@ from	api.ExecutionField T
                     else
                     {
                         success = false;
-                        errorMessage += $"{fieldName} is not a valid field; ";
+                        errorMessages.Add($"{fieldName} is not a valid field");
                     }
                 }
                 else
@@ -736,7 +773,7 @@ from	api.ExecutionField T
                         if (string.IsNullOrEmpty(fieldValue))
                         {
                             success = false;
-                            errorMessage += $"{fieldName} is a required field; ";
+                            errorMessages.Add($"{fieldName} is a required field");
                         }
                     }
 
@@ -748,7 +785,7 @@ from	api.ExecutionField T
                                 if ((fieldValue.ToLower() != "true" && fieldValue.ToLower() != "false") && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} is a boolean field and may only be 'false' or 'true'; ";
+                                    errorMessages.Add($"{fieldName} is a boolean field and may only be 'false' or 'true'");
                                 }
                                 break;
                             case "Date":
@@ -756,7 +793,7 @@ from	api.ExecutionField T
                                 if (!DateTime.TryParse(fieldValue, out dTest) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must be a valid date; ";
+                                    errorMessages.Add($"{fieldName} must be a valid date");
                                 }
                                 break;
                             case "DateTime":
@@ -764,7 +801,7 @@ from	api.ExecutionField T
                                 if (!DateTime.TryParse(fieldValue, out dtTest) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must be a valid datetime value; ";
+                                    errorMessages.Add($"{fieldName} must be a valid datetime value");
                                 }
                                 break;
                             case "Decimal":
@@ -772,14 +809,14 @@ from	api.ExecutionField T
                                 if (!decimal.TryParse(fieldValue, out decTest) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must be a valid decimal; ";
+                                    errorMessages.Add($"{fieldName} must be a valid decimal");
                                 }
                                 break;
                             case "Link":
                                 if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must be a valid link, using the format name|url; ";
+                                    errorMessages.Add($"{fieldName} must be a valid link, using the format name|url");
                                 }
                                 break;
                             case "Lookup":
@@ -789,7 +826,7 @@ from	api.ExecutionField T
                                 if (!int.TryParse(fieldValue, out intTest) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must be a valid whole number; ";
+                                    errorMessages.Add($"{fieldName} must be a valid whole number");
                                 }
                                 break;
                             case "Percentage":
@@ -797,7 +834,7 @@ from	api.ExecutionField T
                                 if (!decimal.TryParse(fieldValue, out pctTest) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must be a valid percentage; ";
+                                    errorMessages.Add($"{fieldName} must be a valid percentage");
                                 }
                                 break;
                             default: // Html, Text
@@ -806,7 +843,7 @@ from	api.ExecutionField T
                                     if (!System.Text.RegularExpressions.Regex.IsMatch(fieldValue, fieldType.Pattern))
                                     {
                                         success = false;
-                                        errorMessage += $"{fieldName} must match regular expression pattern defined for this field; ";
+                                        errorMessages.Add($"{fieldName} must match regular expression pattern defined for this field");
                                     }
                                 }
                                 break;
@@ -817,7 +854,7 @@ from	api.ExecutionField T
                             if (fieldValue.Length < fieldType.Length.Value)
                             {
                                 success = false;
-                                errorMessage += $"{fieldName} must have an exact length of {fieldType.Length.Value}; ";
+                                errorMessages.Add($"{fieldName} must have an exact length of {fieldType.Length.Value}");
                             }
                         }
                         if (fieldType.MinimumLength.HasValue)
@@ -827,7 +864,7 @@ from	api.ExecutionField T
                                 if (decimal.TryParse(fieldValue, out var fieldDecimalValue) && fieldDecimalValue < fieldType.MinimumLength.Value)
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must have a minimum value of {fieldType.MinimumLength.Value}; ";
+                                    errorMessages.Add($"{fieldName} must have a minimum value of {fieldType.MinimumLength.Value.ToString(decimalFormatString)}");
                                 }
                             }
                             else
@@ -835,7 +872,7 @@ from	api.ExecutionField T
                                 if (fieldValue.Length < fieldType.MinimumLength.Value)
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must have a minimum length of {fieldType.MinimumLength.Value}; ";
+                                    errorMessages.Add($"{fieldName} must have a minimum length of {fieldType.MinimumLength.Value.ToString(decimalFormatString)}");
                                 }
                             }
 
@@ -847,7 +884,7 @@ from	api.ExecutionField T
                                 if (decimal.TryParse(fieldValue, out var fieldDecimalValue) && fieldDecimalValue > fieldType.MaximumLength.Value)
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} must have a maximum value of {fieldType.MaximumLength.Value}; ";
+                                    errorMessages.Add($"{fieldName} must have a maximum value of {fieldType.MaximumLength.Value.ToString(decimalFormatString)}");
                                 }
                             }
                             else
@@ -855,12 +892,17 @@ from	api.ExecutionField T
                                 if (fieldValue.Length > fieldType.MaximumLength.Value)
                                 {
                                     success = false;
-                                    errorMessage += $"{fieldName} may only have a maximum length of {fieldType.MaximumLength.Value}; ";
+                                    errorMessages.Add($"{fieldName} may only have a maximum length of {fieldType.MaximumLength.Value.ToString(decimalFormatString)}");
                                 }
                             }
 
                         }
                     }
+                }
+
+                if (errorMessages.Any())
+                {
+                    errorMessage = string.Join(errorDelimiter, errorMessages);
                 }
 
                 var fieldRow = fieldTable.NewRow();
@@ -980,7 +1022,7 @@ from	IntersectType I
             return models;
         }
 
-        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600)
+        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true)
         {
             var results = new List<DatabaseBulkAssetResult>();
             var dt = DateTime.UtcNow;
@@ -1106,6 +1148,9 @@ from	IntersectType I
 
                         #endregion
 
+                        // Validate permissions
+                        LogAssetPermissionErrors(execution.ExecutionID, at, Permission.DeleteAsset, "ExecutionDeletedAsset");
+
                         generalChecksCompleted = true;
                     }
                     catch (Exception generalEx)
@@ -1208,11 +1253,11 @@ from	IntersectType I
                                                     
                                                     	insert into @result values(1,'Success')
                                                     end
-                                                    select * from @result", 
+                                                    select * from @result",
                                                     new { execution.ExecutionID, isCascade = fusion.Cascade.HasValue ? fusion.Cascade.Value : false }, transaction: trans, commandTimeout: timeout).FirstOrDefault();
 
                                             bool IsDeleted = false;
-                                            if(bool.TryParse(data.Status.ToString(), out IsDeleted))
+                                            if (bool.TryParse(data.Status.ToString(), out IsDeleted))
                                             {
                                                 if (!IsDeleted)
                                                 {
@@ -1322,34 +1367,13 @@ from	IntersectType I
 			                    inner join api.ExecutionDeletedAsset S on S.ObjectID = i.ObjectID 
                                  where {querySuffix} ;
 
-                 insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root],IntersectID)
-		                Select distinct ExecutionID, 
-                                ItemNumber, 
-                                S.[Uid],
-                                T.ID 			
-	                   from	[Intersect] T
-                            inner join api.ExecutionDeletedAsset S on S.Object = T.Subject and S.ObjectID = T.SubjectID 
-			                and  {querySuffix}
-			                and not exists (Select 1 from #ExecutionDeletedAsset where ExecutionID = S.ExecutionID and ItemNumber = S.ItemNumber and IntersectID =T.ID );
-
-
-                insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root],IntersectID)
-		                Select distinct ExecutionID, 
-                                ItemNumber, 
-                                S.[Uid],
-                                T.ID 			
-	                   from	[Intersect] T
-                            inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID 
-			                and {querySuffix}
-			                and not exists (Select 1 from #ExecutionDeletedAsset where ExecutionID = S.ExecutionID and ItemNumber = S.ItemNumber and IntersectID =T.ID );
-
-
+            
 			                update S set S.Success = 0 ,
 			                [Message] ='You have not enabled Cascade, yet there are relationships or workflows for this asset.'
 			                from api.ExecutionDeletedAsset S 
 			                inner join (select [Root] as UID,ExecutionID,ItemNumber  from #ExecutionDeletedAsset
 			                group by [Root],ExecutionID,ItemNumber
-			                having (count (*) > 1))   E on
+			                having (count (*) > 0))   E on
 			                S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
 			                where	{querySuffix}  and AssetId is not null
 			                and S.[Cascade]=0
@@ -1651,7 +1675,10 @@ from	IntersectType I
 
                         Connection.Close();
 
-                        SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
+                        if (sendWorkflowEvents)
+                        {
+                            SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
+                        }
                     }
                 }
             }
@@ -2277,9 +2304,8 @@ from    api.ExecutionAsset T
 
 insert into #Keys
     select		A.ID,
-                utility.GetHash(O.Code) as ActiveKey
+                utility.GetHash(A.Code) as ActiveKey
     from		Asset A 
-			    inner join ReferenceItem O on A.Object = 'ReferenceItem' and O.ID = A.ObjectID
     where	    A.AssetTypeID = @ID;
 
 {keyComparisonUpdateStatement}",
@@ -2352,6 +2378,9 @@ from	api.ExecutionAsset T
                         new { execution.ExecutionID }, commandTimeout: timeout);
 
                         #endregion
+
+                        // Validate permissions
+                        LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, "ExecutionAsset");
 
                         generalChecksCompleted = true;
                     }
@@ -2429,10 +2458,10 @@ from	api.ExecutionAsset T
 
                                                         {updateAssetInfoOnExecutionRecordsSql}",
                                                         new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                    }
-                                                    else
-                                                    {
-                                                        Connection.Execute($@"
+                                                }
+                                                else
+                                                {
+                                                    Connection.Execute($@"
                                                         update	T
                                                         set		T.UpdatedBy = @R,
                                                         T.UpdatedOn = @D
@@ -2442,8 +2471,8 @@ from	api.ExecutionAsset T
                                                         update	api.ExecutionAsset
                                                         set		IsNew = 0
                                                         where	{executionAssetWhereSql};",
-                                                        new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                    }
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                }
                                                 break;
                                             #endregion
                                             case AssetTypeClass.FusionAttribute:
@@ -2531,10 +2560,14 @@ from	api.ExecutionAsset T
                                             #endregion
                                             case AssetTypeClass.Policy:
                                             case AssetTypeClass.Glossary:
+                                            case AssetTypeClass.Reference:
                                                 #region
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)
                                                     @object = "Policy";
+                                                else if (at.Class == AssetTypeClass.Reference)
+                                                    @object = "ReferenceItem";
+
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
@@ -2636,58 +2669,7 @@ from	api.ExecutionAsset T
                                                 }
                                                 break;
                                             #endregion
-                                            case AssetTypeClass.Reference:
-                                                #region
-                                                if (isInsert)
-                                                {
-                                                    Connection.Execute($@"
-    create table #ObjectMergeTableResult (ID int, ItemNumber int);
-    CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
-
-    merge   ReferenceItem as T
-    using   (
-            select  A.ItemNumber,
-                    C.FieldValue as [Code]
-            from    api.ExecutionAsset A
-                    inner join api.ExecutionField C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code'
-            where   A.ExecutionID = @ExecutionID
-                    and A.Success is null
-                    and A.ItemNumber between {beginItemNumber} and {endItemNumber}
-            ) S
-    on      (T.ReferenceItemTypeID = @ObjectID and T.[Code] = @NonExistentUid)
-    when    not matched then
-    insert  (ReferenceItemTypeID, [Code], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, S.[Code], @R, @D, @R, @D)
-    output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
-
-    update  T
-    set     T.Object = 'ReferenceItem',
-            T.ObjectID = S.ID,
-            T.IsNew = 1
-    from    api.ExecutionAsset T
-            inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
-
-    {updateAssetInfoOnExecutionRecordsSql}",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
-                                                }
-                                                else
-                                                {
-                                                    Connection.Execute($@"
-    update	T
-    set		T.[Code] = C.FieldValue,
-            T.UpdatedBy = @R,
-            T.UpdatedOn = @D
-    from	ReferenceItem T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between {beginItemNumber} and {endItemNumber}
-            inner join api.ExecutionField C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code';
-
-    update	api.ExecutionAsset
-    set		IsNew = 0
-    where	{executionAssetWhereSql};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                }
-                                                break;
-                                                #endregion
+                                           
                                         }
 
                                         #region Parent/Child Relationship
@@ -2789,7 +2771,7 @@ from	api.ExecutionAsset T
             return results;
         }
 
-        public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600)
+        public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false)
         {
             var results = new List<DatabaseBulkRelationshipResult>();
             bool generalChecksCompleted = false;
@@ -2935,10 +2917,16 @@ update	T
 set		T.Subject = S.Object,
 		T.SubjectID = S.ObjectID,
 		T.Object = O.Object,
-		T.ObjectID = O.ObjectID
+		T.ObjectID = O.ObjectID,
+        T.IsNew = CASE
+                    WHEN I.Id is null THEN 1
+                    ELSE 0
+                  END
 from	api.ExecutionRelationship T
 		left join AssetWithType S on T.ExecutionID = @ExecutionID and S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
-		left join AssetWithType O on T.ExecutionID = @ExecutionID and O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid;
+		left join AssetWithType O on T.ExecutionID = @ExecutionID and O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid
+        left join IntersectType IT on IT.uid = @uid
+        left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectId= S.ObjectId and I.ObjectId = O.ObjectId and I.Subject = S.Object and I.Object = O.Object;
 
 if @st = 'ReferenceItemType' and @stid = 0
 begin
@@ -3162,7 +3150,6 @@ end",
 
         update	T
         set		T.IntersectID = S.ID,
-		        T.IsNew = IIF(S.[Action] = 'I', 1, 0),
                 T.uid = IT.uid
         from	api.ExecutionRelationship T
 		        inner join #ObjectMergeTableResult S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber
@@ -3214,10 +3201,22 @@ end",
 
                 Connection.Close();
 
-                SendWorkflowEvents("IntersectType", rt.ID, results);
+                if (sendWorkflowEvents)
+                    SendWorkflowEvents("IntersectType", rt.ID, results);
             }
 
             return results;
+        }
+
+        public void DeleteRelationships(List<int> parentRelationships, List<int> childrenRelationships, bool sendWorkflowEvents)
+        {
+            if (!sendWorkflowEvents)
+                this.IsEventingEnabled = false;
+
+            Delete<Intersect>(x => childrenRelationships.Contains(x.ID));
+            Delete<Intersect>(x => parentRelationships.Contains(x.ID));
+
+            this.IsEventingEnabled = true;
         }
     }
 }

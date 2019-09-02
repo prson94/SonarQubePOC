@@ -232,6 +232,13 @@ namespace d360.extensions.search
             }
         }
 
+        private string EscapeValueForDoc(string input)
+        {
+            input.Replace("\r", "").Replace("\n", "").Replace("\v", "").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
+            input = HtmlUtilities.RemoveTags(input);
+            return input;
+        }
+
         #endregion
 
         public void AddToIndex(AddToIndexModel item)
@@ -282,13 +289,10 @@ namespace d360.extensions.search
                         else
                             bFirst = false;
 
-                        var val = f.Value.Replace("\r", "").Replace("\n", "").Replace("\v","").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
-                        val = HtmlUtilities.RemoveTags(val);
-
                         sb.Append("\"");
                         sb.Append(f.Key);
                         sb.Append("\":\"");
-                        sb.Append(val);
+                        sb.Append(EscapeValueForDoc(f.Value));
                         sb.Append("\"");
                     }
                     sb.Append("}\n");
@@ -921,13 +925,15 @@ namespace d360.extensions.search
                 bool bFirst = true;
                 foreach (var f in item.Fields)
                 {
+                    if (string.IsNullOrEmpty(f.Value))
+                        continue;
+
                     if (!bFirst)
                         sb.Append(", ");
                     else
                         bFirst = false;
 
-                    if (f.Value == null) continue;
-                    sb.Append(" \"" + f.Key + "\" : \"" + f.Value.Replace("\r", "").Replace("\n", "").Replace("\t", "") + "\" ");
+                    sb.Append(" \"" + f.Key + "\" : \"" + EscapeValueForDoc(f.Value) + "\" ");
                 }
                 sb.Append(" } }\n");
             }
@@ -937,10 +943,12 @@ namespace d360.extensions.search
 
             if (!bulkResponse.Success)
             {
-                ApplicationException bulkEx = new ApplicationException(bulkResponse.OriginalException.Message);
-                bulkEx.Data.Add("ES_DebugInformation", bulkResponse.DebugInformation);
-                bulkEx.Data.Add("ES_RequestBody", sb.ToString());
-                throw bulkEx;
+                StringBuilder exMessage = new StringBuilder();
+                exMessage.AppendLine(bulkResponse.OriginalException.Message);
+                exMessage.Append("ES_DebugInformation: ");
+                exMessage.AppendLine(bulkResponse.DebugInformation);
+
+                throw new ApplicationException(exMessage.ToString()); ;
             }
 
             var result = JObject.Parse(bulkResponse.Body);

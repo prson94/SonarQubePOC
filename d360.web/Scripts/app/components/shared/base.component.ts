@@ -1,15 +1,16 @@
-import {Title} from '@angular/platform-browser';
-import {RightSidebarItem} from '../../models/rightsidebar.model';
-import {PermissionsService} from '../../services/permissions.service';
-import {RightSidebarService} from '../../services/right-sidebar.service';
-import {WebAnalyticsService} from '../../services/web-analytics.service';
+import { Title } from '@angular/platform-browser';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { PermissionsService } from '../../services/permissions.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { WebAnalyticsService } from '../../services/web-analytics.service';
 
-import {Subscription} from 'rxjs';
-import {FormHelpers} from '../../static/form-helpers';
-import {JsonResult} from '../../models/jsonresult.model';
-import {ResponsibilityTypeRelationPermission, Permission} from '../../models/responsibility-type.model';
-import {HttpErrorResponse} from '@angular/common/http';
+import { Subscription } from 'rxjs';
+import { FormHelpers } from '../../static/form-helpers';
+import { JsonResult } from '../../models/jsonresult.model';
+import { ResponsibilityTypeRelationPermission, Permission } from '../../models/responsibility-type.model';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { TreeNode } from 'primeng/primeng';
 
 declare var CompanySettings;
 
@@ -150,7 +151,7 @@ export class BaseComponent {
                     'Lineage',
                     'lineage',
                     ['fa-random'],
-                    `/sidebar/visualization/lineage${urlLineage}`, null,15
+                    `/sidebar/visualization/lineage${urlLineage}`, null, 15
                 );
                 this.rightSidebarService.showItem(this.lineageSidebar);
             }
@@ -186,7 +187,7 @@ export class BaseComponent {
                 );
             }
 
-            if (hasImpact && CompanySettings.ShowImpactSidebar != 'false') {
+            if (hasImpact && CompanySettings.ShowImpactSidebar != 'false' && CompanySettings.LineageVersion != 3) {
                 this.impactSidebar = new RightSidebarItem(
                     'Impact',
                     'impact',
@@ -323,4 +324,55 @@ export class BaseComponent {
     public getLocaleDateString(): string {
         return FormHelpers.getLocaleDateString();
     }
+
+    public filterTreeTable(originalArray: TreeNode[], search: string, tree: any) {
+        var arrDeepCopy = JSON.parse(JSON.stringify(originalArray));
+        if (search.length == 0) {
+            tree.value = arrDeepCopy;
+            return;
+        }
+        else {
+            let temp: TreeNode[] = [];
+            arrDeepCopy.forEach(n => {
+                if (this.doesNodeContainsValue(n, search)) {
+                    temp.push(n);
+                    this.expandTreeNode(n);
+                }
+            });
+
+            tree.value = temp;
+        }
+    }
+
+    expandTreeNode(node: TreeNode) {
+        node.expanded = true;
+        if (node.children) {
+            node.children.forEach(n => this.expandTreeNode(n));
+        }
+    }
+
+    doesNodeContainsValue(node: TreeNode, q: string): boolean {
+        let hasValue: boolean = false;
+        var nodeProps = Object.getOwnPropertyNames(node.data);
+
+        var tempChildren = node.children;
+        node.children = [];
+        if (tempChildren) {
+            tempChildren.forEach(n => {
+                if (this.doesNodeContainsValue(n, q)) {
+                    node.children.push(n);
+                }
+            });
+        }
+        if (node.children && node.children.length > 0) return true;
+
+        nodeProps.forEach(prop => {
+            if (prop.toLowerCase().indexOf("value") != -1 || prop.toLowerCase().indexOf("field") != -1) {
+                if (node.data[prop] && node.data[prop].toLowerCase().indexOf(q.toLowerCase()) != -1) hasValue = true;
+            }
+        });
+
+        return hasValue;
+    }
+
 }

@@ -11,7 +11,7 @@
                     <input [(ngModel)]="filters.globalSearch" type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter {{showSimpleFilter ? '' : 'hidden'}}">
                 </d3s-tile-actions>
             </header>
-            <p-table #dt [value]="tagUsage" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['DisplayValue','AssetType','TagsAsString']" sortField="DisplayValue" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selected">
+            <p-table #dt [value]="tagUsage" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['DisplayValue','AssetType','TagsAsString']" sortField="DisplayValue" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rowsPerPageOptions]="[10,20,50,100,200,500]" [rows]="10" [(selection)]="selected">
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'DisplayValue'" style="width: 20%">
@@ -23,7 +23,7 @@
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'AssetType'"></d3s-sortIcon>
 
                         </th>
-                        <th [pSortableColumn]="'TagsAsString'" style="width: 50%;">
+                        <th [pSortableColumn]="'TagsAsString'" style="width: 50%">
                             Tags
                             <d3s-sortIcon (changeCallback)="updateSort($event);" [field]="'TagsAsString'"></d3s-sortIcon>
 
@@ -42,13 +42,7 @@
                         <td>{{item.DisplayValue}}</td>
                         <td [innerHTML]="formatValue(item)"></td>
                         <td>
-                            <div class="tag-list">
-                                <div class="tag-item" *ngFor="let tag of item.Tags">
-                                    <button class="button" (click)="openTagPage(tag)" [disabled]="tag.Uid == tagUid">
-                                        <span>{{tag.Value}}</span>
-                                    </button>
-                                </div>
-                            </div>
+                            <d3s-tag-view [data]="item.Tags" ></d3s-tag-view>
                         </td>
                         <td>
                             <div class="RowTools">

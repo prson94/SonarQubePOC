@@ -1,17 +1,46 @@
 ﻿
-<div #container class="tag-list-container" *ngIf="tags">
+<div #container class="tag-list-container">
     <ng-container *ngFor="let tag of tags;">
-
-        <a (click)="openTagPage($event, getTagUrl(tag))" [attr.target]="'_blank'" class="link-button">
-            <div #el (mouseenter)="enter($event.target)" (mouseleave)="leave($event.target)" class="tag-item-wrapper">
+        <a (click)="getTagUrl(tag,$event)" (mouseenter)="enter(tag, $event.target)" [attr.target]="'_blank'" class="link-button">
+            <div class="tooltip-wrapper">
+                <div class="tag-tooltip">
+                    <i *ngIf="!isTooltipLoaded" class="fa fa-spinner fa-spin fa-2x"></i>
+                    <ng-container *ngIf="isTooltipLoaded">
+                        <span class="span-break">{{tagTooltip.Value}}</span>
+                        <span>Tag added by {{tagTooltip.CreatedBy}} on {{(tagTooltip.CreatedOn | date:'short')}}</span>
+                    </ng-container>
+                </div>
+            </div>
+            <div #el class="tag-item-wrapper">
                 {{tag.Value}}
+            </div>
+            <div *ngIf="isEditable" [pTooltip]="'Remove Tag'" tooltipPosition="top"  (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
+                <i style="padding-left:10px" class="fa fa-close"></i>
             </div>
         </a>
     </ng-container>
-    <ng-container *ngIf="tags.length > 10">
-        <a (click)="showAllToggle($event);" style="display:block;margin-left:6px;">
+    <ng-container *ngIf="isEditable">
+        <a class="link-button">
+            <div #el (click)="add();" class="tag-item-wrapper">
+                Click to add...
+            </div>
+        </a>
+    </ng-container>
+    <ng-container *ngIf="tags && tags.length > 10">
+        <a (click)="showAllToggle($event);" class="show-all-tags">
             <ng-container *ngIf="isShowAll">Hide all</ng-container>
             <ng-container *ngIf="!isShowAll">Show all {{tags.length}} tags</ng-container>
         </a>
     </ng-container>
+    <d3s-dynamic-editor
+                        [objectID]="-1"
+                        [objectType]="'Tag'"
+                        [title]="'Tag'"
+                        (saveClick)="saveTag($event)"
+                        [showAsModal]="true"
+                        [modalTitle]="editPopupTitle"
+                        [isModalVisible]="showEditor"
+                        (closeClick)="closeEditor()"
+                        [adding]="true">
+    </d3s-dynamic-editor>
 </div>

@@ -873,11 +873,11 @@ order by A.RunDate desc, A.EffectiveDate desc";
         public bool QualifierResolutionObjectsExits(int id, string type)
         {
            return Company.Query<dynamic>(string.Format(@"select ID, [Type], [value], [label] from (
-                        select ID, 'ArtifactType' as [Type],  'ArtifactType|' + cast(ObjectID as varchar(50)) as [value],  'Artifact :: ' + [Name] as [label] from AssetType where [Object] = 'ArtifactType'
+                        select ObjectID as ID, 'ArtifactType' as [Type],  'ArtifactType|' + cast(ObjectID as varchar(50)) as [value],  'Artifact :: ' + [Name] as [label] from AssetType where [Object] = 'ArtifactType'
                         union all
-                         select ID, 'TaxonomyType' as [Type],  'TaxonomyType|' + cast(ObjectID as varchar(50)) as [value],  'Model :: ' + [Name] as [label] from AssetType where [Object] = 'TaxonomyType'
+                         select ObjectID as ID, 'TaxonomyType' as [Type],  'TaxonomyType|' + cast(ObjectID as varchar(50)) as [value],  'Model :: ' + [Name] as [label] from AssetType where [Object] = 'TaxonomyType'
                         union all
-                        select ID, 'ReferenceItemType' as [Type], 'ReferenceItemType|' + cast(ID as varchar(50)) as [value], 'Reference :: ' + [Name] as [label] from ReferenceItemType
+                        select ObjectID as ID, 'ReferenceItemType' as [Type],  'ReferenceItemType|' + cast(ObjectID as varchar(50)) as [value],  'Reference :: ' + [Name] as [label] from AssetType where [Object] = 'ReferenceItemType'
 				        ) as t
 				        where t.ID = {0} and  t.[Type] = '{1}'", id, type)).Count() > 0;
         }

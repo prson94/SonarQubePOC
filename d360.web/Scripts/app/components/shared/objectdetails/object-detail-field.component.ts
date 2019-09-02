@@ -2,6 +2,9 @@
 import { DetailRow, DetailField, DetailModel, DetailFieldType, DetailSubField } from '../../../models/object-detail.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
+import { TagService } from '../../../services/tag.service';
+import { TagType, TagDetail, TagItem } from '../../../models/tag.model';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'object-detail-field',
@@ -10,12 +13,16 @@ import { Router } from '@angular/router';
 
 export class ObjectDetailFieldComponent {
     @Input() field: DetailField;
+    @Input() assetUID: string;
     DetailFieldType = DetailFieldType;
+    
 
     constructor(private router: Router) {}
     ngOnInit() {
           if ((this.field.DataType == 'date' || this.field.DataType == 'datetime') && isNaN(Date.parse(this.field.Value)))
-                this.field.Value = null;
+            this.field.Value = null;
+        
+
     }
 
     private formatAsNumber(fieldValue): string {
@@ -31,6 +38,9 @@ export class ObjectDetailFieldComponent {
         } catch{
             return "Error";
         }
+    }
+    private getJSONString(obj: any): string {
+        return JSON.stringify(obj)
     }
 
     private get isArrayValue(): boolean {
@@ -51,7 +61,6 @@ export class ObjectDetailFieldComponent {
             && this.field.Name != null
             && ['name', 'implementation name'].indexOf(this.field.Name.toLowerCase()) > -1;
     }
-
 
     private get fieldDataType(): string {
         if (this.field == null || this.field.DataType == null)

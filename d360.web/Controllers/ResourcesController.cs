@@ -457,7 +457,7 @@ from	FollowDetail F
             {
                 rowIndex++;
                 colIndex = 1;
-                int i = 0;
+                
                 foreach (var f in fields)
                 {
                     var val = (((row as IDictionary<string, object>)[$"{f.datafield}"]) ?? "").ToString();
@@ -896,6 +896,21 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             }
         }
 
+        [HttpGet, Route("TooltipData/{objectType}/{objectID}")]
+        public JsonResult GetTooltipData(SystemObjects objectType, string objectID)
+        {
+            try
+            {
+                Guid uid = Guid.Parse(objectID);
+                int objectId = Company.GetObjectId(uid, objectType);
+                return GetTooltipData(objectId, objectType.ToString());
+            }
+            catch (Exception ex)
+            {
+                return Json(new { title = "Error Occurred!", message = ex.Message, type = "error" }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         [HttpGet, Route("TooltipData/{objectType}/{objectID:int}")]
         public JsonResult GetTooltipData(int objectID, string objectType)
         {
@@ -1070,11 +1085,17 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
                         desc = qType.Description ?? "";
                         dispName = qType.Name.ToString();
                     }
+                    else if (objectType == "Tag")
+                    {
+                        var tag = Company.Tags.FirstOrDefault(x => x.ID == objectID);
+                        int useCount = Company.AssetTags.Count(x => x.TagID == tag.ID);
+                        uid = tag.uid.ToString();
+                        res.Add(new FieldTooltipValueModel() {Name="Use count", Value = useCount.ToString() });
+                    }
 
 
                     var tagFieldType = det == null ? null : Company.FieldTypes.Where(x => x.Object == det.Type && x.ObjectID == det.TypeID && x.Type == "Tag").Select(x => new { x.ID, x.ShowIfEmpty, x.FriendlyName }).FirstOrDefault();
-                    var taggingEnabled = Community.GetCompanySettingByKey<bool>("EnableTagging");
-                    if (tagFieldType != null && taggingEnabled)
+                    if (tagFieldType != null)
                     {
                         string assetTagSql = @"select T.Value, T.uid from Asset A
                                                  inner join AssetTag AT on AT.AssetId = A.Id

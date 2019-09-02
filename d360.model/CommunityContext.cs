@@ -460,20 +460,5 @@ where S.ID <> 4", new { c = CurrentCompanyID })
             return settings;
         }
 
-        public bool IsCompanySettingActive(string settingName)
-        {
-            bool result = true;
-            var AllSettings = GetCompanySettings();
-            var setting = AllSettings.FirstOrDefault(x => x.Key.Equals(settingName, StringComparison.OrdinalIgnoreCase)).Value;
-            if (setting != null)
-            {
-                if (bool.TryParse(setting, out result))
-                {
-                    return result;
-                }
-            }
-            return true;
-        }
-
     }
 }

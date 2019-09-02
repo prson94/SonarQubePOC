@@ -14,6 +14,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 using Dapper;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace d360.web.Controllers
 {
@@ -32,7 +34,7 @@ namespace d360.web.Controllers
 
         [Route("download/excel/{id:int}.xls"), FileDownload, HttpGet]
         public async Task<FileResult> ToExcel(int id, string sortDataField, string sortOrder, string filter, string ownerUsers = "", string ownerGroups = "", bool listableOnly = true)
-        { 
+        {
             var typesToAvoid = new List<string>() {
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
@@ -50,7 +52,7 @@ namespace d360.web.Controllers
                 fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
 
             var filters = GetFilterValuesFromRequest(Request, true);
-            //var filters = new List<UiRequestFilterValue>();
+            
             if (!string.IsNullOrEmpty(ownerUsers))
             {
                 try
@@ -100,9 +102,33 @@ namespace d360.web.Controllers
                 }
             }
 
-            var results = await Company.GetDynamicAssets(assetType, filters, 0, 0, sortDataField, sortOrder, filter, false, false, false);
+            var results = await Company.GetDynamicAssets(assetType.ID, filters, 0, 0, sortDataField, sortOrder, filter, false, false, false);
 
-            var document = GenerateDefaultSpreadsheet(fields, results.Results);
+            var data = results.Results.ToList();
+
+            //Tags are returned as array containing uid and value, if asset has tags, lets parse it to readable format
+            if (fields.Any(x => x.Type == "Tag"))
+            {
+                var ft = fields.FirstOrDefault(x => x.Type == "Tag");
+                data.ForEach(row =>
+                {
+                    var rowDic = (IDictionary<string, object>)row;
+                    string tagKey = "Field" + ft.ID;
+
+                    if (rowDic.ContainsKey(tagKey) && rowDic[tagKey] != null)
+                    {
+                        string value = rowDic[tagKey].ToString();
+                        if (!string.IsNullOrEmpty(value))
+                        {
+                            var parsed = JsonConvert.DeserializeObject<List<TagDetailItem>>(value);
+                            if (parsed != null)
+                                rowDic[tagKey] = string.Join("|", parsed.Select(x => x.Value));
+                        }
+                    }
+                });
+            }
+
+            var document = GenerateDefaultSpreadsheet(fields, data);
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
@@ -123,19 +149,19 @@ namespace d360.web.Controllers
                 DataType.FusionLookup.ToString(),
                 DataType.OwnershipLookup.ToString()
             };
-            
+
             var dbArgs = new Dapper.DynamicParameters();
 
             dbArgs.Add("id", artifactTypeId);
-                        
+
 
             var template = Company.AssetTypeExportTemplates.Where(x => x.ID == templateId).FirstOrDefault();
 
-            if(template == null)
+            if (template == null)
             {
                 throw new Exception("INVALID TEMPLATE ID SPECIFIED.");
             }
-                        
+
             var fields = getFieldTypesByObjectType("ArtifactType", artifactTypeId, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
 
             getDynamicFieldJoinStatements(artifactTypeId, "Artifact", out joins, out columns, true, false, listableOnly, fields, "A.ObjectID");
@@ -155,7 +181,7 @@ namespace d360.web.Controllers
                 {
                     var field = oldFields.Find(x => x.ID == fieldId);
                     if (field != null) fields.Add(field);
-                }                
+                }
             }
 
             var parentIntersectType = Company.Filter<IntersectType>(i => i.Object == "ArtifactType" && i.ObjectID == artifactTypeId && i.Predicate.Type == core.enums.PredicateType.InterTypeHierarchy).FirstOrDefault();
@@ -190,7 +216,7 @@ from	AssetDetail A
 where   A.Type = 'ArtifactType' 
         and A.TypeID = @id 
         and A.[State] = 1 
-        and not exists(select 1 from AssetTypesUserCantRead({ Company.CurrentResourceID})u where u.AssetTypeID = A.AssetTypeID) and not exists(select 1 from AssetsByTypeUserCantRead({ Company.CurrentResourceID}, A.AssetTypeID) u where u.AssetID = A.ID) ";        
+        and not exists(select 1 from AssetTypesUserCantRead({ Company.CurrentResourceID})u where u.AssetTypeID = A.AssetTypeID) and not exists(select 1 from AssetsByTypeUserCantRead({ Company.CurrentResourceID}, A.AssetTypeID) u where u.AssetID = A.ID) ";
 
 
             #endregion
@@ -206,11 +232,11 @@ where   A.Type = 'ArtifactType'
 
                 sql = $"{sql} and {addDynamicFieldSimpleFilter(fixedColumns.ToArray(), "Artifact", artifactTypeId, filter, dbArgs)}";
             }
-            
+
             sql = string.Format(@"select * from ({0}) A", sql);
 
-            sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: oldFields,fromArtifact:true);
-                        
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: oldFields, fromArtifact: true);
+
             if (string.IsNullOrEmpty(sortDataField))
             {
                 var sortSql = "";
@@ -218,7 +244,7 @@ where   A.Type = 'ArtifactType'
                 foreach (var field in fields.Where(i => i.SortOrder > 0).OrderBy(i => i.SortOrder))
                 {
                     var columnName = $"Field{field.ID}";
-                    if(field.Type == "Number")                        
+                    if (field.Type == "Number")
                         sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"CAST([{columnName}] AS int)";
                     else
                         sortSql += ((string.IsNullOrEmpty(sortSql)) ? "" : ", ") + $"[{columnName}]";
@@ -235,7 +261,31 @@ where   A.Type = 'ArtifactType'
 
 
             var results = Company.Query<dynamic>(sql, dbArgs);
-                                    
+
+            var data = results.ToList();
+
+            //Tags are returned as array containing uid and value, if asset has tags, lets parse it to readable format
+            if (fields.Any(x => x.Type == "Tag"))
+            {
+                var ft = fields.FirstOrDefault(x => x.Type == "Tag");
+                data.ForEach(row =>
+                {
+                    var rowDic = (IDictionary<string, object>)row;
+                    string tagKey = "Field" + ft.ID;
+
+                    if (rowDic.ContainsKey(tagKey) && rowDic[tagKey] != null)
+                    {
+                        string value = rowDic[tagKey].ToString();
+                        if (!string.IsNullOrEmpty(value))
+                        {
+                            var parsed = JsonConvert.DeserializeObject<List<TagDetailItem>>(value);
+                            if (parsed != null)
+                                rowDic[tagKey] = string.Join("|", parsed.Select(x => x.Value));
+                        }
+                    }
+                });
+            }
+                       
             SLDocument document = null;
             if (template.IncludeParent)
             {
@@ -244,17 +294,18 @@ where   A.Type = 'ArtifactType'
             }
 
             if (template.IncludeUrl) fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
-                        
+
+
             switch (template.ExportViewType)
             {
                 case core.enums.ExportView.None:
-                    document = GenerateDefaultSpreadsheet(fields,results, template, "Items");
+                    document = GenerateDefaultSpreadsheet(fields, data, template, "Items");
                     break;
                 case core.enums.ExportView.Pivot:
-                    document = GeneratePivotedSpreadsheet(fields, results, template, "Items");
+                    document = GeneratePivotedSpreadsheet(fields, data, template, "Items");
                     break;
                 case core.enums.ExportView.Grouped:
-                    document = GenerateGroupedSpreadsheet(fields, results, template, "Items");
+                    document = GenerateGroupedSpreadsheet(fields, data, template, "Items");
                     break;
                 default:
                     throw new Exception("INVALID EXPORT VIEW TYPE SPECIFIED");
@@ -288,7 +339,7 @@ where   A.Type = 'ArtifactType'
             {
                 SetColumnStyles(document, index, styles);
 
-                document.SetCellValue(1, index++, (string)field.FriendlyName);                
+                document.SetCellValue(1, index++, (string)field.FriendlyName);
             }
 
             #endregion
@@ -298,14 +349,14 @@ where   A.Type = 'ArtifactType'
             {
                 index = 1;
                 rowNumber++;
-                
+
                 foreach (var field in fields)
                 {
                     var val = getRowFieldValue(row, field);
                     SetSpreadsheetValueFromField(document, rowNumber, index, field, val);
                     SetColumnStylesFromField(styles, document, rowNumber, index, field, row);
                     index++;
-                }                
+                }
             }
 
             SetExcelColumnWidths(document, fields);
@@ -331,7 +382,7 @@ where   A.Type = 'ArtifactType'
             }
 
             #endregion
-            
+
             int rowNumber = 1;
             dynamic previousRow = null;
 
@@ -340,14 +391,14 @@ where   A.Type = 'ArtifactType'
                 bool rowSameAsPrevious = true;
 
                 if (previousRow == null) rowSameAsPrevious = false;
-                
+
                 index = 1;
                 rowNumber++;
-                
+
                 foreach (var field in fields)
                 {
                     var val = getRowFieldValue(row, field);
-                    var previousVal = previousRow != null ? getRowFieldValue(previousRow, field) :"";
+                    var previousVal = previousRow != null ? getRowFieldValue(previousRow, field) : "";
 
                     rowSameAsPrevious = rowSameAsPrevious && (val == previousVal);
 
@@ -355,7 +406,7 @@ where   A.Type = 'ArtifactType'
                     {
                         SetSpreadsheetValueFromField(document, rowNumber, index, field, val);
                         SetColumnStylesFromField(styles, document, rowNumber, index, field, row);
-                        index++;                        
+                        index++;
                     }
                     else
                     {
@@ -363,7 +414,7 @@ where   A.Type = 'ArtifactType'
                         SetColumnStylesFromField(styles, document, rowNumber, index, field, row);
                     }
                 }
-                
+
                 previousRow = row;
             }
 
@@ -384,7 +435,7 @@ where   A.Type = 'ArtifactType'
 
             int columnNumber = 0;
             foreach (var row in results)
-            {                
+            {
                 var concatenatedValue = "";
                 foreach (var field in fields)
                 {
@@ -402,19 +453,19 @@ where   A.Type = 'ArtifactType'
                         SetSpreadsheetValueFromField(document, index, columnNumber, field, val);
                         SetRowStylesFromField(styles, document, index, columnNumber, field, row);
 
-                        index++;                        
+                        index++;
                     }
                 }
             }
 
-            for(int i = 1; i < index; i++)
+            for (int i = 1; i < index; i++)
             {
                 SetRowStyles(document, i, styles);
             }
 
             for (int i = 1; i < columnNumber; i++)
             {
-                SetColumnCellStyle(document, i,index-1, styles);
+                SetColumnCellStyle(document, i, index - 1, styles);
             }
 
             document.AutoFitColumn(1, columnNumber);
@@ -437,7 +488,7 @@ where   A.Type = 'ArtifactType'
         }
 
         private void SetColumnStylesFromField(ICollection<AssetTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
-        {            
+        {
             if (styles != null && styles.Any())
             {
 
@@ -449,11 +500,11 @@ where   A.Type = 'ArtifactType'
                     var st = CreateStyle(style, row);
                     if (field.Type == "Date")
                         st.FormatCode = "m/d/yyyy";
-                    
+
                     //we have a style based on the value in another column(s)
                     document.SetCellStyle(rowIndex, columnIndex, st);
                 }
-            }            
+            }
         }
 
         private SLDocument createExcelBaseDocument(AssetTypeExportTemplate template, string worksheetName)
@@ -493,7 +544,7 @@ where   A.Type = 'ArtifactType'
             return document;
         }
 
-        private void SetColumnCellStyle(SLDocument document, int column,int totalRows, ICollection<AssetTypeExportTemplateStyle> styles)
+        private void SetColumnCellStyle(SLDocument document, int column, int totalRows, ICollection<AssetTypeExportTemplateStyle> styles)
         {
             if (styles == null) return;
             //style for the whole column
@@ -501,7 +552,7 @@ where   A.Type = 'ArtifactType'
 
             if (columnStyle != null)
             {
-                document.SetCellStyle(1,column,totalRows,column, CreateStyle(columnStyle));
+                document.SetCellStyle(1, column, totalRows, column, CreateStyle(columnStyle));
             }
         }
         private void SetColumnStyles(SLDocument document, int column, ICollection<AssetTypeExportTemplateStyle> styles)
@@ -521,8 +572,8 @@ where   A.Type = 'ArtifactType'
 
             if (columnheaderStyle != null)
             {
-                document.SetCellStyle(1,column, CreateStyle(columnheaderStyle));
-            }            
+                document.SetCellStyle(1, column, CreateStyle(columnheaderStyle));
+            }
         }
 
         private void SetRowStyles(SLDocument document, int row, ICollection<AssetTypeExportTemplateStyle> styles)
@@ -559,7 +610,7 @@ where   A.Type = 'ArtifactType'
                 }
             }
 
-            if(columnStyle.ColorValueFieldTypeID > 0 && row != null)
+            if (columnStyle.ColorValueFieldTypeID > 0 && row != null)
             {
                 var color = getRowFieldValue(row, columnStyle.ColorValueFieldTypeID);
                 if (!string.IsNullOrWhiteSpace(color))
@@ -572,7 +623,7 @@ where   A.Type = 'ArtifactType'
 
             return style;
         }
-        
+
         private void SetExcelColumnWidths(SLDocument document, List<FieldType> fields)
         {
             int index = 1;
@@ -581,7 +632,7 @@ where   A.Type = 'ArtifactType'
                 if (field.ColumnWidth.HasValue)
                 {
                     int width = field.ColumnWidth.Value > 0 ? field.ColumnWidth.Value / 10 : 0;
-                    document.SetColumnWidth(index, width);                    
+                    document.SetColumnWidth(index, width);
                 }
                 else
                 {
@@ -590,7 +641,7 @@ where   A.Type = 'ArtifactType'
                 index++;
             }
         }
-        
+
         private void SetSpreadsheetValueFromField(SLDocument document, int rowIndex, int columnIndex, FieldType field, string value)
         {
             switch ((field.Type ?? "").ToUpper())
@@ -621,7 +672,7 @@ where   A.Type = 'ArtifactType'
                     break;
                 default:
                     var doc = new HtmlAgilityPack.HtmlDocument();
-                    doc.LoadHtml(value+"");
+                    doc.LoadHtml(value + "");
                     var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
                     if (txt.StartsWith("="))
                         txt = "'" + txt;
@@ -632,9 +683,9 @@ where   A.Type = 'ArtifactType'
 
         private string getRowFieldValue(dynamic row, FieldType field)
         {
-            if(field != null && field.ID > 0)
+            if (field != null && field.ID > 0)
                 return (((row as IDictionary<string, object>)[$"Field{field.ID}"]) ?? "").ToString();
-            else if(field != null && field.Name == "Parent")
+            else if (field != null && field.Name == "Parent")
                 return (string)((row as IDictionary<string, object>)["Parent"]);
             else if (field != null && field.Name == "Url")
                 return (string)((row as IDictionary<string, object>)["Url"]);
@@ -645,18 +696,18 @@ where   A.Type = 'ArtifactType'
 
         private string getRowFieldValue(dynamic row, int fieldId)
         {
-            if(fieldId>0)
-                return (string)((row as IDictionary<string, object>)[$"Field{fieldId}"]);            
+            if (fieldId > 0)
+                return (string)((row as IDictionary<string, object>)[$"Field{fieldId}"]);
             return "";
         }
 
         #endregion
-                      
+
         #region Json
 
         [HttpGet, Route("artifactsbyparent"), NonNullableParameters]
-        public JsonNetResult ArtifactsByParent(int parentID, int childArtifactTypeID, string sortDataField, string sortOrder, string filter, int pagenum = 0 , int pagesize = 20)
-        {            
+        public JsonNetResult ArtifactsByParent(int parentID, int childArtifactTypeID, string sortDataField, string sortOrder, string filter, int pagenum = 0, int pagesize = 20)
+        {
             return ByParent(parentID, sortDataField, sortOrder, filter, pagenum, pagesize, childArtifactTypeID);
         }
 
@@ -689,7 +740,7 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
                 true,
                 sortDataField, sortOrder, pagenum, pagesize,
                 new string[] { "P.DisplayValue" },
-                filter, extraParams: d, includeIdColumn: false, idColumn: "O.ID", innerIdColumn:"O.ObjectID");
+                filter, extraParams: d, includeIdColumn: false, idColumn: "O.ID", innerIdColumn: "O.ObjectID");
 
             return jsonNetResult(model);
         }
@@ -704,27 +755,21 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
         public async Task<ActionResult> ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
             try
-            {
-                var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == id).SingleOrDefault();
-                if (assetType == null)
-                {
-                    return jsonNetResult(new { message = "Asset Type not found" });
-                }
-
-                var filters = GetFilterValuesFromRequest(Request,true);
-                var results = await Company.GetDynamicAssets(assetType, filters, pagenum, pagesize, sortDataField, sortOrder, filter);
+            {                
+                var filters = GetFilterValuesFromRequest(Request, true);
+                var results = await Company.GetDynamicAssets(id, filters, pagenum, pagesize, sortDataField, sortOrder, filter);
                 return jsonNetResult(new { results = results.Results, total = results.Count });
             }
             catch (Exception ex)
             {
-                return new HttpStatusCodeResult(System.Net.HttpStatusCode.InternalServerError, ex.Message);                
+                return new HttpStatusCodeResult(System.Net.HttpStatusCode.InternalServerError, ex.Message);
             }
         }
 
         [Route("types")]
         public JsonNetResult GetTypes()
         {
-            
+
             var models = Company.Query<dynamic>(@"
 select	    AT.ObjectID as ID,
 		    IT.SubjectID as ParentID,
@@ -760,17 +805,7 @@ order by    AT.Name").AsQueryable();
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-
-        [Route("typeswithstatistics")]
-        public JsonNetResult GetTypesWithStatistics()
-        {
-            return new JsonNetResult
-            {
-                Data = Company.Query<dynamic>(QueryConstants.ArtifactTypeStatisticsList),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
+        
         #endregion
     }
 }

@@ -90,6 +90,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     private initialNodes: go.Node[] = [];
     private selectedData = null;
     private conditions: any[] = [];
+    private newKey = -1;
 
 
     private menuItems: MenuItem[] = [];
@@ -217,6 +218,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.diagram.addDiagramListener('LinkDrawn', e => this.LinkDrawn(e));
         this.diagram.addDiagramListener('PartCreated', () => this.checkHasMultipleInputs());
         this.diagram.addDiagramListener('ExternalObjectsDropped', e => this.ExternalObjectsDropped(e));
+        this.diagram.addDiagramListener('ClipboardPasted', e => this.ClipboardPasted(e));
 
         this.diagram.grid.visible = false;
         this.diagram.grid.gridCellSize = new go.Size(24, 24);
@@ -1230,7 +1232,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
 
         this.diagram.startTransaction('changeStep');
 
-        let n = this.diagram.model.findNodeDataForKey(e.key);
+        let n = this.diagram.model.findNodeDataForKey(e.key) as NodeModel;
 
         //TODO: just set n = e??
 
@@ -1300,8 +1302,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         if (!e.hasMultipleInputs && n.settings.WaitForAllTransitions != null)
             delete n.settings.WaitForAllTransitions;
 
-        this.diagram.model.setDataProperty(n, 'name', e.name);
-        this.diagram.model.setDataProperty(n, 'valid', this.validateNode(n));
+        this.diagram.model.setDataProperty(n as go.ObjectData, 'name', e.name);
+        this.diagram.model.setDataProperty(n as go.ObjectData, 'valid', this.validateNode(n));
         this.validateDiagram();
 
         this.diagram.commitTransaction('changeStep');
@@ -1521,6 +1523,23 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         this.validateDiagram();
     }
 
+    private ClipboardPasted(e) {
+        if (e != null && e.subject != null) {
+            let nodes = e.subject.toArray();
+            for (let i = 0; i < nodes.length; i++) {
+
+                if (nodes[i].data.DiagramObjectType == DiagramObjectType.Link) {
+                    continue;
+                }
+
+                this.diagram.model.setKeyForNodeData(nodes[i].data, (--this.newKey).toString());
+                //move the copy slightly so it's not directly on top of the original
+                nodes[i].location = new go.Point(nodes[i].location.x - (Math.random() * 30), nodes[i].location.y - (Math.random() * 30));
+            }
+            this.ExternalObjectsDropped(null);
+        }
+    }
+
     //#endregion
 
     //#region templates
@@ -1615,12 +1634,13 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
             "undoManager.isEnabled": !this.isReadOnly
         });
 
-        dg.model.class = go.GraphLinksModel;
-        dg.model.nodeCategoryProperty = "category";
-        dg.model.linkFromPortIdProperty = "frompid";
-        dg.model.linkToPortIdProperty = "topid";
-        dg.model.nodeDataArray = [];
-        dg.model.linkDataArray = [];
+        let model = (dg.model as go.GraphLinksModel);
+
+        model.nodeCategoryProperty = "category";
+        model.linkFromPortIdProperty = "frompid";
+        model.linkToPortIdProperty = "topid";
+        model.nodeDataArray = [];
+        model.linkDataArray = [];
         dg.toolManager.hoverDelay = 250;
 
         return dg;
@@ -1811,11 +1831,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                 reshapable: true,
                 resegmentable: true,
                 // mouse-overs subtly highlight links:
-                mouseEnter: function (e, link) {
-                    link.findObject("HIGHLIGHT").stroke = "rgba(30,144,255,0.2)";
+                mouseEnter: function (e, link: go.Part) {
+                    (link.findObject("HIGHLIGHT") as go.Shape).stroke = "rgba(30,144,255,0.2)";
                 },
-                mouseLeave: function (e, link) {
-                    link.findObject("HIGHLIGHT").stroke = "transparent";
+                mouseLeave: function (e, link: go.Part) {
+                    (link.findObject("HIGHLIGHT") as go.Shape).stroke = "transparent";
                 }
             },
             new go.Binding("points").makeTwoWay(),

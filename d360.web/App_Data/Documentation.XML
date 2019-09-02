@@ -2789,20 +2789,22 @@
             <param name="type">The legacy object type of the asset type (ArtifactType, FusioAttributeType, TaxonomyType, etc.).</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts,System.Boolean)">
             <summary>
             Takes a given set of relationships and inserts/updates them. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
             <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
             <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
+            <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostBulkRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.PostBulkRelationshipsAsync(System.Guid,d360.core.entities.RelationshipInserts,System.Boolean)">
             <summary>
             Inserts or updates a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
             </summary>
             <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
             <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
+            <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetExecutionStatus(System.Guid)">
@@ -2812,12 +2814,13 @@
             <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeleteRelationship(System.Guid,d360.core.entities.RelationshipDeletes)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeleteRelationship(System.Guid,d360.core.entities.RelationshipDeletes,System.Boolean)">
             <summary>
             Deletes a relationship and children of a given uid.
             </summary>
             <param name="intersectTypeUid">The unique identifier of the relationship type.</param>
             <param name="relationships">The list of relationships for deletions.</param>
+            <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.ExportTypesToExcel">
@@ -2837,11 +2840,12 @@
             </summary>
             <returns>Returns a list of asset type classes.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetTypesAsync(System.Nullable{d360.core.enums.AssetTypeClass})">
+        <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetTypesAsync(System.Nullable{d360.core.enums.AssetTypeClass},System.String)">
             <summary>
             GET a list of asset types.
             </summary>
             <param name="Class">Allows for filtering the Asset type's by Class.</param>
+            <param name="FusionTypeUID">Filter by Fusion type UID. Only applicable for FusionQuery and FusionAttribute classes.</param>
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetsAsync(System.Guid)">
@@ -2883,7 +2887,7 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert})">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert},System.Boolean)">
             <summary>
             Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
@@ -2898,10 +2902,11 @@
             Workflows - This endpoint will trigger any associated workflows for the add actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate})">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate},System.Boolean)">
             <summary>
             Updates a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
@@ -2916,10 +2921,11 @@
             Workflows - This endpoint will trigger any associated workflows for the update actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetsAsync(System.Guid,d360.core.entities.AssetDeletes)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetsAsync(System.Guid,d360.core.entities.AssetDeletes,System.Boolean)">
             <summary>
             Removes a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
@@ -2934,10 +2940,11 @@
             Workflows - This endpoint will trigger any associated workflows for the delete actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert})">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert},System.Boolean)">
             <summary>
             Adds a given set of assets based on the specific asset type unique identifier. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
@@ -2952,10 +2959,11 @@
             Workflows - This endpoint will trigger any associated workflows for the add actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PutBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate})">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PutBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate},System.Boolean)">
             <summary>
             Updates a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
@@ -2970,10 +2978,11 @@
             Workflows - This endpoint will trigger any associated workflows for the update actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteBulkAssetsAsync(System.Guid,d360.core.entities.AssetDeletes)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.DeleteBulkAssetsAsync(System.Guid,d360.core.entities.AssetDeletes,System.Boolean)">
             <summary>
             Removes a given set of assets based on the specific asset type Uid. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
             </summary>
@@ -2988,6 +2997,7 @@
             Workflows - This endpoint will trigger any associated workflows for the delete actions taken on assets as part of this API call.
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
+            <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
@@ -3014,15 +3024,15 @@
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
-             <summary>
-             Creates association between an existing Asset and an existing tag
-             </summary>
-             <remarks>
-             An Administrator can create  any tag association. 
+            <summary>
+            Creates association between an existing Asset and an existing tag
+            </summary>
+            <remarks>
+            An Administrator can create  any tag association. 
             A regular user can only create a tag association to assets they have access to.
-             </remarks>
-             <param name="assetTags">AssetTag</param>
-             <returns>An HTTP status code and message.</returns>
+            </remarks>
+            <param name="assetTags">Collection of assets and tags to associate.</param>
+            <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
             <summary>
@@ -3031,7 +3041,7 @@
             <remarks>An Administrator can remove any tag association. 
             A regular user can only remove a tag association to an asset they initially created the association for.
             </remarks>
-            <param name="assetTags">AssetTag</param>
+            <param name="assetTags">Collection of assets and tags to remove tag associations for.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.ResponsibilitiesController">
@@ -3124,43 +3134,45 @@
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.Search">
             <summary>
-            Returns all tags that are defined in Govern.          
+            Returns all tags that are defined in Govern that match the search criteria.          
             </summary>        
             <returns>A list of tags</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.Get">
             <summary>
-            Returns all tags that are defined in Govern.          
-            </summary>        
-            <returns>A list of tags</returns>
+            Retrieves a list of all tags defined in Govern.
+            </summary>                
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.DeleteById(System.Guid,System.Boolean)">
             <summary>
-            Allows you to remove a tag based on its Uid.
+            Deletes a tag from Govern.
             </summary>
-            <param name="uid">The public identifier for the tag.</param>
-            <param name="cascade">Cascade delete to all related data.</param>
+            <param name="tagUid">The uid of the tag to be removed.</param>
+            <param name="cascade">Cascade, if true a tag that is applied to an asset will be deleted along with the association.  If false a tag that is in use will not be deleted.  The default is false for the cascade setting.</param>
             <returns>A status for the DELETE request.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.PostTag(d360.core.entities.TagApiModel)">
             <summary>
-            Adds one tag to Govern.
+            Adds a tag to Govern with the properties provided in the model.
             </summary>        
             <param name="model">The tag to be created.</param>
             <returns>The created tag.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.Put(System.Guid,d360.core.entities.TagApiModel)">
             <summary>
-            Updates the specified tag.
+            Updates the specified tag with the values provided in the model.
             </summary>
-            <param name="uid">The unique identifier of the asset cross reference.</param>        
-            <param name="model">The tag to be updated.</param>
-            <returns>The updated tag.</returns>
+            <param name="tagUid">The Uid of the tag to be updated.</param>        
+            <param name="model">The new definition of the tag to be used for the update.</param>
+            <returns>A tag model representing the updated tag.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.DeleteTags(System.Collections.Generic.List{d360.core.entities.TagApiDeleteModel})">
             <summary>
             Allows you to remove a tags based on tag lists.
             </summary>
+            <remarks>
+            Use the cascade flag set to true to delete a tag that is applied to an asset that tag will be deleted along with the association.  If false a tag that is in use will not be deleted.  The default is false for the cascade setting.
+            </remarks>
             <returns>A status for the DELETE request.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.ConsolidateTags(System.String,System.Collections.Generic.List{System.String})">

@@ -129,7 +129,7 @@ namespace d360.web.Models
         public int? Version { get; set; }
         public string Step { get; set; }
         public int StepId { get; set; }
-        public int? Total { get; set; }        
+        public int? Total { get; set; }
         public int? Id { get; set; }
     }
 
@@ -246,7 +246,7 @@ namespace d360.web.Models
             return fields;
         }
     }
-    
+
     [DataContract(Namespace = constants.NAMESPACE)]
     public class FilterObjectItem
     {
@@ -273,7 +273,7 @@ namespace d360.web.Models
 
         [DataMember]
         public string align { get; set; }
-        
+
         [DataMember]
         public string name { get; set; }
     }
@@ -316,7 +316,7 @@ namespace d360.web.Models
 
         [DataMember]
         public string text { get; set; }
-        
+
         [DataMember]
         public bool sortable { get; set; }
 
@@ -332,7 +332,7 @@ namespace d360.web.Models
         [DataMember]
         public string filtertype { get; set; }
 
-        [DataMember]        
+        [DataMember]
         public List<string> filteritems { get; set; }
 
         [DataMember]
@@ -355,6 +355,9 @@ namespace d360.web.Models
 
         [DataMember]
         public int parentFieldTypeID { get; set; }
+
+        [DataMember]
+        public bool canHaveMultipleFilters { get; set; }
     }
 
     [DataContract]
@@ -369,13 +372,14 @@ namespace d360.web.Models
             relatedfield = false;
             cellsformat = val.cellsformat;
             datafield = val.datafield;
-            text = val.text;            
+            text = val.text;
             sortable = val.sortable;
             filterable = val.filterable;
             columntype = val.columntype;
             filtertype = val.filtertype;
             filteritems = val.filteritems;
             parentFieldTypeID = val.parentFieldTypeID;
+            canHaveMultipleFilters = val.canHaveMultipleFilters;
         }
         [DataMember]
         public bool relatedfield { get; set; }
@@ -432,27 +436,30 @@ namespace d360.web.Models
 
         [DataMember]
         public string TooltipUrl { get; set; }
+
+        [DataMember]
+        public Guid uid { get; set; }
     }
 
-   public class ReadOnlyFieldValueComparer : IEqualityComparer<ReadOnlyFieldValue>
+    public class ReadOnlyFieldValueComparer : IEqualityComparer<ReadOnlyFieldValue>
     {
-      
+
         public bool Equals(ReadOnlyFieldValue x, ReadOnlyFieldValue y)
         {
             if (Object.ReferenceEquals(x, y)) return true;
 
             if (Object.ReferenceEquals(x, null) || Object.ReferenceEquals(y, null))
                 return false;
-         
-            return  x.Value == y.Value;
+
+            return x.Value == y.Value;
         }
 
-        
+
 
         public int GetHashCode(ReadOnlyFieldValue obj)
         {
             if (Object.ReferenceEquals(obj, null)) return 0;
-          
+
             int value = obj.Value == null ? 0 : obj.Value.GetHashCode();
 
             return value;
@@ -490,7 +497,7 @@ namespace d360.web.Models
 
         [DataMember]
         public string FieldDescription { get; set; }
-        
+
         [DataMember]
         public string LookupGridUrl { get; set; }
 
@@ -534,8 +541,8 @@ namespace d360.web.Models
         public int? TooltipID { get; set; }
 
         [DataMember]
-        public string TooltipUrl { get; set; }      
-        
+        public string TooltipUrl { get; set; }
+
         [DataMember]
         public string DataType { get; set; }
         [DataMember]
@@ -597,16 +604,16 @@ namespace d360.web.Models
         [DataMember]
         public List<PermissionInfo> Permissions { get; set; } = new List<PermissionInfo>();
     }
-    
+
     [DataContract(Name = "ObjectSurvey", Namespace = constants.NAMESPACE)]
     public class ObjectSurveyModel
     {
         [DataMember]
         public int ID { get; set; }
         [DataMember]
-        public string Name { get; set; }        
+        public string Name { get; set; }
     }
-    
+
     public class ObjectSurveyQuestionValuesModel
     {
         [DataMember]
@@ -618,30 +625,30 @@ namespace d360.web.Models
     }
 
     public class SurveyResponseModel
-    {        
+    {
         public List<SurveyResponseQuestionModel> Questions { get; set; }
     }
 
     public class SurveyResponseQuestionModel
-    {        
+    {
         public int Id { get; set; }
-        
-        public string Name { get; set; }        
-        
-        
+
+        public string Name { get; set; }
+
+
         public string Comments { get; set; }
-        
+
         public List<SurveyResponseValueModel> Values { get; set; }
     }
 
     public class SurveyResponseValueModel
-    {     
+    {
         public int ID { get; set; }
-     
+
         public string Name { get; set; }
-     
+
         public string Value { get; set; }
-     
+
         public bool IsChecked { get; set; }
     }
 

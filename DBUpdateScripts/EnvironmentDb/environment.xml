@@ -271,7 +271,6 @@
   <include file="scripts/GOV-4864.xml"/>
   <include file="scripts/GOV-4857.xml"/>
   <include file="scripts/GOV-7685.xml"/>
-  <include file="scripts/GOV-7862.xml"/>
   <include file="scripts/GOV-7693.xml" /> <!-- Updates AddAuditEntry, allows additional nullable parameter and allows auditing for company settings -->
   <include file="scripts/GOV-7865.xml"/> <!-- graph tables for asset browser -->
   <include file="scripts/GOV-7872.xml"/> <!-- Asset Browser - PopulatePathsForAssetType -->
@@ -283,7 +282,17 @@
   <include file="scripts/GOV-7713.xml"/> <!-- GetDynamicAssets -->
   <include file="scripts/GOV-7933.xml"/> <!-- api.ExecutionAsset changes to ProposedKey column -->
   <include file="scripts/GOV-7932.xml"/> <!-- api.DeleteAssetType -->
+  <include file="scripts/GOV-7877.xml"/> <!-- GetDynamicAssets procedure -->
   <include file="scripts/GOV-7781.xml"/> <!-- api.DeleteAssetType -->
-  <include file="scripts/GOV-7949.xml"/> <!-- GetFormattedFieldLookupValue -->
+  <include file="scripts/GOV-7949.xml"/> <!-- GetFormattedFieldLookupValue  -->
   <include file="scripts/GOV-7851.xml"/> <!-- Add columns to integration.SynchedAssetType and integration.ExecutionAssetType -->
+  <include file="scripts/GOV-7624.xml"/>
+  <include file="scripts/GOV-7625.xml"/>
+  <include file="scripts/GOV-8025.xml"/> <!-- Increase size of some IGC breakdown columns dues to truncation errors -->
+  <include file="scripts/GOV-7966.xml"/> <!-- Add UseAsTransformation boolean field on dbo.AssetType table-->
+  <include file="scripts/GOV-8035.xml"/> <!-- Trigger on FusionQueryAttribute table is incorrect missing type name-->
+  <include file="scripts/GOV-7862.xml"/> <!-- api.DeleteAssetType fix workflow join -->
+  <include file="scripts/GOV-8038.xml"/> <!-- IGC: [integration].[ExecutionAssetTypeError] - new column -->
+  <include file="scripts/GOV-8008.xml"/> <!-- IGC: [integration].[CompleteExecution] -->
+  <include file="scripts/GOV-8060.xml"/> <!-- perf optmizations [utility].[ArtifactAssetParent] -->
 </databaseChangeLog>

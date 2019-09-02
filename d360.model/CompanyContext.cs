@@ -199,9 +199,7 @@ namespace d360.model
 
         public DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
 
-        public DbSet<ReferenceItem> ReferenceItems { get; set; }
 
-        public DbSet<ReferenceItemType> ReferenceItemTypes { get; set; }
 
         public DbSet<ReportLayout> ReportLayouts { get; set; }
 
@@ -2572,43 +2570,7 @@ select @err";
                 }
                 #endregion
 
-                #region Business logic : Reference Item
 
-                if(entry.Entity is ReferenceItem)
-                {
-                    var o = entry.Entity as ReferenceItem;
-                    
-                    switch (entry.State)
-                    {                        
-                        case EntityState.Deleted:                                                    
-                            if(Any<Intersect>(i => (i.Subject == "ReferenceItem" && i.SubjectID == o.ID) || (i.Object == "ReferenceItem" && i.ObjectID == o.ID)))
-                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "ReferenceItem"), Messages.Error_Item_RelationshipsReferences);
-                            break;                     
-                    }
-                }
-
-                #endregion
-
-                #region Business logic : ReferenceItemTyoe
-
-                if (entry.Entity is ReferenceItemType)
-                {
-                    var o = entry.Entity as ReferenceItemType;
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<ReferenceItemType>(i => i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:                            
-                            if (Any<ReferenceItemType>(i => i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                    }
-                }
-
-                #endregion
 
                 #region Business logic : Report
                 if (entry.Entity is Report)
@@ -2870,10 +2832,10 @@ select @err";
             return homePage?.Route ?? "";
         }
 
-        public void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName)
+        public void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName, string key)
         {
             string xml = $@"<fields><Action>{actionName}</Action>
-                            <ActionObject>EnableTagging</ActionObject>     
+                            <ActionObject>{key}</ActionObject>     
                             <ActionObjectID>{companySetting.SettingID}</ActionObjectID>  
                             <ActionObjectValue>{companySetting.Value}</ActionObjectValue>
                             <ResourceID>{CurrentResourceID}</ResourceID>

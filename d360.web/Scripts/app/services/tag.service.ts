@@ -1,6 +1,6 @@
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { Tag, TagType } from '../models/tag.model';
+import { Tag, TagType, TagApiModel } from '../models/tag.model';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
@@ -9,6 +9,7 @@ import { JsonResult } from '../models/jsonresult.model';
 
 @Injectable()
 export class TagService extends BaseObservableService {
+
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
@@ -71,6 +72,22 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
+    createAssetTag(tags: TagApiModel[]): Observable<any> {
+        let url = `api/v2/assets/tags`;
+        return this.http.post(url, tags)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
+    deleteAssetTag(tags: TagApiModel[]): Observable<any> {
+                
+        const httpHeaders = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: tags
+        };
+        let url = `api/v2/assets/tags`;
+        return this.http.delete(url, httpHeaders)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
     consolidateTags(parentTag: string, childrenTags: string[]): Observable<any[]> {
         let url = `api/v2/tags/consolidate/${parentTag}`;
         return this.http.post(url, childrenTags)
@@ -89,14 +106,6 @@ export class TagService extends BaseObservableService {
         let url = `api/v2/tags/search?value=${q}&exceptuid=${exceptId}`;
         return this.http.get(url)
             .pipe(map(response => <any[]>response),
-                catchError(err => this.handleError(err, true)))
-    }
-
-    setTaggingStatus(state: boolean): Observable<any> {
-        let url = `api/v2/tags/settaggingstatus`;
-        let body = { IsTaggingEnabled: state };
-        return this.http.put(url, body)
-            .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)))
     }
 
@@ -143,6 +152,27 @@ export class TagService extends BaseObservableService {
         return this.http.get(url)
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err)));
+    }
+
+    private tagTooltipsCache: any[] = [];
+
+    getTagTooltip(uid: string): Observable<any> {
+
+        var cachedItem = this.tagTooltipsCache.find(x => x.uid == uid);
+        if (cachedItem)
+            return cachedItem.obs;
+
+        let url = `api/v2/tags/${uid}/tooltip`;
+        var obs = this.http.get(url)
+            .pipe(map(response => <any>response),
+                publishReplay(1),
+                refCount(),
+                catchError(err => this.handleError(err)));
+
+        var data = { uid: uid, obs: obs };
+        this.tagTooltipsCache.push(data);
+
+        return obs;
     }
 
 

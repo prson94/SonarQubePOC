@@ -107,31 +107,7 @@ group by at.name,at.objectid order by at.name";
                                         P.ID as [ID], P.Name as [Name] 
                                 from  [dbo].[NymRelation] R inner join [dbo].[predicate] P on P.ID = R.PredicateID where R.[Object] = @ot and R.ObjectID = @id
     ";
-
-        public static string ArtifactTypeStatisticsList = @"
-select		AT.ObjectID as ID,
-			IT.ParentID,
-			AT.Name,
-			AT.Description,
-            cast(1 as bit) as expanded,
-			AC.*
-from		AssetType as AT
-			cross apply (
-						select	count(1) AS [Total]
-						from	Asset A
-						
-						where	AssetTypeID = AT.ID
-						) AC
-			outer apply (
-				select	IT.SubjectID as ParentID
-				from	IntersectType IT 
-						inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
-			) IT
-	Where AT.Object = 'ArtifactType'
-order by	IT.ParentID,
-			AT.Name";
-             
-
+        
         public static string ExecutionErrorList = @"
 select  ER.Date,
         ER.Error,
@@ -812,7 +788,7 @@ from AssetDetail d
 															    )
 						) O on O.Object = D.Type and O.ObjectID = D.TypeID and D.Object + '|' + cast(D.ObjectID as varchar) <> @object + '|' + cast(@objectId as varchar)
             inner join [Predicate] P on P.ID = @predicateId
-			where (@query = '') or (@query != '' and d.DisplayValue like '%'+@query+'%')
+			where (@query = '') or (@query != '' and d.DisplayValue like '%'+@query+'%') and d.Type = @type and d.typeid = @typeid
 order by	D.TypeName,
 			D.DisplayValue
 ";

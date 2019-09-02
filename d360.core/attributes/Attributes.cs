@@ -52,6 +52,15 @@ namespace d360.core
         }
     }
 
+    public class LineageVersionsSupportedAttribute : Attribute
+    {
+        public int[] Versions { get; set; }
+        public LineageVersionsSupportedAttribute(params int[] versions)
+        {
+            Versions = versions;
+        }
+    }
+
     public class AllowIntersectTypeAssignmentAttribute : Attribute
     {
         private bool _allowed = true;
@@ -149,16 +158,6 @@ namespace d360.core
         public ExcludeDataTypeAttribute(DataType exclude)
         {
             this.Excluded = exclude;
-        }
-    }
-
-    public class CompanySettingActive : Attribute
-    {
-        public String Setting { get; set; }
-
-        public CompanySettingActive(string setting)
-        {
-            this.Setting = setting;
         }
     }
 

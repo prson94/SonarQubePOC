@@ -8,11 +8,12 @@
     <input type="text"
         pInputText
         [(ngModel)]="searchValue"
+        (keyup)="filter($event)"
         placeholder="Search"
         style="width: 100%;margin-bottom:10px;"
         *ngIf="!showDelete && !showEditor">
-    <p-treeTable *ngIf="!showDelete && !showEditor"
-        [value]="treeNodeArray | treeSearch: searchValue"
+    <p-treeTable #treeTable *ngIf="!showDelete && !showEditor"
+        [value]="treeNodeArray"
         selectionMode="single"
         [(selection)]="selected"
         styleClass="breadcrumbTree"

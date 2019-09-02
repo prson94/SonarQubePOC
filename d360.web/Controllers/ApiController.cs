@@ -26,6 +26,7 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using System.Xml.Linq;
 using d360.core.resources;
+using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers
 {
@@ -35,14 +36,15 @@ namespace d360.web.Controllers
         #region DI
 
         ISecurityContextProvider SecProvider;
-
-        public D3SApiController(ICommunityContext community, ICompanyContext company, ISecurityContextProvider secProvider)
+        ITagRepository tagRepository;
+        public D3SApiController(ICommunityContext community, ICompanyContext company,ITagRepository tagRepository, ISecurityContextProvider secProvider)
             : base(community, company)
         {
 #if DEBUG
             company.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 #endif
             SecProvider = secProvider;
+            this.tagRepository = tagRepository;
         }
 
         #endregion
@@ -75,7 +77,8 @@ namespace d360.web.Controllers
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id)
         {
             var list = new List<DetailReadOnlyRowModel>();
-
+            var tagList = new List<ReadOnlyFieldValue>();
+            
             var details = Company.GetObjectDetail(type.ToString(), id);
             if (details != null)
             {
@@ -253,6 +256,18 @@ namespace d360.web.Controllers
                     {
                         //look at fusionlookup field and figure out what to show
                         list.AddRange(RenderFilteredLookupField(type.ToString(), id, ft.ID));
+                    }
+                    else if (ft.Type == DataType.Tag.ToString())
+                    {
+                        var ro = new ReadOnlyFieldValue
+                        {
+                            Value = ft.FriendlyName,
+                            TooltipType = "tag",
+                            TooltipID = ft.ObjectID,
+                            TooltipContext = "Preview",
+                            TooltipUrl = ""
+                        };
+                        tagList.Add(ro);
                     }
                     else if (ft.Type == DataType.Attribute.ToString())
                     {
@@ -479,8 +494,45 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 });
             }
 
+            if (tagList.Count > 0)
+            {
+                var title = new ReadOnlyField
+                {
+                    Name = "Tags",
+                    ShowIfEmpty = true,
+                    DataType = "tag",
+                    Values = GetTagsValues(type,id)
+                };
+                list.Add(new DetailReadOnlyRowModel
+                {
+                    columns = 1,
+                    FirstColumnFields = new List<ReadOnlyField> { title }
+                });
 
+            }
             return list;
+        }
+
+        private List<ReadOnlyFieldValue> GetTagsValues(SystemObjects type, int id)
+        {
+            List<ReadOnlyFieldValue> tagsFields = new List<ReadOnlyFieldValue>();
+            var asset = Company.Assets.SingleOrDefault(x => x.Object == type.ToString() && x.ObjectID == id);
+            var tags = tagRepository.GetTagsForAsset(asset.ID);
+            tags.ToList().ForEach(x=>
+            {
+                var roField = new ReadOnlyFieldValue
+                {
+                    Value = x.Value,
+                    TooltipType = "tag",
+                    TooltipID = x.ID,
+                    TooltipContext = "Preview",
+                    TooltipUrl = "",
+                    uid = x.uid
+                };
+                tagsFields.Add(roField);
+            });
+
+            return tagsFields;
         }
 
         private List<AssetWithoutReadPermission> GetObjectsWithoutReadAccess(List<BasicAsset> objectsToCheckAccesFor)
@@ -560,6 +612,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             string filterType = GridColumn.FILTER_TYPE_STRING;
             List<string> filterItems = new List<string>();
 
+            bool canHaveMultipleFilterItems = false;
             var columnDataType = item.Type;
 
             if (columnDataType == DataType.JsonElement.ToString())
@@ -660,6 +713,9 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     filterType = GridColumn.FILTER_TYPE_LIST;
                     filterItems = new List<string> { "True", "False" };
                     break;
+                case "Tag":
+                    canHaveMultipleFilterItems = true;
+                    break;
             }
 
             var width = item.ColumnWidth;
@@ -667,7 +723,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             {
                 width = (int)dynamicFieldWidth;
             }
-            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID };
+            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID, canHaveMultipleFilters = canHaveMultipleFilterItems };
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
@@ -789,11 +845,6 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
 
             var sType = type.ToString();
             var skippedFieldTypes = DataType.Text.GetNonlistableFields();
-
-            var isTaggingEnabled = Community.GetCompanySettingByKey<bool>("EnableTagging");
-
-            if (!isTaggingEnabled)
-                skippedFieldTypes.Add(DataType.Tag.ToString());
 
             var totalItems = Company
                 .Filter<FieldType>(i => i.Object == sType && i.ObjectID == id && !skippedFieldTypes.Contains(i.Type))
@@ -1383,6 +1434,7 @@ where   h.ID <> @t order by h.[Level] desc;
             var hasV2WorkflowsAssigned = (Company.Query<int>(sql).FirstOrDefault() > 0);
             model.Add("HasV2Workflows", hasV2WorkflowsAssigned);
             model.Add("AssetTypeUID", assetType.uid);
+            model.Add("AssetTypeID", assetType.ID);
 
             return model;
         }
@@ -1486,8 +1538,8 @@ order by 'Name'";
                 )
             );
         }
-        
-      
+
+
 
         [Route("fusion/promotion/QueryAttributes"), HttpGet]
         public HttpResponseMessage GetPromotionFusionQueryAttributes(int ruleID)
@@ -1497,15 +1549,15 @@ order by 'Name'";
             return Request.CreateResponse(HttpStatusCode.OK, results);
 
         }
-                
 
 
 
 
 
 
- 
-        
+
+
+
         [Route("fusion/technicalmapping")]
         public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings()
         {
@@ -3050,8 +3102,8 @@ outer apply (
                         idColumn = "ResourceID";
                     else if (@object == "Artifact" || @object == "Policy" || @object == "Taxonomy")
                         idColumn = "ObjectID";
-                        
-                    
+
+
                     if (i.FieldTypeID == 0)
                     {
                         if (isReferenceType)
@@ -3401,6 +3453,16 @@ outer apply (
                     break;
             }
 
+            switch(previousObj.ToLower())
+            {
+                case "policy":
+                case "artifact":
+                case "taxonomy":
+                    previousObjIdColumn = "ObjectID";
+                    break;
+            }
+
+
             switch (join.RelationType)
             {
                 case ComplexLookupRelationType.StandardRelationhip:
@@ -3505,15 +3567,15 @@ outer apply (
                             default:
                                 if (useAssetJoin)
                                 {
-                                    join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                    join.JoinStatement += $" {joinType} join Asset A{i} on A{i}.Object = '{currentObj}' and A{i}.ObjectID = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 }
                                 else
                                 {
                                     join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 }
                                 join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : " and " + permissionsWhere;
-                                objColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.Object else I{i}.Subject end";
-                                objIDColumn = $"case when (I{i}.Subject = '{currentObj}' and I{i}.SubjectID = A{i - 1}.{currentObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                objColumn = $"case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.Object else I{i}.Subject end";
+                                objIDColumn = $"case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 break;
                         }
                         join.JoinStatement += permissionJoin;
@@ -3884,7 +3946,7 @@ outer apply (
                 foreach (var f in fieldTypes)
                 {
                     sqlColumns += $", F{f.ID}.FormattedValue as [{f.Name}]";
-                    sqlJoins += $" left join Field F{f.ID} on F{f.ID}.FieldTypeID = {f.ID} and F{f.ID}.ObjectType = 'ReferenceItem' and F{f.ID}.ObjectID = R.ID";
+                    sqlJoins += $" left join Field F{f.ID} on F{f.ID}.FieldTypeID = {f.ID} and F{f.ID}.ObjectType = 'ReferenceItem' and F{f.ID}.ObjectID = O.ObjectID";
 
                     var gc = new GridColumn { datafield = f.Name, text = f.FriendlyName };
                     if (f.ColumnWidth.HasValue)
@@ -3905,12 +3967,12 @@ outer apply (
                 }
 
                 var sqlQuery = $@"
-select  R.Code
+select  O.Code
         {sqlColumns} 
-from    ReferenceItem R 
-        inner join Asset O on O.Object = 'ReferenceItem' and O.ObjectID = R.ID 
+from    Asset O 
+        inner join AssetType AT on O.AssetTypeId = AT.ID
         {sqlJoins} 
-where   R.ReferenceItemTypeID = {id} 
+where    AT.Object = 'ReferenceItemType' and AT.ObjectID= {id}  
         and O.ID not in ({Company.GetNoReadSqlStatement()})
 {sqlOrderBy}";
 
@@ -3935,7 +3997,11 @@ where   R.ReferenceItemTypeID = {id}
 
         private bool AnyReferenceListItemsFieldValues(int id)
         {
-            var sqlQuery = $"select case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end from ReferenceItem where ReferenceItemTypeID = {id}";
+            var sqlQuery = $@"select case when count(1) > 0 then cast(1 as bit) else cast(0 as bit) end 
+                            from Asset A 
+                            inner join AssetType AST on
+                            AST.ID = A.AssetTypeID
+                            where AST.ObjectID = { id} and AST.[Object]='ReferenceItemType'";
             return Company.Query<bool>(sqlQuery).First();
         }
 
@@ -4228,10 +4294,13 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                             order by disp.TextPath";
                     break;
                 case SystemObjects.ReferenceItemType:
-                    sql = @"select distinct A.DisplayValue as Name, A.ID, 'ReferenceItem' as [Type] 
-                            from ReferenceItem A 
-                            inner join [Intersect] I on A.ReferenceItemTypeID = @id and ( (I.Subject = 'ReferenceItem' and A.ID = I.SubjectID) OR (I.Object = 'ReferenceItem' and A.ID = I.ObjectID) ) 
-                            order by A.DisplayValue";
+                    sql = @"select distinct AD.DisplayValue as Name, A.ID, 'ReferenceItem' as [Type] 
+                            from Asset A 
+                            inner join AssetType AST on AST.ID = A.AssetTypeID
+                            inner join AssetDisplayValue AD on AD.AssetID =A.ID
+                            inner join [Intersect] I on  ( (I.Subject = 'ReferenceItem' and A.ObjectID = I.SubjectID) OR (I.Object = 'ReferenceItem' and A.ObjectID = I.ObjectID) ) 
+                            where AST.ObjectID= @id and AST.[Object]='ReferenceItemType'
+                            order by AD.DisplayValue";
                     break;
                 case SystemObjects.ResourceType:
                     sql = @"select distinct A.LastName + ', ' + A.FirstName as Name, A.ResourceID as ID, 'Resource' as [Type] 
@@ -4704,8 +4773,8 @@ select	top 100 percent
 from	
         Asset A
         inner join AssetType ATT on ATT.ID = A.AssetTypeID and ATT.ObjectID = @id  and A.Object = 'Policy'
-        {joins} 
-        left join dbo.GetAssetDisplayValue() TD on TD.ID = A.ID
+        {joins}         
+        inner join dbo.AssetDisplayValue TD on TD.AssetID = A.ID
         outer apply (
 					select	I.SubjectID
 					from	[Intersect] I
@@ -8242,18 +8311,19 @@ where	Type = 'ReferenceItemType'
 
                 if ((fieldType.LookupObjectType ?? "").ToUpper() != "REFERENCEITEM") throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
-                var referenceListType = Company.ReferenceItemTypes.Where(x => x.ID == fieldType.LookupObjectID).FirstOrDefault();
+                var referenceListType = Company.Filter<AssetType>(i => i.Object == "ReferenceItemType" && i.ObjectID == fieldType.LookupObjectID).FirstOrDefault();
+
 
                 if (referenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
-                var parentReferenceListType = Company.GetParentType(referenceListType.ID, SystemObjects.ReferenceItemType);
+                var parentReferenceListType = Company.GetParentType(referenceListType.ObjectID, SystemObjects.ReferenceItemType);
 
                 if (parentReferenceListType == null) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
                 var sql = @"select flv.Text, flv.Value from fieldlookupvalue flv 
                         inner join[intersectdetail] id on(id.subjecttype = 'ReferenceItemType' and id.objecttype = 'ReferenceItemType' and id.predicatetype = @predicate and id.objectid = flv.value and id.objecttypeid = flv.lookupobjectid and id.subjecttypeid = @parentReferenceListTypeId)
-                        inner join[referenceitem] ri on(ri.referenceitemtypeid = id.subjecttypeid and ri.id = id.subjectid and ri.id in @parentReferenceItemId)
-                        where flv.fieldTypeID = @id";
+                        inner join AssetDetail ad on(ad.TypeId = id.subjecttypeid and ad.Type='ReferenceItemType' and ad.[ObjectId] = id.subjectid  and ad.[Object]='ReferenceItem' )
+                        where flv.fieldTypeID = @id and  ad.[ObjectId] in ( @parentReferenceItemId)";
 
                 items = Company.Query<SelectListInfoItem>(sql, new { id = fieldTypeID, predicate = predicateTypeId, parentReferenceItemId = parents, parentReferenceListTypeId = parentReferenceListType.ObjectID }).ToList();
             }
@@ -8315,7 +8385,7 @@ where	Type = 'ReferenceItemType'
 
             if (entity == null) return null;
 
-            var types = DataType.Text.GetDataTypeInfoList().Where(x => x.CompanySettingActive != null && Community.IsCompanySettingActive(x.CompanySettingActive)).ToList();
+            var types = DataType.Text.GetDataTypeInfoList();
             var fields = Company.Query<dynamic>(@"select 
                                            eft.*,
                                            ft.Name,

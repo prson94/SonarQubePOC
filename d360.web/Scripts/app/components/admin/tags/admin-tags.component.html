@@ -1,4 +1,4 @@
-﻿<d3s-admin-tags-action (onTagToggle)="tagStateChanged($event)" (onDelete)="openDeleteModal()" (onConsolidate)="openConsolidateModal()" [(selectedTags)]="selected"></d3s-admin-tags-action>
+﻿<d3s-admin-tags-action (onDelete)="openDeleteModal()" (onConsolidate)="openConsolidateModal()" [(selectedTags)]="selected"></d3s-admin-tags-action>
 
 <div class="row">
     <div class="col l12 m12 s12">
@@ -37,7 +37,11 @@
                                 <td class="enable-pointer-events">
                                     <p-tableCheckbox [value]="item"></p-tableCheckbox>
                                 </td>
-                                <td (click)="selectSingleItem($event,item, el);">{{item.Value}}</td>
+                                <td (click)="selectSingleItem($event,item, el);">
+                                    <a class="mid-blue" (click)="openTagDetails(item);">
+                                        {{item.Value}}
+                                    </a>
+                                </td>
                                 <td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
                                 <td (click)="selectSingleItem($event,item);">
                                     <div class="RowTools">

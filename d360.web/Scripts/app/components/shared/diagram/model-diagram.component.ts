@@ -62,7 +62,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         this.diagram.linkTemplate = this.createLinkTemplate();
 
         this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
-        this.diagram.addDiagramListener('ViewPortBoundsChanged', () => this.ViewPortBoundsChanged());
+        this.diagram.addDiagramListener('ViewportBoundsChanged', () => this.ViewportBoundsChanged());
 
         this.populateDiagram();
     }
@@ -112,7 +112,7 @@ export class ModelDiagramComponent extends DiagramBaseComponent implements OnIni
         this.diagramRef.nativeElement.style.height = (height - offset - 50) + 'px';
     }
 
-    private ViewPortBoundsChanged() {
+    private ViewportBoundsChanged() {
         var s = this.diagram.scale;
         var h = 500;
         if (s > 1) {

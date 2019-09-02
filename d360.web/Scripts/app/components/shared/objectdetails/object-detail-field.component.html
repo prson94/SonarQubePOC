@@ -1,13 +1,20 @@
-﻿<div *ngIf="isArrayValue">
-    <div *ngFor="let item of field.Values">
-        <d3s-preview-tooltip [objectType]="item.TooltipType" [objectId]="item.TooltipID">
-            <a *ngIf="item.TooltipUrl;else arrayNoUrl" (click)="navigate(item.TooltipUrl)" [innerHtml]="item.Value"></a>
-            <ng-template #arrayNoUrl>
-                <span [innerHtml]="item.Value"></span>
-            </ng-template>
-        </d3s-preview-tooltip>
+﻿<div *ngIf="isArrayValue || fieldDataType == 'tag'">
+    <div *ngIf="fieldDataType != 'tag'">
+        <div *ngFor="let item of field.Values">
+            <d3s-preview-tooltip [objectType]="item.TooltipType" [objectId]="item.TooltipID">
+                <a *ngIf="item.TooltipUrl;else arrayNoUrl" (click)="navigate(item.TooltipUrl)" [innerHtml]="item.Value"></a>
+                <ng-template #arrayNoUrl>
+                    <span [innerHtml]="item.Value"></span>
+                </ng-template>
+            </d3s-preview-tooltip>
+        </div>
     </div>
-</div>
+    <div *ngIf="fieldDataType == 'tag'">
+        <ng-container >
+            <d3s-tag-view [data]="getJSONString(field.Values)" [assetUID]="assetUID" [isEditable]="true"></d3s-tag-view>
+        </ng-container>
+    </div>
+</div> 
 <ng-template [ngIf]="!isArrayValue">
     <div *ngIf="field.Value">
         <ng-container *ngIf="field.Type == DetailFieldType.Field">
@@ -74,11 +81,11 @@
     </div>
     <div *ngIf="field.Type == DetailFieldType.Lookup">
         <d3s-dynamic-lookup-grid 
-                                 *ngIf="field.Data && field.Data.Values && field.Data.Values.length > 0" 
-                                 [data]="field.Data" 
-                                 [hideHeader]="field.HideHeader" 
-                                 [hideFooter]="field.HideFooter" 
-                                 [hideFilter]="field.HideFilter" 
+                                 *ngIf="field.Data && field.Data.Values && field.Data.Values.length > 0"
+                                 [data]="field.Data"
+                                 [hideHeader]="field.HideHeader"
+                                 [hideFooter]="field.HideFooter"
+                                 [hideFilter]="field.HideFilter"
                                  [field]="field">
         </d3s-dynamic-lookup-grid>
     </div>

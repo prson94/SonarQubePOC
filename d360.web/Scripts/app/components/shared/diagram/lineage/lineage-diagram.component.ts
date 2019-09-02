@@ -1163,7 +1163,7 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
 
     private changeNode(e: LineageNode) {
 
-        let node: LineageNode = this.diagram.model.findNodeDataForKey(e.key);
+        let node: LineageNode = this.diagram.model.findNodeDataForKey(e.key) as LineageNode;
         //console.log('changeNode', e, node, this.myDiagram);
         if (node == null)
             return;
@@ -1309,8 +1309,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
         //console.log('LinkDrawn', e);
         let data = e.subject.data;
 
-        let fromNode = this.diagram.model.findNodeDataForKey(data.from);
-        let toNode = this.diagram.model.findNodeDataForKey(data.to);
+        let fromNode = this.diagram.model.findNodeDataForKey(data.from) as LineageNode;
+        let toNode = this.diagram.model.findNodeDataForKey(data.to) as LineageNode;
         let link: LineageLink = <LineageLink>(<go.GraphLinksModel>this.diagram.model).linkDataArray.find(l => (<any>l).to == data.to && (<any>l).from == data.from);
 
         if (link == null || fromNode == null || toNode == null) {
@@ -1472,12 +1472,13 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             "undoManager.isEnabled": true
         });
 
-        dg.model.class = go.GraphLinksModel;
-        dg.model.nodeCategoryProperty = 'category';
-        dg.model.linkFromPortIdProperty = 'frompid';
-        dg.model.linkToPortIdProperty = 'topid';
-        dg.model.nodeDataArray = [];
-        dg.model.linkDataArray = [];
+        let model = (dg.model as go.GraphLinksModel);
+        //model = go.GraphLinksModel;
+        model.nodeCategoryProperty = 'category';
+        model.linkFromPortIdProperty = 'frompid';
+        model.linkToPortIdProperty = 'topid';
+        model.nodeDataArray = [];
+        model.linkDataArray = [];
         dg.toolManager.hoverDelay = 250;
         dg.toolManager.linkingTool.isEnabled = !this.readonly;
 
