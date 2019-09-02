@@ -10,7 +10,7 @@ namespace d360.model.DataAccessLayer
     public interface ITagRepository
     {
         Task<TagApiModelWrapper> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams);
-        Task<dynamic> GetTagsWithResourceName(IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<dynamic> GetTagsForExcel(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool DeleteTags(List<TagApiDeleteModel> models);
         TagApiModel CreateTag(TagApiModel model);
         TagApiModel UpdateTag(Guid uid, TagApiModel model, Tag tag);

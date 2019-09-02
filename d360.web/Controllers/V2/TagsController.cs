@@ -275,7 +275,7 @@ namespace d360.web.Controllers.V2
             /// <param name="parentUid">The unique identifier of the parent tag.</param>        
             /// <param name="childrenUids">The list of children tags which we want to consolidate.</param>
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(TagApiModel)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<TagApiModel>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
@@ -355,7 +355,7 @@ namespace d360.web.Controllers.V2
 
             var queryParams = Request.GetQueryNameValuePairs();
 
-            var tags = await tagRepository.GetTagsWithResourceName(queryParams);
+            var tags = await tagRepository.GetTagsForExcel(queryParams);
 
             var document = new SLDocument();
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
