@@ -56,7 +56,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
         this.rightSidebarService.clearItems();
         this.rightSidebarService.clearButtons();
         this.rightSidebarService.clearCurrentObject();
-        this.rightSidebarService.setCurrentArea('Search Results', 'fa-database', null);
+        this.rightSidebarService.setCurrentArea('Search Results', 'fa-search', null);
         this.rightSidebarService.showHeader(true);
 
         this.sub = this.route.queryParams.subscribe(params => {
