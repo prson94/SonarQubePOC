@@ -43,7 +43,7 @@ export class SearchResultsComponent extends BaseComponent {
             event.first: Index of first record
             event.rows: Number of rows to display in new page            
             event.pageCount: Total number of pages
-        */        
-        this.paginateClick.emit({page: data.page, size: data.rows, first: data.first});
+        */
+        this.paginateClick.emit({page: data.page, size: data.size, first: data.first});
     }
 };
