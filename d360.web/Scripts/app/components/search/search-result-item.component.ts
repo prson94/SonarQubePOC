@@ -15,51 +15,44 @@ declare var CompanySettings;
     selector: 'd3s-search-result-item',
     template: `       
                 <div class="card-res">
-                        <div class="left">
-                            <span class="title">
-                                <span class="d3s-icon large-icon"><i class="fa {{result?.Icon}}"></i></span>
-                                <span *ngIf="result?.ImageUrl" class="folder-icon"><img [src]="result.ImageUrl" /></span> 
-                                <span (click)="navigateLink()" class="name"><span class="inner" [innerHtml]="result?.Name"></span></span>
-                            </span>
-                            <span class="category">
-                                {{displayType}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
-                            </span>
-                            <span class="description" *ngIf="result?.Description" [innerHtml]="result.Description"></span>
-                        </div>
-                        <div class="right">
-                            <div class="badges"> 
-                                <span #badge *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon clickable"
-                                      title="{{lastCalculatedMessage()}}"
-                                      [ngClass]="{
-                                                            'bad':scoreBetween(0,49),
-                                                            'ok':scoreBetween(50,89),
-                                                            'good':scoreBetween(90,1000)
-                                                        }">
-			                        <d3s-dynamic-percentage [percentage]="statistics?.Score"></d3s-dynamic-percentage>
-			                        <span class="text">{{statistics?.Score}}%</span>
-		                        </span>
-		                        <ng-template #noScore>
-			                        <span #noScoreBadge title="Governance Score not yet calculated" class="d3s-icon large-icon clickable">
-				                        <d3s-dynamic-percentage [percentage]="0"></d3s-dynamic-percentage>
-				                        <span class="text">N/A</span>
-			                        </span>
-		                        </ng-template>
-		                        <span *ngIf="showStatus" class="d3s-icon large-icon" [style.background-color]="getCertificationStatusColor(status)">
-			                        <i class="fa fa-certificate"></i>
-			                        <span class="text">{{status}}</span>
-		                        </span>
-                                <button *ngIf="showShoppingCart && result.Group != 'Synonym' && result.Group != 'Attribute'" class="button icon" (click)="add()">
-                                    <i class="fa fa-cart-plus"></i>
-                                </button>
-                                <span class="d3s-icon med-icon light">
-                                    <i class="fa fa-info-circle"></i>
-                                </span>
-                            </div>
-                            <span class="grow"></span>
-                            <div class="tags">
-                                <d3s-tag-view [data]="tags"></d3s-tag-view>
-                            </div>
-                        </div>
+                    <span class="title">
+                        <span class="d3s-icon large-icon title-icon"><i class="fa {{result?.Icon}}"></i></span>
+                        <span *ngIf="result?.ImageUrl" class="folder-icon"><img [src]="result.ImageUrl" /></span> 
+                        <span (click)="navigateLink()" class="name"><span class="inner" [innerHtml]="result?.Name"></span></span>
+                        <span #badge *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon clickable"
+                              title="{{lastCalculatedMessage()}}"
+                              [ngClass]="{
+                                                    'bad':scoreBetween(0,49),
+                                                    'ok':scoreBetween(50,89),
+                                                    'good':scoreBetween(90,1000)
+                                                }">
+			                <d3s-dynamic-percentage [percentage]="statistics?.Score"></d3s-dynamic-percentage>
+			                <span class="text">{{statistics?.Score}}%</span>
+		                </span>
+		                <ng-template #noScore>
+			                <span #noScoreBadge title="Governance Score not yet calculated" class="d3s-icon large-icon clickable">
+				                <d3s-dynamic-percentage [percentage]="0"></d3s-dynamic-percentage>
+				                <span class="text">N/A</span>
+			                </span>
+		                </ng-template>
+		                <span *ngIf="showStatus" class="d3s-icon large-icon" [style.background-color]="getCertificationStatusColor(status)">
+			                <i class="fa fa-certificate"></i>
+			                <span class="text">{{status}}</span>
+		                </span>
+                        <button *ngIf="showShoppingCart && result.Group != 'Synonym' && result.Group != 'Attribute'" class="button icon" (click)="add()">
+                            <i class="fa fa-cart-plus"></i>
+                        </button>
+                        <span class="d3s-icon med-icon light">
+                            <i class="fa fa-info-circle"></i>
+                        </span>
+                    </span>
+                    <span class="category">
+                        {{displayType}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
+                    </span>
+                    <span class="description" *ngIf="result?.Description" [innerHtml]="result.Description"></span>
+                    <div class="tags">
+                        <d3s-tag-view [data]="tags"></d3s-tag-view>
+                    </div>      
                 </div>        
                 `,
     changeDetection: ChangeDetectionStrategy.OnPush,

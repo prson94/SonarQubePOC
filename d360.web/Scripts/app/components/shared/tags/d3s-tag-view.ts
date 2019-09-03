@@ -73,10 +73,9 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
         if (this.container) {
             let parent = this.container.nativeElement.closest('td')
-                ? this.container.nativeElement.closest('td') : this.container.nativeElement.closest('div');
+                ? this.container.nativeElement.closest('td') : this.container.nativeElement.parentElement.closest('div');
 
             let ofWidth = parent ? parent.offsetWidth - 10 : 500;
-
             this.container.nativeElement.style.width = ofWidth + 'px';
             this.container.nativeElement.querySelectorAll('.tag-item-wrapper')
                 .forEach((x) => {

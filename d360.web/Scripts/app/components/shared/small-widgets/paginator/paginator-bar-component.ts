@@ -8,9 +8,9 @@ import { Paginator } from 'primeng/paginator'
 @Component({
     selector: 'd3s-paginator',
     template: `<div class="paging-bar">
-                    <span class="items">Showing {{(page * itemsPerPage) + 1}} to {{(page * itemsPerPage) + itemsPerPage}} of {{totalRecords}} items</span>
+                    <span class="items">Showing {{(page * itemsPerPage) + 1}} to {{GetToDisplayValue()}} of {{totalRecords}} items</span>
                     <span class="grow"></span>
-                    <div class="pages">
+                    <div *ngIf="totalRecords > itemsPerPage" class="pages">
                         <span (click)="changePageToFirst($event)">First</span>
                         <span (click)="changePageToPrev($event)">Previous</span>
                         <span [ngClass]="{selected: page == (cpage - 1)}" *ngFor="let cpage of pageOptions" (click)="onPageLinkClick(cpage - 1)">{{cpage}}</span>
@@ -30,7 +30,8 @@ export class PaginatorComponent implements OnChanges, OnInit {
     @Input() percentage: number;
     @Output() onPageChange = new EventEmitter();
     private itemsPerPage: number = 10;
-    pageOptions = [1, 2, 3];
+    private pageOptions = [1];
+    private visableNumbers: number = 3;
     constructor(
         ref: ChangeDetectorRef,
         private router: Router
@@ -48,6 +49,7 @@ export class PaginatorComponent implements OnChanges, OnInit {
     ngOnInit(): void {
         this.itemsPerPage = 10;
         this.page = 0;
+        this.CheckVisableNumbers();
     }
 
     isFirstPage(): boolean {
@@ -109,16 +111,31 @@ export class PaginatorComponent implements OnChanges, OnInit {
     }
 
     paginate(size, page, firstItemIndex) {
-        if (this.getPageCount() > 2) {
-            if (this.isFirstPage())
-                this.pageOptions = [1, 2, 3]
-            else if (this.isLastPage() && this.getPageCount() > 2)
-                this.pageOptions = [this.getPageCount() - 2, this.getPageCount() - 1, this.getPageCount()];
-            else {
-                this.pageOptions = [this.page, this.page + 1, this.page + 2]
-            }
-        }
+        this.CheckVisableNumbers(); 
         this.onPageChange.emit({ size: size, page: page, first: firstItemIndex });
     }
 
+
+    private CheckVisableNumbers() {
+        if (this.getPageCount() > 1) {
+            if (this.isFirstPage())
+                this.pageOptions = [1, 2, 3];
+            else if (this.isLastPage() && this.getPageCount() > 2)
+                this.pageOptions = [this.getPageCount() - 2, this.getPageCount() - 1, this.getPageCount()];
+            else {
+                for (var i = 0; i < this.visableNumbers; i++) {
+                    if (this.getPageCount() <= i)
+                        this.pageOptions[i] = i + 1;
+                }
+            }
+        }
+    }
+
+    GetToDisplayValue() {
+        if (this.totalRecords < this.itemsPerPage)
+            return this.totalRecords;
+        else {
+            return (this.page * this.itemsPerPage) + this.itemsPerPage;
+        }
+    }
 };
