@@ -295,4 +295,5 @@
   <include file="scripts/GOV-8038.xml"/> <!-- IGC: [integration].[ExecutionAssetTypeError] - new column -->
   <include file="scripts/GOV-8008.xml"/> <!-- IGC: [integration].[CompleteExecution] -->
   <include file="scripts/GOV-8060.xml"/> <!-- perf optmizations [utility].[ArtifactAssetParent] -->
+  <include file="scripts/GOV-8080.xml"/> <!-- perf optmizations intersect table subject / subjectid -->
 </databaseChangeLog>
