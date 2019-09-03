@@ -58,11 +58,6 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.selected = this.tags;
     }
 
-    getTagUrl(tag: any, event: MouseEvent) {
-        if (this.isEditable != true && this.showDelete == false)
-            this.openTagPage(event, `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${tag.uid.toString().toLowerCase()}`);
-    }
-
     getTags() {
         this.isLoading = true;
         this.tagService.getTagsList().subscribe(res => {
@@ -142,7 +137,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
             subscribe(result => {
                 let msg: string = '';
                 msg = `Tag succesfully removed`;
-                this.showMessageForResult(this.messagesService, result,msg);    
+                this.showMessageForResult(this.messagesService, result, msg);
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
                     this.selected.forEach(t => {
@@ -224,8 +219,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     openTagPage(event: MouseEvent, item: any) {
-        if (this.isEditable) return;
-        this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid}`]);
+        if (this.isEditable != true && this.showDelete == false)
+            this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid.toString().toLowerCase()}`]);
         event.stopPropagation();
     }
 
