@@ -1662,10 +1662,26 @@ where	R.SourceObject = 'FusionAttribute'
         public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
         {
             var sSubject = subject.ToString();
-            var subjectAssetType = Filter<AssetType>(i => i.Object == sSubject && i.ObjectID == subjectID).FirstOrDefault();
-            if (subjectAssetType == null)
+            bool removeSpecialPredicateTypes = false;
+
+            if (sSubject == "IntersectType")
             {
-                throw new ApplicationException("Subject asset type does not exist.");
+                removeSpecialPredicateTypes = true;
+            }
+            else
+            {
+                var subjectAssetType = Filter<AssetType>(i => i.Object == sSubject && i.ObjectID == subjectID).FirstOrDefault();
+                if (subjectAssetType == null)
+                {
+                    throw new ApplicationException("Subject asset type does not exist.");
+                }
+
+                removeSpecialPredicateTypes = (
+                    subjectAssetType.Class != AssetTypeClass.Glossary &&
+                    subjectAssetType.Class != AssetTypeClass.Model &&
+                    subjectAssetType.Class != AssetTypeClass.Policy &&
+                    subjectAssetType.Class != AssetTypeClass.Rule
+                );
             }
 
             var sql = @"
@@ -1690,12 +1706,7 @@ where	I.ID is null";
                         i.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion)
                   );
 
-            if (
-                subjectAssetType.Class != AssetTypeClass.Glossary &&
-                subjectAssetType.Class != AssetTypeClass.Model &&
-                subjectAssetType.Class != AssetTypeClass.Policy &&
-                subjectAssetType.Class != AssetTypeClass.Rule
-                )
+            if (removeSpecialPredicateTypes)
             {
                 predicates = predicates.Where(i => i.Type != PredicateType.BusinessToTechnical && i.Type != PredicateType.FusionMapping);
             }
