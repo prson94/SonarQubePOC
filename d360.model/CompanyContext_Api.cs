@@ -214,6 +214,33 @@ where	ExecutionID = @executionID
             new { executionID }, commandTimeout: timeout);
         }
 
+        private void LogAssetPermissionErrors(Guid executionID, AssetType at, Permission p, string apiTableName, int timeout = 3600)
+        {
+            if (string.IsNullOrEmpty(apiTableName))
+            {
+                throw new ApplicationException("Endpoint logic is misconfigured, and is missing an API table name.");
+            }
+            if (!CurrentResourceIsAdmin)
+            {
+                Connection.Execute($@"
+    declare @hasAssetTypePermission bit = 0
+
+    select @hasAssetTypePermission = case when exists (select AssetTypeID from UserAssetPermissions(3, @assetTypeID) where PermissionsBitMask & @p = @p and AssetID = 0) then 1 else 0 end
+
+    if @hasAssetTypePermission = 0
+    begin
+	    update	T
+	    set		T.Success = 0,
+			    T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this asset.'
+	    from    api.{apiTableName} T
+			    inner join api.Execution E on E.ExecutionID = T.ExecutionID 
+											    and E.ExecutionID = @executionID 
+											    and T.AssetID is not null
+											    and T.AssetID not in (select AssetID from UserAssetPermissions(E.ResourceID, @assetTypeID) where PermissionsBitMask & @p = @p)
+    end", new { executionID, assetTypeID = at.ID, p = (int)p }, commandTimeout: timeout);
+            }
+        }
+
         private void LogParentErrors(Guid executionID, int timeout = 3600)
         {
             Connection.Execute(@"
@@ -1121,6 +1148,9 @@ from	IntersectType I
 
                         #endregion
 
+                        // Validate permissions
+                        LogAssetPermissionErrors(execution.ExecutionID, at, Permission.DeleteAsset, "ExecutionDeletedAsset");
+
                         generalChecksCompleted = true;
                     }
                     catch (Exception generalEx)
@@ -1254,7 +1284,7 @@ from	IntersectType I
 
                                             //Cascade behaviour
                                             #region Cascade Behaviour
-                                            Connection.Execute($@" 
+                                           Connection.Execute($@" 
                 if OBJECT_ID('tempdb..#ExecutionDeletedAsset') IS NOT NULL
                     Truncate TABLE #ExecutionDeletedAsset
                 else
@@ -1268,7 +1298,8 @@ from	IntersectType I
                                     FromHierarchy	bit,
                                     WorkflowItemId bigint
                             );
-
+            if( @hasPredicate = 1)
+            begin
                  with h as (
 	                    select	D.ExecutionID,
 			                    D.ItemNumber,
@@ -1294,7 +1325,7 @@ from	IntersectType I
                                 P.[Level] + 1 as [Level],
                                 P.[Root] as Root
 	                    from	PredicateIntersect I 
-			                    inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = {(int)predicateType} and P.Object = I.Subject and P.ObjectID = I.SubjectID
+			                    inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = @predicateTypeValue and P.Object = I.Subject and P.ObjectID = I.SubjectID
 			                    inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
                         where   P.ItemNumber between {beginItemNumber} and {endItemNumber} and P.[Level] <= 15
                     )
@@ -1312,7 +1343,7 @@ from	IntersectType I
                                 and [Level] > 0 
                              and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = h.ExecutionID and ItemNumber = h.ItemNumber )
 			                 and  ExecutionID = @ExecutionID
-
+        end
                  insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root],WorkflowItemId)
                         select distinct 
                                 ExecutionID, 
@@ -1347,7 +1378,10 @@ from	IntersectType I
 			                S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
 			                where	{querySuffix}  and AssetId is not null
 			                and S.[Cascade]=0
-                                                ", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                                ", new { ExecutionID = execution.ExecutionID,
+                                                        predicateTypeValue = predicateType.HasValue ? (int)predicateType : -1,
+                                                        hasPredicate = predicateType.HasValue ? 1 : 0
+                                                        }, transaction: trans, commandTimeout: timeout);
                                             #endregion
 
                                             // Get the hierarchy items we also need to remove
@@ -2348,6 +2382,9 @@ from	api.ExecutionAsset T
                         new { execution.ExecutionID }, commandTimeout: timeout);
 
                         #endregion
+
+                        // Validate permissions
+                        LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, "ExecutionAsset");
 
                         generalChecksCompleted = true;
                     }

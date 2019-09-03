@@ -436,6 +436,9 @@ namespace d360.web.Models
 
         [DataMember]
         public string TooltipUrl { get; set; }
+
+        [DataMember]
+        public Guid uid { get; set; }
     }
 
     public class ReadOnlyFieldValueComparer : IEqualityComparer<ReadOnlyFieldValue>

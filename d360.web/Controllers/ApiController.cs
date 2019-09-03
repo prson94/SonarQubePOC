@@ -78,7 +78,7 @@ namespace d360.web.Controllers
         {
             var list = new List<DetailReadOnlyRowModel>();
             var tagList = new List<ReadOnlyFieldValue>();
-            string tagString = "";
+            
             var details = Company.GetObjectDetail(type.ToString(), id);
             if (details != null)
             {
@@ -526,7 +526,8 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     TooltipType = "tag",
                     TooltipID = x.ID,
                     TooltipContext = "Preview",
-                    TooltipUrl = ""
+                    TooltipUrl = "",
+                    uid = x.uid
                 };
                 tagsFields.Add(roField);
             });
@@ -1433,6 +1434,7 @@ where   h.ID <> @t order by h.[Level] desc;
             var hasV2WorkflowsAssigned = (Company.Query<int>(sql).FirstOrDefault() > 0);
             model.Add("HasV2Workflows", hasV2WorkflowsAssigned);
             model.Add("AssetTypeUID", assetType.uid);
+            model.Add("AssetTypeID", assetType.ID);
 
             return model;
         }
@@ -4771,8 +4773,8 @@ select	top 100 percent
 from	
         Asset A
         inner join AssetType ATT on ATT.ID = A.AssetTypeID and ATT.ObjectID = @id  and A.Object = 'Policy'
-        {joins} 
-        left join dbo.GetAssetDisplayValue() TD on TD.ID = A.ID
+        {joins}         
+        inner join dbo.AssetDisplayValue TD on TD.AssetID = A.ID
         outer apply (
 					select	I.SubjectID
 					from	[Intersect] I

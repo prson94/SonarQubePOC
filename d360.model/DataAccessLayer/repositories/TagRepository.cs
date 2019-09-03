@@ -156,7 +156,7 @@ namespace d360.model.DataAccessLayer
             return results;
         }
 
-        public async Task<dynamic> GetTagsWithResourceName(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public async Task<dynamic> GetTagsForExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
 
             var dbArgs = new DynamicParameters();
@@ -292,6 +292,11 @@ namespace d360.model.DataAccessLayer
         public Tag GetTagByUid(Guid uid)
         {
             return companyContext.Tags.FirstOrDefault(x => x.uid == uid);
+        }
+
+        public Tag GetTagByName(string name)
+        {
+            return companyContext.Tags.FirstOrDefault(x => x.Value == name && x.State == State.Active);
         }
 
         public bool DoesTagExists(string value)

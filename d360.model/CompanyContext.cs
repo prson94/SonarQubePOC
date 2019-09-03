@@ -2175,6 +2175,18 @@ where	R.SourceObject = 'FusionAttribute'
 
         public void CreateOrUpdateTypeDisplayValuesAsync(int objectTypeId, string objectType)
         {
+            //check if assettype is part of custom folder, if so, update its value
+            var navSiteItem = SiteNav.FirstOrDefault(x => x.Object == objectType && x.ObjectID == objectTypeId && x.ParentID != null);
+            if(navSiteItem != null)
+            {
+                var assetTypeName = AssetTypes.FirstOrDefault(x => x.Object == objectType && x.ObjectID == objectTypeId)?.Name;
+                if (!string.IsNullOrEmpty(assetTypeName))
+                {
+                    navSiteItem.Title = navSiteItem.Name = assetTypeName;
+                    SaveChanges();
+                }
+            }
+
             Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
         }
 

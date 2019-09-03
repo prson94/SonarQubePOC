@@ -247,8 +247,8 @@ declare @IDs table (ID uniqueidentifier)
 insert into @IDs
 select top {numberOfQueueItems} ID 
 from [queue].[Task] 
-where MachineAssigned is null and NumberOfRetries < 2 
-order by [Priority] asc, [Date] asc
+where MachineAssigned is null and NumberOfRetries < 2  and [date] < DATEADD(minute, -1, getutcdate()) 
+order by [Date] asc
 
 update  T
 set     T.MachineAssigned = @m
