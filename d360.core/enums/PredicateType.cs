@@ -269,7 +269,10 @@ namespace d360.core.enums
                     AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)t.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
                     ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)t.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
                     ReadOnly = ((ReadOnlyAttribute)t.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly,
-                    AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditorAttribute)t.GetCustomAttribute(typeof(AllowEditFromRelationshipEditorAttribute))).Allowed
+                    AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditorAttribute)t.GetCustomAttribute(typeof(AllowEditFromRelationshipEditorAttribute))).Allowed,
+                    LineageVersionsSupported = t.IsDefined(typeof(LineageVersionsSupportedAttribute), false) ?
+                                                    ((LineageVersionsSupportedAttribute)t.GetCustomAttribute(typeof(LineageVersionsSupportedAttribute))).Versions :
+                                                    new int[4] { 0, 1, 2, 3 }, //0 accounts for unit tests
                 };
         }
     }
