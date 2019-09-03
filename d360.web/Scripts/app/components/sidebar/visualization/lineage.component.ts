@@ -8,7 +8,7 @@ declare var CompanySettings: any;
     selector: 'd3s-lineage-wrapper',
     template: `
         <ng-container *ngIf="lineageVersion == 3">
-            No yet implemented
+            <d3s-assetbrowser [objectId]="objectID" [object]="objectType" [readonly]="true"></d3s-assetbrowser>
         </ng-container>
         <ng-container *ngIf="lineageVersion == 2">
             <d3s-lineage-diagram [objectID]="objectID" [objectType]="objectType" [readonly]="true"></d3s-lineage-diagram>
