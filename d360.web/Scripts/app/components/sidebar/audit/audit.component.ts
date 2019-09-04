@@ -125,12 +125,17 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
     }
 
     public export() {
+        var fileName = this.objectName;
+        if (this.objectID === 0) {
+            fileName = this.objectType;
+        }
+
         this
             .auditService
             .exportToExcel(
                 this.objectID,
                 this.objectType,
-                this.objectName,
+                fileName,
                 this.filters
             );
     }
