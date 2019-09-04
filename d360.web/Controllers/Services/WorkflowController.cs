@@ -2083,17 +2083,32 @@ order by wi.StartedOn desc";
         private string FormatMessageBodyTemplate(string type, List<FieldType> fieldTypes, string data)
         {
             dynamic settings = XmlToDynamic(data);
-            if (settings != null && settings.MessageBodyTemplate != null)
+            if (settings != null && (settings.MessageBodyTemplate != null || settings.MessageSubjectTemplate != null))
             {
-                string msg = settings.MessageBodyTemplate;
-                fieldTypes.ForEach(x =>
+                if (settings.MessageBodyTemplate != null)
                 {
-                    var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
-                    var f = "[" + fieldType + " :: " + x.Name + "]";
-                    var t = "[FIELD" + x.ID + "]";
-                    msg = msg.Replace(f, t);
-                });
-                settings.MessageBodyTemplate = msg;
+                    string msg = settings.MessageBodyTemplate;
+                    fieldTypes.ForEach(x =>
+                    {
+                        var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
+                        var f = "[" + fieldType + " :: " + x.Name + "]";
+                        var t = "[FIELD" + x.ID + "]";
+                        msg = msg.Replace(f, t);
+                    });
+                    settings.MessageBodyTemplate = msg;
+                }
+                if (settings.MessageSubjectTemplate != null)
+                {
+                    string msg = settings.MessageSubjectTemplate;
+                    fieldTypes.ForEach(x =>
+                    {
+                        var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
+                        var f = "[" + fieldType + " :: " + x.Name + "]";
+                        var t = "[FIELD" + x.ID + "]";
+                        msg = msg.Replace(f, t);
+                    });
+                    settings.MessageSubjectTemplate = msg;
+                }
                 return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();
             }
             return data;
@@ -2102,17 +2117,33 @@ order by wi.StartedOn desc";
         private string DeFormatMessageBodyTemplate(string type, List<FieldType> fieldTypes, string data)
         {
             dynamic settings = XmlToDynamic(data);
-            if (settings != null && settings.MessageBodyTemplate != null)
+            if (settings != null && (settings.MessageBodyTemplate != null || settings.MessageSubjectTemplate != null))
             {
-                string msg = settings.MessageBodyTemplate;
-                fieldTypes.ForEach(x =>
+                if (settings.MessageBodyTemplate != null)
                 {
-                    var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
-                    var f = "[" + fieldType + " :: " + x.Name + "]";
-                    var t = "[FIELD" + x.ID + "]";
-                    msg = msg.Replace(t, f);
-                });
-                settings.MessageBodyTemplate = msg;
+                    string msg = settings.MessageBodyTemplate;
+                    fieldTypes.ForEach(x =>
+                    {
+                        var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
+                        var f = "[" + fieldType + " :: " + x.Name + "]";
+                        var t = "[FIELD" + x.ID + "]";
+                        msg = msg.Replace(t, f);
+                    });
+                    settings.MessageBodyTemplate = msg;
+                }
+
+                if (settings.MessageSubjectTemplate != null)
+                {
+                    string msg = settings.MessageSubjectTemplate;
+                    fieldTypes.ForEach(x =>
+                    {
+                        var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
+                        var f = "[" + fieldType + " :: " + x.Name + "]";
+                        var t = "[FIELD" + x.ID + "]";
+                        msg = msg.Replace(t, f);
+                    });
+                    settings.MessageSubjectTemplate = msg;
+                }
                 return JsonConvert.DeserializeXNode(settings.ToString(), "settings").ToString();
             }
             return data;

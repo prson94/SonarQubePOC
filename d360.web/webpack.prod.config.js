@@ -1,6 +1,7 @@
 ﻿/// <binding ProjectOpened='Watch - Development' />
 var webpack = require('webpack');
 var path = require('path');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 
 // Webpack Config
@@ -12,8 +13,8 @@ var webpackConfig = {
     },
 
     output: {
-        path: __dirname + '/scripts/app/',
-        publicPath: './scripts/app/'
+        path: __dirname + '/scripts/dist/',
+        publicPath: './scripts/dist/'
     },
 
     plugins: [
@@ -50,7 +51,8 @@ var webpackConfig = {
       new webpack.optimize.CommonsChunkPlugin({ name: ['main', 'vendor', 'polyfills'], minChunks: Infinity }),
       new webpack.DefinePlugin({
           __BUILD_DATE: JSON.stringify(new Date().toLocaleString()),
-      })
+      }),
+        new CleanWebpackPlugin()
     ],
 
     module: {

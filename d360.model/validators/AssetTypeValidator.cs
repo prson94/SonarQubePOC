@@ -161,20 +161,28 @@ namespace d360.core.validators
 
             var fieldsToIgnore = DataType.Text.GetNonDisplayFormatFields();
 
-            List<string> fieldNames;
+            List<string> allowedFieldTokens;
             if (assetTypeId == 0)
-                fieldNames = new List<string> { "name" };
+                allowedFieldTokens = new List<string> { "name" };
             else
-                fieldNames = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.FriendlyName.ToLower()).ToList();
+                allowedFieldTokens = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.FriendlyName.ToLower()).ToList();
 
             if (assetClass == AssetTypeClass.Reference)
-                fieldNames.Add("code");
+                allowedFieldTokens.Add("code");
 
-            displayFormat = displayFormat.Replace("}{", "} {");
-            var displayFieldNames = displayFormat.Split().Where(x => x.StartsWith("{") && x.EndsWith("}"))
-                    .Select(x => x.ToLower().Replace("{", string.Empty).Replace("}", string.Empty))
-                    .ToList();
-            return !displayFieldNames.Except(fieldNames).Any();
+            var regex = new Regex(@"\{.*?\}");
+            var tokens = regex.Matches(displayFormat);
+            foreach(var token in tokens)
+            {
+                var tokenString = token.ToString().ToLower();
+                tokenString = tokenString.Substring(1, tokenString.Length - 2);
+                if (!allowedFieldTokens.Contains(tokenString))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
       
     }

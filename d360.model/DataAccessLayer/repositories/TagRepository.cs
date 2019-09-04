@@ -156,7 +156,7 @@ namespace d360.model.DataAccessLayer
             return results;
         }
 
-        public async Task<dynamic> GetTagsWithResourceName(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public async Task<dynamic> GetTagsForExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
 
             var dbArgs = new DynamicParameters();

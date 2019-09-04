@@ -5242,9 +5242,6 @@ offset 0 rows fetch next 25 rows only
 
         #endregion
 
-
-
-
         #region FusionType
 
         #region Form Get/Post
@@ -5860,7 +5857,6 @@ offset 0 rows fetch next 25 rows only
 
         #region IntersectType
 
-
         #region Json Feeds To Support Editing
 
         [Route("IntersectType_FormData"), NonNullableParameters]
@@ -5892,31 +5888,13 @@ offset 0 rows fetch next 25 rows only
         }
 
         [Route("IntersectType_PredicateOptions"), NonNullableParameters]
-        public JsonNetResult IntersectType_PredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int objectID = 0, int predicateID = 0)
+        public JsonNetResult IntersectType_PredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
         {
             try
             {
-                var usedPredicateIDs = new List<int>();
-
-                var sSubject = subject.ToString();
-                if (@object.HasValue && objectID > 0)
-                {
-                    var sObject = @object.Value.ToString();
-                    usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
-                }
-                
-                if (predicateID > 0)
-                {
-                    usedPredicateIDs.Remove(predicateID);
-                }
-
-                var models = Company.Table<Predicate>()
-                    .ToList()
-                    .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment && i.Type.AsInfoModel().AllowEditFromRelationshipEditor && !usedPredicateIDs.Contains(i.ID))
-                    .Select(i => new {
-                        title = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})",
-                        value = i.ID
-                    })
+                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+                var models = Company.GetPredicateOptions(lineageVersion, subject, subjectID, @object, objectID, predicateID)
+                    .Select(i => new { title = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.ID })
                     .OrderBy(i => i.title);
 
                 return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
@@ -5950,7 +5928,21 @@ offset 0 rows fetch next 25 rows only
         {
             try
             {
-                var models = Company.GetIntersectTypeOptions(type, id, side2Type, side2ID, predicateID)
+                List<AssetTypeClass> classLimits = null;
+
+                if (predicateID.HasValue)
+                {
+                    var predicate = Company.GetById<Predicate>(predicateID.Value);
+                    if (predicate != null)
+                    {
+                        if (predicate.Type == PredicateType.BusinessToTechnical || predicate.Type == PredicateType.FusionMapping)
+                        {
+                            classLimits = new List<AssetTypeClass>() { AssetTypeClass.FusionAttribute };
+                        }
+                    }
+                }
+                
+                var models = Company.GetIntersectTypeOptions(type, id, side2Type, side2ID, predicateID, classLimits)
                     .Where(i => i.Type != "IntersectType")
                     .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
 
@@ -5980,30 +5972,11 @@ offset 0 rows fetch next 25 rows only
                 var subjectInfo = subject.Split('|');
                 var @object = form["Object"];
                 var objectInfo = @object.Split('|');
-
                 var predicate = form["Predicate"];
-                int? predicateID = null;
 
                 if (string.IsNullOrEmpty(predicate))
                 {
                     throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Please select a predicate for this relationship.");
-                }
-
-                predicateID = int.Parse(predicate);
-
-                var predicateModel = Company.GetById<Predicate>(predicateID.Value);
-
-                if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add a relationship type with this predicate.");
-                }
-                if ((subject != @object) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
-                }
-                if ((subject == @object) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
                 }
 
                 var model = new IntersectType {
@@ -6014,14 +5987,15 @@ offset 0 rows fetch next 25 rows only
                     ObjectCardinality = parseEnumField<Cardinality>(form, "ObjectCardinality"),
                     ObjectID = int.Parse(objectInfo[1]),
                     IsSystem = false,
-                    PredicateID = predicateID
+                    PredicateID = int.Parse(predicate)
                 };
-                Company.Add<IntersectType>(model);
+
+                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+
+                Company.UpsertIntersectType(model, lineageVersion);
                 var id = model.ID;
 
-                var name = Company.GetIntersectTypeName(model);
-
-                return jsonSuccess(name + " successfully created.", id.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess("Relationship type successfully created.", id.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -6077,7 +6051,7 @@ offset 0 rows fetch next 25 rows only
 
                 var id = int.Parse(form["ID"]);
 
-                // Permisisons validation.
+                // Permissions validation.
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
@@ -6092,28 +6066,10 @@ offset 0 rows fetch next 25 rows only
                 var objectInfo = @object.Split('|');
 
                 var predicate = form["Predicate"];
-                int? predicateID = null;
 
                 if (string.IsNullOrEmpty(predicate))
                 {
                     throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Please select a predicate for this relationship.");
-                }
-
-                predicateID = int.Parse(predicate);
-
-                var predicateModel = Company.GetById<Predicate>(predicateID.Value);
-
-                if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to edit relationship type with this predicate.");
-                }
-                if ((subject != @object) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
-                }
-                if ((subject == @object) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
                 }
 
                 model.Subject = subjectInfo[0];
@@ -6124,10 +6080,11 @@ offset 0 rows fetch next 25 rows only
                 model.ObjectID = int.Parse(objectInfo[1]);
                 model.PredicateID = int.Parse(predicate);
 
-                Company.Update<IntersectType>(model);
-                var name = Company.GetIntersectTypeName(model);
+                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
-                return jsonSuccess(name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
+                Company.UpsertIntersectType(model, lineageVersion);
+
+                return jsonSuccess("Relationship type  successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -9150,6 +9107,13 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                         throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add another predicate of this type. Only one may exist.");
                 }
 
+                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+
+                if (!a.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {a.Type.AsInfoModel().Name}.");
+                }
+
                 Company.Add<Predicate>(a);
 
                 return jsonSuccess(a.Name + " successfully created.", string.Format("Predicate|{0}", a.ID), "add", HttpStatusCode.Created, new { });
@@ -9218,7 +9182,14 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     model.Type = (PredicateType)parseIntField(form, "Type");
                 }
 
-                Company.Update<Predicate>(model);
+                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+
+                if (!model.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {model.Type.AsInfoModel().Name}.");
+                }
+
+                Company.Update(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", string.Format("IntersectRole|{0}", id), "edit", HttpStatusCode.OK, new { });
             }

@@ -270,6 +270,10 @@ namespace d360.core.entities
         public Guid SubjectAssetUid { get; set; }
         [DataMember]
         public Guid ObjectAssetUid { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
         [DataMember]
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
@@ -319,6 +323,9 @@ namespace d360.core.entities
     public class DatabaseBulkRelationshipResult: IWorkflowEnabledAsset
     {
         public Guid ExecutionID { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
 
         [DataMember]
         public int ItemNumber { get; set; }
