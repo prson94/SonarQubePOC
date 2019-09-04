@@ -2,7 +2,7 @@
 <div class="row">
     <div class="col s12">
         <div class="tile tile-detail" *ngIf="!isLoading">
-            <header>
+            <header class="flex-header">
                 <d3s-tile-actions [hasAdd]="false"
                                   [hasFilterMode]="true"
                                   [(filterMode)]="showSimpleFilter"
@@ -10,6 +10,7 @@
                                   (exportClick)="export()">
                     <input [(ngModel)]="filters.globalSearch" type="text" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter {{showSimpleFilter ? '' : 'hidden'}}">
                 </d3s-tile-actions>
+                <div class="clearfix"></div>
             </header>
             <p-table #dt [value]="tagUsage" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['DisplayValue','AssetType','TagsAsString']" sortField="DisplayValue" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rowsPerPageOptions]="[10,20,50,100,200,500]" [rows]="10" [(selection)]="selected">
                 <ng-template pTemplate="header">

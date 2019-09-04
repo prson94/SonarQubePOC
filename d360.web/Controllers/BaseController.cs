@@ -551,7 +551,7 @@ namespace d360.web.Controllers
 
             fields.ForEach(f =>
             {
-                if (f.IsEditable)
+                if (f.IsEditable && f.Type != "Tag")
                 {
                     #region Is Editable
 
@@ -779,7 +779,7 @@ namespace d360.web.Controllers
 
             fieldTypes.ForEach(ft =>
             {
-                if (ft.IsEditable)
+                if (ft.IsEditable && ft.Type != "Tag")
                 {
                     #region Is Editable
 
