@@ -1,0 +1,71 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-7786">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+IF (NOT Exists(Select 1 from information_schema.tables where Table_schema='api' 
+	and table_name ='ExecutionAssetCrossReference'))
+BEGIN
+	CREATE TABLE [api].[ExecutionAssetCrossReference](
+		[ExecutionID] [uniqueidentifier] NOT NULL,
+		[ItemNumber] [int] NOT NULL,
+		[uid] [uniqueidentifier]  NULL,
+		[DataSource] [varchar](250)  NULL,
+		[Type] [varchar](50)  NULL,
+		[ExternalID] [varchar](250)  NULL,
+		[FieldHash] [varchar](50) ,
+		[Message] [nvarchar](2500) NULL,
+		[Success] [bit] NULL,
+	 CONSTRAINT [PK_ApiExecutionAssetCrossReference] PRIMARY KEY CLUSTERED 
+	(
+		[ExecutionID] DESC,
+		[ItemNumber] ASC
+	)
+	)
+END
+
+IF EXISTS (SELECT name FROM sys.indexes  
+            WHERE name = N'IX_api_ExecutionAssetCrossReference_Uid_DataSource_Type_ExternalID')
+BEGIN
+    DROP INDEX IX_api_ExecutionAssetCrossReference_Uid_DataSource_Type_ExternalID ON api.ExecutionAssetCrossReference;  
+END
+
+  
+CREATE NONCLUSTERED INDEX IX_api_ExecutionAssetCrossReference_Uid_DataSource_Type_ExternalID   
+    ON api.ExecutionAssetCrossReference (Uid,DataSource,Type,ExternalID);   
+ 
+
+
+
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+
+IF EXISTS (SELECT name FROM sys.indexes  
+            WHERE name = N'IX_api_ExecutionAssetCrossReference_Uid_DataSource_Type_ExternalID')
+BEGIN
+    DROP INDEX IX_api_ExecutionAssetCrossReference_Uid_DataSource_Type_ExternalID ON api.ExecutionAssetCrossReference; 
+END
+    
+IF ( Exists(Select 1 from information_schema.tables where Table_schema='api' 
+	and table_name ='ExecutionAssetCrossReference'))
+BEGIN
+	DROP TABLE [api].[ExecutionAssetCrossReference]
+END
+
+
+	
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

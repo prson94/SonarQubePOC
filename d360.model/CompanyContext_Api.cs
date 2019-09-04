@@ -3313,5 +3313,135 @@ end",
 
             this.IsEventingEnabled = true;
         }
+
+        private void ValidateAssetCrossReference(ApiExecution execution,  int timeout = 3600)
+        {
+            Connection.Execute(@"Update api.ExecutionAssetCrossReference
+                                    Set Success=0,
+                                    Message='Does not contain required fields.' 
+                                    Where ExecutionID = @executionID and 
+                                    (Uid is null or DataSource is null or [Type] is null or ExternalID is null
+                                   or UID ='00000000-0000-0000-0000-000000000000' or Trim(DataSource) ='' or TRIM([Type]) = '' or TRIM(ExternalID) ='') ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"
+                        Update  ECR
+                        SET Success=0,
+                        Message='Asset cross reference already exists'
+                        from api.ExecutionAssetCrossReference ECR
+                        Where ECR.ExecutionID = @executionID and exists (Select 1 from AssetCrossReference where UID=ECR.UID and DataSource= ECR.DataSource and
+                        [Type]=ECR.[Type] and ExternalID =ECR.ExternalID)",
+                        new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"
+                        Update ECR
+                            Set Success=0,
+                            Message ='Duplicate asset cross reference;'
+                            From api.ExecutionAssetCrossReference ECR
+                            inner join 
+                            (Select Uid,DataSource,Type,ExternalID from api.ExecutionAssetCrossReference
+                            where Success is null and ExecutionID=@executionID
+                            group by Uid,DataSource,Type,ExternalID
+                            having(count(*)>1)) T on
+                            ECR.[Uid] = T.[UID] and
+                            ECR.DataSource = T.DataSource and
+                            ECR.[Type] = T.[Type] and
+                            ECR.ExternalID = T.ExternalID
+                            Where ECR.Success is null  and ExecutionID=@executionID ",
+                        new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+        }
+        public List<AssetCrossReferenceResult> ImportCrossRefernces(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600)
+        {
+
+            List<AssetCrossReferenceResult> bulkResult = new List<AssetCrossReferenceResult>();
+            #region Build data tables for bulk load
+
+            var table = new DataTable();
+            table.Columns.Add("ExecutionID", typeof(Guid));
+            table.Columns.Add("ItemNumber", typeof(int));
+            table.Columns.Add("Uid", typeof(Guid));
+            table.Columns.Add("DataSource", typeof(string));
+            table.Columns.Add("Type", typeof(string));
+            table.Columns.Add("ExternalID", typeof(string));
+            table.Columns.Add("FieldHash", typeof(string));
+            table.Columns.Add("Message", typeof(string));
+            table.Columns.Add("Success", typeof(bool));
+
+
+           
+            int i = 0;
+            foreach (var item in import)
+            {
+                var row = table.NewRow();
+
+                row["ExecutionID"] = execution.ExecutionID;
+                row["ItemNumber"] = i++;
+                row["uid"] = item.uid;
+                row["DataSource"] = item.DataSource;
+                row["Type"] = item.Type;
+                row["ExternalID"] = item.ExternalID;
+                row["FieldHash"] = item.FieldHash;
+
+                table.Rows.Add(row);
+            }
+
+            #endregion
+            try
+            {
+
+           
+            if (Database.Connection.State != ConnectionState.Open)
+                Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+            #region Bulk Copy
+            var bulkCopy = new SqlBulkCopy(Connection)
+            {
+                BatchSize = table.Rows.Count,
+                DestinationTableName = "api.ExecutionAssetCrossReference",
+                BulkCopyTimeout = timeout
+            };
+
+                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                bulkCopy.ColumnMappings.Add("uid", "uid");
+                bulkCopy.ColumnMappings.Add("DataSource", "DataSource");
+                bulkCopy.ColumnMappings.Add("Type", "Type");
+                bulkCopy.ColumnMappings.Add("ExternalID", "ExternalID");
+                bulkCopy.ColumnMappings.Add("FieldHash", "FieldHash");
+
+
+                bulkCopy.WriteToServer(table);
+
+            bulkCopy = null;
+
+            #endregion
+
+            this.ValidateAssetCrossReference(execution, timeout);
+
+            Connection.Execute(@"
+                            insert into AssetCrossReference
+                            (Uid,DataSource,Type,ExternalID,FieldHash)
+                            Select Uid,DataSource,Type,ExternalID,FieldHash from api.ExecutionAssetCrossReference
+                            Where ExecutionID=@executionID and Success is null;
+
+                            Update api.ExecutionAssetCrossReference
+                            Set Success =1,
+                            Message ='Added Successfully'
+                            Where ExecutionID=@executionID and Success is null; ",
+                new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+                bulkResult = Query<AssetCrossReferenceResult>(
+                                        $"select ItemNumber,Uid,Message,Success from api.ExecutionAssetCrossReference where ExecutionID = @ExecutionID",
+                                        new { ExecutionID = execution.ExecutionID }).ToList();
+           
+
+            }
+            finally
+            {
+                if (Database.Connection.State == ConnectionState.Open)
+                    Connection.Close();
+            }
+            return bulkResult;
+        }
+        
     }
 }
