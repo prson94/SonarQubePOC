@@ -46,10 +46,6 @@ export class PoliciesService extends BaseObservableService {
             );
     }
 
-    deletePolicy(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'policy', id);
-    }
-
     savePolicy(policy: Policy): Observable<JsonResult> {
         let methodName = 'putDynamic';
 

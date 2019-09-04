@@ -1,23 +1,23 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div class="tile tile-detail"
-    *ngIf="!isLoading">
+     *ngIf="!isLoading">
     <header *ngIf="!showDelete && !showEditor">
         <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()"
-            (addClick)="add()"></d3s-tile-actions>
+                          (addClick)="add()"></d3s-tile-actions>
     </header>
     <input type="text"
-        pInputText
-        [(ngModel)]="searchValue"
-        (keyup)="filter($event)"
-        placeholder="Search"
-        style="width: 100%;margin-bottom:10px;"
-        *ngIf="!showDelete && !showEditor">
+           pInputText
+           [(ngModel)]="searchValue"
+           (keyup)="filter($event)"
+           placeholder="Search"
+           style="width: 100%;margin-bottom:10px;"
+           *ngIf="!showDelete && !showEditor">
     <p-treeTable #treeTable *ngIf="!showDelete && !showEditor"
-        [value]="treeNodeArray"
-        selectionMode="single"
-        [(selection)]="selected"
-        styleClass="breadcrumbTree"
-        [style]="{'line-height':'25px'}">
+                 [value]="treeNodeArray"
+                 selectionMode="single"
+                 [(selection)]="selected"
+                 styleClass="breadcrumbTree"
+                 [style]="{'line-height':'25px'}">
         <ng-template pTemplate="header">
             <tr>
                 <th>Item</th>
@@ -25,7 +25,7 @@
                     [ttSortableColumn]="column.sortable === true ? column.datafield : null">
                     {{column.text}}
                     <p-treeTableSortIcon *ngIf="column.sortable === true"
-                        [field]="column.datafield"></p-treeTableSortIcon>
+                                         [field]="column.datafield"></p-treeTableSortIcon>
                 </th>
                 <th style="width: 40px"></th>
                 <th style="width: 40px"></th>
@@ -33,8 +33,8 @@
             </tr>
         </ng-template>
         <ng-template pTemplate="body"
-            let-rowNode
-            let-item="rowData">
+                     let-rowNode
+                     let-item="rowData">
             <style>
                 .linkTree a,
                 .linkTree span {
@@ -47,35 +47,37 @@
                 <td title="{{item.DisplayValue}}" class="no-text-overflow">
                     <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                     <a (click)="showHierarchy(item.ID)"
-                        [ngStyle]="setTreeNodeStyles(rowNode.node)">{{item.DisplayValue}} <i *ngIf="item?.hasRelations"
-                            class="fa fa-share-alt"
-                            aria-hidden="true"
-                            title="Item has relationships"
-                            style="color:#999;"></i></a>
+                       [ngStyle]="setTreeNodeStyles(rowNode.node)">
+                        {{item.DisplayValue}} <i *ngIf="item?.hasRelations"
+                                                 class="fa fa-share-alt"
+                                                 aria-hidden="true"
+                                                 title="Item has relationships"
+                                                 style="color:#999;"></i>
+                    </a>
                 </td>
                 <td class="no-text-overflow" *ngFor="let column of columns">
                     <d3s-dynamic-field-value [column]="column"
-                        [fields]="fields"
-                        [item]="item"></d3s-dynamic-field-value>
+                                             [fields]="fields"
+                                             [item]="item"></d3s-dynamic-field-value>
                 </td>
                 <td>
                     <div *ngIf="hasModifyAssetPermissions()"
-                        class="RowTools">
+                         class="RowTools">
                         <a style="cursor:pointer;"
-                            *ngIf="policyType.MaximumDepth > item.Level"
-                            (click)="selected=rowNode.node;add()"><i class="fa fa-plus"></i></a>
+                           *ngIf="policyType.MaximumDepth > item.Level"
+                           (click)="selected=rowNode.node;add()"><i class="fa fa-plus"></i></a>
                     </div>
                 </td>
                 <td>
                     <div class="RowTools"
-                         *ngIf="item.P_CanEdit">                        
-                            <a style="cursor:pointer;"
-                               (click)="selected=rowNode.node;showEditor=true;"><i class="fa fa-pencil"></i></a>
-                        </div>
+                         *ngIf="item.P_CanEdit">
+                        <a style="cursor:pointer;"
+                           (click)="selected=rowNode.node;showEditor=true;"><i class="fa fa-pencil"></i></a>
+                    </div>
                 </td>
                 <td>
                     <div class="RowTools"
-                         *ngIf="item.P_CanDelete">                        
+                         *ngIf="item.P_CanDelete">
                         <a *ngIf="!rowNode.node.children"
                            style="cursor:pointer;"
                            (click)="selected=rowNode.node;showDelete=true;"><i class="fa fa-trash-o"></i></a>
@@ -84,18 +86,19 @@
             </tr>
         </ng-template>
     </p-treeTable>
-    <d3s-delete-form *ngIf="showDelete"
-        [callback]="theDeleteCallback"
-        [itemId]="selected?.data?.ID"
-        [method]="'callback'"
-        [prompt]="'Are you sure you want to delete the policy item [' + [selected?.data?.DisplayValue] + ']?'"
-        (onCancel)="showDelete=false;"></d3s-delete-form>
-    <d3s-dynamic-editor *ngIf="showEditor"
-        [objectID]="selected ? selected?.data?.ID : policyType.ID"
-        objectType="Policy"
-        [parentID]="selectedParentID"
-        [title]="policyEditorTitle()"
-        [selection]="selected?.data"
-        (saveClick)="savePolicy($event)"
-        (closeClick)="showEditor=false"></d3s-dynamic-editor>
+    <d3s-asset-delete-editor *ngIf="showDelete"
+                             [uid]="selected?.data?.Uid"
+                             [assetTypeUid]="policyType?.AssetTypeUID"
+                             [displayValue]="(selected?.data?.DisplayValue ? selected?.data?.DisplayValue : 'Policy')"
+                             (onCancel)="showDelete = false"
+                             (onDeleted)="onDeleted()">
+    </d3s-asset-delete-editor>        
+        <d3s-dynamic-editor *ngIf="showEditor"
+                            [objectID]="selected ? selected?.data?.ID : policyType.ID"
+                            objectType="Policy"
+                            [parentID]="selectedParentID"
+                            [title]="policyEditorTitle()"
+                            [selection]="selected?.data"
+                            (saveClick)="savePolicy($event)"
+                            (closeClick)="showEditor=false"></d3s-dynamic-editor>
 </div>

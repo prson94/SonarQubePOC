@@ -1,7 +1,5 @@
 ﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
-import { Column } from 'primeng/primeng';
-import { Lookup, LookupItem } from '../../../models/lookup.model';
-import { GridDefinition, GridColumn, GridField } from '../../../models/grid-definition.model';
+import {  GridColumn, GridField } from '../../../models/grid-definition.model';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { UriBasedService } from '../../../services/uri-based.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -85,13 +83,19 @@ import { MessagesObservableService } from '../../../services/messages-observable
         <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" [objectType]="objectType"
                             [title]="itemName + ' Item'" [selection]="selected" [rowID]="rowID"
                             (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
-        <d3s-delete-form *ngIf="showDelete"
+        <d3s-delete-form *ngIf="showDelete && !assetTypeUid"
                          [callback]="theDeleteCallback"
                          [itemId]="selected?.ID"
                          [method]="'callback'"
                          [prompt]="'Are you sure you want to delete the selected item?'"
                          (onCancel)="showDelete=false;"
-        ></d3s-delete-form>
+       ></d3s-delete-form>
+        <d3s-asset-delete-editor *ngIf="showDelete && assetTypeUid"
+                                     [uid]="selected?.UID"
+                                     [assetTypeUid]="assetTypeUid"                                     
+                                     (onCancel)="showDelete = false"
+                                     (onDeleted)="onDeleted()">
+        </d3s-asset-delete-editor>
     `
 })
 
@@ -106,11 +110,13 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     @Input() title: string = "Items";
     @Input() itemName: string = "";
     @Input() sortField: string;
-
+    @Input() assetTypeUid: string;
+        
     @Input() showEditButton: boolean = true;
     @Input() showDeleteButton: boolean = true;
     @Input() showAddButton: boolean = true;
     @Input() showExportButton: boolean = false;
+    
 
     @Output() editItemClick = new EventEmitter();
     @Output() exportClick = new EventEmitter();
@@ -147,6 +153,12 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     public load() {
         this.getFieldsDefinition();
         this.getData();
+    }
+
+    public onDeleted() {
+        this.items = this.items.filter(x => x.ID != this.selected.ID);
+        this.selected = null;
+        this.showDelete = false;
     }
 
     deleteItem(id: number) {

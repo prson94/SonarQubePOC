@@ -628,7 +628,12 @@ order by case when (Subject = @type and SubjectID = @id) then ObjectName else Su
 ";
 
         public static string PolicySettingsItem = @"
-select	T.*, R.*
+select	T.Name, 
+		T.Description, 
+		R.AllowAttributes,
+		T.HierarchyMaximumDepth,
+		T.Uid,
+		T.ObjectID
 from	AssetType T 
 		cross apply (
 					select	case 
@@ -855,6 +860,7 @@ select
 	T.UpdatedBy,
 	A.AllowAttributes,
 	S.AllowSynonyms,
+    T.Uid,
     (select cast(count(1) as bit) from report r where r.ObjectType = 'TaxonomyType' and r.ObjectID = @id and r.ReportType != 'legacy') as HasDashboards	
 from	AssetType T
 		cross apply (

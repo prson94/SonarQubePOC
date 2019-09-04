@@ -67,13 +67,7 @@ namespace d360.web.Controllers
                 }
             }
         }
-
-        public class TypeCheckModel
-        {
-            public string Type { get; set; }
-            public int ID { get; set; }
-        }
-
+        
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id)
         {
             var list = new List<DetailReadOnlyRowModel>();
@@ -4728,7 +4722,8 @@ from    ResponsibilityTypeRelationRule R
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-                    { "MaximumDepth", row.HierarchyMaximumDepth }
+                    { "MaximumDepth", row.HierarchyMaximumDepth },
+                    { "AssetTypeUID", row.Uid }
                 }
             );
         }
@@ -5133,7 +5128,8 @@ order by    Name
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-                    { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") }
+                    { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") },
+                    { "AssetTypeUID", row.uid }
                 }
             );
         }
@@ -7775,9 +7771,9 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
-                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-                    { "ClassificationName", row.ClassificationName },
-                    { "HasDashboards", row.HasDashboards }
+                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },                    
+                    { "HasDashboards", row.HasDashboards },
+                    { "AssetTypeUID", row.Uid }
                 }
             );
         }
@@ -7994,7 +7990,8 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
 		                AT.Description,
 		                AT.DisplayFormat,
 		                AT.AutoDisplayDescription,
-		                AT.id as AssetTypeID
+		                AT.id as AssetTypeID,
+                        AT.uid as AssetTypeUID
 		                from
                   Assettype AT 
                   where  AT.[object] = 'ReferenceItemType' and AT.ObjectID > 0";

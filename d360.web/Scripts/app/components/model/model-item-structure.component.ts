@@ -47,7 +47,6 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     showDelete: boolean;
     selectedLevel: number = 0;
 
-    theDeleteCallback: Function;
     @ViewChild("treeTable") treeTable: any;
     unfilteredTreeNode: TreeNode[] = [];
 
@@ -66,8 +65,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     ) {
         super();
 
-        this.rightSidebarService = rightSidebarService;
-        this.theDeleteCallback = this.deleteModelHierarchy.bind(this);
+        this.rightSidebarService = rightSidebarService;        
         router.events.subscribe(
             (value) => {
                 this.showEditor = false;
@@ -218,24 +216,13 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         return styles;
     }
 
-    deleteModelHierarchy(id: number) {
-        this.isLoading = true;
-        this.modelsService.deleteModelHierarchy(id).subscribe(
-            res => {
-                if (!res.isError) {
-                    this.deleteSelectedTreeNode(id);
-                }
-
-                this.showMessageForResult(this.messagesService, res);
-                this.headerActionsService.emitFavoritesChange();
-                this.selected = null;
-                this.isLoading = false;
-            }
-        );
-
+    public onDeleted() {
+        this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
+        this.deleteSelectedTreeNode(this.selected.data.ID);
+        this.selected = null;                
         this.showDelete = false;
     }
-
+    
     private deleteSelectedTreeNode(id: number): TreeNode {
         let nodes: TreeNode[] = [];
 
