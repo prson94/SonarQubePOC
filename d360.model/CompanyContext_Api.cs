@@ -2931,7 +2931,7 @@ from	api.ExecutionAsset T
                                 row["ItemNumber"] = i;
                                 row["SubjectUid"] = model.SubjectAssetUid;
                                 row["ObjectUid"] = model.ObjectAssetUid;
-                                row["ExecutionItemUid"] = model.ExecutionItemUid;
+                                if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
                                 table.Rows.Add(row);
                             }
                             else
