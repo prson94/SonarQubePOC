@@ -114,7 +114,10 @@ export class TagService extends BaseObservableService {
     }
 
     exportTagsByUid(uid: string, sort: any, filters: any) {
-        var params = new URLSearchParams(filters).toString();
+        var params = "globalSearch=" + filters.globalSearch;
+        params += "&AssetType=" + filters.AssetType;
+        params += "&DisplayValue=" + filters.DisplayValue;
+        params += "&TagsAsString=" + filters.TagsAsString;
         params += "&sortBy=" + sort.field;
         params += "&sortOrder=" + sort.order;
 
