@@ -103,24 +103,57 @@ export class TagView extends AdminBaseComponent implements OnInit {
                 this.messagesService.showError('Error', 'Tag already assigned to Asset');
             }
         })
-        if (this.existingTag == false) {
-            this.tagService.createAssetTag(tags)
+        if (!this.existingTag) {
+            this.tagService.doesTagExist(event.item.Value)
                 .subscribe(result => {
-                    let msg: string = '';
-                    if (event.item.uid == undefined) {
-                        msg = `${event.item.Value} succesfully added`;
-                    }
-                    this.showMessageForResult(this.messagesService, result, msg);
-                    if (event.item.uid == undefined) {
-                        event.item.uid = result[0].Uid;
-                        this.tags.push(event.item);
-                    }
-                    this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
+                    if (result == null) {
+                        this.tagService.saveTag(event.item)
+                            .subscribe(result => {
+                                let msg: string = '';
+                                if (event.item.uid == undefined) {
+                                    msg = `${event.item.Value} succesfully created`;
+                                }
+                                this.showMessageForResult(this.messagesService, result, msg);
+                                this.tagService.createAssetTag(tags)
+                                    .subscribe(result => {
+                                        let msg: string = '';
+                                        if (event.item.uid == undefined) {
+                                            msg = `${event.item.Value} succesfully added to Asset`;
+                                        }
+                                        this.showMessageForResult(this.messagesService, result, msg);
+                                        if (event.item.uid == undefined) {
+                                            event.item.uid = result[0].Uid;
+                                            this.tags.push(event.item);
+                                        }
+                                        this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
 
-                    this.selected = [];
-                    event.item.UseCount = 0;
-                    this.selected.push(event.item);
+                                        this.selected = [];
+                                        event.item.UseCount = 0;
+                                        this.selected.push(event.item);
 
+                                    });
+                            });
+                    }
+                    else {
+                        this.tagService.createAssetTag(tags)
+                            .subscribe(result => {
+                                let msg: string = '';
+                                if (event.item.uid == undefined) {
+                                    msg = `${event.item.Value} succesfully added to Asset`;
+                                }
+                                this.showMessageForResult(this.messagesService, result, msg);
+                                if (event.item.uid == undefined) {
+                                    event.item.uid = result[0].Uid;
+                                    this.tags.push(event.item);
+                                }
+                                this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
+
+                                this.selected = [];
+                                event.item.UseCount = 0;
+                                this.selected.push(event.item);
+
+                            });
+                    }
                 });
         }
         this.showEditor = false;
