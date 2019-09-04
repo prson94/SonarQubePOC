@@ -51,6 +51,8 @@ namespace d360.core.enums
         [Description("More asset relationships deleted than expected.")]
         RelationshipsUnexpectedDeletedCount = 23,
         [Description("Unable to connect to source system.")]
-        ConnectivityError = 24
+        ConnectivityError = 24,
+        [Description("Source system paging error.")]
+        PagingError = 25
     }
 }
