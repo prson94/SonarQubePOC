@@ -127,7 +127,7 @@ export class TagService extends BaseObservableService {
         params += "&sortBy=" + sort.field;
         params += "&sortOrder=" + sort.order;
 
-        this.http.get(`api/v2/tags/${uid}/export?${params}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
+        this.http.get(`api/v2/tags/${uid}/export?${params}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Tags'));
     }
 
     downloadFile(data: Blob, name: string) {
