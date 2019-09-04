@@ -88,8 +88,12 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         );
     }
 
+    private filterQ: any;
     filter(event) {
-        this.filterTreeTable(this.unfilteredTreeNode, event.target.value, this.treeTable);
+        window.clearTimeout(this.filterQ);
+        this.filterQ = setTimeout(() => {
+            this.filterTreeTable(this.unfilteredTreeNode, event.target.value, this.treeTable);
+        }, 600);
     }
 
     ngOnInit() {
