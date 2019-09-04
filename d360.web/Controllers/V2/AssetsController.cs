@@ -988,7 +988,7 @@ namespace d360.web.Controllers.V2
 
         #region AssetTag
         /// <summary>
-        /// Creates association between an existing Asset and an existing tag.
+        /// Creates association between an existing asset and an existing tag.
         /// </summary>
         /// <remarks>
         /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
