@@ -148,7 +148,7 @@ export class TagService extends BaseObservableService {
     }
 
     getTagDetails(uid: string): Observable<any> {
-        let url = `api/v2/tags/${uid}/details`;
+        let url = `api/v2/tags/${uid}/details?_pagesize=1000000`;
         return this.http.get(url)
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err)));
