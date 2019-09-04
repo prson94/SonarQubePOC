@@ -252,7 +252,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     openTagPage(event: MouseEvent, item: any) {
-        if (this.isEditable != true && this.showDelete == false)
+        if ((this.isEditable != true && this.showDelete == false) || (<HTMLElement>event.target).className == 'tag-item-wrapper')
             this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid.toString().toLowerCase()}`]);
         event.stopPropagation();
     }
