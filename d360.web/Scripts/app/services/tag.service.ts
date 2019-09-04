@@ -1,6 +1,6 @@
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
-import { Tag, TagType } from '../models/tag.model';
+import { Tag, TagType, TagApiModel } from '../models/tag.model';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BaseObservableService } from './baseObservable.service';
@@ -72,6 +72,28 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
+    createAssetTag(tags: TagApiModel[]): Observable<any> {
+        let url = `api/v2/assets/tags`;
+        return this.http.post(url, tags)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
+    deleteAssetTag(tags: TagApiModel[]): Observable<any> {
+
+        const httpHeaders = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: tags
+        };
+        let url = `api/v2/assets/tags`;
+        return this.http.delete(url, httpHeaders)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
+    doesTagExist(name: string): Observable<any> {
+        let url = `api/v2/tags/exists?name=${name}`;
+        return this.http.get(url)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
     consolidateTags(parentTag: string, childrenTags: string[]): Observable<any[]> {
         let url = `api/v2/tags/consolidate/${parentTag}`;
         return this.http.post(url, childrenTags)
@@ -98,7 +120,10 @@ export class TagService extends BaseObservableService {
     }
 
     exportTagsByUid(uid: string, sort: any, filters: any) {
-        var params = new URLSearchParams(filters).toString();
+        var params = "globalSearch=" + filters.globalSearch;
+        params += "&AssetType=" + filters.AssetType;
+        params += "&DisplayValue=" + filters.DisplayValue;
+        params += "&TagsAsString=" + filters.TagsAsString;
         params += "&sortBy=" + sort.field;
         params += "&sortOrder=" + sort.order;
 
@@ -132,7 +157,7 @@ export class TagService extends BaseObservableService {
     }
 
     getTagDetails(uid: string): Observable<any> {
-        let url = `api/v2/tags/${uid}/details`;
+        let url = `api/v2/tags/${uid}/details?_pagesize=1000000`;
         return this.http.get(url)
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err)));

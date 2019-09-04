@@ -2408,6 +2408,20 @@
             <param name="dataSource">Asset cross reference datasource.</param>
             <returns>Http Status code OK if asset cross references were deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.CrossReferencesController.PostBulkCrossReferenceAsync(System.Collections.Generic.List{d360.core.entities.AssetCrossReference})">
+            <summary>
+            Creates new asset cross references.  This endpoint is meant for batch processing.
+            </summary>
+            <param name="crossReferences">The payload of your request.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.CrossReferencesController.GetExecutionStatus(System.Guid)">
+            <summary>
+            GETs the status of an execution record, including the results for the execution.
+            </summary>
+            <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.CustomEndpointsController.CustomAPIVersionFieldEditor_GetFieldTypes(System.Int32)">
             <summary>
             Gets the field types
@@ -3024,15 +3038,15 @@
             <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
-             <summary>
-             Creates association between an existing Asset and an existing tag
-             </summary>
-             <remarks>
-             An Administrator can create  any tag association. 
+            <summary>
+            Creates association between an existing Asset and an existing tag
+            </summary>
+            <remarks>
+            An Administrator can create  any tag association. 
             A regular user can only create a tag association to assets they have access to.
-             </remarks>
-             <param name="assetTags">AssetTag</param>
-             <returns>An HTTP status code and message.</returns>
+            </remarks>
+            <param name="assetTags">Collection of assets and tags to associate.</param>
+            <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
             <summary>
@@ -3041,7 +3055,7 @@
             <remarks>An Administrator can remove any tag association. 
             A regular user can only remove a tag association to an asset they initially created the association for.
             </remarks>
-            <param name="assetTags">AssetTag</param>
+            <param name="assetTags">Collection of assets and tags to remove tag associations for.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.ResponsibilitiesController">
@@ -3087,7 +3101,7 @@
             <summary>
             Retrieves a list of assets with ownership based on the provided parameters.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.  If a user doesnt have access to see an asset then they will not be able to see the asset or its ownership.  If a user does have access to see an asset but doesn't have access to see the assets ownership, the asset will be returned without any ownership details.  No filters applied will return all items which have at least one owner.  Only assets with ownership are returned by this API.  By default 5 assets are returned at a time the max page size is 250 assets.  Please keep in mind that assets with lots of owners will impact response time / size.
             </summary>   
-            <permission cref="!:">Admin or Ownership read required</permission>
+            <permission>Admin or Ownership read required</permission>
             <returns>Returns a list of assets and there corresponding ownership information.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.SearchController">
@@ -3134,43 +3148,45 @@
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.Search">
             <summary>
-            Returns all tags that are defined in Govern.          
+            Returns all tags that are defined in Govern that match the search criteria.          
             </summary>        
             <returns>A list of tags</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.Get">
             <summary>
-            Returns all tags that are defined in Govern.          
-            </summary>        
-            <returns>A list of tags</returns>
+            Retrieves a list of all tags defined in Govern.
+            </summary>                
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.DeleteById(System.Guid,System.Boolean)">
             <summary>
-            Allows you to remove a tag based on its Uid.
+            Deletes a tag from Govern.
             </summary>
-            <param name="uid">The public identifier for the tag.</param>
-            <param name="cascade">Cascade delete to all related data.</param>
+            <param name="tagUid">The uid of the tag to be removed.</param>
+            <param name="cascade">Cascade, if true a tag that is applied to an asset will be deleted along with the association.  If false a tag that is in use will not be deleted.  The default is false for the cascade setting.</param>
             <returns>A status for the DELETE request.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.PostTag(d360.core.entities.TagApiModel)">
             <summary>
-            Adds one tag to Govern.
+            Adds a tag to Govern with the properties provided in the model.
             </summary>        
             <param name="model">The tag to be created.</param>
             <returns>The created tag.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.Put(System.Guid,d360.core.entities.TagApiModel)">
             <summary>
-            Updates the specified tag.
+            Updates the specified tag with the values provided in the model.
             </summary>
-            <param name="uid">The unique identifier of the asset cross reference.</param>        
-            <param name="model">The tag to be updated.</param>
-            <returns>The updated tag.</returns>
+            <param name="tagUid">The Uid of the tag to be updated.</param>        
+            <param name="model">The new definition of the tag to be used for the update.</param>
+            <returns>A tag model representing the updated tag.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.DeleteTags(System.Collections.Generic.List{d360.core.entities.TagApiDeleteModel})">
             <summary>
             Allows you to remove a tags based on tag lists.
             </summary>
+            <remarks>
+            Use the cascade flag set to true to delete a tag that is applied to an asset that tag will be deleted along with the association.  If false a tag that is in use will not be deleted.  The default is false for the cascade setting.
+            </remarks>
             <returns>A status for the DELETE request.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.TagsController.ConsolidateTags(System.String,System.Collections.Generic.List{System.String})">

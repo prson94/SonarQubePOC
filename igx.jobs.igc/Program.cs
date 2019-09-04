@@ -49,7 +49,7 @@ namespace igx.jobs
     public static class IgcIntegration
     {
 #if DEBUG
-   //     [Disable]
+        [Disable]
 #endif
         public static void RunScheduleViaTimer([TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer, CancellationToken token, TextWriter log)
         {
@@ -235,7 +235,7 @@ where	[AllowChangeDetection] = 0").ToList();
         {
             CoreFunction.AppInsightsInstrumentationKey(CoreFunction.GetConfigValueByKey("IGC_APPINSIGHTS_INSTRUMENTATIONKEY"));
 #if DEBUG
-            var queueModel = new IntegrationQueueModel { CompanyID = 1, ExecutionID = 57763, IntegrationSettingID = 1, SynchedAssetTypeID = 6, To = QueueAction.Integration, UrlPrefix = "integration.eng" };
+            var queueModel = new IntegrationQueueModel { CompanyID = 122, ExecutionID = 119774, IntegrationSettingID = 1, SynchedAssetTypeID = 1, To = QueueAction.Integration, UrlPrefix = "statestreet.uat" };
 #else
             var queueModel = JsonConvert.DeserializeObject<IntegrationQueueModel>(myQueueItem);
 #endif
@@ -347,6 +347,7 @@ where	[AllowChangeDetection] = 0").ToList();
         public IGCAssetResponsibilityBreakdownModels ResponsibilityBreakdownModels { get; set; }
         public List<RelationshipTargetComparisonModel> RelationshipTargetComparisons { get; set; }
 
+        public bool FatalError { get; set; } = false;
 
         public CommunityContext Community { get; set; }
 
@@ -604,7 +605,6 @@ where	[AllowChangeDetection] = 0").ToList();
             var now = DateTime.UtcNow;
             string url;
             int currentStep = 1;
-            bool fatalError = false;
 
             // Create common client before connecting to any URI.
             createHttpClient();
@@ -656,16 +656,14 @@ where	[AllowChangeDetection] = 0").ToList();
 
                     OnStepCompleted(new StepCompletedEventArgs { Step = currentStep });
                 }
-                catch (HttpRequestException rex)
-                {
-                    if (rex.Message.Contains("403 (Forbidden)"))
-                    {
-                        throw rex;
-                    }
-                }
                 catch (Exception ex)
                 {
                     writeLogEntry(ex.GetFullExceptionData(true), currentStep, true);
+                    FatalError = true;
+                    // Error Code 24
+                    ExecutionAssetType.ErrorMessage = $"Connectivity error when connecting to IGC. {ex.GetFullExceptionData(false)}";
+                    ExecutionAssetTypeRetryLog.LastRetryInError = true;
+                    ExecutionAssetTypeRetryLog.RetryCount++;
                 }
             }
 
@@ -836,7 +834,7 @@ where	[AllowChangeDetection] = 0").ToList();
 
                 // Fields Request : step (2)
                 currentStep = 2;
-                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !FatalError)
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
                     writeLogEntry($"BEGIN: Getting field data", currentStep);
@@ -850,7 +848,7 @@ where	[AllowChangeDetection] = 0").ToList();
 
                 // Relations Request : step (3)
                 currentStep = 3;
-                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !FatalError)
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
                     writeLogEntry($"BEGIN: Getting relationship data", currentStep);
@@ -862,7 +860,7 @@ where	[AllowChangeDetection] = 0").ToList();
 
                 // Ownership Request : step (4)
                 currentStep = 4;
-                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !FatalError)
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
                     writeLogEntry($"BEGIN: Getting responsibility data", currentStep);
@@ -887,7 +885,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 #region Field Data
 
                 currentStep = 5;
-                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !FatalError)
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
 
@@ -912,7 +910,7 @@ where	[AllowChangeDetection] = 0").ToList();
                             if (p.Name.Contains("_error"))
                             {
                                 ParsePageSavedException(json);
-                                fatalError = true;
+                                FatalError = true;
                             }
                             else
                             {
@@ -958,7 +956,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 #region Relationship Data
 
                 currentStep = 6;
-                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !FatalError)
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
 
@@ -983,7 +981,7 @@ where	[AllowChangeDetection] = 0").ToList();
                             if (p.Name.Contains("_error"))
                             {
                                 ParsePageSavedException(json);
-                                fatalError = true;
+                                FatalError = true;
                             }
                             else
                             {
@@ -1089,7 +1087,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 #region Responsibility Data
 
                 currentStep = 7;
-                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep)
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !FatalError)
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
 
@@ -1114,7 +1112,7 @@ where	[AllowChangeDetection] = 0").ToList();
                             if (p.Name.Contains("_error"))
                             {
                                 ParsePageSavedException(json);
-                                fatalError = true;
+                                FatalError = true;
                             }
                             else
                             {
@@ -1156,7 +1154,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 #region Complete execution
 
                 currentStep = 8;
-                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !fatalError)
+                if (ExecutionAssetTypeRetryLog.LastStepCompleted < currentStep && !FatalError)
                 {
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
 
@@ -1173,9 +1171,12 @@ where	[AllowChangeDetection] = 0").ToList();
 
                 #endregion
 
-                // Set the last synch time so we can start the next delta check from this date.
-                SynchedAssetType.LastSynchOn = now;
-                ExecutionAssetTypeRetryLog.LastRetryInError = false;
+                if (!FatalError)
+                {
+                    // Set the last synch time so we can start the next delta check from this date.
+                    SynchedAssetType.LastSynchOn = now;
+                    ExecutionAssetTypeRetryLog.LastRetryInError = false;
+                }
             }
             catch (Exception oex)
             {
@@ -1338,36 +1339,49 @@ where	[AllowChangeDetection] = 0").ToList();
 
             var igcCount = 0;
             var fShouldContinue = true;
+            int? lastPageBeginValue = null;
             while (fShouldContinue)
             {
                 try
                 {
-                    var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel), folderName, postModel.begin).Result;
-                    if (models != null)
+                    if (lastPageBeginValue != postModel.begin)
                     {
-                        if (igcCount == 0)
+                        lastPageBeginValue = postModel.begin;
+
+                        var models = PostJsonToApiAsync<IgcDynamicArrayModels>(url, JsonConvert.SerializeObject(postModel), folderName, postModel.begin).Result;
+                        if (models != null)
                         {
-                            igcCount = models.paging.numTotal;
+                            if (igcCount == 0)
+                            {
+                                igcCount = models.paging.numTotal;
+                            }
+                            // serialize JSON directly to a file
+                            Storage.CreateFile(
+                                $"igc",
+                                $@"{folderName}/{postModel.begin}.json",
+                                JsonConvert.SerializeObject(models, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore })
+                            );
+                            //Storage.CreateFile($"igc-{companyID}", $@"{postModel.begin}.json", JsonConvert.SerializeObject(models));
+                            OnPageBeginValueUpdated(new PageBeginValueUpdatedEventArgs { Class = pageDataClass, Value = models.paging.end + 1 });
+                            fShouldContinue = (models.paging.numTotal > models.paging.end + 1);
+                            postModel.begin = models.paging.end + 1;
                         }
-                        // serialize JSON directly to a file
-                        Storage.CreateFile(
-                            $"igc",
-                            $@"{folderName}/{postModel.begin}.json",
-                            JsonConvert.SerializeObject(models, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore })
-                        );
-                        //Storage.CreateFile($"igc-{companyID}", $@"{postModel.begin}.json", JsonConvert.SerializeObject(models));
-                        OnPageBeginValueUpdated(new PageBeginValueUpdatedEventArgs { Class = pageDataClass, Value = models.paging.end + 1 });
-                        fShouldContinue = (models.paging.numTotal > models.paging.end + 1);
-                        postModel.begin = models.paging.end + 1;
+                        else
+                        {
+                            // Move onto next page.
+                            postModel.begin = postModel.begin + postModel.pageSize;
+                            if (postModel.begin >= igcCount)
+                            {
+                                fShouldContinue = false;
+                            }
+                        }
                     }
                     else
                     {
-                        // Move onto next page.
-                        postModel.begin = postModel.begin + postModel.pageSize;
-                        if (postModel.begin >= igcCount)
-                        {
-                            fShouldContinue = false;
-                        }
+                        // Error Code = 25
+                        ExecutionAssetType.ErrorMessage += "Processor not able to continue due to IGC paging error. Not able to traverse to the next page.";
+                        fShouldContinue = false;
+                        FatalError = true;
                     }
                 }
                 catch (Exception ex)
@@ -1464,77 +1478,6 @@ where	[AllowChangeDetection] = 0").ToList();
                         {
                             propertiesToRemove.ForEach(pr => { obj.Remove(pr); });
                         }
-
-                        //foreach (var prop in obj.Properties())
-                        //{
-                        //    if (fieldsToKeep.Contains(prop.Name))
-                        //    {
-                        //        switch (section)
-                        //        {
-                        //            case 2:
-                        //                #region
-                        //                if (prop.Value.ToString() != "{}" && !string.IsNullOrEmpty(prop.Value.ToString()))
-                        //                {
-                        //                    var relationshipCollection = JsonConvert.DeserializeObject<IgcRelationshipCollection>(prop.Value.ToString());
-                        //                    if (relationshipCollection.items != null && relationshipCollection.paging != null)
-                        //                    {
-                        //                        if (relationshipCollection.paging.numTotal > 0)
-                        //                        {
-                        //                            OnRelationshipBreakdownModelsUpdated(new RelationshipBreakdownModelsUpdatedEventArgs
-                        //                            {
-                        //                                Updates = (
-                        //                                            from rci in relationshipCollection.items
-                        //                                            join rtc in RelationshipTargetComparisons on rci._type equals rtc.SourceAssetType
-                        //                                            where rtc.SourceField == prop.Name
-                        //                                            group rtc by new { rtc.SourceAssetType, rtc.IntersectTypeID } into g
-                        //                                            select new IGCAssetRelationshipBreakdownModel
-                        //                                            {
-                        //                                                AssetTypeName = g.Key.SourceAssetType,
-                        //                                                FieldName = prop.Name,
-                        //                                                IntersectTypeID = g.Key.IntersectTypeID,
-                        //                                                Count = g.Count()
-                        //                                            }).ToList()
-                        //                            });
-                        //                        }
-                        //                    }
-                        //                    else
-                        //                    {
-                        //                        var relationshipItem = JsonConvert.DeserializeObject<GenericIgcContextModel>(prop.Value.ToString());
-                        //                        if (relationshipItem != null)
-                        //                        {
-                        //                            var rtc = RelationshipTargetComparisons.FirstOrDefault(r => r.SourceField == prop.Name);
-                        //                            if (rtc != null)
-                        //                            {
-                        //                                OnRelationshipBreakdownModelsUpdated(new RelationshipBreakdownModelsUpdatedEventArgs
-                        //                                {
-                        //                                    Updates = new List<IGCAssetRelationshipBreakdownModel>() {
-                        //                                        new IGCAssetRelationshipBreakdownModel { AssetTypeName = relationshipItem._type, Count = 1, FieldName = prop.Name, IntersectTypeID = rtc.IntersectTypeID }
-                        //                                    }
-                        //                                });
-                        //                            }
-                        //                        }
-                        //                    }
-                        //                }
-                        //                #endregion
-                        //                break;
-                        //            case 3:
-                        //                #region
-                        //                if (!string.IsNullOrEmpty(prop.Value.ToString()))
-                        //                {
-                        //                    OnResponsibilityBreakdownModelsUpdated(new ResponsibilityBreakdownModelsUpdatedEventArgs
-                        //                    {
-                        //                        Update = new IGCAssetResponsibilityBreakdownModel
-                        //                        {
-                        //                            Role = prop.Name,
-                        //                            Count = 1
-                        //                        }
-                        //                    });
-                        //                }
-                        //                #endregion
-                        //                break;
-                        //        }
-                        //    }
-                        //}
 
                         var json = JsonConvert.SerializeObject(obj, Formatting.None, new DecimalJsonConverter());
 

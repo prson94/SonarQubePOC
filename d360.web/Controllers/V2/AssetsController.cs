@@ -335,19 +335,19 @@ namespace d360.web.Controllers.V2
         /// <param name="model"></param>
         /// <returns></returns>
         [
-        HttpPut,
-    Route(""),
-    SwaggerRequestExample(typeof(AssetTypeInsert), typeof(Models.AssetTypeInsertExample)),
-    SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-    SwaggerResponse(HttpStatusCode.OK, "Update asset type and success / failure message.", typeof(AssetTypeSuccess)),
-    SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.BadRequest, "Assets already exist with assigned parents. You may not change the parent of this asset type.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.BadRequest, "You have not provided a proper predicate based on its asset type class.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.BadRequest, "Display Format contains invalid field references.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
-    SwaggerResponse(HttpStatusCode.Conflict, "If attempting to alter certain properties of a child asset type and there is a conflict within your Govern environment. For example, changing the predicate between a parent a child asset type", typeof(ErrorResponse))
-]
+            HttpPut,
+            Route(""),
+            SwaggerRequestExample(typeof(AssetTypeInsert), typeof(Models.AssetTypeInsertExample)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Update asset type and success / failure message.", typeof(AssetTypeSuccess)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Assets already exist with assigned parents. You may not change the parent of this asset type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "You have not provided a proper predicate based on its asset type class.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Display Format contains invalid field references.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Conflict, "If attempting to alter certain properties of a child asset type and there is a conflict within your Govern environment. For example, changing the predicate between a parent a child asset type", typeof(ErrorResponse))
+        ]
         public async Task<IHttpActionResult> PutAssetTypeAsync(AssetTypeInsert model)
         {
             var prefix = "Assets.PutAssetTypeAsync => ";
@@ -402,8 +402,6 @@ namespace d360.web.Controllers.V2
             }
         }
 
-
-
         /// <summary>
         /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
@@ -433,15 +431,15 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostAssetsAsync(Guid assetTypeUid, List<AssetInsert> assets, bool triggersWorkflow = true)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
-
             var prefix = "Assets.PostBulkAssetsAsync => ";
-            var errorMessage = "";            
+            var errorMessage = "";
 
             try
             {
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+                if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ModifyAsset))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
 
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
@@ -460,12 +458,12 @@ namespace d360.web.Controllers.V2
                 bool fieldJsonPropertyLoadLimitToTopLevel = true;
                 try
                 {
-                    fieldJsonPropertyLoadLimitToTopLevel = bool.Parse(Community.GetCompanySettings().Single(i => i.Key == "FieldJsonPropertyLoadLimitToTopLevel").Value);
+                    fieldJsonPropertyLoadLimitToTopLevel = Community.GetCompanySettingByKey<bool>("FieldJsonPropertyLoadLimitToTopLevel");
                 }
                 catch (Exception ex)
                 {
                 }
-
+                
                 var results = AssetRepository.PostAssets(assets, assetType, execution, fieldJsonPropertyLoadLimitToTopLevel, triggersWorkflow);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
@@ -513,9 +511,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutAssetsAsync(Guid assetTypeUid, List<AssetUpdate> assets, bool triggersWorkflow = true)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to update assets of this type."));
-
             var prefix = "Assets.PutAssetsAsync => ";
             var errorMessage = "";
             
@@ -591,9 +586,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> DeleteAssetsAsync(Guid assetTypeUid, AssetDeletes assets, bool triggersWorkflow = true)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
-
             var prefix = "Assets.DeleteAssetsAsync => ";
             var errorMessage = "";            
 
@@ -662,9 +654,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostBulkAssetsAsync(Guid assetTypeUid, List<AssetInsert> assets, bool triggersWorkflow = true)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
-
             var prefix = "Assets.PostBulkAssetsAsync => ";
             var errorMessage = "";
 
@@ -738,9 +727,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PutBulkAssetsAsync(Guid assetTypeUid, List<AssetUpdate> assets, bool triggersWorkflow = true)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to update assets of this type."));
-
             var prefix = "Assets.PutBulkAssetsAsync => ";
             var errorMessage = "";
 
@@ -815,9 +801,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> DeleteBulkAssetsAsync(Guid assetTypeUid, AssetDeletes assets, bool triggersWorkflow = true)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
-
             var prefix = "Assets.DeleteBulkAssetsAsync => ";
             var errorMessage = "";
 
@@ -931,8 +914,6 @@ namespace d360.web.Controllers.V2
             }
         }
 
-
-
         /// <summary>
         /// GETs the status of an execution record, including the results for the execution.
         /// </summary>
@@ -1007,31 +988,36 @@ namespace d360.web.Controllers.V2
 
         #region AssetTag
         /// <summary>
-        /// Creates association between an existing Asset and an existing tag
+        /// Creates association between an existing Asset and an existing tag.
         /// </summary>
         /// <remarks>
-        /// An Administrator can create  any tag association. 
-        ///A regular user can only create a tag association to assets they have access to.
+        /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
         /// </remarks>
-        /// <param name="assetTags">AssetTag</param>
+        /// <param name="assetTags">Collection of assets and tags to associate.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
             Route("tags"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Creates association between an existing Asset and an existing tag, returns the UID of asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse)),
-             ApiExplorerSettings(IgnoreApi = true)
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))             
         ]
         public IHttpActionResult PostAssetTag(List<AssetTagApiModel> assetTags)
         {
             List<AssetTagSuccessApiModel> resultList = new List<AssetTagSuccessApiModel>();
+            Tag currentTag;
             foreach (var assetTagApi in assetTags)
             {
                 AssetTagSuccessApiModel result;
-
-                var existingTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
-                if (existingTag == null)
+                if(assetTagApi.TagUID == Guid.Empty)
+                {
+                    currentTag = tagRepository.GetTagByName(assetTagApi.TagName);
+                }
+                else
+                {
+                    currentTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
+                }
+                if (currentTag == null)
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1055,7 +1041,7 @@ namespace d360.web.Controllers.V2
                     continue;
                 }
 
-                if (this.tagRepository.DoesAssetTagExists(existingTag.ID, asset.ID))
+                if (this.tagRepository.DoesAssetTagExists(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1075,7 +1061,7 @@ namespace d360.web.Controllers.V2
                     resultList.Add(result);
                     continue;
                 }
-                AssetTag assetTag = this.tagRepository.CreateAssetTag(existingTag.ID, asset.ID);
+                AssetTag assetTag = this.tagRepository.CreateAssetTag(currentTag.ID, asset.ID);
                 if (assetTag != null)
                 {
                     result = new AssetTagSuccessApiModel()
@@ -1101,20 +1087,18 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Removes association between an existing Asset and an exiting Tag
+        /// Removes the association between an existing asset and an existing tag.
         /// </summary>
-        /// <remarks>An Administrator can remove any tag association. 
-        /// A regular user can only remove a tag association to an asset they initially created the association for.
+        /// <remarks>An Administrator can remove any tag association. A non-administrative user can only remove tag associations for assets to which they have read access.
         /// </remarks>
-        /// <param name="assetTags">AssetTag</param>
+        /// <param name="assetTags">Collection of assets and tags to remove tag associations for.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
             Route("tags"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Delete association between an existing Asset and an exiting Tag,returns the UID of deleted asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse)),
-             ApiExplorerSettings(IgnoreApi = true)
+            SwaggerResponse(HttpStatusCode.OK, "Removes the association between an existing asset and an existing tag, returns the Uid of removed asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))             
         ]
         public IHttpActionResult DeleteAssetTag(List<AssetTagApiModel> assetTags)
         {
@@ -1123,8 +1107,8 @@ namespace d360.web.Controllers.V2
             {
                 AssetTagSuccessApiModel result;
 
-                var existingTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
-                if (existingTag == null)
+                var currentTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
+                if (currentTag == null)
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1147,7 +1131,7 @@ namespace d360.web.Controllers.V2
                     continue;
                 }
 
-                if (!this.tagRepository.DoesAssetTagExists(existingTag.ID, asset.ID))
+                if (!this.tagRepository.DoesAssetTagExists(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel
                     {
@@ -1158,7 +1142,7 @@ namespace d360.web.Controllers.V2
                     continue;
                 }
 
-                if (!this.tagRepository.IsAuthorizedToDeleteAssetTag(existingTag.ID, asset.ID))
+                if (!this.tagRepository.IsAuthorizedToDeleteAssetTag(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1168,8 +1152,8 @@ namespace d360.web.Controllers.V2
                     resultList.Add(result);
                     continue;
                 }
-                AssetTag assetTag = this.tagRepository.GetAssetTag(existingTag.ID, asset.ID);
-                if (assetTag != null && this.tagRepository.DeleteAssetTag(existingTag.ID, asset.ID))
+                AssetTag assetTag = this.tagRepository.GetAssetTag(currentTag.ID, asset.ID);
+                if (assetTag != null && this.tagRepository.DeleteAssetTag(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel()
                     {

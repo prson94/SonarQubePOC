@@ -368,7 +368,7 @@ export class BaseComponent {
 
         nodeProps.forEach(prop => {
             if (prop.toLowerCase().indexOf("value") != -1 || prop.toLowerCase().indexOf("field") != -1) {
-                if (node.data[prop] && node.data[prop].toLowerCase().indexOf(q.toLowerCase()) != -1) hasValue = true;
+                if (node.data[prop] && node.data[prop].toString().toLowerCase().indexOf(q.toLowerCase()) != -1) hasValue = true;
             }
         });
 

@@ -36,6 +36,9 @@ namespace d360.core.entities
         public Guid AssetUID { get; set; }
         [DataMember]
         public Guid TagUID { get; set; }
+        [DataMember]
+        public string TagName { get; set; }
+
     }
 
     public class AssetTagSuccessApiModel

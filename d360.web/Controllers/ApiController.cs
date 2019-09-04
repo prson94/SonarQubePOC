@@ -72,7 +72,7 @@ namespace d360.web.Controllers
         {
             var list = new List<DetailReadOnlyRowModel>();
             var tagList = new List<ReadOnlyFieldValue>();
-            string tagString = "";
+            
             var details = Company.GetObjectDetail(type.ToString(), id);
             if (details != null)
             {
@@ -520,7 +520,8 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     TooltipType = "tag",
                     TooltipID = x.ID,
                     TooltipContext = "Preview",
-                    TooltipUrl = ""
+                    TooltipUrl = "",
+                    uid = x.uid
                 };
                 tagsFields.Add(roField);
             });
@@ -4767,8 +4768,8 @@ select	top 100 percent
 from	
         Asset A
         inner join AssetType ATT on ATT.ID = A.AssetTypeID and ATT.ObjectID = @id  and A.Object = 'Policy'
-        {joins} 
-        left join dbo.GetAssetDisplayValue() TD on TD.ID = A.ID
+        {joins}         
+        inner join dbo.AssetDisplayValue TD on TD.AssetID = A.ID
         outer apply (
 					select	I.SubjectID
 					from	[Intersect] I
@@ -8152,24 +8153,16 @@ where	Type = 'ReferenceItemType'
                 cross apply (select count(*) as Allocations from IssueTypeRelation R where R.IssueTypeID = I.ID) C
                 where C.Allocations = 0
                 {0}";
-
             if (@object != null && objectID != null)
-            {
-                bool isType = @object.EndsWith("Type");
-
-                sql = string.Format(sql, $@"union all
+                sql = string.Format(sql, @"union all
                     select I.ID, I.Name, I.Description, I.IsSystem, I.UpdatedBy, I.UpdatedOn from IssueType I
                     inner join IssueTypeRelation R on R.IssueTypeID = I.ID
                     inner join AssetType T on T.ID = R.AssetTypeID
-                    {(isType ? "" : "inner join Asset A on A.AssetTypeID = T.ID")}
-                    where {(isType ? "T.Object = @object and T.ObjectID = @objectID" : "A.Object = @object and A.ObjectID = @objectID")}
+                    inner join Asset A on A.AssetTypeID = T.ID
+                    where A.Object = @object and A.ObjectID = @objectID
                     order by name asc");
-            }
             else
-            {
                 sql = string.Format(sql, "order by name asc");
-
-            }
 
             return Company.Query<IssueType>(sql, new { @object, objectID }).AsQueryable();
         }

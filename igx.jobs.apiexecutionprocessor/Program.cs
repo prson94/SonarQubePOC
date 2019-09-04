@@ -238,7 +238,23 @@ namespace igx.jobs.apiexecutionprocessor
                             storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(deleteAssetTypesResults));
                             log.WriteLine($"DELETE Asset Types (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                             break;
-                            #endregion
+                        #endregion
+                        case ApiExecutionAction.PostCrossReferences:
+                            string postCrossReferencesJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
+                            var postCrossReferences = JsonConvert.DeserializeObject<List<AssetCrossReference>>(postCrossReferencesJson);
+
+                            log.WriteLine($"POST Cross References (DB Start): Total raw Cross References: {postCrossReferences.Count}");
+                            var postCrossReferenceResult = company.ImportCrossRefernces(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
+                            dbExecutionItem.Processed = postCrossReferenceResult.Count(i => i.Success);
+                            dbExecutionItem.Error = postCrossReferenceResult.Count(i => !i.Success);
+                            log.WriteLine($"POST Cross References (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
+                            log.WriteLine($"POST Cross References (DB Complete): Total Error: {dbExecutionItem.Error}.");
+
+                            log.WriteLine($"Post Cross References (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                            storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postCrossReferenceResult));
+                            log.WriteLine($"Post Cross References (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+
+                            break;
                     }
 
                     dbExecutionItem.CompletedOn = DateTime.UtcNow;
