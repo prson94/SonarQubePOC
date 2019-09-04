@@ -546,6 +546,27 @@ namespace d360.web.Controllers.V2
 
         }
 
+        [HttpGet, MapToApiVersion("2.0"), Route("exists"), ApiExplorerSettings(IgnoreApi = true)]
+        public IHttpActionResult DoesTagExist(string name)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+                var result = tagRepository.GetTagByName(name);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+
+            }
+            catch (Exception e)
+            {
+
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while checking if tag exists", e.Message);
+            }
+
+        }
+
 
     }
 }

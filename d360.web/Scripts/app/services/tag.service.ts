@@ -79,12 +79,18 @@ export class TagService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
     deleteAssetTag(tags: TagApiModel[]): Observable<any> {
-                
+
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: tags
         };
         let url = `api/v2/assets/tags`;
         return this.http.delete(url, httpHeaders)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
+    doesTagExist(name: string): Observable<any> {
+        let url = `api/v2/tags/exists?name=${name}`;
+        return this.http.get(url)
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
