@@ -1,4 +1,5 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.core.validators;
 using System;
 using System.Collections.Generic;
@@ -32,6 +33,13 @@ namespace d360.model.validators
                     if (field.Type.IsPartyOfKey())
                     {
                         actionIsReplaceAndKeySelected = true;
+                    }
+                }
+                if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.ReferenceItemType.ToString())
+                {
+                    if (field.Type.IsPartyOfKey())
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Reference item types cannot have field property 'IsPartOfKey' set to true.");
                     }
                 }
             }
