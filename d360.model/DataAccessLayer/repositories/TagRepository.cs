@@ -552,6 +552,14 @@ namespace d360.model.DataAccessLayer
             return hasPersmission;
         }
 
+        public bool IsAuthorizedToEditTag(Guid tagUid)
+        {
+            var tag = GetTagByUid(tagUid);
+            if (tag == null) return false;
+            if (companyContext.CurrentResourceIsAdmin || companyContext.CurrentResourceID == tag.CreatedBy) return true;
+            return false;
+        }
+
         public TagDetailApiModel GetDetails(Guid tagUid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             TagDetailApiModel result = new TagDetailApiModel();

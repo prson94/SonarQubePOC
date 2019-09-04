@@ -37,7 +37,7 @@ namespace d360.web.Controllers
 
         ISecurityContextProvider SecProvider;
         ITagRepository tagRepository;
-        public D3SApiController(ICommunityContext community, ICompanyContext company,ITagRepository tagRepository, ISecurityContextProvider secProvider)
+        public D3SApiController(ICommunityContext community, ICompanyContext company, ITagRepository tagRepository, ISecurityContextProvider secProvider)
             : base(community, company)
         {
 #if DEBUG
@@ -78,7 +78,7 @@ namespace d360.web.Controllers
         {
             var list = new List<DetailReadOnlyRowModel>();
             var tagList = new List<ReadOnlyFieldValue>();
-            
+
             var details = Company.GetObjectDetail(type.ToString(), id);
             if (details != null)
             {
@@ -501,7 +501,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     Name = "Tags",
                     ShowIfEmpty = true,
                     DataType = "tag",
-                    Values = GetTagsValues(type,id)
+                    Values = GetTagsValues(type, id)
                 };
                 list.Add(new DetailReadOnlyRowModel
                 {
@@ -518,7 +518,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             List<ReadOnlyFieldValue> tagsFields = new List<ReadOnlyFieldValue>();
             var asset = Company.Assets.SingleOrDefault(x => x.Object == type.ToString() && x.ObjectID == id);
             var tags = tagRepository.GetTagsForAsset(asset.ID);
-            tags.ToList().ForEach(x=>
+            tags.ToList().ForEach(x =>
             {
                 var roField = new ReadOnlyFieldValue
                 {
@@ -3453,7 +3453,7 @@ outer apply (
                     break;
             }
 
-            switch(previousObj.ToLower())
+            switch (previousObj.ToLower())
             {
                 case "policy":
                 case "artifact":
@@ -7059,6 +7059,17 @@ where v.id = {0}", id)).FirstOrDefault();
         [Route("{type}/{uid}/permissions")]
         public List<PermissionInfo> GetPermissionsByObject(SystemObjects type, Guid uid)
         {
+
+            if (type == SystemObjects.Tag)
+            {
+                List<PermissionInfo> ret = new List<PermissionInfo>();
+                if (tagRepository.IsAuthorizedToEditTag(uid))
+                {
+                    ret.AddRange(Permission.DeleteAsset.GetList());
+                }
+
+                return ret;
+            }
             int id = Company.GetObjectId(uid, type);
             return GetPermissionsByObject(type, id);
         }
