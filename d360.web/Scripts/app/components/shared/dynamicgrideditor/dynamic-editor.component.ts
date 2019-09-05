@@ -1,5 +1,5 @@
 ﻿import * as _ from 'lodash';
-import { Number } from 'core-js';
+import { Number, setTimeout } from 'core-js';
 import {
     ChangeDetectionStrategy,
     ChangeDetectorRef,
@@ -9,7 +9,9 @@ import {
     OnChanges,
     OnInit,
     Output,
-    SimpleChange
+    SimpleChange,
+    ViewChild,
+    ElementRef
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
@@ -76,6 +78,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     fore: EditorField;
     back: EditorField;
     selectedTagID: number;
+    @ViewChild('assetForm') formElement: ElementRef;
 
     constructor(
         private ref: ChangeDetectorRef,
@@ -111,14 +114,18 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         if (this.objectType == 'Tag' && !this.adding) {
             this.consolidateToTag = event;
         } else if (this.objectType == 'Tag' && this.adding) {
-            console.log(event);
             if (event) {
                 this.consolidateToTag = null;
                 this.selectedTagID = event.ID;
             }
 
         }
-        
+
+    }
+
+    focusToFirst() {
+        if (this.formElement)
+            this.formElement.nativeElement.querySelector("input:not([type='hidden'])").focus();
     }
 
     private load() {
@@ -216,6 +223,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                 this.form = this.toFormGroup(this.fields);
                 this.ref.markForCheck();
+                setTimeout(() => {
+                    this.focusToFirst();
+                }, 200);
             });
     }
 
