@@ -110,9 +110,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     checkAssetExistance() {
+        this.doesAssetExists = false;
+
         this.tagService.searchTags(this.field.Value, this.objectID, true)
             .subscribe(response => {
-                this.doesAssetExists = false;
 
                 response.forEach(s => {
                     if (s.name.toLowerCase() == this.field.Value.toLowerCase()) {

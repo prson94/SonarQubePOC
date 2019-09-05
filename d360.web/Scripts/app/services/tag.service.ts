@@ -10,7 +10,6 @@ import { JsonResult } from '../models/jsonresult.model';
 @Injectable()
 export class TagService extends BaseObservableService {
 
-
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getTags(phrase: string, excludeObjects: string = ''): Observable<Tag[]> {
@@ -126,6 +125,7 @@ export class TagService extends BaseObservableService {
         params += "&TagsAsString=" + filters.TagsAsString;
         params += "&sortBy=" + sort.field;
         params += "&sortOrder=" + sort.order;
+        params += "&_pagesize=1000000";
 
         this.http.get(`api/v2/tags/${uid}/export?${params}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Tags'));
     }

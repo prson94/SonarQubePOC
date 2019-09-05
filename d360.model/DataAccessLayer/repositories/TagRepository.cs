@@ -298,6 +298,10 @@ namespace d360.model.DataAccessLayer
         {
             return companyContext.Tags.FirstOrDefault(x => x.Value == name && x.State == State.Active);
         }
+        public Tag GetTagById(int tagId)
+        {
+            return companyContext.Tags.FirstOrDefault(x => x.ID == tagId);
+        }
 
         public bool DoesTagExists(string value)
         {
