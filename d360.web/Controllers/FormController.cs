@@ -4218,6 +4218,14 @@ offset 0 rows fetch next 25 rows only
                 if (!Company.HasAssetTypePermission(model.Object, model.ObjectID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
+                if (model.Type == SystemObjects.Tag.ToString())
+                {
+                    var assetTypeID = Company.AssetTypes.FirstOrDefault(x => x.Object == model.Object && x.ObjectID == model.ObjectID)?.ID;
+                    var assets = Company.Assets.Where(x => x.AssetTypeID == assetTypeID).Select(x => x.ID);
+                    var assetTagsForDeletion = Company.AssetTags.Where(x => assets.Contains(x.AssetID)).ToList();
+                    Company.AssetTags.RemoveRange(assetTagsForDeletion);
+                }
+
                 Company.Delete(model);
 
                 return jsonSuccess(FormInfo.Delete_FieldType_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
