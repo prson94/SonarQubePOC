@@ -15,6 +15,7 @@ import { TagType, TagDetail, TagItem } from '../../models/tag.model';
 import { Location } from '@angular/common';
 import { AuthenticationService } from '../../services/authentication.service';
 import { Permission } from '../../models/responsibility-type.model';
+import { Breadcrumb } from '../../models/breadcrumb.model';
 
 
 @Component({
@@ -67,7 +68,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             this.tagUid = params['tagUid'];
-            this.headerBreadcrumbService.setCurrentObjectInfo('Tag', this.tagUid);
+
+
             this.logAction('open', 'Tag', this.tagUid);
             this.isLoading = true;
 
@@ -79,7 +81,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                     this.load();
                 });
 
-            this.currentAreaName = "Tag";
+
+
         });
 
 
@@ -141,6 +144,21 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                             })
                             this.isLoading = false;
                         });
+
+
+                    this.headerBreadcrumbService.clearBreadcrumbs();
+                    this.currentAreaName = "Tags";
+                    let areaBreadcrumb = new Breadcrumb(
+                        this.currentAreaName, ``
+                    );
+
+                    let itemBreadcrumb = new Breadcrumb(
+                        this.tag.Value,
+                        `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${this.tag.uid}`
+                    )
+
+                    this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
+                    this.headerBreadcrumbService.showBreadcrumb(itemBreadcrumb);
                 }
                 else {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
