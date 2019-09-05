@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Azure.WebJobs;
+﻿using Microsoft.Azure.WebJobs;
 
-namespace igx.jobs.assetprocessor
+namespace igx.jobs.assetgraphprocessor
 {
     class Program
     {
@@ -16,6 +11,7 @@ namespace igx.jobs.assetprocessor
 #if DEBUG
             config.UseDevelopmentSettings();
 #endif
+            config.UseTimers();
 
             var host = new JobHost(config);
             host.RunAndBlock();
