@@ -148,7 +148,7 @@
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
                     </div>
-                    <div>
+                    <div *ngIf="enableAllowMultipleValues">
                         <p-checkbox binary="true"
                                     [ngModel]="model.FieldType.AllowMultipleValues"
                                     (ngModelChange)="model.FieldType.AllowMultipleValues=$event;model.FieldType.IsPartOfKey=false;"
@@ -245,7 +245,7 @@
                 </div>
             </div>
         </simple-accordion>
-        
+
         <simple-accordion header="Filter Configuration"
                           [active]="expandFilterConfiguration"
                           *ngIf="model.FieldType.Type == 'Lookup' && listFilterable">
@@ -957,10 +957,10 @@
                 <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
                     <div class="FieldNameRequired">JSON Attribute Path</div><br/>
                     <p-autoComplete 
-                        [ngModelOptions]="{standalone: true}" 
-                        [(ngModel)]="model.JsonElementSettings.Path" 
-                        [suggestions]="TypeaheadJsonPropertyOptionsForJsonFieldResults" 
-                        (completeMethod)="searchJsonForProperty($event)">
+                                    [ngModelOptions]="{standalone: true}"
+                                    [(ngModel)]="model.JsonElementSettings.Path"
+                                    [suggestions]="TypeaheadJsonPropertyOptionsForJsonFieldResults"
+                                    (completeMethod)="searchJsonForProperty($event)">
                     </p-autoComplete>
                 </div>
                 <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">

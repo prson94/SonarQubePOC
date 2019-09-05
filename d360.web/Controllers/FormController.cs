@@ -3006,7 +3006,8 @@ namespace d360.web.Controllers
                         && i.Type != DataType.FusionLookup.ToString()
                         && i.Type != DataType.FilteredLookup.ToString()
                         && i.Type != DataType.ComplexRelationLookup.ToString()
-                        && i.Type != DataType.JSON.ToString())
+                        && i.Type != DataType.JSON.ToString()
+                        && i.Type != DataType.Tag.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
 
@@ -3186,7 +3187,8 @@ namespace d360.web.Controllers
                         i.Type != DataType.FusionLookup.ToString() && 
                         i.Type != DataType.ComplexRelationLookup.ToString() && 
                         i.Type != DataType.Relationship.ToString() &&
-                        i.Type != DataType.JSON.ToString())
+                        i.Type != DataType.JSON.ToString()
+                        && i.Type != DataType.Tag.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .Distinct()
                 .ToDictionary(i => i.Name, i => i.ID);
