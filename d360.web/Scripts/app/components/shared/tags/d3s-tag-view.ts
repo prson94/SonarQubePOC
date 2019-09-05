@@ -130,7 +130,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
                                         this.selected = [];
                                         event.item.UseCount = 0;
                                         this.selected.push(event.item);
-
+                                        this.ref.markForCheck();
                                     });
                             });
                     }
@@ -151,6 +151,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
                                 this.selected = [];
                                 event.item.UseCount = 0;
                                 this.selected.push(event.item);
+                                this.ref.markForCheck();
 
                             });
                     }
@@ -178,6 +179,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
                     })
                     this.selected = [];
                 }
+                this.ref.markForCheck();
+
             }, err => this.showMessageForResult(this.messagesService, err));
     }
 
