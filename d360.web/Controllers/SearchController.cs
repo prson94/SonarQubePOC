@@ -112,21 +112,17 @@ namespace d360.web.Controllers
                     case "Group":
                         return "fa-users";
                     case "Grammatic Type":
-                    case "Synonym":
                         return "fa-comments";
                     case "Attribute":
                         return "fa-pencil-square-o";
                     case "Fusion":
-                    case "FusionAttributes":
                     case "FusionType":
                         siteNavName = "#Fusion";
                         break;
-                    case "Artifact":
                     case "Glossary":
                         siteNavName = "#Glossary";
                         break;
                     case "Model":
-                    case "Taxonomy":
                         siteNavName = "#Models";
                         break;
                     case "Reference":
@@ -162,25 +158,11 @@ namespace d360.web.Controllers
 
         private TypeaheadResult AddIcon(TypeaheadResult result)
         {
-            string icon = GetIcon(result.Uid, result.Type);
+            string icon = GetIcon(result.Uid, result.Group);
             if(icon.Substring(0, 3) == "fa-")
             {
                 result.Icon = icon;
             } else
-            {
-                result.Icon = null;
-                result.ImageUrl = icon;
-            }
-            return result;
-        }
-        private IndexResult AddIcon(IndexResult result)
-        {
-            string icon = GetIcon(result.Uid, result.Group);
-            if (icon.Substring(0, 3) == "fa-")
-            {
-                result.Icon = icon;
-            }
-            else
             {
                 result.Icon = null;
                 result.ImageUrl = icon;

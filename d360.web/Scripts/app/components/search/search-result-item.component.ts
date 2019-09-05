@@ -19,7 +19,7 @@ declare var CompanySettings;
                         </span>
                     </h4>
                     <p class="search-result-desc" *ngIf="result?.Description" [innerHtml]="result.Description"></p>
-                    <h5 class="search-result-attributes"><span *ngIf="result?.Type">Category: <em class="result-category" [innerHtml]="result?.Type"></em>&nbsp;&nbsp;</span>Type: <em class="result-type">{{displayType}}</em></h5>
+                    <h5 class="search-result-attributes"><span *ngIf="result?.Type">Category: <em class="result-category" [innerHtml]="result?.Type"></em>&nbsp;&nbsp;</span>Type: <em class="result-type">{{result?.Group}}</em></h5>
                 </div>        
                 `,
     changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,19 +30,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     @Input() result: SearchFullResult;
 
     showShoppingCart = false;
-
-    get displayType() {
-        if (this.result) {
-            switch (this.result.Group) {
-                case 'Artifact':
-                    return 'Glossary';
-                case 'Synonym':
-                    return 'Grammatic Type';
-                default:
-                    return this.result.Group
-            }
-        }
-    }
 
     get type() {
         if (this.result) {
