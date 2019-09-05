@@ -114,7 +114,6 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                     if (this.isAdmin) {
 
                         this.setCommonRightSideBar(true);
-                        this.setActions();
 
                         if (this.auditSidebar) {
                             this.auditSidebar.hasDynamicUrl = true;
@@ -127,6 +126,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         this.setCommonRightSideBar(false);
 
                     }
+                    this.setActions();
+
                     this.rightSidebarService.showHeader(true);
 
                     this.tagsService.getTagDetails(this.tag.uid)
@@ -179,36 +180,39 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     setActions() {
-        if (!this.isAdmin) return;
         this.actions = new AssetAction();
         this.actions.isVisible = true;
+        this.actions.showDelete = false;
+        this.actions.showEdit = false;
         this.actions.showBack = true;
-        this.actions.showDelete = true;
-        this.actions.showEdit = true;
-        this.actions.editCallback = this.onActionEditClick.bind(this);
-        this.actions.deleteCallback = this.onActionDeleteClick.bind(this);
+
         this.actions.backCallback = this.onActionBackClick.bind(this);
 
-        let editAction: EditFormData = new EditFormData();
-        editAction.title = 'Edit Tag';
-        editAction.closeClick = this.onActionEditCloseClick.bind(this);
-        editAction.selected = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
-        editAction.isModalVisible = false;
-        editAction.modalTitle = "Edit Tag";
-        editAction.objectID = this.tag.uid;
-        editAction.objectType = 'Tag';
-        editAction.saveClick = this.saveTag.bind(this);
-        editAction.showAsModal = true;
+        if (this.isAdmin) {
+            this.actions.showEdit = true;
+            this.actions.editCallback = this.onActionEditClick.bind(this);
+            let editAction: EditFormData = new EditFormData();
+            editAction.title = 'Edit Tag';
+            editAction.closeClick = this.onActionEditCloseClick.bind(this);
+            editAction.selected = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
+            editAction.isModalVisible = false;
+            editAction.modalTitle = "Edit Tag";
+            editAction.objectID = this.tag.uid;
+            editAction.objectType = 'Tag';
+            editAction.saveClick = this.saveTag.bind(this);
+            editAction.showAsModal = true;
+            this.actions.edit = editAction;
 
-        let deleteAction: DeleteFormData = new DeleteFormData();
-        deleteAction.callback = this.deleteCallback.bind(this);
-        deleteAction.item = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
-        deleteAction.modalTitle = 'Delete Tag';
-        deleteAction.isModalVisible = false;
-        deleteAction.showAsModal = true;
-
-        this.actions.edit = editAction;
-        this.actions.delete = deleteAction;
+            this.actions.showDelete = true;
+            let deleteAction: DeleteFormData = new DeleteFormData();
+            deleteAction.callback = this.deleteCallback.bind(this);
+            deleteAction.item = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
+            deleteAction.modalTitle = 'Delete Tag';
+            deleteAction.isModalVisible = false;
+            deleteAction.showAsModal = true;
+            this.actions.deleteCallback = this.onActionDeleteClick.bind(this);
+            this.actions.delete = deleteAction;
+        }
 
         this.rightSidebarService.setActionTitleItems(this.actions);
     }
