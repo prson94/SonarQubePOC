@@ -1064,10 +1064,11 @@ namespace d360.web.Controllers.V2
                 AssetTag assetTag = this.tagRepository.CreateAssetTag(currentTag.ID, asset.ID);
                 if (assetTag != null)
                 {
+                    var tag = this.tagRepository.GetTagById(assetTag.TagID);
                     result = new AssetTagSuccessApiModel()
                     {
                         Message = $"Asset / Tag Association  created",
-                        Uid = assetTag.UID.Value,
+                        Uid = tag.uid,
                         Success = true
                     };
                     resultList.Add(result);

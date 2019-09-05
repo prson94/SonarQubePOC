@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -51,7 +51,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         rightSidebarService: RightSidebarService,
-        private authService: AuthenticationService
+        private authService: AuthenticationService,
+        private ref: ChangeDetectorRef
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -301,14 +302,14 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
                 this.tagUsage.forEach(detail => {
                     detail.Tags.forEach(t => {
-                        if (t.Uid == this.tagUid) {
+                        if (t["uid"] == this.tagUid) {
                             t.Value = event.item.Value;
                         }
                     });
                 });
 
                 this.onActionEditCloseClick();
-
+                this.ref.markForCheck();
 
             });
     }
