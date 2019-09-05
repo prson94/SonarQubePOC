@@ -17,6 +17,13 @@ export class TagType {
     CreatedBy: string;
     UpdatedOn: Date;
     UpdatedBy: string;
+    TooltipID: number;
+}
+
+export class TagApiModel {
+    TagUID: string;
+    AssetUID: string;
+    TagName: string;
 }
 
 export enum TagTypeState {

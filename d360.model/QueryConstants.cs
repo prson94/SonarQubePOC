@@ -107,31 +107,7 @@ group by at.name,at.objectid order by at.name";
                                         P.ID as [ID], P.Name as [Name] 
                                 from  [dbo].[NymRelation] R inner join [dbo].[predicate] P on P.ID = R.PredicateID where R.[Object] = @ot and R.ObjectID = @id
     ";
-
-        public static string ArtifactTypeStatisticsList = @"
-select		AT.ObjectID as ID,
-			IT.ParentID,
-			AT.Name,
-			AT.Description,
-            cast(1 as bit) as expanded,
-			AC.*
-from		AssetType as AT
-			cross apply (
-						select	count(1) AS [Total]
-						from	Asset A
-						
-						where	AssetTypeID = AT.ID
-						) AC
-			outer apply (
-				select	IT.SubjectID as ParentID
-				from	IntersectType IT 
-						inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
-			) IT
-	Where AT.Object = 'ArtifactType'
-order by	IT.ParentID,
-			AT.Name";
-             
-
+        
         public static string ExecutionErrorList = @"
 select  ER.Date,
         ER.Error,
@@ -652,7 +628,12 @@ order by case when (Subject = @type and SubjectID = @id) then ObjectName else Su
 ";
 
         public static string PolicySettingsItem = @"
-select	T.*, R.*
+select	T.Name, 
+		T.Description, 
+		R.AllowAttributes,
+		T.HierarchyMaximumDepth,
+		T.Uid,
+		T.ObjectID
 from	AssetType T 
 		cross apply (
 					select	case 
@@ -879,6 +860,7 @@ select
 	T.UpdatedBy,
 	A.AllowAttributes,
 	S.AllowSynonyms,
+    T.Uid,
     (select cast(count(1) as bit) from report r where r.ObjectType = 'TaxonomyType' and r.ObjectID = @id and r.ReportType != 'legacy') as HasDashboards	
 from	AssetType T
 		cross apply (

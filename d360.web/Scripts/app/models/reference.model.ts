@@ -9,6 +9,7 @@
     UpdatedOn: Date;
     UpdatedBy: number;
     AssetTypeID: number;
+    AssetTypeUID: string;
 }
 
 export class ReferenceItem {

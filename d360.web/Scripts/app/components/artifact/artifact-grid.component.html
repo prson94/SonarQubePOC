@@ -1,5 +1,5 @@
 <d3s-loading [isLoading]="isEditing"></d3s-loading>
-<header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing">
+<header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns">
     <d3s-tile-actions [hasAdd]="showAddButton && hasModifyAssetPermissions()"
                       [hasExport]="!artifactType.HasCustomExportTemplates"
                       [hasCustomExport]="artifactType.HasCustomExportTemplates"
@@ -8,7 +8,7 @@
                       (exportClick)="export(false)"
                       [hasFilterMode]="true"
                       [filterMode]="showGridSimpleFilter"
-                      (filterModeChange)="resetFilters($event)"></d3s-tile-actions>
+                      (filterModeChange)="resetFilters(dt,$event)"></d3s-tile-actions>
     <div *ngIf="showArtifactDetails && artifactType && artifactType.Description"
          [innerHtml]="artifactType.Description | safeHtml"
          class="tile-description"></div>
@@ -20,7 +20,7 @@
         {{showArtifactDetails ? 'Hide Description':'Show Description'}}
     </span>
 </header>
-<div class="row" *ngIf="!showDelete && !showEditor && !isEditing">
+<div class="row" *ngIf="!showDelete && !showEditor && !isEditing && !hasNoListableColumns">
   <div
     #rightMenu
     [ngClass]="{
@@ -47,7 +47,7 @@
       *ngIf="topLevelFilters.length > 0"
       [(filters)]="stateService.artifactTypeFilters.filters"
       [fields]="topLevelFilters"
-      (filterChanged)="filterGridData()"
+      (filterChanged)="filterGridData(dt)"
     >
     </d3s-artifact-top-level-filter>
   </div>
@@ -216,3 +216,6 @@
     (onCancel)="showDelete = false"
     (onDeleted)="onDeleted()">
 </d3s-asset-delete-editor>
+<div *ngIf="hasNoListableColumns" style="font-weight:bold;padding:25px;">
+    The current artifact type has no listable fields types configured.  Please configure at least one field type as listable in order to see data on the artifact list page.  For further information how to configure a field type as listable see the product guide.
+</div>

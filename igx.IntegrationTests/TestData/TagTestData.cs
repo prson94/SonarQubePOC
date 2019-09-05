@@ -5,20 +5,20 @@ namespace igx.IntegrationTests.TestData
 {
     public class TagTestData
     {
+        public static int TagsCount = 0;
+
+        public static JArray AllItems = null;
+
         private static JObject _testJSON = null;
-        public static JObject TagJSON { get {
+        public static JObject TagJSON
+        {
+            get
+            {
 
                 if (_testJSON == null)
                 {
                     JObject @object = new JObject();
-                    @object.Add(new JProperty("uid", "00000000-0000-0000-0000-000000000000"));
                     @object.Add(new JProperty("Value", "int_test_tag" + Guid.NewGuid()));
-                    @object.Add(new JProperty("CreatedByUid", "00000000-0000-0000-0000-000000000000"));
-                    @object.Add(new JProperty("CreatedOn", "2019-06-21T13:11:58.208Z"));
-                    @object.Add(new JProperty("UpdatedByUid", "00000000-0000-0000-0000-000000000000"));
-                    @object.Add(new JProperty("UpdatedOn", "2019-06-21T13:11:58.208Z"));
-
-
                     _testJSON = @object;
                 }
 
@@ -27,5 +27,40 @@ namespace igx.IntegrationTests.TestData
             set { _testJSON = value; }
         }
 
+        private static JObject _testJSON2 = null;
+        public static JObject TagJSON2
+        {
+            get
+            {
+
+                if (_testJSON2 == null)
+                {
+                    JObject @object = new JObject();
+                    @object.Add(new JProperty("Value", "int_test_tag" + Guid.NewGuid()));
+                    _testJSON2 = @object;
+                }
+
+                return _testJSON2;
+            }
+            set { _testJSON2 = value; }
+        }
+
+        private static JObject _testJSON3 = null;
+        public static JObject TagJSON3
+        {
+            get
+            {
+
+                if (_testJSON3 == null)
+                {
+                    JObject @object = new JObject();
+                    @object.Add(new JProperty("Value", "int_test_tag" + Guid.NewGuid()));
+                    _testJSON3 = @object;
+                }
+
+                return _testJSON3;
+            }
+            set { _testJSON3 = value; }
+        }
     }
 }

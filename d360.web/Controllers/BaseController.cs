@@ -551,7 +551,7 @@ namespace d360.web.Controllers
 
             fields.ForEach(f =>
             {
-                if (f.IsEditable)
+                if (f.IsEditable && f.Type != "Tag")
                 {
                     #region Is Editable
 
@@ -779,7 +779,7 @@ namespace d360.web.Controllers
 
             fieldTypes.ForEach(ft =>
             {
-                if (ft.IsEditable)
+                if (ft.IsEditable && ft.Type != "Tag")
                 {
                     #region Is Editable
 
@@ -1490,7 +1490,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                 var friendlyName = f.FriendlyName.Replace("[", "").Replace("]", "");
                 string thisColumn;
                 string fieldJoin;
-                string dataType = "nvarchar";
+                string dataType = "nvarchar(max)";
 
                 if (f.Type == dtJsonElement)
                 {
@@ -1516,7 +1516,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                             dataType = "float";
                             break;
                         default:
-                            dataType = "nvarchar";
+                            dataType = "nvarchar(max)";
                             break;
                     }
 

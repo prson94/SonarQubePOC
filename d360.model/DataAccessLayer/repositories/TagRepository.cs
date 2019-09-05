@@ -156,7 +156,7 @@ namespace d360.model.DataAccessLayer
             return results;
         }
 
-        public async Task<dynamic> GetTagsWithResourceName(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public async Task<dynamic> GetTagsForExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
 
             var dbArgs = new DynamicParameters();
@@ -292,6 +292,15 @@ namespace d360.model.DataAccessLayer
         public Tag GetTagByUid(Guid uid)
         {
             return companyContext.Tags.FirstOrDefault(x => x.uid == uid);
+        }
+
+        public Tag GetTagByName(string name)
+        {
+            return companyContext.Tags.FirstOrDefault(x => x.Value == name && x.State == State.Active);
+        }
+        public Tag GetTagById(int tagId)
+        {
+            return companyContext.Tags.FirstOrDefault(x => x.ID == tagId);
         }
 
         public bool DoesTagExists(string value)
@@ -432,6 +441,7 @@ namespace d360.model.DataAccessLayer
         {
             string value = "";
             Guid exceptUid = Guid.Empty;
+            bool ignoreCounts = false;
             foreach (var queryitem in queryParams)
             {
                 switch (queryitem.Key.ToLower())
@@ -446,15 +456,27 @@ namespace d360.model.DataAccessLayer
                             exceptUid = Guid.Empty;
                         }
                         break;
+                    case "ignorecounts":
+                        if (queryitem.Value.ToLower() == "true")
+                            ignoreCounts = true;
+                        break;
                     case "value":
-                        value = queryitem.Value.ToLower();
+                        value = $"%{queryitem.Value.ToLower()}%";
                         break;
                 }
             }
-
-            string sql = @"select T.Value as name, T.uid as code, Results.count from Tag T 
+            string sql = string.Empty;
+            if (!ignoreCounts)
+            {
+                sql = @"select T.Value as name, T.uid as code, Results.count from Tag T 
                             cross apply (select count(*) from AssetTag where TagID = T.ID)Results(count)
-                            where State = 1 and LOWER(T.Value) like '%'+@value+'%' and T.uid != @exceptUid";
+                            where State = 1 and T.Value like @value and T.uid != @exceptUid";
+            }
+            else
+            {
+                sql = @"select T.Value as name, T.uid as code from Tag T 
+                        where State = 1 and T.Value like @value and T.uid != @exceptUid";
+            }
 
             return companyContext.Query<dynamic>(sql, new { value, exceptUid }).ToList();
         }
@@ -517,7 +539,7 @@ namespace d360.model.DataAccessLayer
             assetTags.ForEach(x =>
             {
                 var tag = companyContext.Tags.FirstOrDefault(y => y.ID == x.TagID);
-                if(tag != null)
+                if (tag != null)
                     tags.Add(tag);
             });
             return tags;
@@ -545,6 +567,14 @@ namespace d360.model.DataAccessLayer
                 hasPersmission = companyContext.HasAssetPermission(assetId, Permission.ModifyAsset);
             }
             return hasPersmission;
+        }
+
+        public bool IsAuthorizedToEditTag(Guid tagUid)
+        {
+            var tag = GetTagByUid(tagUid);
+            if (tag == null) return false;
+            if (companyContext.CurrentResourceIsAdmin || companyContext.CurrentResourceID == tag.CreatedBy) return true;
+            return false;
         }
 
         public TagDetailApiModel GetDetails(Guid tagUid, IEnumerable<KeyValuePair<string, string>> queryParams)

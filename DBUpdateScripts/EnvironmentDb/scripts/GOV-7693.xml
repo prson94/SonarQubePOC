@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Tomislav Duric" id="GOV-7693-A">
+  <changeSet author="Tomislav Duric" id="GOV-7693-AuditUpdatedV2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -336,7 +336,7 @@ begin
 		from	Tag T
 		where	T.Id = @MainObjectID
 
-		insert into @tbl  select 0, 'Value', Value, 0, 0 from Tag where ID = @MainObjectID
+		insert into @tbl  select 0, 'Tag Name', Value, 0, 0 from Tag where ID = @MainObjectID
 	end
 	
 	if @MainObject = 'ResponsibilityType'
