@@ -24,6 +24,8 @@ namespace d360.core.queue
 
         public Dictionary<string, string> Fields { get; set; }
 
+        public Dictionary<string, string> Tags { get; set; }
+
         /// <summary>
         /// Returns the unique id for this search item
         /// </summary>
