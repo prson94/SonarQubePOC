@@ -104,11 +104,13 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                         this.autoCompleteSelected.emit(s);
                     }
                 });
+
+                this.ref.markForCheck();
             });
     }
 
     checkAssetExistance() {
-        this.tagService.searchTags(this.field.Value, this.objectID)
+        this.tagService.searchTags(this.field.Value, this.objectID, true)
             .subscribe(response => {
                 this.doesAssetExists = false;
 

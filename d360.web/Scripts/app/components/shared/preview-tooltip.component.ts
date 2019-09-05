@@ -148,7 +148,7 @@ export class PreviewTooltipComponent {
         try {
             return JSON.parse(value);
         } catch {
-            return "Error";
+            return "NULL";
         }
     }
 

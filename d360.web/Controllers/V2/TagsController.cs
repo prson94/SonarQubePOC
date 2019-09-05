@@ -49,8 +49,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> Search()
         {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
@@ -80,8 +78,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> Get()
         {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
@@ -96,8 +92,6 @@ namespace d360.web.Controllers.V2
 
             }
         }
-
-
 
         /// <summary>
         /// Deletes a tag from Govern.
@@ -115,8 +109,9 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult DeleteById(Guid tagUid, bool cascade = false)
         {
-            if (!Company.CurrentResourceIsAdmin)
+            if (!tagRepository.IsAuthorizedToEditTag(tagUid))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
             try
             {
                 if (!tagRepository.DeleteTags(new List<TagApiDeleteModel>() { new TagApiDeleteModel { uid = tagUid, cascade = cascade } }))
@@ -129,7 +124,7 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error while deleting tag", ex.Message);
 
             }
-            
+
             return successMessageResponse(HttpStatusCode.OK, "Tag removed.", "Tag successfully removed.");
         }
 
@@ -149,8 +144,6 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult PostTag(TagApiModel model)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to create tags."));
 
             if (model == null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty request please check your request and try again."));
@@ -197,8 +190,8 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult Put(Guid tagUid, TagApiModel model)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to update tags."));
+            if (!tagRepository.IsAuthorizedToEditTag(tagUid))
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             TagApiModel result = new TagApiModel();
             try
@@ -246,8 +239,14 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult DeleteTags(List<TagApiDeleteModel> model)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            foreach (var item in model)
+            {
+                if (!tagRepository.IsAuthorizedToEditTag(item.uid))
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+            }
+
+
             try
             {
 
@@ -277,7 +276,7 @@ namespace d360.web.Controllers.V2
             /// <param name="parentUid">The unique identifier of the parent tag.</param>        
             /// <param name="childrenUids">The list of children tags which we want to consolidate.</param>
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(TagApiModel)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<TagApiModel>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
@@ -319,9 +318,6 @@ namespace d360.web.Controllers.V2
         [HttpGet, MapToApiVersion("2.0"), Route("{tagUid}/assetpath"), ApiExplorerSettings(IgnoreApi = true)]
         public IHttpActionResult GetAssetsPath(Guid tagUid)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-
             try
             {
 
@@ -357,7 +353,7 @@ namespace d360.web.Controllers.V2
 
             var queryParams = Request.GetQueryNameValuePairs();
 
-            var tags = await tagRepository.GetTagsWithResourceName(queryParams);
+            var tags = await tagRepository.GetTagsForExcel(queryParams);
 
             var document = new SLDocument();
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
@@ -429,8 +425,6 @@ namespace d360.web.Controllers.V2
             ]
         public IHttpActionResult GetTagDetails(string uid)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             try
             {
@@ -463,7 +457,7 @@ namespace d360.web.Controllers.V2
         /// <returns>A excel file containing tagged assets.</returns>
         [
             HttpGet,
-            MapToApiVersion("2.0"),            
+            MapToApiVersion("2.0"),
             Route("{tagUid}/export"),
             FileDownload,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
@@ -526,11 +520,8 @@ namespace d360.web.Controllers.V2
         }
 
         [HttpGet, MapToApiVersion("2.0"), Route("{uid}/tooltip"), ApiExplorerSettings(IgnoreApi = true)]
-        public async  Task<IHttpActionResult> GetTagTooltipData(string uid)
+        public async Task<IHttpActionResult> GetTagTooltipData(string uid)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-
             try
             {
                 Guid guid = Guid.Parse(uid);
@@ -544,6 +535,27 @@ namespace d360.web.Controllers.V2
             {
 
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting assets path", e.Message);
+            }
+
+        }
+
+        [HttpGet, MapToApiVersion("2.0"), Route("exists"), ApiExplorerSettings(IgnoreApi = true)]
+        public IHttpActionResult DoesTagExist(string name)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+                var result = tagRepository.GetTagByName(name);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+
+            }
+            catch (Exception e)
+            {
+
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while checking if tag exists", e.Message);
             }
 
         }

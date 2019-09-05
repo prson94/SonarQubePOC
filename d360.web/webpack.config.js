@@ -1,7 +1,7 @@
 /// <binding />
 var webpack = require('webpack');
 var path = require('path');
-
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 // Webpack Config
 var webpackConfig = {
@@ -14,8 +14,8 @@ var webpackConfig = {
       hints: false
   },
   output: {
-      path: __dirname + '/scripts/app/',
-      publicPath: './scripts/app/'
+      path: __dirname + '/scripts/dist/',
+      publicPath: './scripts/dist/'
   },
 
   plugins: [
@@ -39,7 +39,8 @@ var webpackConfig = {
         noSources: true,
         moduleFilenameTemplate: '[absolute-resource-path]',
         fallbackModuleFilenameTemplate: '[absolute-resource-path]'
-    })
+    }),
+    new CleanWebpackPlugin()
   ],
 
   module: {

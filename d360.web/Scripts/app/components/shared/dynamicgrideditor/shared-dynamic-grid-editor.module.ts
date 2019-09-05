@@ -23,6 +23,7 @@ import { CoreModule } from '../core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
+import { SharedAssetEditorsModule } from '../asseteditors/shared-asset-editor.module';
 import { TilesModule  } from '../tiles/tiles.module';
 import { SimilarItemsModule } from '../similar-items.component';
 
@@ -51,6 +52,7 @@ import { TagView } from "../../shared/tags/d3s-tag-view";
         CoreModule,
         SharedDeleteFormModule,
         SharedGridPagingInfoModule,
+        SharedAssetEditorsModule,
         TilesModule,
         SimpleAccordionModule,
         SimilarItemsModule,

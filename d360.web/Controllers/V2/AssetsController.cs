@@ -988,11 +988,10 @@ namespace d360.web.Controllers.V2
 
         #region AssetTag
         /// <summary>
-        /// Creates association between an existing Asset and an existing tag
+        /// Creates association between an existing asset and an existing tag.
         /// </summary>
         /// <remarks>
-        /// An Administrator can create  any tag association. 
-        /// A regular user can only create a tag association to assets they have access to.
+        /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
         /// </remarks>
         /// <param name="assetTags">Collection of assets and tags to associate.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -1006,12 +1005,19 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult PostAssetTag(List<AssetTagApiModel> assetTags)
         {
             List<AssetTagSuccessApiModel> resultList = new List<AssetTagSuccessApiModel>();
+            Tag currentTag;
             foreach (var assetTagApi in assetTags)
             {
                 AssetTagSuccessApiModel result;
-
-                var existingTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
-                if (existingTag == null)
+                if(assetTagApi.TagUID == Guid.Empty)
+                {
+                    currentTag = tagRepository.GetTagByName(assetTagApi.TagName);
+                }
+                else
+                {
+                    currentTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
+                }
+                if (currentTag == null)
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1035,7 +1041,7 @@ namespace d360.web.Controllers.V2
                     continue;
                 }
 
-                if (this.tagRepository.DoesAssetTagExists(existingTag.ID, asset.ID))
+                if (this.tagRepository.DoesAssetTagExists(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1055,7 +1061,7 @@ namespace d360.web.Controllers.V2
                     resultList.Add(result);
                     continue;
                 }
-                AssetTag assetTag = this.tagRepository.CreateAssetTag(existingTag.ID, asset.ID);
+                AssetTag assetTag = this.tagRepository.CreateAssetTag(currentTag.ID, asset.ID);
                 if (assetTag != null)
                 {
                     result = new AssetTagSuccessApiModel()
@@ -1081,10 +1087,9 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Removes association between an existing Asset and an exiting Tag
+        /// Removes the association between an existing asset and an existing tag.
         /// </summary>
-        /// <remarks>An Administrator can remove any tag association. 
-        /// A regular user can only remove a tag association to an asset they initially created the association for.
+        /// <remarks>An Administrator can remove any tag association. A non-administrative user can only remove tag associations for assets to which they have read access.
         /// </remarks>
         /// <param name="assetTags">Collection of assets and tags to remove tag associations for.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -1092,7 +1097,7 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             Route("tags"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Delete association between an existing Asset and an exiting Tag,returns the UID of deleted asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "Removes the association between an existing asset and an existing tag, returns the Uid of removed asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))             
         ]
         public IHttpActionResult DeleteAssetTag(List<AssetTagApiModel> assetTags)
@@ -1102,8 +1107,8 @@ namespace d360.web.Controllers.V2
             {
                 AssetTagSuccessApiModel result;
 
-                var existingTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
-                if (existingTag == null)
+                var currentTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
+                if (currentTag == null)
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1126,7 +1131,7 @@ namespace d360.web.Controllers.V2
                     continue;
                 }
 
-                if (!this.tagRepository.DoesAssetTagExists(existingTag.ID, asset.ID))
+                if (!this.tagRepository.DoesAssetTagExists(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel
                     {
@@ -1137,7 +1142,7 @@ namespace d360.web.Controllers.V2
                     continue;
                 }
 
-                if (!this.tagRepository.IsAuthorizedToDeleteAssetTag(existingTag.ID, asset.ID))
+                if (!this.tagRepository.IsAuthorizedToDeleteAssetTag(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1147,8 +1152,8 @@ namespace d360.web.Controllers.V2
                     resultList.Add(result);
                     continue;
                 }
-                AssetTag assetTag = this.tagRepository.GetAssetTag(existingTag.ID, asset.ID);
-                if (assetTag != null && this.tagRepository.DeleteAssetTag(existingTag.ID, asset.ID))
+                AssetTag assetTag = this.tagRepository.GetAssetTag(currentTag.ID, asset.ID);
+                if (assetTag != null && this.tagRepository.DeleteAssetTag(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel()
                     {

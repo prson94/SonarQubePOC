@@ -4,20 +4,7 @@
     Description: string;
     HasDashboards: boolean;
     AllowAttributes: boolean; 
-}
-
-
-export enum RuleClassification {
-    Informational = 1,
-    Quality = 2,
-    Metric = 3,
-    Profile = 4
-}
-
-export enum RuleStatus {    
-    Draft = 1,
-    Active = 2,
-    Inactive = 3
+    AssetTypeID: string;
 }
 
 export class Rule {    
@@ -26,12 +13,7 @@ export class Rule {
     Description: string;
     Measurement: string;
     Purpose: string;
-    Resolution: string;
-    Status: RuleStatus;
-    StatusName: string;
-    RuleDimensionID: number;
-    RuleType: RuleClassification;
-    RuleTypeName: string;
+    Resolution: string;                 
     SourceID: number;
 }
 
@@ -92,13 +74,13 @@ export class RuleDetail {
 export class RuleResultPagedResults {
     total: number;
     results: any[];
-    qualifiers: any[];//string[];
+    qualifiers: any[];
 }
 
 export class RuleImplementationPagedResults {
     total: number;
     results: any[];
-    implementations: any[];//string[];
+    implementations: any[];
 }
 
 export class RuleImplementationFilter {

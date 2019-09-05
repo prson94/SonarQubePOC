@@ -12,6 +12,7 @@ import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-editor.module';
 import { SharedAssetTypeEditorModule } from '../shared/assettypeeditor/shared-asset-type-editor.module';
 
 import { PolicyRoutingModule } from './policy.routes';
@@ -71,6 +72,7 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
         SharedGridPagingInfoModule,        
         SharedDynamicGridEditorModule,        
         SharedAssetTypeEditorModule,     
+        SharedAssetEditorsModule,
         TilesModule,
         SharedObjectGovernanceModule,
     ],
