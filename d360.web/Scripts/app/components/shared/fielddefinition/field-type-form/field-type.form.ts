@@ -66,6 +66,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() showIsPartOfKey: boolean = true;
     @Input() showIsEditable: boolean = true;
     @Input() showDescription: boolean = true;
+    @Input() enableAllowMultipleValues: boolean = true;
 
     private lookups: Lookups = new Lookups();
     private lookupDefaultValueOptions: SelectItem[];
@@ -368,6 +369,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private loadDataType(value: string, isFromLoad: boolean = false) {
         let observables: Array<Observable<any>> = [];
         this.showDescription = true;
+        this.enableAllowMultipleValues = true;
 
         if (value == null) {
             return;
@@ -507,8 +509,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.IsPartOfKey = false;
                 this.model.FieldType.ShowIfEmpty = true;
+                this.model.FieldType.AllowMultipleValues = null;
                 this.showIsEditable = false;
                 this.showDescription = false;
+                this.enableAllowMultipleValues = false;
                 break;
             default:
                 this.model.FieldType.LookupDisplayFormat = null;
@@ -593,7 +597,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         //update the model to have correct lookuptype object and id
         this.model.FieldType.LookupObjectID = value;
         this.model.FieldType.LookupObjectType = "IntersectType";
-        
+
         return this.fieldsService.getRelationObjectFields(this.objectType, this.objectID, value)
             .pipe(map(
                 d => {
