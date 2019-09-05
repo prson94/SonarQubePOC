@@ -13,7 +13,8 @@
             stripComments="false">
 		<![CDATA[
 CREATE OR ALTER PROCEDURE [graph].[SynchronizeTables]	
-      AS
+	  @populatePaths bit = 0
+	  AS
 begin
 
 	delete E
@@ -104,15 +105,24 @@ begin
 	insert into #assetTypes
 	select ID from AssetType;
 	
-	
-	while ((select count(*) from #assetTypes) > 0)
+	if @populatePaths = 1
 	begin
-		declare @id bigint;
-		select top 1 @id = id from #assetTypes;
+	
+		drop table if exists #assetTypes;
+		create table #assetTypes (ID bigint);
 		
-		exec graph.PopulatePathsForAssetType @id;
+		insert into #assetTypes
+		select ID from AssetType;
+	
+		while ((select count(*) from #assetTypes) > 0)
+		begin
+			declare @id bigint;
+			select top 1 @id = id from #assetTypes;
 		
-		delete from #assetTypes where id = @id;
+			exec graph.PopulatePathsForAssetType @id;
+		
+			delete from #assetTypes where id = @id;
+		end
 	end
 end
 		]]>
@@ -120,6 +130,27 @@ end
 	<rollback>
 		<![CDATA[
 drop procedure if exists [graph].[SynchronizeTables]
+		]]>
+	</rollback>
+  </changeSet>
+   <changeSet author="MDonato" id="GOV-7941-index">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+ IF NOT EXISTS (SELECT *  FROM sys.indexes  WHERE name='CIX_GraphAssetNode_AssetId' AND object_id = OBJECT_ID('[graph].[AssetNode]'))
+begin
+	CREATE UNIQUE CLUSTERED INDEX [CIX_GraphAssetNode_AssetId] ON [graph].[AssetNode] (ID)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+ IF  EXISTS (SELECT *  FROM sys.indexes  WHERE name='CIX_GraphAssetNode_AssetId' AND object_id = OBJECT_ID('[graph].[AssetNode]'))
+begin
+	DROP INDEX [CIX_GraphAssetNode_AssetId] ON [graph].[AssetNode]
+end
 		]]>
 	</rollback>
   </changeSet>

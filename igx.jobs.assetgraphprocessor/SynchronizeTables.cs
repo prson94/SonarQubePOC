@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions;
-using igx.jobs;
 using d360.utils.company;
-using System.Data;
-using System.Data.SqlClient;
 using Dapper;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
@@ -21,7 +15,7 @@ namespace igx.jobs.assetgraphprocessor
 #if DEBUG
         const string timerSettings = "*/2 * * * * *";
 #else
-        const string timerSettings = "0 0 3 * * *";
+        const string timerSettings = "0 0 1 * * *";
 #endif
 
         public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
@@ -32,6 +26,7 @@ namespace igx.jobs.assetgraphprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
 
+            var populatePaths = DateTime.UtcNow.DayOfWeek == DayOfWeek.Saturday;
 
             foreach (var company in companies)
             {
@@ -47,7 +42,7 @@ namespace igx.jobs.assetgraphprocessor
 
                         try
                         {
-                            await conn.ExecuteAsync("graph.SynchronizeTables", commandTimeout: timeout);
+                            await conn.ExecuteAsync("graph.SynchronizeTables @populatePaths", new { populatePaths },  commandTimeout: timeout);
                         }
                         catch (Exception ex)
                         {
@@ -66,5 +61,4 @@ namespace igx.jobs.assetgraphprocessor
             CoreFunction.AIFlush();
         }
     }
-
 }
