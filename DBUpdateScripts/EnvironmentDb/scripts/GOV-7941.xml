@@ -20,9 +20,23 @@ begin
     from graph.AssetEdge E
     where E.ID not in (select ID from [Intersect]);
 
-	delete N
+	drop table if exists #DeleteNodes;
+	create table #DeleteNodes (ID bigint);
+	create clustered index CIX_DeleteNodes ON #DeleteNodes (ID)
+	
+	insert into #DeleteNodes
+	select N.ID
 	from graph.AssetNode N
 	where N.ID not in (select ID from Asset);
+
+	delete E
+	from graph.AssetEdge E
+	inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
+	inner join #DeleteNodes D on D.ID = N.ID
+
+	delete N
+	from graph.AssetNode N
+	inner join #DeleteNodes D on D.ID = N.ID;
 
 	merge graph.AssetNode T
 	using
@@ -85,7 +99,7 @@ begin
 
 
 	drop table if exists #assetTypes;
-	create table #assetTypes (ID int);
+	create table #assetTypes (ID bigint);
 	
 	insert into #assetTypes
 	select ID from AssetType;
@@ -93,7 +107,7 @@ begin
 	
 	while ((select count(*) from #assetTypes) > 0)
 	begin
-		declare @id int;
+		declare @id bigint;
 		select top 1 @id = id from #assetTypes;
 		
 		exec graph.PopulatePathsForAssetType @id;
