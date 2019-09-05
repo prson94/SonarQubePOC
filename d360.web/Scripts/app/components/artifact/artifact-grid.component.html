@@ -8,7 +8,7 @@
                       (exportClick)="export(false)"
                       [hasFilterMode]="true"
                       [filterMode]="showGridSimpleFilter"
-                      (filterModeChange)="resetFilters($event)"></d3s-tile-actions>
+                      (filterModeChange)="resetFilters(dt,$event)"></d3s-tile-actions>
     <div *ngIf="showArtifactDetails && artifactType && artifactType.Description"
          [innerHtml]="artifactType.Description | safeHtml"
          class="tile-description"></div>
@@ -47,7 +47,7 @@
       *ngIf="topLevelFilters.length > 0"
       [(filters)]="stateService.artifactTypeFilters.filters"
       [fields]="topLevelFilters"
-      (filterChanged)="filterGridData()"
+      (filterChanged)="filterGridData(dt)"
     >
     </d3s-artifact-top-level-filter>
   </div>
