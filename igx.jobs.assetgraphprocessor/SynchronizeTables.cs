@@ -30,6 +30,11 @@ namespace igx.jobs.assetgraphprocessor
 
             foreach (var company in companies)
             {
+                string lineageVersion = CompanyConnectionUtils.GetCompanySettings(company.CompanyID).FirstOrDefault(s => s.SettingID == 68)?.Value ?? "";
+
+                if (lineageVersion != "3")
+                    continue;
+
                 try
                 {
                     var conn = CompanyConnectionUtils.GetCompanyConnection(company.CompanyID, company.Server, company.Username, company.Password);
@@ -42,7 +47,7 @@ namespace igx.jobs.assetgraphprocessor
 
                         try
                         {
-                            await conn.ExecuteAsync("graph.SynchronizeTables @populatePaths", new { populatePaths },  commandTimeout: timeout);
+                                await conn.ExecuteAsync("graph.SynchronizeTables @populatePaths", new { populatePaths }, commandTimeout: timeout);
                         }
                         catch (Exception ex)
                         {
