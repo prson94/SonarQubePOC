@@ -21,6 +21,9 @@
     </ng-container>
     <ng-container *ngIf="isEditable">
         <a class="link-button">
+            <div class="tooltip-wrapper">
+                <div class="tag-tooltip"></div>
+            </div>
             <div #el (click)="add();" class="tag-item-wrapper">
                 Click to add...
             </div>

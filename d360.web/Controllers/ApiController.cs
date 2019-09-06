@@ -80,6 +80,7 @@ namespace d360.web.Controllers
             var tagList = new List<ReadOnlyFieldValue>();
             string tagDisplayDescription = "";
             string tagDisplayName = "";
+            string tagCategory = "";
             
             var details = Company.GetObjectDetail(type.ToString(), id);
             if (details != null)
@@ -263,6 +264,7 @@ namespace d360.web.Controllers
                     {
                         tagDisplayDescription = ft.DisplayDescription;
                         tagDisplayName = ft.FriendlyName;
+                        tagCategory = ft.Category;
                         var ro = new ReadOnlyFieldValue
                         {
                             Value = ft.FriendlyName,
@@ -511,7 +513,8 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 list.Add(new DetailReadOnlyRowModel
                 {
                     columns = 1,
-                    FirstColumnFields = new List<ReadOnlyField> { title }
+                    FirstColumnFields = new List<ReadOnlyField> { title },
+                    Category = tagCategory
                 });
 
             }
