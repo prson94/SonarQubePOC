@@ -179,12 +179,12 @@ export class ResourcesService extends BaseObservableService {
         this.http.get(url, { responseType: 'blob' }).subscribe((data: any) => this.downloadFile(data, "Users.xlsx"));  
     }
 
-    downloadFile(data: Response, filename: string) {
+    downloadFile(data: Blob, filename: string) {
          if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data.blob(), filename);
+            window.navigator.msSaveOrOpenBlob(data, filename);
         }
         else {
-            var url = window.URL.createObjectURL(data.blob());
+            var url = window.URL.createObjectURL(data);
             var anchor = document.createElement("a");
             anchor.setAttribute("style", "display:none;");
             document.body.appendChild(anchor);
