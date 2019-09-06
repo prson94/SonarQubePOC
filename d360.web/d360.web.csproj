@@ -1171,6 +1171,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\shared-asset-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\gov-checkbox.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\assetbrowserlayout.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-responsibility-selector.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />

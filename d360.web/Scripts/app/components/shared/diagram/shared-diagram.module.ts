@@ -51,8 +51,6 @@ import { SharedFormMessageModule } from '../form-message.part'
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 import { NgxJsonViewModule } from 'ng-json-view';
 
-
-
 @NgModule({
     imports: [CommonModule,
         DeprecatedI18NPipesModule,
