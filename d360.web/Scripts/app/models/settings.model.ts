@@ -97,7 +97,7 @@ export module SettingsHelper {
             { title: "Model", value: "Taxonomy", selected: false },
             { title: "Policy", value: "Policy", selected: false },
             { title: "Reference", value: "Reference", selected: false },
-            { title: "User", value: "Users", selected: false },
+            { title: "User", value: "Resource", selected: false },
             { title: "Grammatic Type", value: "Synonym", selected: false },
             { title: "Data Quality", value: "Rule", selected: false }
         ];
