@@ -566,6 +566,16 @@ values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, 
             new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
         }
 
+        private void CopyFieldLookupValuesAsIs(Guid executionID, int timeout = 3600)
+        {
+            Connection.Execute(@"
+        update	T
+        set		T.LookupValue = T.[FieldValue]
+        from	api.ExecutionField T
+		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.[Type] = 'Lookup' and T.ExecutionID = @executionID
+            ", new { executionID }, commandTimeout: timeout);
+        }
+
         private void ResolveFieldLookupValues(Guid executionID, int timeout = 3600)
         {
             Connection.Execute(@"
@@ -1991,7 +2001,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             return results;
         }
 
-        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true)
+        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
         {
             var results = new List<DatabaseBulkAssetResult>();
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
@@ -2284,7 +2294,14 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                         #endregion
 
-                        ResolveFieldLookupValues(execution.ExecutionID, timeout);
+                        if (lookupFieldsPassedByValue)
+                        {
+                            CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout);
+                        }
+                        else
+                        {
+                            ResolveFieldLookupValues(execution.ExecutionID, timeout);
+                        }
 
                         if (at.Object == "RuleType")
                         {

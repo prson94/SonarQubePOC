@@ -2901,7 +2901,7 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert},System.Boolean)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert},System.Boolean,System.Boolean)">
             <summary>
             Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
@@ -2917,7 +2917,8 @@
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
-            <param name="assets">The payload of your request.</param>
+            <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
+            <param name="assets">The payload of your request.</param>        
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate},System.Boolean)">
@@ -3039,21 +3040,19 @@
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
             <summary>
-            Creates association between an existing Asset and an existing tag
+            Creates association between an existing asset and an existing tag.
             </summary>
             <remarks>
-            An Administrator can create  any tag association. 
-            A regular user can only create a tag association to assets they have access to.
+            An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
             </remarks>
             <param name="assetTags">Collection of assets and tags to associate.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
             <summary>
-            Removes association between an existing Asset and an exiting Tag
+            Removes the association between an existing asset and an existing tag.
             </summary>
-            <remarks>An Administrator can remove any tag association. 
-            A regular user can only remove a tag association to an asset they initially created the association for.
+            <remarks>An Administrator can remove any tag association. A non-administrative user can only remove tag associations for assets to which they have read access.
             </remarks>
             <param name="assetTags">Collection of assets and tags to remove tag associations for.</param>
             <returns>An HTTP status code and message.</returns>

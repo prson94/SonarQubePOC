@@ -36,4 +36,34 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err))
             );
     }
+
+    public saveAsset(
+        assetTypeUid: string,
+        asset: any
+    ): Observable<JsonResult> {
+
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })            
+        };        
+
+        
+        if (asset.UID) {
+            return this
+                .http
+                .put(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, [{ asset }], httpOptions)
+                .pipe(
+                    map(res => <JsonResult>res),
+                    catchError(err => this.handleError(err))
+                );
+        }
+        else {
+            return this
+                .http
+                .post(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, [{ asset }], httpOptions)
+                .pipe(
+                    map(res => <JsonResult>res),
+                    catchError(err => this.handleError(err))
+                );
+        }       
+    }
 }

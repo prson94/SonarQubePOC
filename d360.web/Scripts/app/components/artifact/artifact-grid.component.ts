@@ -26,7 +26,8 @@ import {
     GridAttributeFilterExpression
 } from '../../models/grid-definition.model';
 import {GridDefinitionService} from '../../services/grid-definition.service';
-import {ArtifactService} from '../../services/artifacts.service';
+import { ArtifactService } from '../../services/artifacts.service';
+import { AssetService } from '../../services/asset.service';
 import {PermissionsService} from '../../services/permissions.service';
 import {StateService} from '../../services/state.service';
 import {HeaderActionsService} from '../../services/header-actions.service';
@@ -40,7 +41,7 @@ import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-artifact-grid',
-    providers: [GridDefinitionService, ArtifactService, PermissionsService, ObjectDetailService],
+    providers: [GridDefinitionService, ArtifactService, PermissionsService, ObjectDetailService, AssetService],
     templateUrl: './artifact-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -100,7 +101,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         private gridDefinitionService: GridDefinitionService,
         private artifactService: ArtifactService,
         private changeDetectorRef: ChangeDetectorRef,
-        private objectDetailService: ObjectDetailService
+        private objectDetailService: ObjectDetailService,
+        private assetService: AssetService
     ) {
         super();
                 
@@ -266,6 +268,9 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.showEditor = false;
 
         let values: any = {};
+        let asset: any = {
+            Fields: {}
+        };
 
         //takes the form and convert any array values to , separated string values
         for (var p in event.item) {
@@ -278,9 +283,21 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             }
         }
 
+        //convert artifact to an asset
+        for (var p in values) {
+            if (p.toUpperCase() == "PARENTUID") {
+                asset.ParentUid = values[p];
+            }
+            else {
+                asset.Fields[p] = values[p]
+            }
+        }
+
+        console.log(asset);
+
         this
-            .artifactService
-            .saveArtifact(values)
+            .assetService
+            .saveAsset(this.artifactType.AssetTypeUID, asset)
             .subscribe(result => {
                 this.isEditing = false;
                 this.showMessageForResult(this.messagesService, result);
