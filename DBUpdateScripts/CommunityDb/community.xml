@@ -37,4 +37,5 @@
   <include file="scripts/GOV-7706.xml"/>
   <include file="scripts/GOV-7897.xml"/> <!--system setting for LineageVersion-->
   <include file="scripts/GOV-7943.xml"/> <!--system setting for UseAsTransformationLimit-->
+  <include file="scripts/GOV-8130.xml"/> <!--rename search type in system settings--> 
 </databaseChangeLog>
