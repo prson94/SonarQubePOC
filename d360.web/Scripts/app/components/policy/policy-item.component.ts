@@ -8,7 +8,7 @@ import {Title} from '@angular/platform-browser';
 import {TreeNode} from 'primeng/primeng';
 
 import {Breadcrumb} from '../../models/breadcrumb.model';
-import {Policy, PolicyType, PolicyStatus} from '../../models/policy.model';
+import {Policy, PolicyType } from '../../models/policy.model';
 import {Permission} from '../../models/responsibility-type.model';
 
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
@@ -225,10 +225,6 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     loadPolicyItems(policyTypeId: number, selectedHierarchyId: number): Promise<any> {
         return this.policiesService.getPolicies(policyTypeId).toPromise().then(
             r => {
-                for (let policy of r) {
-                    policy.StatusName = PolicyStatus[policy.Status];
-                }
-
                 this.policies = r;
 
                 this.treeNodeArray = this.buildTreeNodeArray(this.policies);

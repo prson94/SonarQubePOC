@@ -613,12 +613,12 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 )),
             this.g(go.Panel, "Vertical", {
                     alignment: go.Spot.Left,
-                    alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+                    alignmentFocus: new go.Spot(0, 0.5, 8, 0)
                 },
                 [this.makePort("IN", false)]),
             this.g(go.Panel, "Vertical", {
                     alignment: go.Spot.Right,
-                    alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+                    alignmentFocus: new go.Spot(1, 0.5, -8, 0)
                 },
                 [this.makePort("OUT", false)]));
     }
@@ -682,12 +682,12 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 )),
             this.g(go.Panel, "Vertical", {
                     alignment: go.Spot.Left,
-                    alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+                    alignmentFocus: new go.Spot(0, 0.5, 8, 0)
                 },
                 [this.makePort("IN", false)]),
             this.g(go.Panel, "Vertical", {
                     alignment: go.Spot.Right,
-                    alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+                    alignmentFocus: new go.Spot(1, 0.5, -8, 0)
                 },
                 [this.makePort("OUT", false)]));
     }
@@ -751,12 +751,12 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 )),
             this.g(go.Panel, "Vertical", {
                     alignment: go.Spot.Left,
-                    alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+                    alignmentFocus: new go.Spot(0, 0.5, 8, 0)
                 },
                 [this.makePort("IN", false)]),
             this.g(go.Panel, "Vertical", {
                     alignment: go.Spot.Right,
-                    alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+                    alignmentFocus: new go.Spot(1, 0.5, -8, 0)
                 },
                 [this.makePort("OUT", false)]));
 
@@ -821,12 +821,12 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 )),
             this.g(go.Panel, "Vertical", {
                     alignment: go.Spot.Left,
-                    alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+                    alignmentFocus: new go.Spot(0, 0.5, 8, 0)
                 },
                 [this.makePort("IN", false)]),
             this.g(go.Panel, "Vertical", {
                     alignment: go.Spot.Right,
-                    alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+                    alignmentFocus: new go.Spot(1, 0.5, -8, 0)
                 },
                 [this.makePort("OUT", false)]));
     }
@@ -888,12 +888,12 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
                 )),
             this.g(go.Panel, "Vertical", {
                     alignment: go.Spot.Left,
-                    alignmentFocus: new go.Spot(0, 0.5, -8, 0)
+                    alignmentFocus: new go.Spot(0, 0.5, 8, 0)
                 },
                 [this.makePort("IN", false)]),
             this.g(go.Panel, "Vertical", {
                     alignment: go.Spot.Right,
-                    alignmentFocus: new go.Spot(1, 0.5, 8, 0)
+                    alignmentFocus: new go.Spot(1, 0.5, -8, 0)
                 },
                 [this.makePort("OUT", false)]));
     }

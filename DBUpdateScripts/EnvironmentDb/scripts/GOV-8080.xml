@@ -1,0 +1,28 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="kmcnamee" id="GOV-8080-B">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+    if not exists (SELECT * FROM sys.indexes WHERE name='IX_Intersect_Subject_SubjectID_IntersectType' AND object_id = OBJECT_ID('dbo.[Intersect]'))
+  begin
+	  create nonclustered index IX_Intersect_Subject_SubjectID_IntersectType on [intersect] (subjectid,subject) include(IntersectTypeID);
+  end
+    
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+      drop index IX_Intersect_Subject_SubjectID_IntersectType on [intersect]
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

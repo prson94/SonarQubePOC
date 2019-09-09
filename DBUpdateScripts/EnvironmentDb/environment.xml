@@ -295,4 +295,9 @@
   <include file="scripts/GOV-8038.xml"/> <!-- IGC: [integration].[ExecutionAssetTypeError] - new column -->
   <include file="scripts/GOV-8008.xml"/> <!-- IGC: [integration].[CompleteExecution] -->
   <include file="scripts/GOV-8060.xml"/> <!-- perf optmizations [utility].[ArtifactAssetParent] -->
+  <include file="scripts/GOV-7786.xml"/> <!-- Create table api.ExecutionAssetCrossReference -->
+  <include file="scripts/GOV-8080.xml"/> <!-- perf optmizations intersect table subject / subjectid -->
+  <include file="scripts/GOV-8096.xml"/> <!-- IGC: [integration].[CompleteExecution] -->
+  <include file="scripts/GOV-7788.xml"/> <!-- Add Column ExecutionItemUid on api.ExecutionRelationship -->
+  <include file="scripts/GOV-7941.xml"/> <!-- graph.SynchronizeTables - new proc to sync graph tables -->
 </databaseChangeLog>

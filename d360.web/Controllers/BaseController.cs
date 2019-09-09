@@ -372,7 +372,8 @@ namespace d360.web.Controllers
             DataType.DataTableSelect.ToString(),
             DataType.OwnershipLookup.ToString(),
             DataType.RefListRelationship.ToString(),
-            DataType.JsonElement.ToString()
+            DataType.JsonElement.ToString(),
+            DataType.Tag.ToString()
         };
 
         public BaseController(ICommunityContext community, ICompanyContext company)
@@ -551,7 +552,7 @@ namespace d360.web.Controllers
 
             fields.ForEach(f =>
             {
-                if (f.IsEditable)
+                if (f.IsEditable && f.Type != "Tag")
                 {
                     #region Is Editable
 
@@ -779,7 +780,7 @@ namespace d360.web.Controllers
 
             fieldTypes.ForEach(ft =>
             {
-                if (ft.IsEditable)
+                if (ft.IsEditable && ft.Type != "Tag")
                 {
                     #region Is Editable
 

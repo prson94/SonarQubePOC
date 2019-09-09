@@ -608,19 +608,13 @@ namespace d360.web.Controllers
                 case "ORGANIZATIONINVITATION":
                     return DeleteOrganizationInvitation(objectID);
                 case "PREDICATE":
-                    return DeletePredicate(form);
-                case "REFERENCEITEM":
-                    return DeleteReferenceItem(form);
+                    return DeletePredicate(form);                
                 case "REPORT":
                     return await DeleteReport(form);
                 case "REPORTTILE":
-                    return DeleteReportTile(form);
-                case "RULE":
-                    return DeleteRule(form);
+                    return DeleteReportTile(form);                
                 case "RULETYPE":
-                    return DeleteRuleType(form);
-                case "POLICY":
-                    return DeletePolicy(form);                
+                    return DeleteRuleType(form);                
                 case "POLICYTYPELEVEL":
                     return DeletePolicyTypeLevel(form);
                 case "RULEIMPLEMENTATION":
@@ -632,9 +626,7 @@ namespace d360.web.Controllers
                 case "SURVEYQUESTIONTYPE":
                     return DeleteQuestionType(form);
                 case "SYNONYM":
-                    return DeleteSynonym(form);
-                case "TAXONOMY":
-                    return DeleteTaxonomy(form);
+                    return DeleteSynonym(form);                
                 case "TAXONOMYTYPE":
                     return DeleteTaxonomyType(form);
                 case "TAXONOMYTYPELEVEL":
@@ -3184,8 +3176,8 @@ namespace d360.web.Controllers
                         i.Type != DataType.FusionLookup.ToString() && 
                         i.Type != DataType.ComplexRelationLookup.ToString() && 
                         i.Type != DataType.Relationship.ToString() &&
-                        i.Type != DataType.JSON.ToString() &&
-                        i.Type != DataType.Tag.ToString())
+                        i.Type != DataType.JSON.ToString()
+                        && i.Type != DataType.Tag.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .Distinct()
                 .ToDictionary(i => i.Name, i => i.ID);
@@ -4214,6 +4206,14 @@ offset 0 rows fetch next 25 rows only
 
                 if (!Company.HasAssetTypePermission(model.Object, model.ObjectID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                if (model.Type == SystemObjects.Tag.ToString())
+                {
+                    var assetTypeID = Company.AssetTypes.FirstOrDefault(x => x.Object == model.Object && x.ObjectID == model.ObjectID)?.ID;
+                    var assets = Company.Assets.Where(x => x.AssetTypeID == assetTypeID).Select(x => x.ID);
+                    var assetTagsForDeletion = Company.AssetTags.Where(x => assets.Contains(x.AssetID)).ToList();
+                    Company.AssetTags.RemoveRange(assetTagsForDeletion);
+                }
 
                 Company.Delete(model);
 
@@ -5244,9 +5244,6 @@ offset 0 rows fetch next 25 rows only
 
         #endregion
 
-
-
-
         #region FusionType
 
         #region Form Get/Post
@@ -5862,7 +5859,6 @@ offset 0 rows fetch next 25 rows only
 
         #region IntersectType
 
-
         #region Json Feeds To Support Editing
 
         [Route("IntersectType_FormData"), NonNullableParameters]
@@ -5894,31 +5890,13 @@ offset 0 rows fetch next 25 rows only
         }
 
         [Route("IntersectType_PredicateOptions"), NonNullableParameters]
-        public JsonNetResult IntersectType_PredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int objectID = 0, int predicateID = 0)
+        public JsonNetResult IntersectType_PredicateOptions(SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
         {
             try
             {
-                var usedPredicateIDs = new List<int>();
-
-                var sSubject = subject.ToString();
-                if (@object.HasValue && objectID > 0)
-                {
-                    var sObject = @object.Value.ToString();
-                    usedPredicateIDs.AddRange(Company.Filter<IntersectType>(i => i.Subject == sSubject && i.SubjectID == subjectID && i.Object == sObject && i.ObjectID == objectID && i.PredicateID.HasValue).Select(i => i.PredicateID.Value));
-                }
-                
-                if (predicateID > 0)
-                {
-                    usedPredicateIDs.Remove(predicateID);
-                }
-
-                var models = Company.Table<Predicate>()
-                    .ToList()
-                    .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment && i.Type.AsInfoModel().AllowEditFromRelationshipEditor && !usedPredicateIDs.Contains(i.ID))
-                    .Select(i => new {
-                        title = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})",
-                        value = i.ID
-                    })
+                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+                var models = Company.GetPredicateOptions(lineageVersion, subject, subjectID, @object, objectID, predicateID)
+                    .Select(i => new { title = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.ID })
                     .OrderBy(i => i.title);
 
                 return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
@@ -5952,7 +5930,21 @@ offset 0 rows fetch next 25 rows only
         {
             try
             {
-                var models = Company.GetIntersectTypeOptions(type, id, side2Type, side2ID, predicateID)
+                List<AssetTypeClass> classLimits = null;
+
+                if (predicateID.HasValue)
+                {
+                    var predicate = Company.GetById<Predicate>(predicateID.Value);
+                    if (predicate != null)
+                    {
+                        if (predicate.Type == PredicateType.BusinessToTechnical || predicate.Type == PredicateType.FusionMapping)
+                        {
+                            classLimits = new List<AssetTypeClass>() { AssetTypeClass.FusionAttribute };
+                        }
+                    }
+                }
+                
+                var models = Company.GetIntersectTypeOptions(type, id, side2Type, side2ID, predicateID, classLimits)
                     .Where(i => i.Type != "IntersectType")
                     .Select(i => new { title = i.Name, value = i.Type + "|" + i.ID });
 
@@ -5982,30 +5974,11 @@ offset 0 rows fetch next 25 rows only
                 var subjectInfo = subject.Split('|');
                 var @object = form["Object"];
                 var objectInfo = @object.Split('|');
-
                 var predicate = form["Predicate"];
-                int? predicateID = null;
 
                 if (string.IsNullOrEmpty(predicate))
                 {
                     throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Please select a predicate for this relationship.");
-                }
-
-                predicateID = int.Parse(predicate);
-
-                var predicateModel = Company.GetById<Predicate>(predicateID.Value);
-
-                if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add a relationship type with this predicate.");
-                }
-                if ((subject != @object) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
-                }
-                if ((subject == @object) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
                 }
 
                 var model = new IntersectType {
@@ -6016,14 +5989,15 @@ offset 0 rows fetch next 25 rows only
                     ObjectCardinality = parseEnumField<Cardinality>(form, "ObjectCardinality"),
                     ObjectID = int.Parse(objectInfo[1]),
                     IsSystem = false,
-                    PredicateID = predicateID
+                    PredicateID = int.Parse(predicate)
                 };
-                Company.Add<IntersectType>(model);
+
+                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+
+                Company.UpsertIntersectType(model, lineageVersion);
                 var id = model.ID;
 
-                var name = Company.GetIntersectTypeName(model);
-
-                return jsonSuccess(name + " successfully created.", id.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess("Relationship type successfully created.", id.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -6079,7 +6053,7 @@ offset 0 rows fetch next 25 rows only
 
                 var id = int.Parse(form["ID"]);
 
-                // Permisisons validation.
+                // Permissions validation.
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
@@ -6094,28 +6068,10 @@ offset 0 rows fetch next 25 rows only
                 var objectInfo = @object.Split('|');
 
                 var predicate = form["Predicate"];
-                int? predicateID = null;
 
                 if (string.IsNullOrEmpty(predicate))
                 {
                     throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Please select a predicate for this relationship.");
-                }
-
-                predicateID = int.Parse(predicate);
-
-                var predicateModel = Company.GetById<Predicate>(predicateID.Value);
-
-                if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to edit relationship type with this predicate.");
-                }
-                if ((subject != @object) && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
-                }
-                if ((subject == @object) && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
                 }
 
                 model.Subject = subjectInfo[0];
@@ -6126,10 +6082,11 @@ offset 0 rows fetch next 25 rows only
                 model.ObjectID = int.Parse(objectInfo[1]);
                 model.PredicateID = int.Parse(predicate);
 
-                Company.Update<IntersectType>(model);
-                var name = Company.GetIntersectTypeName(model);
+                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
-                return jsonSuccess(name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
+                Company.UpsertIntersectType(model, lineageVersion);
+
+                return jsonSuccess("Relationship type  successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -8840,41 +8797,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             }
         }
 
-        [HttpDelete, Route("DeletePolicy")]
-        public JsonResult DeletePolicy(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("Policy");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "Policy");
-                if (model == null) throw new NotFoundException("Policy");
-
-                if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.Policy, id);
-
-                dynamic custom = new
-                {                    
-                    action = "delete",
-                    Context = form["_context"]
-                };                
-
-                return jsonSuccess("Policy successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-        
         [HttpPut, ValidateInput(false), Route("EditPolicy"), NonNullableParameters]
         public JsonResult EditPolicy(FormCollection form)
         {
@@ -8990,7 +8912,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             form.Add("ID", policyTypeId.ToString());
             return DeletePolicyTypeLevel(form);
         }
-
 
         [HttpDelete, Route("DeletePolicyTypeLevel")]
         public JsonResult DeletePolicyTypeLevel(FormCollection form)
@@ -9152,6 +9073,13 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                         throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add another predicate of this type. Only one may exist.");
                 }
 
+                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+
+                if (!a.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {a.Type.AsInfoModel().Name}.");
+                }
+
                 Company.Add<Predicate>(a);
 
                 return jsonSuccess(a.Name + " successfully created.", string.Format("Predicate|{0}", a.ID), "add", HttpStatusCode.Created, new { });
@@ -9220,7 +9148,14 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                     model.Type = (PredicateType)parseIntField(form, "Type");
                 }
 
-                Company.Update<Predicate>(model);
+                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+
+                if (!model.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
+                {
+                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {model.Type.AsInfoModel().Name}.");
+                }
+
+                Company.Update(model);
 
                 return jsonSuccess(model.Name + " successfully updated.", string.Format("IntersectRole|{0}", id), "edit", HttpStatusCode.OK, new { });
             }
@@ -9348,35 +9283,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 }
 
                 return jsonSuccess(type.Name + " successfully created.", model.ObjectID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteReferenceItem")]
-        public JsonResult DeleteReferenceItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItem");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
-                if (model == null) throw new NotFoundException("ReferenceItem");
-
-                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, model.ObjectID, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.ReferenceItem, id);
-                
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -12353,42 +12259,7 @@ order by	case
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [HttpDelete, Route("DeleteRule")]
-        public JsonResult DeleteRule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("Rule");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Rule>(id);
-                if (model == null) throw new NotFoundException("Rule");
-
-                if (!Company.HasAssetPermission(SystemObjects.Rule, model.ID, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.Rule, model.ID);
-
-                dynamic custom = new
-                {
-                    action = "delete",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
+                
         [HttpPut, ValidateInput(false), Route("EditRule")]
         public JsonResult EditRule(FormCollection form)
         {
@@ -13932,9 +13803,7 @@ order by	case
             }
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        
-        
+                
         #endregion
 
         #region Form Get/Post
@@ -14017,43 +13886,7 @@ order by	case
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [HttpDelete, Route("DeleteTaxonomy")]
-        public JsonResult DeleteTaxonomy(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("taxonomy");
-
-                var id = parseIntField(form, "ID");
-
-                if (!Company.HasAssetPermission(SystemObjects.Taxonomy, id, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                var model = Company.Assets.Where(x => (x.Object == "Taxonomy" && x.ObjectID == id)).Include(x => x.AssetType).FirstOrDefault();
-                if (model == null) throw new NotFoundException("taxonomy");
                 
-                dynamic custom = new
-                {
-                    model.AssetType.ObjectID,
-                    Context = form["_context"]
-                };
-
-                Company.Delete(SystemObjects.Taxonomy, id);
-                
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         [HttpPut, ValidateInput(false), Route("EditTaxonomy")]
         public JsonResult EditTaxonomy(FormCollection form)
         {

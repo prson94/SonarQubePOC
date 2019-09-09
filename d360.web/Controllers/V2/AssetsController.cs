@@ -988,11 +988,10 @@ namespace d360.web.Controllers.V2
 
         #region AssetTag
         /// <summary>
-        /// Creates association between an existing Asset and an existing tag
+        /// Creates association between an existing asset and an existing tag.
         /// </summary>
         /// <remarks>
-        /// An Administrator can create  any tag association. 
-        /// A regular user can only create a tag association to assets they have access to.
+        /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
         /// </remarks>
         /// <param name="assetTags">Collection of assets and tags to associate.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -1065,10 +1064,11 @@ namespace d360.web.Controllers.V2
                 AssetTag assetTag = this.tagRepository.CreateAssetTag(currentTag.ID, asset.ID);
                 if (assetTag != null)
                 {
+                    var tag = this.tagRepository.GetTagById(assetTag.TagID);
                     result = new AssetTagSuccessApiModel()
                     {
                         Message = $"Asset / Tag Association  created",
-                        Uid = assetTag.UID.Value,
+                        Uid = tag.uid,
                         Success = true
                     };
                     resultList.Add(result);
@@ -1088,10 +1088,9 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Removes association between an existing Asset and an exiting Tag
+        /// Removes the association between an existing asset and an existing tag.
         /// </summary>
-        /// <remarks>An Administrator can remove any tag association. 
-        /// A regular user can only remove a tag association to an asset they initially created the association for.
+        /// <remarks>An Administrator can remove any tag association. A non-administrative user can only remove tag associations for assets to which they have read access.
         /// </remarks>
         /// <param name="assetTags">Collection of assets and tags to remove tag associations for.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -1099,7 +1098,7 @@ namespace d360.web.Controllers.V2
             HttpDelete,
             Route("tags"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Delete association between an existing Asset and an exiting Tag,returns the UID of deleted asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "Removes the association between an existing asset and an existing tag, returns the Uid of removed asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))             
         ]
         public IHttpActionResult DeleteAssetTag(List<AssetTagApiModel> assetTags)

@@ -107,7 +107,7 @@ namespace d360.extensions.search
         private const string DEFAULT_SEARCH_SERVER = "search1-d3s.cloudapp.net:9200";
         private const int BULK_BATCH_SIZE = 5000;
 
-        private const string MAPPING_VERSION_5 = "{\"settings\": { \"index\": { \"number_of_shards\": 2, \"number_of_replicas\": 1 }},\"mappings\": {\"_doc\" : {\"properties\" : {\"d3sGroup\" : {\"type\" : \"keyword\" }, \"Type\" : {\"type\" : \"keyword\" }}}}}";
+        private const string MAPPING_VERSION_5 = "{\"settings\": {\"index\": {\"number_of_shards\": 2,\"number_of_replicas\": 1}},\"mappings\": {\"_doc\": {\"date_detection\": false, \"properties\": {\"d3sGroup\": {\"type\": \"keyword\"},	\"d3sTags\": { \"type\": \"nested\", \"properties\": { \"Uid\": { \"type\": \"keyword\" }}}, \"Type\": { \"type\": \"keyword\" }, \"Uid\": { \"type\": \"keyword\"	}, \"AssetTypeUid\": { \"type\": \"keyword\"}}}}}";
 
         protected string SearchServerUrl { get; set; }
 
@@ -234,7 +234,7 @@ namespace d360.extensions.search
 
         private string EscapeValueForDoc(string input)
         {
-            input.Replace("\r", "").Replace("\n", "").Replace("\v", "").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
+            input = input.Replace("\r", "").Replace("\n", "").Replace("\v", "").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
             input = HtmlUtilities.RemoveTags(input);
             return input;
         }
@@ -295,6 +295,15 @@ namespace d360.extensions.search
                         sb.Append(EscapeValueForDoc(f.Value));
                         sb.Append("\"");
                     }
+
+                    if(item.Tags != null && item.Tags.Any())
+                    {
+                        string[] tags = item.Tags.Select(t => "{ \"Uid\": \"" + t.Key + "\", \"Value\": \"" + EscapeValueForDoc(t.Value) + "\"}").ToArray();
+                        sb.Append(", \"d3sTags\":[");
+                        sb.Append(string.Join(",", tags));
+                        sb.Append("]");
+                    }
+
                     sb.Append("}\n");
                 }
                 sb.Append("\n");
@@ -434,7 +443,7 @@ namespace d360.extensions.search
                 string[] types = type.Split(',');
                 if (types.Length > 1)
                 {
-                    searchFilters.Add(" { \"terms\":  { \"d3sGroup\": [\"" + String.Join("\",\"",types) + "\"] } }");
+                    searchFilters.Add(" { \"terms\":  { \"d3sGroup\": [\"" + string.Join("\",\"",types) + "\"] } }");
                 }
                 else
                 {
@@ -542,16 +551,18 @@ namespace d360.extensions.search
             var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
 
             result.Results = searchResults.hits.hits.Select(h => new IndexResult {
-                Description = GetHighlightedPropertyValueIfExists(h, "Description"),
-                Group = h.d3sGroup,
-                ID = h._id,
                 Name = GetHighlightedNameValueIfExists(h),
+                DisplayName = GetDisplayName(h),
+                Description = GetHighlightedPropertyValueIfExists(h, "Description"),
+                Group = MapGroupToFriendlyName(h.d3sGroup),
+                ID = h._id,
                 NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score/searchResults.hits.max_score.GetValueOrDefault()*100)),
                 Score = h._score,
                 Type = GetHighlightedPropertyValueIfExists(h, "Type"),
                 Url = GetHighlightedPropertyValueIfExists(h, "Url"),
-                Uid = GetUid(h, "Uid"),
-                Icon = GetIcon(h)
+                Uid = GetGuidPropertyIfExists(h, "Uid"),
+                AssetTypeUid = GetGuidPropertyIfExists(h, "AssetTypeUid"),
+                Tags = GetTags(h)
             }).ToList();
 
 
@@ -560,7 +571,7 @@ namespace d360.extensions.search
                 categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexTypeList
                 {
                     Name = h.key,
-                    DisplayName = MapTypeToFriendlyName(h.key),
+                    DisplayName = MapGroupToFriendlyName(h.key),
                     ResultCount = h.doc_count,
                     Categories = h.category?.buckets.Select(c => new IndexCategory
                     {
@@ -578,12 +589,7 @@ namespace d360.extensions.search
             return result;
         }
 
-        private string GetIcon(SearchResultsHitModel hit)
-        {
-            return "fa-search";
-        }
-
-        private string MapTypeToFriendlyName(string key)
+        private string MapGroupToFriendlyName(string key)
         {
             if (string.IsNullOrEmpty(key)) return string.Empty;
 
@@ -640,7 +646,7 @@ namespace d360.extensions.search
                     string[] types = type.Split(',');
                     if (types.Length > 1)
                     {
-                        sb.Append(" { \"terms\":  { \"d3sGroup\": [\"" + String.Join("\",\"", types) + "\"] } }");
+                        sb.Append(" { \"terms\":  { \"d3sGroup\": [\"" + string.Join("\",\"", types) + "\"] } }");
                     }
                     else
                     {
@@ -663,22 +669,13 @@ namespace d360.extensions.search
             return searchResults.hits.hits.Select(h => new TypeaheadResult
             {
                 Name = GetPropertyValue<string>(h._source, "Name"),
-                DisplayName = GetDisplayName(h),//GetHighlightedPropertyValueIfExists(h, "Name"),
-                Desc = GetHighlightedPropertyValueIfExists(h, "Description"),
-                Type = GetTypeAheadDisplayType(h),//mapTypeToFriendlyName(h._type),
+                DisplayName = GetDisplayName(h),
+                Group = MapGroupToFriendlyName(h.d3sGroup),
+                Type = GetPropertyValue<string>(h._source, "Type"),
                 Url = GetPropertyValue<string>(h._source, "Url"),
-                Uid = GetUid(h, "Uid"),
-                Icon = GetIcon(h)
+                Uid = GetGuidPropertyIfExists(h, "Uid"),
+                Tags = GetTags(h)
             });
-        }
-
-        private string GetTypeAheadDisplayType(SearchResultsHitModel h)
-        {
-            if ((h.d3sGroup ?? string.Empty).ToUpper() == "ARTIFACT")
-            {
-                return $"{MapTypeToFriendlyName(h.d3sGroup)} - {GetPropertyValue<string>(h._source, "Type")}";
-            }
-            return MapTypeToFriendlyName(h.d3sGroup);
         }
 
         private string GetTypeAheadSynonymDisplayType(SearchResultsHitModel h)
@@ -686,9 +683,9 @@ namespace d360.extensions.search
             var type = GetPropertyValue<string>(h._source, "SynonymForObject");
             if ((type ?? string.Empty).ToUpper() == "ARTIFACT")
             {
-                return $"{MapTypeToFriendlyName(type)} - {GetPropertyValue<string>(h._source, "SynonymForObjectType")}";
+                return $"{MapGroupToFriendlyName(type)} - {GetPropertyValue<string>(h._source, "SynonymForObjectType")}";
             }
-            return MapTypeToFriendlyName(type);
+            return MapGroupToFriendlyName(type);
         }
 
         /// <summary>
@@ -733,16 +730,18 @@ namespace d360.extensions.search
 
             result.Results = searchResults.hits.hits.Select(h => new IndexResult
             {
-                Description = GetPropertyValue<string>(h._source, "Description"),
-                Group = h.d3sGroup,
-                ID = h._id,
                 Name = GetPropertyValue<string>(h._source, "Name"),
+                DisplayName = GetDisplayName(h),
+                Description = GetPropertyValue<string>(h._source, "Description"),
+                Group = MapGroupToFriendlyName(h.d3sGroup),
+                ID = h._id,
                 NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score / searchResults.hits.max_score.GetValueOrDefault() * 100)),
                 Score = h._score,
                 Type = GetPropertyValue<string>(h._source, "Type"),
                 Url = GetPropertyValue<string>(h._source, "Url"),
-                Uid = GetUid(h, "Uid"),
-                Icon = GetIcon(h)
+                Uid = GetGuidPropertyIfExists(h, "Uid"),
+                AssetTypeUid = GetGuidPropertyIfExists(h, "AssetTypeUid"),
+                Tags = GetTags(h)
             }).ToList();
             
             result.ElapsedMS = searchResults.took;
@@ -812,15 +811,23 @@ namespace d360.extensions.search
             return GetPropertyValue<string>(h._source, propName);
         }
 
-        private Guid? GetUid(SearchResultsHitModel h, string propName)
+        private Guid? GetGuidPropertyIfExists(SearchResultsHitModel h, string propName)
         {
             Guid result = new Guid();
-            Guid.TryParse(GetPropertyValue<string>(h._source, "Uid"), out result);
+            Guid.TryParse(GetPropertyValue<string>(h._source, propName), out result);
             if (result == Guid.Empty)
                 return null;
             return result;
         }
 
+        private List<IndexTag> GetTags(SearchResultsHitModel h)
+        {
+            List<IndexTag> tags = new List<IndexTag>();
+            if (h._source != null && h._source.TryGetValue("d3sTags", out JToken jToken))
+                if (jToken.Type == JTokenType.Array)
+                    tags = JsonConvert.DeserializeObject<List<IndexTag>>(jToken.ToString());
+            return tags;
+        }
 
         private T GetPropertyValue<T>(JObject _source, string propName)
         {
@@ -934,6 +941,14 @@ namespace d360.extensions.search
                         bFirst = false;
 
                     sb.Append(" \"" + f.Key + "\" : \"" + EscapeValueForDoc(f.Value) + "\" ");
+                }
+
+                if (item.Tags != null && item.Tags.Any())
+                {
+                    string[] tags = item.Tags.Select(t => "{ \"Uid\": \"" + t.Key + "\", \"Value\": \"" + EscapeValueForDoc(t.Value) + "\"}").ToArray();
+                    sb.Append(", \"d3sTags\":[");
+                    sb.Append(string.Join(",", tags));
+                    sb.Append("]");
                 }
                 sb.Append(" } }\n");
             }

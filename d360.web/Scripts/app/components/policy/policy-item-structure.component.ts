@@ -10,7 +10,7 @@ import { Title } from '@angular/platform-browser';
 import { TreeNode } from 'primeng/primeng';
 
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { Policy, PolicyType, PolicyStatus } from '../../models/policy.model';
+import { Policy, PolicyType } from '../../models/policy.model';
 import { GridColumn, GridField } from '../../models/grid-definition.model';
 
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -59,8 +59,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     showDelete = false;
     showEditor = false;
-
-    theDeleteCallback: Function;
+        
     @ViewChild("treeTable") treeTable: any;
     unfilteredTreeNode: TreeNode[] = [];
 
@@ -79,8 +78,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         private gridDefinitionService: GridDefinitionService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
-        this.theDeleteCallback = this.deletePolicyItem.bind(this);
+        this.rightSidebarService = rightSidebarService;        
         router.events.subscribe(
             (value) => {
                 this.showEditor = false;
@@ -88,8 +86,12 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         );
     }
 
+    private filterQ: any;
     filter(event) {
-        this.filterTreeTable(this.unfilteredTreeNode, event.target.value, this.treeTable);
+        window.clearTimeout(this.filterQ);
+        this.filterQ = setTimeout(() => {
+            this.filterTreeTable(this.unfilteredTreeNode, event.target.value, this.treeTable);
+        }, 600);
     }
 
     ngOnInit() {
@@ -160,12 +162,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     private loadPolicyHierarchy(policyTypeId: number) {
         this.policiesService.getPolicies(policyTypeId, true).subscribe(
-            result => {
-
-                for (let policy of result) {
-                    policy.StatusName = PolicyStatus[policy.Status];
-                }
-
+            result => {                
                 this.policies = result;
                 this.treeNodeArray = this.buildTreeNodeArray(this.policies, 1);
                 this.unfilteredTreeNode = JSON.parse(JSON.stringify(this.treeNodeArray));
@@ -222,23 +219,10 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         return styles;
     }
 
-    deletePolicyItem(id: number) {
-        this.isLoading = true;
-
-        this.policiesService.deletePolicy(id).subscribe(
-            res => {
-                this.showMessageForResult(this.messagesService, res);
-
-                if (res.type != 'error') {
-                    this.deleteSelectedTreeNode(id);
-                    this.headerActionsService.emitFavoritesChange();
-                    this.selected = null;
-                }
-
-                this.isLoading = false;
-            }
-        );
-
+    public onDeleted() {
+        this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
+        this.deleteSelectedTreeNode(this.selected.data.ID);
+        this.selected = null;
         this.showDelete = false;
     }
 

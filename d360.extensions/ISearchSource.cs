@@ -43,32 +43,37 @@ namespace d360.extensions
         public int ElapsedMS { get; set; }
     }
 
+    public class IndexTag
+    {
+        public Guid? Uid { get; set; }
+        public string Value { get; set; }
+    }
+
     public class TypeaheadResult
     {
+        public TypeaheadResult()
+        {
+            Tags = new List<IndexTag>();
+        }
         public string Name { get; set; }
         public string DisplayName { get; set; }
+        public string Group { get; set; }
         public string Type { get; set; }
         public string Url { get; set; }
 
-        public string Desc { get; set; }
         public string Icon { get; set; }
         public string ImageUrl { get; set; }
         public Guid? Uid { get; set; }
+        public Guid? AssetTypeUid { get; set; }
+        public List<IndexTag> Tags { get; set; }
     }
 
-    public class IndexResult
+    public class IndexResult : TypeaheadResult
     {
-        public string Name { get; set; }
-        public string Group { get; set; }
-        public string Type { get; set; }
         public string ID { get; set; }
         public string Description { get; set; }
         public string AbsoluteUrl { get; set; }
-        public string Url { get; set; }
         public float Score { get; set; }
-        public string Icon { get; set; }
-        public string ImageUrl { get; set; }
-        public Guid? Uid { get; set; }
         /// <summary>
         /// score ranging between 1 and 0 adjusted based on max value.
         /// </summary>

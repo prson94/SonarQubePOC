@@ -4,7 +4,16 @@
     </header>
 </div>
 <input type="text" [hidden]="!showSimpleFilter || hideFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-<p-table #dt [value]="data.Values" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="globalFilterFields" [pageLinks]="3" [paginator]="!hideFooter" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" (sortFunction)="customSort($event)">
+<p-table #dt 
+         [value]="data.Values" 
+         selectionMode="single" 
+         [metaKeySelection]="true" 
+         [globalFilterFields]="globalFilterFields" 
+         [pageLinks]="3" [paginator]="!hideFooter" 
+         [rows]="defaultInitialItemsPerPage" 
+         [rowsPerPageOptions]="defaultPagingOptions" 
+         (sortFunction)="customSort($event)" 
+         [customSort]="true">
     <ng-template pTemplate="header">
         <tr [hidden]="hideHeader">
             <th *ngFor="let column of visibleColumns" [style.width]="(column.columnWidth == null || column.columnWidth < 1) ? null : column.columnWidth + 'px'" [pSortableColumn]="column.sortable ? column.datafield : null">

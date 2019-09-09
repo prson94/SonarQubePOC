@@ -205,6 +205,43 @@ namespace d360.core.entities
     }
 
     [DataContract]
+    public class BulkAssetCrossReferenceResult
+    {
+       
+        [DataMember]
+        public int Total { get; set; }
+
+        [DataMember]
+        public int Processed { get; set; }
+        [DataMember]
+        public int Error { get; set; }
+        [DataMember]
+        public DateTime StartedOn { get; set; }
+        [DataMember]
+        public DateTime? CompletedOn { get; set; }
+        [DataMember]
+        public List<AssetCrossReferenceResult> Results { get; set; }
+
+    }
+
+    [DataContract]
+    public class AssetCrossReferenceResult
+    {
+        [DataMember]
+        public int ItemNumber { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public String Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+       
+
+    }
+
+    [DataContract]
     public class DatabaseBulkAssetTypeResult
     {
         [DataMember]
@@ -233,6 +270,10 @@ namespace d360.core.entities
         public Guid SubjectAssetUid { get; set; }
         [DataMember]
         public Guid ObjectAssetUid { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
         [DataMember]
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
@@ -282,6 +323,9 @@ namespace d360.core.entities
     public class DatabaseBulkRelationshipResult: IWorkflowEnabledAsset
     {
         public Guid ExecutionID { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
 
         [DataMember]
         public int ItemNumber { get; set; }
