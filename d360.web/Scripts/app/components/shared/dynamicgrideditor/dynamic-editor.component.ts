@@ -27,6 +27,7 @@ import { BaseComponent } from '../base.component';
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { concat } from 'rxjs';
+import { forEach } from '@angular/router/src/utils/collection';
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -429,6 +430,15 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     values[p] = this.form.value[p];
                 }
             }
+        }
+
+        // if this is the v2 api we need to combine any link field types into the format stored in the db
+        if (this.isV2API) {
+            let links = this.fields.filter(x => x.FieldType == 'Link');
+
+            //need to get the link and url for each
+            //links.forEach
+
         }
 
         if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {

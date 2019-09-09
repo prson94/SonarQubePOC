@@ -4,6 +4,7 @@ import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 
 import { JsonResult } from '../models/jsonresult.model';
+import { ApiResult } from '../models/apiresult.model';
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
@@ -41,7 +42,7 @@ export class AssetService extends BaseObservableService {
     public saveAsset(
         assetTypeUid: string,
         asset: AssetEditorModel
-    ): Observable<JsonResult> {
+    ): Observable<ApiResult> {
 
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })            
@@ -59,17 +60,15 @@ export class AssetService extends BaseObservableService {
                     catchError(err => this.handleError(err))
                 );
         }
-        else {
-            let result: JsonResult[]  = null;
+        else {            
             return this
                 .http
                 .post(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, assetArray, httpOptions)
                 .pipe(                    
-                    /*map((res: JsonResult[]) => {   
+                    map((res: ApiResult[]) => {   
                         console.log(res[0]);
                         return res[0];
-                    }),*/
-                    map(res => <JsonResult[]>res),
+                    }),                    
                     catchError(err => this.handleError(err))
                 );
         }       
