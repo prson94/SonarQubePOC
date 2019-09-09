@@ -988,7 +988,7 @@ namespace d360.web.Controllers.V2
 
         #region AssetTag
         /// <summary>
-        /// Creates association between an existing Asset and an existing tag.
+        /// Creates association between an existing asset and an existing tag.
         /// </summary>
         /// <remarks>
         /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
@@ -1064,10 +1064,11 @@ namespace d360.web.Controllers.V2
                 AssetTag assetTag = this.tagRepository.CreateAssetTag(currentTag.ID, asset.ID);
                 if (assetTag != null)
                 {
+                    var tag = this.tagRepository.GetTagById(assetTag.TagID);
                     result = new AssetTagSuccessApiModel()
                     {
                         Message = $"Asset / Tag Association  created",
-                        Uid = assetTag.UID.Value,
+                        Uid = tag.uid,
                         Success = true
                     };
                     resultList.Add(result);

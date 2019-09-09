@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -15,6 +15,7 @@ import { TagType, TagDetail, TagItem } from '../../models/tag.model';
 import { Location } from '@angular/common';
 import { AuthenticationService } from '../../services/authentication.service';
 import { Permission } from '../../models/responsibility-type.model';
+import { Breadcrumb } from '../../models/breadcrumb.model';
 
 
 @Component({
@@ -50,7 +51,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         rightSidebarService: RightSidebarService,
-        private authService: AuthenticationService
+        private authService: AuthenticationService,
+        private ref: ChangeDetectorRef
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -67,7 +69,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             this.tagUid = params['tagUid'];
-            this.headerBreadcrumbService.setCurrentObjectInfo('Tag', this.tagUid);
+
+
             this.logAction('open', 'Tag', this.tagUid);
             this.isLoading = true;
 
@@ -79,7 +82,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                     this.load();
                 });
 
-            this.currentAreaName = "Tag";
+
+
         });
 
 
@@ -114,7 +118,6 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                     if (this.isAdmin) {
 
                         this.setCommonRightSideBar(true);
-                        this.setActions();
 
                         if (this.auditSidebar) {
                             this.auditSidebar.hasDynamicUrl = true;
@@ -127,6 +130,8 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         this.setCommonRightSideBar(false);
 
                     }
+                    this.setActions();
+
                     this.rightSidebarService.showHeader(true);
 
                     this.tagsService.getTagDetails(this.tag.uid)
@@ -141,6 +146,21 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                             })
                             this.isLoading = false;
                         });
+
+
+                    this.headerBreadcrumbService.clearBreadcrumbs();
+                    this.currentAreaName = "Tags";
+                    let areaBreadcrumb = new Breadcrumb(
+                        this.currentAreaName, ``
+                    );
+
+                    let itemBreadcrumb = new Breadcrumb(
+                        this.tag.Value,
+                        `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${this.tag.uid}`
+                    )
+
+                    this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
+                    this.headerBreadcrumbService.showBreadcrumb(itemBreadcrumb);
                 }
                 else {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
@@ -179,36 +199,39 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     setActions() {
-        if (!this.isAdmin) return;
         this.actions = new AssetAction();
         this.actions.isVisible = true;
+        this.actions.showDelete = false;
+        this.actions.showEdit = false;
         this.actions.showBack = true;
-        this.actions.showDelete = true;
-        this.actions.showEdit = true;
-        this.actions.editCallback = this.onActionEditClick.bind(this);
-        this.actions.deleteCallback = this.onActionDeleteClick.bind(this);
+
         this.actions.backCallback = this.onActionBackClick.bind(this);
 
-        let editAction: EditFormData = new EditFormData();
-        editAction.title = 'Edit Tag';
-        editAction.closeClick = this.onActionEditCloseClick.bind(this);
-        editAction.selected = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
-        editAction.isModalVisible = false;
-        editAction.modalTitle = "Edit Tag";
-        editAction.objectID = this.tag.uid;
-        editAction.objectType = 'Tag';
-        editAction.saveClick = this.saveTag.bind(this);
-        editAction.showAsModal = true;
+        if (this.isAdmin) {
+            this.actions.showEdit = true;
+            this.actions.editCallback = this.onActionEditClick.bind(this);
+            let editAction: EditFormData = new EditFormData();
+            editAction.title = 'Edit Tag';
+            editAction.closeClick = this.onActionEditCloseClick.bind(this);
+            editAction.selected = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
+            editAction.isModalVisible = false;
+            editAction.modalTitle = "Edit Tag";
+            editAction.objectID = this.tag.uid;
+            editAction.objectType = 'Tag';
+            editAction.saveClick = this.saveTag.bind(this);
+            editAction.showAsModal = true;
+            this.actions.edit = editAction;
 
-        let deleteAction: DeleteFormData = new DeleteFormData();
-        deleteAction.callback = this.deleteCallback.bind(this);
-        deleteAction.item = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
-        deleteAction.modalTitle = 'Delete Tag';
-        deleteAction.isModalVisible = false;
-        deleteAction.showAsModal = true;
-
-        this.actions.edit = editAction;
-        this.actions.delete = deleteAction;
+            this.actions.showDelete = true;
+            let deleteAction: DeleteFormData = new DeleteFormData();
+            deleteAction.callback = this.deleteCallback.bind(this);
+            deleteAction.item = { uid: this.tag.uid, Value: this.tag.Value, UseCount: this.tag.UseCount };
+            deleteAction.modalTitle = 'Delete Tag';
+            deleteAction.isModalVisible = false;
+            deleteAction.showAsModal = true;
+            this.actions.deleteCallback = this.onActionDeleteClick.bind(this);
+            this.actions.delete = deleteAction;
+        }
 
         this.rightSidebarService.setActionTitleItems(this.actions);
     }
@@ -279,14 +302,14 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
                 this.tagUsage.forEach(detail => {
                     detail.Tags.forEach(t => {
-                        if (t.Uid == this.tagUid) {
+                        if (t["uid"] == this.tagUid) {
                             t.Value = event.item.Value;
                         }
                     });
                 });
 
                 this.onActionEditCloseClick();
-
+                this.ref.markForCheck();
 
             });
     }

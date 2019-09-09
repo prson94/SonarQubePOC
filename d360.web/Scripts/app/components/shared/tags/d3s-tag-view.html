@@ -35,15 +35,16 @@
             <ng-container *ngIf="!isShowAll">Show all {{tags.length}} tags</ng-container>
         </a>
     </ng-container>
-    <d3s-dynamic-editor
-                        [objectID]="-1"
-                        [objectType]="'Tag'"
-                        [title]="'Tag'"
-                        (saveClick)="saveTag($event)"
-                        [showAsModal]="true"
-                        [modalTitle]="editPopupTitle"
-                        [isModalVisible]="showEditor"
-                        (closeClick)="closeEditor()"
-                        [adding]="true">
-    </d3s-dynamic-editor>
+    <ng-container *ngIf="showEditor">
+        <d3s-dynamic-editor [objectID]="-1"
+                            [objectType]="'Tag'"
+                            [title]="'Tag'"
+                            (saveClick)="saveTag($event)"
+                            [showAsModal]="true"
+                            [modalTitle]="editPopupTitle"
+                            [isModalVisible]="showEditor"
+                            (closeClick)="closeEditor()"
+                            [adding]="true">
+        </d3s-dynamic-editor>
+    </ng-container>
 </div>

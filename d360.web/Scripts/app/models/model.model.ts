@@ -4,8 +4,7 @@ export class Model {
     Name: string;
     Description: string;
     MaximumDepth: number;
-    TaxonomyTypeClass: string;
-    ClassificationName: string;
+    TaxonomyTypeClass: string;    
     HasDashboards: boolean;
     AllowAttributes: boolean;
     AllowSynonyms: boolean;
@@ -13,7 +12,7 @@ export class Model {
     NymTypes: NymType[];
     P_CanDelete: boolean;
     P_CanEdit: boolean;
-    UID: string;
+    AssetTypeUID: string;
 }
 
 export class ModelHierarchy {

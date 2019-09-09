@@ -147,13 +147,16 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         }
     }
 
-    public filterGridData() {
+    public filterGridData(dt: DataTable) {
         this.isLoading = true;
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
+        if (dt) {
+            dt.reset();
+        }
         this.getData();
     }
 
-    resetFilters(val) {
+    resetFilters(dt: DataTable, val) {
         this.stateService.artifactTypeFilters.showSimpleFilter = val;
         this.stateService.artifactTypeFilters.simpleTextFilter = '';
         this.stateService.artifactTypeFilters.filters = [];
@@ -161,7 +164,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.stateService.artifactTypeFilters.relationships = [];
         this.stateService.artifactTypeFilters.owners = null;
 
-        this.filterGridData();
+        this.filterGridData(dt);
     }
 
     onDeleted() {

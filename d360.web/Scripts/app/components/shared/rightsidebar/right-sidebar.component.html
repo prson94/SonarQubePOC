@@ -31,39 +31,45 @@
 			<span class="content">{{button.text}}</span>
             <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>
 		</button>
-		<div class="asset-actions" *ngIf="assetAction && assetAction.isVisible">
-			<span class="grow"></span>
-			<button *ngIf="assetAction.showBack" (click)="assetAction.backCallback()" class="button">
-				<i class="fa fa-arrow-left"></i>Back</button>
-			<button *ngIf="assetAction.showEdit" (click)="assetAction.editCallback()" class="button">
-				<i class="fa fa-pencil"></i>Edit</button>
-			<button *ngIf="assetAction.showDelete" (click)="assetAction.deleteCallback()" class="button">
-				<i class="fa fa-trash"></i>Delete</button>
+        <div class="asset-actions" *ngIf="assetAction && assetAction.isVisible">
+            <span class="grow"></span>
+            <button *ngIf="assetAction.showBack" (click)="assetAction.backCallback()" class="button">
+                <i class="fa fa-arrow-left"></i>Back
+            </button>
+            <button *ngIf="assetAction.showEdit" (click)="assetAction.editCallback()" class="button">
+                <i class="fa fa-pencil"></i>Edit
+            </button>
+            <button *ngIf="assetAction.showDelete" (click)="assetAction.deleteCallback()" class="button">
+                <i class="fa fa-trash"></i>Delete
+            </button>
 
-			<d3s-dynamic-editor [objectID]="assetAction.edit.objectID"
-                                [objectType]="assetAction.edit.objectType"
-                                [selection]="assetAction.edit.selected"
-                                [title]="assetAction.edit.title"
-                                (saveClick)="assetAction.edit.saveClick($event);"
-                                [showAsModal]="assetAction.edit.showAsModal"
-                                [modalTitle]="assetAction.edit.modalTitle"
-                                [isModalVisible]="assetAction.edit.isModalVisible"
-                                (closeClick)="assetAction.edit.closeClick()">
-			</d3s-dynamic-editor>
+            <ng-container *ngIf="assetAction.showEdit">
+                <d3s-dynamic-editor [objectID]="assetAction.edit.objectID"
+                                    [objectType]="assetAction.edit.objectType"
+                                    [selection]="assetAction.edit.selected"
+                                    [title]="assetAction.edit.title"
+                                    (saveClick)="assetAction.edit.saveClick($event);"
+                                    [showAsModal]="assetAction.edit.showAsModal"
+                                    [modalTitle]="assetAction.edit.modalTitle"
+                                    [isModalVisible]="assetAction.edit.isModalVisible"
+                                    (closeClick)="assetAction.edit.closeClick()">
+                </d3s-dynamic-editor>
+            </ng-container>
+            <ng-container *ngIf="assetAction.showDelete">
+                <d3s-delete-form [callback]="assetAction.delete.callback"
+                                 [method]="'callback'"
+                                 [items]="assetAction.delete.item"
+                                 [showAsModal]="assetAction.delete.showAsModal"
+                                 [modalTitle]="assetAction.delete.modalTitle"
+                                 [isModalVisible]="assetAction.delete.isModalVisible"
+                                 (onCancel)="assetAction.delete.isModalVisible=false;">
+                    <div prompt>
+                        Please confirm that you wish to delete the tag '{{assetAction.delete.item.Value}}'(<d3s-tag-usage [uid]="assetAction.delete.item.uid">{{assetAction.delete.item.UseCount}} assets</d3s-tag-usage> tagged)
+                    </div>
 
-			<d3s-delete-form [callback]="assetAction.delete.callback"
-                             [method]="'callback'"
-                             [items]="assetAction.delete.item"
-                             [showAsModal]="assetAction.delete.showAsModal"
-                             [modalTitle]="assetAction.delete.modalTitle"
-                             [isModalVisible]="assetAction.delete.isModalVisible"
-                             (onCancel)="assetAction.delete.isModalVisible=false;">
-				<div prompt>
-                    Please confirm that you wish to delete the tag '{{assetAction.delete.item.Value}}'(<d3s-tag-usage [uid]="assetAction.delete.item.uid">{{assetAction.delete.item.UseCount}} assets</d3s-tag-usage> tagged)
-				</div>
-
-			</d3s-delete-form>
-		</div>
+                </d3s-delete-form>
+            </ng-container>
+        </div>
 	</div>
 	<div *ngIf="items && items.length > 0" class="tab-view">
 		<div class="tab-bar-outer">

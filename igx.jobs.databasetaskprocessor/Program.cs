@@ -111,7 +111,8 @@ namespace igx.jobs.databasetaskprocessor
 
                                 ObjectDetail detail = null;
                                 Dictionary<string, string> fields = new Dictionary<string, string>();
-                                
+                                Dictionary<string, string> tags = new Dictionary<string, string>();
+
                                 #region Load Info for Object
 
                                 detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
@@ -135,6 +136,11 @@ namespace igx.jobs.databasetaskprocessor
                                 {
                                     if (fields.ContainsKey("Name")) fields["Name"] = detail.Name;
                                     else fields.Add("Name", detail.Name);
+
+                                    if (detail.AssetTypeID != null) {
+                                        string assetTypeUid = companyConnection.Query<Guid>("SELECT uid FROM [dbo].[AssetType] WHERE ID = @i", new { i = detail.AssetTypeID }).SingleOrDefault().ToString();
+                                        fields.Add("AssetTypeUID", assetTypeUid);
+                                    }
 
                                     if (o == "Synonym")
                                     {
@@ -161,6 +167,8 @@ namespace igx.jobs.databasetaskprocessor
                                         if (fields.ContainsKey("UID")) fields["UID"] = detail.UID.ToString();
                                         else fields.Add("UID", detail.UID.ToString());
                                     }
+
+                                    tags = companyConnection.Query<TagSqlModel>("SELECT t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID WHERE at.AssetID = @i", new {i = assetId}).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
                                 }
                                 else if ((detail == null) && (string.Compare(o, "Synonym", true) == 0))
                                 {
@@ -206,7 +214,7 @@ namespace igx.jobs.databasetaskprocessor
                                 switch (a)
                                 {
                                     case "A":   //Add
-                                        var add = new AddToIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = itemUrl, To = QueueAction.AddToIndex, Type = itemTypeName };
+                                        var add = new AddToIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = itemUrl, To = QueueAction.AddToIndex, Type = itemTypeName, Tags = tags };
                                         if (o == "Synonym")
                                         {
                                             add.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
@@ -218,7 +226,7 @@ namespace igx.jobs.databasetaskprocessor
                                         indexCollectionModel.Adds.Add(add);
                                         break;
                                     case "U":   //Update
-                                        var update = new UpdateInIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = itemUrl, To = QueueAction.UpdateInIndex, Type = itemTypeName };
+                                        var update = new UpdateInIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = itemUrl, To = QueueAction.UpdateInIndex, Type = itemTypeName, Tags = tags };
                                         if (o == "Synonym")
                                         {
                                             update.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
@@ -552,5 +560,11 @@ from    [queue].[Task] T
                 }
             }
         }
+    }
+
+    internal class TagSqlModel
+    {
+        public Guid TagUID { get; set; }
+        public string Value { get; set; }
     }
 }

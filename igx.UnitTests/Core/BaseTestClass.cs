@@ -378,6 +378,9 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetTagByUid(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new Tag() : null);
 
+            mock.Setup(x => x.IsAuthorizedToEditTag(It.IsAny<Guid>()))
+                .Returns(true);
+
             mock.Setup(x => x.GetTags(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
                 .Returns(Task.FromResult(new TagApiModelWrapper() { items = new List<TagApiModel>() }));
 

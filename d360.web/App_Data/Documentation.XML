@@ -2408,6 +2408,20 @@
             <param name="dataSource">Asset cross reference datasource.</param>
             <returns>Http Status code OK if asset cross references were deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.CrossReferencesController.PostBulkCrossReferenceAsync(System.Collections.Generic.List{d360.core.entities.AssetCrossReference})">
+            <summary>
+            Creates new asset cross references.  This endpoint is meant for batch processing.
+            </summary>
+            <param name="crossReferences">The payload of your request.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.CrossReferencesController.GetExecutionStatus(System.Guid)">
+            <summary>
+            GETs the status of an execution record, including the results for the execution.
+            </summary>
+            <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.CustomEndpointsController.CustomAPIVersionFieldEditor_GetFieldTypes(System.Int32)">
             <summary>
             Gets the field types
@@ -3025,21 +3039,19 @@
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
             <summary>
-            Creates association between an existing Asset and an existing tag
+            Creates association between an existing asset and an existing tag.
             </summary>
             <remarks>
-            An Administrator can create  any tag association. 
-            A regular user can only create a tag association to assets they have access to.
+            An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
             </remarks>
             <param name="assetTags">Collection of assets and tags to associate.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
             <summary>
-            Removes association between an existing Asset and an exiting Tag
+            Removes the association between an existing asset and an existing tag.
             </summary>
-            <remarks>An Administrator can remove any tag association. 
-            A regular user can only remove a tag association to an asset they initially created the association for.
+            <remarks>An Administrator can remove any tag association. A non-administrative user can only remove tag associations for assets to which they have read access.
             </remarks>
             <param name="assetTags">Collection of assets and tags to remove tag associations for.</param>
             <returns>An HTTP status code and message.</returns>

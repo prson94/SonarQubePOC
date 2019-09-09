@@ -2646,14 +2646,11 @@ from	api.ExecutionAsset T
                                             #endregion
                                             case AssetTypeClass.Policy:
                                             case AssetTypeClass.Glossary:
-                                            case AssetTypeClass.Reference:
                                                 #region
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)
                                                     @object = "Policy";
-                                                else if (at.Class == AssetTypeClass.Reference)
-                                                    @object = "ReferenceItem";
-
+                                                
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
@@ -2755,7 +2752,59 @@ from	api.ExecutionAsset T
                                                 }
                                                 break;
                                             #endregion
-                                           
+                                            case AssetTypeClass.Reference:
+                                                #region
+                                                if (isInsert)
+                                                {
+                                                    Connection.Execute($@"
+                                                        create table #ObjectMergeTableResult (ID int, ItemNumber int);
+                                                        CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
+
+                                                        merge   [Asset] as T
+                                                        using   (
+                                                                select  A.ItemNumber,
+                                                                        C.FieldValue as [Code]
+                                                                from    api.ExecutionAsset A
+                                                                        inner join api.ExecutionField C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code'
+                                                                where   A.ExecutionID = @ExecutionID
+                                                                        and A.Success is null
+                                                                        and A.ItemNumber between {beginItemNumber} and {endItemNumber}
+                                                                ) S
+                                                        on      (T.AssetTypeID = @AssetTypeID and T.[Code] = @NonExistentUid)
+                                                        when    not matched then
+                                                        insert  (AssetTypeID,State,[Object], [Code], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+                                                        values  (@AssetTypeID,1,'ReferenceItem', S.[Code], @R, @D, @R, @D)
+                                                        output  inserted.ObjectID, S.ItemNumber into #ObjectMergeTableResult;
+
+                                                        update  T
+                                                        set     T.Object = 'ReferenceItem',
+                                                                T.ObjectID = S.ID,
+                                                                T.IsNew = 1
+                                                        from    api.ExecutionAsset T
+                                                                inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
+
+                                                        {updateAssetInfoOnExecutionRecordsSql}",
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
+                                                }
+                                                else
+                                                {
+                                                    Connection.Execute($@"
+                                                        update	T
+                                                        set		T.[Code] = C.FieldValue,
+                                                                T.UpdatedBy = @R,
+                                                                T.UpdatedOn = @D
+                                                        from	Asset T
+		                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and S.[Object]=T.[Object] and T.[Object]='ReferenceItem'  and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between {beginItemNumber} and {endItemNumber}
+                                                                inner join api.ExecutionField C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code';
+
+                                                        update	api.ExecutionAsset
+                                                        set		IsNew = 0
+                                                        where	{executionAssetWhereSql};",
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                }
+                                                break;
+                                                #endregion
+
                                         }
 
                                         #region Parent/Child Relationship
@@ -2931,7 +2980,7 @@ from	api.ExecutionAsset T
                                 row["ItemNumber"] = i;
                                 row["SubjectUid"] = model.SubjectAssetUid;
                                 row["ObjectUid"] = model.ObjectAssetUid;
-                                row["ExecutionItemUid"] = model.ExecutionItemUid;
+                                if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
                                 table.Rows.Add(row);
                             }
                             else
@@ -3313,5 +3362,135 @@ end",
 
             this.IsEventingEnabled = true;
         }
+
+        private void ValidateAssetCrossReference(ApiExecution execution,  int timeout = 3600)
+        {
+            Connection.Execute(@"Update api.ExecutionAssetCrossReference
+                                    Set Success=0,
+                                    Message='Does not contain required fields.' 
+                                    Where ExecutionID = @executionID and 
+                                    (Uid is null or DataSource is null or [Type] is null or ExternalID is null
+                                   or UID ='00000000-0000-0000-0000-000000000000' or Trim(DataSource) ='' or TRIM([Type]) = '' or TRIM(ExternalID) ='') ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"
+                        Update  ECR
+                        SET Success=0,
+                        Message='Asset cross reference already exists'
+                        from api.ExecutionAssetCrossReference ECR
+                        Where ECR.ExecutionID = @executionID and exists (Select 1 from AssetCrossReference where UID=ECR.UID and DataSource= ECR.DataSource and
+                        [Type]=ECR.[Type] and ExternalID =ECR.ExternalID)",
+                        new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"
+                        Update ECR
+                            Set Success=0,
+                            Message ='Duplicate asset cross reference;'
+                            From api.ExecutionAssetCrossReference ECR
+                            inner join 
+                            (Select Uid,DataSource,Type,ExternalID from api.ExecutionAssetCrossReference
+                            where Success is null and ExecutionID=@executionID
+                            group by Uid,DataSource,Type,ExternalID
+                            having(count(*)>1)) T on
+                            ECR.[Uid] = T.[UID] and
+                            ECR.DataSource = T.DataSource and
+                            ECR.[Type] = T.[Type] and
+                            ECR.ExternalID = T.ExternalID
+                            Where ECR.Success is null  and ExecutionID=@executionID ",
+                        new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+        }
+        public List<AssetCrossReferenceResult> ImportCrossRefernces(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600)
+        {
+
+            List<AssetCrossReferenceResult> bulkResult = new List<AssetCrossReferenceResult>();
+            #region Build data tables for bulk load
+
+            var table = new DataTable();
+            table.Columns.Add("ExecutionID", typeof(Guid));
+            table.Columns.Add("ItemNumber", typeof(int));
+            table.Columns.Add("Uid", typeof(Guid));
+            table.Columns.Add("DataSource", typeof(string));
+            table.Columns.Add("Type", typeof(string));
+            table.Columns.Add("ExternalID", typeof(string));
+            table.Columns.Add("FieldHash", typeof(string));
+            table.Columns.Add("Message", typeof(string));
+            table.Columns.Add("Success", typeof(bool));
+
+
+           
+            int i = 0;
+            foreach (var item in import)
+            {
+                var row = table.NewRow();
+
+                row["ExecutionID"] = execution.ExecutionID;
+                row["ItemNumber"] = i++;
+                row["uid"] = item.uid;
+                row["DataSource"] = item.DataSource;
+                row["Type"] = item.Type;
+                row["ExternalID"] = item.ExternalID;
+                row["FieldHash"] = item.FieldHash;
+
+                table.Rows.Add(row);
+            }
+
+            #endregion
+            try
+            {
+
+           
+            if (Database.Connection.State != ConnectionState.Open)
+                Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+            #region Bulk Copy
+            var bulkCopy = new SqlBulkCopy(Connection)
+            {
+                BatchSize = table.Rows.Count,
+                DestinationTableName = "api.ExecutionAssetCrossReference",
+                BulkCopyTimeout = timeout
+            };
+
+                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                bulkCopy.ColumnMappings.Add("uid", "uid");
+                bulkCopy.ColumnMappings.Add("DataSource", "DataSource");
+                bulkCopy.ColumnMappings.Add("Type", "Type");
+                bulkCopy.ColumnMappings.Add("ExternalID", "ExternalID");
+                bulkCopy.ColumnMappings.Add("FieldHash", "FieldHash");
+
+
+                bulkCopy.WriteToServer(table);
+
+            bulkCopy = null;
+
+            #endregion
+
+            this.ValidateAssetCrossReference(execution, timeout);
+
+            Connection.Execute(@"
+                            insert into AssetCrossReference
+                            (Uid,DataSource,Type,ExternalID,FieldHash)
+                            Select Uid,DataSource,Type,ExternalID,FieldHash from api.ExecutionAssetCrossReference
+                            Where ExecutionID=@executionID and Success is null;
+
+                            Update api.ExecutionAssetCrossReference
+                            Set Success =1,
+                            Message ='Added Successfully'
+                            Where ExecutionID=@executionID and Success is null; ",
+                new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+                bulkResult = Query<AssetCrossReferenceResult>(
+                                        $"select ItemNumber,Uid,Message,Success from api.ExecutionAssetCrossReference where ExecutionID = @ExecutionID",
+                                        new { ExecutionID = execution.ExecutionID }).ToList();
+           
+
+            }
+            finally
+            {
+                if (Database.Connection.State == ConnectionState.Open)
+                    Connection.Close();
+            }
+            return bulkResult;
+        }
+        
     }
 }

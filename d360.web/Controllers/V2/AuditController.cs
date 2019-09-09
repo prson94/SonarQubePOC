@@ -71,7 +71,10 @@ namespace d360.web.Controllers.V2
                                         R.FirstName + ' ' + R.LastName + ' (deleted)'
                                     end as ResourceName,
                                      fa.FieldName as Field, 
-                                     fa.Value as NewValue, 
+									 CASE
+										WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
+										ELSE fa.Value
+	                                 END as NewValue, 
                                      fa.[Version] as 'Version',	                            
                                  									 CASE 
 									      WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
@@ -98,7 +101,10 @@ namespace d360.web.Controllers.V2
 	                                    R.FirstName + ' ' + R.LastName + ' (deleted)'
 	                                end as ResourceName,
 	                                 fa.FieldName as Field, 
-	                                 fa.Value as NewValue, 
+									 CASE
+										WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
+										ELSE fa.Value
+	                                 END as NewValue, 
 	                                 fa.[Version] as 'Version',	    
 	                                CASE 
 	                                     WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
@@ -224,7 +230,10 @@ namespace d360.web.Controllers.V2
                                          R.FirstName + ' ' + R.LastName + ' (deleted)'
                                     end as ResourceName, 
                                      fa.FieldName as Field, 
-                                     fa.Value as NewValue, 
+									 CASE
+										WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
+										ELSE fa.Value
+	                                 END as NewValue, 
                                      fa.[Version] as 'Version',	                            
                                   ( select			
                                 top 1 fa_sub.value as 'value'			                            
@@ -248,7 +257,10 @@ namespace d360.web.Controllers.V2
 	                                    R.FirstName + ' ' + R.LastName + ' (deleted)'
 	                                end as ResourceName,
 	                                 fa.FieldName as Field, 
-	                                 fa.Value as NewValue, 
+									 CASE
+										WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
+										ELSE fa.Value
+	                                 END as NewValue, 
 	                                 fa.[Version] as 'Version',	    
 	                                CASE 
 	                                     WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName

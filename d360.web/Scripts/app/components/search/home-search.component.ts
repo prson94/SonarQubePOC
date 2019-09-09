@@ -12,16 +12,7 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-home-search',
     template: `               
-                <d3s-search-input (keydown.enter)="navigateSearch()" (search)="doSearch()" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [(searchText)]="searchText"></d3s-search-input>                
-                <d3s-search-results
-                    *ngIf="hasResults=='true'" 
-                    [itemsPerPage]="resultsPerPage" 
-                    [results]="searchResults" 
-                    [categories]="categories" 
-                    (paginateClick)="paginate($event);" 
-                    (selectedCategoryChange)="filterByCategory($event);"
-                    [from]="pageNumber"
-                ></d3s-search-results>
+                <d3s-search-input (keydown.enter)="navigateSearch()" (search)="navigateSearch()" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [(searchText)]="searchText"></d3s-search-input>                
                 `,
     providers: [SearchService, TypeaheadSearchService],
 })
@@ -46,49 +37,8 @@ export class HomeSearchComponent extends BaseComponent {
     ngOnInit() {
         this.isExactMatch = (CompanySettings.SearchExactMatch && CompanySettings.SearchExactMatch == 'true');
     }
-    
-    private doSearch(filterCategory?: SearchCategories) {        
-        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, this.searchTypes, filterCategory, this.isExactMatch)
-            .subscribe(res => {                
-                this.searchResults = res;
-                this.resultsChange.emit(this.searchResults);
-                if (filterCategory == undefined) this.categories = res.Categories;
-            });
-    }
-       
-    private filterByCategory(category) {        
-        this.selectedCategory = category;
-        this.pageNumber = 0;
-        this.doSearch(this.selectedCategory);
-    }
 
     private navigateSearch() {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&advanced=0&types=${this.searchTypes ? this.searchTypes.join(',') : ''}`);
-    }
-
-    private paginate(event) {        
-        if (!event.size == undefined) {
-            console.log("ERROR : MISSING ITEMS PER PAGE.");
-
-            return;
-        }
-
-        if (event.page == undefined) {
-            console.log("ERROR : MISSING PAGE NUMBER.");
-
-            return;
-        }
-
-        if (!event.first == undefined) {
-            console.log("ERROR : MISSING INDEX OF FIRST PAGE.");
-
-            return;
-        }
-
-        this.resultsPerPage = event.size;
-        
-        this.pageNumber = event.first;
-
-        this.doSearch(this.selectedCategory);
     }
 };

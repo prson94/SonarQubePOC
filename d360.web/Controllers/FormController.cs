@@ -608,19 +608,13 @@ namespace d360.web.Controllers
                 case "ORGANIZATIONINVITATION":
                     return DeleteOrganizationInvitation(objectID);
                 case "PREDICATE":
-                    return DeletePredicate(form);
-                case "REFERENCEITEM":
-                    return DeleteReferenceItem(form);
+                    return DeletePredicate(form);                
                 case "REPORT":
                     return await DeleteReport(form);
                 case "REPORTTILE":
-                    return DeleteReportTile(form);
-                case "RULE":
-                    return DeleteRule(form);
+                    return DeleteReportTile(form);                
                 case "RULETYPE":
-                    return DeleteRuleType(form);
-                case "POLICY":
-                    return DeletePolicy(form);                
+                    return DeleteRuleType(form);                
                 case "POLICYTYPELEVEL":
                     return DeletePolicyTypeLevel(form);
                 case "RULEIMPLEMENTATION":
@@ -632,9 +626,7 @@ namespace d360.web.Controllers
                 case "SURVEYQUESTIONTYPE":
                     return DeleteQuestionType(form);
                 case "SYNONYM":
-                    return DeleteSynonym(form);
-                case "TAXONOMY":
-                    return DeleteTaxonomy(form);
+                    return DeleteSynonym(form);                
                 case "TAXONOMYTYPE":
                     return DeleteTaxonomyType(form);
                 case "TAXONOMYTYPELEVEL":
@@ -3003,7 +2995,8 @@ namespace d360.web.Controllers
                         && i.Type != DataType.FusionLookup.ToString()
                         && i.Type != DataType.FilteredLookup.ToString()
                         && i.Type != DataType.ComplexRelationLookup.ToString()
-                        && i.Type != DataType.JSON.ToString())
+                        && i.Type != DataType.JSON.ToString()
+                        && i.Type != DataType.Tag.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
 
@@ -3183,7 +3176,8 @@ namespace d360.web.Controllers
                         i.Type != DataType.FusionLookup.ToString() && 
                         i.Type != DataType.ComplexRelationLookup.ToString() && 
                         i.Type != DataType.Relationship.ToString() &&
-                        i.Type != DataType.JSON.ToString())
+                        i.Type != DataType.JSON.ToString()
+                        && i.Type != DataType.Tag.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .Distinct()
                 .ToDictionary(i => i.Name, i => i.ID);
@@ -4212,6 +4206,14 @@ offset 0 rows fetch next 25 rows only
 
                 if (!Company.HasAssetTypePermission(model.Object, model.ObjectID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+                if (model.Type == SystemObjects.Tag.ToString())
+                {
+                    var assetTypeID = Company.AssetTypes.FirstOrDefault(x => x.Object == model.Object && x.ObjectID == model.ObjectID)?.ID;
+                    var assets = Company.Assets.Where(x => x.AssetTypeID == assetTypeID).Select(x => x.ID);
+                    var assetTagsForDeletion = Company.AssetTags.Where(x => assets.Contains(x.AssetID)).ToList();
+                    Company.AssetTags.RemoveRange(assetTagsForDeletion);
+                }
 
                 Company.Delete(model);
 
@@ -8795,41 +8797,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             }
         }
 
-        [HttpDelete, Route("DeletePolicy")]
-        public JsonResult DeletePolicy(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("Policy");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "Policy");
-                if (model == null) throw new NotFoundException("Policy");
-
-                if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.Policy, id);
-
-                dynamic custom = new
-                {                    
-                    action = "delete",
-                    Context = form["_context"]
-                };                
-
-                return jsonSuccess("Policy successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-        
         [HttpPut, ValidateInput(false), Route("EditPolicy"), NonNullableParameters]
         public JsonResult EditPolicy(FormCollection form)
         {
@@ -8945,7 +8912,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             form.Add("ID", policyTypeId.ToString());
             return DeletePolicyTypeLevel(form);
         }
-
 
         [HttpDelete, Route("DeletePolicyTypeLevel")]
         public JsonResult DeletePolicyTypeLevel(FormCollection form)
@@ -9317,35 +9283,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 }
 
                 return jsonSuccess(type.Name + " successfully created.", model.ObjectID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteReferenceItem")]
-        public JsonResult DeleteReferenceItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("ReferenceItem");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
-                if (model == null) throw new NotFoundException("ReferenceItem");
-
-                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, model.ObjectID, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.ReferenceItem, id);
-                
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
             }
             catch (BaseException ex)
             {
@@ -12322,42 +12259,7 @@ order by	case
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [HttpDelete, Route("DeleteRule")]
-        public JsonResult DeleteRule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("Rule");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Rule>(id);
-                if (model == null) throw new NotFoundException("Rule");
-
-                if (!Company.HasAssetPermission(SystemObjects.Rule, model.ID, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete(SystemObjects.Rule, model.ID);
-
-                dynamic custom = new
-                {
-                    action = "delete",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
+                
         [HttpPut, ValidateInput(false), Route("EditRule")]
         public JsonResult EditRule(FormCollection form)
         {
@@ -13901,9 +13803,7 @@ order by	case
             }
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-
-        
-        
+                
         #endregion
 
         #region Form Get/Post
@@ -13986,43 +13886,7 @@ order by	case
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [HttpDelete, Route("DeleteTaxonomy")]
-        public JsonResult DeleteTaxonomy(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("taxonomy");
-
-                var id = parseIntField(form, "ID");
-
-                if (!Company.HasAssetPermission(SystemObjects.Taxonomy, id, Permission.DeleteAsset))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                var model = Company.Assets.Where(x => (x.Object == "Taxonomy" && x.ObjectID == id)).Include(x => x.AssetType).FirstOrDefault();
-                if (model == null) throw new NotFoundException("taxonomy");
                 
-                dynamic custom = new
-                {
-                    model.AssetType.ObjectID,
-                    Context = form["_context"]
-                };
-
-                Company.Delete(SystemObjects.Taxonomy, id);
-                
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         [HttpPut, ValidateInput(false), Route("EditTaxonomy")]
         public JsonResult EditTaxonomy(FormCollection form)
         {

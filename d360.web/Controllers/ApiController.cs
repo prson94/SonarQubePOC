@@ -37,7 +37,7 @@ namespace d360.web.Controllers
 
         ISecurityContextProvider SecProvider;
         ITagRepository tagRepository;
-        public D3SApiController(ICommunityContext community, ICompanyContext company,ITagRepository tagRepository, ISecurityContextProvider secProvider)
+        public D3SApiController(ICommunityContext community, ICompanyContext company, ITagRepository tagRepository, ISecurityContextProvider secProvider)
             : base(community, company)
         {
 #if DEBUG
@@ -67,13 +67,7 @@ namespace d360.web.Controllers
                 }
             }
         }
-
-        public class TypeCheckModel
-        {
-            public string Type { get; set; }
-            public int ID { get; set; }
-        }
-
+        
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id)
         {
             var list = new List<DetailReadOnlyRowModel>();
@@ -508,7 +502,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     FieldDescription = tagDisplayDescription,
                     ShowIfEmpty = true,
                     DataType = "tag",
-                    Values = GetTagsValues(type,id)
+                    Values = GetTagsValues(type, id)
                 };
                 list.Add(new DetailReadOnlyRowModel
                 {
@@ -526,7 +520,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             List<ReadOnlyFieldValue> tagsFields = new List<ReadOnlyFieldValue>();
             var asset = Company.Assets.SingleOrDefault(x => x.Object == type.ToString() && x.ObjectID == id);
             var tags = tagRepository.GetTagsForAsset(asset.ID);
-            tags.ToList().ForEach(x=>
+            tags.ToList().ForEach(x =>
             {
                 var roField = new ReadOnlyFieldValue
                 {
@@ -3461,7 +3455,7 @@ outer apply (
                     break;
             }
 
-            switch(previousObj.ToLower())
+            switch (previousObj.ToLower())
             {
                 case "policy":
                 case "artifact":
@@ -4736,7 +4730,8 @@ from    ResponsibilityTypeRelationRule R
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-                    { "MaximumDepth", row.HierarchyMaximumDepth }
+                    { "MaximumDepth", row.HierarchyMaximumDepth },
+                    { "AssetTypeUID", row.Uid }
                 }
             );
         }
@@ -5141,7 +5136,8 @@ order by    Name
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-                    { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") }
+                    { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") },
+                    { "AssetTypeUID", row.uid }
                 }
             );
         }
@@ -7067,6 +7063,17 @@ where v.id = {0}", id)).FirstOrDefault();
         [Route("{type}/{uid}/permissions")]
         public List<PermissionInfo> GetPermissionsByObject(SystemObjects type, Guid uid)
         {
+
+            if (type == SystemObjects.Tag)
+            {
+                List<PermissionInfo> ret = new List<PermissionInfo>();
+                if (tagRepository.IsAuthorizedToEditTag(uid))
+                {
+                    ret.AddRange(Permission.DeleteAsset.GetList());
+                }
+
+                return ret;
+            }
             int id = Company.GetObjectId(uid, type);
             return GetPermissionsByObject(type, id);
         }
@@ -7783,9 +7790,9 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
-                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
-                    { "ClassificationName", row.ClassificationName },
-                    { "HasDashboards", row.HasDashboards }
+                    { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },                    
+                    { "HasDashboards", row.HasDashboards },
+                    { "AssetTypeUID", row.Uid }
                 }
             );
         }
@@ -8002,7 +8009,8 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
 		                AT.Description,
 		                AT.DisplayFormat,
 		                AT.AutoDisplayDescription,
-		                AT.id as AssetTypeID
+		                AT.id as AssetTypeID,
+                        AT.uid as AssetTypeUID
 		                from
                   Assettype AT 
                   where  AT.[object] = 'ReferenceItemType' and AT.ObjectID > 0";

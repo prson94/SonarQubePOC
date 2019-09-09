@@ -205,6 +205,43 @@ namespace d360.core.entities
     }
 
     [DataContract]
+    public class BulkAssetCrossReferenceResult
+    {
+       
+        [DataMember]
+        public int Total { get; set; }
+
+        [DataMember]
+        public int Processed { get; set; }
+        [DataMember]
+        public int Error { get; set; }
+        [DataMember]
+        public DateTime StartedOn { get; set; }
+        [DataMember]
+        public DateTime? CompletedOn { get; set; }
+        [DataMember]
+        public List<AssetCrossReferenceResult> Results { get; set; }
+
+    }
+
+    [DataContract]
+    public class AssetCrossReferenceResult
+    {
+        [DataMember]
+        public int ItemNumber { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public String Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+       
+
+    }
+
+    [DataContract]
     public class DatabaseBulkAssetTypeResult
     {
         [DataMember]
