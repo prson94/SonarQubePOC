@@ -28,7 +28,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                             </div>
                         </div>
                         <div class="search-input-adv-container hide-on-med-and-down">
-                            <button type="button" name="action" id="home-adv-btn" class="adv-search-btn" (click)="handleAdvancedClick()">Advanced Search</button>
+                            <button type="button" name="action" id="home-adv-btn" class="advanced-search-btn" (click)="handleAdvancedClick()">Advanced Search</button>
                         </div>
                         <div class="search-input-button-container">
                             <button type="submit" name="action" id="home-search-btn" class="search-input-btn" (click)="triggerSearch()">
