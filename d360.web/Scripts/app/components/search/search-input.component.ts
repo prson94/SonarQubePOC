@@ -19,7 +19,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                         </div>
                         <div class="search-input-exact-container hide-on-med-and-down">
                             <div class="adv-search-btn">
-                                <label><input type="checkbox" name="search-exact-chk" id="search-exact-chk" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"> Exact match</label>
+                                <label><input type="checkbox" name="search-exact-chk" id="search-exact-chk" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"> Match Whole Words</label>
                             </div>
                         </div>
                         <div class="search-input-types-container hide-on-med-and-down">
@@ -28,7 +28,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                             </div>
                         </div>
                         <div class="search-input-adv-container hide-on-med-and-down">
-                            <button type="button" name="action" id="home-adv-btn" class="adv-search-btn" (click)="handleAdvancedClick()">Advanced&nbsp;<i class="fa fa-caret-down"></i></button>
+                            <button type="button" name="action" id="home-adv-btn" class="advanced-search-btn" (click)="handleAdvancedClick()">Advanced Search</button>
                         </div>
                         <div class="search-input-button-container">
                             <button type="submit" name="action" id="home-search-btn" class="search-input-btn" (click)="triggerSearch()">
