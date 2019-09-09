@@ -48,6 +48,7 @@ namespace d360.core.helpers
             types.Add(DataType.Link.ToString());
             types.Add(DataType.Password.ToString());
             types.Add(DataType.Relationship.ToString());
+            types.Add(DataType.Tag.ToString());
             return types;
         }
 
