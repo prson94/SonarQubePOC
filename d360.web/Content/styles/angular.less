@@ -3815,12 +3815,22 @@ button.tab-scroller {
         .tile {
             z-index: 1;
             top: -10px;
+            box-shadow: none;
+        }
+
+        .button {
+            margin-left: 10px;
         }
 
         .titlebar-search {
             width: 100%;
             flex-wrap: nowrap;
             display: flex;
+
+            i {
+                padding-right: 10px;
+                cursor: pointer;
+            }
         }
 
         .mr10 {
@@ -3908,6 +3918,10 @@ button.tab-scroller {
                         .caption {
                             color: #0971b9;
                             margin-right: 30px;
+                            max-width: 200px;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
                         }
 
                         .d3s-badge {

@@ -50,7 +50,7 @@ declare var CompanySettings;
                     </span>
                     <span class="description" *ngIf="result?.Description" [innerHtml]="result.Description"></span>
                     <div *ngIf="result?.Tags"  class="tags">
-                        <d3s-tag-view [data]="result?.Tags"></d3s-tag-view>
+                        <d3s-tag-view [data]="parseTagResult(result?.Tags)"></d3s-tag-view>
                     </div>      
                 </div>        
                 `,
@@ -60,7 +60,6 @@ declare var CompanySettings;
 
 export class SearchResultItemComponent extends BaseComponent implements OnInit {
     @Input() result: SearchFullResult;
-    private tags: TagItem[] = [];
     private lastCalculatedDate: number;
     private showStatus: boolean = false;
     private status: string;
@@ -80,7 +79,9 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             }
         }
     }
-
+    parseTagResult(tags: any[]) {
+        return tags.map(tag => { return { uid: tag.Uid, Value: tag.Value }; });
+    }
     get type() {
         if (this.result) {
             switch (this.result.Group) {
@@ -106,23 +107,18 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() == 'true')
             this.showShoppingCart = true;
 
-        if (this.result.Url.split('/').length == 4) {
-            this.obj = this.result.Url.split('/')[1];
-            this.objID = +this.result.Url.split('/')[3];
-            this.loadDetails();
+        let url = this.result.Url.split('/').filter(String);
+        if (url.length == 3) {
+            this.obj = url[0];
+            this.objID = +url[2];
         }
+        this.loadDetails();
 
     }
 
   
 
     private loadDetails() {
-        this.tags.push({ Uid: 123, Value: 'tag1' });
-        this.tags.push({ Uid: 123, Value: 'tag2' });
-        this.tags.push({ Uid: 123, Value: 'tag3' });
-        this.tags.push({ Uid: 123, Value: 'tag4' });
-        this.tags.push({ Uid: 123, Value: 'tag5' });
-        this.tags.push({ Uid: 123, Value: 'tag5' });
 
         this.objectStatisticsService.getScoreAndStatus(this.result.Uid).subscribe(
             result => {

@@ -20,7 +20,6 @@ export class SearchFullResult extends SearchResult {
     ID: number;
     Description: string;
     Group: string;
-    ID: string;
     Name: string;
     AbsoluteUrl: string;
     NormalizedScore: number;

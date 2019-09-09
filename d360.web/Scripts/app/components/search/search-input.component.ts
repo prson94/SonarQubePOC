@@ -13,7 +13,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
     selector: 'd3s-search-input',
     template: ` <div *ngIf="newSearch && !isAdvancedMode" 
                 class="titlebar-search">           
-                        <div class="field grow mr10"><input (keydown.enter)="triggerSearch()" [ngModel]="searchText" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);" autofocus autocomplete="off" type="text" placeholder="Please enter search terms"></div>
+                        <div class="field grow mr10"><input (keydown.enter)="triggerSearch()" [ngModel]="searchText" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);" autofocus autocomplete="off" type="text" placeholder="Please enter search terms"><i (click)="triggerSearch()" class="fa fa-search"></i></div>
                         <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match Whole Words</span></label>
                         <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>                        
                         <button class="button" (click)="handleAdvancedClick()">Advanced Search</button>

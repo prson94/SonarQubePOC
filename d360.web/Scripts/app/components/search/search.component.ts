@@ -32,6 +32,7 @@ declare var CompanySettings;
                     (paginateClick)="paginate($event);" 
                     (selectedCategoryChange)="filterByCategory($event);"></d3s-search-results>
                 </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 `,
     providers: [SearchService, TypeaheadSearchService],
 })
@@ -95,8 +96,6 @@ export class SearchComponent extends BaseComponent implements OnInit {
     private changeheight() {
         window.setTimeout(() => {
             if (this.title.nativeElement) {
-                console.log(this.title.nativeElement);
-                console.log(this.title.nativeElement.getElementsByClassName('tile'));
                 let tiles = this.title.nativeElement.getElementsByClassName('tile');
                 if (tiles.length > 0) {
                     let dims = this.title.nativeElement.getElementsByClassName('tile')[0].getBoundingClientRect();

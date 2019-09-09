@@ -31,7 +31,6 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
 
     ngOnChanges(changes: any) {
         if (changes['results'] && !changes['results'].firstChange) {
-            console.log(changes['results']);
             this.setResultsHeight();
         }
     }
@@ -46,9 +45,7 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
 
     setResultsHeight() {
         window.setTimeout(() => {
-            console.log(this.container);
             if (this.container && this.container.nativeElement) {
-                console.log(this.container.nativeElement);
                 this.container.nativeElement.style.height = (window.innerHeight - 108) + 'px';
             }
             this.ref.markForCheck();
