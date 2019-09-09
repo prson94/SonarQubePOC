@@ -280,7 +280,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 } else {
                     values[p] = event.item[p];
                 }
-            }
+            }            
         }
 
         //convert artifact to an asset
@@ -292,7 +292,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 asset.Uid = values[p];
             }
             else {
-                asset.Fields[p] = values[p]
+                asset.Fields[p] = values[p];                
             }
         }
 

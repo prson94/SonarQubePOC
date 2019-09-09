@@ -55,16 +55,21 @@ export class AssetService extends BaseObservableService {
                 .http
                 .put(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, assetArray, httpOptions)
                 .pipe(
-                    map(res => <JsonResult>res),
+                    
                     catchError(err => this.handleError(err))
                 );
         }
         else {
+            let result: JsonResult[]  = null;
             return this
                 .http
                 .post(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, assetArray, httpOptions)
-                .pipe(
-                    map(res => <JsonResult>res),
+                .pipe(                    
+                    /*map((res: JsonResult[]) => {   
+                        console.log(res[0]);
+                        return res[0];
+                    }),*/
+                    map(res => <JsonResult[]>res),
                     catchError(err => this.handleError(err))
                 );
         }       

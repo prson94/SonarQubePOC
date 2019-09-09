@@ -55,6 +55,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() selectedObject: string;
     @Input() selectedObjectID: number;
     @Input() adding: boolean = false;
+    @Input() isV2API: boolean = false;
 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
@@ -384,6 +385,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         return validators.length > 0 ? validators : null;
     }
 
+    public pad(s) :string { return (s < 10) ? '0' + s : s; }
+
     onSubmit() {
         this.savingInProgress = true;
 
@@ -400,7 +403,15 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 let field = this.fields.find(f => f.FieldName == p);
 
                 if (this.form.value[p] instanceof Date) {
-                    this.form.value[p] = this.getUTCDate(this.form.value[p]);
+                    if (field != null && field.FieldType == 'Date' && this.isV2API) {
+                        
+                        let simpleDate = [this.pad(this.form.value[p].getMonth()+1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
+                        this.form.value[p] = simpleDate;
+                        console.log(simpleDate);
+                    }
+                    else {
+                        this.form.value[p] = this.getUTCDate(this.form.value[p]);
+                    }                    
                 } else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
                     if (this.form.value[p] != null) {
                         this.form.value[p] = this.form.value[p].Value;
