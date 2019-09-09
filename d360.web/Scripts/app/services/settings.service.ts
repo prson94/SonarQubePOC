@@ -58,6 +58,15 @@ export class CompanySettingsService extends BaseObservableService  implements IC
             );
     }
 
+    postAssetGraphRebuildRequest(): Observable<JsonResult> {
+        return this.http
+            .post(`form/rebuildAssetGraph`, '')
+            .pipe(
+                map(res => <JsonResult>res),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     postIndexRebuildRequest(): Observable<JsonResult> {
         return this.http
             .post(`api/v2/search/rebuildIndex`, '')

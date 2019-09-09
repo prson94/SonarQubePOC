@@ -15093,7 +15093,21 @@ order by	case
 
             Company.RebuildDisplayValuesRequest();
 
-            return jsonSuccess("request submitted.", "", "add", HttpStatusCode.Created);
+            return jsonSuccess("Rebuild request received and accepted.", "", "add", HttpStatusCode.Created);
+        }
+
+        #endregion
+
+        #region UpdateAssetGraph
+
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuildAssetGraph")]
+        public JsonResult RebuildAssetGraph()
+        {
+            if (!Company.CurrentResourceIsAdmin) return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            Company.RebuildAssetGraphRequest();
+
+            return jsonSuccess("Rebuild request received and accepted.", "", "add", HttpStatusCode.Created);
         }
 
         #endregion
