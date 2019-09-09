@@ -67,6 +67,12 @@ export class AssetType {
     UpdatedOn: string;
 }
 
+export class AssetEditorModel {
+    Uid: string;
+    ParentUid: string;
+    Fields: any;
+}
+
 export class AssetDetail {
     AssetTypeID: number;
     AssetTypeName: string;

@@ -37,6 +37,7 @@ import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
 import {ObjectDetailService} from '../../services/object-detail.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { AssetEditorModel } from '../../models/asset.model';
 import * as _ from 'lodash';
 
 @Component({
@@ -268,9 +269,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.showEditor = false;
 
         let values: any = {};
-        let asset: any = {
-            Fields: {}
-        };
+        let asset: AssetEditorModel = new AssetEditorModel();
+        asset.Fields = {};
 
         //takes the form and convert any array values to , separated string values
         for (var p in event.item) {
@@ -288,12 +288,13 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             if (p.toUpperCase() == "PARENTUID") {
                 asset.ParentUid = values[p];
             }
+            else if (p.toUpperCase() == "UID") {
+                asset.Uid = values[p];
+            }
             else {
                 asset.Fields[p] = values[p]
             }
         }
-
-        console.log(asset);
 
         this
             .assetService
@@ -301,7 +302,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             .subscribe(result => {
                 this.isEditing = false;
                 this.showMessageForResult(this.messagesService, result);
-                if (event.item.ID) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
+                if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
                 this.getData();
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();

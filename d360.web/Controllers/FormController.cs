@@ -808,7 +808,7 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();                        
             var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString()).Include(x => x.AssetType).FirstOrDefault();
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ObjectID.ToString() });
+            list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
 
             var parentType = Company.GetParentType(a.AssetType.ObjectID, SystemObjects.ArtifactType);
             
@@ -819,10 +819,9 @@ namespace d360.web.Controllers
                 {
                     var parent = Company.GetParentObject(a.ObjectID, SystemObjects.Artifact);
                    
-
                     var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                    var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {parentType.ObjectID}").OrderBy(i => i.Text).ToList();
-                    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? parent.ObjectID.ToString() : ""), Items = parents });
+                    var parents = Company.Query<SelectListItem>($"select uid as Value, AD.DisplayValue as Text from Asset A inner join AssetType AT on A.AssetTypeID = AT.ID inner join AssetDisplayValue AD on A.ID = AD.AssetID   where AT.[Object] = 'ArtifactType' and AT.[ObjectID] = {parentType.ObjectID}").OrderBy(i => i.Text).ToList();
+                    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? parent.ObjectID.ToString() : ""), Items = parents });
                 }
             }
 

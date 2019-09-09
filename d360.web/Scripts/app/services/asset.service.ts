@@ -7,6 +7,7 @@ import { JsonResult } from '../models/jsonresult.model';
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
+import { AssetEditorModel } from '../models/asset.model';
 
 @Injectable()
 export class AssetService extends BaseObservableService {
@@ -39,18 +40,20 @@ export class AssetService extends BaseObservableService {
 
     public saveAsset(
         assetTypeUid: string,
-        asset: any
+        asset: AssetEditorModel
     ): Observable<JsonResult> {
 
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })            
-        };        
-
+        };
+        let assetArray: AssetEditorModel[] = [];
+        assetArray.push(asset);
         
-        if (asset.UID) {
+        if (asset.Uid) {
+
             return this
                 .http
-                .put(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, [{ asset }], httpOptions)
+                .put(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, assetArray, httpOptions)
                 .pipe(
                     map(res => <JsonResult>res),
                     catchError(err => this.handleError(err))
@@ -59,7 +62,7 @@ export class AssetService extends BaseObservableService {
         else {
             return this
                 .http
-                .post(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, [{ asset }], httpOptions)
+                .post(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, assetArray, httpOptions)
                 .pipe(
                     map(res => <JsonResult>res),
                     catchError(err => this.handleError(err))
