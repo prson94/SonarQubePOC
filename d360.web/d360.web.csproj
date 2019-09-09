@@ -533,7 +533,6 @@
     <Content Include="Content\quill\v1.3.4\quill.snow.min.css">
       <DependentUpon>quill.snow.css</DependentUpon>
     </Content>
-    <Content Include="Content\scripts\jquery\3.3.1\jquery.min.js" />
     <Content Include="Content\styles\ang.css" />
     <Content Include="Content\styles\ang.min.css">
       <DependentUpon>ang.css</DependentUpon>
@@ -696,7 +695,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-bulk-reassign.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
-    <Content Include="Scripts\dist\*.js" />    
+    <Content Include="Scripts\dist\*.js" />
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="webpack.prod.config.js" />
