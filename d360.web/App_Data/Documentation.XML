@@ -2495,6 +2495,13 @@
             <param name="ruleResults">The rule results and the mappings of fusionattributes that tie to the results</param>
             <returns></returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.DataQualityController.GetScoreAndStatus(System.Guid)">
+            <summary>
+            Gets the score and the status of a Asset by its Uid
+            </summary>
+            <param name="assetUid">The Uid of the rule</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.ErrorsController.SaveClientError(d360.web.Models.ClientErrorModel)">
             <summary>
             This logs the client error on server side
@@ -3087,7 +3094,7 @@
             <summary>
             Retrieves a list of assets with ownership based on the provided parameters.  Assets and ownership results reflect the users permissions to see the assets and the ownership details for them.  If a user doesnt have access to see an asset then they will not be able to see the asset or its ownership.  If a user does have access to see an asset but doesn't have access to see the assets ownership, the asset will be returned without any ownership details.  No filters applied will return all items which have at least one owner.  Only assets with ownership are returned by this API.  By default 5 assets are returned at a time the max page size is 250 assets.  Please keep in mind that assets with lots of owners will impact response time / size.
             </summary>   
-            <permission cref="!:">Admin or Ownership read required</permission>
+            <permission>Admin or Ownership read required</permission>
             <returns>Returns a list of assets and there corresponding ownership information.</returns>
         </member>
         <member name="T:d360.web.Controllers.V2.SearchController">

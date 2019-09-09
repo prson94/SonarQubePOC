@@ -16,7 +16,21 @@ import { Paginator } from 'primeng/paginator'
                         <span [ngClass]="{selected: page == (cpage - 1)}" *ngFor="let cpage of pageOptions" (click)="onPageLinkClick(cpage - 1)">{{cpage}}</span>
                         <span (click)="changePageToNext($event)">Next</span>
                         <span (click)="changePageToLast($event)">Last</span>
-                        <span><i class="fa fa-cog"></i></span>
+                        <span class="popup-container">
+                            <i class="fa fa-cog"></i>
+                            <div class="popup-menu popup">
+                            <ul>
+                                <li class="label"><span class="col1"></span><span>Items Per Page</span></li>
+                                <li *ngFor="let item of itemsPerPageOptions"(click)="changePageNumber(item)">
+                                    <span class="col1"> 
+                                        <i *ngIf="item == itemsPerPage" class="fa fa-check"></i>
+                                    </span>
+                                    <span>{{item}}</span>
+                                    <span class="col3"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        </span>
                     </div>
                 </div>
 			  `,
@@ -29,9 +43,10 @@ export class PaginatorComponent implements OnChanges, OnInit {
     @Input() totalRecords: number;
     @Input() percentage: number;
     @Output() onPageChange = new EventEmitter();
+    private itemsPerPageOptions = [10, 25, 50, 100];
     private itemsPerPage: number = 10;
     private pageOptions = [1];
-    private visableNumbers: number = 3;
+    private visableNumbers: number = 5;
     constructor(
         ref: ChangeDetectorRef,
         private router: Router
@@ -51,7 +66,10 @@ export class PaginatorComponent implements OnChanges, OnInit {
         this.page = 0;
         this.CheckVisableNumbers();
     }
-
+    changePageNumber(number: number) {
+        this.itemsPerPage = number;
+        this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
+    }
     isFirstPage(): boolean {
         if (0 == this.page) {
             return true;
@@ -85,8 +103,6 @@ export class PaginatorComponent implements OnChanges, OnInit {
             return;
         else
             this.page++;
-        console.log({ size: this.itemsPerPage, page: this.page });
-
         this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
     }
     changePageToLast(event: any): void {
@@ -117,16 +133,16 @@ export class PaginatorComponent implements OnChanges, OnInit {
 
 
     private CheckVisableNumbers() {
+        this.pageOptions = [];
         if (this.getPageCount() > 1) {
             if (this.isFirstPage())
                 this.pageOptions = [1, 2, 3];
             else if (this.isLastPage() && this.getPageCount() > 2)
                 this.pageOptions = [this.getPageCount() - 2, this.getPageCount() - 1, this.getPageCount()];
-            else {
-                for (var i = 0; i < this.visableNumbers; i++) {
-                    if (this.getPageCount() <= i)
-                        this.pageOptions[i] = i + 1;
-                }
+            else if (this.getPageCount() > this.visableNumbers) {
+                this.pageOptions.push((this.page + 1) - 1);
+                this.pageOptions.push((this.page + 1));
+                this.pageOptions.push((this.page + 1) + 1);
             }
         }
     }

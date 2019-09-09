@@ -64,7 +64,8 @@ import {
         SearchInputComponent,    
     ],
     exports: [
-        HomeSearchComponent,                                      
+        HomeSearchComponent,    
+        SearchInputComponent,
     ],
     providers: [        
         {

@@ -1,35 +1,59 @@
-﻿import { Component, OnInit, Input, EventEmitter, Output, ChangeDetectionStrategy, ViewChild} from '@angular/core';
+﻿import { Component, OnInit, Input, EventEmitter, Output, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SearchService } from '../../services/search.service';
 import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../models/search-result.model';
 import { Paginator } from 'primeng/primeng';
+import { NgIf } from '@angular/common';
 
 @Component({
     selector: 'd3s-search-results',
     templateUrl: './search-results-component.html',
     providers: [SearchService],
-    changeDetection: ChangeDetectionStrategy.OnPush,
+    changeDetection: ChangeDetectionStrategy.Default,
+    host: {
+        '(window:resize)': 'setResultsHeight()'
+    },  
 })
 
-export class SearchResultsComponent extends BaseComponent {
+export class SearchResultsComponent extends BaseComponent implements AfterViewInit {
     @Input() results: SearchResultsObject;
     @Input() categories: SearchCategories[] = [];    
     @Input() itemsPerPage: number = 5;
     @Input() from: number = 0;
     @Input() loading: boolean = false;
+    @Input() useSubscription: boolean = false;
         
     @Output() paginateClick = new EventEmitter();    
     @Input() selectedCategory: SearchCategories;
     @Output() selectedCategoryChange = new EventEmitter();
 
-    @ViewChild('pag') paginator: Paginator;
+    @ViewChild('searchContainer') container: ElementRef;
 
     ngOnChanges(changes: any) {
-        if (changes.from != undefined && this.paginator != undefined) {
-            this.paginator.updatePaginatorState();
+        if (changes['results'] && !changes['results'].firstChange) {
+            console.log(changes['results']);
+            this.setResultsHeight();
         }
     }
-        
+
+    constructor(private searchService: SearchService, private ref: ChangeDetectorRef) {
+        super();
+    }
+
+    ngAfterViewInit(): void {
+        this.setResultsHeight();
+    }
+
+    setResultsHeight() {
+        window.setTimeout(() => {
+            console.log(this.container);
+            if (this.container && this.container.nativeElement) {
+                console.log(this.container.nativeElement);
+                this.container.nativeElement.style.height = (window.innerHeight - 108) + 'px';
+            }
+            this.ref.markForCheck();
+        }, 50);
+    }
 
     private selectCategory(category) {
         this.selectedCategory = category;

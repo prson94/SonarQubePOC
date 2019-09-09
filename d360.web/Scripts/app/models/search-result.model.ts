@@ -11,13 +11,14 @@
 export class SearchFullResult {
     Description: string;
     Group: string;
-    ID: number;
+    ID: string;
     Name: string;
     NormalizedScore: number;
     Score: number;
     Type: string;
     Url: string;
     Icon: string;
+    Uid: string;
     
 }
 

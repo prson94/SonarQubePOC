@@ -1,4 +1,4 @@
-﻿import { Component, Input, ChangeDetectionStrategy, OnInit } from '@angular/core';
+﻿import { Component, Input, ChangeDetectionStrategy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SearchFullResult } from '../../models/search-result.model';
@@ -8,6 +8,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 import { ObjectStatistics } from '../../models/object-statistics.model';
 import { TagService } from '../../services/tag.service';
 import { Tag, TagItem } from '../../models/tag.model';
+import { ObjectStatisticsService } from '../../services/object-statistics.service';
 
 declare var CompanySettings;
 
@@ -19,22 +20,16 @@ declare var CompanySettings;
                         <span class="d3s-icon large-icon title-icon"><i class="fa {{result?.Icon}}"></i></span>
                         <span *ngIf="result?.ImageUrl" class="folder-icon"><img [src]="result.ImageUrl" /></span> 
                         <span (click)="navigateLink()" class="name"><span class="inner" [innerHtml]="result?.Name"></span></span>
-                        <span #badge *ngIf="statistics && statistics.Score;else noScore" class="d3s-icon large-icon clickable"
+                        <span #badge *ngIf="scoreAndStatus && scoreAndStatus.Score;else noScore" class="d3s-icon large-icon"
                               title="{{lastCalculatedMessage()}}"
                               [ngClass]="{
                                                     'bad':scoreBetween(0,49),
                                                     'ok':scoreBetween(50,89),
                                                     'good':scoreBetween(90,1000)
                                                 }">
-			                <d3s-dynamic-percentage [percentage]="statistics?.Score"></d3s-dynamic-percentage>
-			                <span class="text">{{statistics?.Score}}%</span>
+			                <d3s-dynamic-percentage [percentage]="scoreAndStatus?.Score"></d3s-dynamic-percentage>
+			                <span class="text">{{scoreAndStatus?.Score}}%</span>
 		                </span>
-		                <ng-template #noScore>
-			                <span #noScoreBadge title="Governance Score not yet calculated" class="d3s-icon large-icon clickable">
-				                <d3s-dynamic-percentage [percentage]="0"></d3s-dynamic-percentage>
-				                <span class="text">N/A</span>
-			                </span>
-		                </ng-template>
 		                <span *ngIf="showStatus" class="d3s-icon large-icon" [style.background-color]="getCertificationStatusColor(status)">
 			                <i class="fa fa-certificate"></i>
 			                <span class="text">{{status}}</span>
@@ -42,32 +37,37 @@ declare var CompanySettings;
                         <button *ngIf="showShoppingCart && result.Group != 'Synonym' && result.Group != 'Attribute'" class="button icon" (click)="add()">
                             <i class="fa fa-cart-plus"></i>
                         </button>
-                        <span class="d3s-icon med-icon light">
-                            <i class="fa fa-info-circle"></i>
+                        <span *ngIf="obj && objID" class="d3s-icon med-icon light">
+                            <d3s-preview-tooltip
+                                [objectType]="obj"
+                                [objectId]="objID"
+                                icon="info-circle"
+                              ></d3s-preview-tooltip>
                         </span>
                     </span>
                     <span class="category">
                         {{displayType}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
                     </span>
                     <span class="description" *ngIf="result?.Description" [innerHtml]="result.Description"></span>
-                    <div class="tags">
-                        <d3s-tag-view [data]="tags"></d3s-tag-view>
+                    <div *ngIf="result?.Tags"  class="tags">
+                        <d3s-tag-view [data]="result?.Tags"></d3s-tag-view>
                     </div>      
                 </div>        
                 `,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [ShoppingCartService]
+    providers: [ShoppingCartService, ObjectStatisticsService]
 })
 
 export class SearchResultItemComponent extends BaseComponent implements OnInit {
     @Input() result: SearchFullResult;
     private tags: TagItem[] = [];
-    private statistics: ObjectStatistics;
     private lastCalculatedDate: number;
-    private showStatus: boolean = true;
-    private status: string = 'certified';
+    private showStatus: boolean = false;
+    private status: string;
     showShoppingCart = false;
-
+    private obj: string;
+    private objID: number;
+    private scoreAndStatus: any;
     get displayType() {
         if (this.result) {
             switch (this.result.Group) {
@@ -94,7 +94,11 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         }
     }
 
-    constructor(private router: Router, private shoppingCartService: ShoppingCartService, private messagesService: MessagesObservableService) {
+    constructor(private router: Router,
+        private shoppingCartService: ShoppingCartService,
+        private messagesService: MessagesObservableService,
+        private objectStatisticsService: ObjectStatisticsService,
+        private ref: ChangeDetectorRef) {
         super();
     }
 
@@ -102,11 +106,15 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() == 'true')
             this.showShoppingCart = true;
 
-        this.statistics = new ObjectStatistics();
-        this.statistics.Score = 90
-        this.statistics.ScoreLast = "2019-03-10T00:00:00.000Z";
-        this.loadDetails();
+        if (this.result.Url.split('/').length == 4) {
+            this.obj = this.result.Url.split('/')[1];
+            this.objID = +this.result.Url.split('/')[3];
+            this.loadDetails();
+        }
+
     }
+
+  
 
     private loadDetails() {
         this.tags.push({ Uid: 123, Value: 'tag1' });
@@ -115,6 +123,19 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         this.tags.push({ Uid: 123, Value: 'tag4' });
         this.tags.push({ Uid: 123, Value: 'tag5' });
         this.tags.push({ Uid: 123, Value: 'tag5' });
+
+        this.objectStatisticsService.getScoreAndStatus(this.result.Uid).subscribe(
+            result => {
+                this.scoreAndStatus = result;
+                if (this.scoreAndStatus && this.scoreAndStatus.Status) {
+                    this.status = this.scoreAndStatus.Status; 
+                    this.showStatus = true;
+                } else {
+                    this.showStatus = false;
+                }
+                this.ref.markForCheck();
+            }
+        );
 
     }
 
@@ -130,8 +151,8 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     scoreBetween(start, end) {
-        if (this.statistics) {
-            return this.statistics.Score >= start && this.statistics.Score <= end;
+        if (this.scoreAndStatus && this.scoreAndStatus.Score) {
+            return this.scoreAndStatus.Score >= start && this.scoreAndStatus.Score <= end;
         }
     }
 
@@ -157,10 +178,10 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     private lastCalculatedMessage() {
-        if (!this.statistics) {
+        if (!this.scoreAndStatus.Score) {
             return "Governance Score not yet calculated";
         }
-        var diff = new Date(Date.now() - Date.parse(this.statistics.ScoreLast));
+        var diff = new Date(Date.now() - Date.parse(this.scoreAndStatus.Score));
 
         var years = diff.getUTCFullYear() - 1970;
 

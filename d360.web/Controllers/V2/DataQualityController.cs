@@ -13,6 +13,8 @@ using System.Data.SqlClient;
 using System.Data;
 using System.Data.Entity;
 using Swashbuckle.Swagger.Annotations;
+using System.Web.Http.Description;
+using d360.web.Filters;
 
 namespace d360.web.Controllers.V2
 {
@@ -323,6 +325,21 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, e.Message));
             }
             return ruleResults;
+        }
+
+        /// <summary>
+        /// Gets the score and the status of a Asset by its Uid
+        /// </summary>
+        /// <param name="assetUid">The Uid of the rule</param>
+        /// <returns></returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("GetScoreAndStatus/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(Object))
+        ]
+        public dynamic GetScoreAndStatus(Guid assetUid)
+        {
+            return Company.GetAssetStatusAndScore(assetUid);
         }
 
 
