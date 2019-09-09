@@ -25,7 +25,7 @@ namespace d360.model.validators
 
             foreach (var field in model.Fields)
             {
-                if (!nameRegex.IsMatch(field.Name))
+                if (!nameRegex.IsMatch(field.Name ?? ""))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
