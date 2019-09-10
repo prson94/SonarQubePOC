@@ -45,7 +45,6 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
     }
 
     ngOnInit() {
-        console.log('elemental',this.element);
         if (this.element && this.element.offsetWidth) this.width = this.element.offsetWidth + 'px';        
     }
 
