@@ -6,18 +6,22 @@ import {ObjectDetail} from '../../models/object-detail.model';
 import {BaseComponent} from '../shared/base.component';
 import {NymType} from '../../models/object-detail.model';
 import {ResponsibilityTypeRelationPermission} from '../../models/responsibility-type.model';
-import {FormMode} from '../../models/form.model';
+import { FormMode } from '../../models/form.model';
+import { AssetService } from '../../services/asset.service';
+import { AssetEditorModel } from '../../models/asset.model';
+import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
     selector: 'd3s-object-definition-tile',
     templateUrl: './object-definition.tile.html',
-    providers: [ObjectDetailService],
+    providers: [ObjectDetailService, AssetService],
 })
 
 export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     @Input() objectID: number;
     @Input() objectType: string;
-
+    @Input() useV2API: boolean = false;
+    
     @Input() hasAttributes: boolean = true;
     @Input() nymTypes: NymType[] = [];
 
@@ -33,7 +37,9 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
 
     constructor(
         private objectDetailService: ObjectDetailService,
-        private headerActionsService: HeaderActionsService
+        private headerActionsService: HeaderActionsService,
+        private assetService: AssetService,
+        private messagesService: MessagesObservableService,
     ) {
         super();
     }
@@ -70,5 +76,55 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
         this.onEditComplete.emit(this.object);
         this.formMode = FormMode.Default;
         this.formModeChange.emit(this.formMode);
+    }
+
+    saveV2(event): void {
+        let values: any = {};
+        let asset: AssetEditorModel = new AssetEditorModel();
+        asset.Fields = {};
+
+        //takes the form and convert any array values to , separated string values
+        for (var p in event.item) {
+            if (event.item.hasOwnProperty(p)) {
+                if (Array.isArray(event.item[p])) {
+                    values[p] = event.item[p].join();
+                } else {
+                    values[p] = event.item[p];
+                }
+            }
+        }
+
+        //convert to an asset
+        for (var p in values) {
+            if (p.toUpperCase() == "PARENTUID") {
+                asset.ParentUid = values[p];
+            }
+            else if (p.toUpperCase() == "UID") {
+                asset.Uid = values[p];
+            }
+            else if (p.toUpperCase() == "ASSETTYPEUID") {
+                assetTypeUid = values[p];
+            }
+            else {
+                asset.Fields[p] = values[p];
+            }
+        }
+
+        this
+            .assetService
+            .saveAsset(assetTypeUid, asset)
+            .subscribe(result => {                
+                this.showMessageForApiResult(this.messagesService, result, 'Asset updated');
+                if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                                
+                this.isLoading = false;
+
+                this.load();
+
+                this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was renamed
+                this.onEditComplete.emit(this.object);
+                this.formMode = FormMode.Default;
+                this.formModeChange.emit(this.formMode);
+            });
+        
     }
 }

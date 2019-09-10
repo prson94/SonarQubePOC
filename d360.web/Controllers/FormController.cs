@@ -809,6 +809,7 @@ namespace d360.web.Controllers
             var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString()).Include(x => x.AssetType).FirstOrDefault();
 
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
+            list.Add(new EditableField { FieldName = "AssetTypeUid", FieldType = DataType.Hidden.ToString(), Value = a.AssetType.uid.ToString() });
 
             var parentType = Company.GetParentType(a.AssetType.ObjectID, SystemObjects.ArtifactType);
             

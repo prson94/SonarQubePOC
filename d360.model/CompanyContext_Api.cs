@@ -290,32 +290,61 @@ from	{targetTable} T
 ", new { executionID, obj, objID }, commandTimeout: timeout);
         }
 
-        private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600)
+        private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
         {
             string targetTable = "api.ExecutionRelationship";
             if (obj != "IntersectType") targetTable = "api.ExecutionAsset";
-            Connection.Execute($@"
-update	T
-set		T.Success = 0,
-		T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid relationship values: [' + S.Names + ']'
-from	{targetTable} T
-		inner join	(
-					select		A.ExecutionID,
-                                A.ItemNumber,
-								STRING_AGG(FT.Name+'='+F.FieldValue, ', ') as Names
-					from		{targetTable} A
-                                inner join FieldType FT on FT.Object = @obj
-								    and FT.ObjectID = @objID
-									and FT.[Type] = 'Relationship' and FT.LookupObjectType ='IntersectType'
-								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
-								inner join IntersectType IT on IT.ID = FT.LookupObjectID
-								left join AssetDetail AD on AD.DisplayValue = F.FieldValue 
-									and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
-									or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
-                    where       A.ExecutionID = @executionID and AD.ID IS NULL
-					group by	A.ExecutionID, A.ItemNumber
-					) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
-", new { executionID, obj, objID }, commandTimeout: timeout);
+
+            if (!lookupFieldsPassedByValue)
+            {
+                Connection.Execute($@"
+                    update	T
+                    set		T.Success = 0,
+		                    T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid relationship values: [' + S.Names + ']'
+                    from	{targetTable} T
+		                    inner join	(
+					                    select		A.ExecutionID,
+                                                    A.ItemNumber,
+								                    STRING_AGG(FT.Name+'='+F.FieldValue, ', ') as Names
+					                    from		{targetTable} A
+                                                    inner join FieldType FT on FT.Object = @obj
+								                        and FT.ObjectID = @objID
+									                    and FT.[Type] = 'Relationship' and FT.LookupObjectType ='IntersectType'
+								                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
+								                    inner join IntersectType IT on IT.ID = FT.LookupObjectID
+								                    left join AssetDetail AD on AD.DisplayValue = F.FieldValue 
+									                    and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
+									                    or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
+                                        where       A.ExecutionID = @executionID and AD.ID IS NULL
+					                    group by	A.ExecutionID, A.ItemNumber
+					                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+                    ", new { executionID, obj, objID }, commandTimeout: timeout);
+            }
+            else
+            {
+                Connection.Execute($@"
+                    update	T
+                    set		T.Success = 0,
+		                    T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid relationship values: [' + S.Names + ']'
+                    from	{targetTable} T
+		                    inner join	(
+					                    select		A.ExecutionID,
+                                                    A.ItemNumber,
+								                    STRING_AGG(FT.Name+'='+F.FieldValue, ', ') as Names
+					                    from		{targetTable} A
+                                                    inner join FieldType FT on FT.Object = @obj
+								                        and FT.ObjectID = @objID
+									                    and FT.[Type] = 'Relationship' and FT.LookupObjectType ='IntersectType'
+								                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
+								                    inner join IntersectType IT on IT.ID = FT.LookupObjectID
+								                    left join AssetDetail AD on AD.ObjectID = cast(F.FieldValue as int)
+									                    and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
+									                    or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
+                                        where       A.ExecutionID = @executionID and AD.ID IS NULL
+					                    group by	A.ExecutionID, A.ItemNumber
+					                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+                    ", new { executionID, obj, objID }, commandTimeout: timeout);
+            }
         }
 
         private void LogLoopExecutionError(Guid executionID, int beginItemNumber, int endItemNumber, string targetTable, string msg, int timeout = 3600)
@@ -484,7 +513,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 						and A.Success is null
                     inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
                     inner join IntersectType IT on IT.ID = FT.LookupObjectId
-                    inner join AssetDetail AD on AD.ObjectID = F.FieldValue 
+                    inner join AssetDetail AD on AD.ObjectID = cast(F.FieldValue  as int)
                             and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
                                 or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
             where   A.ExecutionID = @executionID
@@ -2365,7 +2394,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                         }
 
                         LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout);
-                        LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout);
+                        LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
                         ValidateAssetAndParent(execution.ExecutionID, at.ID, timeout);
 
                         LogParentErrors(execution.ExecutionID, timeout);                // If you cannot find parent based on Uids provided.

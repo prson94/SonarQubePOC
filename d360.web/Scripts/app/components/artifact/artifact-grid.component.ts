@@ -291,6 +291,9 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             else if (p.toUpperCase() == "UID") {
                 asset.Uid = values[p];
             }
+            else if (p.toUpperCase() == "ASSETTYPEUID") {
+                //ignore
+            }
             else {
                 asset.Fields[p] = values[p];                
             }
