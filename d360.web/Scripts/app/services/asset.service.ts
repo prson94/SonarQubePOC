@@ -56,7 +56,9 @@ export class AssetService extends BaseObservableService {
                 .http
                 .put(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, assetArray, httpOptions)
                 .pipe(
-                    
+                    map((res: ApiResult[]) => {                        
+                        return res[0];
+                    }),           
                     catchError(err => this.handleError(err))
                 );
         }
@@ -65,8 +67,7 @@ export class AssetService extends BaseObservableService {
                 .http
                 .post(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, assetArray, httpOptions)
                 .pipe(                    
-                    map((res: ApiResult[]) => {   
-                        console.log(res[0]);
+                    map((res: ApiResult[]) => {                           
                         return res[0];
                     }),                    
                     catchError(err => this.handleError(err))
