@@ -3868,7 +3868,7 @@ button.tab-scroller {
         }
 
         .checkbox {
-            display:flex;
+            display: flex;
             align-self: center;
 
             input {
@@ -3876,7 +3876,7 @@ button.tab-scroller {
                 height: 17px;
                 outline: none;
                 box-shadow: none;
-                align-self:center;
+                align-self: center;
             }
 
             span {
@@ -3953,6 +3953,11 @@ button.tab-scroller {
                             overflow: hidden;
                             text-overflow: ellipsis;
                             white-space: nowrap;
+
+                            &.selected {
+                                font-weight: bold;
+                                color: black;
+                            }
                         }
 
                         .d3s-badge {
