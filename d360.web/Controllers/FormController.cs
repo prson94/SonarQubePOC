@@ -9602,6 +9602,19 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             var sql = "";
 
+            var subSql = $@"(
+select		D.ID,
+            D.[Object], 
+			D.ObjectID
+from		Asset D
+            inner join AssetType AST on D.AssetTypeID = AST.ID
+			left join [Intersect] I on	I.IntersectTypeID = @it and (
+											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
+											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
+										)
+where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType and D.ObjectID != @id
+) C on {(useAssetJoin ? "C.ID" : "C.ObjectID")} = O.ID";
+
             switch (targetType)
             {
                 case "FusionAttributeType":
@@ -9853,47 +9866,21 @@ order by r.Name";
                     }
                     break;
                 #endregion
-                default:
-                    #region
-                    sql = $@"(
-select		D.ID,
-            D.[Object], 
-			D.ObjectID
-from		Asset D
-            inner join AssetType AST on D.AssetTypeID = AST.ID
-			left join [Intersect] I on	I.IntersectTypeID = @it and (
-											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
-											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
-										)
-where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType and D.ObjectID != @id
-) C on {(useAssetJoin ? "C.ID" : "C.ObjectID")} = O.ID";
-
-                    switch (targetType)
-                    {
-                        case "ArtifactType":
-                            sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue as Name from AssetDetail O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
-                            break;
-                        case "GroupType":
-                            sql = $@"select C.Object, C.ObjectID, O.Name from [Group] O inner join {sql} order by O.Name";
-                            break;
-                        case "IntersectType":
-                            sql = $@"select C.Object, C.ObjectID, O.Name from [Intersect] O inner join {sql} order by O.Name";
-                            break;
-                        case "LookupType":
-                            sql = $@"select C.Object, C.ObjectID, O.Name from [LookupType] O inner join {sql} order by O.Name";
-                            break;                            
-                        case "ReferenceItemType":
-                            sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue as Name from AssetDetail O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'ReferenceItem') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
-                            break;
-                        case "ResourceType":
-                            sql = $@"select C.Object, C.ObjectID, O.LastName + ', ' + O.FirstName as Name from reporting.[Global_Resource] O inner join {sql} order by O.LastName + ', ' + O.FirstName";
-                            break;
-                        case "RuleType":
-                            sql = $@"select C.Object, C.ObjectID, O.DisplayValue AS Name from [Rule] O inner join {sql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
-                            break;
-                        case "PolicyType":
-                        case "TaxonomyType":
-                            sql = $@"
+                case "ArtifactType":
+                    sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue as Name from AssetDetail O inner join {subSql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                    break;
+                case "IntersectType":
+                    sql = $@"select C.Object, C.ObjectID, O.Name from [Intersect] O inner join {subSql} order by O.Name";
+                    break;
+                case "LookupType":
+                    sql = $@"select C.Object, C.ObjectID, O.Name from [LookupType] O inner join {subSql} order by O.Name";
+                    break;
+               case "RuleType":
+                    sql = $@"select C.Object, C.ObjectID, O.DisplayValue AS Name from [Rule] O inner join {subSql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                    break;
+                case "PolicyType":
+                case "TaxonomyType":
+                    sql = $@"
                                     select	A.Object,
                                             A.ObjectID, 
                                             TP.TextPath as Name 
@@ -9909,11 +9896,9 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                                             and A.ObjectID != @id
                                             and A.ID not in ({GetNoReadSqlStatement()}) 
                                             and I.ID is null
-                                    order by TP.TextPath"; 
-                            break;
-                    }
+                                    order by TP.TextPath";
                     break;
-                    #endregion
+
             }
 
             #endregion
