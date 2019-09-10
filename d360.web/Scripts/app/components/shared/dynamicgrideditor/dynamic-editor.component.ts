@@ -433,11 +433,17 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
 
         // if this is the v2 api we need to combine any link field types into the format stored in the db
+        // tallyfy|https://tallyfy.com/what-is-compliance-management/
         if (this.isV2API) {
-            let links = this.fields.filter(x => x.FieldType == 'Link');
-
-            //need to get the link and url for each
-            //links.forEach
+            let links = this.fields.filter(x => x.FieldType == 'Link');            
+            //need to get the link and url for each            
+            for (let link of links) {                
+                let url = values[link.FieldName + '_Url'];
+                delete values[link.FieldName + '_Url'];
+                let name = values[link.FieldName + '_Name'];
+                delete values[link.FieldName + '_Name'];
+                values[link.FieldName] = `${name}|${url}`;
+            }
 
         }
 
