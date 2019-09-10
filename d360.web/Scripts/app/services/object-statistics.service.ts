@@ -38,7 +38,7 @@ export class ObjectStatisticsService extends BaseObservableService {
     }
 
     getScoreAndStatus(Uid: string): Observable<string> {
-        return this.http.get(`api/v2/dataquality/GetScoreAndStatus/${Uid}`).pipe(
+        return this.http.get(`api/v2/assets/GetScoreAndStatus/${Uid}`).pipe(
             map(response => <any>response),
             catchError(err => this.handleError(err))
         );
