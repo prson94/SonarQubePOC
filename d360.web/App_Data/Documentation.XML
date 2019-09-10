@@ -782,6 +782,16 @@
               Looks up a localized string similar to Date Last Modified.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.UseAsTransformation_Description">
+            <summary>
+              Looks up a localized string similar to The assets of this type may be used as a connecting asset to form lineage relationships.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.UseAsTransformation_Name">
+            <summary>
+              Looks up a localized string similar to Use As Transformation.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.ValidationDescription_Description">
             <summary>
               Looks up a localized string similar to This message will appear to the user if they provide invalid or missing information on this field.  You must enable some form of regular expression pattern validation on this field in order for the message to appear..

@@ -59,6 +59,7 @@ export class AssetType {
     State: State;
     Hierarchical: boolean;
     HierarchyMaximumDepth: number;
+    UseAsTransformation: boolean;
     Object: string;
     ObjectID: number;
     CreatedBy: number;

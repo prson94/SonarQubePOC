@@ -5,6 +5,8 @@ import { AssetTypeService } from "../../../services/asset-type.services";
 import { AssetTypeClass, AssetTypeEditorModel } from "../../../models/asset.model";
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
+declare var CompanySettings: any;
+
 @Component({
     selector: 'd3s-asset-type-editor',
     templateUrl: './asset-type-editor.component.html',
@@ -35,12 +37,20 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     showAssetFusionSettings: boolean = false;
     showAssetArtifactSettings: boolean = false;
     showNotesField: boolean = false;
+    showReferenceTypeSettings: boolean = false;
+    private lineageVersion: number = 1;
 
     constructor(private assetTypeService: AssetTypeService, private messagesService: MessagesObservableService) {
         super();
     }    
 
+    
     ngOnChanges(changes: SimpleChanges): void {
+
+        if (CompanySettings != null && CompanySettings.LineageVersion != null) {
+            this.lineageVersion = CompanySettings.LineageVersion;
+        }
+
         for (let p in changes) {
             if (p == 'id' || p == 'parentID' || p == 'topTypeID') {
                 this.load();                
@@ -75,6 +85,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 this.theAssetTypeClass = AssetTypeClass.ReferenceItemType;
                 this.showAssetStyles = false;
                 this.showNotesField = true;
+                this.showReferenceTypeSettings = this.lineageVersion==3;
                 break;
             case 'F':
                 this.showAssetFusionSettings = true;                
@@ -173,7 +184,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     }
 
     get FirstColumnStyle(): string {
-        if (this.showAssetArtifactSettings || this.showAssetDepthSettings || this.showAssetFusionSettings || this.showAssetStyles)
+        if (this.showAssetArtifactSettings || this.showAssetDepthSettings || this.showAssetFusionSettings || this.showAssetStyles || this.showReferenceTypeSettings )
             return "col l8 m12 s12";
         return "col s12";
     }
