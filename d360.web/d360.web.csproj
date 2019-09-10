@@ -696,7 +696,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-bulk-reassign.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
-    <Content Include="Scripts\dist\*.js" />    
+    <Content Include="Scripts\dist\*.js" />
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="webpack.prod.config.js" />
@@ -1108,6 +1108,7 @@
     <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\shared-asset-editor.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor-use-as-transformation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\gov-checkbox.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-responsibility-selector.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />

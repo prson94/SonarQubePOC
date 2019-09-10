@@ -5351,6 +5351,7 @@ where    A.RuleID = @id", new { id });
         public DetailReadOnlyModel GetObjectDetailFields(SystemObjects type, int id)
         {
             var model = new DetailReadOnlyModel() { columns = 2 };
+            var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
             int row = 0;
             switch (type)
@@ -6414,14 +6415,34 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = Fields.ID_Name, FieldName = "PolicyTypeID", FieldDescription = Fields.ID_Description, Value = policyType.ObjectID.ToString() }
                             }
                         });
-                        model.rows.Add(new DetailReadOnlyRowModel
+                        if(lineageVersion == 3)
                         {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 2 ,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = objectDetail.UID.ToString()  }
+                            },
+                                SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UseAsTransformation_Name, FieldName = "UseAsTransformation", DataType="bool", FieldDescription = Resources.FieldInfo.UseAsTransformation_Description, Value = policyType.UseAsTransformation.ToString()  }
+                            }
+                            });
+                        }
+                        else
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = objectDetail.UID.ToString()  }
                             }
-                        });
+                            });
+                        }
+
+                        
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -6488,26 +6509,40 @@ where    A.RuleID = @id", new { id });
                                 }
                         });
 
+                        var useAsTransformationField = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UseAsTransformation_Name, FieldName = "UseAsTransformation", DataType="bool", FieldDescription = Resources.FieldInfo.UseAsTransformation_Description, Value = refType.UseAsTransformation.ToString()  }
+                            };
+
                         var parentRefType = Company.GetParentType(refType.ObjectID, SystemObjects.ReferenceItemType);
 
                         var heirarchyColumns = new DetailReadOnlyRowModel
                         {
-                            columns = (parentRefType != null) ? 2 : 1,
+                            columns = (parentRefType != null) ? 2 : lineageVersion == 3 ? 2 : 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = "Hierarchical", FieldName = "Hierarchical", FieldDescription = "Is this reference list a hierarchical reference list", Value = parentRefType != null ? "Yes":"No" }
-                            }
-                        };
-
-                        if (parentRefType != null)
-                        {
-                            heirarchyColumns.SecondColumnFields = new List<ReadOnlyField>
+                            },
+                            SecondColumnFields = parentRefType != null ?
+                            new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = "Parent", FieldName = "Parent", FieldDescription = "Parent Reference List", Value = parentRefType.Name }
-                            };
-                        }
+                            } : lineageVersion == 3 ? useAsTransformationField : null
+
+                        };
 
                         model.rows.Add(heirarchyColumns);
+
+                        if (parentRefType != null && lineageVersion == 3) {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = useAsTransformationField
+                            });
+                        }
+                        
+
+
                     }
                     break;
                 #endregion
@@ -6904,11 +6939,15 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 1,
+                            columns = lineageVersion ==3 ?  2 : 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Fields.Description_Name, FieldName = "TaxonomyTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description }
-                            }
+                            },
+                            SecondColumnFields = lineageVersion == 3 ? new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UseAsTransformation_Name, FieldName = "UseAsTransformation", DataType="bool", FieldDescription = Resources.FieldInfo.UseAsTransformation_Description, Value = taxonomyType.UseAsTransformation.ToString()  }
+                            } : null
                         });
                     }
                     taxonomyType = null;

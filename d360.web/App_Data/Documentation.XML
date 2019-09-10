@@ -782,6 +782,16 @@
               Looks up a localized string similar to Date Last Modified.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.UseAsTransformation_Description">
+            <summary>
+              Looks up a localized string similar to The assets of this type may be used as a connecting asset to form lineage relationships.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.UseAsTransformation_Name">
+            <summary>
+              Looks up a localized string similar to Use As Transformation.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.ValidationDescription_Description">
             <summary>
               Looks up a localized string similar to This message will appear to the user if they provide invalid or missing information on this field.  You must enable some form of regular expression pattern validation on this field in order for the message to appear..
@@ -3039,21 +3049,19 @@
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
             <summary>
-            Creates association between an existing Asset and an existing tag
+            Creates association between an existing asset and an existing tag.
             </summary>
             <remarks>
-            An Administrator can create  any tag association. 
-            A regular user can only create a tag association to assets they have access to.
+            An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
             </remarks>
             <param name="assetTags">Collection of assets and tags to associate.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
             <summary>
-            Removes association between an existing Asset and an exiting Tag
+            Removes the association between an existing asset and an existing tag.
             </summary>
-            <remarks>An Administrator can remove any tag association. 
-            A regular user can only remove a tag association to an asset they initially created the association for.
+            <remarks>An Administrator can remove any tag association. A non-administrative user can only remove tag associations for assets to which they have read access.
             </remarks>
             <param name="assetTags">Collection of assets and tags to remove tag associations for.</param>
             <returns>An HTTP status code and message.</returns>
