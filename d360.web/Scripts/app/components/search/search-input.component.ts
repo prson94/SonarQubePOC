@@ -65,7 +65,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                                 </select>
                             </div>
                             <div class="col s1" *ngIf="filter.field != '_type'">
-                                    <label><input type="checkbox" [(ngModel)]="filter.exact" [name]="'exm'+idx">Exact match</label>
+                                    <label><input type="checkbox" [(ngModel)]="filter.exact" [name]="'exm'+idx">Match Whole Words</label>
                             </div>
                             <div class="col s1" *ngIf="filter.field == '_type'">&nbsp;</div>
                             <div class="col s1" *ngIf="last" (click)="addFilter()" style="cursor:pointer"><i class="fa fa-plus" aria-hidden="true" title="add filter" style="font-size:1.5em"></i></div>
