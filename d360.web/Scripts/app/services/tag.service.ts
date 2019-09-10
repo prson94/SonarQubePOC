@@ -115,7 +115,7 @@ export class TagService extends BaseObservableService {
     }
 
     exportTags(filters: any, sort) {
-        this.http.get(`api/v2/tags/export?globalSearch=${filters.globalSearch}&value=${filters.Value}&useCount=${filters.UseCount}&sortBy=${sort.field}&sortOrder=${sort.order}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'tags'));
+        this.http.get(`api/v2/tags/export?globalSearch=${filters.globalSearch}&value=${filters.Value}&useCount=${filters.UseCount}&sortBy=${sort.field}&sortOrder=${sort.order}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Tags'));
     }
 
     exportTagsByUid(uid: string, sort: any, filters: any) {

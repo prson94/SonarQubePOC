@@ -8,6 +8,7 @@ namespace d360.core.entities
         public int ID { get; set; }
         public long? AssetID { get; set; }
         public Guid? UID { get; set; }
+        public int? AssetTypeID { get; set; }
         public string Name { get; set; }
         public string TextPath { get; set; }
         public string Description { get; set; }
