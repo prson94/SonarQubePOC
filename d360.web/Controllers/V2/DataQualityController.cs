@@ -13,6 +13,8 @@ using System.Data.SqlClient;
 using System.Data;
 using System.Data.Entity;
 using Swashbuckle.Swagger.Annotations;
+using System.Web.Http.Description;
+using d360.web.Filters;
 
 namespace d360.web.Controllers.V2
 {
@@ -324,8 +326,7 @@ namespace d360.web.Controllers.V2
             }
             return ruleResults;
         }
-
-
+               
         private async Task SaveRuleResults(List<DataQualityResult> resultList, int timeout, SqlTransaction transaction, int implementationId)
         {
             await Company.Database.Connection.ExecuteAsync(@"

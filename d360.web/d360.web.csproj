@@ -621,6 +621,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
+    <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-editor-preview.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-mapping-rules.component.html" />
@@ -1237,6 +1238,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dynamic-percentage\dynamic-percentage-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\treetable-toggler.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-column-filter.component.ts" />

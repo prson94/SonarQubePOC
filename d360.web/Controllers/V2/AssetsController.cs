@@ -623,6 +623,24 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+        /// <summary>
+        /// Gets the score and the status of a Asset by its Uid
+        /// </summary>
+        /// <param name="assetUid">The asset Uid</param>
+        /// <returns></returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("GetScoreAndStatus/{assetUid}"), 
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(Object)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public dynamic GetScoreAndStatus(Guid assetUid)
+        {
+            return Company.GetAssetStatusAndScore(assetUid);
+        }
+
+
         #region Batch
 
         /// <summary>
