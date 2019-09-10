@@ -2519,13 +2519,6 @@
             <param name="ruleResults">The rule results and the mappings of fusionattributes that tie to the results</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.DataQualityController.GetScoreAndStatus(System.Guid)">
-            <summary>
-            Gets the score and the status of a Asset by its Uid
-            </summary>
-            <param name="assetUid">The Uid of the rule</param>
-            <returns></returns>
-        </member>
         <member name="M:d360.web.Controllers.V2.ErrorsController.SaveClientError(d360.web.Models.ClientErrorModel)">
             <summary>
             This logs the client error on server side
@@ -2974,6 +2967,13 @@
             <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.GetScoreAndStatus(System.Guid)">
+            <summary>
+            Gets the score and the status of a Asset by its Uid
+            </summary>
+            <param name="assetUid">The asset Uid</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert},System.Boolean)">
             <summary>
