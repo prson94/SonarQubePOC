@@ -3827,6 +3827,20 @@ button.tab-scroller {
             flex-wrap: nowrap;
             display: flex;
 
+            .field {
+                input {
+                    &:focus {
+                        outline: none;
+                        border: none;
+                        box-shadow: none;
+                    }
+                }
+
+                &:focus-within {
+                    border: 1px solid #4D90FE;
+                }
+            }
+
             i {
                 padding-right: 10px;
                 cursor: pointer;
@@ -3852,7 +3866,22 @@ button.tab-scroller {
         }
 
         .checkbox {
+            display:flex;
             align-self: center;
+
+            input {
+                width: 17px;
+                height: 17px;
+                outline: none;
+                box-shadow: none;
+                align-self:center;
+            }
+
+            span {
+                padding-left: 8px;
+                white-space: nowrap;
+                user-select: none;
+            }
         }
     }
 

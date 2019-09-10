@@ -11,11 +11,11 @@ import { Paginator } from 'primeng/paginator'
                     <span class="items">Showing {{(page * itemsPerPage) + 1}} to {{GetToDisplayValue()}} of {{totalRecords}} items</span>
                     <span class="grow"></span>
                     <div *ngIf="totalRecords > itemsPerPage" class="pages">
-                        <span (click)="changePageToFirst($event)">First</span>
-                        <span (click)="changePageToPrev($event)">Previous</span>
+                        <span [ngClass]="{'disabled' : isFirstPage()}" (click)="changePageToFirst($event)">First</span>
+                        <span [ngClass]="{'disabled' : isFirstPage()}" (click)="changePageToPrev($event)">Previous</span>
                         <span [ngClass]="{selected: page == (cpage - 1)}" *ngFor="let cpage of pageOptions" (click)="onPageLinkClick(cpage - 1)">{{cpage}}</span>
-                        <span (click)="changePageToNext($event)">Next</span>
-                        <span (click)="changePageToLast($event)">Last</span>
+                        <span [ngClass]="{'disabled' : isLastPage()}" (click)="changePageToNext($event)">Next</span>
+                        <span [ngClass]="{'disabled' : isLastPage()}" (click)="changePageToLast($event)">Last</span>
                         <span class="popup-container">
                             <i class="fa fa-cog"></i>
                             <div class="popup-menu popup">
@@ -85,8 +85,9 @@ export class PaginatorComponent implements OnChanges, OnInit {
     }
 
     changePageToFirst(event: any): void {
+        if (this.isFirstPage())
+            return;
         this.page = 0;
-
         this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
     }
 
@@ -106,8 +107,10 @@ export class PaginatorComponent implements OnChanges, OnInit {
         this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
     }
     changePageToLast(event: any): void {
-        this.page = this.getPageCount();
-
+        if (this.isLastPage())
+            return;
+        else
+            this.page = this.getPageCount();
         this.paginate(2, this.page, (this.page * this.itemsPerPage));
     }
     onPageLinkClick(page: number): void {
@@ -131,20 +134,28 @@ export class PaginatorComponent implements OnChanges, OnInit {
         this.onPageChange.emit({ size: size, page: page, first: firstItemIndex });
     }
 
-
-    private CheckVisableNumbers() {
+    CheckVisableNumbers() {
         this.pageOptions = [];
-        if (this.getPageCount() > 1) {
-            if (this.isFirstPage())
-                this.pageOptions = [1, 2, 3];
-            else if (this.isLastPage() && this.getPageCount() > 2)
-                this.pageOptions = [this.getPageCount() - 2, this.getPageCount() - 1, this.getPageCount()];
-            else if (this.getPageCount() > this.visableNumbers) {
-                this.pageOptions.push((this.page + 1) - 1);
-                this.pageOptions.push((this.page + 1));
-                this.pageOptions.push((this.page + 1) + 1);
-            }
+        let currentPage = this.page + 1, range = 5,  totalPages = this.getPageCount(), start = 1;  
+        let paging = [];      
+        if (currentPage < (range / 2) + 1) {
+            start = 1;
+
+        } else if (currentPage >= (totalPages - (range / 2))) {
+            start = Math.floor(totalPages - range + 1);
+
+        } else {
+            start = (currentPage - Math.floor(range / 2));
         }
+
+        for (let i = start; i <= ((start + range) - 1); i++) {
+            paging.push(i); 
+        }
+        if (this.page < 2) {
+            this.pageOptions = paging.splice(0,3);
+        } else {
+            this.pageOptions = paging;
+        }   
     }
 
     GetToDisplayValue() {
