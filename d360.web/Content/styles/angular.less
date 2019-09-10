@@ -3731,6 +3731,8 @@ button.tab-scroller {
     .tag-item-wrapper {
         display: inline-block;
         overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 
         &.too-long {
             text-overflow: ellipsis;
@@ -3749,7 +3751,7 @@ button.tab-scroller {
             height: 24px;
             padding: 0px 8px !important;
         }
-        
+
         .tag-tooltip {
             display: none;
             font-size: 12px;
