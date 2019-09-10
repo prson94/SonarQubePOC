@@ -174,10 +174,10 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     private lastCalculatedMessage() {
-        if (!this.scoreAndStatus.Score) {
+        if (!this.scoreAndStatus.EffectiveDate) {
             return "Governance Score not yet calculated";
         }
-        var diff = new Date(Date.now() - Date.parse(this.scoreAndStatus.Score));
+        var diff = new Date(Date.now() - Date.parse(this.scoreAndStatus.EffectiveDate));
 
         var years = diff.getUTCFullYear() - 1970;
 
