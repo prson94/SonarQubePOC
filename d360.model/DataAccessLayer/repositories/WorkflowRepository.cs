@@ -697,12 +697,7 @@ namespace d360.model.DataAccessLayer
                 count(*)
                         from workflow.type t
                     inner join workflow.version v on v.TypeID = t.Id
-                    inner join  workflow.VersionStep  vs  on
-                    vs.VersionID = v.id
-                    inner join workflow.ItemStep itemstep on
-                    itemstep.StepID = vs.id
-                    inner join [workflow].[Item] item on
-                    item.VersionID =v.id and itemstep.ItemID = item.id
+                    inner join [workflow].[Item] item on item.VersionID = v.id
                     left join Asset D on D.Object = item.Object and D.ObjectID = item.ObjectID 
                     left join issue iss on item.object = 'Issue' and iss.id = item.objectid
                     left join [Intersect] inter on item.Object = 'Intersect' and item.objectid = inter.ID
@@ -728,12 +723,7 @@ namespace d360.model.DataAccessLayer
 		        R1.uid as CompletedByUid
 	        from workflow.type t
 	        inner join workflow.version v on v.TypeID = t.Id
-	        inner join  workflow.VersionStep  vs  on
-	        vs.VersionID = v.id
-	        inner join workflow.ItemStep itemstep on
-	        itemstep.StepID = vs.id
-	        inner join [workflow].[Item] item on
-	        item.VersionID =v.id and itemstep.ItemID = item.id
+	        inner join [workflow].[Item] item on item.VersionID =v.id
 	        left join Asset D on D.Object = item.Object and D.ObjectID = item.ObjectID 
 	        left join issue iss on item.object = 'Issue' and iss.id = item.objectid
 	        left join [Intersect] inter on item.Object = 'Intersect' and item.objectid = inter.ID

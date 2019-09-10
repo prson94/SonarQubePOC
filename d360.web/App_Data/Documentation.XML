@@ -782,6 +782,16 @@
               Looks up a localized string similar to Date Last Modified.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.UseAsTransformation_Description">
+            <summary>
+              Looks up a localized string similar to The assets of this type may be used as a connecting asset to form lineage relationships.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.UseAsTransformation_Name">
+            <summary>
+              Looks up a localized string similar to Use As Transformation.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.ValidationDescription_Description">
             <summary>
               Looks up a localized string similar to This message will appear to the user if they provide invalid or missing information on this field.  You must enable some form of regular expression pattern validation on this field in order for the message to appear..
@@ -2408,6 +2418,20 @@
             <param name="dataSource">Asset cross reference datasource.</param>
             <returns>Http Status code OK if asset cross references were deleted, Http Status code of Not Found if item could not be deleted</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.CrossReferencesController.PostBulkCrossReferenceAsync(System.Collections.Generic.List{d360.core.entities.AssetCrossReference})">
+            <summary>
+            Creates new asset cross references.  This endpoint is meant for batch processing.
+            </summary>
+            <param name="crossReferences">The payload of your request.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.CrossReferencesController.GetExecutionStatus(System.Guid)">
+            <summary>
+            GETs the status of an execution record, including the results for the execution.
+            </summary>
+            <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.CustomEndpointsController.CustomAPIVersionFieldEditor_GetFieldTypes(System.Int32)">
             <summary>
             Gets the field types
@@ -2438,7 +2462,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.GetRuleResults(System.Guid)">
             <summary>
-            Returns the all the rule results for the specified rule Uid that are under the default implementation
+            Returns all the rule results for the specified rule Uid that are under the default implementation
             If the user is not an admin http status code 403 forbidden is returned
             </summary>
             <param name="ruleUid">The Uid of the rule</param>
@@ -2944,6 +2968,13 @@
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.GetScoreAndStatus(System.Guid)">
+            <summary>
+            Gets the score and the status of a Asset by its Uid
+            </summary>
+            <param name="assetUid">The asset Uid</param>
+            <returns></returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert},System.Boolean)">
             <summary>
             Adds a given set of assets based on the specific asset type unique identifier. This endpoint is meant for a greater number of items as it stores the asset list for asynchronous or batch processing.
@@ -3025,21 +3056,19 @@
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
             <summary>
-            Creates association between an existing Asset and an existing tag
+            Creates association between an existing asset and an existing tag.
             </summary>
             <remarks>
-            An Administrator can create  any tag association. 
-            A regular user can only create a tag association to assets they have access to.
+            An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
             </remarks>
             <param name="assetTags">Collection of assets and tags to associate.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.DeleteAssetTag(System.Collections.Generic.List{d360.core.entities.AssetTagApiModel})">
             <summary>
-            Removes association between an existing Asset and an exiting Tag
+            Removes the association between an existing asset and an existing tag.
             </summary>
-            <remarks>An Administrator can remove any tag association. 
-            A regular user can only remove a tag association to an asset they initially created the association for.
+            <remarks>An Administrator can remove any tag association. A non-administrative user can only remove tag associations for assets to which they have read access.
             </remarks>
             <param name="assetTags">Collection of assets and tags to remove tag associations for.</param>
             <returns>An HTTP status code and message.</returns>

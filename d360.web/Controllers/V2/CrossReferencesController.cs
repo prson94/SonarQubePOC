@@ -1,8 +1,10 @@
 ﻿using d360.core.entities;
 using d360.model;
+using d360.web.Models;
 using d360.model.DataAccessLayer;
 using d360.web.Controllers.V2;
 using d360.web.Filters;
+using d360.core.queue;
 using Dapper;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
@@ -26,13 +28,14 @@ namespace d360.web.Controllers.V2
     {
 
         private ICrossReferencesRepository crossReferencesRepository;
-
+        private IAssetRepository assetRepository;
         #region DI
 
-        public CrossReferencesController(ICommunityContext community, ICompanyContext company, ICrossReferencesRepository crossReferencesRepository)
+        public CrossReferencesController(ICommunityContext community, ICompanyContext company, ICrossReferencesRepository crossReferencesRepository,IAssetRepository assetRepository)
             : base(community, company)
         {
             this.crossReferencesRepository = crossReferencesRepository;
+            this.assetRepository = assetRepository;
         }
 
         #endregion
@@ -435,9 +438,108 @@ namespace d360.web.Controllers.V2
             return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
         }
 
+        /// <summary>
+        /// Creates new asset cross references.  This endpoint is meant for batch processing.
+        /// </summary>
+        /// <param name="crossReferences">The payload of your request.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            Route("batch"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add Asset Cross Reference", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
 
+        ]
+        public async Task<IHttpActionResult> PostBulkCrossReferenceAsync(List<AssetCrossReference> crossReferences)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add asset cross reference"));
 
+            var prefix = "CrossReferences.PostBulkCrossReference => ";
+            var errorMessage = "";
+            try
+            {
+                if (crossReferences == null)
+                    crossReferences = readRequestJsonContent<List<AssetCrossReference>>(Request).Result;
 
+                if (crossReferences == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                var execution = getApiExecution(crossReferences.Count);
+
+                ApiExecutionInfo executionInfo = await crossReferencesRepository.PostBulkCrossReference(crossReferences, execution);
+
+                var result = Request.CreateResponse(
+                                 HttpStatusCode.OK,
+                                new ApiExecutionRecievedResponse
+                                {
+                                    ExecutionID = executionInfo.ExecutionID,
+                                    Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                    Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/crossreferences/executions/{executionInfo.ExecutionID}/status"
+                                });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                   { "CrossReferencesCount", $"{((crossReferences != null) ? crossReferences.Count : 0)}" }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// GETs the status of an execution record, including the results for the execution.
+        /// </summary>
+        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("executions/{executionUid:Guid}/status"),
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json", "application/xml"), 
+            SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of Asset Cross References.", typeof(BulkAssetCrossReferenceResult)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Execution unique identifier not found.", typeof(ErrorResponse)),
+            ]
+        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionUid)
+        {
+            var prefix = "CrossReferences.GetExecutionStatus => ";
+            var errorMessage = "";
+            try {
+                ApiExecution execution = assetRepository.GetExecutionItemByUid(executionUid);
+
+                if (execution == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
+                }
+
+                var bulkResult = crossReferencesRepository.GetExecutionStatus(execution);
+                return await Task.FromResult<IHttpActionResult>(
+                        ResponseMessage(
+                                    Request.CreateResponse(HttpStatusCode.OK,bulkResult)
+                                )
+                             );
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "ExecutionUid", executionUid.ToString() }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+
+        }
 
     }
 }

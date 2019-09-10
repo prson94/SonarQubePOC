@@ -1568,9 +1568,40 @@ where	R.SourceObject = 'FusionAttribute'
         public List<IntersectTypeOption> GetIntersectTypeOptions(
             SystemObjects? subject = null, int? subjectID = null, 
             SystemObjects? @object = null, int? objectID = null,
-            int? predicateID = null)
+            int? predicateID = null,
+            List<AssetTypeClass> limitToClasses = null)
         {
-            var sql = @"
+            string noClassLimitSql = "";
+            string classLimitSql = "";
+            if (limitToClasses == null)
+            {
+                noClassLimitSql = @"
+                UNION
+                SELECT	CAST(IT.ID as int) ID,
+		                'Relationship :: ' + ITypeName.Name AS Name,
+		                'IntersectType' AS Type
+                FROM	IntersectType IT    
+		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
+                UNION
+                SELECT	ID,
+		                'Rule Implementation :: ' + DisplayValue as Name,
+		                'RuleImplementationType' as Type
+                FROM    [Rule]
+                UNION
+                SELECT	0 as ID,
+		                'Reference :: List' as Name,
+		                'ReferenceItemType' as Type	";
+            }
+            else
+            {
+                if (limitToClasses.Count > 0)
+                {
+                    classLimitSql = " and T.[Class] in ("  + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
+                }
+            }
+
+
+            var sql = $@"
     SELECT		I.ID,
 				I.Name,
 				I.Type
@@ -1592,22 +1623,8 @@ where	R.SourceObject = 'FusionAttribute'
 		                cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
                         left join FusionAttributeType FAT on T.Object = 'FusionAttributeType' and FAT.ID = T.ObjectID 
                         left join FusionType FT on FT.ID = FAT.FusionTypeID 
-                where	T.Object not in ('AttributeType', 'FusionType', 'OrganizationType')
-                UNION
-                SELECT	CAST(IT.ID as int) ID,
-		                'Relationship :: ' + ITypeName.Name AS Name,
-		                'IntersectType' AS Type
-                FROM	IntersectType IT    
-		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
-                UNION
-                SELECT	ID,
-		                'Rule Implementation :: ' + DisplayValue as Name,
-		                'RuleImplementationType' as Type
-                FROM    [Rule]
-                UNION
-                SELECT	0 as ID,
-		                'Reference :: List' as Name,
-		                'ReferenceItemType' as Type				 				
+                where	T.Object not in ('AttributeType', 'FusionType', 'OrganizationType'){classLimitSql}
+			 	{noClassLimitSql}
                 ) I";
 
             if (subject.HasValue && subjectID.HasValue)
@@ -1640,6 +1657,126 @@ where	R.SourceObject = 'FusionAttribute'
             sql += " ORDER BY I.Name";
 
             return Database.Connection.Query<IntersectTypeOption>(sql).ToList();
+        }
+
+        public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
+        {
+            var sSubject = subject.ToString();
+            bool removeSpecialPredicateTypes = false;
+
+            if (sSubject == "IntersectType")
+            {
+                removeSpecialPredicateTypes = true;
+            }
+            else
+            {
+                var subjectAssetType = Filter<AssetType>(i => i.Object == sSubject && i.ObjectID == subjectID).FirstOrDefault();
+                if (subjectAssetType == null)
+                {
+                    throw new ApplicationException("Subject asset type does not exist.");
+                }
+
+                removeSpecialPredicateTypes = (
+                    subjectAssetType.Class != AssetTypeClass.Glossary &&
+                    subjectAssetType.Class != AssetTypeClass.Model &&
+                    subjectAssetType.Class != AssetTypeClass.Policy &&
+                    subjectAssetType.Class != AssetTypeClass.Rule
+                );
+            }
+
+            var sql = @"
+select	P.*
+from	[Predicate] P
+		left join IntersectType I on I.PredicateID = P.ID 
+			and I.Subject = @s and I.SubjectID = @sid 
+			and ( (@o is null) or (@o is not null and I.Object = @o and I.ObjectID = @oid) )
+			and ( (@pid is null) or (@pid is not null and I.PredicateID <> @pid) )
+where	I.ID is null";
+
+            var predicates = Query<Predicate>(sql, new
+            {
+                s = new DbString { IsAnsi = true, Value = subject.ToString() },
+                sid = subjectID,
+                o = new DbString { IsAnsi = true, Value = @object.ToString() },
+                oid = objectID,
+                pid = predicateID
+            }).ToList()
+            .Where(i => i.Type.AsInfoModel().AllowIntersectTypeAssignment &&
+                        i.Type.AsInfoModel().AllowEditFromRelationshipEditor &&
+                        i.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion)
+                  );
+
+            if (removeSpecialPredicateTypes)
+            {
+                predicates = predicates.Where(i => i.Type != PredicateType.BusinessToTechnical && i.Type != PredicateType.FusionMapping);
+            }
+
+            return predicates.ToList();
+        }
+
+        public IntersectType UpsertIntersectType(IntersectType model, int lineageVersion)
+        {
+            var predicateModel = GetById<Predicate>(model.PredicateID.Value);
+
+            if (!predicateModel.Type.AsInfoModel().AllowIntersectTypeAssignment)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", "Not allowed to add a relationship type with this predicate.");
+            }
+            if (($"{model.Subject}{model.SubjectID}" != $"{model.Object}{model.ObjectID}") && !predicateModel.Type.AsInfoModel().AllowDifferentSubjectObject)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", "The subject and object must be the same when using this Predicate.");
+            }
+            if (($"{model.Subject}{model.SubjectID}" == $"{model.Object}{model.ObjectID}") && predicateModel.Type.AsInfoModel().ForceDifferentSubjectObject)
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", "The subject and object may not be the same when using this Predicate.");
+            }
+
+            if (!predicateModel.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {predicateModel.Type.AsInfoModel().Name}.");
+            }
+
+            AssetType subjectAssetType = null;
+            AssetType objectAssetType = null;
+            if (predicateModel.Type == PredicateType.BusinessToTechnical || predicateModel.Type == PredicateType.Transformation)
+            {
+                subjectAssetType = Filter<AssetType>(i => i.Object == model.Subject && i.ObjectID == model.SubjectID).FirstOrDefault();
+                objectAssetType = Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).FirstOrDefault();
+
+                if (predicateModel.Type == PredicateType.BusinessToTechnical)
+                {
+                    if (subjectAssetType.Class != AssetTypeClass.Glossary && subjectAssetType.Class != AssetTypeClass.Model && subjectAssetType.Class != AssetTypeClass.Policy && subjectAssetType.Class != AssetTypeClass.Rule)
+                    {
+                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : Glossary, Model Policy, or Rule.");
+                    }
+                    if (objectAssetType.Class != AssetTypeClass.FusionAttribute)
+                    {
+                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your object must be a Technical Asset class.");
+                    }
+                }
+                else if (predicateModel.Type == PredicateType.Transformation)
+                {
+                    if (!subjectAssetType.UseAsTransformation && !objectAssetType.UseAsTransformation)
+                    {
+                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate either your subject or object must support being used as a transformation.");
+                    }
+                    if (subjectAssetType.UseAsTransformation && objectAssetType.UseAsTransformation)
+                    {
+                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate either your subject or object must support being used as a transformation, but not both.");
+                    }
+                }
+            }
+
+            if (model.ID > 0)
+            {
+                Update(model);
+            }
+            else
+            {
+                Add(model);
+            }
+
+            return model;
         }
 
         #endregion
@@ -2175,7 +2312,24 @@ where	R.SourceObject = 'FusionAttribute'
 
         public void CreateOrUpdateTypeDisplayValuesAsync(int objectTypeId, string objectType)
         {
+            //check if assettype is part of custom folder, if so, update its value
+            var navSiteItem = SiteNav.FirstOrDefault(x => x.Object == objectType && x.ObjectID == objectTypeId && x.ParentID != null);
+            if(navSiteItem != null)
+            {
+                var assetTypeName = AssetTypes.FirstOrDefault(x => x.Object == objectType && x.ObjectID == objectTypeId)?.Name;
+                if (!string.IsNullOrEmpty(assetTypeName))
+                {
+                    navSiteItem.Title = navSiteItem.Name = assetTypeName;
+                    SaveChanges();
+                }
+            }
+
             Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
+        }
+
+        public void RebuildAssetGraphRequest()
+        {
+            Enqueue(Config.GetValue<string>("AssetGraphQueue"), new RebuildAssetGraphModel { CompanyID = CurrentCompanyID });
         }
 
         public void RebuildDisplayValuesRequest()
@@ -3088,12 +3242,32 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.Tag:
                     objectId = Tags.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
+                case SystemObjects.IntersectType:
+                    objectId = IntersectTypes.FirstOrDefault(x => x.uid == objectUid).ID;
+                    break;
                 default:
-                    throw new Exception($"Method not implemented for object type '{objectType.ToString()}'");
-
+                    objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString()).ObjectID;
+                    if (objectId <= 0)
+                        throw new Exception($"Method not implemented for object type '{objectType.ToString()}'");
+                    break;
             }
             return objectId;
         }
 
+        public dynamic GetAssetStatusAndScore(Guid uid)
+        {
+            string sql = $@"select	cast(S.Value * 100 as int) as 'Score',S.EffectiveDate as 'EffectiveDate',  f.FormattedValue as Status from	metrics.Score S
+                            inner join (
+	                            select	max(EffectiveDate) as EffectiveDate
+	                            from	metrics.Score
+	                            where	AssetUid = @assetUid
+			                            and EffectiveDate <= getutcdate()
+                            ) M on M.EffectiveDate = S.EffectiveDate and S.AssetUid = @assetUid
+                            left join Asset A on  A.Uid = @assetUid
+                            left Join AssetType AT on A.AssetTypeID = AT.ID
+                            left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
+                            left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID";
+            return Query<dynamic>(sql, new { @assetUid = uid }).FirstOrDefault();
+        }
     }
 }

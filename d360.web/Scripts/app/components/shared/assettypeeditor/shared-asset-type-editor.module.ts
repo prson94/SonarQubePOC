@@ -20,6 +20,7 @@ import { TilesModule } from '../tiles/tiles.module';
 
 import { AssetTypeEditorComponent } from './asset-type-editor.component';
 import { SimpleAccordionModule } from '../simple-accordion.part';
+import { AssetTypeEditorUseAsTransformationComponent } from './asset-type-editor-use-as-transformation.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -43,7 +44,8 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
         SharedModule,
     ],
     declarations: [
-        AssetTypeEditorComponent
+        AssetTypeEditorComponent,
+        AssetTypeEditorUseAsTransformationComponent
     ],
     exports: [
         AssetTypeEditorComponent

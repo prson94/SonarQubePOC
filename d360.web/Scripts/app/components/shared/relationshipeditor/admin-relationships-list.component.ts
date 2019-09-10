@@ -201,8 +201,10 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
         this.relationshipsService.saveRelationship(event.relationship)
             .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
-                this.getRelationships();
-                this.showEditor = false;
+                if (result.type == "confirm") {
+                    this.getRelationships();
+                    this.showEditor = false;
+                }
             });
     }
 

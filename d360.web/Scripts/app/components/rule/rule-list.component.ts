@@ -17,7 +17,7 @@ import {GridDefinitionService} from '../../services/grid-definition.service';
 import {HeaderActionsService} from '../../services/header-actions.service';
 import {PermissionsService} from '../../services/permissions.service';
 import {Breadcrumb} from '../../models/breadcrumb.model';
-import {Rule, RuleType, RuleClassification, RuleStatus} from '../../models/rule.model';
+import {Rule, RuleType } from '../../models/rule.model';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
 import {RightSidebarService} from '../../services/right-sidebar.service';
@@ -45,8 +45,6 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     fields: GridField[] = [];
     filtercolumns: GridFilterColumn[] = [];
 
-    theDeleteCallback: Function;
-
     constructor(private route: ActivatedRoute,
                 private router: Router,
                 protected rulesService: RulesService,
@@ -60,8 +58,6 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
-
-        this.theDeleteCallback = this.deleteRule.bind(this);
     }
 
     get globalFilterFields(): string[] {
@@ -163,11 +159,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         this.isLoading = true;
         this.rulesService.getRules(this.ruleTypeId)
             .subscribe(result => {
-                this.isLoading = false;
-                for (let rule of result) {
-                    if (!rule.Dimension) rule.Dimension = ""; //prime grid has issues with null objects make sure we dont have any.
-                    rule.StatusName = RuleStatus[rule.Status];
-                }
+                this.isLoading = false;                
                 this.rules = result;
 
                 if (this.rules.length && this.rules.length > 0) this.selected = this.rules[0];
@@ -195,20 +187,10 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('rule', rule.ID, this.ruleTypeId));
     }
 
-    private deleteRule(id: number) {
-        this.rulesService.deleteRule(id).subscribe(result => {
-            this.showMessageForResult(this.messagesService, result);
-            this.showDelete = false;
-            this.selected = this.rules.length > 0 ? this.rules[0] : null;
-            this.rules = this.rules.filter(x => x.ID != id);
-            this.headerActionsService.emitFavoritesChange();
-        });
-    }
-
-    private columnDimSort(event) {
-        //event.field = Field to sort
-        //event.order = Sort order, 1 ascending , -1 descending                        
-        this.rules = _.sortBy(this.rules, 'Dimension');
-        if (event.order == -1) this.rules.reverse();
+    public onDeleted() {
+        this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
+        this.rules = this.rules.filter(x => x.ID != this.selected.ID);
+        this.selected = this.rules.length > 0 ? this.rules[0] : null;                
+        this.showDelete = false;
     }
 };

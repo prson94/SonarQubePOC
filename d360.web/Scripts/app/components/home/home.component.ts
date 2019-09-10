@@ -51,7 +51,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
     public numTiles: number = 3;
     private colSize = 4;
     public hasResults = false;
-    public dashboard: Dashboard = null;
+    public dashboard: Dashboard = null;    
     private sub;
 
     constructor(
@@ -104,6 +104,14 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 
         this.colSize = 12.0 / (this.numTiles == 0 ? 1 : this.numTiles);
 
+        this.dashboardService.getHomePageDashboards().subscribe(
+            r => {
+                if (r && r.length > 0) {
+                    this.dashboard = r[0];
+                }
+            }
+        );
+
     }
 
     ngOnDestroy() {
@@ -111,7 +119,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.sub.unsubscribe();
     }
 
-    private onShowActivityDetails(event) {
+    public onShowActivityDetails(event) {
         this.showActivityDetails = true;
         this.showBoardDetails = false;
         this.showAssignmentDetails = false;
@@ -120,14 +128,14 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         this.selectedArtifactTypeName = event.name;
     }
 
-    private onShowAssignmentDetails(event) {
+    public onShowAssignmentDetails(event) {
         if (event.workflowId)
             this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST_V2}/${event.workflowId}/${event.version}/${event.stepId}`);
         else
             this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT}/${SiteUrlHelpers.SITE_URL_WORKFLOW_LIST}/${event.workflowType}`);
     }
 
-    private onShowBoardDetails(event) {
+    public onShowBoardDetails(event) {
         if (!event.selected) {
             console.log("ERROR NO SELECTION PASSED ON BOARD DETAILS CLICK.");
             return;

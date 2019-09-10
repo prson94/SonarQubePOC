@@ -49,7 +49,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     public canApplyFilter = false;
     public menuItems: MenuItem[] = [];
 
-    private showDetail = true;
+    private showDetail = false;
     private overlayWidth = 700;
     private overlayMaxHeight = 700;
 

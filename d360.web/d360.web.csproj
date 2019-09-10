@@ -533,7 +533,6 @@
     <Content Include="Content\quill\v1.3.4\quill.snow.min.css">
       <DependentUpon>quill.snow.css</DependentUpon>
     </Content>
-    <Content Include="Content\scripts\jquery\3.3.1\jquery.min.js" />
     <Content Include="Content\styles\ang.css" />
     <Content Include="Content\styles\ang.min.css">
       <DependentUpon>ang.css</DependentUpon>
@@ -583,65 +582,6 @@
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <Content Include="Scripts\app\0.chunk.js" />
-    <Content Include="Scripts\app\1.chunk.js" />
-    <Content Include="Scripts\app\10.chunk.js" />
-    <Content Include="Scripts\app\11.chunk.js" />
-    <Content Include="Scripts\app\12.chunk.js" />
-    <Content Include="Scripts\app\13.chunk.js" />
-    <Content Include="Scripts\app\14.chunk.js" />
-    <Content Include="Scripts\app\15.chunk.js" />
-    <Content Include="Scripts\app\16.chunk.js" />
-    <Content Include="Scripts\app\17.chunk.js" />
-    <Content Include="Scripts\app\18.chunk.js" />
-    <Content Include="Scripts\app\19.chunk.js" />
-    <Content Include="Scripts\app\2.chunk.js" />
-    <Content Include="Scripts\app\20.chunk.js" />
-    <Content Include="Scripts\app\21.chunk.js" />
-    <Content Include="Scripts\app\22.chunk.js" />
-    <Content Include="Scripts\app\23.chunk.js" />
-    <Content Include="Scripts\app\24.chunk.js" />
-    <Content Include="Scripts\app\25.chunk.js" />
-    <Content Include="Scripts\app\26.chunk.js" />
-    <Content Include="Scripts\app\27.chunk.js" />
-    <Content Include="Scripts\app\28.chunk.js" />
-    <Content Include="Scripts\app\29.chunk.js" />
-    <Content Include="Scripts\app\3.chunk.js" />
-    <Content Include="Scripts\app\30.chunk.js" />
-    <Content Include="Scripts\app\31.chunk.js" />
-    <Content Include="Scripts\app\32.chunk.js" />
-    <Content Include="Scripts\app\33.chunk.js" />
-    <Content Include="Scripts\app\34.chunk.js" />
-    <Content Include="Scripts\app\37.chunk.js" />
-    <Content Include="Scripts\app\38.chunk.js" />
-    <Content Include="Scripts\app\39.chunk.js" />
-    <Content Include="Scripts\app\4.chunk.js" />
-    <Content Include="Scripts\app\40.chunk.js" />
-    <Content Include="Scripts\app\41.chunk.js" />
-    <Content Include="Scripts\app\42.chunk.js" />
-    <Content Include="Scripts\app\43.chunk.js" />
-    <Content Include="Scripts\app\44.chunk.js" />
-    <Content Include="Scripts\app\45.chunk.js" />
-    <Content Include="Scripts\app\46.chunk.js" />
-    <Content Include="Scripts\app\47.chunk.js" />
-    <Content Include="Scripts\app\48.chunk.js" />
-    <Content Include="Scripts\app\49.chunk.js" />
-    <Content Include="Scripts\app\5.chunk.js" />
-    <Content Include="Scripts\app\50.chunk.js" />
-    <Content Include="Scripts\app\51.chunk.js" />
-    <Content Include="Scripts\app\52.chunk.js" />
-    <Content Include="Scripts\app\53.chunk.js" />
-    <Content Include="Scripts\app\54.chunk.js" />
-    <Content Include="Scripts\app\55.chunk.js" />
-    <Content Include="Scripts\app\56.chunk.js" />
-    <Content Include="Scripts\app\57.chunk.js" />
-    <Content Include="Scripts\app\58.chunk.js" />
-    <Content Include="Scripts\app\59.chunk.js" />
-    <Content Include="Scripts\app\6.chunk.js" />
-    <Content Include="Scripts\app\60.chunk.js" />
-    <Content Include="Scripts\app\7.chunk.js" />
-    <Content Include="Scripts\app\8.chunk.js" />
-    <Content Include="Scripts\app\9.chunk.js" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
@@ -681,6 +621,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
+    <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-editor-preview.component.html" />
@@ -756,9 +697,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-bulk-reassign.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
-    <Content Include="Scripts\app\main.bundle.js" />
-    <Content Include="Scripts\app\polyfills.bundle.js" />
-    <Content Include="Scripts\app\vendor.bundle.js" />
+    <Content Include="Scripts\dist\*.js" />
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />
     <Content Include="webpack.prod.config.js" />
@@ -1170,6 +1109,7 @@
     <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\shared-asset-editor.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor-use-as-transformation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\gov-checkbox.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\assetbrowserlayout.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.ts" />
@@ -1302,6 +1242,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dynamic-percentage\dynamic-percentage-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\treetable-toggler.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-column-filter.component.ts" />

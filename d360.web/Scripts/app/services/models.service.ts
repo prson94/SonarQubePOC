@@ -49,10 +49,6 @@ export class ModelsService extends BaseObservableService {
             );
     }
 
-    deleteModelHierarchy(id: number): Observable<JsonResult>{
-        return this.deleteDynamicWithResult(this.http, 'taxonomy', id);
-    }
-
     saveModelHierarchy(hierarchy: ModelHierarchy): Observable<JsonResult> {
         if (hierarchy.ID == undefined || !hierarchy.ID) {
             return this.postDynamic(this.http, 'taxonomy', hierarchy);

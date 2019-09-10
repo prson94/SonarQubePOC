@@ -404,6 +404,7 @@ from	@points O
 
         public static string FusionAttributeRelationshipAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
+        IT.uid,
 		case 
 			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) then IT.[Object]
 			else IT.[Subject]
@@ -428,8 +429,14 @@ select	IT.ID as IntersectTypeID,
         case
             when IT.PredicateType in ({0}) then cast(0 as bit)
             else cast(1 as bit)
-        end as AllowEditFromRelationshipEditor
+        end as AllowEditFromRelationshipEditor,
+        case
+            when fa.fusionattributetypeid = IT.SubjectID then 1
+            else 0
+        end as IsSubject,
+        a.uid as ObjectUid
 from	[dbo].[fusionattribute] fa	
+        inner join asset a on a.object ='fusionattribute' and a.objectid = fa.id
 		inner join IntersectTypeDetail IT on ( 
 										(IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) OR 
 										(IT.Object = 'FusionAttributeType' and IT.ObjectID = fa.fusionattributetypeid) 
@@ -456,6 +463,7 @@ order by case
 
         public static string FusionQueryAttributeRelationshipAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
+        IT.uid,
 		case 
 			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then IT.[Object]
 			else IT.[Subject]
@@ -480,8 +488,14 @@ select	IT.ID as IntersectTypeID,
         case
             when IT.PredicateType in ({0}) then cast(0 as bit)
             else cast(1 as bit)
-        end as AllowEditFromRelationshipEditor
+        end as AllowEditFromRelationshipEditor,
+        case
+            when fa.fusionqueryattributetypeid = IT.SubjectID then 1
+            else 0
+        end as IsSubject,
+        a.uid as ObjectUid
 from	[dbo].[fusionQueryattribute] fa	
+        inner join Asset A on A.object = 'fusionQueryattribute' and A.objectid = fa.id
 		inner join IntersectTypeDetail IT on ( 
 										(IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) OR 
 										(IT.Object = 'FusionQueryAttributeType' and IT.ObjectID = fa.fusionqueryattributetypeid) 
@@ -507,6 +521,7 @@ order by case
 ";
         public static string ReferenceListTypeRelationshipsAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
+        IT.uid,
 		case 
 			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.[Object]
 			else IT.[Subject]
@@ -527,9 +542,15 @@ select	IT.ID as IntersectTypeID,
         case
             when IT.PredicateType in ({0}) then cast(0 as bit)
             else cast(1 as bit)
-        end as AllowEditFromRelationshipEditor
+        end as AllowEditFromRelationshipEditor,
+        case
+            when @objId = IT.SubjectID or (IT.Subject = 'ReferenceItemType' AND IT.SubjectID =0) then 1
+            else 0
+        end as IsSubject,
+        AT.uid as ObjectUid
 from	IntersectTypeDetail IT 
 		left join [Predicate] P on P.ID = IT.PredicateID
+		left join AssetType AT on AT.Object = @obj and AT.ObjectID =@objId
 		cross apply (
 					select	count(1) as [Count]
 					from	[Intersect] 
@@ -549,7 +570,9 @@ order by case
 ";
 
         public static string ObjectRelationshipAllCountsWithZero = @"
-select	IT.ID as IntersectTypeID,
+select  IT.uid,
+        IT.ID as IntersectTypeID,
+        A.uid as ObjectUid,
 		case 
 			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[Object]
 			else IT.[Subject]
@@ -574,7 +597,11 @@ select	IT.ID as IntersectTypeID,
         case
             when IT.PredicateType in ({0}) then cast(0 as bit)
             else cast(1 as bit)
-        end as AllowEditFromRelationshipEditor
+        end as AllowEditFromRelationshipEditor,
+        case
+            when T.ObjectID = IT.SubjectID then 1
+            else 0
+        end as IsSubject
 from	Asset A
 		inner join AssetType T on T.ID = A.AssetTypeID	
 		inner join IntersectTypeDetail IT on ( 
@@ -628,7 +655,12 @@ order by case when (Subject = @type and SubjectID = @id) then ObjectName else Su
 ";
 
         public static string PolicySettingsItem = @"
-select	T.*, R.*
+select	T.Name, 
+		T.Description, 
+		R.AllowAttributes,
+		T.HierarchyMaximumDepth,
+		T.Uid,
+		T.ObjectID
 from	AssetType T 
 		cross apply (
 					select	case 
@@ -855,6 +887,7 @@ select
 	T.UpdatedBy,
 	A.AllowAttributes,
 	S.AllowSynonyms,
+    T.Uid,
     (select cast(count(1) as bit) from report r where r.ObjectType = 'TaxonomyType' and r.ObjectID = @id and r.ReportType != 'legacy') as HasDashboards	
 from	AssetType T
 		cross apply (

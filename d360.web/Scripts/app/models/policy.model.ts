@@ -8,12 +8,7 @@ export class PolicyType {
     AllowAttributes: boolean;
     NymTypes: NymType[];
     MaximumDepth: number;
-}
-
-export enum PolicyStatus {
-    Draft = 1,
-    Active = 2,
-    Inactive = 3
+    AssetTypeUID: string;
 }
 
 export class Policy {
@@ -21,9 +16,7 @@ export class Policy {
     Uid: string;
     AssetID: number;
     ParentID: number;
-    DisplayValue: string;
-    Status: PolicyStatus;
-    StatusName: string;
+    DisplayValue: string;    
     Description: string;
     Level: number;
 }

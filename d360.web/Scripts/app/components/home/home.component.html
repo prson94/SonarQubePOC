@@ -17,21 +17,6 @@
              style="width:100%; position:absolute; left:0; top:0; z-index: -10000"/>
     </div>
 </ng-template>
-<div *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && numTiles > 0"
-     class="row home-tiles">
-    <div [class]="'col s12 l' + colSize"
-         *ngIf="showAssignmentTile">
-        <d3s-assignments (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments>
-    </div>
-    <div [class]="'col s12 l' + colSize" *ngIf="showBoardTile">
-        <d3s-board-tile (showItemDetail)="onShowBoardDetails($event);"
-                        [(daysToLookBack)]="boardDaysToLookBack"></d3s-board-tile>
-    </div>
-    <div [class]="'col s12 l' + colSize" *ngIf="showActivityTile">
-        <d3s-activity-tile (showItemDetail)="onShowActivityDetails($event);"
-                           [(daysToLookBack)]="activityDaysToLookBack"></d3s-activity-tile>
-    </div>
-</div>
 
 <div class="row" *ngIf="showActivityDetails">
     <div class="col s12">
@@ -58,8 +43,23 @@
     <d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails"
                      (resultsChange)="checkHasResults($event)"
                      hasResults="{{ hasResults }}"></d3s-home-search>
-    <span [hidden]="hasResults"
-          style="padding-left:5px"><d3s-shortcut-display></d3s-shortcut-display></span>
+    <span style="padding-left:5px"><d3s-shortcut-display></d3s-shortcut-display></span>
+</div>
+
+<div *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && numTiles > 0"
+     class="row home-tiles">
+    <div [class]="'col s12 l' + colSize"
+         *ngIf="showAssignmentTile">
+        <d3s-assignments (showItemDetail)="onShowAssignmentDetails($event);"></d3s-assignments>
+    </div>
+    <div [class]="'col s12 l' + colSize" *ngIf="showBoardTile">
+        <d3s-board-tile (showItemDetail)="onShowBoardDetails($event);"
+                        [(daysToLookBack)]="boardDaysToLookBack"></d3s-board-tile>
+    </div>
+    <div [class]="'col s12 l' + colSize" *ngIf="showActivityTile">
+        <d3s-activity-tile (showItemDetail)="onShowActivityDetails($event);"
+                           [(daysToLookBack)]="activityDaysToLookBack"></d3s-activity-tile>
+    </div>
 </div>
 
 <div *ngIf="dashboard != null"
