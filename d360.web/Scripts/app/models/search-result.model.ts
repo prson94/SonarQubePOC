@@ -1,6 +1,7 @@
 ﻿export class SearchResultTags {
     Uid: string;
     Value: string;
+    Highlight: string;
 }
 
 export class SearchResult {
