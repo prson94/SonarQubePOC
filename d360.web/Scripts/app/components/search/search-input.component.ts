@@ -11,15 +11,21 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-search-input',
-    template: `      
+    template: ` <div *ngIf="newSearch && !isAdvancedMode" 
+                class="titlebar-search">           
+                        <div class="field grow mr10"><input (keydown.enter)="triggerSearch()" [ngModel]="searchText" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);" autofocus autocomplete="off" type="text" placeholder="Please enter search terms"><i (click)="triggerSearch()" class="fa fa-search"></i></div>
+                        <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match Whole Words</span></label>
+                        <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>                        
+                        <button class="button" (click)="handleAdvancedClick()">Advanced Search</button>
+                </div>      
                 <div *ngIf="!isAdvancedMode">
-                    <div class="search-input-container" >           
+                    <div *ngIf="!newSearch" class="search-input-container" >           
                         <div class="search-input-text-container">                        
                             <input #search [ngModel]="searchText" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);" (keyup)="checkSearchKey($event);" type="text" id="home-search-text" placeholder="What do you want to find?" class="search-input-text" autofocus autocomplete="off" />                        
                         </div>
                         <div class="search-input-exact-container hide-on-med-and-down">
                             <div class="adv-search-btn">
-                                <label><input type="checkbox" name="search-exact-chk" id="search-exact-chk" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"> Exact match</label>
+                                <label><input type="checkbox" name="search-exact-chk" id="search-exact-chk" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"> Match Whole Words</label>
                             </div>
                         </div>
                         <div class="search-input-types-container hide-on-med-and-down">
@@ -28,14 +34,14 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                             </div>
                         </div>
                         <div class="search-input-adv-container hide-on-med-and-down">
-                            <button type="button" name="action" id="home-adv-btn" class="adv-search-btn" (click)="handleAdvancedClick()">Advanced&nbsp;<i class="fa fa-caret-down"></i></button>
+                            <button type="button" name="action" id="home-adv-btn" class="advanced-search-btn" (click)="handleAdvancedClick()">Advanced Search</button>
                         </div>
                         <div class="search-input-button-container">
                             <button type="submit" name="action" id="home-search-btn" class="search-input-btn" (click)="triggerSearch()">
                                 <i class="fa fa-search"></i>
                             </button>
                         </div>                    
-                    </div>  
+                    </div>   
                     <d3s-search-autocomplete-list *ngIf="!isAdvancedMode" [searchText]="searchText" [element]="search" [autocompletions]="autocompletions"></d3s-search-autocomplete-list>            
                 </div>
                 <div *ngIf="isAdvancedMode" class="tile tile-detail">                             
@@ -95,6 +101,8 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
 
     @Input() advancedFilters: AdvancedSearchFilter[] = [];
     @Output() advancedFiltersChange = new EventEmitter();
+
+    @Input() newSearch: boolean = false;
     private searchSub: ISubscription;
 
     private fields: DropdownOption[] = [

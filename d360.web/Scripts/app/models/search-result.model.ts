@@ -19,9 +19,16 @@ export class SearchResult {
 export class SearchFullResult extends SearchResult {
     ID: number;
     Description: string;
+    Group: string;
+    Name: string;
     AbsoluteUrl: string;
     NormalizedScore: number;
     Score: number;
+    Type: string;
+    Url: string;
+    Icon: string;
+    Uid: string;
+    
 }
 
 export class SearchCategories {

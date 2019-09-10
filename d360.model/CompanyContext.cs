@@ -2327,6 +2327,11 @@ where	I.ID is null";
             Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
         }
 
+        public void RebuildAssetGraphRequest()
+        {
+            Enqueue(Config.GetValue<string>("AssetGraphQueue"), new RebuildAssetGraphModel { CompanyID = CurrentCompanyID });
+        }
+
         public void RebuildDisplayValuesRequest()
         {
             Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
@@ -3244,5 +3249,20 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return objectId;
         }
 
+        public dynamic GetAssetStatusAndScore(Guid uid)
+        {
+            string sql = $@"select	cast(S.Value * 100 as int) as 'Score',S.EffectiveDate as 'EffectiveDate',  f.FormattedValue as Status from	metrics.Score S
+                            inner join (
+	                            select	max(EffectiveDate) as EffectiveDate
+	                            from	metrics.Score
+	                            where	AssetUid = @assetUid
+			                            and EffectiveDate <= getutcdate()
+                            ) M on M.EffectiveDate = S.EffectiveDate and S.AssetUid = @assetUid
+                            left join Asset A on  A.Uid = @assetUid
+                            left Join AssetType AT on A.AssetTypeID = AT.ID
+                            left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
+                            left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID";
+            return Query<dynamic>(sql, new { @assetUid = uid }).FirstOrDefault();
+        }
     }
 }

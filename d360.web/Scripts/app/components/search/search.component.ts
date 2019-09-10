@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, ViewChild, ElementRef, ViewChildren } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -16,9 +16,23 @@ declare var CompanySettings;
 
 @Component({
     selector: 'd3s-search',
-    template: `               
-                <d3s-search-input (search)="doSearch()" [isAdvancedMode]="showAdvanced" (isAdvancedModeChange)="showAdvanced=$event;searchResults=null;" [(advancedFilters)]="advancedFilters" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [hasAdvanced]="true" [(searchText)]="searchText"></d3s-search-input>
-                <d3s-search-results [from]="pageNumber" [loading]="isLoading" [itemsPerPage]="resultsPerPage" [results]="searchResults" [categories]="categories" (paginateClick)="paginate($event);" (selectedCategoryChange)="filterByCategory($event);"></d3s-search-results>
+    template: ` <div class="search-page-full">
+                    <div #title class="title-bar search">
+                        <div class="title">
+                            <span class="large icon badge"><i class="fa fa-search"></i></span>
+                            <h1>Search Results</h1>
+                            <d3s-search-input [newSearch]="true" (search)="doSearch()" [isAdvancedMode]="showAdvanced" (advancedFiltersChange)="changeheight()" (isAdvancedModeChange)="handleAdvancedChange($event)" [(advancedFilters)]="advancedFilters" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [hasAdvanced]="true" [(searchText)]="searchText" [style.width]="'100%'" [style.height.px]="32"></d3s-search-input>
+                        </div>
+                    </div>
+                <d3s-search-results [from]="pageNumber" 
+                    [loading]="isLoading" [itemsPerPage]="resultsPerPage"
+                    [useSubscription]="true"
+                    [results]="searchResults" 
+                    [categories]="categories" 
+                    (paginateClick)="paginate($event);" 
+                    (selectedCategoryChange)="filterByCategory($event);"></d3s-search-results>
+                </div>
+                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 `,
     providers: [SearchService, TypeaheadSearchService],
 })
@@ -36,6 +50,8 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public pageNumber: number = 0;
     public sub: any;
     public showAdvanced: boolean = false;
+
+    @ViewChild('title') title: ElementRef;
 
     constructor(private route: ActivatedRoute,
         protected titleService: Title,
@@ -57,7 +73,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
         this.rightSidebarService.clearButtons();
         this.rightSidebarService.clearCurrentObject();
         this.rightSidebarService.setCurrentArea('Search Results', 'fa-search', null);
-        this.rightSidebarService.showHeader(true);
+        this.rightSidebarService.showHeader(false);
 
         this.sub = this.route.queryParams.subscribe(params => {
             this.showAdvanced = params['advanced'] == '1';
@@ -71,6 +87,27 @@ export class SearchComponent extends BaseComponent implements OnInit {
         });
     }
 
+    handleAdvancedChange(event) {
+        this.showAdvanced = event;
+        this.searchResults = null;
+        this.changeheight();
+    }
+
+    private changeheight() {
+        window.setTimeout(() => {
+            if (this.title.nativeElement) {
+                let tiles = this.title.nativeElement.getElementsByClassName('tile');
+                if (tiles.length > 0) {
+                    let dims = this.title.nativeElement.getElementsByClassName('tile')[0].getBoundingClientRect();
+                    console.log(dims);
+                    this.title.nativeElement.style.height = dims.bottom + 'px';
+
+                } else {
+                    this.title.nativeElement.style.height = '67px';
+                }
+            }
+        }, 100);
+    }
 
     public doSearch(filterCategory?: SearchCategories) {
         this.isLoading = true;
