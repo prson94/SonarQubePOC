@@ -2560,7 +2560,7 @@ order by wi.StartedOn desc";
                                 if (ix > -1) users.RemoveAt(ix);
                             }
                         }
-
+                        users = users.Distinct().ToList();
                         result.Assignee = string.Join(", ", users.Select(u => u.FullName));
                         result.IsAssignedLoginUser = users.Where(x => x.ResourceID == Company.CurrentResourceID).Count() == 0 ? Boolean.FalseString : Boolean.TrueString;
                     }
@@ -3353,7 +3353,7 @@ order by wi.StartedOn desc";
 
                             var userHasOpenAssignment = Company.WorkflowItemAssignments.Any(i => i.ItemID == detail.ItemID && (i.ItemStepID == detail.ItemStepID || i.ItemStepID == null) && i.ResourceObject == "Resource"
                                 && i.ResourceObjectID == Company.CurrentResourceID);
-
+                            users = users.Distinct().ToList();
                             detail.AssignedUsers = users;
                             detail.IsAssignedLoginUser = userHasOpenAssignment && users.Any(x => x.ResourceID == Company.CurrentResourceID);
                         }
