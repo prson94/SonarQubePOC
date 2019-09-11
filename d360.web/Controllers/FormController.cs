@@ -1314,6 +1314,7 @@ namespace d360.web.Controllers
                             State = State.Active,
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
+                            UseAsTransformation = model.AssetType.UseAsTransformation,
                             Class = AssetTypeClass.Glossary
                         };
                         Company.Add(a);
@@ -1369,6 +1370,7 @@ namespace d360.web.Controllers
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
                             Hierarchical = true,
+                            UseAsTransformation = model.AssetType.UseAsTransformation,
                             Class = AssetTypeClass.Policy
                         };
                         Company.Add(p);
@@ -1390,6 +1392,7 @@ namespace d360.web.Controllers
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
                             Hierarchical = true,
+                            UseAsTransformation = model.AssetType.UseAsTransformation,
                             Class = AssetTypeClass.Model
                         };
 
@@ -1420,6 +1423,7 @@ namespace d360.web.Controllers
                             State = State.Active,
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
+                            UseAsTransformation = model.AssetType.UseAsTransformation,
                             Class = AssetTypeClass.Reference
                         };                                            
                         Company.Add(rt);
@@ -1524,7 +1528,7 @@ namespace d360.web.Controllers
                         a.Description = model.AssetType.Description;
                         a.CanOwnFusion = model.CanOwnFusion ?? false;
                         a.AutoDisplayDescription = model.AutoDisplayDescription ?? false;
-
+                        a.UseAsTransformation = model.AssetType.UseAsTransformation;
                         Company.Update(a);
 
                         parentType = SystemObjects.ArtifactType;
@@ -1559,7 +1563,7 @@ namespace d360.web.Controllers
                         p.DisplayFormat = model.AssetType.DisplayFormat;
                         p.Description = model.AssetType.Description;
                         p.HierarchyMaximumDepth = model.AssetType.HierarchyMaximumDepth;
-
+                        p.UseAsTransformation = model.AssetType.UseAsTransformation;
                         Company.Update(p);
 
                         parentType = SystemObjects.PolicyType;
@@ -1574,7 +1578,7 @@ namespace d360.web.Controllers
                         rt.Notes = model.AssetType.Notes;
                         rt.UpdatedBy = Company.CurrentResourceID;
                         rt.UpdatedOn = DateTime.UtcNow;
-
+                        rt.UseAsTransformation = model.AssetType.UseAsTransformation;
 
                         Company.Update(rt);
 
@@ -1591,6 +1595,7 @@ namespace d360.web.Controllers
                         assetType.DisplayFormat = model.AssetType.DisplayFormat;
                         assetType.Description = model.AssetType.Description;
                         assetType.HierarchyMaximumDepth = model.AssetType.HierarchyMaximumDepth;
+                        assetType.UseAsTransformation = model.AssetType.UseAsTransformation;
 
                         if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
                             throw new GenericException(HttpStatusCode.BadRequest, "Invalid Maximum Level", "Invalid Maximum Model level specified must be a value between 1 and 10");
