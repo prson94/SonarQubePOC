@@ -27,6 +27,7 @@ export class PreviewTooltipComponent {
     @Input() icon: string;
     @Input() class: string;
     @Input() innerHtmlContent: string;
+    @Input() uid: string;
     @HostBinding('style.color') @Input() iconColor: string;
     @HostBinding('style.background') @Input() foreColor: string;
 
@@ -72,19 +73,35 @@ export class PreviewTooltipComponent {
 
         if (!this.data) {
             //get object properties for the tooltip
-            this.toolTipService.getTooltipInfo(this.objectType, this.objectId)
-                .subscribe(res => {
-                if (!res.ShowTooltip || !this.pending) {
-                    this.active = false;
-                    return;
-                }
+            if (this.uid) {
+                this.toolTipService.getTooltipInfoByUid(this.uid)
+                    .subscribe(res => {
+                        if (!res.ShowTooltip || !this.pending) {
+                            this.active = false;
+                            return;
+                        }
 
-                this.data = res;
-                if (tip.innerText != " " && tip.textContent != " ") {
-                    this.showPanel(tip, item);
-                    this.ref.markForCheck();
-                }
-            });
+                        this.data = res;
+                        if (tip.innerText != " " && tip.textContent != " ") {
+                            this.showPanel(tip, item);
+                            this.ref.markForCheck();
+                        }
+                    });
+            } else {
+                this.toolTipService.getTooltipInfo(this.objectType, this.objectId)
+                    .subscribe(res => {
+                    if (!res.ShowTooltip || !this.pending) {
+                        this.active = false;
+                        return;
+                    }
+
+                    this.data = res;
+                    if (tip.innerText != " " && tip.textContent != " ") {
+                        this.showPanel(tip, item);
+                        this.ref.markForCheck();
+                    }
+                });
+            }
         } else {
             if (tip.innerText != " " && tip.textContent != " ") {
                 this.showPanel(tip, item);

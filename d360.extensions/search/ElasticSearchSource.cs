@@ -77,6 +77,23 @@ namespace d360.extensions.search
         public string key { get; set; }
     }
 
+    public class SearchTagInnerHitsModel
+    {
+        public IndexTag _source { get; set; }
+        public JObject highlight { get; set; }
+        public string GetHighLightValue()
+        {
+            if(highlight != null && highlight.TryGetValue("d3sTags.Value", out JToken jToken))
+            {
+                if (jToken.Type == JTokenType.Array)
+                {
+                    return ((JArray)jToken)[0].Value<string>();
+                }
+                return jToken.Value<string>();
+            }
+            return null;
+        }
+    }
 
     public class SearchResultsHitModel
     {
@@ -99,6 +116,7 @@ namespace d360.extensions.search
         public float _score { get; set; }
         public JObject _source { get; set; }
         public JObject highlight { get; set; }
+        public JObject inner_hits { get; set; }
     }
 
 
@@ -435,115 +453,173 @@ namespace d360.extensions.search
         {
             IndexResults result = new IndexResults();
 
-            string searchType = type ?? null;
-            List<string> searchFilters = new List<string>();
-            searchType = "_doc";
-            if(!string.IsNullOrEmpty(type))
-            {
-                string[] types = type.Split(',');
-                if (types.Length > 1)
-                {
-                    searchFilters.Add(" { \"terms\":  { \"d3sGroup\": [\"" + string.Join("\",\"",types) + "\"] } }");
-                }
-                else
-                {
-                    searchFilters.Add(" { \"term\":  { \"d3sGroup\": \"" + type + "\" } }");
-                }
-            }
+            Nest.Field fldName = new Nest.Field("Name");
+            Nest.Field fldGroup = new Nest.Field("d3sGroup");
+            Nest.Field fldType = new Nest.Field("Type");
+            Nest.Field fldTag = new Nest.Field("d3sTags.Value");
 
-            StringBuilder sb = new StringBuilder();
-            
-            if(!string.IsNullOrEmpty(phrase))
-            {
-                phrase = EscapeSpecialCharacters(phrase);
+            string tagSearch = "";
+            QueryBase coreQuery = null;
+            List<QueryContainer> filterQueries = new List<QueryContainer>();
 
-                //search.service indicates "Exact match" by wrapping phrase in single quotes
+            if (!string.IsNullOrEmpty(phrase)) {
+                //Regular search
                 if (phrase.StartsWith("'") && phrase.EndsWith("'"))
                 {
-                    phrase = phrase.Trim('\'');
-                    sb.Append("{\"query\":{\"bool\": {\"must\":  { \"match_phrase\": { \"Name\":\"" + phrase + "\"} }");
+                    coreQuery = new MatchPhraseQuery
+                    {
+                        Field = fldName,
+                        Query = phrase.Trim('\'')
+                    };
+                    tagSearch = phrase.Trim('\'');
                 }
                 else
                 {
-                    if (!phrase.EndsWith("*"))
+                    coreQuery = new QueryStringQuery
                     {
-                        phrase += "*";
-                    }
-                    sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
+                        Query = phrase + (!phrase.EndsWith("*") ? "*" : "")
+                    };
+                    tagSearch = phrase + (!phrase.EndsWith("*") ? "*" : "");
                 }
             }
-            else if(!string.IsNullOrEmpty(advancedFilterJSON))
+            else if (!string.IsNullOrEmpty(advancedFilterJSON))
             {
-                var advFilters = Newtonsoft.Json.JsonConvert.DeserializeObject<List<AdvancedSearchParameters>>(advancedFilterJSON);
+                //Advanced search
                 //deserialize advanced search parameters
-
+                var advFilters = JsonConvert.DeserializeObject<List<AdvancedSearchParameters>>(advancedFilterJSON);
+                
                 var compositeSearchTerm = string.Empty;
                 SearchConnector con = SearchConnector.And;
 
                 foreach (var item in advFilters)
                 {
-                    if (!string.IsNullOrEmpty(compositeSearchTerm)) compositeSearchTerm += $" {con.ToString().ToUpper()} ";
-
                     if (string.IsNullOrEmpty(item.value)) continue;
 
+                    var field = item.field;
+                    if (field == "_type")
+                        field = "d3sGroup";
+                    else if (field == "d3sTags")
+                    {
+                        tagSearch = item.value;
+                        continue;
+                    }
+
+                    if (!string.IsNullOrEmpty(compositeSearchTerm)) compositeSearchTerm += $" {con.ToString().ToUpper()} ";
                     con = item.connector;
 
-                    var searchTerm = phrase = EscapeSpecialCharacters(item.value);
-
+                    var searchTerm = item.value.Replace(":","\\:");
                     if (item.exact)
                     {
-                        searchTerm = searchTerm.Replace("\\\"","");
-
-                        searchTerm = "\\\"" + searchTerm + "\\\"";
+                        searchTerm = searchTerm.Replace("\"", "");
+                        searchTerm = "\"" + searchTerm + "\"";
                     }
-                    else if(!searchTerm.EndsWith("*"))
+                    else if (!searchTerm.EndsWith("*"))
                     {
                         //Not exact, so append * to searchTerm if it does not already end with *
                         searchTerm += "*";
                     }
-                    var field = item.field;
-                    if (field == "_type")
-                        field = "d3sGroup";
+
                     compositeSearchTerm += $"{field}:{searchTerm}";
                 }
+                coreQuery = new QueryStringQuery
+                {
+                    Query = compositeSearchTerm
+                };
+            }
 
-                sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + compositeSearchTerm + "\"} }");
-            }                
+            //If neither advanced nor a phrase is available, return an empty result set
+            if (coreQuery == null)
+                return result;
 
+            if (!string.IsNullOrEmpty(type))
+            {
+                string[] types = type.Split(',');
+                if (types.Length > 1)
+                {
+                    filterQueries.Add(new TermsQuery {
+                        Field = fldGroup,
+                        Terms = types
+                    });
+                }
+                else
+                {
+                    filterQueries.Add(new TermQuery
+                    {
+                        Field = fldGroup,
+                        Value = type,
+                    });
+                }
+            }
             //if a group was specified filter by it
             if (!string.IsNullOrEmpty(group))
             {
-                searchFilters.Add("{ \"term\":  { \"Type\": \"" + group + "\" } }");
+                filterQueries.Add(new TermQuery
+                {
+                    Field = fldType,
+                    Value = group,
+                });
             }
 
-            if(searchFilters.Count > 0)
+            SearchRequest sReq = new SearchRequest
             {
-                sb.Append(",\"filter\":  { \"bool\": { \"must\": [ ");
-                sb.Append(string.Join(",",searchFilters));
-                sb.Append("]}}");
-            }
-
-            sb.Append("}},\"from\":" + from + ",\"size\":" + size );
+                Query = new BoolQuery
+                {
+                    Must = new QueryContainer[] {
+                        new BoolQuery{
+                            Should = new QueryContainer[] {
+                                coreQuery, 
+                                new NestedQuery {
+                                    Path = "d3sTags",
+                                    Query = new BoolQuery{
+                                        Must = new QueryContainer[] { new QueryStringQuery {
+                                            DefaultField = fldTag,
+                                            Query = tagSearch
+                                        }}
+                                    },
+                                    InnerHits = new InnerHits {
+                                        Highlight = new Highlight {
+                                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    Filter = new QueryContainer[] { new BoolQuery {
+                        Must = filterQueries
+                    } }
+                },
+                Highlight = new Highlight {
+                    Fields = new Dictionary<Nest.Field, IHighlightField> { { fldName, new HighlightField {
+                        PreTags = new [] { "<em class='search-highlight'>" },
+                        PostTags = new [] { "</em>" },
+                        NumberOfFragments = 0
+                    } } },
+                    RequireFieldMatch = false
+                },
+                From = from,
+                Size = size
+            };
 
             // if no group filter then we need to get list of categories
-            if (string.IsNullOrEmpty(group))
-            {
+            if (string.IsNullOrEmpty(group)) { 
                 //size=0 intepreted as integer.MAX_VALUE deprecated in ES 2.4.0.
                 //Using 2000 for EX6 for now. @TODO: Consider using Composite aggreation
-                int bucketSize = 2000;
-                sb.Append(",\"aggs\" : { \"all_types\": {\"terms\": {\"field\": \"d3sGroup\"},\"aggs\": {\"category\": {\"terms\": {\"field\": \"Type\",\"size\": " + bucketSize+"}}}}}");
+                sReq.Aggregations = new TermsAggregation("all_types")
+                {
+                    Field = fldGroup,
+                    Aggregations = new TermsAggregation("category")
+                    {
+                        Field = fldType,
+                        Size = 2000
+                    }
+                };
             }
 
-            //turn on highlighting
-
-            sb.Append(", \"highlight\": {\"fields\": {\"Name\": { \"pre_tags\": [\"<em class='search-highlight'>\"],\"post_tags\": [\"</em>\"],\"number_of_fragments\" : 0 }},\"require_field_match\": false  }");
-            
-            sb.Append("}");
-
-            //if no group specified get the categories for this search
-
-            var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
-            var response = client.Search<StringResponse>(GetCompanyIndexName(companyID), searchType, sb.ToString());
+            var client = new ElasticClient(GetConnectionSettings(companyID));
+            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
 
             if (!response.Success)
                 throw new ApplicationException(response.OriginalException.Message);
@@ -616,51 +692,100 @@ namespace d360.extensions.search
 
         public IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, int size = 10, string type = "")
         {
-            StringBuilder sb = new StringBuilder();
+            if (string.IsNullOrEmpty(phrase))
+                return new List<TypeaheadResult>();
 
-            if (!string.IsNullOrEmpty(phrase))
+            Nest.Field fldName = new Nest.Field("Name");
+            Nest.Field fldGroup = new Nest.Field("d3sGroup");
+            Nest.Field fldTag = new Nest.Field("d3sTags.Value");
+            List<QueryContainer> mustClauses = new List<QueryContainer>();
+            BoolQuery filterQuery = null;
+
+            /* For Typeahead, the search phrase is split into words, all words but the last will be
+             * queried using 'match' and the last word will be 'prefix'
+             * For searching tags, an asterkiks is appended and a regular 'query_string' query is used 
+             */
+            Queue<string> parts = new Queue<string>( phrase.ToLower().Split(' '));
+            string tagSearch = phrase.ToLower() + (!phrase.EndsWith("*") ? "*" :  "");
+
+            while (parts.Count > 1)
             {
-                phrase = phrase.Replace("\"", "");
-
-                phrase = EscapeSpecialCharacters(phrase).ToLower();
-                                
-                //split on spaces
-                var parts = phrase.Split(' ');
-                sb.Append("{\"query\": {\"bool\": {\"must\": [ ");
-                int indx = 0;
-
-                foreach (var word in parts)
+                mustClauses.Add(new MatchQuery
                 {
-                    var matchType = (indx == (parts.Length - 1)) ? "prefix" : "match";
+                    Field = fldName,
+                    Query = parts.Dequeue()
+                });
+            }
+            mustClauses.Add(new PrefixQuery
+            {
+                Field = fldName,
+                Value = parts.Dequeue()
+            });
 
-                    if (indx > 0) sb.Append(',');
-                    sb.Append("{\""+ matchType + "\": {\"Name\": \"" + word + "\"}}");
-
-                    indx++;
-                }
-                sb.Append("]");
-
-                if (!string.IsNullOrEmpty(type))
+            if (!string.IsNullOrEmpty(type))
+            {
+                string[] types = type.Split(',');
+                if (types.Length > 1)
                 {
-                    sb.Append(",\"filter\":  { \"bool\": { \"must\": [ ");
-                    string[] types = type.Split(',');
-                    if (types.Length > 1)
-                    {
-                        sb.Append(" { \"terms\":  { \"d3sGroup\": [\"" + string.Join("\",\"", types) + "\"] } }");
-                    }
-                    else
-                    {
-                        sb.Append(" { \"term\":  { \"d3sGroup\": \"" + type + "\" } }");
-                    }
-                    sb.Append("]}}");
+                    filterQuery = new BoolQuery {
+                        Must = new QueryContainer[] {
+                            new TermsQuery {
+                                Field = fldGroup,
+                                Terms = types
+                            }
+                        }
+                    };
                 }
-
-                sb.Append("}}, \"size\":" + size + "}");
+                else
+                {
+                    filterQuery = new BoolQuery {
+                        Must = new QueryContainer[] {
+                            new TermQuery {
+                                Field = fldGroup,
+                                Value = type
+                            }
+                        }
+                    };
+                }
             }
 
-            var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
-            var response = client.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", sb.ToString());
+            SearchRequest sReq = new SearchRequest
+            {
+                Query = new BoolQuery
+                {
+                    Must = new QueryContainer[] {
+                        new BoolQuery{
+                            Should = new QueryContainer[] {
+                                new BoolQuery {
+                                    Must = mustClauses
+                                },
+                                new NestedQuery {
+                                    Path = "d3sTags",
+                                    Query = new BoolQuery{
+                                        Must = new QueryContainer[] { new QueryStringQuery {
+                                            DefaultField = fldTag,
+                                            Query = tagSearch
+                                        }}
+                                    },
+                                    InnerHits = new InnerHits {
+                                        Highlight = new Highlight {
+                                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    Filter = new QueryContainer[] { filterQuery }
+                },
+                Size = size
+            };
 
+            var client = new ElasticClient(GetConnectionSettings(companyID));
+            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
+           
             if (!response.Success)
                 throw new ApplicationException(response.OriginalException.Message);
 
@@ -674,7 +799,7 @@ namespace d360.extensions.search
                 Type = GetPropertyValue<string>(h._source, "Type"),
                 Url = GetPropertyValue<string>(h._source, "Url"),
                 Uid = GetGuidPropertyIfExists(h, "Uid"),
-                Tags = GetTags(h)
+                Tags = GetTags(h, true)
             });
         }
 
@@ -698,30 +823,57 @@ namespace d360.extensions.search
         public IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string group = "")
         {
             IndexResults result = new IndexResults();
-
             CreateIndexIfNotExists(companyID);
 
-            StringBuilder sb = new StringBuilder();
+            Nest.Field fldType = new Nest.Field("Type");
+            Nest.Field fldTag = new Nest.Field("d3sTags.Value");
 
-            if (!string.IsNullOrEmpty(phrase))
-                phrase = phrase.Replace("\"", "\\\"");
-
-            sb.Append("{\"query\":{\"bool\": {\"must\":  { \"query_string\": { \"query\":\"" + phrase + "\"} }");
-
-            //if a group was specified filter by it
-            if (!string.IsNullOrEmpty(group))
+            SearchRequest sReq = new SearchRequest
             {
-                sb.Append(",\"filter\": { \"term\":  { \"Type\": \"" + group + "\" } }");
-            }
+                Query = new BoolQuery
+                {
+                    Must = new QueryContainer[] {
+                        new BoolQuery{
+                            Should = new QueryContainer[] {
+                                new QueryStringQuery {
+                                    Query = phrase
+                                },
+                                new NestedQuery {
+                                    Path = "d3sTags",
+                                    Query = new BoolQuery{
+                                        Must = new QueryContainer[] { new QueryStringQuery {
+                                            DefaultField = fldTag,
+                                            Query = phrase
+                                        }}
+                                    },
+                                    InnerHits = new InnerHits {
+                                        Highlight = new Highlight {
+                                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    Filter = new QueryContainer[] {
+                        new TermQuery{
+                            Field = fldType,
+                            Value = group
+                        }
+                    }
+                },
+                Size = size,
+                From = from,
+                Sort = new List<ISort>
+                {
+                    new SortField { Field = "_score", Order = Nest.SortOrder.Descending }
+                }
+            };
 
-            sb.Append("}},\"from\":" + from + ",\"size\":" + size + ",\"sort\":{ \"_score\":{ \"order\":\"desc\"} }");
-                        
-            sb.Append("}");
-
-            //if no group specified get the categories for this search
-
-            var client = new ElasticLowLevelClient(GetConnectionSettings(companyID));
-            var response = client.Search<StringResponse>(GetCompanyIndexName(companyID), sb.ToString());
+            var client = new ElasticClient(GetConnectionSettings(companyID));
+            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
 
             if (!response.Success)
                 throw new ApplicationException(response.OriginalException.Message);
@@ -820,12 +972,35 @@ namespace d360.extensions.search
             return result;
         }
 
-        private List<IndexTag> GetTags(SearchResultsHitModel h)
+        private List<IndexTag> GetTags(SearchResultsHitModel h, bool onlyHits = false, bool highlightHits = true)
         {
             List<IndexTag> tags = new List<IndexTag>();
-            if (h._source != null && h._source.TryGetValue("d3sTags", out JToken jToken))
-                if (jToken.Type == JTokenType.Array)
-                    tags = JsonConvert.DeserializeObject<List<IndexTag>>(jToken.ToString());
+            List<IndexTag> highlights = new List<IndexTag>();
+
+            if (h._source == null)
+                return tags;
+
+            if(highlightHits)
+                highlights = h.inner_hits.SelectTokens("d3sTags.hits.hits[*]")
+                    .Select(t => t.ToObject<SearchTagInnerHitsModel>())
+                    .Select(hi => new IndexTag { Uid = hi._source.Uid, Value = hi._source.Value, Highlight = hi.GetHighLightValue() })
+                    .ToList();
+
+            if (onlyHits && highlightHits)
+            {
+                //Since we are only returning hits, no need to also find _source tags
+                return highlights;
+            }
+
+            //Find _source tags from either inner_hits or _source
+            if (onlyHits)
+                tags = h.inner_hits.SelectTokens("d3sTags.hits.hits[*]._source").Select(t => t.ToObject<IndexTag>()).ToList();
+            else
+                tags = h._source.SelectTokens("d3sTags[*]").Select(t => t.ToObject<IndexTag>()).ToList();
+
+            if (highlightHits)
+                tags = highlights.Union(tags).ToList();
+
             return tags;
         }
 

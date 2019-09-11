@@ -18,8 +18,8 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                         <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>                        
                         <button class="button" (click)="handleAdvancedClick()">Advanced Search</button>
                 </div>      
-                <div *ngIf="!isAdvancedMode">
-                    <div *ngIf="!newSearch" class="search-input-container" >           
+                <div *ngIf="!isAdvancedMode && !newSearch">
+                    <div class="search-input-container" >           
                         <div class="search-input-text-container">                        
                             <input #search [ngModel]="searchText" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);" (keyup)="checkSearchKey($event);" type="text" id="home-search-text" placeholder="What do you want to find?" class="search-input-text" autofocus autocomplete="off" />                        
                         </div>
@@ -42,7 +42,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                             </button>
                         </div>                    
                     </div>   
-                    <d3s-search-autocomplete-list *ngIf="!isAdvancedMode" [searchText]="searchText" [element]="search" [autocompletions]="autocompletions"></d3s-search-autocomplete-list>            
+                    <d3s-search-autocomplete-list [searchText]="searchText" [element]="search" [autocompletions]="autocompletions"></d3s-search-autocomplete-list>            
                 </div>
                 <div *ngIf="isAdvancedMode" class="tile tile-detail">                             
                     <form (ngSubmit)="triggerAdvancedSearch()" #advSearchForm="ngForm">
@@ -65,7 +65,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                                 </select>
                             </div>
                             <div class="col s1" *ngIf="filter.field != '_type'">
-                                    <label><input type="checkbox" [(ngModel)]="filter.exact" [name]="'exm'+idx">Exact match</label>
+                                    <label><input type="checkbox" [(ngModel)]="filter.exact" [name]="'exm'+idx">Match Whole Words</label>
                             </div>
                             <div class="col s1" *ngIf="filter.field == '_type'">&nbsp;</div>
                             <div class="col s1" *ngIf="last" (click)="addFilter()" style="cursor:pointer"><i class="fa fa-plus" aria-hidden="true" title="add filter" style="font-size:1.5em"></i></div>

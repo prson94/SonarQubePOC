@@ -1413,13 +1413,13 @@ a.breadcrumb {
     }
 }
 
-.search-typeahead-suggestion, .search-res-container {
+.search-typeahead-suggestion {
     .folder-icon {
         display: inline-block;
-        width: 32px;
-        height: 32px;
-        line-height: 32px;
-        font-size: 18px !important;
+        width: 26px;
+        height: 26px;
+        line-height: 26px;
+        font-size: 14px !important;
         background: @igx-left-side-nav;
         margin-right: 4px;
         color: white;
@@ -3764,7 +3764,7 @@ button.tab-scroller {
             border: 1px solid #adadad;
             z-index: 1000;
             top: -45px;
-            transform: translateX(-50%);
+            transform: translateX(-5%);
 
             span {
                 display: block;
@@ -4010,7 +4010,18 @@ button.tab-scroller {
                                 margin-left: 0px;
                                 font-size: 18px;
                                 background: @igx-left-side-nav;
+                                width:32px;
+
+                                i {
+                                    margin-left: -2px;
+                                }
                             }
+                        }
+
+                        img {
+                            max-height: 20px;
+                            max-width: 20px;
+                            vertical-align: middle;
                         }
 
                         .name {
@@ -4070,7 +4081,6 @@ button.tab-scroller {
                     .tags {
                         margin-top: 15px;
                         max-height: 60px;
-                        overflow-y: hidden;
                         display: inline-flex;
                         flex-direction: row;
                         flex-wrap: wrap;

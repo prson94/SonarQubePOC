@@ -72,9 +72,9 @@
                         </li>
                     </ul>
                     <div class="directions">
-                        Should exact match be enabled by default?  If checked the exact match option will be initially populated.  If unchecked exact match will be off unless the user checks it.
+                        Specify if the option 'Match Whole Words' is checked by default.   If selected the 'Match Whole Words' option is checked by default and the search will look for whole words entered in the search criteria.  If unselected the option will not be checked, but the user can still check it when searching.                        
                     </div>
-                    <input type="checkbox" [(ngModel)]="companySettings.EnableSearchExactMatch" />Enable Exact match by default
+                    <input type="checkbox" [(ngModel)]="companySettings.EnableSearchExactMatch" />Enable 'Match Whole Words' by default
                 </div>
                 <div class="tile tile-detail">
                     <header>Default Route</header>

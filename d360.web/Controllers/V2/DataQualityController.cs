@@ -40,7 +40,7 @@ namespace d360.web.Controllers.V2
         private static string DefaultImplementationName = "default";
 
         /// <summary>
-        /// Returns the all the rule results for the specified rule Uid that are under the default implementation
+        /// Returns all the rule results for the specified rule Uid that are under the default implementation
         /// If the user is not an admin http status code 403 forbidden is returned
         /// </summary>
         /// <param name="ruleUid">The Uid of the rule</param>

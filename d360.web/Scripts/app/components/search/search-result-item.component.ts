@@ -17,8 +17,8 @@ declare var CompanySettings;
     template: `       
                 <div class="card-res">
                     <span class="title">
-                        <span class="d3s-icon large-icon title-icon"><i class="fa {{result?.Icon}}"></i></span>
-                        <span *ngIf="result?.ImageUrl" class="folder-icon"><img [src]="result.ImageUrl" /></span> 
+                        <span *ngIf="result?.Icon" class="d3s-icon large-icon title-icon"><i class="fa {{result?.Icon}}"></i></span>
+                        <span *ngIf="result?.ImageUrl" class="d3s-icon large-icon title-icon"><img [src]="result.ImageUrl" /></span> 
                         <span (click)="navigateLink()" class="name"><span class="inner" [innerHtml]="result?.Name"></span></span>
                         <span #badge *ngIf="scoreAndStatus && scoreAndStatus.Score;else noScore" class="d3s-icon large-icon"
                               title="{{lastCalculatedMessage()}}"
@@ -37,12 +37,8 @@ declare var CompanySettings;
                         <button *ngIf="showShoppingCart && result.Group != 'Synonym' && result.Group != 'Attribute'" class="button icon" (click)="add()">
                             <i class="fa fa-cart-plus"></i>
                         </button>
-                        <span *ngIf="obj && objID" class="d3s-icon med-icon light">
-                            <d3s-preview-tooltip
-                                [objectType]="obj"
-                                [objectId]="objID"
-                                icon="info-circle"
-                              ></d3s-preview-tooltip>
+                        <span *ngIf="result.Uid" class="d3s-icon med-icon light">
+                            <d3s-preview-tooltip [uid]="result.Uid" icon="info-circle"></d3s-preview-tooltip>
                         </span>
                     </span>
                     <span class="category">
@@ -107,11 +103,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         if (CompanySettings != null && CompanySettings.EnableShoppingCart != null && CompanySettings.EnableShoppingCart.toString() == 'true')
             this.showShoppingCart = true;
 
-        let url = this.result.Url.split('/').filter(String);
-        if (url.length == 3) {
-            this.obj = url[0];
-            this.objID = +url[2];
-        }
         this.loadDetails();
 
     }
@@ -119,19 +110,20 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
   
 
     private loadDetails() {
-
-        this.objectStatisticsService.getScoreAndStatus(this.result.Uid).subscribe(
-            result => {
-                this.scoreAndStatus = result;
-                if (this.scoreAndStatus && this.scoreAndStatus.Status) {
-                    this.status = this.scoreAndStatus.Status; 
-                    this.showStatus = true;
-                } else {
-                    this.showStatus = false;
+        if (this.result.Uid) {
+            this.objectStatisticsService.getScoreAndStatus(this.result.Uid).subscribe(
+                result => {
+                    this.scoreAndStatus = result;
+                    if (this.scoreAndStatus && this.scoreAndStatus.Status) {
+                        this.status = this.scoreAndStatus.Status; 
+                        this.showStatus = true;
+                    } else {
+                        this.showStatus = false;
+                    }
+                    this.ref.markForCheck();
                 }
-                this.ref.markForCheck();
-            }
-        );
+            );  
+        }
 
     }
 
