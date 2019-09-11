@@ -763,6 +763,24 @@ namespace Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The assets of this type may be used as a connecting asset to form lineage relationships.
+        /// </summary>
+        public static string UseAsTransformation_Description {
+            get {
+                return ResourceManager.GetString("UseAsTransformation_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use As Transformation.
+        /// </summary>
+        public static string UseAsTransformation_Name {
+            get {
+                return ResourceManager.GetString("UseAsTransformation_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This message will appear to the user if they provide invalid or missing information on this field.  You must enable some form of regular expression pattern validation on this field in order for the message to appear..
         /// </summary>
         public static string ValidationDescription_Description {

@@ -33,7 +33,7 @@ export const MULTISELECT_GRID_VALUE_ACCESSOR: any = {
                                         <p-tableCheckbox *ngIf="multiple" [value]="item"></p-tableCheckbox>
                                 </td>
                                 <td>
-                                    <d3s-preview-tooltip [objectType]="item.Value.split('|')[0]" [objectId]="item.Value.split('|')[1]">{{item.Text}}</d3s-preview-tooltip>
+                                    <d3s-preview-tooltip [objectType]="getObjectTypeForTooltip(item)" [objectId]="getObjectIdForTooltip(item)">{{item.Text}}</d3s-preview-tooltip>
                                 </td>
                             </tr>
                         </ng-template>
@@ -69,6 +69,17 @@ export class MultiSelectGridComponent extends BaseComponent implements OnInit, C
 
     ngOnInit() {
         this.load();
+    }
+
+    private getObjectTypeForTooltip(item: any): string {
+        if (item.Value.indexOf('|') == -1) return item.ObjectType;
+
+        return item.Value.split('|')[0];
+    }
+    private getObjectIdForTooltip(item: any): number {
+        if (item.Value.indexOf('|') == -1) return item.Value;
+
+        return item.Value.split('|')[1];
     }
 
     private load() {

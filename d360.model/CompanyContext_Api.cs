@@ -2748,14 +2748,11 @@ from	api.ExecutionAsset T
                                             #endregion
                                             case AssetTypeClass.Policy:
                                             case AssetTypeClass.Glossary:
-                                            case AssetTypeClass.Reference:
                                                 #region
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)
                                                     @object = "Policy";
-                                                else if (at.Class == AssetTypeClass.Reference)
-                                                    @object = "ReferenceItem";
-
+                                                
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
@@ -2857,7 +2854,59 @@ from	api.ExecutionAsset T
                                                 }
                                                 break;
                                             #endregion
-                                           
+                                            case AssetTypeClass.Reference:
+                                                #region
+                                                if (isInsert)
+                                                {
+                                                    Connection.Execute($@"
+                                                        create table #ObjectMergeTableResult (ID int, ItemNumber int);
+                                                        CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
+
+                                                        merge   [Asset] as T
+                                                        using   (
+                                                                select  A.ItemNumber,
+                                                                        C.FieldValue as [Code]
+                                                                from    api.ExecutionAsset A
+                                                                        inner join api.ExecutionField C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code'
+                                                                where   A.ExecutionID = @ExecutionID
+                                                                        and A.Success is null
+                                                                        and A.ItemNumber between {beginItemNumber} and {endItemNumber}
+                                                                ) S
+                                                        on      (T.AssetTypeID = @AssetTypeID and T.[Code] = @NonExistentUid)
+                                                        when    not matched then
+                                                        insert  (AssetTypeID,State,[Object], [Code], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+                                                        values  (@AssetTypeID,1,'ReferenceItem', S.[Code], @R, @D, @R, @D)
+                                                        output  inserted.ObjectID, S.ItemNumber into #ObjectMergeTableResult;
+
+                                                        update  T
+                                                        set     T.Object = 'ReferenceItem',
+                                                                T.ObjectID = S.ID,
+                                                                T.IsNew = 1
+                                                        from    api.ExecutionAsset T
+                                                                inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
+
+                                                        {updateAssetInfoOnExecutionRecordsSql}",
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
+                                                }
+                                                else
+                                                {
+                                                    Connection.Execute($@"
+                                                        update	T
+                                                        set		T.[Code] = C.FieldValue,
+                                                                T.UpdatedBy = @R,
+                                                                T.UpdatedOn = @D
+                                                        from	Asset T
+		                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and S.[Object]=T.[Object] and T.[Object]='ReferenceItem'  and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between {beginItemNumber} and {endItemNumber}
+                                                                inner join api.ExecutionField C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code';
+
+                                                        update	api.ExecutionAsset
+                                                        set		IsNew = 0
+                                                        where	{executionAssetWhereSql};",
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                }
+                                                break;
+                                                #endregion
+
                                         }
 
                                         #region Parent/Child Relationship

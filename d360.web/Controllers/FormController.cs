@@ -1,4 +1,4 @@
-﻿using d360.core;
+using d360.core;
 using d360.core.entities;
 using d360.core.entities.Views;
 using d360.core.enums;
@@ -312,7 +312,10 @@ namespace d360.web.Controllers
             {
                 case "TAG":
                     objectId = Company.Tags.FirstOrDefault(x => x.uid == uid).ID;
-                    return DynamicEditorEditFields(o,objectId);
+                    return DynamicEditorEditFields(o, objectId);
+                case "INTERSECTTYPE":
+                    objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
+                    return DynamicEditorEditFields(o, objectId);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -458,7 +461,15 @@ namespace d360.web.Controllers
             throw new Exception("Invalid or non implemented editor type");
         }
 
-        [HttpGet, Route("dynamiceditorrel/new/{objectType}/{objectID}/{targetType}/{targetID}")]
+        [HttpGet, Route("dynamiceditorrel/new/{objectType}/{objectUID}/{targetType}/{targetID:int}")]
+        public JsonResult DynamicEditorAddRelationFields(string objectType, string objectUID, SystemObjects targetType, int targetID)
+        {
+            Guid guid = Guid.Parse(objectUID);
+            int objectId = Company.GetObjectId(guid, SystemObjects.IntersectType);
+            return DynamicEditorAddRelationFields(objectType, objectId, targetType, targetID);
+        }
+
+        [HttpGet, Route("dynamiceditorrel/new/{objectType}/{objectID:int}/{targetType}/{targetID:int}")]
         public JsonResult DynamicEditorAddRelationFields(string objectType, int objectID, SystemObjects targetType, int targetID)
         {
             switch ((objectType ?? "").ToUpper())
@@ -1160,6 +1171,7 @@ namespace d360.web.Controllers
                             State = State.Active,
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
+                            UseAsTransformation = model.AssetType.UseAsTransformation,
                             Class = AssetTypeClass.Glossary
                         };
                         Company.Add(a);
@@ -1215,6 +1227,7 @@ namespace d360.web.Controllers
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
                             Hierarchical = true,
+                            UseAsTransformation = model.AssetType.UseAsTransformation,
                             Class = AssetTypeClass.Policy
                         };
                         Company.Add(p);
@@ -1236,6 +1249,7 @@ namespace d360.web.Controllers
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
                             Hierarchical = true,
+                            UseAsTransformation = model.AssetType.UseAsTransformation,
                             Class = AssetTypeClass.Model
                         };
 
@@ -1266,6 +1280,7 @@ namespace d360.web.Controllers
                             State = State.Active,
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
+                            UseAsTransformation = model.AssetType.UseAsTransformation,
                             Class = AssetTypeClass.Reference
                         };                                            
                         Company.Add(rt);
@@ -1370,7 +1385,7 @@ namespace d360.web.Controllers
                         a.Description = model.AssetType.Description;
                         a.CanOwnFusion = model.CanOwnFusion ?? false;
                         a.AutoDisplayDescription = model.AutoDisplayDescription ?? false;
-
+                        a.UseAsTransformation = model.AssetType.UseAsTransformation;
                         Company.Update(a);
 
                         parentType = SystemObjects.ArtifactType;
@@ -1405,7 +1420,7 @@ namespace d360.web.Controllers
                         p.DisplayFormat = model.AssetType.DisplayFormat;
                         p.Description = model.AssetType.Description;
                         p.HierarchyMaximumDepth = model.AssetType.HierarchyMaximumDepth;
-
+                        p.UseAsTransformation = model.AssetType.UseAsTransformation;
                         Company.Update(p);
 
                         parentType = SystemObjects.PolicyType;
@@ -1420,7 +1435,7 @@ namespace d360.web.Controllers
                         rt.Notes = model.AssetType.Notes;
                         rt.UpdatedBy = Company.CurrentResourceID;
                         rt.UpdatedOn = DateTime.UtcNow;
-
+                        rt.UseAsTransformation = model.AssetType.UseAsTransformation;
 
                         Company.Update(rt);
 
@@ -1437,6 +1452,7 @@ namespace d360.web.Controllers
                         assetType.DisplayFormat = model.AssetType.DisplayFormat;
                         assetType.Description = model.AssetType.Description;
                         assetType.HierarchyMaximumDepth = model.AssetType.HierarchyMaximumDepth;
+                        assetType.UseAsTransformation = model.AssetType.UseAsTransformation;
 
                         if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
                             throw new GenericException(HttpStatusCode.BadRequest, "Invalid Maximum Level", "Invalid Maximum Model level specified must be a value between 1 and 10");
@@ -9468,9 +9484,11 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                         sql = $@"
 select	'FusionAttribute' as [Object], 
         FA.ID as ObjectID, 
+        A.uid,
         F.Name + '.' + FA.TextPath as Name
 from	FusionAttribute FA with(nolock)
 		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
+        inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectId = FA.ID
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]
@@ -9535,11 +9553,13 @@ if @OwnerSourceType = 'Artifact'
 
 select distinct 'FusionAttribute' as [Object], 
         FA.ID as ObjectID, 
+        A.uid,
         F.Name + '.' + FA.TextPath as Name
 from	FusionAttribute FA with(nolock)
 		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
         inner join FusionOwner FO on FO.FusionID = FA.FusionID
         inner join @h H on H.ID = FO.ASSETID
+        inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectID = FA.ID
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]
@@ -9555,10 +9575,12 @@ order by 3";
                         sql = $@"
 select	'FusionQueryAttribute' as [Object], 
         FA.ID as ObjectID, 
+        A.uid,
         F.Name + '.' + FA.DisplayValue as Name
 from	FusionQueryAttribute FA with(nolock)
         inner join FusionQueryAttributeType FAT on (FA.FusionQueryAttributeTypeID = FAT.ID)
 		inner join Fusion F with(nolock) on F.ID = FAT.FusionID and FA.FusionQueryAttributeTypeID = @targetTypeID and FA.Deleted = 0
+        inner join Asset A on A.object = 'FusionQueryAttribute' and A.ObjectID =  FA.ID
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]
@@ -9574,8 +9596,10 @@ order by F.Name, FA.DisplayValue";
                     sql = $@"
 select	'Group' as [Object], 
         D.ID as ObjectID, 
+		A.uid,
         D.Name
 from	[Group] D with(nolock)
+inner join Asset A on A.Object = 'Group' and A.ObjectID= D.ID
 where	D.ID not in (
 					select	case 
                                 when SubjectType = 'Group' then SubjectID
@@ -9597,8 +9621,10 @@ order by D.Name";
                     sql = $@"
 select	'Resource' as [Object], 
         D.ResourceID as ObjectID, 
+        A.uid,
         D.LastName + ', ' + D.FirstName as Name
 from	reporting.Global_Resource D with(nolock)
+inner join Asset A on A.Object = 'Resource' and A.ObjectID = D.ResourceID
 where   D.ResourceID not in (
 					select	case 
                                 when SubjectType = 'ResourceType' then SubjectID
@@ -9621,6 +9647,7 @@ order by D.LastName, D.FirstName";
                         sql = $@"
 select	'ReferenceItemType' as [Object], 
         r.ObjectID as ObjectID, 
+        r.uid,
         r.Name as Name
 from	[dbo].[AssetType] r with(nolock)
 where   r.[objectId] not in (
@@ -9643,6 +9670,7 @@ order by r.Name";
                         sql = $@"
 select	'ReferenceItem' as [Object], 
         AD.ObjectID as ObjectID, 
+        AD.uid,
         AD.DisplayValue as Name
 from	AssetDetail AD with(nolock)
 where   AD.[ObjectId] not in (
@@ -9714,8 +9742,9 @@ order by r.Name";
                     #region
                     sql = $@"(
 select		D.ID,
-            D.[Object], 
-			D.ObjectID
+            D.[Object],
+            D.ObjectID,
+            D.uid
 from		Asset D
             inner join AssetType AST on D.AssetTypeID = AST.ID
 			left join [Intersect] I on	I.IntersectTypeID = @it and (
@@ -9728,32 +9757,23 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                     switch (targetType)
                     {
                         case "ArtifactType":
-                            sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue as Name from AssetDetail O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                            sql = $@"select C.uid, C.Object ,ADisp.DisplayValue as Name from AssetDetail O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
                             break;
                         case "GroupType":
-                            sql = $@"select C.Object, C.ObjectID, O.Name from [Group] O inner join {sql} order by O.Name";
-                            break;
-                        case "IntersectType":
-                            sql = $@"select C.Object, C.ObjectID, O.Name from [Intersect] O inner join {sql} order by O.Name";
+                            sql = $@"select C.uid, C.Object ,O.Name from [Group] O inner join {sql} order by O.Name";
                             break;
                         case "LookupType":
-                            sql = $@"select C.Object, C.ObjectID, O.Name from [LookupType] O inner join {sql} order by O.Name";
-                            break;                            
-                        case "ReferenceItemType":
-                            sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue as Name from AssetDetail O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'ReferenceItem') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
-                            break;
-                        case "ResourceType":
-                            sql = $@"select C.Object, C.ObjectID, O.LastName + ', ' + O.FirstName as Name from reporting.[Global_Resource] O inner join {sql} order by O.LastName + ', ' + O.FirstName";
+                            sql = $@"select C.uid, C.Object ,O.Name from [LookupType] O inner join {sql} order by O.Name";
                             break;
                         case "RuleType":
-                            sql = $@"select C.Object, C.ObjectID, O.DisplayValue AS Name from [Rule] O inner join {sql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                            sql = $@"select C.uid,C.ObjectID, C.Object ,O.DisplayValue AS Name from [Rule] O inner join {sql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
                             break;
                         case "PolicyType":
                         case "TaxonomyType":
                             sql = $@"
-                                    select	A.Object,
-                                            A.ObjectID, 
-                                            TP.TextPath as Name 
+                                    select	A.UID as uid,
+                                            TP.TextPath as Name ,
+                                            A.Object
                                     from	AssetDetail A 
                                             cross apply dbo.GetAssetTextPathById(A.ID, '/') TP 
                                     		left join [Intersect] I on	I.IntersectTypeID = @it and (
@@ -9775,7 +9795,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
 
             #endregion
 
-            var items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId }).Select(i => new { Text = i.Name, Value = $"{i.Object}|{i.ObjectID}" }).ToList();
+            var items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId }).Select(i => new { Text = i.Name, Value = $"{i.uid}", ObjectType = i.Object }).ToList();
 
             return Json(items, JsonRequestBehavior.AllowGet);
         }
@@ -14950,7 +14970,21 @@ order by	case
 
             Company.RebuildDisplayValuesRequest();
 
-            return jsonSuccess("request submitted.", "", "add", HttpStatusCode.Created);
+            return jsonSuccess("Rebuild request received and accepted.", "", "add", HttpStatusCode.Created);
+        }
+
+        #endregion
+
+        #region UpdateAssetGraph
+
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuildAssetGraph")]
+        public JsonResult RebuildAssetGraph()
+        {
+            if (!Company.CurrentResourceIsAdmin) return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
+
+            Company.RebuildAssetGraphRequest();
+
+            return jsonSuccess("Rebuild request received and accepted.", "", "add", HttpStatusCode.Created);
         }
 
         #endregion

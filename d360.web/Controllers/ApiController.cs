@@ -1,4 +1,4 @@
-﻿using d360.core;
+using d360.core;
 using d360.core.entities;
 using d360.core.entities.Views;
 using d360.core.enums;
@@ -72,7 +72,10 @@ namespace d360.web.Controllers
         {
             var list = new List<DetailReadOnlyRowModel>();
             var tagList = new List<ReadOnlyFieldValue>();
-
+            string tagDisplayDescription = "";
+            string tagDisplayName = "";
+            string tagCategory = "";
+            
             var details = Company.GetObjectDetail(type.ToString(), id);
             if (details != null)
             {
@@ -253,6 +256,9 @@ namespace d360.web.Controllers
                     }
                     else if (ft.Type == DataType.Tag.ToString())
                     {
+                        tagDisplayDescription = ft.DisplayDescription;
+                        tagDisplayName = ft.FriendlyName;
+                        tagCategory = ft.Category;
                         var ro = new ReadOnlyFieldValue
                         {
                             Value = ft.FriendlyName,
@@ -492,7 +498,8 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             {
                 var title = new ReadOnlyField
                 {
-                    Name = "Tags",
+                    Name = tagDisplayName,
+                    FieldDescription = tagDisplayDescription,
                     ShowIfEmpty = true,
                     DataType = "tag",
                     Values = GetTagsValues(type, id)
@@ -500,7 +507,8 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 list.Add(new DetailReadOnlyRowModel
                 {
                     columns = 1,
-                    FirstColumnFields = new List<ReadOnlyField> { title }
+                    FirstColumnFields = new List<ReadOnlyField> { title },
+                    Category = tagCategory
                 });
 
             }
@@ -817,6 +825,14 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 columns.Add(col);
 
             });
+        }
+
+        [HttpGet, Route("{type}/{uid}/grid/definition")]
+        public HttpResponseMessage GetGridDefinitionByType(SystemObjects type, string uid)
+        {
+            Guid guid = Guid.Parse(uid);
+            int objectId = Company.GetObjectId(guid, type);
+            return GetGridDefinitionByType(type, objectId);
         }
 
         [HttpGet, Route("{type}/{id:int}/grid/definition")]
@@ -5351,6 +5367,7 @@ where    A.RuleID = @id", new { id });
         public DetailReadOnlyModel GetObjectDetailFields(SystemObjects type, int id)
         {
             var model = new DetailReadOnlyModel() { columns = 2 };
+            var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
             int row = 0;
             switch (type)
@@ -6414,14 +6431,34 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = Fields.ID_Name, FieldName = "PolicyTypeID", FieldDescription = Fields.ID_Description, Value = policyType.ObjectID.ToString() }
                             }
                         });
-                        model.rows.Add(new DetailReadOnlyRowModel
+
+                        if (lineageVersion == 3)
                         {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 2,
+                                FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = objectDetail.UID.ToString()  }
+                            },
+                                SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UseAsTransformation_Name, FieldName = "UseAsTransformation", DataType="bool", FieldDescription = Resources.FieldInfo.UseAsTransformation_Description, Value = policyType.UseAsTransformation.ToString()  }
                             }
-                        });
+                            });
+                        }
+                        else
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = objectDetail.UID.ToString()  }
+                                }
+                            });
+                        }
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -6488,26 +6525,38 @@ where    A.RuleID = @id", new { id });
                                 }
                         });
 
+                        var useAsTransformationField = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UseAsTransformation_Name, FieldName = "UseAsTransformation", DataType="bool", FieldDescription = Resources.FieldInfo.UseAsTransformation_Description, Value = refType.UseAsTransformation.ToString()  }
+                            };
+
+
                         var parentRefType = Company.GetParentType(refType.ObjectID, SystemObjects.ReferenceItemType);
 
                         var heirarchyColumns = new DetailReadOnlyRowModel
                         {
-                            columns = (parentRefType != null) ? 2 : 1,
+                            columns = (parentRefType != null) ? 2 : lineageVersion == 3 ? 2 : 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = "Hierarchical", FieldName = "Hierarchical", FieldDescription = "Is this reference list a hierarchical reference list", Value = parentRefType != null ? "Yes":"No" }
-                            }
+                            },
+                            SecondColumnFields = parentRefType != null ?
+                                new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "Parent", FieldName = "Parent", FieldDescription = "Parent Reference List", Value = parentRefType.Name }
+                                } : lineageVersion == 3 ? useAsTransformationField : null
                         };
 
-                        if (parentRefType != null)
-                        {
-                            heirarchyColumns.SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = "Parent", FieldName = "Parent", FieldDescription = "Parent Reference List", Value = parentRefType.Name }
-                            };
-                        }
-
                         model.rows.Add(heirarchyColumns);
+
+                        if (parentRefType != null && lineageVersion == 3)
+                        {
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 1,
+                                FirstColumnFields = useAsTransformationField
+                            });
+                        }
                     }
                     break;
                 #endregion
@@ -6904,11 +6953,15 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = 1,
+                            columns = lineageVersion == 3 ? 2 : 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Fields.Description_Name, FieldName = "TaxonomyTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description }
-                            }
+                            },
+                            SecondColumnFields = lineageVersion == 3 ? new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField{ Name = Resources.FieldInfo.UseAsTransformation_Name, FieldName = "UseAsTransformation", DataType="bool", FieldDescription = Resources.FieldInfo.UseAsTransformation_Description, Value = taxonomyType.UseAsTransformation.ToString()  }
+                            } : null
                         });
                     }
                     taxonomyType = null;
@@ -7188,6 +7241,14 @@ where v.id = {0}", id)).FirstOrDefault();
             return Company.Query<dynamic>(QueryConstants.ObjectRelationships, new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, id });
         }
 
+        [Route("{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeUID}"), HttpGet]
+        public IEnumerable<dynamic> RelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, string intersectTypeUID, bool includeInverse = true)
+        {
+            Guid guid = Guid.Parse(intersectTypeUID);
+            int ID = Company.GetObjectId(guid, SystemObjects.IntersectType);
+            return RelationshipsForObjectByTargetType(type, id, targetType, targetID, ID, includeInverse);
+        }
+
         [Route("{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}"), HttpGet]
         public IEnumerable<dynamic> RelationshipsForObjectByTargetType(SystemObjects type, int id, SystemObjects targetType, int targetID, int intersectTypeID, bool includeInverse = true)
         {
@@ -7253,6 +7314,7 @@ where v.id = {0}", id)).FirstOrDefault();
 		                        case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end as Type,
 		                        case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
 		                        AST.Name as TypeName,
+                                IA.uid as ObjectUid,
 		                        T.HasTechnicalRelationships
                         from	[Intersect] I
                                 inner join IntersectType IT on IT.ID = I.IntersectTypeID
@@ -7301,6 +7363,7 @@ where v.id = {0}", id)).FirstOrDefault();
                         else
                             I.SubjectID
                         end as ObjectID,
+                        IA.uid as ObjectUid,
 		                P.TextPath as Name,        
 		                IT.Object Type,
 		                IT.ObjectID TypeID,
@@ -7351,12 +7414,13 @@ where v.id = {0}", id)).FirstOrDefault();
                     else
                         I.ObjectID
                     end as ObjectID,
+                    IA.uid as ObjectUid,
 		            P.TextPath as Name,        
 		            IT.Subject as Type,
 		            IT.SubjectID as TypeID,
 		            AST.Name as TypeName,
 		            T.HasTechnicalRelationships
-            from [Intersect] I
+                    from [Intersect] I
                 inner join IntersectType IT on IT.ID = I.IntersectTypeID
                     {assetJoin}
                     cross apply(
@@ -8331,7 +8395,7 @@ where	Type = 'ReferenceItemType'
                 var sql = @"select flv.Text, flv.Value from fieldlookupvalue flv 
                         inner join[intersectdetail] id on(id.subjecttype = 'ReferenceItemType' and id.objecttype = 'ReferenceItemType' and id.predicatetype = @predicate and id.objectid = flv.value and id.objecttypeid = flv.lookupobjectid and id.subjecttypeid = @parentReferenceListTypeId)
                         inner join AssetDetail ad on(ad.TypeId = id.subjecttypeid and ad.Type='ReferenceItemType' and ad.[ObjectId] = id.subjectid  and ad.[Object]='ReferenceItem' )
-                        where flv.fieldTypeID = @id and  ad.[ObjectId] in ( @parentReferenceItemId)";
+                        where flv.fieldTypeID = @id and ad.[ObjectId] in @parentReferenceItemId";
 
                 items = Company.Query<SelectListInfoItem>(sql, new { id = fieldTypeID, predicate = predicateTypeId, parentReferenceItemId = parents, parentReferenceListTypeId = parentReferenceListType.ObjectID }).ToList();
             }

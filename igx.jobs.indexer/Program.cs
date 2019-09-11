@@ -42,6 +42,13 @@ namespace igx.jobs.indexer
         public string FormattedValue { get; set; }
     }
 
+    internal class TagSqlModel
+    {
+        public Guid AssetUID { get; set; }
+        public Guid TagUID { get; set; }
+        public string Value { get; set; }
+    }
+
     public static class Indexer
     {
         private static int _defaultQueryCommandTimeout = 180;
@@ -53,6 +60,7 @@ namespace igx.jobs.indexer
 #endif
 
         const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> '' and T.[Type] not in('DateTime','Color','FusionLookup','FilteredLookup','ComplexRelationLookup','OwnershipLookup','Relationship','FieldFromRelationship','RefListRelationship','JSON')";
+        const string tagsSql = @"SELECT a.uid AS AssetUID, t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID INNER JOIN [dbo].[Asset] a ON at.AssetID = a.ID";
 
         public static void RunViaTimer([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -66,7 +74,6 @@ namespace igx.jobs.indexer
                 companies.ForEach(c =>
                 {
                     queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = c.CompanyID });
-
                 });
 
             }
@@ -427,6 +434,8 @@ from
                     A.ObjectID as ID,
                     D.DisplayValue as Name,
                     T.Name as RuleType,
+                    T.uid as AssetTypeUid,
+                    a.uid as Uid,
                     [dbo].GenerateAssetUrl(A.ID) as [Url]
                 FROM [dbo].[Asset] A
 				INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
@@ -447,8 +456,10 @@ from
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
-                        { "Type", $"{o.RuleType} Rule" },
-                        { "Description", o.Description }
+                        { "Type", o.RuleType },
+                        { "Description", o.Description },
+                        { "Uid", o.Uid.ToString() },
+                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
                     }
                 };
             });
@@ -483,7 +494,8 @@ from
             var sql = $@"SELECT
                     ObjectID as ID,
                     Name,
-                    Description
+                    Description,
+                    uid as AssetTypeUid
                 FROM [dbo].[AssetType]
                 WHERE Class = {assettypeclass.ToString()}
                 AND State = 1";
@@ -500,7 +512,9 @@ from
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
                         { "Type", "Reference List" },
-                        { "Description", o.Description }
+                        { "Description", o.Description },
+                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
+
                     }
                 };
             });
@@ -514,6 +528,8 @@ from
 	                D.DisplayValue as [Name],
 	                D.DisplayValue as TextPath,
 	                T.Name as PolicyType,
+                    a.uid as Uid,
+                    T.uid as AssetTypeUid,
 	                [dbo].GenerateAssetUrl(A.ID) as [Url]
                 FROM [dbo].[Asset] A
                 INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
@@ -535,7 +551,9 @@ from
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
                         { "Type", o.PolicyType },
-                        { "TextPath", o.TextPath ?? "" }
+                        { "TextPath", o.TextPath ?? "" },
+                        { "Uid", o.Uid.ToString() },
+                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
                     }
                 };
             });
@@ -550,6 +568,7 @@ select
 	att.ObjectID as TypeID,
 	adv.DisplayValue,
 	att.Name as TypeName,
+    att.uid as AssetTypeUid,
 	a.uid as Uid
 from
 	[dbo].Asset a
@@ -576,7 +595,8 @@ where
                         { "Uid", o.Uid.ToString() },
                         { "Description", "" },
                         { "Status", "Active" },
-                        { "Taxonomy", "" }
+                        { "Taxonomy", "" },
+                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
                     }
                 };
             });
@@ -615,6 +635,7 @@ SELECT	A.ObjectID as ID,
 		T.ObjectID as TypeID,
 		D.DisplayValue,
 		T.Name as TypeName,
+        T.uid as AssetTypeUid,
 		A.uid as Uid
 FROM	[dbo].Asset A
 		INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
@@ -639,7 +660,8 @@ WHERE	T.Object = 'TaxonomyType'
                         { "Type", o.TypeName },
                         { "Uid", o.Uid.ToString() },
                         { "Description", "" },
-                        { "TextPath", o.DisplayValue ?? "" }
+                        { "TextPath", o.DisplayValue ?? "" },
+                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
                     }
                 };
             });
@@ -694,6 +716,7 @@ from    fusion f
         private static IEnumerable<AddToIndexModel> getDataWithFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, AddToIndexModel> convertToDictionary)
         {
             var fields = context.Query<FieldSqlModel>(fieldsSql, new { t = type }, commandTimeout: _defaultQueryCommandTimeout).ToList();
+            var tags = context.Query<TagSqlModel>(tagsSql, null, commandTimeout: _defaultQueryCommandTimeout).ToList();
             var list = getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);
                         
             foreach (var item in list)
@@ -702,6 +725,10 @@ from    fusion f
                 foreach (var f in subset)
                 {
                     item.Fields[f.Name] = f.FormattedValue;
+                }
+                if(item.Fields.ContainsKey("Uid"))
+                {
+                    item.Tags = tags.Where(i => i.AssetUID == Guid.Parse(item.Fields["Uid"])).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
                 }
 
                 yield return item;
