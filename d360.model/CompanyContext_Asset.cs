@@ -100,6 +100,7 @@ namespace d360.model
 
             if (string.IsNullOrEmpty(simpleFilter))
             {
+                var fieldTypes = Filter<FieldType>(x => x.AssetTypeID == assetTypeId).ToList();
                 var usedFilters = new List<string>();
                 foreach (var filter in filters)
                 {
@@ -143,13 +144,28 @@ namespace d360.model
                             {
                                 int fieldTypeId = 0;
                                 int.TryParse(f.FieldName.Replace("Field", ""), out fieldTypeId);
-                                var fieldType = FieldTypes.FirstOrDefault(x => x.ID == fieldTypeId)?.Type;
-
-                                if (!usedFilters.Contains($"F{f.FieldName.Replace("Field", "")}") || fieldType == SystemObjects.Tag.ToString())
+                                var fieldType = fieldTypes.FirstOrDefault(x => x.ID == fieldTypeId);
+                                if (fieldType != null)
                                 {
-                                    filterTable.Rows.Add("F", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{wildcardValue(f.RawValue)}");
+                                    if (!usedFilters.Contains($"F{f.FieldName.Replace("Field", "")}") || fieldType.Type == SystemObjects.Tag.ToString())
+                                    {
+                                        var fieldFilterValue = "";
+                                        if (fieldType.Type == DataType.Decimal.ToString() || fieldType.Type == DataType.Number.ToString())
+                                        {
+                                            fieldFilterValue = f.RawValue;
+                                        }
+                                        else if (fieldType.Type == DataType.Lookup.ToString())
+                                        {
+                                            fieldFilterValue = f.RawValue;
+                                        }
+                                        else
+                                        {
+                                            fieldFilterValue = wildcardValue(f.RawValue);
+                                        }
+                                        filterTable.Rows.Add("F", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{fieldFilterValue}");
 
-                                    usedFilters.Add($"F{f.FieldName.Replace("Field", "")}");
+                                        usedFilters.Add($"F{f.FieldName.Replace("Field", "")}");
+                                    }
                                 }
                             }
                         }
