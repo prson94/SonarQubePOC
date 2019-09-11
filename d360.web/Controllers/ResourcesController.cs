@@ -911,6 +911,27 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             }
         }
 
+        [HttpGet, Route("tooltipdatabyuid/{uid}")]
+        public JsonResult GetTooltipDataByUid(Guid uid)
+        {
+            var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
+            if (asset != null)
+                return GetTooltipData(asset.ObjectID, asset.Object);
+            else return Json(
+                    new
+                    {
+                        ShowTooltip = false,
+                        AssetID = -1,
+                        UID = "",
+                        DisplayName = "",
+                        TypeName = "",
+                        Url = "",
+                        Description = ""
+
+                    },
+                    JsonRequestBehavior.AllowGet); 
+        }
+
         [HttpGet, Route("TooltipData/{objectType}/{objectID:int}")]
         public JsonResult GetTooltipData(int objectID, string objectType)
         {
