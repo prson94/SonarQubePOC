@@ -228,7 +228,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
         if (this.container) {
             let parent = this.getParentForResizing(this.container.nativeElement, 'TD,DIV');
             if (!parent) {
-                console.warn("No suitable parent fount for tag resizing!");
+                console.warn("No suitable parent found for tag resizing!");
             }
 
             let ofWidth = parent ? parent.offsetWidth - 10 : 500;
