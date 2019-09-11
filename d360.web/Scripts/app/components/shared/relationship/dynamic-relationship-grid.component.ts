@@ -19,6 +19,7 @@ declare var CompanySettings;
 export class DynamicRelationshipGridComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
+    @Input() objectUid: number;
     @Input() objectName: string;
     @Input() targetType: string;
     @Input() targetTypeID: number;
@@ -38,6 +39,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     @Output() onFilterChange = new EventEmitter();
 
     @Input() simpleFilter: boolean;
+    @Input() isSubject: boolean;
 
     private fields: GridField[] = [];
 
@@ -130,6 +132,36 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     saveRelationship(event) {
+        let model: any[] = [];
+        let fields: any = {};
+        for (var prop in event.item) {
+            if (prop != 'IntersectTypeID' && prop != 'Source' && prop != 'SourceID' && prop != 'Items' && prop != 'ID' && prop != 'Uid') {
+                fields[prop] = event.item[prop];
+            }
+        }
+
+        if (event.action == 'new') {
+            var assets = event.item.Items.split(',');
+            assets.forEach(a => {
+                let newRel: any = {};
+                if (this.isSubject)
+                    newRel = { SubjectAssetUid: this.objectUid, ObjectAssetUid: a, Fields: fields };
+                else
+                    newRel = { ObjectAssetUid: this.objectUid, SubjectAssetUid: a, Fields: fields };
+
+                model.push(newRel);
+            });
+        }
+        else {
+            let newRel: any = {};
+            if (this.isSubject)
+                newRel = { SubjectAssetUid: this.objectUid, ObjectAssetUid: this.selected.ObjectUid, Fields: fields };
+            else
+                newRel = { ObjectAssetUid: this.objectUid, SubjectAssetUid: this.selected.ObjectUid, Fields: fields };
+
+            model.push(newRel);
+        }
+
         if (event.item.id != undefined && event.item.id == 0) {
             let count = 1;
             if (event.values && event.values.Items) {
@@ -137,17 +169,38 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
             }
         }
 
-        this.getData();
-        this.closeEditor();
+        this.relationshipsService.saveRelationships(this.intersectTypeID, model)
+            .subscribe(res => {
+                this.getData();
+                this.closeEditor();
+                if (event.action == 'new') {
+                    this.showMessageForResult(this.messagesService, res, 'Relationships succesfully added!');
+                }
+                else {
+                    this.showMessageForResult(this.messagesService, res, 'Relationships succesfully updated!');
+                }
+
+            });
     }
 
     deleteItem(item) {
-        this.relationshipsService.deleteRelationshipItem(item).subscribe(res => {
-            this.relations = this.relations.filter(x => x.ID != item);
-            this.relationshipRemoved.emit();
-        });
-        this.deleteOff.emit();
-        this.showDelete = false;
+        let model: any[] = [];
+        let deleteItem: any = {};
+
+        deleteItem['Cascade'] = true;
+        deleteItem['uid'] = item;
+        model.push(deleteItem);
+
+        this.relationshipsService.deleteRelationshipV2(this.intersectTypeID, model)
+            .subscribe(res => {
+                this.relations = this.relations.filter(x => x.Uid != item);
+                this.relationshipRemoved.emit();
+                this.deleteOff.emit();
+                this.showDelete = false;
+                this.showMessageForResult(this.messagesService, res, 'Relationship succesfully deleted!');
+
+            });
+
     }
 
     doDelete() {

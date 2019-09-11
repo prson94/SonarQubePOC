@@ -70,6 +70,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.sub = this.route.params.subscribe(params => {
             this.tagUid = params['tagUid'];
 
+            this.rightSidebarService.clearCurrentObject();
 
             this.logAction('open', 'Tag', this.tagUid);
             this.isLoading = true;

@@ -1,23 +1,34 @@
-﻿export class SearchResult {
-    Desc: string;
-    Name: string;
-    DisplayName: string;
-    Url: string;
-    Type: string; 
-    ID: string;
-    Icon: string;
+﻿export class SearchResultTags {
+    Uid: string;
+    Value: string;
+    Highlight: string;
 }
 
-export class SearchFullResult {
+export class SearchResult {
+    Name: string;
+    DisplayName: string;
+    Group: string;
+    Type: string;
+    Url: string;
+    Icon: string;
+    ImageUrl: string;
+    Uid: string;
+    AssetTypeUid: string;
+    Tags: SearchResultTags[];
+}
+
+export class SearchFullResult extends SearchResult {
+    ID: number;
     Description: string;
     Group: string;
-    ID: number;
     Name: string;
+    AbsoluteUrl: string;
     NormalizedScore: number;
     Score: number;
     Type: string;
     Url: string;
     Icon: string;
+    Uid: string;
     
 }
 

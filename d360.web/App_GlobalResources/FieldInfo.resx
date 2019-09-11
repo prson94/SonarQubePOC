@@ -351,6 +351,12 @@
   <data name="UpdatedOn_Name" xml:space="preserve">
     <value>Date Last Modified</value>
   </data>
+  <data name="UseAsTransformation_Description" xml:space="preserve">
+    <value>The assets of this type may be used as a connecting asset to form lineage relationships</value>
+  </data>
+  <data name="UseAsTransformation_Name" xml:space="preserve">
+    <value>Use As Transformation</value>
+  </data>
   <data name="ValidationDescription_Description" xml:space="preserve">
     <value>This message will appear to the user if they provide invalid or missing information on this field.  You must enable some form of regular expression pattern validation on this field in order for the message to appear.</value>
   </data>

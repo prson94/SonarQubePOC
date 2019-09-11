@@ -13,6 +13,8 @@ using System.Data.SqlClient;
 using System.Data;
 using System.Data.Entity;
 using Swashbuckle.Swagger.Annotations;
+using System.Web.Http.Description;
+using d360.web.Filters;
 
 namespace d360.web.Controllers.V2
 {
@@ -38,7 +40,7 @@ namespace d360.web.Controllers.V2
         private static string DefaultImplementationName = "default";
 
         /// <summary>
-        /// Returns the all the rule results for the specified rule Uid that are under the default implementation
+        /// Returns all the rule results for the specified rule Uid that are under the default implementation
         /// If the user is not an admin http status code 403 forbidden is returned
         /// </summary>
         /// <param name="ruleUid">The Uid of the rule</param>
@@ -324,8 +326,7 @@ namespace d360.web.Controllers.V2
             }
             return ruleResults;
         }
-
-
+               
         private async Task SaveRuleResults(List<DataQualityResult> resultList, int timeout, SqlTransaction transaction, int implementationId)
         {
             await Company.Database.Connection.ExecuteAsync(@"

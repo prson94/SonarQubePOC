@@ -117,7 +117,7 @@ namespace igx.IntegrationTests.ApiTests
         [Fact, Priority(40)]
         public async void GetRelationshipsExport()
         {
-            var uidsToExport = RelationshipTestData.RelationshipTypes.Where(x => x["Uid"] != null).Select(x => x["Uid"].ToString()).ToList();
+            var uidsToExport = RelationshipTestData.RelationshipTypes.Where(x => x["Uid"] != null).Select(x => x["Uid"].ToString()).Take(3).ToList();
 
             foreach (var uid in uidsToExport)
             {
@@ -387,6 +387,185 @@ namespace igx.IntegrationTests.ApiTests
             }
 
             Assert.True(isElementFound);
+        }
+    }
+
+    [Trait("Integration tests", "Relationship UI Tests")]
+    [TestCaseOrderer(PriorityOrderer.Name, PriorityOrderer.Assembly)]
+    public class RelationshipControllerUITests : BaseIntegrationTestClass
+    {
+
+
+        [Fact, Priority(10)]
+        public async void GetRelationshipsCounts()
+        {
+            //Input data with different intersects (object/subject)
+            var data = JsonConvert.DeserializeObject<JArray>(RelationshipUITestData.JsonInputMedium);
+            foreach (var item in data)
+            {
+                var IntersectTypeID = item["IntersectTypeID"];
+                var Subject = item["Subject"].ToString();
+                var SubjectID = item["SubjectID"].ToString();
+                var Object = item["Object"].ToString();
+                var Objectid = item["Objectid"].ToString();
+
+                //Check does subject has all fields
+                string subjectCountUrl = $"{Settings.Host}/api/{Subject}/{SubjectID}/relationships/counts";
+                var response = await httpClient.GetAsync(subjectCountUrl);
+                var content = await response.Content.ReadAsStringAsync();
+                var parsedData = JsonConvert.DeserializeObject<JArray>(content);
+                JToken subjectItem = null;
+
+
+                bool checkITId = false;
+
+                List<string> requiredFields = new List<string> { "uid", "IntersectTypeID", "ObjectUid", "Object", "ObjectID", "Count", "Name", "Cardinality", "IsSubject", "AllowEditFromRelationshipEditor" };
+                foreach (var cntItem in parsedData)
+                {
+                    foreach (var field in requiredFields)
+                    {
+                        Assert.True(cntItem[field] != null, IntersectTypeID.ToString() + "::" + XMsg.MissingField(field) + " on relationship " + Subject + "--" + Object);
+                    }
+                    if (cntItem["IntersectTypeID"].ToString() == IntersectTypeID.ToString())
+                    {
+                        subjectItem = cntItem;
+                        Assert.True(cntItem["IsSubject"].ToString() == "1", XMsg.InvalidFieldValue("IsSubject") + " on subject" + subjectCountUrl);
+                        checkITId = true;
+                    }
+                }
+
+                Assert.True(checkITId, "Missing IntersectTypeID in response!");
+
+                //Check does object has all fields
+                string objectCountUrl = $"{Settings.Host}/api/{Object}/{Objectid}/relationships/counts";
+                response = await httpClient.GetAsync(objectCountUrl);
+                content = await response.Content.ReadAsStringAsync();
+                parsedData = JsonConvert.DeserializeObject<JArray>(content);
+                checkITId = false;
+                foreach (var cntItem in parsedData)
+                {
+                    foreach (var field in requiredFields)
+                    {
+                        Assert.True(cntItem[field] != null, XMsg.MissingField(field) + " on relationship " + Subject + "--" + Object);
+                    }
+
+                    if (cntItem["IntersectTypeID"].ToString() == IntersectTypeID.ToString())
+                    {
+                        bool areSameType = subjectItem["Object"].ToString() == cntItem["Object"].ToString() && subjectItem["ObjectID"].ToString() == cntItem["ObjectID"].ToString();
+                        if (!areSameType)
+                            Assert.True(cntItem["IsSubject"].ToString() == "0", IntersectTypeID.ToString() + "::" + XMsg.InvalidFieldValue("IsSubject") + " on object " + objectCountUrl);
+
+                        checkITId = true;
+                    }
+                }
+                Assert.True(checkITId, "Missing IntersectTypeID in response!");
+
+            }
+        }
+
+        [Fact, Priority(20)]
+        public async void GetRelationshipsDataTables()
+        {            
+            //Input data with different intersects (object/subject)
+            var data = JsonConvert.DeserializeObject<JArray>(RelationshipUITestData.JsonInputMedium);
+            List<string> requiredFields = new List<string> { "Text", "Value", "ObjectType" };
+            List<string> failedRequests = new List<string>();
+            foreach (var item in data)
+            {
+                var IntersectTypeID = item["IntersectTypeID"].ToString();
+                var Subject = item["Subject"].ToString();
+                var SubjectID = item["SubjectID"].ToString();
+                var Object = item["Object"].ToString();
+                var Objectid = item["Objectid"].ToString();
+
+                //Check does subject has all fields
+                string subjectCountUrl = $"{Settings.Host}/form/Relationship_DataTable?intersectTypeId={IntersectTypeID}&type={Subject}&objectId={SubjectID}";
+                var response = await httpClient.GetAsync(subjectCountUrl);
+                var content = await response.Content.ReadAsStringAsync();
+                if (response.IsSuccessStatusCode)
+                {
+                    var parsedData = JsonConvert.DeserializeObject<JArray>(content);
+                    foreach (var cntItem in parsedData)
+                    {
+                        foreach (var field in requiredFields)
+                        {
+                            Assert.True(cntItem[field] != null, IntersectTypeID.ToString() + "::" + XMsg.MissingField(field) + " on relationship " + Subject + "--" + Object);
+                        }
+                    }
+                }
+
+                //Check does object has all fields
+                string objectCountUrl = $"{Settings.Host}/form/Relationship_DataTable?intersectTypeId={IntersectTypeID}&type={Object}&objectId={Objectid}";
+                response = await httpClient.GetAsync(objectCountUrl);
+                content = await response.Content.ReadAsStringAsync();
+                if (response.IsSuccessStatusCode)
+                {
+                    var parsedData = JsonConvert.DeserializeObject<JArray>(content);
+                    foreach (var cntItem in parsedData)
+                    {
+                        foreach (var field in requiredFields)
+                        {
+                            Assert.True(cntItem[field] != null, IntersectTypeID.ToString() + "::" + XMsg.MissingField(field) + " on relationship " + Subject + "--" + Object);
+                        }
+
+                    }
+                }
+            }
+        }
+
+        [Fact, Priority(20)]
+        public async void GetRelationshipsIncludeReverse()
+        {
+            //Input data with different intersects (object/subject)
+            var data = JsonConvert.DeserializeObject<JArray>(RelationshipUITestData.JsonInputMedium);
+            List<string> requiredFields = new List<string> { "Uid", "ID", "IntersectTypeID", "Object", "ObjectID", "ObjectUid", "Name", "Type", "TypeID", "TypeName", "HasTechnicalRelationships" };
+            List<string> failedRequests = new List<string>();
+            foreach (var item in data)
+            {
+                var IntersectTypeUid = item["IntersectTypeUid"].ToString();
+                var IntersectTypeID = item["IntersectTypeID"].ToString();
+                var Subject = item["Subject"].ToString();
+                var SubjectID = item["SubjectID"].ToString();
+                var Object = item["Object"].ToString();
+                var Objectid = item["Objectid"].ToString();
+                var ObjectType = item["ObjectType"].ToString();
+                var ObjectTypeId = item["ObjectTypeId"].ToString();
+                var SubjectType = item["SubjectType"].ToString();
+                var SubjectTypeId = item["SubjectTypeId"].ToString();
+
+                //Check does subject has all fields
+                string subjectCountUrl = $"{Settings.Host}/api/{Subject}/{SubjectID}/relationships/{ObjectType}/{ObjectTypeId}/{IntersectTypeUid}?includeInverse=true";
+                var response = await httpClient.GetAsync(subjectCountUrl);
+                var content = await response.Content.ReadAsStringAsync();
+                if (response.IsSuccessStatusCode)
+                {
+                    var parsedData = JsonConvert.DeserializeObject<JArray>(content);
+                    foreach (var cntItem in parsedData)
+                    {
+                        foreach (var field in requiredFields)
+                        {
+                            Assert.True(cntItem[field] != null, IntersectTypeID.ToString() + "::" + XMsg.MissingField(field) + " on relationship " + Subject + "--" + Object);
+                        }
+                    }
+                }
+
+                //Check does object has all fields
+                string objectUrl = $"{Settings.Host}/api/{Object}/{Objectid}/relationships/{SubjectType}/{SubjectTypeId}/{IntersectTypeUid}?includeInverse=true";
+                response = await httpClient.GetAsync(objectUrl);
+                content = await response.Content.ReadAsStringAsync();
+                if (response.IsSuccessStatusCode)
+                {
+                    var parsedData = JsonConvert.DeserializeObject<JArray>(content);
+                    foreach (var cntItem in parsedData)
+                    {
+                        foreach (var field in requiredFields)
+                        {
+                            Assert.True(cntItem[field] != null, IntersectTypeID.ToString() + "::" + XMsg.MissingField(field) + " on relationship " + Subject + "--" + Object);
+                        }
+                    }
+                }
+
+            }
         }
     }
 }

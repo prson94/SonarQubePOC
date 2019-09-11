@@ -65,14 +65,7 @@ namespace d360.web.Controllers.V2
 
             Company.RebuildIndexRequest();
 
-            var responsejson = new JsonNetResult
-            {
-                Data = new { type = "confirm", title = "Success!", action = "add", message = "request submitted.", id = "" },
-                Formatting = Newtonsoft.Json.Formatting.None
-            }; 
-
-            return Request.CreateResponse(HttpStatusCode.Created, new { type = "confirm", title = "Success!", action = "add", message = "request submitted.", id = "" });
-
+            return Request.CreateResponse(HttpStatusCode.Created, new { type = "confirm", title = "Success!", action = "add", message = "Rebuild request received and accepted.", id = "" });
         }
     }
 }
