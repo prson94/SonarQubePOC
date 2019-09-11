@@ -9422,14 +9422,14 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         public JsonResult Relationship_DataTable(int intersectTypeId, SystemObjects type, int objectId)
         {
             var relationshipType = Company.GetById<IntersectType>(intersectTypeId, i => i.Predicate);
-            
+
             int objectTypeID = -1;
             string parentType = string.Empty;
             bool useAssetJoin = false;
 
             #region Resolve Type
 
-            if(type == SystemObjects.FusionAttribute)
+            if (type == SystemObjects.FusionAttribute)
             {
                 objectTypeID = Company.FusionAttributes.Where(x => x.ID == objectId).Single().FusionAttributeTypeID;
                 parentType = "FusionAttributeType";
@@ -9446,7 +9446,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException("Invalid relationship type or source item.", HttpStatusCode.NotFound);
             }
 
-            if(type == SystemObjects.ReferenceItemType)
+            if (type == SystemObjects.ReferenceItemType)
             {
                 objectTypeID = 0;
             }
@@ -9474,6 +9474,20 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             #region sql
 
             var sql = "";
+
+           var subSql = $@"(
+select		D.ID,
+            D.[Object],
+            D.ObjectID,
+            D.uid
+from		Asset D
+            inner join AssetType AST on D.AssetTypeID = AST.ID
+			left join [Intersect] I on	I.IntersectTypeID = @it and (
+											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
+											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
+										)
+where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType and D.ObjectID != @id
+) C on {(useAssetJoin ? "C.ID" : "C.ObjectID")} = O.ID";
 
             switch (targetType)
             {
@@ -9572,7 +9586,7 @@ order by 3";
                 #endregion
                 case "FusionQueryAttributeType":
                     #region                    
-                        sql = $@"
+                    sql = $@"
 select	'FusionQueryAttribute' as [Object], 
         FA.ID as ObjectID, 
         A.uid,
@@ -9587,7 +9601,7 @@ where	FA.ID not in (
 					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
         and FA.ID != @id
-order by F.Name, FA.DisplayValue";                 
+order by F.Name, FA.DisplayValue";
                     break;
                 #endregion
                 case "Group":
@@ -9738,39 +9752,19 @@ order by r.Name";
                     }
                     break;
                 #endregion
-                default:
-                    #region
-                    sql = $@"(
-select		D.ID,
-            D.[Object],
-            D.ObjectID,
-            D.uid
-from		Asset D
-            inner join AssetType AST on D.AssetTypeID = AST.ID
-			left join [Intersect] I on	I.IntersectTypeID = @it and (
-											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
-											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
-										)
-where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType and D.ObjectID != @id
-) C on {(useAssetJoin ? "C.ID" : "C.ObjectID")} = O.ID";
+                case "ArtifactType":
+                    sql = $@"select C.uid, C.Object ,ADisp.DisplayValue as Name from AssetDetail O inner join {subSql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                    break;
 
-                    switch (targetType)
-                    {
-                        case "ArtifactType":
-                            sql = $@"select C.uid, C.Object ,ADisp.DisplayValue as Name from AssetDetail O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
-                            break;
-                        case "GroupType":
-                            sql = $@"select C.uid, C.Object ,O.Name from [Group] O inner join {sql} order by O.Name";
-                            break;
-                        case "LookupType":
-                            sql = $@"select C.uid, C.Object ,O.Name from [LookupType] O inner join {sql} order by O.Name";
-                            break;
-                        case "RuleType":
-                            sql = $@"select C.uid,C.ObjectID, C.Object ,O.DisplayValue AS Name from [Rule] O inner join {sql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
-                            break;
-                        case "PolicyType":
-                        case "TaxonomyType":
-                            sql = $@"
+                case "LookupType":
+                    sql = $@"select C.uid, C.Object ,O.Name from [LookupType] O inner join {subSql} order by O.Name";
+                    break;
+                case "RuleType":
+                    sql = $@"select C.uid,C.ObjectID, C.Object ,O.DisplayValue AS Name from [Rule] O inner join {subSql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                    break;
+                case "PolicyType":
+                case "TaxonomyType":
+                    sql = $@"
                                     select	A.UID as uid,
                                             TP.TextPath as Name ,
                                             A.Object
@@ -9786,11 +9780,8 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                                             and A.ObjectID != @id
                                             and A.ID not in ({GetNoReadSqlStatement()}) 
                                             and I.ID is null
-                                    order by TP.TextPath"; 
-                            break;
-                    }
+                                    order by TP.TextPath";
                     break;
-                    #endregion
             }
 
             #endregion
@@ -9799,7 +9790,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
 
             return Json(items, JsonRequestBehavior.AllowGet);
         }
-        
+
         #endregion
 
         #endregion
