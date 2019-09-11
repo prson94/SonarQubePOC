@@ -8395,7 +8395,7 @@ where	Type = 'ReferenceItemType'
                 var sql = @"select flv.Text, flv.Value from fieldlookupvalue flv 
                         inner join[intersectdetail] id on(id.subjecttype = 'ReferenceItemType' and id.objecttype = 'ReferenceItemType' and id.predicatetype = @predicate and id.objectid = flv.value and id.objecttypeid = flv.lookupobjectid and id.subjecttypeid = @parentReferenceListTypeId)
                         inner join AssetDetail ad on(ad.TypeId = id.subjecttypeid and ad.Type='ReferenceItemType' and ad.[ObjectId] = id.subjectid  and ad.[Object]='ReferenceItem' )
-                        where flv.fieldTypeID = @id and  ad.[ObjectId] in  (@parentReferenceItemId)";
+                        where flv.fieldTypeID = @id and ad.[ObjectId] in @parentReferenceItemId";
 
                 items = Company.Query<SelectListInfoItem>(sql, new { id = fieldTypeID, predicate = predicateTypeId, parentReferenceItemId = parents, parentReferenceListTypeId = parentReferenceListType.ObjectID }).ToList();
             }
