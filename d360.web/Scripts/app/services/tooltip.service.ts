@@ -19,6 +19,14 @@ export class ToolTipService extends BaseObservableService {
             );
     }
 
+    getTooltipInfoByUid(uid: string): Observable<TooltipInfo> {
+        return this.http.get(`resources/tooltipdatabyuid/${uid}`)
+            .pipe(
+                map(response => <TooltipInfo>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     getLookupTooltipInfo(objectType: string, objectID: number): Observable<LookupTooltipInfo> {
         return this.http.get(`resources/lookuptooltipdata/${objectType}/${objectID}`)
             .pipe(
