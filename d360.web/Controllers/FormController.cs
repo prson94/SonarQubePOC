@@ -9565,14 +9565,14 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         public JsonResult Relationship_DataTable(int intersectTypeId, SystemObjects type, int objectId)
         {
             var relationshipType = Company.GetById<IntersectType>(intersectTypeId, i => i.Predicate);
-            
+
             int objectTypeID = -1;
             string parentType = string.Empty;
             bool useAssetJoin = false;
 
             #region Resolve Type
 
-            if(type == SystemObjects.FusionAttribute)
+            if (type == SystemObjects.FusionAttribute)
             {
                 objectTypeID = Company.FusionAttributes.Where(x => x.ID == objectId).Single().FusionAttributeTypeID;
                 parentType = "FusionAttributeType";
@@ -9589,7 +9589,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException("Invalid relationship type or source item.", HttpStatusCode.NotFound);
             }
 
-            if(type == SystemObjects.ReferenceItemType)
+            if (type == SystemObjects.ReferenceItemType)
             {
                 objectTypeID = 0;
             }
@@ -9618,10 +9618,11 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             var sql = "";
 
-            var subSql = $@"(
+           var subSql = $@"(
 select		D.ID,
-            D.[Object], 
-			D.ObjectID
+            D.[Object],
+            D.ObjectID,
+            D.uid
 from		Asset D
             inner join AssetType AST on D.AssetTypeID = AST.ID
 			left join [Intersect] I on	I.IntersectTypeID = @it and (
@@ -9728,7 +9729,7 @@ order by 3";
                 #endregion
                 case "FusionQueryAttributeType":
                     #region                    
-                        sql = $@"
+                    sql = $@"
 select	'FusionQueryAttribute' as [Object], 
         FA.ID as ObjectID, 
         A.uid,
@@ -9743,7 +9744,7 @@ where	FA.ID not in (
 					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
         and FA.ID != @id
-order by F.Name, FA.DisplayValue";                 
+order by F.Name, FA.DisplayValue";
                     break;
                 #endregion
                 case "Group":
@@ -9895,23 +9896,21 @@ order by r.Name";
                     break;
                 #endregion
                 case "ArtifactType":
-                    sql = $@"select C.Object, C.ObjectID, ADisp.DisplayValue as Name from AssetDetail O inner join {subSql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                    sql = $@"select C.uid, C.Object ,ADisp.DisplayValue as Name from AssetDetail O inner join {subSql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
                     break;
-                case "IntersectType":
-                    sql = $@"select C.Object, C.ObjectID, O.Name from [Intersect] O inner join {subSql} order by O.Name";
-                    break;
+
                 case "LookupType":
-                    sql = $@"select C.Object, C.ObjectID, O.Name from [LookupType] O inner join {subSql} order by O.Name";
+                    sql = $@"select C.uid, C.Object ,O.Name from [LookupType] O inner join {subSql} order by O.Name";
                     break;
-               case "RuleType":
-                    sql = $@"select C.Object, C.ObjectID, O.DisplayValue AS Name from [Rule] O inner join {subSql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                case "RuleType":
+                    sql = $@"select C.uid,C.ObjectID, C.Object ,O.DisplayValue AS Name from [Rule] O inner join {subSql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
                     break;
                 case "PolicyType":
                 case "TaxonomyType":
                     sql = $@"
-                                    select	A.Object,
-                                            A.ObjectID, 
-                                            TP.TextPath as Name 
+                                    select	A.UID as uid,
+                                            TP.TextPath as Name ,
+                                            A.Object
                                     from	AssetDetail A 
                                             cross apply dbo.GetAssetTextPathById(A.ID, '/') TP 
                                     		left join [Intersect] I on	I.IntersectTypeID = @it and (
@@ -9926,7 +9925,6 @@ order by r.Name";
                                             and I.ID is null
                                     order by TP.TextPath";
                     break;
-
             }
 
             #endregion
@@ -9935,7 +9933,7 @@ order by r.Name";
 
             return Json(items, JsonRequestBehavior.AllowGet);
         }
-        
+
         #endregion
 
         #endregion
