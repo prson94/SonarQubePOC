@@ -61,6 +61,33 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#region helper methods
 
+    private getMoreData(e: go.InputEvent, obj: go.Part) {
+        alert(obj);
+
+        //if (obj.data) {
+
+        //}
+    }
+
+    private highlightPath(e: go.InputEvent, obj: go.Part) {
+        //Set all to not highlighted.
+        obj.diagram.nodes.each(n => {
+            n.isHighlighted = false;
+        });
+
+        if (obj.data) {
+            if (obj.data.impacts) {
+                let keysToHighlight: string[] = obj.data.impacts;
+                keysToHighlight.forEach(k => {
+                    let node: go.Node = obj.diagram.findNodeForKey(k);
+                    if (node) {
+                        node.isHighlighted = true;
+                    }
+                });
+            }
+        }
+    }
+
     private shadeColor(col, amt) {
 
         var usePound = false;
@@ -94,6 +121,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.diagram.groupTemplateMap.add("PortGroup", this.createPortGroupNode());
         this.diagram.groupTemplateMap.add("Group", this.createGroupNode());
+
+        this.diagram.nodeTemplateMap.add("MoreData", this.createMoreDataNode());
 
         this.diagram.nodeTemplate = this.createListItemNode();
 
@@ -142,40 +171,45 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let btColor: string = "#E0EAF7";
 
         dm.nodeDataArray = [
+            { key: "btType1", isGroup: true, text: "Business Terms", template: "PortGroup", back: btColor, loc: "600 0", layer: -2, icon: "\uf02d", impacts: [] },
+            { key: "bt1", group: "btType1", text: "Member Name", back: this.shadeColor(btColor, 15), icon: "\uf02d", impacts: [] },
 
-            { key: "btType1", isGroup: true, text: "Business Terms", template: "PortGroup", back: btColor, loc: "600 0", layer: -2, icon: "\uf02d" },
-            { key: "bt1", group: "btType1", text: "Member Name", back: this.shadeColor(btColor, 15), icon: "\uf02d" },
+            { key: "sys1", isGroup: true, text: "Enrollment System", template: "PortGroup", back: sysColor, loc: "300 200", layer: -1, icon: "\uf233", impacts: [] },
+            { key: "sysTerm1", group: "sys1", text: "Member Name", back: this.shadeColor(sysColor, 15), icon: "\uf02d", impacts: [] },
 
-            { key: "sys1", isGroup: true, text: "Enrollment System", template: "PortGroup", back: sysColor, loc: "300 200", layer: -1, icon: "\uf233" },
-            { key: "sysTerm1", group: "sys1", text: "Member Name", back: this.shadeColor(sysColor, 15), icon: "\uf02d" },
+            { key: "sys2", isGroup: true, text: "Claims Adjudication", template: "PortGroup", back: sysColor, loc: "900 200", layer: -1, icon: "\uf233", impacts: [] },
+            { key: "sysTerm2", group: "sys2", text: "Member Name", back: this.shadeColor(sysColor, 15), icon: "\uf02d", impacts: [] },
 
-            { key: "sys2", isGroup: true, text: "Claims Adjudication", template: "PortGroup", back: sysColor, loc: "900 200", layer: -1, icon: "\uf233" },
-            { key: "sysTerm2", group: "sys2", text: "Member Name", back: this.shadeColor(sysColor, 15), icon: "\uf02d" },
+            { key: "tran1", isGroup: true, text: "BosEtlServer", template: "PortGroup", back: transformColor, loc: "560 600", layer: 0, icon: "\uf085", impacts: ["."] },
+            { key: "job1", isGroup: true, group: "tran1", text: "ETL_MEMBER_TO_CLAIM", template: "Group", back: this.shadeColor(transformColor, 15), icon: "\uf542", impacts: ["."] },
+            { key: "jobStep1", group: "job1", text: "LOAD_MEMBER_NAME", back: this.shadeColor(transformColor, 30), icon: "\uf085", impacts: ["c1_1", "c1_2", "c2_1", "c2_2", "jobStep1"] },
 
-            { key: "tran1", isGroup: true, text: "BosEtlServer", template: "PortGroup", back: transformColor, loc: "560 600", layer: 0, icon: "\uf085" },
-            { key: "job1", isGroup: true, group: "tran1", text: "ETL_MEMBER_TO_CLAIM", template: "Group", back: this.shadeColor(transformColor, 15), icon: "\uf542" },
-            { key: "jobStep1", group: "job1", text: "LOAD_MEMBER_NAME", back: this.shadeColor(transformColor, 30), icon: "\uf085" },
+            { key: "h1", isGroup: true, text: "DWH", template: "PortGroup", back: color, loc: "300 400", layer: 0, icon: "\uf1c0", impacts: ["."] },
+            { key: "s1", isGroup: true, group: "h1", text: "fact", template: "Group", back: this.shadeColor(color, 15), icon: "\uf007", impacts: ["."] },
+            { key: "t1", isGroup: true, group: "s1", text: "MEMBERS", template: "Group", back: this.shadeColor(color, 30), icon: "\uf0ce", impacts: ["."] },
+            { key: "c1_1", group: "t1", text: "FIRST_NAME", back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_1", "c2_1", "jobStep1"] },
+            { key: "c1_2", group: "t1", text: "LAST_NAME", back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_2", "c2_2", "jobStep1"] },
 
-            { key: "h1", isGroup: true, text: "DWH", template: "PortGroup", back: color, loc: "300 400", layer: 0, icon: "\uf1c0" },
-            { key: "s1", isGroup: true, group: "h1", text: "fact", template: "Group", back: this.shadeColor(color, 15), icon: "\uf007" },
-            { key: "t1", isGroup: true, group: "s1", text: "MEMBERS", template: "Group", back: this.shadeColor(color, 30), icon: "\uf0ce" },
-            { key: "c1_1", group: "t1", text: "FIRST_NAME", back: this.shadeColor(color, 45), intersects: [1, 2, 3, 4, 5], icon: "\uf0db" },
-            { key: "c1_2", group: "t1", text: "LAST_NAME", back: this.shadeColor(color, 45), intersects: [1, 2, 3, 4, 5], icon: "\uf0db" },
+            { key: "h2", isGroup: true, text: "EGL", template: "PortGroup", back: color, loc: "900 400", layer: 0, icon: "\uf1c0", impacts: ["."] },
+            { key: "s2", isGroup: true, group: "h2", text: "dbo", template: "Group", back: this.shadeColor(color, 15), icon: "\uf007", impacts: ["."] },
+            { key: "t2", isGroup: true, group: "s2", text: "MEMBERS", template: "Group", back: this.shadeColor(color, 30), icon: "\uf0ce", impacts: ["."] },
+            { key: "c2_1", group: "t2", text: "FIRST_NAME", back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_1", "c2_1", "jobStep1"] },
+            { key: "c2_2", group: "t2", text: "LAST_NAME", back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_2", "c2_2", "jobStep1"] },
 
-            { key: "h2", isGroup: true, text: "EGL", template: "PortGroup", back: color, loc: "900 400", layer: 0, icon: "\uf1c0" },
-            { key: "s2", isGroup: true, group: "h2", text: "dbo", template: "Group", back: this.shadeColor(color, 15), icon: "\uf007" },
-            { key: "t2", isGroup: true, group: "s2", text: "MEMBERS", template: "Group", back: this.shadeColor(color, 30), icon: "\uf0ce" },
-            { key: "c2_1", group: "t2", text: "FIRST_NAME", back: this.shadeColor(color, 45), intersects: [1, 2, 3, 4, 5], icon: "\uf0db" },
-            { key: "c2_2", group: "t2", text: "LAST_NAME", back: this.shadeColor(color, 45), intersects: [1, 2, 3, 4, 5], icon: "\uf0db" },
+            { key: "h1_moredata", template: "MoreData", back: this.shadeColor(color, 45) },
+            { key: "h2_moredata", template: "MoreData", back: this.shadeColor(color, 45) }
         ];
 
         dm.linkDataArray = [
-            { from: "sys1", fromPort: "T", to: "btType1", toPort: "B", text: "see also", back: sysColor, intersects: [1, 2, 3, 4, 5] },
-            { from: "sys2", fromPort: "T", to: "btType1", toPort: "B", text: "see also", back: sysColor, intersects: [1, 2, 3, 4, 5] },
-            { from: "h1", fromPort: "T", to: "sys1", toPort: "B", text: "maps to", back: color, intersects: [1, 2, 3, 4, 5] },
-            { from: "h2", fromPort: "T", to: "sys2", toPort: "B", text: "maps to", back: color, intersects: [1, 2, 3, 4, 5] },
-            { from: "h1", fromPort: "R", to: "tran1", toPort: "L", text: "transformed by", back: transformColor, intersects: [1, 2, 3, 4, 5] },
-            { from: "tran1", fromPort: "R", to: "h2", toPort: "L", text: "transforms into", back: transformColor, intersects: [6, 8, 13] }
+            { from: "sys1", fromPort: "T", to: "btType1", toPort: "B", text: "see also", back: sysColor, impacts: [] },
+            { from: "sys2", fromPort: "T", to: "btType1", toPort: "B", text: "see also", back: sysColor, impacts: [] },
+            { from: "h1", fromPort: "T", to: "sys1", toPort: "B", text: "maps to", back: color, impacts: [] },
+            { from: "h2", fromPort: "T", to: "sys2", toPort: "B", text: "maps to", back: color, impacts: [] },
+            { from: "h1", fromPort: "R", to: "tran1", toPort: "L", text: "transformed by", back: transformColor, impacts: ["c1_1", "c1_2", "c2_1", "c2_2", "jobStep1"] },
+            { from: "tran1", fromPort: "R", to: "h2", toPort: "L", text: "transforms into", back: transformColor, impacts: ["c1_1", "c1_2", "c2_1", "c2_2", "jobStep1"] },
+
+            { from: "h1", fromPort: "R", to: "h1_moredata", toPort: "L", text: "", back: color, impacts: [] },
+            { from: "h2", fromPort: "R", to: "h2_moredata", toPort: "L", text: "", back: color, impacts: [] },
         ];
 
         this.diagram.commitTransaction("load_all_data");
@@ -242,13 +276,45 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#region templates
 
+    private createContextMenu(): go.Adornment {
+        return this.g(
+            "ContextMenu",
+            { areaBackground: "#ffffff", background: "#ffffff" },
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "bold 12px sans-serif" }),
+                { click: function (e, obj) { alert("Not yet implemented") } }
+            ),
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Hide", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
+                { click: function (e, obj) { alert("Not yet implemented") } }
+            ),
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Hide Upstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
+                { click: function (e, obj) { alert("Not yet implemented") } }
+            ),
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
+                { click: function (e, obj) { alert("Not yet implemented") } }
+            ),
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Isolate", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
+                { click: function (e, obj) { alert("Not yet implemented") } }
+            )
+        );
+    }
+
     private createDiagram(): go.Diagram {
         let dg = this.g(go.Diagram, 'LineageDiagram', {
             initialContentAlignment: go.Spot.Center,
             allowDrop: true,
             initialAutoScale: go.Diagram.UniformToFill,
-            //scrollMode: go.Diagram.DocumentScroll,
-            //initialPosition: new go.Point(125, 125),
+            scrollMode: go.Diagram.DocumentScroll,
+            initialPosition: new go.Point(125, 125),
             layout: this.g(go.LayeredDigraphLayout, { layerSpacing: 50, setsPortSpots: false }), //direction: 270, 
             //layout: this.g(AssetBrowserLayout, {}),//layout: this.g(go.LayeredDigraphLayout, {direction: 0, columnSpacing: 50, layerSpacing: 50}),
             "undoManager.isEnabled": true,
@@ -257,6 +323,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         let model = (dg.model as go.GraphLinksModel);
 
+        //TODO: Get this looking good with the ports. 
         //model.linkFromPortIdProperty = "fromPort";
         //model.linkToPortIdProperty = "toPort",
         model.nodeCategoryProperty = "template";
@@ -265,6 +332,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         dg.toolManager.hoverDelay = 250;
         dg.toolManager.linkingTool.isEnabled = !this.readonly;
         dg.model.isReadOnly = this.readonly;
+
+        //TODO: Get this to work so when you click onywhere else on diagram, the selected node highlights go away.
+        //dg.addDiagramListener("BackgroundSingleClicked", function (e) {
+        //    //Set all to not highlighted.
+        //    this.diagram.nodes.each(n => {
+        //        n.isHighlighted = false;
+        //    });
+        //});
 
         return dg;
     }
@@ -276,35 +351,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             "Auto",
             {
                 background: "transparent",
-                contextMenu: this.g(
-                    "ContextMenu",
-                    { areaBackground: "#ffffff", background: "#ffffff" },
-                    this.g(
-                        "ContextMenuButton",
-                        this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "bold 12px sans-serif" }),
-                        { click: function (e, obj) { alert("Not yet implemented") } }
-                    ),
-                    this.g(
-                        "ContextMenuButton",
-                        this.g(go.TextBlock, { text: "Hide", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
-                        { click: function (e, obj) { alert("Not yet implemented") } }
-                    ),
-                    this.g(
-                        "ContextMenuButton",
-                        this.g(go.TextBlock, { text: "Hide Upstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
-                        { click: function (e, obj) { alert("Not yet implemented") } }
-                    ),
-                    this.g(
-                        "ContextMenuButton",
-                        this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
-                        { click: function (e, obj) { alert("Not yet implemented") } }
-                    ),
-                    this.g(
-                        "ContextMenuButton",
-                        this.g(go.TextBlock, { text: "Isolate", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
-                        { click: function (e, obj) { alert("Not yet implemented") } }
-                    )
-                ),
+                contextMenu: this.createContextMenu(),
                 computesBoundsAfterDrag: true,
                 handlesDragDropForMembers: true,
                 layout:
@@ -316,8 +363,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
                     )
             },
-            new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-            //this.g("Button", { alignment: go.Spot.Center }, this.g(go.TextBlock, "maps to (1)") ),
             this.g(
                 go.Shape,
                 "Rectangle",
@@ -405,6 +450,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             "Auto",
             {
                 background: "transparent",
+                contextMenu: this.createContextMenu(),
                 computesBoundsAfterDrag: true,
                 handlesDragDropForMembers: true,
                 layout:
@@ -472,10 +518,17 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private createListItemNode(): go.Node {
         return this.g(go.Node, "Auto",
+            {
+                contextMenu: this.createContextMenu(),
+                click: this.highlightPath
+            },
             this.g(
                 go.Panel,
                 "Horizontal",
                 { stretch: go.GraphObject.Horizontal, padding: 5 },
+                new go.Binding("background", "isHighlighted",
+                    function (h) { return h ? "#F5C2FF" : "transparent"; }
+                ).ofObject(),
                 this.g(
                     go.Shape,
                     { width: 10, height: 0, stroke: "transparent" }
@@ -510,16 +563,46 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
+    private createMoreDataNode(): go.Node {
+        return this.g(go.Node, "Auto",
+            {
+                click: this.getMoreData
+            },
+            this.g(
+                go.Panel,
+                "Horizontal",
+                { stretch: go.GraphObject.Horizontal, padding: 10, type: go.Panel.Spot },
+                this.g(
+                    "Shape",
+                    { alignment: go.Spot.Center, width: 25, height: 25 },
+                    new go.Binding("fill", "back"),
+                    new go.Binding("stroke", "back", function (v) { return this.shadeColor(v, -15); }),
+                ),
+                this.g(
+                    go.TextBlock,
+                    {
+                        row: 0,
+                        alignment: go.Spot.Center,
+                        editable: false,
+                        font: "12px FontAwesome",
+                        stroke: "#404040",
+                        text: "\uf067"
+                    }
+                )
+            )  // end Horizontal Panel
+        );
+    }
+
+
     private createDefaultLink(): go.Link {
         return this.g(
             go.Link, {
-                routing: go.Link.AvoidsNodes,
+                routing: go.Link.Orthogonal,
                 corner: 5,
-                curve: go.Link.JumpGap,
                 relinkableFrom: false,
-                relinkableTo: false
+                relinkableTo: false,
+                click: this.highlightPath
             }, // the whole link panel
-            new go.Binding("curve", "curve", go.Binding.parseEnum(go.Link, go.Link.JumpOver)),
             this.g(go.Shape, {
                     stroke: "gray", strokeWidth: 2
                 },
