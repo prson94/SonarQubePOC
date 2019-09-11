@@ -62,11 +62,36 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region helper methods
 
     private getMoreData(e: go.InputEvent, obj: go.Part) {
-        alert(obj);
+        if (obj.data) {
+            if (obj.data.retrieveDataFor) {
+                let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>obj.diagram.model;
 
-        //if (obj.data) {
+                let prefix = obj.data.retrieveDataFor + "_";
+                let color: string = "#B9F1AF";
+                let transformColor: string = "#FAE7BC";
 
-        //}
+                obj.diagram.startTransaction("get_data");
+
+                diagramModel.addNodeData({ key: prefix + "pg", isGroup: true, text: "PG1", template: "PortGroup", back: color, loc: "300 400", layer: 0, icon: "\uf1c0", impacts: ["."] });
+                diagramModel.addNodeData({ key: prefix + "s", isGroup: true, group: prefix + "pg", text: "fact", template: "Group", back: color, icon: "\uf007", impacts: ["."] });
+                diagramModel.addNodeData({ key: prefix + "t", isGroup: true, group: prefix + "s", text: "MEMBERS", template: "Group", back: color, icon: "\uf0ce", impacts: ["."] });
+                diagramModel.addNodeData({ key: prefix + "c", group: prefix + "t", text: "SOME_COLUMN", back: color, icon: "\uf0db", impacts: ["c1_1", "c2_1", "jobStep1"] });
+
+                diagramModel.addLinkData({ from: obj.data.retrieveDataFor, fromPort: "R", to: prefix + "pg", toPort: "L", text: "sample link", back: transformColor, impacts: [] });
+
+                var linksToRemove = diagramModel.linkDataArray.filter(l => l.to === obj.key);
+                linksToRemove.forEach(i => {
+                    diagramModel.removeLinkData(i);
+                });
+                diagramModel.removeNodeData(obj); 
+                obj.visible = false;
+                //obj.diagram.remove(obj);
+
+                obj.diagram.commitTransaction("get_data");
+            }
+        }
+
+        //this.reOrderLayout();
     }
 
     private highlightPath(e: go.InputEvent, obj: go.Part) {
@@ -196,8 +221,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             { key: "c2_1", group: "t2", text: "FIRST_NAME", back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_1", "c2_1", "jobStep1"] },
             { key: "c2_2", group: "t2", text: "LAST_NAME", back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_2", "c2_2", "jobStep1"] },
 
-            { key: "h1_moredata", template: "MoreData", back: this.shadeColor(color, 45) },
-            { key: "h2_moredata", template: "MoreData", back: this.shadeColor(color, 45) }
+            { key: "h1_moredata", template: "MoreData", back: this.shadeColor(color, 45), retrieveDataFor: "h1" },
+            { key: "h2_moredata", template: "MoreData", back: this.shadeColor(color, 45), retrieveDataFor: "h2" }
         ];
 
         dm.linkDataArray = [
