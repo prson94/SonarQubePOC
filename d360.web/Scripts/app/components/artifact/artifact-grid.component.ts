@@ -304,7 +304,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             .saveAsset(this.artifactType.AssetTypeUID, asset)
             .subscribe(result => {
                 this.isEditing = false;
-                this.showMessageForApiResult(this.messagesService, result, 'Artifact added/updated');
+                this.showMessageForApiResult(this.messagesService, result, 'Artifact successfully added/updated.');
                 if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
                 this.getData();
                 this.isLoading = false;

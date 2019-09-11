@@ -79,7 +79,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     }
 
     saveV2(event): void {
-        console.log(event);
+        
         let values: any = {};
         let asset: AssetEditorModel = new AssetEditorModel();
         let assetTypeUid: string;
@@ -115,8 +115,8 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
         this
             .assetService
             .saveAsset(assetTypeUid, asset)
-            .subscribe(result => {                
-                this.showMessageForApiResult(this.messagesService, result, 'Asset updated');
+            .subscribe(result => {
+                this.showMessageForApiResult(this.messagesService, result, `${this.objectType} successfully updated.`);
                 if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                                
                 this.isLoading = false;
 
