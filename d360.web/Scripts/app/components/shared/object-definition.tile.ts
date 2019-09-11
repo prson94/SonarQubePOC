@@ -20,7 +20,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     @Input() objectID: number;
     @Input() objectType: string;
-    @Input() useV2API: boolean = false;
+    @Input() useV2Api: boolean = false;
     
     @Input() hasAttributes: boolean = true;
     @Input() nymTypes: NymType[] = [];
@@ -79,8 +79,10 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     }
 
     saveV2(event): void {
+        console.log(event);
         let values: any = {};
         let asset: AssetEditorModel = new AssetEditorModel();
+        let assetTypeUid: string;
         asset.Fields = {};
 
         //takes the form and convert any array values to , separated string values
@@ -109,7 +111,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
                 asset.Fields[p] = values[p];
             }
         }
-
+        
         this
             .assetService
             .saveAsset(assetTypeUid, asset)

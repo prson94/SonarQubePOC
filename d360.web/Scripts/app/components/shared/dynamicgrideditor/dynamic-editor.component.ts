@@ -389,6 +389,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     public pad(s) :string { return (s < 10) ? '0' + s : s; }
 
     onSubmit() {
+        
         this.savingInProgress = true;
 
         let action = (this.selection == null ? "new" : "edit");
@@ -420,6 +421,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
             }
         }
+        
 
         //takes the form and convert any array values to , separated string values
         for (var p in this.form.value) {
@@ -432,9 +434,12 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             }
         }
 
+        console.log(this.isV2API);
+
         // if this is the v2 api we need to combine any link field types into the format stored in the db
         // tallyfy|https://tallyfy.com/what-is-compliance-management/
         if (this.isV2API) {
+            console.log('here');
             let links = this.fields.filter(x => x.FieldType == 'Link');            
             //need to get the link and url for each            
             for (let link of links) {                

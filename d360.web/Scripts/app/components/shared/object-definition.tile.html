@@ -45,7 +45,7 @@
   </simple-accordion>
 </div>
 <d3s-dynamic-editor
-  *ngIf="formMode == FormMode.Editing && !useV2API"
+  *ngIf="formMode == FormMode.Editing && !useV2Api"
   [objectID]="objectID"
   [parentID]="object?.ParentID"
   [objectType]="objectType"
@@ -56,7 +56,7 @@
   (closeClick)="formMode = FormMode.Default; formModeChange.emit(formMode)"
 >
 </d3s-dynamic-editor>
-<d3s-dynamic-editor *ngIf="formMode == FormMode.Editing && useV2API"
+<d3s-dynamic-editor *ngIf="formMode == FormMode.Editing && useV2Api"
                     [objectID]="objectID"
                     [parentID]="object?.ParentID"
                     [objectType]="objectType"
