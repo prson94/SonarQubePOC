@@ -456,7 +456,7 @@ from
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
-                        { "Type", $"{o.RuleType} Rule" },
+                        { "Type", o.RuleType },
                         { "Description", o.Description },
                         { "Uid", o.Uid.ToString() },
                         { "AssetTypeUid", o.AssetTypeUid.ToString() }

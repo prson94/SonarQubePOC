@@ -17,8 +17,8 @@ declare var CompanySettings;
     template: `       
                 <div class="card-res">
                     <span class="title">
-                        <span class="d3s-icon large-icon title-icon"><i class="fa {{result?.Icon}}"></i></span>
-                        <span *ngIf="result?.ImageUrl" class="folder-icon"><img [src]="result.ImageUrl" /></span> 
+                        <span *ngIf="result?.Icon" class="d3s-icon large-icon title-icon"><i class="fa {{result?.Icon}}"></i></span>
+                        <span *ngIf="result?.ImageUrl" class="d3s-icon large-icon title-icon"><img [src]="result.ImageUrl" /></span> 
                         <span (click)="navigateLink()" class="name"><span class="inner" [innerHtml]="result?.Name"></span></span>
                         <span #badge *ngIf="scoreAndStatus && scoreAndStatus.Score;else noScore" class="d3s-icon large-icon"
                               title="{{lastCalculatedMessage()}}"
