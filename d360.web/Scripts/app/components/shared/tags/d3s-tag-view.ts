@@ -93,11 +93,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     search(event, searchValue) {
-        if (event.key != "Enter") {
-            this.selectedtag.Value = undefined;
-            this.selectedtag.uid = undefined;
-        }
-        else if (event.key == "Enter") {
+        if (event.key == "Enter") {
             if (this.selectedtag.Value == undefined)
                 this.selectedtag.Value = searchValue;
             if (this.selectedtag.Value != "")
