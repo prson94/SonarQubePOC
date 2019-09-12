@@ -526,7 +526,7 @@ from    [queue].[Task] T
                 if (custom.Contains("ActionObjectValue"))
                 {
                     companyConnection.Execute(
-                    "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID,@NewValue",
+                    "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID, @NewValue",
                     new
                     {
                         Object = @object,
