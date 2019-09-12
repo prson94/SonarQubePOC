@@ -301,4 +301,5 @@
   <include file="scripts/GOV-7788.xml"/> <!-- Add Column ExecutionItemUid on api.ExecutionRelationship -->
   <include file="scripts/GOV-7941.xml"/> <!-- graph.SynchronizeTables - new proc to sync graph tables -->
   <include file="scripts/GOV-7991.xml"/> <!-- graph procs to update single edge/node/path -->
+  <include file="scripts/GOV-7680.xml"/> <!-- AddAuditEntry - proc -->
 </databaseChangeLog>

@@ -21,8 +21,18 @@ namespace d360.model.validators
             bool actionIsReplaceAndKeySelected = (model.Action == FieldTypesApiEditAction.Merge); //If set to merge we can set to true and skip this step.
             bool fieldsHaveErrors = false;
             var fieldsHaveErrorsList = new List<string>();
+            var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
+
             foreach (var field in model.Fields)
             {
+                if (!nameRegex.IsMatch(field.Name ?? ""))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
+                }
+                if (field.Name.Trim().ToLower() == "id")
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot be ID.");
+                }
                 if (!field.Type.IsOnlyOneTypeModelDefined())
                 {
                     fieldsHaveErrors = true;

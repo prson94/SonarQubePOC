@@ -32,6 +32,8 @@ namespace d360.extensions
 
         Task CreateTopicMessagesAsync(List<EventInfo> events);
         Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events);
+
+        string GetTopicNameBySetting(string settingName);
         Task CreateTopicMessagesAsync<T>(string topicName, List<T> events);
     }
 }

@@ -3295,12 +3295,31 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.Tag:
                     objectId = Tags.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
+                case SystemObjects.IntersectType:
+                    objectId = IntersectTypes.FirstOrDefault(x => x.uid == objectUid).ID;
+                    break;
                 default:
-                    throw new Exception($"Method not implemented for object type '{objectType.ToString()}'");
-
+                    objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString()).ObjectID;
+                    if (objectId <= 0)
+                        throw new Exception($"Method not implemented for object type '{objectType.ToString()}'");
+                    break;
             }
             return objectId;
         }
 
+        public dynamic GetAssetStatusAndScore(Guid uid)
+        {
+            string sql = $@"SELECT 
+                            cast(S.Value * 100 as int) as 'Score',
+                            S.EffectiveDate as 'EffectiveDate',  
+                            f.FormattedValue as Status 
+                            from Asset A
+                            left Join AssetType AT on A.AssetTypeID = AT.ID
+                            left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
+                            left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
+                            left join metrics.Score S on AssetUid = @assetUid and EffectiveDate <= getutcdate()
+                            WHERE A.Uid = @assetUid";
+            return Query<dynamic>(sql, new { @assetUid = uid }).FirstOrDefault();
+        }
     }
 }

@@ -25,8 +25,12 @@ declare var CompanySettings;
                                 (onSelect)="selectItem()">                       
                             <ng-template let-result pTemplate="item">
                                 <div>                                
-                                   <div class="search-typeahead-suggestion"><i *ngIf="result?.Icon" class="icon fa {{result.Icon}}"></i><span *ngIf="result?.ImageUrl" class="icon"><img [src]="result.ImageUrl" /></span> {{result.DisplayName}}</div>
-                                </div>                            
+                                    <div class="search-typeahead-suggestion"><i *ngIf="result?.Icon" class="folder-icon fa {{result.Icon}}"></i><span *ngIf="result?.ImageUrl" class="folder-icon"><img [src]="result.ImageUrl" /></span><span>{{result.DisplayName}}</span>
+                                        <span *ngIf="result?.Tags"  class="tags">
+                                            <span *ngFor="let restag of result?.Tags" class="tag-item-wrapper" [innerHtml]="restag.Highlight" style="background: #BDC3C7;margin-left: 4px;border-radius: 3px;padding: 4px;text-align: center;"></span>
+                                        </span>
+                                    </div>
+                                 </div>                            
                             </ng-template>
                         </p-autoComplete>
                     <i class="fa fa-search" (click)="openSearch()"></i>

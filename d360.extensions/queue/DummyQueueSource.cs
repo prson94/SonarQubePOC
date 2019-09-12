@@ -110,5 +110,10 @@ namespace d360.extensions.queue
             var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, "Events");
             await client.SendBatchAsync(list);
         }
+        public string GetTopicNameBySetting(string settingName)
+        {
+            return CloudConfigurationManager.GetSetting(settingName);
+        }
+
     }
 }
