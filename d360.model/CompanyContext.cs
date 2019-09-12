@@ -2345,11 +2345,11 @@ where	I.ID is null";
         public void UpdateAssetGraphNode(Guid uid, List<string> changedFieldNames = null)
         {
             
-            QueueSource.CreateTopicMessageAsync<AssetGraphEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetGraphEventInfo
+            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
             {
                 CompanyID = CurrentCompanyID,
                 Uid = uid,
-                Type = AssetGraphType.Node,
+                Type = AssetEventType.Node,
                 ChangedFieldNames = changedFieldNames
             });
         }
@@ -2357,41 +2357,41 @@ where	I.ID is null";
         public void UpdateAssetGraphNodePath(Guid uid)
         {
 
-            QueueSource.CreateTopicMessageAsync<AssetGraphEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetGraphEventInfo
+            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
             {
                 CompanyID = CurrentCompanyID,
                 Uid = uid,
-                Type = AssetGraphType.Path
+                Type = AssetEventType.Path
             });
         }
 
         public void UpdateAssetGraphEdge(Guid uid)
         {
 
-            QueueSource.CreateTopicMessageAsync<AssetGraphEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetGraphEventInfo
+            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
             {
                 CompanyID = CurrentCompanyID,
                 Uid = uid,
-                Type = AssetGraphType.Edge
+                Type = AssetEventType.Edge
             });
         }
 
         public async Task SendAssetGraphEvents(List<IAssetUpsert> results)
         {
-            List<AssetGraphEventInfo> events = new List<AssetGraphEventInfo>();
+            List<AssetEventInfo> events = new List<AssetEventInfo>();
 
             foreach(var result in results)
             {
-                events.Add(new AssetGraphEventInfo
+                events.Add(new AssetEventInfo
                 {
                     CompanyID = CurrentCompanyID,
                     Uid = result.Uid,
                     ChangedFieldNames = result.Fields.Keys.ToList(),
-                    Type = AssetGraphType.Node
+                    Type = AssetEventType.Node
                 });
             }
 
-            await QueueSource.CreateTopicMessagesAsync<AssetGraphEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
+            await QueueSource.CreateTopicMessagesAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
 
         }
 

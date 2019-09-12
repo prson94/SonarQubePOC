@@ -20,8 +20,8 @@ namespace igx.jobs.assetgraphprocessor
 
         public static async Task Run([ServiceBusTrigger("%AssetBusTopicName%", "GraphEdge", AccessRights.Manage)]BrokeredMessage brokeredMessage, TextWriter log)
         {
-            var info = brokeredMessage.GetBody<AssetGraphEventInfo>();
-            if (info.Type != AssetGraphType.Edge)
+            var info = brokeredMessage.GetBody<AssetEventInfo>();
+            if (info.Type != AssetEventType.Edge)
                 return;
 
             CoreFunction.AITrackJobStart(functionName);

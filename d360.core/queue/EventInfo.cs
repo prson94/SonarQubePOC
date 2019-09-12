@@ -42,15 +42,15 @@ namespace d360.core.queue
         public long VersionStepTransitionID { get; set; }  
     }
 
-    public class AssetGraphEventInfo
+    public class AssetEventInfo
     {
         public int CompanyID { get; set; }
-        public AssetGraphType Type { get; set; }
+        public AssetEventType Type { get; set; }
         public List<string> ChangedFieldNames { get; set; }
         public Guid Uid { get; set; }
     }
 
-    public enum AssetGraphType
+    public enum AssetEventType
     {
         Node,
         Edge,
