@@ -2342,6 +2342,59 @@ where	I.ID is null";
             Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
         }
 
+        public void UpdateAssetGraphNode(Guid uid, List<string> changedFieldNames = null)
+        {
+            
+            QueueSource.CreateTopicMessageAsync<AssetGraphEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetGraphEventInfo
+            {
+                CompanyID = CurrentCompanyID,
+                Uid = uid,
+                Type = AssetGraphType.Node,
+                ChangedFieldNames = changedFieldNames
+            });
+        }
+
+        public void UpdateAssetGraphNodePath(Guid uid)
+        {
+
+            QueueSource.CreateTopicMessageAsync<AssetGraphEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetGraphEventInfo
+            {
+                CompanyID = CurrentCompanyID,
+                Uid = uid,
+                Type = AssetGraphType.Path
+            });
+        }
+
+        public void UpdateAssetGraphEdge(Guid uid)
+        {
+
+            QueueSource.CreateTopicMessageAsync<AssetGraphEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetGraphEventInfo
+            {
+                CompanyID = CurrentCompanyID,
+                Uid = uid,
+                Type = AssetGraphType.Edge
+            });
+        }
+
+        public async Task SendAssetGraphEvents(List<IAssetUpsert> results)
+        {
+            List<AssetGraphEventInfo> events = new List<AssetGraphEventInfo>();
+
+            foreach(var result in results)
+            {
+                events.Add(new AssetGraphEventInfo
+                {
+                    CompanyID = CurrentCompanyID,
+                    Uid = result.Uid,
+                    ChangedFieldNames = result.Fields.Keys.ToList(),
+                    Type = AssetGraphType.Node
+                });
+            }
+
+            await QueueSource.CreateTopicMessagesAsync<AssetGraphEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
+
+        }
+
         private void AddQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
         {
             // if assettype id is specified lookup object type info as workflow subscriber still works off object objectid...
