@@ -495,8 +495,6 @@ namespace d360.web.Controllers
             {
                 case "APIFIELD":
                     return EditApiField(form);
-                case "ARTIFACT":
-                    return EditArtifact(form);
                 case "ATTRIBUTE":
                     return EditAttribute(form);
                 case "ATTRIBUTETYPE":
@@ -665,9 +663,7 @@ namespace d360.web.Controllers
             switch ((objectType ?? "").ToUpper())
             {
                 case "APIFIELD":
-                    return AddServiceEndpointVersionField(form);
-                case "ARTIFACT":
-                    return AddArtifact(form);
+                    return AddServiceEndpointVersionField(form);                
                 case "ATTRIBUTE":
                     return AddAttribute(form);
                 case "ATTRIBUTETYPE":
@@ -796,13 +792,12 @@ namespace d360.web.Controllers
                 i.PredicateType.Value == PredicateType.InterTypeHierarchy
             ).SingleOrDefault();
 
-            list.Add(new EditableField { FieldName = "ArtifactTypeID", FieldType = DataType.Hidden.ToString(), Value = at.ToString() });
-
+            
             if (intersectType != null)
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {intersectType.SubjectID}").OrderBy(i => i.Text).ToList();
-                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents });
+                var parents = Company.Query<SelectListItem>($"select convert(nvarchar(36), A.uid) as Value, AD.DisplayValue as Text from Asset a inner join AssetDisplayValue AD on AD.AssetID = A.ID inner join AssetType AT on A.AssetTypeID = AT.ID where AT.[Object] = 'ArtifactType' and AT.[ObjectID] = {intersectType.SubjectID}").OrderBy(i => i.Text).ToList();
+                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents });
             }
 
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), 1);
@@ -820,7 +815,8 @@ namespace d360.web.Controllers
             var list = new List<EditableField>();                        
             var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Artifact.ToString()).Include(x => x.AssetType).FirstOrDefault();
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ObjectID.ToString() });
+            list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
+            list.Add(new EditableField { FieldName = "AssetTypeUid", FieldType = DataType.Hidden.ToString(), Value = a.AssetType.uid.ToString() });
 
             var parentType = Company.GetParentType(a.AssetType.ObjectID, SystemObjects.ArtifactType);
             
@@ -831,10 +827,9 @@ namespace d360.web.Controllers
                 {
                     var parent = Company.GetParentObject(a.ObjectID, SystemObjects.Artifact);
                    
-
                     var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                    var parents = Company.Query<SelectListItem>($"select ObjectID as Value, DisplayValue as Text from AssetDetail where Type = 'ArtifactType' and TypeID = {parentType.ObjectID}").OrderBy(i => i.Text).ToList();
-                    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? parent.ObjectID.ToString() : ""), Items = parents });
+                    var parents = Company.Query<SelectListItem>($"select lower(convert(nvarchar(36), A.uid)) as Value, AD.DisplayValue as Text from Asset A inner join AssetType AT on A.AssetTypeID = AT.ID inner join AssetDisplayValue AD on A.ID = AD.AssetID   where AT.[Object] = 'ArtifactType' and AT.[ObjectID] = {parentType.ObjectID}").OrderBy(i => i.Text).ToList();
+                    list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUID", Name = $"Parent {pluralize.Singularize(parentType.Name)}", FieldType = DataType.Lookup.ToString(), Value = ((parent != null) ? (parent.uid.ToString()??"").ToLower() : ""), Items = parents });
                 }
             }
 
@@ -867,144 +862,6 @@ namespace d360.web.Controllers
         #endregion
 
         #region Form Get/Post
-
-        [Route("AddArtifact"), HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false)]
-        public JsonResult AddArtifact(FormCollection form)
-        {
-
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("artifact");
-
-                int typeID = parseIntField(form, "ArtifactTypeID");                
-                var assettype = Company.AssetTypes.FirstOrDefault(x => x.ObjectID == typeID && x.Object == SystemObjects.ArtifactType.ToString());
-
-                if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, typeID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (assettype == null) throw new NotFoundException("artifact type");
-                                
-                var model = new Asset { AssetTypeID = assettype.ID, Object = "Artifact", State = State.Active, CreatedBy = Company.CurrentResourceID, CreatedOn = DateTime.UtcNow, UpdatedBy = Company.CurrentResourceID, UpdatedOn = DateTime.UtcNow };
-
-
-                int? parentId = parseNullableIntField(form, "ParentID");
-
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, typeID).ToList();
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ObjectID, fieldTypes, form, Server);
-                Company.SaveOrUpdateAsset(model, fields, parentId.GetValueOrDefault());
-
-                processFormDynamicRelationshipFields(SystemObjects.ArtifactType, typeID, SystemObjects.Artifact, model.ObjectID, fieldTypes, form);
-
-                if (parentId.HasValue)
-                {
-                    if(!Company.AddObjectParentRelationship(SystemObjects.ArtifactType, assettype.ObjectID, SystemObjects.Artifact, parentId.Value, model.ObjectID))
-                    {
-                        return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
-                    }                    
-                }
-
-                return jsonSuccess(assettype.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = model.ID });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-                
-        [Route("EditArtifact"), HttpPut, ValidateInput(false)]
-        public JsonResult EditArtifact(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("artifact");
-
-                var id = parseIntField(form, "ID");
-
-                if (!Company.HasAssetPermission(SystemObjects.Artifact, id, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-                                
-                var model = Company.Assets.Where(x => (x.Object == "Artifact" && x.ObjectID == id)).Include(x => x.AssetType).FirstOrDefault();
-
-                if (model == null) throw new NotFoundException("artifact");
-
-                var sType = SystemObjects.Artifact.ToString();
-
-                var parentID = parseIntField(form, "ParentID");
-
-                if (parentID > 0)
-                {
-                    var intersect = Company.Filter<Intersect>(i => 
-                        i.Subject == sType &&
-                        i.Object == sType &&
-                        i.ObjectID == model.ObjectID &&
-                        i.IntersectType.Predicate.Type == PredicateType.InterTypeHierarchy
-                    ).SingleOrDefault();
-
-                    if (intersect != null)
-                    {
-                        if (intersect.SubjectID != parentID)
-                        {
-                            intersect.SubjectID = parentID;
-                            Company.Update(intersect);
-                        }
-                    }
-                    else
-                    {
-                        var intersectType = Company.Filter<IntersectTypeDetail>(i =>
-                        i.Object == "ArtifactType" &&
-                        i.ObjectID == model.AssetType.ObjectID &&
-                        i.PredicateType.Value == PredicateType.InterTypeHierarchy
-                    ).SingleOrDefault();
-
-                        if (intersectType != null)
-                        {
-                            var newIntersect = new Intersect
-                            {
-                                Subject = SystemObjects.Artifact.ToString(),
-                                SubjectID = parentID,
-                                Object = SystemObjects.Artifact.ToString(),
-                                ObjectID = model.ObjectID,
-                                IntersectTypeID = intersectType.ID
-                            };
-
-                            var parentExists = Company.Any<Asset>(i =>
-                                i.ObjectID == newIntersect.SubjectID &&
-                                i.AssetType.Object == "ArtifactType" &&
-                                i.AssetType.ObjectID == intersectType.SubjectID
-                                );
-
-                            if (!parentExists)
-                            {
-                                return jsonException($"Parent {intersectType.SubjectName} with ID {newIntersect.SubjectID} could not be found.", HttpStatusCode.NotFound);
-                            }
-
-                            Company.Add(newIntersect);
-                        }
-                    }
-                }
-                
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.ArtifactType, model.AssetType.ObjectID).ToList();
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Artifact, model.ObjectID, fieldTypes, form, Server, false);
-                Company.SaveOrUpdateAsset(model, fields, (parentID > 0 ? parentID : -1));
-                processFormDynamicRelationshipFields(SystemObjects.ArtifactType, model.AssetType.ObjectID, SystemObjects.Artifact, model.ObjectID, fieldTypes, form);
-                
-                return jsonSuccess(model.AssetType.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, new { ObjectType = SystemObjects.Artifact.ToString(), ObjectID = id });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
 
         [AjaxValidateAntiForgeryToken, HttpPost, Route("RequestCertification")]
         public JsonResult RequestCertification(FormCollection form)
@@ -9565,14 +9422,14 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         public JsonResult Relationship_DataTable(int intersectTypeId, SystemObjects type, int objectId)
         {
             var relationshipType = Company.GetById<IntersectType>(intersectTypeId, i => i.Predicate);
-            
+
             int objectTypeID = -1;
             string parentType = string.Empty;
             bool useAssetJoin = false;
 
             #region Resolve Type
 
-            if(type == SystemObjects.FusionAttribute)
+            if (type == SystemObjects.FusionAttribute)
             {
                 objectTypeID = Company.FusionAttributes.Where(x => x.ID == objectId).Single().FusionAttributeTypeID;
                 parentType = "FusionAttributeType";
@@ -9589,7 +9446,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException("Invalid relationship type or source item.", HttpStatusCode.NotFound);
             }
 
-            if(type == SystemObjects.ReferenceItemType)
+            if (type == SystemObjects.ReferenceItemType)
             {
                 objectTypeID = 0;
             }
@@ -9617,6 +9474,20 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             #region sql
 
             var sql = "";
+
+           var subSql = $@"(
+select		D.ID,
+            D.[Object],
+            D.ObjectID,
+            D.uid
+from		Asset D
+            inner join AssetType AST on D.AssetTypeID = AST.ID
+			left join [Intersect] I on	I.IntersectTypeID = @it and (
+											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
+											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
+										)
+where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType and D.ObjectID != @id
+) C on {(useAssetJoin ? "C.ID" : "C.ObjectID")} = O.ID";
 
             switch (targetType)
             {
@@ -9715,7 +9586,7 @@ order by 3";
                 #endregion
                 case "FusionQueryAttributeType":
                     #region                    
-                        sql = $@"
+                    sql = $@"
 select	'FusionQueryAttribute' as [Object], 
         FA.ID as ObjectID, 
         A.uid,
@@ -9730,7 +9601,7 @@ where	FA.ID not in (
 					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
         and FA.ID != @id
-order by F.Name, FA.DisplayValue";                 
+order by F.Name, FA.DisplayValue";
                     break;
                 #endregion
                 case "Group":
@@ -9881,39 +9752,19 @@ order by r.Name";
                     }
                     break;
                 #endregion
-                default:
-                    #region
-                    sql = $@"(
-select		D.ID,
-            D.[Object],
-            D.ObjectID,
-            D.uid
-from		Asset D
-            inner join AssetType AST on D.AssetTypeID = AST.ID
-			left join [Intersect] I on	I.IntersectTypeID = @it and (
-											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
-											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
-										)
-where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType and D.ObjectID != @id
-) C on {(useAssetJoin ? "C.ID" : "C.ObjectID")} = O.ID";
+                case "ArtifactType":
+                    sql = $@"select C.uid, C.Object ,ADisp.DisplayValue as Name from AssetDetail O inner join {subSql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                    break;
 
-                    switch (targetType)
-                    {
-                        case "ArtifactType":
-                            sql = $@"select C.uid, C.Object ,ADisp.DisplayValue as Name from AssetDetail O inner join {sql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
-                            break;
-                        case "GroupType":
-                            sql = $@"select C.uid, C.Object ,O.Name from [Group] O inner join {sql} order by O.Name";
-                            break;
-                        case "LookupType":
-                            sql = $@"select C.uid, C.Object ,O.Name from [LookupType] O inner join {sql} order by O.Name";
-                            break;
-                        case "RuleType":
-                            sql = $@"select C.uid,C.ObjectID, C.Object ,O.DisplayValue AS Name from [Rule] O inner join {sql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
-                            break;
-                        case "PolicyType":
-                        case "TaxonomyType":
-                            sql = $@"
+                case "LookupType":
+                    sql = $@"select C.uid, C.Object ,O.Name from [LookupType] O inner join {subSql} order by O.Name";
+                    break;
+                case "RuleType":
+                    sql = $@"select C.uid,C.ObjectID, C.Object ,O.DisplayValue AS Name from [Rule] O inner join {subSql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                    break;
+                case "PolicyType":
+                case "TaxonomyType":
+                    sql = $@"
                                     select	A.UID as uid,
                                             TP.TextPath as Name ,
                                             A.Object
@@ -9929,11 +9780,8 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
                                             and A.ObjectID != @id
                                             and A.ID not in ({GetNoReadSqlStatement()}) 
                                             and I.ID is null
-                                    order by TP.TextPath"; 
-                            break;
-                    }
+                                    order by TP.TextPath";
                     break;
-                    #endregion
             }
 
             #endregion
@@ -9942,7 +9790,7 @@ where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetT
 
             return Json(items, JsonRequestBehavior.AllowGet);
         }
-        
+
         #endregion
 
         #endregion

@@ -45,7 +45,7 @@
   </simple-accordion>
 </div>
 <d3s-dynamic-editor
-  *ngIf="formMode == FormMode.Editing"
+  *ngIf="formMode == FormMode.Editing && !useV2Api"
   [objectID]="objectID"
   [parentID]="object?.ParentID"
   [objectType]="objectType"
@@ -55,4 +55,14 @@
   (saveClick)="save($event)"
   (closeClick)="formMode = FormMode.Default; formModeChange.emit(formMode)"
 >
+</d3s-dynamic-editor>
+<d3s-dynamic-editor *ngIf="formMode == FormMode.Editing && useV2Api"
+                    [objectID]="objectID"
+                    [parentID]="object?.ParentID"
+                    [objectType]="objectType"
+                    [selection]="object"
+                    [isV2API]="true"
+                    [title]="object?.Name"
+                    (saveClick)="saveV2($event)"
+                    (closeClick)="formMode = FormMode.Default; formModeChange.emit(formMode)">
 </d3s-dynamic-editor>
