@@ -1,0 +1,469 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-8183-PopulatePathsForAssetType">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+alter procedure [graph].[PopulatePathsForAssetType]
+	@assetTypeID int,
+	@assetID bigint = null
+as
+begin
+	set nocount on;
+
+	if @assetTypeID is null
+	begin
+		RAISERROR ('Required parameter @assetTypeID not supplied or is NULL.', 10, 1);
+	end
+
+	declare @sql nvarchar(max) = '',
+			@columnSql nvarchar(max) = '',
+			@segmentSql nvarchar(max) = '',
+			@fromSql nvarchar(max) = '',
+			@whereSql nvarchar(max) = '',
+			@matchSql nvarchar(max) = 'a1';
+
+	declare @a table(RowID int identity, AssetTypeID int);
+	declare @f table(RowID int, AssetTypeID int, FieldTypeID int, KeyOrder int identity);
+
+	with c as (
+		select	T.ID as AssetTypeID,
+				I.SubjectID as ParentID,
+				T.Object,
+				T.ObjectID,
+				1 as [Level]
+		from	AssetType T
+				left join IntersectType I on I.Object = T.Object and I.ObjectID = T.ObjectID and I.PredicateID in (select ID from [Predicate] where Type = 3)
+		where	T.ID = @assetTypeID
+		union all
+		select	T.ID as AssetTypeID,
+				I.SubjectID as ParentID,
+				T.Object,
+				T.ObjectID,
+				C.Level + 1 as Level
+		from	AssetType T
+				inner join c on T.Object = c.Object and T.ObjectID = c.ParentID
+				outer apply (
+							select	SubjectID
+							from	IntersectType 
+							where	Object = T.Object and ObjectID = T.ObjectID and PredicateID in (select ID from [Predicate] where Type = 3)
+							) I
+	)
+	insert into @a
+		select	AssetTypeID
+		from	c
+		order by Level desc;
+
+	insert into @f (RowID, AssetTypeID, FieldTypeID)
+		select		A.RowID,
+					A.AssetTypeID,
+					F.ID
+		from		@a A
+					inner join FieldType F on F.AssetTypeID = A.AssetTypeID and F.IsPartOfKey = 1
+		order by	A.RowID,
+					F.ColumnOrder, 
+					F.Name;
+
+	select @columnSql = string_agg('''[''+' + 'f'+cast(RowID as nvarchar)+'k'+cast(KeyOrder as nvarchar)+'.[FormattedValue]' + '+'']''', '+''.''+') from @f;
+
+	declare @current int = 1,
+			@max int,
+			@atID int,
+			@sCurrent nvarchar(30) = ''
+	select @max = max(RowID) from @a
+	while @current <= @max
+	begin
+		set @sCurrent = cast(@current as nvarchar(30))
+		select @atID = AssetTypeID from @a where RowID = @current
+		set @fromSql = @fromSql + iif(@current > 1, ', ', '') + 'graph.AssetNode a'+@sCurrent
+		set @fromSql = @fromSql + iif(@current > 1, ', graph.AssetEdge e'+ @sCurrent, '')
+
+		select @fromSql = @fromSql + ', ' + string_agg('FieldDetail f'+@sCurrent+'k'+cast(KeyOrder as nvarchar), ', ') from @f where RowID = @current
+		select @whereSql = @whereSql + string_agg(' and a'+@sCurrent+'.ID = f'+@sCurrent+'k'+cast(KeyOrder as nvarchar)+'.AssetID and f'+@sCurrent+'k'+cast(KeyOrder as nvarchar)+'.FieldTypeID = '+cast(FieldTypeID as nvarchar), ' ') from @f where RowID = @current
+
+		select @segmentSql = @segmentSql + iif (@segmentSql<>'', '+', '') + string_agg('''<segment level="' + @sCurrent+'" assetTypeId="'+cast(@atID as nvarchar)+'" assetId="''+cast(a'+@sCurrent+'.ID as nvarchar)+''"><![CDATA[''+' + 'f'+@sCurrent+'k'+cast(KeyOrder as nvarchar)+'.FormattedValue' + '+'']' + ']><' + '/segment>''', '+') from @f where RowID = @current
+	
+		set @matchSql = @matchSql + iif(@current > 1, '-(e'+ @sCurrent + ')->a'+ @sCurrent, '')
+		
+
+		if @current = @max
+		begin
+			set @whereSql = ' a'+ @sCurrent + '.AssetTypeID = ' + cast(@atID as nvarchar)
+							+ iif(@assetID is not null, ' and a'+ @sCurrent + '.ID = ' + cast(@assetID as nvarchar), '')
+							+ @whereSql
+			select @segmentSql = '''<path>''+' + @segmentSql + '+''</path>'' as Segments'
+		end
+
+		set @columnSql = iif(@current = @max, 'a'+ @sCurrent + '.ID as AssetID, ', '') + @columnSql + iif(@current = @max, ' as [Path]', '')
+
+		set @current = @current+1
+	end
+	
+	set @columnSql = @columnSql + ', ' + @segmentSql
+
+	if @matchSql <> 'a1'
+	begin
+		set @matchSql = 'match(' + @matchSql+ ')'
+		set @whereSql = ' and ' + @whereSql 
+	end
+	else
+	begin 
+		set @matchSql = ''
+	end
+	
+	set	@sql = 'update T set T.[Path] = S.[Path], T.[Segments] = S.[Segments] from graph.AssetNode T inner join (select ' + @columnSql + ' from ' + @fromSql + ' where ' + @matchSql + @whereSql + ') S on S.AssetID = T.ID'
+	execute sp_executesql @sql
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+ALTER   procedure [graph].[PopulatePathsForAssetType]
+	@assetTypeID int,
+	@assetID bigint = null
+as
+begin
+	set nocount on;
+
+	if @assetTypeID is null
+	begin
+		RAISERROR ('Required parameter @assetTypeID not supplied or is NULL.', 10, 1);
+	end
+
+	declare @sql nvarchar(max) = '',
+			@columnSql nvarchar(max) = '',
+			@segmentSql nvarchar(max) = '',
+			@fromSql nvarchar(max) = '',
+			@whereSql nvarchar(max) = '',
+			@matchSql nvarchar(max) = 'a1';
+
+	declare @a table(RowID int identity, AssetTypeID int);
+	declare @f table(RowID int, AssetTypeID int, FieldTypeID int, KeyOrder int);
+
+	with c as (
+		select	T.ID as AssetTypeID,
+				I.SubjectID as ParentID,
+				T.Object,
+				T.ObjectID,
+				1 as [Level]
+		from	AssetType T
+				left join IntersectType I on I.Object = T.Object and I.ObjectID = T.ObjectID and I.PredicateID in (select ID from [Predicate] where Type = 3)
+		where	T.ID = @assetTypeID
+		union all
+		select	T.ID as AssetTypeID,
+				I.SubjectID as ParentID,
+				T.Object,
+				T.ObjectID,
+				C.Level + 1 as Level
+		from	AssetType T
+				inner join c on T.Object = c.Object and T.ObjectID = c.ParentID
+				outer apply (
+							select	SubjectID
+							from	IntersectType 
+							where	Object = T.Object and ObjectID = T.ObjectID and PredicateID in (select ID from [Predicate] where Type = 3)
+							) I
+	)
+	insert into @a
+		select	AssetTypeID
+		from	c
+		order by Level desc
+
+	insert into @f
+		select		A.RowID,
+					A.AssetTypeID,
+					F.ID,
+					F.ColumnOrder
+		from		@a A
+					inner join FieldType F on F.AssetTypeID = A.AssetTypeID and F.IsPartOfKey = 1
+		order by	A.RowID,
+					F.ColumnOrder, 
+					F.Name
+
+	select @columnSql = string_agg('''[''+' + 'f'+cast(RowID as nvarchar)+'k'+cast(KeyOrder as nvarchar)+'.[FormattedValue]' + '+'']''', '+''.''+') from @f
+
+	declare @current int = 1,
+			@max int,
+			@atID int,
+			@sCurrent nvarchar(30) = ''
+	select @max = max(RowID) from @a
+	while @current <= @max
+	begin
+		set @sCurrent = cast(@current as nvarchar(30))
+		select @atID = AssetTypeID from @a where RowID = @current
+		set @fromSql = @fromSql + iif(@current > 1, ', ', '') + 'graph.AssetNode a'+@sCurrent
+		set @fromSql = @fromSql + iif(@current > 1, ', graph.AssetEdge e'+ @sCurrent, '')
+
+		select @fromSql = @fromSql + ', ' + string_agg('FieldDetail f'+@sCurrent+'k'+cast(KeyOrder as nvarchar), ', ') from @f where RowID = @current
+		select @whereSql = @whereSql + string_agg(' and a'+@sCurrent+'.ID = f'+@sCurrent+'k'+cast(KeyOrder as nvarchar)+'.AssetID and f'+@sCurrent+'k'+cast(KeyOrder as nvarchar)+'.FieldTypeID = '+cast(FieldTypeID as nvarchar), ' ') from @f where RowID = @current
+
+		select @segmentSql = @segmentSql + iif (@segmentSql<>'', '+', '') + string_agg('''<segment level="' + @sCurrent+'" assetTypeId="'+cast(@atID as nvarchar)+'" assetId="''+cast(a'+@sCurrent+'.ID as nvarchar)+''">''+' + 'f'+@sCurrent+'k'+cast(KeyOrder as nvarchar)+'.FormattedValue' + '+''</segment>''', '+') from @f where RowID = @current
+	
+		set @matchSql = @matchSql + iif(@current > 1, '-(e'+ @sCurrent + ')->a'+ @sCurrent, '')
+		
+
+		if @current = @max
+		begin
+			set @whereSql = ' a'+ @sCurrent + '.AssetTypeID = ' + cast(@atID as nvarchar)
+							+ iif(@assetID is not null, ' and a'+ @sCurrent + '.ID = ' + cast(@assetID as nvarchar), '')
+							+ @whereSql
+			select @segmentSql = '''<path>''+' + @segmentSql + '+''</path>'' as Segments'
+		end
+
+		set @columnSql = iif(@current = @max, 'a'+ @sCurrent + '.ID as AssetID, ', '') + @columnSql + iif(@current = @max, ' as [Path]', '')
+
+		set @current = @current+1
+	end
+	
+	set @columnSql = @columnSql + ', ' + @segmentSql
+
+	if @matchSql <> 'a1'
+	begin
+		set @matchSql = 'match(' + @matchSql+ ')'
+		set @whereSql = ' and ' + @whereSql 
+	end
+	else
+	begin 
+		set @matchSql = ''
+	end
+	
+	set	@sql = 'update T set T.[Path] = S.[Path], T.[Segments] = S.[Segments] from graph.AssetNode T inner join (select ' + @columnSql + ' from ' + @fromSql + ' where ' + @matchSql + @whereSql + ') S on S.AssetID = T.ID'
+	execute sp_executesql @sql
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="GOV-8183-SynchronizeTables">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+ALTER PROCEDURE [graph].[SynchronizeTables]	
+	  @populatePaths bit = 0
+AS
+begin
+
+	delete	graph.AssetEdge
+    where	ID not in (select ID from [Intersect]);
+
+	drop table if exists #DeleteNodes;
+	create table #DeleteNodes (ID bigint);
+	create clustered index CIX_DeleteNodes ON #DeleteNodes (ID)
+	
+	insert into #DeleteNodes
+		select	N.ID
+		from	graph.AssetNode N
+		where	N.ID not in (select ID from Asset);
+
+	delete	E
+	from	graph.AssetEdge E
+			inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
+			inner join #DeleteNodes D on D.ID = N.ID
+
+	delete	N
+	from	graph.AssetNode N
+			inner join #DeleteNodes D on D.ID = N.ID;
+
+	merge	graph.AssetNode T
+	using	(
+			select	A.ID,
+					A.[Uid],
+					A.AssetTypeID,
+					T.[UID] as AssetTypeUid,
+					A.[State],
+					coalesce(A.UpdatedOn, A.CreatedOn, getutcdate()) as UpdatedOn
+			from	Asset A
+					inner join AssetType T on T.ID = A.AssetTypeID
+			) S on (S.ID = T.ID)
+	when	matched and (T.UpdatedOn < S.UpdatedOn) then 
+	update 
+	set		T.[State] = S.[State],
+			T.[UpdatedOn] = S.[UpdatedOn],
+			T.AssetTypeID = S.AssetTypeID,
+			T.AssetTypeUid = S.AssetTypeUid
+	when	not matched by target then 
+	insert	(ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn) 
+	values	(ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn);
+
+
+	merge	graph.AssetEdge T
+	using	(
+			select	SG.$node_id as from_id,
+					OG.$node_id as to_id,
+					I.ID,
+					I.[Uid],
+					I.IntersectTypeID,
+					T.[Uid] as IntersectTypeUid,
+					T.PredicateID,
+					P.[Uid] as PredicateUid,
+					P.[Type] as PredicateType,
+					'<props/>' as Properties,
+					I.[State],
+					coalesce(I.UpdatedOn, I.CreatedOn, getutcdate()) as UpdatedOn
+			from	[Intersect] I
+					inner join Asset SA on SA.[Object] = I.[Subject] and SA.ObjectID = I.SubjectID
+					inner join graph.AssetNode SG on SG.ID = SA.ID
+					inner join Asset OA on OA.[Object] = I.[Object] and OA.ObjectID = I.ObjectID
+					inner join graph.AssetNode OG on OG.ID = OA.ID
+					inner join IntersectType T on T.ID = I.IntersectTypeID
+					inner join [Predicate] P on P.ID = T.PredicateID
+			) S on (S.ID = T.ID and S.from_id = T.$from_id and S.to_id = T.$to_id)
+	when	matched and (T.UpdatedOn < S.UpdatedOn) then 
+	update	
+	set		T.IntersectTypeID = S.IntersectTypeID,
+			T.IntersectTypeUid = S.IntersectTypeUid,
+			T.PredicateID = S.PredicateID,
+			T.PredicateUid = S.PredicateUid,
+			T.PredicateType = S.PredicateType,
+			T.[State] = S.[State]
+	when	not matched by target then 
+	insert	($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn) 
+	values	(from_id, to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn);
+	
+	if @populatePaths = 1
+	begin
+	
+		drop table if exists #assetTypes;
+		create table #assetTypes (ID bigint);
+		
+		insert into #assetTypes
+		select ID from AssetType;
+	
+		while ((select count(*) from #assetTypes) > 0)
+		begin
+			declare @id bigint;
+			select top 1 @id = id from #assetTypes;
+			
+			print @id
+			
+			exec graph.PopulatePathsForAssetType @id;
+		
+			delete from #assetTypes where id = @id;
+		end
+	end
+
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+ALTER PROCEDURE [graph].[SynchronizeTables]	
+	  @populatePaths bit = 0
+	  AS
+begin
+
+	delete E
+    from graph.AssetEdge E
+    where E.ID not in (select ID from [Intersect]);
+
+	drop table if exists #DeleteNodes;
+	create table #DeleteNodes (ID bigint);
+	create clustered index CIX_DeleteNodes ON #DeleteNodes (ID)
+	
+	insert into #DeleteNodes
+	select N.ID
+	from graph.AssetNode N
+	where N.ID not in (select ID from Asset);
+
+	delete E
+	from graph.AssetEdge E
+	inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
+	inner join #DeleteNodes D on D.ID = N.ID
+
+	delete N
+	from graph.AssetNode N
+	inner join #DeleteNodes D on D.ID = N.ID;
+
+	merge graph.AssetNode T
+	using
+	(
+		select
+			A.ID,
+			A.[Uid],
+			A.AssetTypeID,
+			T.[UID] as AssetTypeUid,
+			A.[State],
+			A.UpdatedOn
+		from Asset A
+		inner join AssetType T on T.ID = A.AssetTypeID
+	) S on (S.ID = T.ID)
+	when matched and (T.UpdatedOn < S.UpdatedOn) then update 
+		set T.[State] = S.[State],
+			T.[UpdatedOn] = S.[UpdatedOn],
+			T.AssetTypeID = S.AssetTypeID,
+			T.AssetTypeUid = S.AssetTypeUid
+	when not matched by target then insert 
+		(ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn) values
+		(ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn);
+
+
+	merge into graph.AssetEdge T
+	using
+	(
+		select
+			SG.$node_id as from_id,
+			OG.$node_id as to_id,
+			I.ID,
+			I.[Uid],
+			I.IntersectTypeID,
+			T.[Uid] as IntersectTypeUid,
+			T.PredicateID,
+			P.[Uid] as PredicateUid,
+			P.[Type] as PredicateType,
+			'<props/>' as Properties,
+			I.[State],
+			coalesce(I.UpdatedOn, I.CreatedOn, getutcdate()) as UpdatedOn
+		from	[Intersect] I
+				inner join Asset SA on SA.[Object] = I.[Subject] and SA.ObjectID = I.SubjectID
+				inner join graph.AssetNode SG on SG.ID = SA.ID
+				inner join Asset OA on OA.[Object] = I.[Object] and OA.ObjectID = I.ObjectID
+				inner join graph.AssetNode OG on OG.ID = OA.ID
+				inner join IntersectType T on T.ID = I.IntersectTypeID
+				inner join [Predicate] P on P.ID = T.PredicateID
+	) S on (S.ID = T.ID and S.from_id = T.$from_id and S.to_id = T.$to_id)
+	when matched and (T.UpdatedOn < S.UpdatedOn) then update 
+		set 
+			T.IntersectTypeID = S.IntersectTypeID,
+			T.IntersectTypeUid = S.IntersectTypeUid,
+			T.PredicateID = S.PredicateID,
+			T.PredicateUid = S.PredicateUid,
+			T.PredicateType = S.PredicateType,
+			T.[State] = S.[State]
+	when not matched by target then insert 
+		($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn) values
+		(from_id, to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn);
+	
+	if @populatePaths = 1
+	begin
+	
+		drop table if exists #assetTypes;
+		create table #assetTypes (ID bigint);
+		
+		insert into #assetTypes
+		select ID from AssetType;
+	
+		while ((select count(*) from #assetTypes) > 0)
+		begin
+			declare @id bigint;
+			select top 1 @id = id from #assetTypes;
+		
+			exec graph.PopulatePathsForAssetType @id;
+		
+			delete from #assetTypes where id = @id;
+		end
+	end
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
