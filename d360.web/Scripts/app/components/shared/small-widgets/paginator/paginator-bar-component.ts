@@ -57,10 +57,6 @@ export class PaginatorComponent implements OnChanges, OnInit {
         
     }
 
-    CheckCurrent(page: number) {
-        console.log(page + "  " +this.page)
-    }
-
     ngOnInit(): void {
         this.itemsPerPage = 10;
         this.page = 0;
@@ -78,7 +74,7 @@ export class PaginatorComponent implements OnChanges, OnInit {
     }
 
     isLastPage(): boolean {
-        if (this.getPageCount() <= this.page) {
+        if (this.getPageCount() <= (this.page + 1)) {
             return true;
         }
         return false;
@@ -110,8 +106,10 @@ export class PaginatorComponent implements OnChanges, OnInit {
         if (this.isLastPage())
             return;
         else
-            this.page = this.getPageCount();
-        this.paginate(2, this.page, (this.page * this.itemsPerPage));
+            this.page = this.getPageCount() - 1;
+        let lastNumItems = this.totalRecords % this.itemsPerPage;
+        console.log(lastNumItems);
+        this.paginate(lastNumItems, this.page, (this.page * this.itemsPerPage));
     }
     onPageLinkClick(page: number): void {
         if (page !== undefined && (this.page !== page)) {
@@ -123,7 +121,7 @@ export class PaginatorComponent implements OnChanges, OnInit {
     getPageCount(): number {
         if (this.totalRecords > 0) {
             {
-                return Math.round(this.totalRecords / this.itemsPerPage);
+                return Math.ceil(this.totalRecords / this.itemsPerPage);
             }
         }
         return 1;
@@ -151,18 +149,24 @@ export class PaginatorComponent implements OnChanges, OnInit {
         for (let i = start; i <= ((start + range) - 1); i++) {
             paging.push(i); 
         }
-        if (this.page < 2) {
-            this.pageOptions = paging.splice(0,3);
-        } else {
+
+        if (this.page < 2 && this.getPageCount() <= 3) {
+            this.pageOptions = paging.splice(0, (this.getPageCount()));
+        }
+        else if (this.page < 2 && this.getPageCount() > 3) {
+            this.pageOptions = paging.splice(0, 3);
+        }
+        else {
             this.pageOptions = paging;
         }   
     }
 
     GetToDisplayValue() {
-        if (this.totalRecords < this.itemsPerPage)
+        if (this.totalRecords <= this.itemsPerPage)
             return this.totalRecords;
-        else {
+        else if ((this.page * this.itemsPerPage) + this.itemsPerPage >= this.totalRecords)
+            return this.totalRecords;
+        else 
             return (this.page * this.itemsPerPage) + this.itemsPerPage;
-        }
     }
 };
