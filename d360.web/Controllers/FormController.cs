@@ -12700,6 +12700,8 @@ order by	case
 
                 upsertObjectStyle(SystemObjects.RuleType, model.ID, form, model.Name);
 
+                Company.CreateOrUpdateTypeDisplayValuesAsync(id, "RuleType");
+
                 return jsonSuccess(model.Name + " successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
             }
             catch (BaseException ex)
