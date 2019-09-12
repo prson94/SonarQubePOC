@@ -29,10 +29,12 @@
                                        (deleteOff)="unhideforDelete()" 
                                        [objectType]="objectType" 
                                        [objectID]="objectID" 
+                                       [objectUid]="selected?.ObjectUid"
                                        [targetType]="selected?.Object" 
                                        [targetName]="selected?.Name" 
                                        [targetTypeID]="selected?.ObjectID" 
-                                       [intersectTypeID]="selected?.IntersectTypeID" 
+                                       [intersectTypeID]="selected?.uid" 
+                                       [isSubject]="selected?.IsSubject"
                                        [hasEdit]="hasModifyRelationshipsPermissions() && selected?.AllowEditFromRelationshipEditor" 
                                        [hasDelete]="hasDeleteRelationshipsPermissions() && selected?.AllowEditFromRelationshipEditor">
         </d3s-dynamic-relationship-grid>

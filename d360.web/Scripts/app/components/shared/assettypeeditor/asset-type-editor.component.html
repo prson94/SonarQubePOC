@@ -57,6 +57,9 @@
                 </div>
             </div>
             <div class="col l4 m12 s12">
+                <simple-accordion header="Settings" active="true" *ngIf="showReferenceTypeSettings">
+                    <d3s-asset-type-editor-use-as-transformation *ngIf="lineageVersion == 3" [(UseAsTransformation)]="model.AssetType.UseAsTransformation"></d3s-asset-type-editor-use-as-transformation>
+                </simple-accordion>
                 <simple-accordion header="Settings" active="true" *ngIf="showAssetArtifactSettings">
                     <div class="FieldName">Auto Display Description?</div>
                     <div class="row">
@@ -76,6 +79,7 @@
                             <div class="FieldInstructions">If enabled, items of this type can own fusion configurations.</div>
                         </div>
                     </div>
+                    <d3s-asset-type-editor-use-as-transformation *ngIf="lineageVersion == 3" [(UseAsTransformation)]="model.AssetType.UseAsTransformation"></d3s-asset-type-editor-use-as-transformation>
                 </simple-accordion>
                 <simple-accordion header="Settings" active="true" *ngIf="showAssetFusionSettings">
                     <div class="FieldName">Scan Enabled?</div>
@@ -98,6 +102,7 @@
                             <div class="FieldInstructions">The maximum depth to which a tree can contain nodes at.</div>
                         </div>
                     </div>
+                    <d3s-asset-type-editor-use-as-transformation *ngIf="lineageVersion == 3" [(UseAsTransformation)]="model.AssetType.UseAsTransformation"></d3s-asset-type-editor-use-as-transformation>
                 </simple-accordion>
 
 
