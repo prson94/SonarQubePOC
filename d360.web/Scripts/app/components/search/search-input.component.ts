@@ -11,15 +11,15 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-search-input',
-    template: ` <div *ngIf="newSearch && !isAdvancedMode" 
+    template: ` <div *ngIf="newSearch && !isAdvancedMode">
                 class="titlebar-search">           
-                        <div class="field grow mr10"><input (keydown.enter)="triggerSearch()" [ngModel]="searchText" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);" autofocus autocomplete="off" type="text" placeholder="Please enter search terms"><i (click)="triggerSearch()" class="fa fa-search"></i></div>
+                        <div class="field grow mr10"><input (keydown.enter)="triggerSearch()" [ngModel]="searchText" (keyup)="checkSearchKey($event);" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);" autofocus autocomplete="off" type="text" placeholder="Please enter search terms"><i *ngIf="!autocompleteLoading" (click)="triggerSearch()" class="fa fa-search"></i><i *ngIf="autocompleteLoading" class="fa fa-spinner fa-spin"></i></div>
                         <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match Whole Words</span></label>
                         <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>                        
                         <button class="button" (click)="handleAdvancedClick()">Advanced Search</button>
-                </div>      
-                <div *ngIf="!isAdvancedMode && !newSearch">
-                    <div class="search-input-container" >           
+                </div>     
+                <div *ngIf="!isAdvancedMode">
+                    <div *ngIf="!newSearch" class="search-input-container">           
                         <div class="search-input-text-container">                        
                             <input #search [ngModel]="searchText" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);" (keyup)="checkSearchKey($event);" type="text" id="home-search-text" placeholder="What do you want to find?" class="search-input-text" autofocus autocomplete="off" />                        
                         </div>
@@ -104,6 +104,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
 
     @Input() newSearch: boolean = false;
     private searchSub: ISubscription;
+    private autocompleteLoading: boolean = false;
 
     private fields: DropdownOption[] = [
         { title: "Category", value: "Type" },
@@ -177,6 +178,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
 
     private cancelAutocomplete() {
         if (this.simpleSearchID > 0) {
+            this.autocompleteLoading = false;
             window.clearTimeout(this.simpleSearchID);
             this.simpleSearchID = 0;
         }
@@ -195,7 +197,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
 
         else if (this.searchText && this.searchText.length >= 3) {
             this.cancelAutocomplete();
-
+            this.autocompleteLoading = true;
             this.simpleSearchID = window.setTimeout(() => this.doAutocompleteSearch(), 1000);
         }
     }
@@ -205,6 +207,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
         this.searchSub = this.typeaheadSearchService.getResults(this.autocompleteResultSize, this.searchText, this.searchTypes)
             .subscribe(res => {
                 this.autocompletions = res;
+                this.autocompleteLoading = false;
             });
     }
 

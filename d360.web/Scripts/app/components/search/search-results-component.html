@@ -11,14 +11,14 @@
                             <span class="d3s-badge">{{results?.Result?.Matches}}</span>
                         </li>
                         <div *ngFor="let category of categories">
-                            <li (click)="selectCategory(category);">
+                            <li [title]="category.Name" (click)="selectCategory(category);">
                                 <span class="lv1">
                                     <i class="fa fa-angle-right" data-bind="click: toggleVisibility,visible: showToggle,css: {'fa-angle-right' : showRow, 'fa-angle-down' : !showRow()}"></i>&nbsp;
                                 </span>
                                 <span class="caption" [ngClass]="{selected:category.Name==selectedCategory?.Name}">{{category.DisplayName}}</span>
                                 <span class="d3s-badge">{{category?.ResultCount}}</span>
                             </li>
-                            <li [title]="subCategory.DisplayName" (click)="selectCategory(subCategory);" *ngFor="let subCategory of category?.Categories">
+                            <li [title]="subCategory.Name" (click)="selectCategory(subCategory);" *ngFor="let subCategory of category?.Categories">
                                 <br />
                                 <span class="lv2">
                                 </span>
