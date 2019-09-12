@@ -977,10 +977,10 @@ namespace d360.extensions.search
             List<IndexTag> tags = new List<IndexTag>();
             List<IndexTag> highlights = new List<IndexTag>();
 
-            if (h._source == null)
+            if (h._source == null || (onlyHits && h.inner_hits == null))
                 return tags;
 
-            if(highlightHits)
+            if(highlightHits && h.inner_hits != null)
                 highlights = h.inner_hits.SelectTokens("d3sTags.hits.hits[*]")
                     .Select(t => t.ToObject<SearchTagInnerHitsModel>())
                     .Select(hi => new IndexTag { Uid = hi._source.Uid, Value = hi._source.Value, Highlight = hi.GetHighLightValue() })
