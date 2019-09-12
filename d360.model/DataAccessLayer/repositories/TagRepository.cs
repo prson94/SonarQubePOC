@@ -441,6 +441,7 @@ namespace d360.model.DataAccessLayer
         {
             string value = "";
             Guid exceptUid = Guid.Empty;
+            int maxNumberOfResults = 200;
             bool ignoreCounts = false;
             foreach (var queryitem in queryParams)
             {
@@ -463,18 +464,26 @@ namespace d360.model.DataAccessLayer
                     case "value":
                         value = $"%{queryitem.Value.ToLower()}%";
                         break;
+                    case "maxnumberofresults":
+                        int size = 200;
+                        if (int.TryParse(queryitem.Value, out size))
+                        {
+                            maxNumberOfResults = size;
+                        }
+                        else throw new Exception("Invalid value for page size parametar!");
+                        break;
                 }
             }
             string sql = string.Empty;
             if (!ignoreCounts)
             {
-                sql = @"select T.Value as name, T.uid as code, Results.count from Tag T 
+                sql = $@"select top {maxNumberOfResults} T.Value as name, T.uid as code, Results.count from Tag T 
                             cross apply (select count(*) from AssetTag where TagID = T.ID)Results(count)
                             where State = 1 and T.Value like @value and T.uid != @exceptUid";
             }
             else
             {
-                sql = @"select T.Value as name, T.uid as code from Tag T 
+                sql = $@"select top {maxNumberOfResults} T.Value as name, T.uid as code from Tag T 
                         where State = 1 and T.Value like @value and T.uid != @exceptUid";
             }
 
