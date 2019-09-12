@@ -109,8 +109,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
             this.tagService.searchTagsTypeAhead(searchValue.toLowerCase(), 10)
                 .subscribe(res => {
                     if (res && res.length > 0) {
-                        if (res.length == 0)
-                            this.searchResults = res;
+                        this.searchResults = res;
                         this.tagsLoading = false;
                         this.ref.markForCheck();
                     }
