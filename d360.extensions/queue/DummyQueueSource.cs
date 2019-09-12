@@ -81,5 +81,10 @@ namespace d360.extensions.queue
             await client.SendBatchAsync(list);
         }
 
+        public string GetTopicNameBySetting(string settingName)
+        {
+            return CloudConfigurationManager.GetSetting(settingName);
+        }
+
     }
 }
