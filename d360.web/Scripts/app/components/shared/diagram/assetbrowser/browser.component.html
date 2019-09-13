@@ -1,0 +1,9 @@
+﻿<div class="tile tile-detail">
+    <header>
+        <span>Lineage</span>
+        <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
+    </header>
+    <div>
+        <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
+    </div>
+</div>

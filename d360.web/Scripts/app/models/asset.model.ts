@@ -59,12 +59,19 @@ export class AssetType {
     State: State;
     Hierarchical: boolean;
     HierarchyMaximumDepth: number;
+    UseAsTransformation: boolean;
     Object: string;
     ObjectID: number;
     CreatedBy: number;
     CreatedOn: string;
     UpdatedBy: number;
     UpdatedOn: string;
+}
+
+export class AssetEditorModel {
+    Uid: string;
+    ParentUid: string;
+    Fields: any;
 }
 
 export class AssetDetail {

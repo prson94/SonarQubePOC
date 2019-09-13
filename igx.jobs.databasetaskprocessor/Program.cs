@@ -79,7 +79,7 @@ namespace igx.jobs.databasetaskprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 1).ToList();
+                companies = companies.Where(i => i.CompanyID == 9).ToList();
 #endif
 
                 companies.Shuffle(); //Randomize
@@ -139,7 +139,7 @@ namespace igx.jobs.databasetaskprocessor
 
                                     if (detail.AssetTypeID != null) {
                                         string assetTypeUid = companyConnection.Query<Guid>("SELECT uid FROM [dbo].[AssetType] WHERE ID = @i", new { i = detail.AssetTypeID }).SingleOrDefault().ToString();
-                                        fields.Add("AssetTypeUID", assetTypeUid);
+                                        fields.Add("AssetTypeUid", assetTypeUid);
                                     }
 
                                     if (o == "Synonym")
@@ -164,8 +164,8 @@ namespace igx.jobs.databasetaskprocessor
                                         if (fields.ContainsKey("Type")) fields["Type"] = detail.TypeName;
                                         else fields.Add("Type", detail.TypeName);
 
-                                        if (fields.ContainsKey("UID")) fields["UID"] = detail.UID.ToString();
-                                        else fields.Add("UID", detail.UID.ToString());
+                                        if (fields.ContainsKey("Uid")) fields["Uid"] = detail.UID.ToString();
+                                        else fields.Add("Uid", detail.UID.ToString());
                                     }
 
                                     tags = companyConnection.Query<TagSqlModel>("SELECT t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID WHERE at.AssetID = @i", new {i = assetId}).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
@@ -526,7 +526,7 @@ from    [queue].[Task] T
                 if (custom.Contains("ActionObjectValue"))
                 {
                     companyConnection.Execute(
-                    "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID,@NewValue",
+                    "exec [utility].[AddAuditEntry]  @ParentObject, @ParentObjectID, @ResourceID, @date, @op, @Object, @ObjectID, @NewValue",
                     new
                     {
                         Object = @object,

@@ -25,7 +25,8 @@ import { AuthenticationService } from '../../../services/authentication.service'
     selector: 'd3s-tag-view',
     templateUrl: './d3s-tag-view.html',
     providers: [TagService],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    host: { '(window:resize)': 'manageWidth()' }
 })
 
 export class TagView extends AdminBaseComponent implements OnInit {
@@ -248,6 +249,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
                 }
             }
         }
+        this.ref.markForCheck();
     }
 
     private getParentForResizing(element: HTMLElement, tags: string) {
@@ -268,34 +270,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     ngAfterViewInit() {
-
-        if (this.container) {
-            let parent = this.getParentForResizing(this.container.nativeElement, 'TD,DIV');
-            if (!parent) {
-                console.warn("No suitable parent fount for tag resizing!");
-            }
-
-            let ofWidth = parent ? parent.offsetWidth - 10 : 500;
-            parent.classList.remove('no-text-overflow')
-            this.container.nativeElement.style.width = ofWidth + 'px';
-
-            var items = Array.prototype.slice.call(this.container.nativeElement.querySelectorAll('.tag-item-wrapper'), 0);
-            if (items.length > 0) {
-                for (let i = 0; i < items.length; i++) {
-                    var x = items[i];
-                    if (x.offsetWidth > ofWidth) {
-                        x.setAttribute('original-width', x.offsetWidth);
-                        x.style.maxWidth = (ofWidth - 30) + 'px';
-                        x.classList.add('too-long');
-                        x.setAttribute('max-width', ofWidth - 30);
-                    }
-                }
-            }
-
-            this.setVisibility();
-
-        }
-
+        this.manageWidth();
     }
 
     openTagPage(event: MouseEvent, item: any) {
@@ -327,6 +302,33 @@ export class TagView extends AdminBaseComponent implements OnInit {
         for (var tag of this.tags) {
             index++;
             if (tag.TooltipID == id) return index;
+        }
+    }
+
+    manageWidth() {
+        if (this.container) {
+            let parent = this.getParentForResizing(this.container.nativeElement, 'TD,DIV');
+            if (!parent) {
+                console.warn("No suitable parent found for tag resizing!");
+            }
+
+            let ofWidth = parent ? parent.offsetWidth - 10 : 500;
+            parent.classList.remove('no-text-overflow')
+            this.container.nativeElement.style.width = ofWidth + 'px';
+
+            var items = Array.prototype.slice.call(this.container.nativeElement.querySelectorAll('.tag-item-wrapper'), 0);
+            if (items.length > 0) {
+                for (let i = 0; i < items.length; i++) {
+                    var x = items[i];
+                    if (x.offsetWidth > ofWidth) {
+                        x.setAttribute('original-width', x.offsetWidth);
+                        x.style.maxWidth = (ofWidth - 30) + 'px';
+                        x.classList.add('too-long');
+                        x.setAttribute('max-width', ofWidth - 30);
+                    }
+                }
+            }
+            this.setVisibility();
         }
     }
 }

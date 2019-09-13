@@ -149,7 +149,8 @@ namespace igx.UnitTests.ValidatorTests
                     {
                         IsPartOfKey = true
                     }
-                }
+                },
+                Name = "test"
             });
 
 
@@ -179,7 +180,8 @@ namespace igx.UnitTests.ValidatorTests
                     {
 
                     }
-                }
+                },
+                Name = "test"
             });
 
 
@@ -228,6 +230,27 @@ namespace igx.UnitTests.ValidatorTests
         }
 
         [Fact]
+        public void PostInvalidModel_InvalidNameField()
+        {
+            model = new FieldTypesApiEditModel();
+            model.AssetTypeUid = Guid.NewGuid();
+            model.Action = FieldTypesApiEditAction.Replace;
+            assetTypeModels = new TypeIdentifierInfoModel();
+
+            model.Fields = new List<FieldTypeApiEditModel>();
+            model.Fields.Add(new FieldTypeApiEditModel()
+            {
+                Name = "not.valid#!@$~"
+            });
+
+            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
+
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            Assert.True(valResults.Error.Contains("Invalid Field Name"), XMsg.BadResponseMessage);
+
+        }
+
+        [Fact]
         public void PostValidModel()
         {
             model = new FieldTypesApiEditModel();
@@ -255,7 +278,7 @@ namespace igx.UnitTests.ValidatorTests
                     {
                     }
                 },
-                Name = "test good"
+                Name = "test_good"
             });
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 

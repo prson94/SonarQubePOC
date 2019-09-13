@@ -782,6 +782,16 @@
               Looks up a localized string similar to Date Last Modified.
             </summary>
         </member>
+        <member name="P:Resources.FieldInfo.UseAsTransformation_Description">
+            <summary>
+              Looks up a localized string similar to The assets of this type may be used as a connecting asset to form lineage relationships.
+            </summary>
+        </member>
+        <member name="P:Resources.FieldInfo.UseAsTransformation_Name">
+            <summary>
+              Looks up a localized string similar to Use As Transformation.
+            </summary>
+        </member>
         <member name="P:Resources.FieldInfo.ValidationDescription_Description">
             <summary>
               Looks up a localized string similar to This message will appear to the user if they provide invalid or missing information on this field.  You must enable some form of regular expression pattern validation on this field in order for the message to appear..
@@ -2452,7 +2462,7 @@
         </member>
         <member name="M:d360.web.Controllers.V2.DataQualityController.GetRuleResults(System.Guid)">
             <summary>
-            Returns the all the rule results for the specified rule Uid that are under the default implementation
+            Returns all the rule results for the specified rule Uid that are under the default implementation
             If the user is not an admin http status code 403 forbidden is returned
             </summary>
             <param name="ruleUid">The Uid of the rule</param>
@@ -2901,7 +2911,7 @@
             <param name="model"></param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert},System.Boolean)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PostAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert},System.Boolean,System.Boolean)">
             <summary>
             Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
@@ -2917,10 +2927,11 @@
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
-            <param name="assets">The payload of your request.</param>
+            <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
+            <param name="assets">The payload of your request.</param>        
             <returns>An HTTP status code and message.</returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate},System.Boolean)">
+        <member name="M:d360.web.Controllers.V2.AssetsController.PutAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetUpdate},System.Boolean,System.Boolean)">
             <summary>
             Updates a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
             </summary>
@@ -2936,6 +2947,7 @@
             </remarks>
             <param name="assetTypeUid">The unique identifier of the asset type.</param>
             <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
+            <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
@@ -2957,6 +2969,13 @@
             <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
             <param name="assets">The payload of your request.</param>
             <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.AssetsController.GetScoreAndStatus(System.Guid)">
+            <summary>
+            Gets the score and the status of a Asset by its Uid
+            </summary>
+            <param name="assetUid">The asset Uid</param>
+            <returns></returns>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.PostBulkAssetsAsync(System.Guid,System.Collections.Generic.List{d360.core.entities.AssetInsert},System.Boolean)">
             <summary>

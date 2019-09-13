@@ -151,9 +151,14 @@ namespace d360.extensions.queue
             client.SendBatch(list);            
         }
 
+        public string GetTopicNameBySetting(string settingName)
+        {
+            return CloudConfigurationManager.GetSetting(settingName);
+        }
+
         private string getTopicName()
         {            
-            return (CloudConfigurationManager.GetSetting("EventBusTopicName") ?? "events-debug");
+            return (GetTopicNameBySetting("EventBusTopicName") ?? "events-debug");
         }
 
         public async Task CreateTopicMessagesAsync(List<EventInfo> events)
@@ -173,6 +178,52 @@ namespace d360.extensions.queue
             }
 
             var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
+            await client.SendBatchAsync(list);
+        }
+
+        public void CreateTopicMessage<T>(string topicName, T e)
+        {
+            var bm = new BrokeredMessage(e);
+            bm.Properties["topic"] = topicName;
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            client.Send(bm);
+        }
+
+        public async Task CreateTopicMessageAsync<T>(string topicName, T e)
+        {
+            var bm = new BrokeredMessage(e);
+            bm.Properties["topic"] = topicName;
+            
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            await client.SendAsync(bm);
+        }
+
+        public void CreateTopicMessages<T>(string topicName, List<T> events)
+        {
+            var list = new List<BrokeredMessage>();
+            foreach (var e in events)
+            {
+                var bm = new BrokeredMessage(e);
+
+                bm.Properties["topic"] = topicName;
+                list.Add(bm);
+            }
+
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); 
+            client.SendBatch(list);
+        }
+
+        public async Task CreateTopicMessagesAsync<T>(string topicName, List<T> events)
+        {
+            var list = new List<BrokeredMessage>();
+            foreach (var e in events)
+            {
+                var bm = new BrokeredMessage(e);
+                bm.Properties["topic"] = topicName;
+                list.Add(bm);
+            }
+
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); 
             await client.SendBatchAsync(list);
         }
     }

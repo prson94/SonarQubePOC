@@ -2327,6 +2327,11 @@ where	I.ID is null";
             Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, ObjectTypeID = objectTypeId, ObjectType = objectType });
         }
 
+        public void RebuildAssetGraphRequest()
+        {
+            Enqueue(Config.GetValue<string>("AssetGraphQueue"), new RebuildAssetGraphModel { CompanyID = CurrentCompanyID });
+        }
+
         public void RebuildDisplayValuesRequest()
         {
             Enqueue(Config.GetValue<string>("DisplayValueQueue"), new DisplayUpdateInfo { CompanyID = CurrentCompanyID, RebuildAll = true });
@@ -2335,6 +2340,59 @@ where	I.ID is null";
         public void RebuildIndexRequest()
         {
             Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
+        }
+
+        public void UpdateAssetGraphNode(Guid uid, List<string> changedFieldNames = null)
+        {
+            
+            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
+            {
+                CompanyID = CurrentCompanyID,
+                Uid = uid,
+                Type = AssetEventType.Node,
+                ChangedFieldNames = changedFieldNames
+            });
+        }
+
+        public void UpdateAssetGraphNodePath(Guid uid)
+        {
+
+            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
+            {
+                CompanyID = CurrentCompanyID,
+                Uid = uid,
+                Type = AssetEventType.Path
+            });
+        }
+
+        public void UpdateAssetGraphEdge(Guid uid)
+        {
+
+            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
+            {
+                CompanyID = CurrentCompanyID,
+                Uid = uid,
+                Type = AssetEventType.Edge
+            });
+        }
+
+        public async Task SendAssetGraphEvents(List<IAssetUpsert> results)
+        {
+            List<AssetEventInfo> events = new List<AssetEventInfo>();
+
+            foreach(var result in results)
+            {
+                events.Add(new AssetEventInfo
+                {
+                    CompanyID = CurrentCompanyID,
+                    Uid = result.Uid,
+                    ChangedFieldNames = result.Fields.Keys.ToList(),
+                    Type = AssetEventType.Node
+                });
+            }
+
+            await QueueSource.CreateTopicMessagesAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
+
         }
 
         private void AddQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
@@ -3237,12 +3295,31 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.Tag:
                     objectId = Tags.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
+                case SystemObjects.IntersectType:
+                    objectId = IntersectTypes.FirstOrDefault(x => x.uid == objectUid).ID;
+                    break;
                 default:
-                    throw new Exception($"Method not implemented for object type '{objectType.ToString()}'");
-
+                    objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString()).ObjectID;
+                    if (objectId <= 0)
+                        throw new Exception($"Method not implemented for object type '{objectType.ToString()}'");
+                    break;
             }
             return objectId;
         }
 
+        public dynamic GetAssetStatusAndScore(Guid uid)
+        {
+            string sql = $@"SELECT 
+                            cast(S.Value * 100 as int) as 'Score',
+                            S.EffectiveDate as 'EffectiveDate',  
+                            f.FormattedValue as Status 
+                            from Asset A
+                            left Join AssetType AT on A.AssetTypeID = AT.ID
+                            left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
+                            left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
+                            left join metrics.Score S on AssetUid = @assetUid and EffectiveDate <= getutcdate()
+                            WHERE A.Uid = @assetUid";
+            return Query<dynamic>(sql, new { @assetUid = uid }).FirstOrDefault();
+        }
     }
 }

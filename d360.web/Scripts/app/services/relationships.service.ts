@@ -31,6 +31,22 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
+    saveRelationships(intersectTypeUid: number, model: any[]): Observable<any> {
+        return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true`, model).pipe(
+            map(response => response),
+            catchError(err => this.handleError(err, true))
+        );
+    }
+
+    deleteRelationshipV2(intersectTypeUid: number, model: any[]): Observable<any> {
+        const httpHeaders = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
+        };
+        return this.http.delete(`api/v2/relationships/types/${intersectTypeUid}/?triggerWorkflow=true`, httpHeaders).pipe(
+            map(response => response),
+            catchError(err => this.handleError(err, true))
+        );
+    }
     exportRelationshipTypeItems(relType: RelationshipType) {
         this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship type items'));
     }

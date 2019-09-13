@@ -36,6 +36,8 @@ import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-techni
 import { LineageInfoComponent } from './lineage/lineage-info.component';
 import { LineageEditorComponent } from './lineage/lineage-editor.component';
 
+import { AssetBrowserComponent } from './assetbrowser/browser.component';
+
 import { LineageDiagramComponent } from './lineage/lineage-diagram.component';
 
 import { ModelDiagramComponent } from './model-diagram.component';
@@ -48,8 +50,6 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part'
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 import { NgxJsonViewModule } from 'ng-json-view';
-
-
 
 @NgModule({
     imports: [CommonModule,
@@ -82,6 +82,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
 
     ],
     declarations: [
+        AssetBrowserComponent,
         ImpactComponent,        
         LineageComponent,
         LineageBusinessEditorComponent,
@@ -102,6 +103,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
         LineageDiagramComponent,
     ],
     exports: [
+        AssetBrowserComponent,
         LineageComponent,
         ImpactComponent,  
         ModelDiagramComponent,  

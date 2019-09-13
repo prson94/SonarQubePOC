@@ -43,6 +43,7 @@ export class CompanySettings {
     MaxDropdownItems: number;
     WriteActionDescription: boolean;
     CurrentCompanyLogoPath: string; 
+    LineageVersion: number;
 }
 
 export class IpRestriction {

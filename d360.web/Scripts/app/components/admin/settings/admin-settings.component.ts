@@ -43,8 +43,17 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     groups: SelectItem[];
     sub: any;
     routeValidationMessage = "";
-    rebuildLabel: string = "Refresh Search Index";
+
+    disableRebuildAssetGraph: boolean = false;
+    graphValidationMessage = "";
+    showRebuildAssetBrowserButton: boolean = false;
+
+    disableRebuildDisplayValue: boolean = false;
+    displayValueValidationMessage = "";
+
     disableRebuildIndex: boolean = false;
+    indexValidationMessage = "";
+    
     SaveButton: DynamicButton;
 
     constructor(
@@ -75,6 +84,9 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 this.homePageImage = new CompanyImage();
 
                 this.companySettings = data;
+
+                this.showRebuildAssetBrowserButton = this.companySettings.LineageVersion === 3;
+
                 this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes);
 
                 this.companySettings.SiteNav.forEach(s => {
@@ -129,18 +141,41 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             this.routeValidationMessage = "The value entered must be a relative url (ex: /artifact/1)";
     }
 
+    rebuildAssetGraph() {
+        this.disableRebuildAssetGraph = true;
+        this.companySettingsService.postAssetGraphRebuildRequest()
+            .subscribe(data => {
+                if (data.type && data.type == "error") {
+                    this.messagesService.showError("Problem with Asset Graph Rebuild", data.message);
+                    this.disableRebuildAssetGraph = false;
+                } else {
+                    this.graphValidationMessage = data.message;
+                }
+            });
+    }
+
     rebuildDisplayValues() {
-        this.companySettingsService.postDisplayRebuildRequest();
+        this.disableRebuildDisplayValue = true;
+        this.companySettingsService.postDisplayRebuildRequest()
+            .subscribe(data => {
+                if (data.type && data.type == "error") {
+                    this.messagesService.showError("Problem with DisplayValue Rebuild", data.message);
+                    this.disableRebuildDisplayValue = false;
+                } else {
+                    this.displayValueValidationMessage = data.message;
+                }
+            });
     }
 
     rebuildIndex() {
         this.disableRebuildIndex = true;
         this.companySettingsService.postIndexRebuildRequest()
-            .subscribe(x => {
-                if (x.type == "confirm") {
-                    this.rebuildLabel = "Refresh Queued";
-                } else {
+            .subscribe(data => {
+                if (data.type && data.type == "error") {
+                    this.messagesService.showError("Problem with Index Rebuild", data.message);
                     this.disableRebuildIndex = false;
+                } else {
+                    this.indexValidationMessage = data.message;
                 }
             });
     }
