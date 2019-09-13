@@ -92,7 +92,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
         window.setTimeout(() => {
 
             let dispPanel = searchPanel.el.nativeElement.children[0];
-            dispPanel.style.top = (lineDims.bottom + dispPanel.getBoundingClientRect().height) + "px";
+            dispPanel.style.top = (lineDims.bottom + dispPanel.getBoundingClientRect().height + 1) + "px";
             dispPanel.style.left = (lineDims.left) + "px";
             dispPanel.style.display = "table";
             dispPanel.style.position = "fixed";
