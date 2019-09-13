@@ -84,7 +84,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.selectedtag.Value = tag.name;
         this.selectedtag.uid = tag.code;
         this.tagInput.nativeElement.value = tag.name;
-        this.search(event,tag.name);
+        this.search(event, tag.name);
+        this.saveTag({ Value: this.selectedtag.Value, uid: this.selectedtag.uid });
     }
 
     show(event, searchPanel, target) {
