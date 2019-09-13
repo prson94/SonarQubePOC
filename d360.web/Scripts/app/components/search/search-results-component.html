@@ -15,14 +15,14 @@
                                 <span class="lv1">
                                     <i class="fa fa-angle-right" data-bind="click: toggleVisibility,visible: showToggle,css: {'fa-angle-right' : showRow, 'fa-angle-down' : !showRow()}"></i>&nbsp;
                                 </span>
-                                <span class="caption" [ngClass]="{selected:category.Name==selectedCategory?.Name}">{{category.DisplayName}}</span>
+                                <span class="caption" [title]="category.Name" [ngClass]="{selected:category.Name==selectedCategory?.Name}">{{category.DisplayName}}</span>
                                 <span class="d3s-badge">{{category?.ResultCount}}</span>
                             </li>
-                            <li [title]="subCategory.DisplayName" (click)="selectCategory(subCategory);" *ngFor="let subCategory of category?.Categories">
+                            <li (click)="selectCategory(subCategory);" *ngFor="let subCategory of category?.Categories">
                                 <br />
                                 <span class="lv2">
                                 </span>
-                                <span [ngClass]="{selected:subCategory.Name==selectedCategory?.Name}" class="caption">{{subCategory.Name}}</span>
+                                <span [title]="subCategory.Name" [ngClass]="{selected:subCategory.Name==selectedCategory?.Name}" class="caption">{{subCategory.Name}}</span>
                                 <span class="d3s-badge">{{subCategory?.ResultCount}}</span>
                             </li>
                         </div>

@@ -1,0 +1,139 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-7991-node">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [graph].[UpdateAssetNode]
+	@uid uniqueidentifier,
+	@updatePath bit = 0
+as
+begin
+	declare @id bigint, @typeId bigint;
+	select	@id = id,
+			@typeId = assetTypeId
+	from	Asset
+	where	[uid] = @uid;
+
+	if exists (select 1 from graph.AssetNode where [uid] = @uid) and not exists (select 1 from Asset where [uid] = @uid)
+	begin
+		delete E
+		from    graph.AssetEdge E
+				inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
+		where   N.[uid] = @uid
+
+		delete from graph.AssetNode where [uid] = @uid;
+	end
+	else if exists (select 1 from graph.AssetNode where [uid] = @uid)
+	begin
+		update N
+		set     N.UpdatedOn = A.UpdatedOn,
+				N.[State] = A.[State],
+				N.AssetTypeID = A.AssetTypeID,
+				N.AssetTypeUid = T.[Uid]
+		from    graph.AssetNode N
+				inner join Asset A on A.ID = N.ID
+				inner join AssetType T on T.ID = A.AssetTypeId
+		where   A.[uid] = @uid;
+
+		if @updatePath = 1
+		begin
+			exec graph.PopulatePathsForAssetType @typeId, @id
+		end
+	end
+	else
+	begin
+		insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
+		select  A.ID,
+				A.Uid,
+				A.AssetTypeID,
+				T.[Uid] as AssetTypeUid,
+				A.[State],
+				A.UpdatedOn
+		from    Asset A
+				inner join AssetType T on T.ID = A.AssetTypeID
+		where   A.[uid] = @uid;
+
+		exec graph.PopulatePathsForAssetType @typeId, @id
+	end
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+drop procedure if exists [graph].[UpdateAssetNode]
+		]]>
+	</rollback>
+  </changeSet>
+    <changeSet author="MDonato" id="GOV-7991-edge">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [graph].[UpdateAssetEdge]
+	@uid uniqueidentifier
+as
+begin
+	if exists (select 1 from graph.AssetEdge where [uid] = @uid) and not exists (select 1 from [Intersect] where [uid] = @uid)
+	begin
+		delete from graph.AssetEdge where [uid] = @uid
+	end
+	else if exists (select 1 from graph.AssetEdge where [uid] = @uid)
+	begin
+		update E
+        set     E.UpdatedOn = I.UpdatedOn,
+                E.IntersectTypeID = I.IntersectTypeID,
+                E.IntersectTypeUid = T.[Uid],
+                E.PredicateID = T.PredicateID,
+                E.PredicateUid = P.[Uid],
+                E.PredicateType = P.[Type],
+                E.[State] = I.[State]
+        from    graph.AssetEdge E
+                inner join [Intersect] I on I.ID = E.ID
+                inner join IntersectType T on T.ID = I.IntersectTypeID
+                inner join [Predicate] P on P.ID = T.PredicateID
+        where   I.[uid] = @uid
+	end
+	else
+	begin
+		insert into graph.AssetEdge ($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn)
+        select  SG.$node_id,
+                OG.$node_id,
+                I.ID,
+                I.[Uid],
+                T.ID as IntersectTypeID,
+                T.[Uid] as IntersectTypeUid,
+                P.ID as PredicateID,
+                P.Uid as PredicateUid,
+                P.Type as PredicateType,
+		        '<props/>' as Properties,
+		        I.[State],
+		        coalesce(I.UpdatedOn, I.CreatedOn, getutcdate()) as UpdatedOn
+        from    [Intersect] I
+                inner join Asset SA on SA.[Object] = I.[Subject] and SA.ObjectID = I.SubjectID
+		        inner join graph.AssetNode SG on SG.ID = SA.ID
+		        inner join Asset OA on OA.[Object] = I.[Object] and OA.ObjectID = I.ObjectID
+		        inner join graph.AssetNode OG on OG.ID = OA.ID
+		        inner join IntersectType T on T.ID = I.IntersectTypeID
+		        inner join [Predicate] P on P.ID = T.PredicateID
+        where   I.[uid] = @uid and not exists (select 1 from graph.AssetEdge where [uid] = @uid)
+	end
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+drop procedure if exists [graph].[UpdateAssetEdge]
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

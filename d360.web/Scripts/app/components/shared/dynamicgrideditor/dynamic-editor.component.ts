@@ -27,6 +27,7 @@ import { BaseComponent } from '../base.component';
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { concat } from 'rxjs';
+import { forEach } from '@angular/router/src/utils/collection';
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -55,6 +56,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() selectedObject: string;
     @Input() selectedObjectID: number;
     @Input() adding: boolean = false;
+    @Input() isV2API: boolean = false;
 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
@@ -388,7 +390,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         return validators.length > 0 ? validators : null;
     }
 
+    public pad(s) :string { return (s < 10) ? '0' + s : s; }
+
     onSubmit() {
+        
         this.savingInProgress = true;
 
         let action = (this.selection == null ? "new" : "edit");
@@ -404,7 +409,15 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 let field = this.fields.find(f => f.FieldName == p);
 
                 if (this.form.value[p] instanceof Date) {
-                    this.form.value[p] = this.getUTCDate(this.form.value[p]);
+                    if (field != null && field.FieldType == 'Date' && this.isV2API) {
+                        
+                        let simpleDate = [this.pad(this.form.value[p].getMonth()+1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
+                        this.form.value[p] = simpleDate;
+                        console.log(simpleDate);
+                    }
+                    else {
+                        this.form.value[p] = this.getUTCDate(this.form.value[p]);
+                    }                    
                 } else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
                     if (this.form.value[p] != null) {
                         this.form.value[p] = this.form.value[p].Value;
@@ -412,6 +425,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
             }
         }
+        
 
         //takes the form and convert any array values to , separated string values
         for (var p in this.form.value) {
@@ -422,6 +436,24 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     values[p] = this.form.value[p];
                 }
             }
+        }
+
+        console.log(this.isV2API);
+
+        // if this is the v2 api we need to combine any link field types into the format stored in the db
+        // tallyfy|https://tallyfy.com/what-is-compliance-management/
+        if (this.isV2API) {
+            console.log('here');
+            let links = this.fields.filter(x => x.FieldType == 'Link');            
+            //need to get the link and url for each            
+            for (let link of links) {                
+                let url = values[link.FieldName + '_Url'];
+                delete values[link.FieldName + '_Url'];
+                let name = values[link.FieldName + '_Name'];
+                delete values[link.FieldName + '_Name'];
+                values[link.FieldName] = `${name}|${url}`;
+            }
+
         }
 
         if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {

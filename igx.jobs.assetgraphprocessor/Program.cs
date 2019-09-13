@@ -12,6 +12,7 @@ namespace igx.jobs.assetgraphprocessor
             config.UseDevelopmentSettings();
 #endif
             config.UseTimers();
+            config.UseServiceBus();
 
             var host = new JobHost(config);
             host.RunAndBlock();
