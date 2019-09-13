@@ -40,6 +40,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     private searchResults: any[] = [];
     private tags: any[];
     private searchTags: any[];
+    private resultPanel: any;
     private tagsLoading = false;
     private tagID: any;
     existingTag: boolean = false;
@@ -89,6 +90,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     show(event, searchPanel, target) {
+        this.resultPanel = searchPanel;
         searchPanel.show(event);
         let lineDims = target.getBoundingClientRect();
         window.setTimeout(() => {
@@ -183,6 +185,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
                                         this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                                         event.UseCount = 0;
                                         this.tagInput.nativeElement.value = "";
+                                        this.resultPanel.hide();
                                         this.ref.markForCheck();
                                     });
                             });
@@ -200,6 +203,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
                                 this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                                 event.UseCount = 0;
                                 this.tagInput.nativeElement.value = "";
+                                this.resultPanel.hide();
                                 this.ref.markForCheck();
 
                             });
