@@ -82,8 +82,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.isLoading = true;
         this.tagsService.getTagsList().subscribe(res => {
             if (res && res.length > 0) {
-                this.tags = res.sort((a, b) => a.Value.localeCompare(b.Value));
-                if (this.tags.length > 0) this.selected.push(this.tags[0]);
+                this.tags = res.sort((a, b) => a.Value.localeCompare(b.Value));                
             }
             this.isLoading = false;
         }, err => this.error = err);

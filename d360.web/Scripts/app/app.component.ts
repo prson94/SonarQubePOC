@@ -21,7 +21,7 @@ import { MessagesObservableService } from './services/messages-observable.servic
                 <main>
                     <d3s-right-sidebar #sidebar [menuOpen]="menuOpen" (changed)="setMaxHeight()"></d3s-right-sidebar>
                     <div class="row d3s-content-pane" [ngStyle]="{'height.px': maxContentPaneHeight}">>
-                        <div class="col s12">
+                        <div class="row">
                             <div [class.maincontent]="!menuOpen" [class.maincontent-open]="menuOpen">
                                 <router-outlet></router-outlet>
                             </div>

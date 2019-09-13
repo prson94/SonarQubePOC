@@ -26,7 +26,8 @@ import {
     GridAttributeFilterExpression
 } from '../../models/grid-definition.model';
 import {GridDefinitionService} from '../../services/grid-definition.service';
-import {ArtifactService} from '../../services/artifacts.service';
+import { ArtifactService } from '../../services/artifacts.service';
+import { AssetService } from '../../services/asset.service';
 import {PermissionsService} from '../../services/permissions.service';
 import {StateService} from '../../services/state.service';
 import {HeaderActionsService} from '../../services/header-actions.service';
@@ -36,11 +37,12 @@ import {SiteUrlHelpers} from '../../static/site-url-helpers';
 import {StringConstants} from '../../static/string-constants';
 import {ObjectDetailService} from '../../services/object-detail.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { AssetEditorModel } from '../../models/asset.model';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-artifact-grid',
-    providers: [GridDefinitionService, ArtifactService, PermissionsService, ObjectDetailService],
+    providers: [GridDefinitionService, ArtifactService, PermissionsService, ObjectDetailService, AssetService],
     templateUrl: './artifact-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -100,7 +102,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         private gridDefinitionService: GridDefinitionService,
         private artifactService: ArtifactService,
         private changeDetectorRef: ChangeDetectorRef,
-        private objectDetailService: ObjectDetailService
+        private objectDetailService: ObjectDetailService,
+        private assetService: AssetService
     ) {
         super();
                 
@@ -266,6 +269,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.showEditor = false;
 
         let values: any = {};
+        let asset: AssetEditorModel = new AssetEditorModel();
+        asset.Fields = {};
 
         //takes the form and convert any array values to , separated string values
         for (var p in event.item) {
@@ -275,16 +280,32 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 } else {
                     values[p] = event.item[p];
                 }
+            }            
+        }
+
+        //convert artifact to an asset
+        for (var p in values) {
+            if (p.toUpperCase() == "PARENTUID") {
+                asset.ParentUid = values[p];
+            }
+            else if (p.toUpperCase() == "UID") {
+                asset.Uid = values[p];
+            }
+            else if (p.toUpperCase() == "ASSETTYPEUID") {
+                //ignore
+            }
+            else {
+                asset.Fields[p] = values[p];                
             }
         }
 
         this
-            .artifactService
-            .saveArtifact(values)
+            .assetService
+            .saveAsset(this.artifactType.AssetTypeUID, asset)
             .subscribe(result => {
                 this.isEditing = false;
-                this.showMessageForResult(this.messagesService, result);
-                if (event.item.ID) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
+                this.showMessageForApiResult(this.messagesService, result, 'Artifact successfully added/updated.');
+                if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
                 this.getData();
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();

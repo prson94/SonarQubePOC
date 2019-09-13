@@ -42,4 +42,9 @@ namespace d360.core.queue
     {
         //No additional properties
     }
+
+    public class RebuildAssetGraphModel : QueueObject
+    {
+        //No additional properties
+    }
 }

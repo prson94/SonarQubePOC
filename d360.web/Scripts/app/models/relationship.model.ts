@@ -53,6 +53,7 @@ export class ObjectRelationshipCount {
     Name: string;
     Count: number;
     IntersectTypeID: number;
+    uid: number;
     Cardinality: number;
     AllowEditFromRelationshipEditor: boolean;
 }

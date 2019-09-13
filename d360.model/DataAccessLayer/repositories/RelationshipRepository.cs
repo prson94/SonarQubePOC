@@ -45,7 +45,16 @@ namespace d360.model.DataAccessLayer
         {
             var dbArgs = new DynamicParameters();
 
-            var countSql = "from [Intersect] I inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID";
+            var baseTableSql = @"from [Intersect] I 
+inner join IntersectType T on T.ID = I.IntersectTypeID 
+left join [Predicate] P on P.ID = T.PredicateID 
+left join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID 
+inner join AssetType ST on ( ( S.ID is not null and ST.ID = S.AssetTypeID ) or ( S.ID is null and ST.Object = I.Subject and ST.ObjectID = I.SubjectID ) )
+left join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID 
+inner join AssetType OT on ( ( O.ID is not null and OT.ID = O.AssetTypeID ) or ( O.ID is null and OT.Object = I.Object and OT.ObjectID = I.ObjectID ) ) ";
+            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + " coalesce(ST.ID,S.ID) is not null and coalesce(OT.ID,O.ID) is not null ";
+
+            var countSql = baseTableSql;
 
             List<FieldType> fieldTypes = null;
             bool filteringByFields = false;
@@ -67,7 +76,7 @@ namespace d360.model.DataAccessLayer
                     {
                         dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";
-                        countSql += $" inner join IntersectType T on T.ID = I.IntersectTypeID";
+                        //countSql += $" inner join IntersectType T on T.ID = I.IntersectTypeID";
                         fieldTypes = companyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }).ToList();
                     }
                 }
@@ -89,11 +98,11 @@ namespace d360.model.DataAccessLayer
                     {
                         dbArgs.Add("@predicateuid", predicateUid);
                         whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (P.Uid = @predicateuid)";
-                        if (!countSql.Contains("inner join IntersectType T"))
-                        {
-                            countSql += $" inner join IntersectType T on T.ID = I.IntersectTypeID";
-                        }
-                        countSql += $" inner join [Predicate] P on P.ID = T.PredicateID and P.[Uid] = @predicateuid";
+                        //if (!countSql.Contains("inner join IntersectType T"))
+                        //{
+                        //    countSql += $" inner join IntersectType T on T.ID = I.IntersectTypeID";
+                        //}
+                        //countSql += $" inner join [Predicate] P on P.ID = T.PredicateID and P.[Uid] = @predicateuid";
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "subjectuid"))
@@ -219,13 +228,7 @@ select	@pageSize as 'pageSize',
 				ST.Uid as 'Subject.AssetTypeUid',
 				O.Uid as 'Object.Uid',
 				OT.Uid as 'Object.AssetTypeUid'
-		from	[Intersect] I
-				inner join IntersectType T on T.ID = I.IntersectTypeID
-				left join [Predicate] P on P.ID = T.PredicateID
-				inner join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID
-				inner join AssetType ST on ST.ID = S.AssetTypeID
-				inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID
-				inner join AssetType OT on OT.ID = O.AssetTypeID
+		{baseTableSql}
                 {fieldJoins} 
         {whereClause} 
         order by I.IntersectTypeID
