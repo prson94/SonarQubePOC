@@ -66,7 +66,7 @@ namespace igx.jobs.bulkloadprocessor
                 var community = new CommunityContext(cache, queue, sec);
                 
                 var company = new CompanyContext(community, cache, queue, sec, true);
-                var repository = new AssetRepository(company, queue, storage);
+                var repository = new AssetRepository(company, queue, storage,community);
                 var isDev = (company.ObjectContext.Connection.DataSource.Contains("dev")) || (loadInfo.CompanyID == 8);
 
                 #endregion
