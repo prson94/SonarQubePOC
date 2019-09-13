@@ -92,15 +92,19 @@ export class TagView extends AdminBaseComponent implements OnInit {
         window.setTimeout(() => {
 
             let dispPanel = searchPanel.el.nativeElement.children[0];
+            dispPanel.style.top = (lineDims.bottom + dispPanel.getBoundingClientRect().height) + "px";
+            dispPanel.style.left = (lineDims.left) + "px";
             dispPanel.style.display = "table";
             dispPanel.style.position = "fixed";
-            dispPanel.style.bottom = (lineDims.top + dispPanel.getBoundingClientRect().height) + "px";
-            dispPanel.style.left = (lineDims.left) + "px";
             dispPanel.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
         }, 150);
     }
 
     search(event, searchValue) {
+        if (event.key != "Enter" && event.key != undefined) {
+            this.selectedtag.Value = undefined;
+            this.selectedtag.uid = undefined;
+        }
         if (event.key == "Enter") {
             if (this.selectedtag.Value == undefined)
                 this.selectedtag.Value = searchValue;
