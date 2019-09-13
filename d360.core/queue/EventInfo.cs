@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace d360.core.queue
 {
+
     public class EventObjectInfo
     {
         public SystemObjects Object { get; set; }
@@ -39,5 +40,20 @@ namespace d360.core.queue
         public long ItemStepID { get; set; }
 
         public long VersionStepTransitionID { get; set; }  
+    }
+
+    public class AssetEventInfo
+    {
+        public int CompanyID { get; set; }
+        public AssetEventType Type { get; set; }
+        public List<string> ChangedFieldNames { get; set; }
+        public Guid Uid { get; set; }
+    }
+
+    public enum AssetEventType
+    {
+        Node,
+        Edge,
+        Path
     }
 }
