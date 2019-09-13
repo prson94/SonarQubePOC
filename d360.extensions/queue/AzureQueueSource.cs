@@ -151,9 +151,14 @@ namespace d360.extensions.queue
             client.SendBatch(list);            
         }
 
+        public string GetTopicNameBySetting(string settingName)
+        {
+            return CloudConfigurationManager.GetSetting(settingName);
+        }
+
         private string getTopicName()
         {            
-            return (CloudConfigurationManager.GetSetting("EventBusTopicName") ?? "events-debug");
+            return (GetTopicNameBySetting("EventBusTopicName") ?? "events-debug");
         }
 
         public async Task CreateTopicMessagesAsync(List<EventInfo> events)
