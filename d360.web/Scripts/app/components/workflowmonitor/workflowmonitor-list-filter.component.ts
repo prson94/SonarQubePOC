@@ -28,7 +28,7 @@ import { map } from 'rxjs/operators';
                                                 <p-multiSelect [options]="items" [style]="{'width':'98%'}" [ngModel]="selection" (ngModelChange)="change($event)"></p-multiSelect>
                                             </td>
                                             <td *ngIf="showExport" style="width:32px">
-                                                <a style="font-size:1.1em" (click)="exportClick.emit()"><i class="fa fa-download"></i></a>
+                                                <a style="font-size:1.1em" (click)="exportClick.emit()" pTooltip="Export to Excel"><i class="fa fa-download"></i></a>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -44,7 +44,7 @@ import { map } from 'rxjs/operators';
                     <div class="row">
                         <div class="col s12" style="padding-right: 0px">
                             <div *ngIf="showExport" style="width: 32px; float: right">
-                                <a style="font-size:1.1em" (click)="exportClick.emit()"><i class="fa fa-download"></i></a>
+                                <a style="font-size:1.1em" (click)="exportClick.emit()" pTooltip="Export to Excel"><i class="fa fa-download"></i></a>
                             </div>
                         </div>
                     </div>
