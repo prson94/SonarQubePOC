@@ -28,10 +28,9 @@
             <input #tagInput class="tag-item-wrapper" [(ngModel)]="searchValue" (keyup)="search($event,searchValue)" type="text" placeholder="Click to add..">
         </a>
             <p-overlayPanel [ngClass]="'search-results'" [style.position]="'fixed'" #searchPanel>
-                <div *ngIf="tagsLoading"><i class="fa fa-spinner fa-spin"></i></div>
-                <div *ngIf="!tagsLoading" class="breadcrumb-search">
+                <div class="breadcrumb-search">
                     <div *ngFor="let sr of searchResults;">
-                        <div (click)="addTag($event,sr)" class="breadcrumb-search-result">{{sr.name}}</div>
+                        <div (click)="addTag($event,sr)" class="breadcrumb-search-result-tag">{{sr.name}}</div>
                     </div>
                 </div>
             </p-overlayPanel>

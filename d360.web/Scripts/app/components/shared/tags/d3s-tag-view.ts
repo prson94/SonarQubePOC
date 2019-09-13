@@ -18,6 +18,7 @@ import {
     DialogModule,
 } from 'primeng/primeng';
 import { debounceTime } from 'rxjs/operators';
+import { AuthenticationService } from '../../../services/authentication.service';
 
 
 @Component({
@@ -53,10 +54,17 @@ export class TagView extends AdminBaseComponent implements OnInit {
     private tagTooltip: TagType;
     private isTooltipLoaded: boolean = false;
 
-    constructor(private router: Router, private tagService: TagService, private messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, rightSidebarService: RightSidebarService, private ref: ChangeDetectorRef) {
+    constructor(private router: Router,
+        private tagService: TagService,
+        private messagesService: MessagesObservableService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title,
+        rightSidebarService: RightSidebarService,
+        private ref: ChangeDetectorRef,
+        private auth: AuthenticationService) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
     }
-
+    
     ngOnInit() {
         this.theDeleteCallback = this.deleteTags.bind(this);
         try {
@@ -97,7 +105,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
             if (this.selectedtag.Value == undefined)
                 this.selectedtag.Value = searchValue;
             if (this.selectedtag.Value != "")
-                this.saveTag(this.selectedtag);
+                this.saveTag({ Value: this.selectedtag.Value, uid: this.selectedtag.uid });
         }
         this.tagsLoading = true;
         clearTimeout(this.timeouthandle);

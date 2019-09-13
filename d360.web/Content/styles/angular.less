@@ -1406,6 +1406,28 @@ a.breadcrumb {
         }
     }
 
+    .breadcrumb-search-result-tag {
+        cursor: pointer;
+        padding-left: 20px;
+        padding-right: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size:medium;
+        color:black;
+
+        &:hover, &.hover {
+            background-color: @igx-lightblue-xlight;
+        }
+
+        &:active, &.active {
+            background: @igx-lightblue-light;
+        }
+
+        &.current-crumb {
+            font-weight: bold;
+        }
+    }
+
     .global-search-typeahead {
         .ui-autocomplete-panel {
             top: 40px !important;
@@ -3721,9 +3743,8 @@ button.tab-scroller {
         input[type=text] {
             background-color: #f1f1f1;
         }
-
-        &:hover {
-            background-color: #f1f1f1;
+        &:focus {
+            background:white;
         }
     }
 
@@ -3738,6 +3759,9 @@ button.tab-scroller {
             border-radius: 2px;
             height: 24px;
             padding: 0px 8px !important;
+        }
+        .input:focus{
+            background:white;
         }
 
         .tag-tooltip {
