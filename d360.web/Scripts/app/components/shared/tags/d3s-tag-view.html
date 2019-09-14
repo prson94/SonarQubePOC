@@ -15,7 +15,7 @@
                 {{tag.Value}}
             </div>
             <div *ngIf="isEditable" [pTooltip]="'Remove Tag'" tooltipPosition="top"  (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
-                <i style="padding-left:10px" class="fa fa-close"></i>
+                <i style="padding-left:10px" class="fa fa-times-circle"></i>
             </div>
         </a>
     </ng-container>
