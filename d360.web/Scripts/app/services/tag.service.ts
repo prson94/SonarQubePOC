@@ -114,6 +114,13 @@ export class TagService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)))
     }
 
+    searchTagsTypeAhead(q: string, maxNumberOfResults: number = 200): Observable<TagType[]> {
+        let url = `api/v2/tags/search?value=${q}&maxNumberOfResults=${maxNumberOfResults}`;
+        return this.http.get(url)
+            .pipe(map(response => <any[]>response),
+                catchError(err => this.handleError(err, true)))
+    }
+
     exportTags(filters: any, sort) {
         this.http.get(`api/v2/tags/export?globalSearch=${filters.globalSearch}&value=${filters.Value}&useCount=${filters.UseCount}&sortBy=${sort.field}&sortOrder=${sort.order}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Tags'));
     }

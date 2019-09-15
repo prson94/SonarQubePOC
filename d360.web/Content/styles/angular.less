@@ -1341,6 +1341,7 @@ a.breadcrumb {
 }
 
 .search-results {
+    z-index:10;
     .ui-overlaypanel-content {
         padding: 0px;
         border-radius: 3px;
@@ -1392,6 +1393,28 @@ a.breadcrumb {
         padding-right: 40px;
         overflow: hidden;
         text-overflow: ellipsis;
+
+        &:hover, &.hover {
+            background-color: @igx-lightblue-xlight;
+        }
+
+        &:active, &.active {
+            background: @igx-lightblue-light;
+        }
+
+        &.current-crumb {
+            font-weight: bold;
+        }
+    }
+
+    .breadcrumb-search-result-tag {
+        cursor: pointer;
+        padding-left: 20px;
+        padding-right: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size:medium;
+        color:black;
 
         &:hover, &.hover {
             background-color: @igx-lightblue-xlight;
@@ -3739,6 +3762,20 @@ button.tab-scroller {
         }
     }
 
+    input {
+        border: 1px solid transparent;
+        background-color: #f1f1f1;
+        height: 24px;
+        width: 110px;
+
+        input[type=text] {
+            background-color: #f1f1f1;
+        }
+        &:focus {
+            background:white;
+        }
+    }
+
     a.link-button {
         margin-bottom: 6px;
 
@@ -3750,6 +3787,9 @@ button.tab-scroller {
             border-radius: 2px;
             height: 24px;
             padding: 0px 8px !important;
+        }
+        .input:focus{
+            background:white;
         }
 
         .tag-tooltip {
