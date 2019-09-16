@@ -303,4 +303,5 @@
   <include file="scripts/GOV-7991.xml"/> <!-- graph procs to update single edge/node/path -->
   <include file="scripts/GOV-7680.xml"/> <!-- AddAuditEntry - proc -->
   <include file="scripts/GOV-8183.xml"/> <!-- Asset Browser - Proc Updates -->
+  <include file="scripts/GOV-8177.xml"/> <!-- IGC - Proc Updates -->
 </databaseChangeLog>

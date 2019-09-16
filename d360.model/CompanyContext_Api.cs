@@ -225,7 +225,7 @@ where	ExecutionID = @executionID
                 Connection.Execute($@"
     declare @hasAssetTypePermission bit = 0
 
-    select @hasAssetTypePermission = case when exists (select AssetTypeID from UserAssetPermissions(3, @assetTypeID) where PermissionsBitMask & @p = @p and AssetID = 0) then 1 else 0 end
+    select @hasAssetTypePermission = case when exists (select AssetTypeID from UserAssetPermissions(@resourceID, @assetTypeID) where PermissionsBitMask & @p = @p and AssetID = 0) then 1 else 0 end
 
     if @hasAssetTypePermission = 0
     begin
@@ -237,7 +237,7 @@ where	ExecutionID = @executionID
 											    and E.ExecutionID = @executionID 
 											    and T.AssetID is not null
 											    and T.AssetID not in (select AssetID from UserAssetPermissions(E.ResourceID, @assetTypeID) where PermissionsBitMask & @p = @p)
-    end", new { executionID, assetTypeID = at.ID, p = (int)p }, commandTimeout: timeout);
+    end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = CurrentResourceID }, commandTimeout: timeout);
             }
         }
 
