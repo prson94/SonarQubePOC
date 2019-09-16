@@ -3312,7 +3312,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             string sql = $@"SELECT 
                             cast(S.Value * 100 as int) as 'Score',
                             S.EffectiveDate as 'EffectiveDate',  
-                            f.FormattedValue as Status 
+                            COALESCE(f.FormattedValue,ft.DefaultFormattedValue) as Status 
                             from Asset A
                             left Join AssetType AT on A.AssetTypeID = AT.ID
                             left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
