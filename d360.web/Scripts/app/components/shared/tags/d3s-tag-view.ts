@@ -41,6 +41,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     private tags: any[];
     private searchTags: any[];
     private resultPanel: any;
+    private targetPanel: any;
     private tagsLoading = false;
     private tagID: any;
     existingTag: boolean = false;
@@ -82,6 +83,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     addTag(event,tag) {
+        this.tagInput.nativeElement.style.background = "white";
         this.selectedtag.Value = tag.name;
         this.selectedtag.uid = tag.code;
         this.tagInput.nativeElement.value = tag.name;
@@ -91,7 +93,11 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
     show(event, searchPanel, target) {
         this.resultPanel = searchPanel;
+        this.targetPanel = target;
         searchPanel.show(event);
+        this.tagInput.nativeElement.style.background = "white";
+        target.style.background = "white";
+        target.style.border = "1px solid #66A9D6";
         let lineDims = target.getBoundingClientRect();
         window.setTimeout(() => {
 
@@ -121,6 +127,11 @@ export class TagView extends AdminBaseComponent implements OnInit {
             this.tagService.searchTagsTypeAhead(searchValue.toLowerCase(), 10)
                 .subscribe(res => {
                     if (res && res.length > 0) {
+                        this.searchResults = res;
+                        this.tagsLoading = false;
+                        this.ref.markForCheck();
+                    }
+                    else if (res && res.length == 0) {
                         this.searchResults = res;
                         this.tagsLoading = false;
                         this.ref.markForCheck();
@@ -160,6 +171,10 @@ export class TagView extends AdminBaseComponent implements OnInit {
                 this.messagesService.showError('Error', 'Tag already assigned to Asset');
             }
         })
+        if (event.Value.includes("|")) {
+            this.existingTag = true;
+            this.messagesService.showError('Error', "Tag can't contain | character");
+        }
         if (!this.existingTag) {
             this.tagService.doesTagExist(event.Value)
                 .subscribe(result => {
@@ -184,7 +199,9 @@ export class TagView extends AdminBaseComponent implements OnInit {
                                         }
                                         this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                                         event.UseCount = 0;
+                                        this.searchResults = [];
                                         this.tagInput.nativeElement.value = "";
+                                        this.resetStyle();
                                         this.resultPanel.hide();
                                         this.ref.markForCheck();
                                     });
@@ -203,6 +220,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
                                 this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                                 event.UseCount = 0;
                                 this.tagInput.nativeElement.value = "";
+                                this.searchResults = [];
+                                this.resetStyle();
                                 this.resultPanel.hide();
                                 this.ref.markForCheck();
 
@@ -238,6 +257,11 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.isShowAll = !this.isShowAll;
         event.stopPropagation();
         this.setVisibility();
+    }
+    resetStyle() {
+        this.targetPanel.style.background = "#f0f0f0";
+        this.targetPanel.style.border = "1px solid #f0f0f0";
+        this.tagInput.nativeElement.style.background = "#f0f0f0";
     }
 
     setVisibility() {

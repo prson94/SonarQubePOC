@@ -1148,6 +1148,13 @@ namespace d360.web.Controllers
                 if (!Company.CurrentResourceIsAdmin)
                     throw new UnauthorizedException(FormInfo.Permisions_Error_Add, FormInfo.Permisions_Error_Add);
 
+                if (model.AssetType.UseAsTransformation == true)
+                {
+                    var useAsTransformationLimit = Community.GetCompanySettingByKey<int>("UseAsTransformationLimit");
+                    var totalUseAsTransform = Company.Filter<AssetType>(i => i.UseAsTransformation == true).Count();
+                    if (totalUseAsTransform > useAsTransformationLimit)
+                        throw new GenericException(HttpStatusCode.BadRequest, "Transformation limit", "The total number of asset types exceeds the Transformation limit ");
+                }
                 //sanitize HTML input
                 if (!string.IsNullOrEmpty(model?.AssetType?.Description ?? null))
                 {
@@ -1227,7 +1234,6 @@ namespace d360.web.Controllers
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
                             Hierarchical = true,
-                            UseAsTransformation = model.AssetType.UseAsTransformation,
                             Class = AssetTypeClass.Policy
                         };
                         Company.Add(p);
@@ -1249,7 +1255,6 @@ namespace d360.web.Controllers
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
                             Hierarchical = true,
-                            UseAsTransformation = model.AssetType.UseAsTransformation,
                             Class = AssetTypeClass.Model
                         };
 
@@ -1280,7 +1285,6 @@ namespace d360.web.Controllers
                             State = State.Active,
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
-                            UseAsTransformation = model.AssetType.UseAsTransformation,
                             Class = AssetTypeClass.Reference
                         };                                            
                         Company.Add(rt);
@@ -1366,6 +1370,14 @@ namespace d360.web.Controllers
                 if (!Company.HasAssetTypePermission(ot, model.AssetType.ObjectID, Permission.ModifyAsset))
                     throw new UnauthorizedException(FormInfo.Permisions_Error_Edit, FormInfo.Permisions_Error_Edit);
 
+                if (model.AssetType.UseAsTransformation == true)
+                {
+                    var useAsTransformationLimit = Community.GetCompanySettingByKey<int>("UseAsTransformationLimit");
+                    var totalUseAsTransform = Company.Filter<AssetType>(i => i.UseAsTransformation == true).Count();
+                    if (totalUseAsTransform > useAsTransformationLimit)
+                        throw new GenericException(HttpStatusCode.BadRequest, "Transformation limit", "The total number of asset types exceeds the Transformation limit ");
+                }
+
                 //sanitize HTML input
                 if (!string.IsNullOrEmpty(model?.AssetType?.Description ?? null))
                 {
@@ -1420,7 +1432,6 @@ namespace d360.web.Controllers
                         p.DisplayFormat = model.AssetType.DisplayFormat;
                         p.Description = model.AssetType.Description;
                         p.HierarchyMaximumDepth = model.AssetType.HierarchyMaximumDepth;
-                        p.UseAsTransformation = model.AssetType.UseAsTransformation;
                         Company.Update(p);
 
                         parentType = SystemObjects.PolicyType;
@@ -1435,7 +1446,6 @@ namespace d360.web.Controllers
                         rt.Notes = model.AssetType.Notes;
                         rt.UpdatedBy = Company.CurrentResourceID;
                         rt.UpdatedOn = DateTime.UtcNow;
-                        rt.UseAsTransformation = model.AssetType.UseAsTransformation;
 
                         Company.Update(rt);
 
@@ -1452,7 +1462,6 @@ namespace d360.web.Controllers
                         assetType.DisplayFormat = model.AssetType.DisplayFormat;
                         assetType.Description = model.AssetType.Description;
                         assetType.HierarchyMaximumDepth = model.AssetType.HierarchyMaximumDepth;
-                        assetType.UseAsTransformation = model.AssetType.UseAsTransformation;
 
                         if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
                             throw new GenericException(HttpStatusCode.BadRequest, "Invalid Maximum Level", "Invalid Maximum Model level specified must be a value between 1 and 10");

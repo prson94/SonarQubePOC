@@ -53,8 +53,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     @ViewChild('badge') badge: ElementRef;
     @ViewChild('noScore') noScore: ElementRef;
     @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
-    private statistics: ObjectStatistics;
-    private lastCalculatedDate: number;
+    private statistics: ObjectStatistics;    
     private actionsAssigned: boolean = false;
     private currentResouceID: number;
 
@@ -226,9 +225,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         );
         this.workflowService.getIssues(objectID, objectName)
             .subscribe(result => {
-                let issues = result;
-                if (issues.length && issues.length > 0)
-                    this.actionsAssigned = issues.find(x => x.ResourceID === this.currentResouceID) !== undefined;
+                let issues = result;                
+                if (issues.length && issues.length > 0) {                    
+                    this.actionsAssigned = true;
+                }
+                this.ref.markForCheck();
             });  
 
         this.surveysService.getObjectSurvey(objectTypeID, objectType, objectID, objectName)

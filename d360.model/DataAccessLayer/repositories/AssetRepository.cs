@@ -23,11 +23,13 @@ namespace d360.model.DataAccessLayer
         internal ICompanyContext CompanyContext;
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
-        public AssetRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
+        internal ICommunityContext Community;
+        public AssetRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, ICommunityContext community)
         {
             this.CompanyContext = companyContext;
             this.QueueSource = queueSource;
             this.StorageProvider = storageProvider;
+            this.Community = community;
         }
         public Asset GetAssetByUID(Guid assetUid)
         {
@@ -902,6 +904,18 @@ namespace d360.model.DataAccessLayer
             return CompanyContext.Any<Asset>(i => i.uid == uid);
         }
 
+        public bool IsReachedTransformationLimit(AssetTypeInsert model)
+        {
+            bool reached = false;
+            if (model.Class == AssetTypeClass.Glossary && model.UseAsTransformation == true)
+            {
+                var useAsTransformationLimit = Community.GetCompanySettingByKey<int>("UseAsTransformationLimit");
+                var totalUseAsTransform = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Count();
+                if (totalUseAsTransform > useAsTransformationLimit)
+                    reached = true;
+            }
+            return reached;
+        }
         #region Private
         private void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns)
         {
