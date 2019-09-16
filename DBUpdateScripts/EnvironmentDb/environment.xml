@@ -304,4 +304,5 @@
   <include file="scripts/GOV-7680.xml"/> <!-- AddAuditEntry - proc -->
   <include file="scripts/GOV-8183.xml"/> <!-- Asset Browser - Proc Updates -->
   <include file="scripts/GOV-8177.xml"/> <!-- IGC - Proc Updates -->
+  <include file="scripts/GOV-8160.xml"/> <!-- GetDynamicAssets proc - Field from relationship optimization -->
 </databaseChangeLog>
