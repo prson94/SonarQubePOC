@@ -70,12 +70,8 @@ namespace d360.web.Controllers
         
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id)
         {
-            var list = new List<DetailReadOnlyRowModel>();
-            var tagList = new List<ReadOnlyFieldValue>();
-            string tagDisplayDescription = "";
-            string tagDisplayName = "";
-            string tagCategory = "";
-            
+            var list = new List<DetailReadOnlyRowModel>();            
+                        
             var details = Company.GetObjectDetail(type.ToString(), id);
             if (details != null)
             {
@@ -256,18 +252,7 @@ namespace d360.web.Controllers
                     }
                     else if (ft.Type == DataType.Tag.ToString())
                     {
-                        tagDisplayDescription = ft.DisplayDescription;
-                        tagDisplayName = ft.FriendlyName;
-                        tagCategory = ft.Category;
-                        var ro = new ReadOnlyFieldValue
-                        {
-                            Value = ft.FriendlyName,
-                            TooltipType = "tag",
-                            TooltipID = ft.ObjectID,
-                            TooltipContext = "Preview",
-                            TooltipUrl = ""
-                        };
-                        tagList.Add(ro);
+                        list.AddRange(RenderTagField(ft, type, id));
                     }
                     else if (ft.Type == DataType.Attribute.ToString())
                     {
@@ -494,7 +479,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 });
             }
 
-            if (tagList.Count > 0)
+           /* if (tagList.Count > 0)
             {
                 var title = new ReadOnlyField
                 {
@@ -511,7 +496,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     Category = tagCategory
                 });
 
-            }
+            }*/
             return list;
         }
 
@@ -1687,6 +1672,35 @@ order by 'Name'";
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, list);
+        }
+
+        #endregion
+
+        #region Tag Fields
+
+        private List<DetailReadOnlyRowModel> RenderTagField(FieldType ft, SystemObjects type, int id)
+        {
+            var list = new List<DetailReadOnlyRowModel>();
+            
+            list.Add(new DetailReadOnlyRowModel
+            {
+                columns = 1,
+                FirstColumnFields = new List<ReadOnlyField> {
+                    new ReadOnlyField {
+                        Column = 1,
+                        Name = ft.FriendlyName,
+                        FieldDescription = ft.DisplayDescription,
+                        FieldName = ft.Name,
+                        ShowIfEmpty = true,
+                        DataType = "tag",
+                        Values = GetTagsValues(type, id)
+
+                    }
+                },
+                Category = ft.Category
+            });
+
+            return list;
         }
 
         #endregion
