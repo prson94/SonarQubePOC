@@ -114,7 +114,7 @@ export class TagService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)))
     }
 
-    searchTagsTypeAhead(q: string, maxNumberOfResults: number = 200): Observable<TagType[]> {
+    searchTagsTypeAhead(q: string, maxNumberOfResults: number = 200): Observable<any[]> {
         let url = `api/v2/tags/search?value=${q}&maxNumberOfResults=${maxNumberOfResults}`;
         return this.http.get(url)
             .pipe(map(response => <any[]>response),

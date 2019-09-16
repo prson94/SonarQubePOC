@@ -127,7 +127,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
             this.tagService.searchTagsTypeAhead(searchValue.toLowerCase(), 10)
                 .subscribe(res => {
                     if (res && res.length > 0) {
-                        this.searchResults = res;
+                        this.searchResults = res.sort((a, b) => a.name.localeCompare(b.name));
                         this.tagsLoading = false;
                         this.ref.markForCheck();
                     }
@@ -259,6 +259,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.setVisibility();
     }
     resetStyle() {
+        this.tagInput.nativeElement.value = "";
         this.targetPanel.style.background = "#f0f0f0";
         this.targetPanel.style.border = "1px solid #f0f0f0";
         this.tagInput.nativeElement.style.background = "#f0f0f0";
