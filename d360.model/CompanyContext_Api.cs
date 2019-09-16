@@ -802,6 +802,28 @@ from	api.ExecutionField T
             }
         }
 
+        private void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null)
+        {
+            List<AssetEventInfo> events = new List<AssetEventInfo>();
+
+            foreach (var result in results)
+            {
+                if (result.Success)
+                {
+                    events.Add(new AssetEventInfo
+                    {
+                        CompanyID = CurrentCompanyID,
+                        Uid = result.Uid,
+                        ChangedFieldNames = (fields != null && fields.ContainsKey(result.Uid)) ? fields[result.Uid] : null,
+                        Type = result.Object == "IntersectType" ? AssetEventType.Edge : AssetEventType.Node
+                    });
+                }
+            }
+
+            _ = QueueSource.CreateTopicMessagesAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
+
+        }
+        
         #region Validation
 
         private List<DataRow> ValidateFields(
@@ -1128,7 +1150,7 @@ from	IntersectType I
             if (executionItemDupes.Any())
             {
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
+                results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
             }
             else
             {
@@ -1136,7 +1158,7 @@ from	IntersectType I
                 if (uidDupes.Any())
                 {
                     execution.ErrorMessage = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-                    results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
+                    results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
                 }
                 else
                 {
@@ -1856,6 +1878,8 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                         Connection.Close();
 
+                        SendAssetGraphEvents(results);
+
                         if (sendWorkflowEvents)
                         {
                             SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
@@ -2093,7 +2117,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             if (dupes.Any())
             {
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
+                results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
             }
             else
             {
@@ -2105,7 +2129,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                 if (uidDupes.Any())
                 {
                     execution.ErrorMessage = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
-                    results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
+                    results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
                 }
                 else
                 {
@@ -2997,6 +3021,10 @@ from	api.ExecutionAsset T
 
                         Connection.Close();
 
+                        var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
+
+                        SendAssetGraphEvents(results, changedFields);
+
                         if (sendWorkflowEvents)
                         {
                             SendWorkflowEvents(at.Object, at.ObjectID, results);
@@ -3447,6 +3475,8 @@ end",
 
                     Connection.Close();
 
+                    SendAssetGraphEvents(results);
+
                     if (sendWorkflowEvents)
                         SendWorkflowEvents("IntersectType", rt.ID, results);
                 }
@@ -3454,13 +3484,19 @@ end",
             return results;
         }
 
-        public void DeleteRelationships(List<int> parentRelationships, List<int> childrenRelationships, bool sendWorkflowEvents)
+        public void DeleteRelationships(List<DatabaseBulkRelationshipResult> parentRelationships, List<DatabaseBulkRelationshipResult> childrenRelationships, bool sendWorkflowEvents)
         {
             if (!sendWorkflowEvents)
                 this.IsEventingEnabled = false;
 
-            Delete<Intersect>(x => childrenRelationships.Contains(x.ID));
-            Delete<Intersect>(x => parentRelationships.Contains(x.ID));
+            var parentIds = parentRelationships.Select(p => p.ObjectID).ToList();
+            var childIds = childrenRelationships.Select(c => c.ObjectID).ToList();
+
+            Delete<Intersect>(x => childIds.Contains(x.ID));
+            Delete<Intersect>(x => parentIds.Contains(x.ID));
+
+            SendAssetGraphEvents(parentRelationships);
+            SendAssetGraphEvents(childrenRelationships);
 
             this.IsEventingEnabled = true;
         }

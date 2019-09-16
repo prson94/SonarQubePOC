@@ -457,8 +457,8 @@ from	IntersectType I
             var forDeleteCheck = await companyContext.QueryAsync<dynamic>(getRelationshipIDsForDeleting, new { intersectTypeId = intersectType.ID });
 
 
-            List<int> parentRelationships = new List<int>();
-            List<int> childrenRelationships = new List<int>();
+            var parentRelationships = new List<DatabaseBulkRelationshipResult>();
+            var childrenRelationships = new List<DatabaseBulkRelationshipResult>();
 
             foreach (var rel in relationships)
             {
@@ -482,10 +482,21 @@ from	IntersectType I
 
                 foreach (var item in deleteItems)
                 {
-                    if (rel.Uid == Guid.Parse(item.Uid.ToString()))
-                        parentRelationships.Add(int.Parse(item.ID.ToString()));
-                    else
-                        childrenRelationships.Add(int.Parse(item.ID.ToString()));
+                    if (int.TryParse(item.ID.ToString(), out int id))
+                    {
+                        var uid = Guid.Parse(item.Uid.ToString());
+                        var result = new DatabaseBulkRelationshipResult
+                        {
+                            Uid = uid,
+                            Object = "Intersect",
+                            ObjectID = id
+                        };
+
+                        if (rel.Uid == uid)
+                            parentRelationships.Add(result);
+                        else
+                            childrenRelationships.Add(result);
+                    }
                 }
 
                 response.Add(status);
