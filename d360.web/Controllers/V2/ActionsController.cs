@@ -76,7 +76,7 @@ namespace d360.web.Controllers.V2
                                     GR.uid as UpdatedByUid";
             string whereSql = "";
             string joinsSql = " ";
-            string orderBySQL = " order By AssetUid ";
+            string orderBySQL = " order By CreatedOn ";
             List<string> queries = new List<string>();
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
@@ -85,7 +85,7 @@ namespace d360.web.Controllers.V2
             ResourceApiViewModel model = new ResourceApiViewModel();
             var pageSize = 5;
             var pageNum = 1;
-            string order = "AssetUid";
+            string order = "CreatedOn";
             var queryParams = Request.GetQueryNameValuePairs();
             queryParams.ToList().ForEach(q =>
             {
@@ -227,7 +227,7 @@ namespace d360.web.Controllers.V2
                 model.pageSize = pageSize;
 
                 string offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-                if (orderBySQL != " order By AssetUid ")
+                if (orderBySQL != " order By CreatedOn ")
                     orderBySQL += " END ";
                 finalSql += orderBySQL + offsetSql;
             }
