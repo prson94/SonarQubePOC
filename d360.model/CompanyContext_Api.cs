@@ -815,7 +815,7 @@ from	api.ExecutionField T
                         CompanyID = CurrentCompanyID,
                         Uid = result.Uid,
                         ChangedFieldNames = (fields != null && fields.ContainsKey(result.Uid)) ? fields[result.Uid] : null,
-                        Type = result.Object == "IntersectType" ? AssetEventType.Edge : AssetEventType.Node
+                        Type = result.Object == "Intersect" ? AssetEventType.Edge : AssetEventType.Node
                     });
                 }
             }
