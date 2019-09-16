@@ -51,7 +51,7 @@ namespace igx.jobs.assetgraphprocessor
                                 dbArgs.Add($"@field{i}", info.ChangedFieldNames[i]);
                             }
 
-                            fieldList = string.Join(",", dbArgs.ParameterNames.ToList());
+                            fieldList = string.Join(",", dbArgs.ParameterNames.Select(p => $"@{p}"));
                             dbArgs.Add("@uid", info.Uid);
 
                             int keyFieldCount = (await companyConnection.QueryAsync<int>($@"
