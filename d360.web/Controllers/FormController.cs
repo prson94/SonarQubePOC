@@ -9434,7 +9434,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             int objectTypeID = -1;
             string parentType = string.Empty;
-            bool useAssetJoin = false;
 
             #region Resolve Type
 
@@ -9473,10 +9472,8 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 targetTypeID = relationshipType.SubjectID;
             }
 
-            if (targetType == SystemObjects.ArtifactType.ToString() || targetType == SystemObjects.ReferenceItemType.ToString())
-            {
-                useAssetJoin = true;
-            }
+            var targetAssetType = Company.Filter<AssetType>(i => i.Object == targetType && i.ObjectID == targetTypeID).SingleOrDefault();
+            if (targetAssetType == null) throw new NotFoundException("target asset type");
 
             #endregion
 
@@ -9484,19 +9481,29 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             var sql = "";
 
-           var subSql = $@"(
-select		D.ID,
-            D.[Object],
-            D.ObjectID,
-            D.uid
-from		Asset D
-            inner join AssetType AST on D.AssetTypeID = AST.ID
+            var PermissionJoins = "";
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                PermissionJoins = @"inner join UserAssetPermissions(@userId,@targetAssetTypeId) P on P.PermissionsBitMask & 1024 = 1024 and P.AssetTypeID = A.AssetTypeID and (P.AssetID = A.ID or P.AssetID = 0)";
+            }
+
+            var subSql = $@"(
+select		A.ID,
+            A.[Object],
+            A.ObjectID,
+            A.Uid
+from		Asset A
+            inner join AssetType T on A.AssetTypeID = T.ID
 			left join [Intersect] I on	I.IntersectTypeID = @it and (
-											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = D.[Object] and I.ObjectID = D.ObjectID) ) OR
-											( (I.Subject = D.[Object] and I.SubjectID = D.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
-										)
-where		I.ID is null and AST.ObjectID = @targetTypeID and AST.[Object] = @targetType and D.ObjectID != @id
-) C on {(useAssetJoin ? "C.ID" : "C.ObjectID")} = O.ID";
+											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = A.[Object] and I.ObjectID = A.ObjectID) ) OR
+											( (I.Subject = A.[Object] and I.SubjectID = A.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
+										) {PermissionJoins}
+where		I.ID is null 
+            and A.[State] = 1 
+            and T.ObjectID = @targetTypeID 
+            and T.[Object] = @targetType 
+            and A.ObjectID != @id
+) C";
 
             switch (targetType)
             {
@@ -9511,13 +9518,14 @@ select	'FusionAttribute' as [Object],
         F.Name + '.' + FA.TextPath as Name
 from	FusionAttribute FA with(nolock)
 		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
-        inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectId = FA.ID
+        inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectId = FA.ID 
+        {PermissionJoins}
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]
 					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
-        and FA.ID != @id
+        and FA.ID != @id 
 order by F.Name, FA.TextPath";
                     }
                     else
@@ -9582,13 +9590,14 @@ from	FusionAttribute FA with(nolock)
 		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
         inner join FusionOwner FO on FO.FusionID = FA.FusionID
         inner join @h H on H.ID = FO.ASSETID
-        inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectID = FA.ID
+        inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectID = FA.ID 
+        {PermissionJoins}
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]
 					where	IntersectTypeID = @it and ( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
-        and FA.ID != @id
+        and FA.ID != @id 
 order by 3";
                     }
                     break;
@@ -9609,7 +9618,7 @@ where	FA.ID not in (
 					from	[IntersectDetail]
 					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
-        and FA.ID != @id
+        and FA.ID != @id 
 order by F.Name, FA.DisplayValue";
                     break;
                 #endregion
@@ -9634,7 +9643,7 @@ where	D.ID not in (
 							 ( (SubjectType = 'Group') AND (Object = @source and ObjectID = @id) )
 							)
 					)
-        and D.ID != @id
+        and D.ID != @id 
 order by D.Name";
                     break;
                 #endregion
@@ -9672,7 +9681,7 @@ select	'ReferenceItemType' as [Object],
         r.ObjectID as ObjectID, 
         r.uid,
         r.Name as Name
-from	[dbo].[AssetType] r with(nolock)
+from	AssetType r with(nolock)
 where   r.[objectId] not in (
 					select	case 
                                 when SubjectType = 'ReferenceItemType' then SubjectID
@@ -9690,27 +9699,7 @@ order by r.Name";
                     }
                     else
                     {
-                        sql = $@"
-select	'ReferenceItem' as [Object], 
-        AD.ObjectID as ObjectID, 
-        AD.uid,
-        AD.DisplayValue as Name
-from	AssetDetail AD with(nolock)
-where   AD.[ObjectId] not in (
-					select	case 
-                                when SubjectType = 'ReferenceItemType' then SubjectID
-                                else ObjectID
-                            end
-					from	[IntersectDetail]
-					where	IntersectTypeID = @it and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'ReferenceItem' and ObjectTypeID = AD.TypeId) ) OR
-							 ( (SubjectType = 'ReferenceItem' and SubjectTypeID = AD.TypeId) AND (Object = @source and ObjectID = @id) )
-							)
-					)
-        and AD.[Object]='ReferenceItem'
-        and AD.TypeId = @targetTypeID
-        and AD.[ObjectId] != @id
-order by AD.DisplayValue";
+                        sql = $@"select C.uid, C.Object, D.DisplayValue as Name from {subSql} inner join AssetDisplayValue D on D.AssetID =  C.ID order by D.DisplayValue";
                     }
                     break;
                 #endregion
@@ -9722,7 +9711,7 @@ order by AD.DisplayValue";
 select	'RuleImplementation' as [Object], 
         r.ID as ObjectID, 
         coalesce(r.Name, 'Implementation ' + cast(r.ID as varchar)) as Name
-from	[dbo].[ruleimplementation] r with(nolock)
+from	RuleImplementation r with(nolock)
 where   r.ID not in (
 					select	case 
                                 when SubjectType = 'RuleImplementation' then SubjectID
@@ -9762,40 +9751,19 @@ order by r.Name";
                     break;
                 #endregion
                 case "ArtifactType":
-                    sql = $@"select C.uid, C.Object ,ADisp.DisplayValue as Name from AssetDetail O inner join {subSql} inner join Asset Ass on (Ass.ObjectID = O.ObjectID and Ass.[Object] = 'Artifact') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
-                    break;
-
                 case "LookupType":
-                    sql = $@"select C.uid, C.Object ,O.Name from [LookupType] O inner join {subSql} order by O.Name";
-                    break;
                 case "RuleType":
-                    sql = $@"select C.uid,C.ObjectID, C.Object ,O.DisplayValue AS Name from [Rule] O inner join {subSql}  inner join Asset Ass on (Ass.ObjectID = O.ID and Ass.[Object] = 'Rule') cross apply [dbo].[GetAssetDisplayValueById](Ass.ID) ADisp order by ADisp.DisplayValue";
+                    sql = $@"select C.uid, C.Object, D.DisplayValue as Name from {subSql} inner join AssetDisplayValue D on D.AssetID =  C.ID order by D.DisplayValue";
                     break;
                 case "PolicyType":
                 case "TaxonomyType":
-                    sql = $@"
-                                    select	A.UID as uid,
-                                            TP.TextPath as Name ,
-                                            A.Object
-                                    from	AssetDetail A 
-                                            cross apply dbo.GetAssetTextPathById(A.ID, '/') TP 
-                                    		left join [Intersect] I on	I.IntersectTypeID = @it and (
-                                    											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = A.[Object] and I.ObjectID = A.ObjectID) ) OR
-                                    											( (I.Subject = A.[Object] and I.SubjectID = A.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
-                                    										)
-                                    where   A.Type = @targetType 
-                                            and A.TypeID = @targetTypeID 
-                                            and A.[State] = 1 
-                                            and A.ObjectID != @id
-                                            and A.ID not in ({GetNoReadSqlStatement()}) 
-                                            and I.ID is null
-                                    order by TP.TextPath";
+                    sql = $@"select	c.uid, TP.TextPath as Name, c.Object from {subSql} cross apply dbo.GetAssetTextPathById(C.ID, '/') TP order by TP.TextPath";
                     break;
             }
 
             #endregion
 
-            var items = Company.Query<dynamic>(sql, new { targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId }).Select(i => new { Text = i.Name, Value = $"{i.uid}", ObjectType = i.Object }).ToList();
+            var items = Company.Query<dynamic>(sql, new { targetAssetTypeId = targetAssetType.ID, targetType, targetTypeID, source = type.ToString(), id = objectId, it = intersectTypeId, userId = Company.CurrentResourceID }).Select(i => new { Text = i.Name, Value = $"{i.uid}", ObjectType = i.Object }).ToList();
 
             return Json(items, JsonRequestBehavior.AllowGet);
         }
