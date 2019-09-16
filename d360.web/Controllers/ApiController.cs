@@ -5339,7 +5339,10 @@ where    A.RuleID = @id", new { id });
 
             var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
 
-            return Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
+            string status = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
+            if (string.IsNullOrEmpty(status))
+                status = fieldType.DefaultFormattedValue;
+            return status;
         }
 
         [Route("{type}/{id:int}/style")]
