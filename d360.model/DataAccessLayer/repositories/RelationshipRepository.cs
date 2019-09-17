@@ -487,7 +487,7 @@ from	IntersectType I
                         var uid = Guid.Parse(item.Uid.ToString());
                         var result = new DatabaseBulkRelationshipResult
                         {
-                            Uid = uid,
+                            uid = uid,
                             Object = "Intersect",
                             ObjectID = id
                         };
