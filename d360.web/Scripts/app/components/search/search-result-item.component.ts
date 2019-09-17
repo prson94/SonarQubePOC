@@ -23,7 +23,7 @@ declare var CompanySettings;
                         <span #badge *ngIf="scoreAndStatus && scoreAndStatus.Score;else noScore" class="d3s-icon large-icon"
                               title="{{lastCalculatedMessage()}}"
                               [ngClass]="{
-                                                    'bad':scoreBetween(0,49),
+                                                    'fail':scoreBetween(0,49),
                                                     'ok':scoreBetween(50,89),
                                                     'good':scoreBetween(90,1000)
                                                 }">
