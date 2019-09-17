@@ -2376,25 +2376,6 @@ where	I.ID is null";
             });
         }
 
-        public async Task SendAssetGraphEvents(List<IAssetUpsert> results)
-        {
-            List<AssetEventInfo> events = new List<AssetEventInfo>();
-
-            foreach(var result in results)
-            {
-                events.Add(new AssetEventInfo
-                {
-                    CompanyID = CurrentCompanyID,
-                    Uid = result.Uid,
-                    ChangedFieldNames = result.Fields.Keys.ToList(),
-                    Type = AssetEventType.Node
-                });
-            }
-
-            await QueueSource.CreateTopicMessagesAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
-
-        }
-
         private void AddQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
         {
             // if assettype id is specified lookup object type info as workflow subscriber still works off object objectid...
