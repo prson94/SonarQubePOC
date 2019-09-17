@@ -989,7 +989,7 @@ namespace d360.extensions.search
             if (onlyHits && highlightHits)
             {
                 //Since we are only returning hits, no need to also find _source tags
-                return highlights;
+                return highlights.OrderBy(t => t.Value).ToList();
             }
 
             //Find _source tags from either inner_hits or _source
@@ -1001,7 +1001,7 @@ namespace d360.extensions.search
             if (highlightHits)
                 tags = highlights.Union(tags).ToList();
 
-            return tags;
+            return tags.OrderBy(t => t.Value).ToList();
         }
 
         private T GetPropertyValue<T>(JObject _source, string propName)
