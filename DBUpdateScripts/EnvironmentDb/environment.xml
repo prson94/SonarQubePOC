@@ -307,4 +307,5 @@
   <include file="scripts/GOV-8160.xml"/> <!-- GetDynamicAssets proc - Field from relationship optimization -->
   <include file="scripts/GOV-7979.xml"/> <!-- Tag triggers to queue re-index of impacted assets -->
   <include file="scripts/GOV-8206.xml"/> <!-- FollowDetail - fix scoring -->
+  <include file="scripts/GOV-8222.xml"/> <!-- [bulkload].[GetLoadColumns] - exclude tag fields -->
 </databaseChangeLog>
