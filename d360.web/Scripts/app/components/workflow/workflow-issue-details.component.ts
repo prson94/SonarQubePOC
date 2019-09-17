@@ -7,7 +7,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 @Component({
     selector: 'd3s-workflow-issue-details',
     template: `          
-            <div class="row" *ngIf="!isLoading && issues.length > 0">
+            <div class="row" *ngIf="!isLoading">
                 <header><d3s-tile-actions [hasAdd]="false" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions></header>
                 <div class="col s12"> 
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
@@ -99,14 +99,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         </ng-template>
                     </p-table>
                 </div>
-            </div>            
-            <div style="min-height:100px" *ngIf="!isLoading && issues.length == 0">
-                <h4 *ngIf="selected.Name">No actions currently exist for <b>{{selected.Name}}</b>.</h4>
-                <h4 *ngIf="!selected.Name">No actions assigned.</h4>
-            </div>
-            <div style="padding:10px">
-                <button *ngIf="hasCloseButton" pButton type="button" (click)="close.emit();" label="Close" style="width: 150px;"></button>
-            </div>
+            </div>                                    
         `,
     providers: [WorkflowService]
 })
@@ -117,13 +110,8 @@ export class WorkflowIssueDetailsComponent extends BaseComponent implements OnIn
 
     @Input() objectID: number = 0;
     @Input() objectType: string;
-    
-    @Input() hasCloseButton: boolean = false;
-    @Input() hasCertifyButton: boolean = false;
-
-    @Output() close = new EventEmitter();
+        
     @Output() countsChanged = new EventEmitter();
-
 
     constructor(private workflowService: WorkflowService, protected router: Router) {
         super();
