@@ -7234,6 +7234,7 @@ where v.id = {0}", id)).FirstOrDefault();
         {
             var joins = "";
             var columns = "";
+            var assetColumns = ", cast(1 as bit) as CanEdit, cast(1 as bit) as CanDelete ";
 
             getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns, true, false);
 
@@ -7242,22 +7243,19 @@ where v.id = {0}", id)).FirstOrDefault();
 
             getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out sourceJoins, out sourceColumns, false, false, false, true, "A.ObjectID", "A.Name", false);
 
-            joins = joins + sourceJoins;
-            columns = columns + sourceColumns;
+            joins += sourceJoins;
+            columns += sourceColumns;
 
-            var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID && !i.AllowMultipleEntries).ToList();
-            foreach (var f in attributesTypes)
-            {
-                var name = $"AttributeType{f.AttributeType.ID}";
-                columns += $"{name}_T.FormattedValue as [{name}], ";
-                joins += $" left join AttributeDetail {name}_T on {name}_T.ObjectType = 'Intersect' and {name}_T.ObjectID = A.ID and {name}_T.AttributeTypeID = {f.AttributeTypeID}";
-            }
-
-            var intersectType = Company.IntersectTypes.Where(x => x.ID == intersectTypeID).FirstOrDefault();
+            var intersectType = Company.GetById<IntersectType>(intersectTypeID);
 
             if (intersectType == null) throw new NotFoundException("intersect type id");
 
-            var isTargetObject = intersectType.Object == targetType.ToString() && intersectType.ObjectID == targetID;
+            var sTargetType = targetType.ToString();
+            var targetAssetType = Company.Filter<AssetType>(i => i.Object == sTargetType && i.ObjectID == targetID).SingleOrDefault();
+            if (targetAssetType == null) throw new NotFoundException("target asset type");
+
+
+            var isTargetObject = intersectType.Object == sTargetType && intersectType.ObjectID == targetID;
             var isTargetSubjectSame = intersectType.Object == intersectType.Subject && intersectType.ObjectID == intersectType.SubjectID;
             var isTargetReferenceItemType = targetType.ToString() == "ReferenceItemType" && targetID == 0;
             var isTargetFusion = targetType.ToString().StartsWith("Fusion");
@@ -7265,52 +7263,64 @@ where v.id = {0}", id)).FirstOrDefault();
             var innerSql = "";
             var assetJoin = "";
 
+            var permissionColumns = Company.CurrentResourceIsAdmin ? assetColumns : @"
+, case when PE.AssetID is not null then cast(1 as bit) else cast(0 as bit) end as CanEdit
+, case when PD.AssetID is not null then cast(1 as bit) else cast(0 as bit) end as CanDelete ";
+
+            var permissionJoins = @"
+left join UserAssetPermissions(@userId,@targetAssetTypeId) PE on PE.PermissionsBitMask & 1024 = 1024 and PE.AssetTypeID = @targetAssetTypeId and (PE.AssetID = IA.ID or PE.AssetID = 0)
+left join UserAssetPermissions(@userId,@targetAssetTypeId) PD on PD.PermissionsBitMask & 2048 = 2048 and PD.AssetTypeID = @targetAssetTypeId and (PD.AssetID = IA.ID or PD.AssetID = 0) ";
 
             if (isTargetSubjectSame)
             {
                 if (isTargetReferenceItemType)
                 {
-                    assetJoin = $@"inner join (select 'Reference List' as Name) AST on 1 = 1
-		                        inner join AssetType IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
-								    and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end
-                                inner join (select ID, Name  as TextPath from AssetType) P on P.ID = IA.ID";
+                    assetJoin = $@"
+inner join (select 'Reference List' as Name) AST on 1 = 1 
+inner join AssetType IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
+							and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end 
+inner join (select ID, Name  as TextPath from AssetType) P on P.ID = IA.ID";
                 }
                 else
                 {
-                    assetJoin = $@"inner join AssetType AST on AST.Object = case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end
-							        and AST.ObjectID = case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end
-		                        inner join Asset IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
-								    and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end
-                                cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P";
+                    assetColumns = permissionColumns;
+                    assetJoin = $@"
+inner join AssetType AST on AST.Object = case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end
+						    and AST.ObjectID = case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end 
+inner join Asset IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
+						and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end 
+cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P 
+{permissionJoins}";
                 }
 
-                innerSql = $@"select	I.[Uid],
-                                I.ID,
-                                IntersectTypeID,
-                                case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
-		                        case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
-		                        P.TextPath as Name,
-                                --case when I.Subject = @type and I.SubjectID = @id then ObjectUrl else SubjectUrl end as Url,
-		                        case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end as Type,
-		                        case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
-		                        AST.Name as TypeName,
-                                IA.uid as ObjectUid,
-		                        T.HasTechnicalRelationships
-                        from	[Intersect] I
-                                inner join IntersectType IT on IT.ID = I.IntersectTypeID
-		                        {assetJoin}
-		                        cross apply (
-					                        select	case 
-								                        when count(1) > 0 then cast(1 as bit)
-								                        else cast(0 as bit)
-							                        end as HasTechnicalRelationships
-					                        from	[Intersect]
-					                        where	Subject = 'Intersect' and SubjectID = I.ID) T
-                        where	(
-                                (I.Subject = @type  and I.SubjectID = @id) or
-                                (I.Object = @type and I.ObjectID = @id)
-                                )
-                                and IntersectTypeID = {intersectTypeID} ";
+                innerSql = $@"
+select	I.[Uid],
+        I.ID,
+        IntersectTypeID,
+        case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
+		case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
+		P.TextPath as Name,
+		case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end as Type,
+		case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
+		AST.Name as TypeName,
+        IA.uid as ObjectUid,
+		T.HasTechnicalRelationships
+        {assetColumns}
+from	[Intersect] I
+        inner join IntersectType IT on IT.ID = I.IntersectTypeID
+		{assetJoin}
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasTechnicalRelationships
+					from	[Intersect]
+					where	Subject = 'Intersect' and SubjectID = I.ID) T
+where	(
+        (I.Subject = @type  and I.SubjectID = @id) or
+        (I.Object = @type and I.ObjectID = @id)
+        )
+        and I.IntersectTypeID = {intersectTypeID} ";
             }
             else if (isTargetObject)
             {
@@ -7323,96 +7333,102 @@ where v.id = {0}", id)).FirstOrDefault();
                 }
                 else
                 {
-                    assetJoin = $@"inner join AssetType AST on AST.Object = (case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end)
-									                        and AST.ObjectID = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end)" : "IT.ObjectID")}
-		                        inner join Asset IA on	IA.Object = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end)" : "I.Object")}
-								                        and IA.ObjectID = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end)" : "I.ObjectID")}
-		                        cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P";
+                    assetColumns = permissionColumns;
+                    assetJoin = $@"
+inner join AssetType AST on AST.Object = (case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end)
+						    and AST.ObjectID = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end)" : "IT.ObjectID")} 
+inner join Asset IA on	IA.Object = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end)" : "I.Object")}
+						and IA.ObjectID = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end)" : "I.ObjectID")} 
+cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P 
+{permissionJoins}";
                 }
 
-                innerSql = $@"select	I.[Uid],
-                        I.ID,
-                        IntersectTypeID,
-                        case when I.Subject = @type and I.SubjectID = @id then
-                            I.Object
-                        else
-                            I.Subject
-                        end as Object,
-		                case when I.Subject = @type and I.SubjectID = @id then
-                            I.ObjectID
-                        else
-                            I.SubjectID
-                        end as ObjectID,
-                        IA.uid as ObjectUid,
-		                P.TextPath as Name,        
-		                IT.Object Type,
-		                IT.ObjectID TypeID,
-		                AST.Name as TypeName,
-		                T.HasTechnicalRelationships
-                from	[Intersect] I
-		                inner join IntersectType IT on IT.ID = I.IntersectTypeID
-		                {assetJoin}
-		                cross apply (
-					                select	case 
-								                when count(1) > 0 then cast(1 as bit)
-								                else cast(0 as bit)
-							                end as HasTechnicalRelationships
-					                from	[Intersect]
-					                where	Subject = 'Intersect' and SubjectID = I.ID
-					                ) T
-                where	((I.Subject = @type  and I.SubjectID = @id) {(includeInverse ? " or (I.Object = @type  and I.ObjectID = @id) " : "")})        
-                        and IntersectTypeID = {intersectTypeID} ";
+                innerSql = $@"
+select	I.[Uid],
+        I.ID,
+        IntersectTypeID,
+        case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
+		case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
+        IA.uid as ObjectUid,
+		P.TextPath as Name,        
+		IT.Object Type,
+		IT.ObjectID TypeID,
+		AST.Name as TypeName,
+		T.HasTechnicalRelationships
+        {assetColumns}
+from	[Intersect] I
+		inner join IntersectType IT on IT.ID = I.IntersectTypeID
+		{assetJoin}
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasTechnicalRelationships
+					from	[Intersect]
+					where	Subject = 'Intersect' and SubjectID = I.ID
+					) T
+where	((I.Subject = @type  and I.SubjectID = @id) {(includeInverse ? " or (I.Object = @type  and I.ObjectID = @id) " : "")})        
+        and I.IntersectTypeID = {intersectTypeID} ";
             }
             else
             {
                 if (isTargetReferenceItemType)
                 {
-                    assetJoin = $@"inner join (select 'Reference List' as Name) AST on 1 = 1
-                                inner join AssetType IA on IA.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.Subject else I.Object end)" : "I.Subject")}
-                                                        and IA.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.SubjectID else I.ObjectID end)" : "I.SubjectID")}
-                                inner join (select ID, Name as TextPath from AssetType) P on P.ID = IA.ID";
+                    assetJoin = $@"
+inner join (select 'Reference List' as Name) AST on 1 = 1 
+inner join AssetType IA on IA.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.Subject else I.Object end)" : "I.Subject")}
+                           and IA.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.SubjectID else I.ObjectID end)" : "I.SubjectID")} 
+inner join (select ID, Name as TextPath from AssetType) P on P.ID = IA.ID";
                 }
                 else
                 {
-                    assetJoin = $@"inner join AssetType AST on AST.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then IT.Subject else IT.Object end)" : "IT.Subject")}
-                                                            and AST.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then IT.SubjectID else IT.ObjectID end)" : "IT.SubjectID")}
-                                inner join Asset IA on IA.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.Subject else I.Object end)" : "I.Subject")}
-                                                        and IA.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.SubjectID else I.ObjectID end)" : "I.SubjectID")}
-                                cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P";
+                    assetColumns = permissionColumns;
+                    assetJoin = $@"
+inner join AssetType AST on AST.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then IT.Subject else IT.Object end)" : "IT.Subject")}
+                            and AST.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then IT.SubjectID else IT.ObjectID end)" : "IT.SubjectID")}
+inner join Asset IA on IA.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.Subject else I.Object end)" : "I.Subject")}
+                       and IA.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.SubjectID else I.ObjectID end)" : "I.SubjectID")}
+cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P
+{permissionJoins}";
                 }
 
-                innerSql = $@"select	I.[Uid],
-                    I.ID,
-                    IntersectTypeID,
-                    case when I.Object = @type and I.ObjectID = @id then
-                        I.Subject
-                    else
-                        I.Object
-                    end as Object,
-                    case when I.Object = @type and I.ObjectID = @id then
-                        I.SubjectID
-                    else
-                        I.ObjectID
-                    end as ObjectID,
-                    IA.uid as ObjectUid,
-		            P.TextPath as Name,        
-		            IT.Subject as Type,
-		            IT.SubjectID as TypeID,
-		            AST.Name as TypeName,
-		            T.HasTechnicalRelationships
-                    from [Intersect] I
-                inner join IntersectType IT on IT.ID = I.IntersectTypeID
-                    {assetJoin}
-                    cross apply(
-                                select	case 
-                                            when count(1) > 0 then cast(1 as bit)
-								            else cast(0 as bit)
-                                        end as HasTechnicalRelationships
-                                from[Intersect]
-                                where   Subject = 'Intersect' and SubjectID = I.ID
-                                ) T
-            where( (I.Object = @type and I.ObjectID = @id) {(includeInverse ? " or (I.Subject = @type  and I.SubjectID = @id) " : "")})
-                    and IntersectTypeID = {intersectTypeID}";
+                innerSql = $@"
+select	I.[Uid],
+        I.ID,
+        IntersectTypeID,
+        case when I.Object = @type and I.ObjectID = @id then
+            I.Subject
+        else
+            I.Object
+        end as Object,
+        case when I.Object = @type and I.ObjectID = @id then
+            I.SubjectID
+        else
+            I.ObjectID
+        end as ObjectID,
+        IA.uid as ObjectUid,
+		P.TextPath as Name,        
+		IT.Subject as Type,
+		IT.SubjectID as TypeID,
+		AST.Name as TypeName,
+		T.HasTechnicalRelationships
+        {assetColumns}
+from    [Intersect] I 
+        inner join IntersectType IT on IT.ID = I.IntersectTypeID 
+        {assetJoin} 
+        cross apply(
+                    select	case 
+                                when count(1) > 0 then cast(1 as bit)
+							    else cast(0 as bit)
+                            end as HasTechnicalRelationships
+                    from    [Intersect]
+                    where   Subject = 'Intersect' and SubjectID = I.ID
+                    ) T 
+where   ( 
+        (I.Object = @type and I.ObjectID = @id) 
+        {(includeInverse ? " or (I.Subject = @type  and I.SubjectID = @id) " : "")}
+        ) 
+        and IntersectTypeID = {intersectTypeID}";
             }
 
             var querySql = $"select {columns} A.* from ({innerSql}) A {joins}";
@@ -7422,7 +7438,14 @@ where v.id = {0}", id)).FirstOrDefault();
 
             sql += " order by AA.Name";
 
-            return Company.Query<dynamic>(sql, new { it = intersectTypeID, type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 20 }, id });
+            return Company.Query<dynamic>(sql, 
+                new {
+                    userId = Company.CurrentResourceID,
+                    it = intersectTypeID,
+                    type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 20 },
+                    id,
+                    targetAssetTypeId = targetAssetType.ID
+                });
         }
 
         [Route("export/{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}/excel.xls"), HttpGet]
