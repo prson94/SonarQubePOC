@@ -1118,13 +1118,15 @@ namespace d360.extensions.search
                     sb.Append(" \"" + f.Key + "\" : \"" + EscapeValueForDoc(f.Value) + "\" ");
                 }
 
+                //This is an update, so if there are no tags, we need to be explicit, so they will be removed (if any) on the document
+                sb.Append(", \"d3sTags\":[");
                 if (item.Tags != null && item.Tags.Any())
                 {
                     string[] tags = item.Tags.Select(t => "{ \"Uid\": \"" + t.Key + "\", \"Value\": \"" + EscapeValueForDoc(t.Value) + "\"}").ToArray();
-                    sb.Append(", \"d3sTags\":[");
                     sb.Append(string.Join(",", tags));
-                    sb.Append("]");
                 }
+                sb.Append("]");
+
                 sb.Append(" } }\n");
             }
 
