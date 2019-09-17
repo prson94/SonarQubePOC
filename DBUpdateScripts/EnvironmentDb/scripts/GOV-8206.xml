@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="GOV-8206">
+  <changeSet author="Pappas" id="GOV-8206-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -176,7 +176,7 @@ TaxonomyParents as
     O.IconForeColor,  
     O.IconText,  
     0 AS OpenEventCount,  
-    cast(S.Value * 100 as int) as CurrentScore,  
+    cast(S.Value as decimal(3,2)) as CurrentScore,  
     cast(F.HardFollow as bit) as HardFollow  
  FROM  (  
     select FollowID,  
