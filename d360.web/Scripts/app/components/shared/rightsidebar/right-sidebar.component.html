@@ -7,7 +7,7 @@
               title="{{lastCalculatedMessage()}}"
               (click)="OpenScoring()"
               [ngClass]="{
-                                    'bad':scoreBetween(0,49),
+                                    'fail':scoreBetween(0,49),
                                     'ok':scoreBetween(50,89),
                                     'good':scoreBetween(90,1000)
                                 }">
