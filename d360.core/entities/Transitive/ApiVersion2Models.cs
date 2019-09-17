@@ -20,7 +20,7 @@ namespace d360.core.entities
     public interface IGraphAsset
     {
         bool Success { get; set; }
-        Guid Uid { get; set; }
+        Guid uid { get; set; }
         string Object { get; set; }
     }
 
@@ -195,7 +195,7 @@ namespace d360.core.entities
         [DataMember]
         public int ItemNumber { get; set; }
         [DataMember]
-        public Guid Uid { get; set; }
+        public Guid uid { get; set; }
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
 
@@ -354,7 +354,7 @@ namespace d360.core.entities
         public int ObjectID { get { return IntersectID; } set { } }
 
         [DataMember]
-        public Guid Uid { get; set; }
+        public Guid uid { get; set; }
     }
 
     public class AssetDataProfileResult
