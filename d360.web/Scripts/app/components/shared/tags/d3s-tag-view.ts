@@ -20,6 +20,8 @@ import {
 import { debounceTime } from 'rxjs/operators';
 import { AuthenticationService } from '../../../services/authentication.service';
 
+declare var CurrentResourceID;
+
 
 @Component({
     selector: 'd3s-tag-view',
@@ -34,6 +36,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     @ViewChild('tagInput') tagInput: ElementRef;
     @Input() data: any;
     @Input() isEditable: boolean = false;
+    @Input() allowAddTag: boolean = false;
     @Input() assetUID: string;
     showEditor: boolean = false;
     showDelete: boolean = false;
@@ -79,6 +82,15 @@ export class TagView extends AdminBaseComponent implements OnInit {
         {
             console.warn("d3s-tag-view::Error while parsing tags!");
         }
+        if (!this.auth.isAdmin || !this.hasModifyAssetPermissions())
+            this.isEditable = false;
+        if (this.auth.isAdmin || this.hasModifyAssetPermissions())
+            this.isEditable = true;
+        this.tags.forEach(tag => {
+            if (tag.TooltipID == CurrentResourceID) {
+                this.isEditable = true;
+            }
+        })
         this.selected = this.tags;
     }
 
