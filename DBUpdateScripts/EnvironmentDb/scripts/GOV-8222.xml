@@ -343,7 +343,7 @@ begin
 			from		FieldType 
 			where		Object = @type 
 						and ObjectID = @id 
-						and Type not in ('Attribute', 'ComplexRelationLookup', 'FieldFromRelationship', 'FilteredLookup', 'FusionLookup', 'OwnershipLookup', 'RefListRelationship')
+						and Type not in ('Attribute', 'ComplexRelationLookup', 'FieldFromRelationship', 'FilteredLookup', 'FusionLookup', 'OwnershipLookup', 'RefListRelationship', 'Tag')
 						and ( (@type = 'IntersectType' and IsPartOfKey = 0) OR (@type = 'TaxonomyType' and IsPartOfKey = 0) OR (@type <> 'TaxonomyType') )
 						and (IsEditable = 1 or (@action = 'P' and [Type] = 'JSON'))
 			order by	ColumnOrder
