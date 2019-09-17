@@ -25,7 +25,7 @@
                 <div class="tooltip-wrapper">
                     <div class="no-display"></div>
                 </div>
-                <input #tagInput class="tag-item-wrapper" [(ngModel)]="searchValue" (keyup)="search($event,searchValue)" type="text" placeholder="Click to add..">
+                <input #tagInput class="tag-item-wrapper" [(ngModel)]="searchValue" (blur)="resetStyle()" (keyup)="search($event,searchValue)" type="text" placeholder="Click to add..">
                 <span *ngIf="tagsLoading"><i class="fa fa-spinner fa-spin"></i></span>
             </a>
         <p-overlayPanel [ngClass]="'search-results'" [style.position]="'fixed'" #searchPanel>
@@ -39,8 +39,8 @@
     </ng-container>
     <ng-container *ngIf="tags && tags.length > 10">
         <a (click)="showAllToggle($event);" class="show-all-tags">
-            <ng-container *ngIf="isShowAll">Hide all</ng-container>
+            <ng-container *ngIf="isShowAll">Show Less</ng-container>
             <ng-container *ngIf="!isShowAll">Show all {{tags.length}} tags</ng-container>
-        </a>
+        </a> 
     </ng-container>
 </div>
