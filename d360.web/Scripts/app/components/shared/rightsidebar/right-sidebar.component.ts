@@ -308,11 +308,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
         switch (status) {
             case 'draft':
-                return '#BBBBBB';
+                return '#6c7884';
             case 'certified':
-                return '#3f9d40';
+                return '#00853e';
             case 'under review':
-                return '#e2792a';
+                return '#FFB000';
             default:
                 //custom status, we need to generate a color
                 let hash = 0;
