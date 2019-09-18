@@ -2114,7 +2114,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             return results;
         }
 
-        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
+        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500)
         {
             var results = new List<DatabaseBulkAssetResult>();
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
@@ -2623,7 +2623,7 @@ from	api.ExecutionAsset T
 
                     if (generalChecksCompleted)
                     {
-                        int loopSize = 500;
+                        int loopSize = mergeBlockSize;
                         int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
                         int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                         int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
