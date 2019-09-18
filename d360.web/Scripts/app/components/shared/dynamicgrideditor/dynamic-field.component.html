@@ -183,10 +183,10 @@
             <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
             <input *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />
             <div *ngSwitchCase="'Date'">
-                <p-calendar [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()"></p-calendar>
+                <p-calendar [formControlName]="field.FieldName"  [dateFormat]="getLocaleDateString()"></p-calendar>
             </div>
             <div *ngSwitchCase="'DateTime'">
-                <p-calendar [formControlName]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
+                <p-calendar [formControlName]="field.FieldName"  [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
             </div>
             <div *ngSwitchCase="'Link'">
                 <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" type="text">
