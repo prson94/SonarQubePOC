@@ -86,11 +86,14 @@ export class TagView extends AdminBaseComponent implements OnInit {
             this.isEditable = false;
         if (this.auth.isAdmin || this.hasModifyAssetPermissions())
             this.isEditable = true;
-        this.tags.forEach(tag => {
-            if (tag.TooltipID == CurrentResourceID) {
-                this.isEditable = true;
-            }
-        })
+        if (this.tags) {
+            this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
+            this.tags.forEach(tag => {
+                if (tag.CreatedBy == CurrentResourceID) {
+                    this.isEditable = true;
+                }
+            })
+        }
         this.selected = this.tags;
     }
 
@@ -188,7 +191,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
             this.messagesService.showError('Error', "Tag can't contain | character");
         }
         if (!this.existingTag) {
-            this.tagService.doesTagExist(event.Value)
+            this.tagService.doesTagExist(event)
                 .subscribe(result => {
                     if (result == null) {
                         this.tagService.saveTag(event)

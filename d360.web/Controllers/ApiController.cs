@@ -526,7 +526,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 {
                     Value = x.Value,
                     TooltipType = "tag",
-                    TooltipID = x.CreatedBy,
+                    TooltipID = x.ID,
                     CreatedBy = x.CreatedBy,
                     TooltipContext = "Preview",
                     TooltipUrl = "",
