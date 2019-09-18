@@ -3209,8 +3209,6 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
                 {
                     string assetIdPath = "A.Id";
 
-                    if (type == SystemObjects.Rule.ToString())
-                        assetIdPath = "O.Id";
 
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                     columns += $@"(select T.Value,T.uid from AssetTag AT inner join Tag T on T.ID = AT.TagID where AssetId = {assetIdPath} order by T.Value for json path) as [{(useFriendlyName ? friendlyName : name)}], ";

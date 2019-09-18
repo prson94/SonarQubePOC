@@ -5178,17 +5178,18 @@ order by    Name
                 var joins = "";
                 var columns = "";
 
-                getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
+                getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false,coreTableIdJoinColumn:"A.ObjectID");
+             
 
                 var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = O.ID  or (u.AssetID = 0 and u.AssetTypeID = O.AssetTypeID))
+                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                ) 
 						                    then 1
 						                    else 0
 
                                         end as P_CanEdit,
 		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = O.ID  or (u.AssetID = 0 and u.AssetTypeID = O.AssetTypeID))
+                                                             select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                                   ) 
 						                                   then 1
 						                                   else 0
@@ -5201,20 +5202,20 @@ order by    Name
                 }
 
                 var querySql = string.Format(@"
-select	O.ID as AssetID,
-        O.[Uid],
-        A.ID,
-        A.Threshold,
-        dbo.GenerateAssetUrl(O.ID) as Url,
+select	A.ID as AssetID,
+        A.[Uid],
+        A.ObjectId as ID,
+        R.Threshold,
+        dbo.GenerateAssetUrl(A.ID) as Url,
         {0}
-        A.RuleTypeID,
+        R.RuleTypeID,
         {2}
-from	[Rule] A
-        inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
+from	[Rule] R
+        inner join Asset A on A.Object = 'Rule' and A.ObjectID = R.ID 
         {1} 
-where   A.RuleTypeID = @id 
-        and O.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
-        "and O.AssetTypeID not in (" + Company.GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
+where   R.RuleTypeID = @id 
+        and A.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
+        "and A.AssetTypeID not in (" + Company.GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
 
                 var query = Company.Query<dynamic>(querySql, dbArgs);
 
