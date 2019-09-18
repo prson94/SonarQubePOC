@@ -325,7 +325,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
     enter(tag: any, el: HTMLElement) {
         this.isTooltipLoaded = false;
-        this.tagService.getTagTooltip(tag.uid)
+        this.tagService.getTagTooltip(tag.uid, this.assetUID)
             .subscribe(t => {
                 this.tagTooltip = t[0];
                 this.isTooltipLoaded = true;

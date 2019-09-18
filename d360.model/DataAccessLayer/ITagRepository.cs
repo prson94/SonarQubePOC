@@ -30,7 +30,7 @@ namespace d360.model.DataAccessLayer
         List<dynamic> SearchTags(IEnumerable<KeyValuePair<string,string>> queryParams);
         TagDetailApiModel GetDetails(Guid tagUid, IEnumerable<KeyValuePair<string,string>> keyValuePairs);
 
-        IEnumerable<dynamic> GetTooltip(Guid guid);
+        IEnumerable<dynamic> GetTooltip(Guid tagUid, Guid? assetUid);
         IEnumerable<Tag> GetTagsForAsset(long assetId);
     }
 }

@@ -91,6 +91,7 @@ namespace d360.core.entities
     {
         public string DisplayValue { get; set; }
         public int AssetID { get; set; }
+        public Guid AssetUid { get; set; }
         public string AssetType { get; set; }
         public string Object { get; set; }
         public int ObjectID { get; set; }

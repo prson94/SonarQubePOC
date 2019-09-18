@@ -715,6 +715,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         select 
                         ADV.*, 
                         A.Id as AssetID,
+                        A.[Uid] as AssetUid,
 						CASE 
 							WHEN AST.Object = 'TaxonomyType' THEN 'Model ' + AST.Name
 							WHEN AST.Object = 'ArtifactType' THEN 'Glossary ' + AST.Name
@@ -743,14 +744,35 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
             return result;
         }
 
-        public IEnumerable<dynamic> GetTooltip(Guid guid)
+        public IEnumerable<dynamic> GetTooltip(Guid tagUid, Guid? assetUid)
         {
-            string sql = @"select T.Value, T.CreatedOn, ADV.DisplayValue as CreatedBy from Tag T 
-                            inner join Asset R on R.Object = 'Resource' and R.ObjectID = T.CreatedBy
-                            cross apply dbo.GetAssetDisplayValueById(R.ID)ADV
-                            where T.Uid = @uid";
+            string sql;
+            if (assetUid.HasValue)
+            {
+                sql = @"select	T.Value, 
+									TA.CreatedOn, 
+									ADV.DisplayValue as CreatedBy 
+							from	AssetTag TA
+									inner join Tag T on T.ID = TA.TagID
+									inner join Asset A on A.ID = TA.AssetID
+									inner join Asset R on R.Object = 'Resource' and R.ObjectID = TA.CreatedBy
+									cross apply dbo.GetAssetDisplayValueById(R.ID)ADV
+                            where	T.[Uid] = @tagUid 
+									and A.[Uid] = @assetUid";
+            }
+            else
+            {
+                sql = @"select  T.Value, 
+                                T.CreatedOn, 
+                                ADV.DisplayValue as CreatedBy 
+                        from    Tag T 
+                                inner join Asset R on R.Object = 'Resource' and R.ObjectID = T.CreatedBy
+                                cross apply dbo.GetAssetDisplayValueById(R.ID)ADV
+                        where   T.[Uid] = @tagUid";
+            }
 
-            var result = companyContext.Query<dynamic>(sql, new { uid = guid });
+
+            var result = companyContext.Query<dynamic>(sql, new { tagUid, assetUid });
             return result;
         }
 
