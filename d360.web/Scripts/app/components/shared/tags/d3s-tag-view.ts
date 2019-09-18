@@ -22,7 +22,6 @@ import { AuthenticationService } from '../../../services/authentication.service'
 
 declare var CurrentResourceID;
 
-
 @Component({
     selector: 'd3s-tag-view',
     templateUrl: './d3s-tag-view.html',
