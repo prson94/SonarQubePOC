@@ -225,7 +225,7 @@ where	ExecutionID = @executionID
                 Connection.Execute($@"
     declare @hasAssetTypePermission bit = 0
 
-    select @hasAssetTypePermission = case when exists (select AssetTypeID from UserAssetPermissions(3, @assetTypeID) where PermissionsBitMask & @p = @p and AssetID = 0) then 1 else 0 end
+    select @hasAssetTypePermission = case when exists (select AssetTypeID from UserAssetPermissions(@resourceID, @assetTypeID) where PermissionsBitMask & @p = @p and AssetID = 0) then 1 else 0 end
 
     if @hasAssetTypePermission = 0
     begin
@@ -237,7 +237,7 @@ where	ExecutionID = @executionID
 											    and E.ExecutionID = @executionID 
 											    and T.AssetID is not null
 											    and T.AssetID not in (select AssetID from UserAssetPermissions(E.ResourceID, @assetTypeID) where PermissionsBitMask & @p = @p)
-    end", new { executionID, assetTypeID = at.ID, p = (int)p }, commandTimeout: timeout);
+    end", new { executionID, assetTypeID = at.ID, p = (int)p, resourceID = CurrentResourceID }, commandTimeout: timeout);
             }
         }
 
@@ -362,13 +362,17 @@ where	ExecutionID = @executionID
          new { executionID, msg }, commandTimeout: timeout);
         }
 
-        private void DeleteEmptyAssetFieldByApiExecutionUid(Guid executionUid, SqlTransaction trans, int timeout = 3600)
+        private void DeleteEmptyAssetListFieldByApiExecutionUid(Guid executionUid, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
         {
             Connection.Execute(@"delete F from Field F
 	                                inner join api.ExecutionAsset EA on EA.ExecutionID = @executionUid
-	                                where F.ObjectType = EA.Object 
+                                    inner join FieldType FT on F.FieldTypeID = FT.ID
+	                                where 
+                                        FT.[Type] = 'Lookup'
+                                      and F.ObjectType = EA.Object 
                                       and F.ObjectId = EA.ObjectID 
-                                      and F.Value = ''", new { executionUid }, transaction: trans, commandTimeout: timeout);
+                                      and EA.ItemNumber between @beginItemNumber and @endItemNumber
+                                      and F.Value = ''", new { executionUid, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
         private void MergeAssetDisplayValues(Guid executionID, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
@@ -802,6 +806,28 @@ from	api.ExecutionField T
             }
         }
 
+        private void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null)
+        {
+            List<AssetEventInfo> events = new List<AssetEventInfo>();
+
+            foreach (var result in results)
+            {
+                if (result.Success)
+                {
+                    events.Add(new AssetEventInfo
+                    {
+                        CompanyID = CurrentCompanyID,
+                        Uid = result.uid,
+                        ChangedFieldNames = (fields != null && fields.ContainsKey(result.uid)) ? fields[result.uid] : null,
+                        Type = result.Object == "Intersect" ? AssetEventType.Edge : AssetEventType.Node
+                    });
+                }
+            }
+
+            _ = QueueSource.CreateTopicMessagesAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
+
+        }
+        
         #region Validation
 
         private List<DataRow> ValidateFields(
@@ -1856,6 +1882,8 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                         Connection.Close();
 
+                        SendAssetGraphEvents(results);
+
                         if (sendWorkflowEvents)
                         {
                             SendWorkflowEvents(at.Object, at.ObjectID, results, ChangeType.Delete);
@@ -2155,6 +2183,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                     Guid? intersectTypeUid = null;
                     int? intersectTypeID = null;
                     CurrentExecutionLocationModel currentLocation = null;
+                    bool hasLookupFieldTypes = false;
 
                     try
                     {
@@ -2174,6 +2203,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                         fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { at.Object, at.ObjectID }).ToList();
                         jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
                         requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
+                        hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
 
                         #region Generate data sets
 
@@ -2379,13 +2409,16 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                         #endregion
 
-                        if (lookupFieldsPassedByValue)
+                        if (hasLookupFieldTypes)
                         {
-                            CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout);
-                        }
-                        else
-                        {
-                            ResolveFieldLookupValues(execution.ExecutionID, timeout);
+                            if (lookupFieldsPassedByValue)
+                            {
+                                CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout);
+                            }
+                            else
+                            {
+                                ResolveFieldLookupValues(execution.ExecutionID, timeout);
+                            }
                         }
 
                         if (at.Object == "RuleType")
@@ -2393,7 +2426,11 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                             ResolveRuleTypeLookupValues(execution.ExecutionID, timeout);
                         }
 
-                        LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout);
+                        if (hasLookupFieldTypes)
+                        {
+                            LogFieldLookupErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout);
+                        }
+
                         LogRelationshipErrors(execution.ExecutionID, at.Object, at.ObjectID, "Asset", timeout, lookupFieldsPassedByValue);
                         ValidateAssetAndParent(execution.ExecutionID, at.ID, timeout);
 
@@ -2953,8 +2990,11 @@ from	api.ExecutionAsset T
                                         // Must execute BEFORE the Success flag is updated below.
                                         MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
 
-                                        //Delete all field without value
-                                        DeleteEmptyAssetFieldByApiExecutionUid(execution.ExecutionID, trans, timeout);
+                                        //Delete all field without value ONLY do this if there are lookup fields AND this is an update.
+                                        if (hasLookupFieldTypes && !isInsert)
+                                        {
+                                            DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
+                                        }
 
                                         // Update success flag.
                                         Connection.Execute(
@@ -2996,6 +3036,10 @@ from	api.ExecutionAsset T
                         }
 
                         Connection.Close();
+
+                        var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
+
+                        SendAssetGraphEvents(results, changedFields);
 
                         if (sendWorkflowEvents)
                         {
@@ -3447,6 +3491,8 @@ end",
 
                     Connection.Close();
 
+                    SendAssetGraphEvents(results);
+
                     if (sendWorkflowEvents)
                         SendWorkflowEvents("IntersectType", rt.ID, results);
                 }
@@ -3454,13 +3500,19 @@ end",
             return results;
         }
 
-        public void DeleteRelationships(List<int> parentRelationships, List<int> childrenRelationships, bool sendWorkflowEvents)
+        public void DeleteRelationships(List<DatabaseBulkRelationshipResult> parentRelationships, List<DatabaseBulkRelationshipResult> childrenRelationships, bool sendWorkflowEvents)
         {
             if (!sendWorkflowEvents)
                 this.IsEventingEnabled = false;
 
-            Delete<Intersect>(x => childrenRelationships.Contains(x.ID));
-            Delete<Intersect>(x => parentRelationships.Contains(x.ID));
+            var parentIds = parentRelationships.Select(p => p.ObjectID).ToList();
+            var childIds = childrenRelationships.Select(c => c.ObjectID).ToList();
+
+            Delete<Intersect>(x => childIds.Contains(x.ID));
+            Delete<Intersect>(x => parentIds.Contains(x.ID));
+
+            SendAssetGraphEvents(parentRelationships);
+            SendAssetGraphEvents(childrenRelationships);
 
             this.IsEventingEnabled = true;
         }

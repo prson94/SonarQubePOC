@@ -2376,25 +2376,6 @@ where	I.ID is null";
             });
         }
 
-        public async Task SendAssetGraphEvents(List<IAssetUpsert> results)
-        {
-            List<AssetEventInfo> events = new List<AssetEventInfo>();
-
-            foreach(var result in results)
-            {
-                events.Add(new AssetEventInfo
-                {
-                    CompanyID = CurrentCompanyID,
-                    Uid = result.Uid,
-                    ChangedFieldNames = result.Fields.Keys.ToList(),
-                    Type = AssetEventType.Node
-                });
-            }
-
-            await QueueSource.CreateTopicMessagesAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
-
-        }
-
         private void AddQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
         {
             // if assettype id is specified lookup object type info as workflow subscriber still works off object objectid...
@@ -3312,7 +3293,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             string sql = $@"SELECT 
                             cast(S.Value * 100 as int) as 'Score',
                             S.EffectiveDate as 'EffectiveDate',  
-                            f.FormattedValue as Status 
+                            COALESCE(f.FormattedValue,ft.DefaultFormattedValue) as Status 
                             from Asset A
                             left Join AssetType AT on A.AssetTypeID = AT.ID
                             left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'

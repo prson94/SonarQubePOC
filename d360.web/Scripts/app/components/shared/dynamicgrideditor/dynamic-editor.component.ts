@@ -40,6 +40,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() selection: any;
     @Input() rowID: string = 'ID';
     @Input() title: string;
+    @Input() directions: string;
     @Input() objectID: number = 0;
     @Input() parentID: number;
     @Input() objectType: string;
@@ -75,7 +76,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     categories: EditorCategory[] = [];
     editedItem: any;
-
+    hasDirections: boolean = false;
     hasIconFields = false;
     fore: EditorField;
     back: EditorField;
@@ -95,6 +96,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
 
     ngOnInit() {
+        this.hasDirections = (this.directions && this.directions !== "");
         this.load();
     }
 
@@ -443,7 +445,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         // if this is the v2 api we need to combine any link field types into the format stored in the db
         // tallyfy|https://tallyfy.com/what-is-compliance-management/
         if (this.isV2API) {
-            console.log('here');
             let links = this.fields.filter(x => x.FieldType == 'Link');            
             //need to get the link and url for each            
             for (let link of links) {                

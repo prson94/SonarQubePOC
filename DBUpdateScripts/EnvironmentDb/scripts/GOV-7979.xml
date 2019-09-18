@@ -1,0 +1,77 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="tklok" id="GOV-7979">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE TRIGGER [dbo].[AssetTag_AfterDelete]
+   ON  [dbo].[AssetTag] 
+   AFTER DELETE
+AS 
+	SET NOCOUNT ON;
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+		SELECT 'ObjectIndex', 
+				'U',
+				A.Object, 
+				A.ObjectID,
+				A.ID
+		FROM deleted D INNER JOIN [dbo].[Asset] A
+		ON D.AssetID = A.ID
+		WHERE A.[Object] not in('FusionAttribute', 'FusionQueryAttribute');
+GO
+
+CREATE TRIGGER [dbo].[AssetTag_AfterUpsert]
+   ON  [dbo].[AssetTag] 
+   AFTER INSERT, UPDATE
+AS 
+	SET NOCOUNT ON;
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+		SELECT 'ObjectIndex', 
+				'U',
+				A.Object, 
+				A.ObjectID,
+				A.ID
+		FROM inserted  I INNER JOIN [dbo].[Asset] A
+		ON I.AssetID = A.ID
+		WHERE A.[Object] not in('FusionAttribute', 'FusionQueryAttribute');
+GO
+
+CREATE TRIGGER [dbo].[Tag_AfterUpdate]
+   ON  [dbo].[Tag] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON;
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+		SELECT 'ObjectIndex', 
+				'U',
+				A.Object, 
+				A.ObjectID,
+				A.ID
+		FROM inserted I INNER JOIN [dbo].[AssetTag] T ON I.ID = T.TagID
+		INNER JOIN [dbo].[Asset] A
+		ON T.AssetID = A.ID
+		WHERE A.[Object] not in('FusionAttribute', 'FusionQueryAttribute');
+GO
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+DROP TRIGGER  IF EXISTS [dbo].[AssetTag_AfterDelete]
+GO
+DROP TRIGGER  IF EXISTS [dbo].[AssetTag_AfterUpsert]
+GO
+DROP TRIGGER  IF EXISTS [dbo].[Tag_AfterUpdate]
+GO
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -8,6 +8,9 @@
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div class="row"
              *ngIf="!isLoading">
+            <div class="form-instructions" *ngIf="hasDirections">
+                {{directions}}
+            </div>
             <form (ngSubmit)="onSubmit()"
                   [formGroup]="form">
                 <ng-template ngFor
@@ -76,6 +79,10 @@
               [formGroup]="form" *ngIf="!isLoading" prompt>
             <div class="content">
                 <div class="no-float row ui-grid-col-12">
+
+                    <div class="form-instructions" *ngIf="hasDirections">
+                        {{directions}}
+                    </div>
 
                     <ng-template ngFor
                                  let-category

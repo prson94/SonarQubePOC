@@ -17,6 +17,13 @@ namespace d360.core.entities
         bool Success { get; set; }
     }
 
+    public interface IGraphAsset
+    {
+        bool Success { get; set; }
+        Guid uid { get; set; }
+        string Object { get; set; }
+    }
+
     public interface IAssetUpsert
     {
         Guid Uid { get; set; }
@@ -183,7 +190,7 @@ namespace d360.core.entities
     }
 
     [DataContract]
-    public class DatabaseBulkAssetResult: IWorkflowEnabledAsset
+    public class DatabaseBulkAssetResult: IWorkflowEnabledAsset, IGraphAsset
     {
         [DataMember]
         public int ItemNumber { get; set; }
@@ -320,7 +327,7 @@ namespace d360.core.entities
     }
 
     [DataContract]
-    public class DatabaseBulkRelationshipResult: IWorkflowEnabledAsset
+    public class DatabaseBulkRelationshipResult: IWorkflowEnabledAsset, IGraphAsset
     {
         public Guid ExecutionID { get; set; }
 

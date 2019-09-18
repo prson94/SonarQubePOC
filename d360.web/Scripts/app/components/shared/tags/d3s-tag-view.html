@@ -39,8 +39,8 @@
     </ng-container>
     <ng-container *ngIf="tags && tags.length > 10">
         <a (click)="showAllToggle($event);" class="show-all-tags">
-            <ng-container *ngIf="isShowAll">Hide all</ng-container>
+            <ng-container *ngIf="isShowAll">Show Less</ng-container>
             <ng-container *ngIf="!isShowAll">Show all {{tags.length}} tags</ng-container>
-        </a>
+        </a> 
     </ng-container>
 </div>
