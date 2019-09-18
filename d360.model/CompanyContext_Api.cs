@@ -1208,7 +1208,7 @@ from	IntersectType I
                                 row["ItemNumber"] = i;
                                 if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
                                 row["Uid"] = model.Uid;
-                                row["Cascade"] = model.Cascade;
+                                row["Cascade"] = model.Cascade ?? false;
 
                                 table.Rows.Add(row);
                             }
