@@ -43,4 +43,25 @@ export class ObjectStatisticsService extends BaseObservableService {
             catchError(err => this.handleError(err))
         );
     }
+
+    getCertificationStatusColor(status: string) {
+        status = status.toLowerCase().trim();
+
+        switch (status) {
+            case 'draft':
+                return '#6c7884';
+            case 'certified':
+                return '#00853e';
+            case 'under review':
+                return '#FFB000';
+            default:
+                //custom status, we need to generate a color
+                let hash = 0;
+                for (let i = 0; i < status.length; i++) {
+                    hash = status.charCodeAt(i) + ((hash << 5) - hash);
+                    hash = hash & hash;
+                }
+                return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
+        }
+    }
 }

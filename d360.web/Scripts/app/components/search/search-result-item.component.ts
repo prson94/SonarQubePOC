@@ -42,7 +42,7 @@ declare var CompanySettings;
                         </span>
                     </span>
                     <span class="category">
-                        {{displayType}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
+                        {{result?.Group}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
                     </span>
                     <span class="description" *ngIf="result?.Description" [innerHtml]="result.Description"></span>
                     <div *ngIf="result?.Tags"  class="tags">
@@ -63,18 +63,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     private obj: string;
     private objID: number;
     private scoreAndStatus: any;
-    get displayType() {
-        if (this.result) {
-            switch (this.result.Group) {
-                case 'Artifact':
-                    return 'Glossary';
-                case 'Synonym':
-                    return 'Grammatic Type';
-                default:
-                    return this.result.Group
-            }
-        }
-    }
+
     parseTagResult(tags: any[]) {
         return tags.map(tag => { return { uid: tag.Uid, Value: tag.Value }; });
     }
@@ -145,24 +134,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     getCertificationStatusColor(status: string) {
-        status = status.toLowerCase().trim();
-
-        switch (status) {
-            case 'draft':
-                return '#BBBBBB';
-            case 'certified':
-                return '#3f9d40';
-            case 'under review':
-                return '#e2792a';
-            default:
-                //custom status, we need to generate a color
-                let hash = 0;
-                for (let i = 0; i < status.length; i++) {
-                    hash = status.charCodeAt(i) + ((hash << 5) - hash);
-                    hash = hash & hash;
-                }
-                return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
-        }
+        return this.objectStatisticsService.getCertificationStatusColor(status);
     }
 
     private lastCalculatedMessage() {
