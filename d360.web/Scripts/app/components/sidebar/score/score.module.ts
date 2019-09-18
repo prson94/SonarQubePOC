@@ -12,7 +12,6 @@ import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
 import { ScoreRoutingModule } from './score.routes';
 import { ScoreComponent } from './score.component';
-import { ResourceModule } from '../../resource/resource.module';
 import { SharedObjectGovernanceModule } from '../../shared/objectgovernance/shared-object-governance.module';
 import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -31,8 +30,7 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
         //d3s        
         CoreModule,
-        TilesModule,
-        ResourceModule,
+        TilesModule,        
         SharedObjectGovernanceModule,
     ],
     declarations: [
