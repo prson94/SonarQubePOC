@@ -42,7 +42,7 @@ declare var CompanySettings;
                         </span>
                     </span>
                     <span class="category">
-                        {{displayType}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
+                        {{result?.Group}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
                     </span>
                     <span class="description" *ngIf="result?.Description" [innerHtml]="result.Description"></span>
                     <div *ngIf="result?.Tags"  class="tags">
@@ -63,18 +63,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     private obj: string;
     private objID: number;
     private scoreAndStatus: any;
-    get displayType() {
-        if (this.result) {
-            switch (this.result.Group) {
-                case 'Artifact':
-                    return 'Glossary';
-                case 'Synonym':
-                    return 'Grammatic Type';
-                default:
-                    return this.result.Group
-            }
-        }
-    }
+
     parseTagResult(tags: any[]) {
         return tags.map(tag => { return { uid: tag.Uid, Value: tag.Value }; });
     }

@@ -22,10 +22,14 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                         <i *ngIf="autocomplete.Icon" class="folder-icon fa {{autocomplete.Icon}}"></i>
                         <span *ngIf="autocomplete.ImageUrl" class="folder-icon"><img [src]="autocomplete.ImageUrl" /></span>
                         <span [innerHtml]="highlightedResult(autocomplete.DisplayName)"></span>
-                        <span *ngIf="autocomplete?.Tags" class="tags">
-                            <span *ngFor="let restag of autocomplete?.Tags" class="tag-item-wrapper" [innerHtml]="restag.Highlight" style="background: #BDC3C7;margin-left: 4px;border-radius: 3px;padding: 4px;text-align: center;"></span>
+                        <span *ngIf="autocomplete?.Tags" class="tag-list-container">
+                            <button *ngFor="let tag of autocomplete?.Tags" class="button">
+                                <span class="tag-item-wrapper" [innerHtml]="tag.Value"></span>
+                            </button>
                         </span>
-                        <span class="type">&nbsp;{{GetDisplayType(autocomplete)}}</span>
+                        <span class="category">
+                            {{autocomplete?.Group}}<span *ngIf="autocomplete?.Type"><i class="fa fa-angle-right"></i><span [innerHtml]="autocomplete?.Type"></span></span>
+                        </span>
                     </div>                    
                 </div>
                 
@@ -35,7 +39,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 export class SearchAutocompleteListComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() autocompletions: SearchResult[] = [];    
     @Input() searchText: string;
-    @Input() element: any;
+    @Input() setwidth: any;
     
     private showResults = true;
     private width: string = '400px';
@@ -45,11 +49,20 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
     }
 
     ngOnInit() {
-        if (this.element && this.element.offsetWidth) this.width = this.element.offsetWidth + 'px';        
+        this.setWidth();      
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        for (let propName in changes) {
+            if (propName == 'setwidth') {
+                this.setWidth();
+            }
+        }
         this.showResults = true;
+    }
+
+    private setWidth() {
+        if (this.setwidth && this.setwidth > 400) this.width = this.setwidth + 'px';        
     }
 
     private goTo(item: SearchResult) {
