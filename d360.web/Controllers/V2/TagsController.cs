@@ -539,12 +539,15 @@ namespace d360.web.Controllers.V2
 
         }
 
-        [HttpGet, MapToApiVersion("2.0"), Route("exists"), ApiExplorerSettings(IgnoreApi = true)]
-        public IHttpActionResult DoesTagExist(string name)
+        /// <param name="tag">The tag to be created.</param>
+        [HttpPost, 
+        Route("exists"),
+        SwaggerConsumes("application/json"), SwaggerProduces("application/json")]
+        public IHttpActionResult DoesTagExist(TagApiModel tag)
         {
             try
             {
-                var result = tagRepository.GetTagByName(name);
+                var result = tagRepository.GetTagByName(tag.Value);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 

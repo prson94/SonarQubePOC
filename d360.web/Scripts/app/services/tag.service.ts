@@ -87,9 +87,9 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
-    doesTagExist(name: string): Observable<any> {
-        let url = `api/v2/tags/exists?name=${name}`;
-        return this.http.get(url)
+    doesTagExist(tag: TagType): Observable<any> {
+        let url = `api/v2/tags/exists`;
+        return this.http.post(url, tag)
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
