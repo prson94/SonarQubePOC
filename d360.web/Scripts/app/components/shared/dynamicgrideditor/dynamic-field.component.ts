@@ -280,8 +280,11 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.selectRelationItems(this.field.Value);
         }
 
-        if ((this.field.FieldType == 'Date' || this.field.FieldType == 'DateTime') && isNaN(Date.parse(this.field.Value)))
+        if ((this.field.FieldType == 'Date' || this.field.FieldType == 'DateTime') && isNaN(Date.parse(this.field.Value))) {
             this.field.Value = null;
+            this.form.controls[this.field.FieldName].setValue(this.field.Value);
+        }
+            
 
         if (this.field.FieldType == 'Lookup' && this.field.ParentFieldTypeID <= 0) {
             window.setTimeout(() => {
