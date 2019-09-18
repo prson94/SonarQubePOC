@@ -277,7 +277,6 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.targetPanel.style.background = "#f0f0f0";
         this.targetPanel.style.border = "1px solid #f0f0f0";
         this.tagInput.nativeElement.style.background = "#f0f0f0";
-        this.searchResults = [];
     }
 
     setVisibility() {
