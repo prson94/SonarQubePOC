@@ -19,7 +19,7 @@
             </div>
         </a>
     </ng-container>
-    <ng-container *ngIf="isEditable" >
+    <ng-container *ngIf="allowAddTag" >
         <span (click)="show($event,searchPanel,target)">
             <a class="link-button"  #target>
                 <div class="tooltip-wrapper">

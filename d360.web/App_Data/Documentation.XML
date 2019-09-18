@@ -3231,6 +3231,9 @@
             </summary>
             <returns>A excel file containing tagged assets.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.DoesTagExist(d360.core.entities.TagApiModel)">
+            <param name="tag">The tag to be created.</param>
+        </member>
         <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowTypeAsync(System.Nullable{d360.core.enums.Workflow.ChangeType},System.Nullable{d360.core.enums.State})">
             <summary>
             Retrieves workflow types for the given asset type unique identifier / action type unique identifier/ relationship type unique identifier .
