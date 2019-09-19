@@ -7,7 +7,8 @@ import {GridDefinitionService} from '../../../services/grid-definition.service';
 import {GridColumn, GridField} from '../../../models/grid-definition.model';
 import {SortOrder} from '../../../models/enums.model';
 import {Artifacts} from '../../../models/artifacts.model';
-import {LazyLoadEvent, DataTable} from 'primeng/primeng';
+import { LazyLoadEvent } from 'primeng/primeng';
+import { Table } from 'primeng/table';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import {StringConstants} from '../../../static/string-constants';
 import {  debounceTime } from 'rxjs/operators';
@@ -110,7 +111,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         );
     }
 
-    private checkSimpleSearchEnter(event, dt: DataTable) {
+    private checkSimpleSearchEnter(event, dt: Table) {
         if (event.keyCode == 13) {
             this.doSimpleSearch(dt);
         } else {
@@ -123,7 +124,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         }
     }
 
-    private doSimpleSearch(dt: DataTable) {
+    private doSimpleSearch(dt: Table) {
         if (dt) {
             dt.reset();
         }

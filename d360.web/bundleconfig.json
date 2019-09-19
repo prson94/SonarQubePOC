@@ -87,9 +87,21 @@
     ]
   },
   {
+    "outputFileName": "Content/primeng/v7.1.3/primeng.min.css",
+    "inputFiles": [
+      "Content/primeng/v7.1.3/primeng.css"
+    ]
+  },
+  {
     "outputFileName": "Content/primeicons/1.0.0-beta.10/primeicons.min.css",
     "inputFiles": [
       "Content/primeicons/1.0.0-beta.10/primeicons.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/primeicons/2.0.0/primeicons.min.css",
+    "inputFiles": [
+      "Content/primeicons/2.0.0/primeicons.css"
     ]
   }
 ]

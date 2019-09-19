@@ -12,7 +12,8 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef
 } from '@angular/core';
-import {LazyLoadEvent, DataTable} from 'primeng/primeng';
+import { LazyLoadEvent } from 'primeng/primeng';
+import { Table } from 'primeng/table';
 import {Router, ActivatedRoute} from '@angular/router';
 
 import {Lookup, LookupItem} from '../../models/lookup.model';
@@ -55,7 +56,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     @Input() artifactType: ArtifactType;
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
-    @ViewChild('dt') dt: DataTable;
+    @ViewChild('dt') dt: Table;
 
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
@@ -150,7 +151,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         }
     }
 
-    public filterGridData(dt: DataTable) {
+    public filterGridData(dt: Table) {
         this.isLoading = true;
         this.stateService.artifactTypeFilters.currentPageNumber = 0;
         if (dt) {
@@ -159,7 +160,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.getData();
     }
 
-    resetFilters(dt: DataTable, val) {
+    resetFilters(dt: Table, val) {
         this.stateService.artifactTypeFilters.showSimpleFilter = val;
         this.stateService.artifactTypeFilters.simpleTextFilter = '';
         this.stateService.artifactTypeFilters.filters = [];
@@ -344,7 +345,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.getData();
     }
 
-    private doSimpleSearch(dt: DataTable, isLoading: boolean) {
+    private doSimpleSearch(dt: Table, isLoading: boolean) {
 
         if (isLoading) {
             return;
