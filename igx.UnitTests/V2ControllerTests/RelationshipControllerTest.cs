@@ -424,14 +424,14 @@ namespace igx.UnitTests.V2ControllerTests
             var model = new RelationshipDeletes();
             model.Add(new RelationshipDelete() { Uid = Guid.Parse(DataConstants.ValidGUID) });
 
-            var actionResult = relationshipsController.DeleteRelationship(guid, model);
+            var actionResult = relationshipsController.DeleteRelationships(guid, model);
             var result = actionResult.Result.ExecuteAsync(new CancellationToken()).Result;
             var str = await result.Content.ReadAsStringAsync();
 
 
             Assert.True(result.IsSuccessStatusCode);
             Assert.True(!string.IsNullOrEmpty(str));
-            var data = JsonConvert.DeserializeObject<List<RelationshipDeleteApiStatus>>(str);
+            var data = JsonConvert.DeserializeObject<List<DatabaseBulkRelationshipResult>>(str);
             Assert.True(data.Count > 0);
 
         }
@@ -444,7 +444,7 @@ namespace igx.UnitTests.V2ControllerTests
             var model = new RelationshipDeletes();
             model.Add(new RelationshipDelete() { Uid = Guid.Parse(DataConstants.ValidGUID) });
 
-            var actionResult = relationshipsController.DeleteRelationship(guid, model);
+            var actionResult = relationshipsController.DeleteRelationships(guid, model);
             var result = actionResult.Result.ExecuteAsync(new CancellationToken()).Result;
             var str = await result.Content.ReadAsStringAsync();
 
@@ -461,7 +461,7 @@ namespace igx.UnitTests.V2ControllerTests
             var guid = Guid.Parse(DataConstants.ValidGUID);
             var model = new RelationshipDeletes();
 
-            var actionResult = relationshipsController.DeleteRelationship(guid, model);
+            var actionResult = relationshipsController.DeleteRelationships(guid, model);
             var result = actionResult.Result.ExecuteAsync(new CancellationToken()).Result;
             var str = await result.Content.ReadAsStringAsync();
 
@@ -479,7 +479,7 @@ namespace igx.UnitTests.V2ControllerTests
             var model = new RelationshipDeletes();
             model.Add(new RelationshipDelete() { Uid = Guid.Parse(DataConstants.InvalidGUID) });
 
-            var actionResult = relationshipsController.DeleteRelationship(guid, model);
+            var actionResult = relationshipsController.DeleteRelationships(guid, model);
             var result = actionResult.Result.ExecuteAsync(new CancellationToken()).Result;
             var str = await result.Content.ReadAsStringAsync();
 

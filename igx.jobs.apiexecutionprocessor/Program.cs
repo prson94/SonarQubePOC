@@ -228,7 +228,25 @@ namespace igx.jobs.apiexecutionprocessor
                             storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postRelationshipsResults));
                             log.WriteLine($"POST Relationships (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                             break;
-                        #endregion
+                            #endregion
+                        case ApiExecutionAction.DeleteRelationships:
+                            #region
+                            var deleteRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteRelationships>(dbExecutionItem.Fields);
+                            intersectType = company.Filter<IntersectType>(i => i.uid == deleteRelationshipsFields.IntersectTypeUid).Single();
+                            string deleteRelationshipsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
+                            var deleteRelationships = JsonConvert.DeserializeObject<RelationshipDeletes>(deleteRelationshipsJson);
+
+                            log.WriteLine($"DELETE Relationships (DB Start): Total raw assets: {deleteRelationships.Count}. Intersect Type Uid: {deleteRelationshipsFields.IntersectTypeUid}.");
+                            var deleteRelationshipsResults = company.DeleteRelationships(dbExecutionItem, intersectType, deleteRelationships, dbExecutionTimeout, Info.SendWorkflowEvents);
+                            dbExecutionItem.Processed = deleteRelationshipsResults.Count(i => i.Success);
+                            dbExecutionItem.Error = deleteRelationshipsResults.Count(i => !i.Success);
+                            log.WriteLine($"DELETE Relationships (DB Complete): Total results: {deleteRelationshipsResults.Count}.");
+
+                            log.WriteLine($"DELETE Relationships (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                            storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(deleteRelationshipsResults));
+                            log.WriteLine($"DELETE Relationships (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                            break;
+                            #endregion
                         case ApiExecutionAction.DeleteAssetTypes:
                             #region
                             var deleteAssetTypesFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssetTypes>(dbExecutionItem.Fields);
@@ -252,7 +270,7 @@ namespace igx.jobs.apiexecutionprocessor
                             var postCrossReferences = JsonConvert.DeserializeObject<List<AssetCrossReference>>(postCrossReferencesJson);
 
                             log.WriteLine($"POST Cross References (DB Start): Total raw Cross References: {postCrossReferences.Count}");
-                            var postCrossReferenceResult = company.ImportCrossRefernces(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
+                            var postCrossReferenceResult = company.ImportCrossReferences(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
                             dbExecutionItem.Processed = postCrossReferenceResult.Count(i => i.Success);
                             dbExecutionItem.Error = postCrossReferenceResult.Count(i => !i.Success);
                             log.WriteLine($"POST Cross References (DB Complete): Total Processed: {dbExecutionItem.Processed}.");

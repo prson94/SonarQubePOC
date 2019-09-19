@@ -502,7 +502,6 @@ namespace d360.web.Controllers.V2
         }
 
 
-
         /// <summary>
         /// Inserts or updates a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
         /// </summary>
@@ -561,8 +560,6 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
             }
         }
-
-
 
 
         /// <summary>
@@ -626,6 +623,67 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
+
+        /// <summary>
+        /// Removes a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
+        /// </summary>
+        /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
+        /// <param name="relationships">The payload of your request. Must include Uid.</param>
+        /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            MapToApiVersion("2.0"),
+            Route("batch/{intersectTypeUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)), SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteBulkRelationshipsAsync(Guid intersectTypeUid, RelationshipDeletes relationships, bool triggerWorkflow = false)
+        {
+            var prefix = "Relationships.DeleteBulkRelationshipsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
+
+                if (intersectType == null)
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
+
+                if (relationships == null)
+                    relationships = readRequestJsonContent<RelationshipDeletes>(Request, true).Result;
+
+                if (relationships == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                ApiExecutionInfo executionInfo = await RelationshipRepository.BulkDeleteRelationships(intersectTypeUid, relationships, this.getApiExecution, triggerWorkflow);
+
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiExecutionRecievedResponse
+                            {
+                                ExecutionID = executionInfo.ExecutionID,
+                                Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/relationships/executions/{executionInfo.ExecutionID}/status"
+                            }
+                        )
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
+
+
         /// <summary>
         /// Deletes a relationship and children of a given uid.
         /// </summary>
@@ -636,75 +694,55 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete,
             MapToApiVersion("2.0"),
-            Route("types/{intersectTypeUid}"),
+            Route("{intersectTypeUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<RelationshipDeleteApiStatus>)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<DatabaseBulkRelationshipResult>)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete relationship of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteRelationship(Guid intersectTypeUid, RelationshipDeletes relationships, bool triggerWorkflow = false)
+        public async Task<IHttpActionResult> DeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, bool triggerWorkflow = false)
         {
-            var prefix = "Relationships.DeleteRelationship => ";
+            var prefix = "Relationships.DeleteRelationship => "; 
 
+            IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
+
+            if (intersectType == null)
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Relationship Type with Uid {intersectTypeUid} could not be found.")));
+
+            if (relationships == null)
+                relationships = readRequestJsonContent<RelationshipDeletes>(Request, true).Result;
+
+            if (relationships == null)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+            if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationships in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
+
+            var execution = getApiExecution(relationships.Count, new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid });
+
+            Company.Add(execution);
+
+            List<DatabaseBulkRelationshipResult> results = null;
             try
             {
-                var intersectType = RelationshipRepository.GetRelationshipTypeByUID(intersectTypeUid);
-                if (intersectType == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Relationship Type with Uid {intersectTypeUid} could not be found."));
-                }
+                results = await RelationshipRepository.DeleteRelationships(execution, intersectType, relationships, 3600, triggerWorkflow);
 
-                bool hasRight = Company.CurrentResourceIsAdmin;
-
-                if (!hasRight)
-                {
-                    hasRight = Company.HasAssetTypePermission(intersectType.Object, intersectType.ObjectID, Permission.DeleteRelationships);
-                }
-
-                if (!hasRight)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to delete relationships of this type."));
-                }
-
-                if (relationships == null || relationships.Count == 0)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "You have not provided a valid JSON structure for this request.!"));
-                }
-
-                foreach (var item in relationships)
-                {
-                    if (item.Uid == null || item.Uid == Guid.Empty)
-                    {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "You have not provided a valid GUID!"));
-                    }
-                }
-
-                var result = await RelationshipRepository.DeleteRelationships(intersectType, relationships, triggerWorkflow);
-                if (result.StatusCode != HttpStatusCode.OK)
-                {
-                    return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message));
-                }
-
-                var response = result.Result;
-
-                return await Task.FromResult<IHttpActionResult>(
-                    ResponseMessage(
-                        Request.CreateResponse(
-                            HttpStatusCode.OK,
-                            response
-                        )
-                    )
-                );
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
             }
             catch (Exception ex)
             {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
             }
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
         }
 
 
