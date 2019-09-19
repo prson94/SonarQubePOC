@@ -432,7 +432,7 @@ namespace igx.UnitTests.V2ControllerTests
             Assert.True(result.IsSuccessStatusCode);
             Assert.True(!string.IsNullOrEmpty(str));
             var data = JsonConvert.DeserializeObject<List<DatabaseBulkRelationshipResult>>(str);
-            Assert.True(data.Count > 0);
+            Assert.True(data.Count == 0);
 
         }
 
