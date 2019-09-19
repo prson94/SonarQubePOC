@@ -1,0 +1,32 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-8247">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (SELECT 1 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME ='UC_AssetTag_AssetID_TagID')
+begin
+	alter table AssetTag add constraint UC_AssetTag_AssetID_TagID unique (AssetID, TagID);
+end
+    
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+if exists (SELECT 1 FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME ='UC_AssetTag_AssetID_TagID')
+begin
+	alter table AssetTag drop constraint UC_AssetTag_AssetID_TagID;
+end
+
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
