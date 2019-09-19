@@ -169,10 +169,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
 
-    closeEditor() {
-        this.showEditor = false;
-        if (this.selected.length == 0 && this.tags.length > 0)
-            this.selectSingleItem(null, this.tags[0]);
+    closeEditor() {        
+        this.showEditor = false;        
     }
 
     add() {
