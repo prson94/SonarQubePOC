@@ -647,24 +647,20 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> DeleteRelationship(Guid intersectTypeUid, RelationshipDeletes relationships, bool triggerWorkflow = false)
         {
             var prefix = "Relationships.DeleteRelationship => ";
-            var errorMessage = "";
-
-
 
             try
             {
                 var intersectType = RelationshipRepository.GetRelationshipTypeByUID(intersectTypeUid);
                 if (intersectType == null)
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Relationship Type with Uid {intersectTypeUid} could not be found."));
+                }
 
                 bool hasRight = Company.CurrentResourceIsAdmin;
 
                 if (!hasRight)
                 {
-                    hasRight = Company.HasAssetTypePermission(intersectType.Object, intersectType.ObjectID, Permission.ModifyAsset)
-                           && Company.HasAssetTypePermission(intersectType.Subject, intersectType.SubjectID, Permission.ModifyAsset)
-                           && Company.HasAssetTypePermission(intersectType.Object, intersectType.ObjectID, Permission.ModifyRelationships)
-                           && Company.HasAssetTypePermission(intersectType.Subject, intersectType.SubjectID, Permission.ModifyRelationships);
+                    hasRight = Company.HasAssetTypePermission(intersectType.Object, intersectType.ObjectID, Permission.DeleteRelationships);
                 }
 
                 if (!hasRight)
@@ -704,7 +700,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
