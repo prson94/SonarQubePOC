@@ -311,4 +311,5 @@
   <include file="scripts/GOV-8216.xml"/> <!-- IGC - Proc Updates -->
   <include file="scripts/GOV-7956.xml"/> <!-- [graph].[PopulatePathsForAssetType], two new functions -->
   <include file="scripts/GOV-8247.xml"/> <!-- add unique constraint on AssetTag -->
+  <include file="scripts/GOV-8251.xml"/> <!-- UserAssetPermission - ensure that valid AssetTypeID comes back in every union -->
 </databaseChangeLog>
