@@ -470,23 +470,5 @@ namespace igx.UnitTests.V2ControllerTests
             Assert.True(result.StatusCode == HttpStatusCode.BadRequest);
 
         }
-
-        [Fact]
-        public async void ERR_DeleteRelationships_InvalidModelItemUid()
-        {
-
-            var guid = Guid.Parse(DataConstants.ValidGUID);
-            var model = new RelationshipDeletes();
-            model.Add(new RelationshipDelete() { Uid = Guid.Parse(DataConstants.InvalidGUID) });
-
-            var actionResult = relationshipsController.DeleteRelationships(guid, model);
-            var result = actionResult.Result.ExecuteAsync(new CancellationToken()).Result;
-            var str = await result.Content.ReadAsStringAsync();
-
-
-            Assert.True(!result.IsSuccessStatusCode);
-            Assert.True(result.StatusCode == HttpStatusCode.BadRequest);
-
-        }
     }
 }
