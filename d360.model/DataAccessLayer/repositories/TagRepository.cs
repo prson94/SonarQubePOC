@@ -436,7 +436,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                             select  distinct
                                     'Update', 'Tag', 0, [queue].WriteIndexXml('Update', A.Object,  A.ObjectID, coalesce(@resourceId, 0))
                             from    @assetTagPending P
-                                    inner join Asset A on A.ID = P.ID;
+                                    inner join Asset A on A.ID = P.AssetID;
                         
                         select  T.uid, 
                                 Items.count as UseCount 
