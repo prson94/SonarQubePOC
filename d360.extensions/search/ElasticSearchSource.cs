@@ -512,7 +512,7 @@ namespace d360.extensions.search
                     if (!string.IsNullOrEmpty(compositeSearchTerm)) compositeSearchTerm += $" {con.ToString().ToUpper()} ";
                     con = item.connector;
 
-                    var searchTerm = item.value.Replace(":","\\:");
+                    var searchTerm = EscapeSpecialCharacters(item.value);
                     if (item.exact)
                     {
                         searchTerm = searchTerm.Replace("\"", "");
