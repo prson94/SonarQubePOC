@@ -81,17 +81,14 @@ export class TagView extends AdminBaseComponent implements OnInit {
         {
             console.warn("d3s-tag-view::Error while parsing tags!");
         }
-        if (!this.auth.isAdmin || !this.hasModifyAssetPermissions())
-            this.isEditable = false;
-        if (this.auth.isAdmin || this.hasModifyAssetPermissions())
-            this.isEditable = true;
-        if (this.tags) {
-            this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
-            this.tags.forEach(tag => {
-                if (tag.CreatedBy == CurrentResourceID) {
-                    this.isEditable = true;
-                }
-            })
+        if (this.isEditable) {
+            if (!this.auth.isAdmin || !this.hasModifyAssetPermissions())
+                this.isEditable = false;
+            if (this.auth.isAdmin || this.hasModifyAssetPermissions())
+                this.isEditable = true;
+            if (this.tags) {
+                this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
+            }
         }
         this.selected = this.tags;
     }
@@ -138,7 +135,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.tagsLoading = true;
         clearTimeout(this.timeouthandle);
         this.timeouthandle = window.setTimeout(() => {
-            this.tagService.searchTagsTypeAhead(searchValue.toLowerCase(), 10)
+            this.tagService.searchTagsTypeAhead(searchValue, 10)
                 .subscribe(res => {
                     if (res && res.length > 0) {
                         this.searchResults = res.sort((a, b) => a.name.localeCompare(b.name));
