@@ -717,6 +717,9 @@ namespace d360.web.Controllers.V2
             if (relationships == null)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
+            if (relationships.Count == 0)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided any relationships to process in this request."));
+
             if (relationships.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationships in this request. Please call the BATCH API to submit more than {MAX_SYNCHRONOUS_API_ITEM_COUNT} items."));
 
