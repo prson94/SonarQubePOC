@@ -309,4 +309,5 @@
   <include file="scripts/GOV-8206.xml"/> <!-- FollowDetail - fix scoring -->
   <include file="scripts/GOV-8222.xml"/> <!-- [bulkload].[GetLoadColumns] - exclude tag fields -->
   <include file="scripts/GOV-8216.xml"/> <!-- IGC - Proc Updates -->
+  <include file="scripts/GOV-7956.xml"/> <!-- [graph].[PopulatePathsForAssetType], two new functions -->
 </databaseChangeLog>
