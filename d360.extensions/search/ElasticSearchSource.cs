@@ -804,6 +804,7 @@ namespace d360.extensions.search
                 Type = GetPropertyValue<string>(h._source, "Type"),
                 Url = GetPropertyValue<string>(h._source, "Url"),
                 Uid = GetGuidPropertyIfExists(h, "Uid"),
+                AssetTypeUid = GetGuidPropertyIfExists(h, "AssetTypeUid"),
                 Tags = GetTags(h, true)
             });
         }
