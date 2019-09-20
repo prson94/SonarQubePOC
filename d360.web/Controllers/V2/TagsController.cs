@@ -559,6 +559,25 @@ namespace d360.web.Controllers.V2
             }
 
         }
+        [HttpGet,
+        Route("getAssetTagDetails"),
+        SwaggerConsumes("application/json"), SwaggerProduces("application/json")]
+        public IHttpActionResult getAssetTagDetails(int tagID, int assetID)
+        {
+            try
+            {
+                var result = tagRepository.GetAssetTagDetails(tagID,assetID);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+
+            }
+            catch (Exception e)
+            {
+
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while checking if tag exists", e.Message);
+            }
+
+        }
 
 
     }

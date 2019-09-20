@@ -14,6 +14,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 export class ObjectDetailFieldComponent {
     @Input() field: DetailField;
     @Input() assetUID: string;
+    @Input() assetID: number;
     DetailFieldType = DetailFieldType;
     
 

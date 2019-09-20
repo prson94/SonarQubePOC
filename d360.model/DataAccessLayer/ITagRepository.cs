@@ -20,6 +20,7 @@ namespace d360.model.DataAccessLayer
         Tag GetTagByName(string name);
         Tag GetTagById(int tagId);
         bool DoesAssetTagExists(int tagId, long assetId);
+        int? GetAssetTagDetails(int tagId, long assetId);
         AssetTag CreateAssetTag(int tagId, long assetId);
         bool IsAuthorizedToDeleteAssetTag(int tagId, long assetId);
         bool IsAuthorizedToEditTag(Guid tagUid);
