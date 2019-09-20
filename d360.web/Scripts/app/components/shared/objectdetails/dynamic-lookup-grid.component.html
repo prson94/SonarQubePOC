@@ -40,6 +40,11 @@
                     </span>
                     <span *ngSwitchCase="'number'">{{item[column.datafield]}}</span>
                     <span *ngSwitchCase="'lookup'" style="display:block; word-wrap:break-word !important">
+                        <d3s-lookup-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]">
+                            <a (click)="navigate(item[column.urlfield])" [innerText]="item[column.datafield]"></a>
+                        </d3s-lookup-tooltip>
+                    </span>
+                    <span *ngSwitchCase="'preview'" style="display:block; word-wrap:break-word !important">
                         <d3s-preview-tooltip [objectType]="item[column.objectfield]" [objectId]="item[column.objectidfield]">
                             <a (click)="navigate(item[column.urlfield])" [innerText]="item[column.datafield]"></a>
                         </d3s-preview-tooltip>
