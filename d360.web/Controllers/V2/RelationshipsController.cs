@@ -690,10 +690,14 @@ namespace d360.web.Controllers.V2
         /// <param name="intersectTypeUid">The unique identifier of the relationship type.</param>
         /// <param name="relationships">The list of relationships for deletions.</param>
         /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
+        /// <remarks>
+        /// The "types/" prefix in the URI will be removed in a subsequent release. Please use the DELETE endpoint without this prefix.
+        /// </remarks>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
             MapToApiVersion("2.0"),
+            Route("types/{intersectTypeUid}"),
             Route("{intersectTypeUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<DatabaseBulkRelationshipResult>)),
