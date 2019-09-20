@@ -3037,9 +3037,13 @@ from	api.ExecutionAsset T
 
                         Connection.Close();
 
-                        var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
+                        try
+                        {
+                            var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
+                            SendAssetGraphEvents(results, changedFields);
+                        }
+                        catch { }
 
-                        SendAssetGraphEvents(results, changedFields);
 
                         if (sendWorkflowEvents)
                         {
