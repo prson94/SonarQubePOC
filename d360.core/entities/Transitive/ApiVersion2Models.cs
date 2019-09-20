@@ -94,7 +94,6 @@ namespace d360.core.entities
         [DataMember] public Guid? PredicateUid { get; set; }
     }
 
-
     [DataContract(Name = "IconStyle")]
     public class IconStyleInsert
     {
@@ -104,7 +103,6 @@ namespace d360.core.entities
         [DataMember]
         public string BackColor { get; set; }
     }
-
 
     [DataContract(Name = "asset")]
     public class AssetInsert : IAssetUpsert, IExecutionItem
@@ -301,19 +299,6 @@ namespace d360.core.entities
         public bool Cascade { get; set; }
 
     }
-
-    //public class RelationshipDeleteApiStatus
-    //{
-    //    [DataMember]
-    //    public Guid Uid { get; set; }
-
-    //    [DataMember]
-    //    public string Message { get; set; }
-
-    //    [DataMember]
-    //    public bool Success { get; set; }
-    //}
-
 
     public class RelationshipImportRequest
     {
