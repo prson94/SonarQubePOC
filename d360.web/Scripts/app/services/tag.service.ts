@@ -77,8 +77,8 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
-    getAssetTagDetails(tagID: number, assetID: number): Observable<any> {
-        let url = `api/v2/tags/getAssetTagDetails?tagID=${tagID}&assetID=${assetID}`;
+    getAssetTagDetails(tagID: number, assetUID: string): Observable<any> {
+        let url = `api/v2/tags/getAssetTagDetails?tagID=${tagID}&assetUID=${assetUID}`;
         return this.http.get(url)
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));

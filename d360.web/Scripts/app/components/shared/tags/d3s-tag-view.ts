@@ -37,7 +37,6 @@ export class TagView extends AdminBaseComponent implements OnInit {
     @Input() isEditable: boolean = false;
     @Input() allowAddTag: boolean = false;
     @Input() assetUID: string;
-    @Input() assetID: number;
     showEditor: boolean = false;
     showDelete: boolean = false;
     private searchResults: any[] = [];
@@ -270,7 +269,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
                 var tagElements = this.container.nativeElement.querySelectorAll('.tagging');
                 tagElements.forEach(tagEle => {
                     this.tags.forEach(tag => {
-                        this.tagService.getAssetTagDetails(tag.TooltipID, this.assetID).
+                        this.tagService.getAssetTagDetails(tag.TooltipID, this.assetUID).
                             subscribe(result => {
                                 if (tagEle.children[1].innerText == tag.Value) {
                                     if (result == CurrentResourceID)

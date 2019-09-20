@@ -30,11 +30,13 @@ namespace d360.web.Controllers.V2
     public class TagsController : BaseV2ApiController
     {
         ITagRepository tagRepository;
+        IAssetRepository assetRepository;
 
-        public TagsController(ICommunityContext community, ICompanyContext company, ITagRepository repository)
+        public TagsController(ICommunityContext community, ICompanyContext company, ITagRepository repository,IAssetRepository assetRep)
             : base(community, company)
         {
             this.tagRepository = repository;
+            this.assetRepository = assetRep;
         }
 
 
@@ -562,11 +564,12 @@ namespace d360.web.Controllers.V2
         [HttpGet,
         Route("getAssetTagDetails"),
         ApiExplorerSettings(IgnoreApi = true)]
-        public IHttpActionResult getAssetTagDetails(int tagID, int assetID)
+        public IHttpActionResult getAssetTagDetails(int tagID, Guid assetUID)
         {
             try
             {
-                var result = tagRepository.GetAssetTagDetails(tagID,assetID);
+                var asset = assetRepository.GetAssetByUID(assetUID);
+                var result = tagRepository.GetAssetTagDetails(tagID,asset.ID);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 
@@ -574,7 +577,7 @@ namespace d360.web.Controllers.V2
             catch (Exception e)
             {
 
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while checking if tag exists", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting asset tag details", e.Message);
             }
 
         }
