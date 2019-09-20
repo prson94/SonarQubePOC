@@ -38,21 +38,4 @@ namespace d360.core.entities
         public string Inverse { get; set; }
 
     }
-
-
-    public class RelationshipDeleteResult
-    {
-        public HttpStatusCode StatusCode { get; set; }
-        public string Error { get; set; }
-        public string Message { get; set; }
-        public List<RelationshipDeleteApiStatus> Result { get; set; }
-
-        public RelationshipDeleteResult(HttpStatusCode code, string err, string msg, List<RelationshipDeleteApiStatus> result)
-        {
-            this.StatusCode = code;
-            this.Error = err;
-            this.Message = msg;
-            this.Result = result;
-        }
-    }
 }

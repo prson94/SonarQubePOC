@@ -1,0 +1,46 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-8240">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' and TABLE_NAME ='ExecutionDeletedRelationship')
+begin
+	CREATE TABLE [api].[ExecutionDeletedRelationship](
+		ExecutionID uniqueidentifier NOT NULL,
+		ItemNumber int NOT NULL,
+		ExecutionItemUid uniqueidentifier NULL,
+		[Uid] uniqueidentifier NOT NULL,
+		IntersectID int NULL,
+		FromHierarchy bit NOT NULL,
+		HierarchyIntersectID int NULL,
+		[Message] nvarchar(2500) NULL,
+		Success bit NULL,
+		[Cascade] bit NOT NULL,
+		CONSTRAINT [PK_ApiExecutionDeletedRelationship] PRIMARY KEY CLUSTERED  ( [ExecutionID] DESC, [Uid] ASC )
+	)
+	ALTER TABLE [api].[ExecutionDeletedRelationship] ADD  CONSTRAINT [DF_ApiExecutionDeletedRelationship_FromHierarchy]  DEFAULT ((0)) FOR [FromHierarchy]
+	ALTER TABLE [api].[ExecutionDeletedRelationship] ADD  CONSTRAINT [DF_ApiExecutionDeletedRelationship_Cascade]  DEFAULT ((1)) FOR [Cascade]
+end
+    
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+if exists (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' and TABLE_NAME ='ExecutionDeletedRelationship')
+begin
+	DROP TABLE [api].[ExecutionDeletedRelationship]
+end
+
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
