@@ -561,7 +561,7 @@ namespace d360.web.Controllers.V2
         }
         [HttpGet,
         Route("getAssetTagDetails"),
-        SwaggerConsumes("application/json"), SwaggerProduces("application/json")]
+        ApiExplorerSettings(IgnoreApi = true)]
         public IHttpActionResult getAssetTagDetails(int tagID, int assetID)
         {
             try
