@@ -85,6 +85,10 @@ export class SearchComponent extends BaseComponent implements OnInit {
             if (this.searchText.length > 0) this.doSearch();
 
         });
+
+        if (this.showAdvanced) {
+            this.changeheight();
+        }
     }
 
     handleAdvancedChange(event) {
