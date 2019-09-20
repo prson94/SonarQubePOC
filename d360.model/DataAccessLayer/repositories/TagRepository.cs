@@ -535,6 +535,10 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
         {
             return companyContext.AssetTags.Any(x => x.TagID == tagId && x.AssetID == assetId);
         }
+        public int? GetAssetTagDetails(int tagId, long assetId)
+        {
+            return companyContext.AssetTags.FirstOrDefault(x => x.TagID == tagId && x.AssetID == assetId).CreatedBy;
+        }
 
         public AssetTag CreateAssetTag(int tagId, long assetId)
         {

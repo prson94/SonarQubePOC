@@ -52,6 +52,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     private editPopupTitle: string = 'Edit Tag';
     private deletePopupTitle: string = 'Delete Tag';
     private isShowAll: boolean = false;
+    showDeleteOption: boolean = false;
     @ViewChild("container") container: ElementRef;
     error: any;
     timeouthandle: any;
@@ -261,19 +262,22 @@ export class TagView extends AdminBaseComponent implements OnInit {
     showRemoveTag() {
         if (this.isEditable) {
             if (!this.auth.isAdmin || !this.hasModifyAssetPermissions())
-                this.isEditable = false;
+                this.showDeleteOption = false;
             if (this.auth.isAdmin || this.hasModifyAssetPermissions())
-                this.isEditable = true;
-            if (!this.isEditable) {
+                this.showDeleteOption = true;
+            if (!this.showDeleteOption) {
                 var tagElements = this.container.nativeElement.querySelectorAll('.tagging');
                 tagElements.forEach(tagEle => {
                     this.tags.forEach(tag => {
-                        if (tagEle.children[1].innerText == tag.Value) {
-                            if (tag.CreatedBy != CurrentResourceID)
-                                tagEle.children[2].remove();
-                            if (tag.CreatedBy != CurrentResourceID)
-                                this.isEditable = true;
-                        }
+                        this.tagService.getAssetTagDetails(tag.TooltipID, this.assetUID).
+                            subscribe(result => {
+                                if (tagEle.children[1].innerText == tag.Value) {
+                                    if (result == CurrentResourceID)
+                                        this.showDeleteOption = true;
+                                    if (result != CurrentResourceID)
+                                        tagEle.children[2].remove();
+                                }
+                            }, err => this.showMessageForResult(this.messagesService, err));
                     })
                 })
             }
@@ -331,6 +335,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.manageWidth();
         this.showRemoveTag();
     }
+
 
     openTagPage(event: MouseEvent, item: any) {
         if ((this.isEditable != true && this.showDelete == false) || (<HTMLElement>event.target).className == 'tag-item-wrapper')
