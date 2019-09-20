@@ -17,7 +17,6 @@ export class ObjectDetailComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
     private assetUID: string;
-    private assetID: number;
     private isLoading = false;
     DetailFieldType = DetailFieldType;
 
@@ -75,9 +74,6 @@ export class ObjectDetailComponent implements OnChanges {
                             if (f.Name == 'UID') {
                                 this.assetUID = f.Value;
                             }
-                            if (f.Name == "Asset ID") {
-                                this.assetID = +f.Value;
-                            }
 
                         });
                         r.FirstColumnFields = r.FirstColumnFields.filter(f => f.Type != DetailFieldType.None);
@@ -102,9 +98,6 @@ export class ObjectDetailComponent implements OnChanges {
                             }
                             if (s.Name == 'UID') {
                                 this.assetUID = s.Value;
-                            }
-                            if (s.Name == "Asset ID") {
-                                this.assetID = +s.Value;
                             }
                         });
 
