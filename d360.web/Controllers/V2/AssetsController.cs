@@ -427,7 +427,7 @@ namespace d360.web.Controllers.V2
         /// Workflows - This endpoint will trigger any associated workflows for the add actions taken on assets as part of this API call.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
-        /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
+        /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning workflow events will be triggered if there are any.</param>
         /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
         /// <param name="assets">The payload of your request.</param>        
         /// <returns>An HTTP status code and message.</returns>
@@ -508,7 +508,7 @@ namespace d360.web.Controllers.V2
         /// Workflows - This endpoint will trigger any associated workflows for the update actions taken on assets as part of this API call.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
-        /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
+        /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning workflow events will be triggered if there are any.</param>
         /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -585,7 +585,7 @@ namespace d360.web.Controllers.V2
         /// Workflows - This endpoint will trigger any associated workflows for the delete actions taken on assets as part of this API call.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
-        /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
+        /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning workflow events will be triggered if there are any.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
@@ -670,7 +670,7 @@ namespace d360.web.Controllers.V2
         /// Workflows - This endpoint will trigger any associated workflows for the add actions taken on assets as part of this API call.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
-        /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
+        /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning workflow events will be triggered if there are any.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
@@ -743,7 +743,7 @@ namespace d360.web.Controllers.V2
         /// Workflows - This endpoint will trigger any associated workflows for the update actions taken on assets as part of this API call.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
-        /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
+        /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning workflow events will be triggered if there are any.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
@@ -818,7 +818,7 @@ namespace d360.web.Controllers.V2
         /// Workflows - This endpoint will trigger any associated workflows for the delete actions taken on assets as part of this API call.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
-        /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning worklow events will be triggered if there are any.</param>
+        /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning workflow events will be triggered if there are any.</param>
         /// <param name="assets">The payload of your request.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
