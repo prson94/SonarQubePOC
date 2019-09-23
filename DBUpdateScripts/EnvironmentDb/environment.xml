@@ -313,4 +313,7 @@
   <include file="scripts/GOV-8247.xml"/> <!-- add unique constraint on AssetTag -->
   <include file="scripts/GOV-8240.xml"/> <!-- add api.ExecutionDeletedRelationship table -->
   <include file="scripts/GOV-8251.xml"/> <!-- UserAssetPermission - ensure that valid AssetTypeID comes back in every union -->
+  
+      <!-- Sprint 8 2019 Start-->
+  <include file="scripts/GOV-7958.xml"/> <!-- Dropped ReferenceItem and ReferenceItemType tables -->
 </databaseChangeLog>
