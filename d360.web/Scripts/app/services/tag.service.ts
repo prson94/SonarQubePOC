@@ -77,6 +77,12 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
+    getAssetTagDetails(tagID: number, assetUID: string): Observable<any> {
+        let url = `api/v2/tags/getAssetTagDetails?tagID=${tagID}&assetUID=${assetUID}`;
+        return this.http.get(url)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
     deleteAssetTag(tags: TagApiModel[]): Observable<any> {
 
         const httpHeaders = {
@@ -87,9 +93,9 @@ export class TagService extends BaseObservableService {
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
-    doesTagExist(name: string): Observable<any> {
-        let url = `api/v2/tags/exists?name=${name}`;
-        return this.http.get(url)
+    doesTagExist(tag: TagType): Observable<any> {
+        let url = `api/v2/tags/exists`;
+        return this.http.post(url, tag)
             .pipe(map(response => <any>response),
                 catchError(err => this.handleError(err, true)));
     }
@@ -109,6 +115,13 @@ export class TagService extends BaseObservableService {
 
     searchTags(q: string, exceptId, ignoreCounts: boolean = false): Observable<any[]> {
         let url = `api/v2/tags/search?value=${q}&exceptuid=${exceptId}&ignoreCounts=${ignoreCounts}`;
+        return this.http.get(url)
+            .pipe(map(response => <any[]>response),
+                catchError(err => this.handleError(err, true)))
+    }
+
+    searchTagsTypeAhead(q: string, maxNumberOfResults: number = 200): Observable<any[]> {
+        let url = `api/v2/tags/search?value=${encodeURIComponent(q)}&maxNumberOfResults=${maxNumberOfResults}`;
         return this.http.get(url)
             .pipe(map(response => <any[]>response),
                 catchError(err => this.handleError(err, true)))
@@ -165,20 +178,24 @@ export class TagService extends BaseObservableService {
 
     private tagTooltipsCache: any[] = [];
 
-    getTagTooltip(uid: string): Observable<any> {
+    getTagTooltip(tagUid: string, assetUid: string = null): Observable<any> {
 
-        var cachedItem = this.tagTooltipsCache.find(x => x.uid == uid);
+        var cachedItem = this.tagTooltipsCache.find(x => x.tagUid == tagUid && x.assetUid == assetUid);
         if (cachedItem)
             return cachedItem.obs;
 
-        let url = `api/v2/tags/${uid}/tooltip`;
+        let url = `api/v2/tags/${tagUid}/tooltip`;
+
+        if (assetUid != null)
+            url += `?assetUid=${assetUid}`;
+
         var obs = this.http.get(url)
             .pipe(map(response => <any>response),
                 publishReplay(1),
                 refCount(),
                 catchError(err => this.handleError(err)));
 
-        var data = { uid: uid, obs: obs };
+        var data = { tagUid: tagUid, assetUid: assetUid, obs: obs };
         this.tagTooltipsCache.push(data);
 
         return obs;

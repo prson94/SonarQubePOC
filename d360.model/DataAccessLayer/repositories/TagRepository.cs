@@ -436,7 +436,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                             select  distinct
                                     'Update', 'Tag', 0, [queue].WriteIndexXml('Update', A.Object,  A.ObjectID, coalesce(@resourceId, 0))
                             from    @assetTagPending P
-                                    inner join Asset A on A.ID = P.ID;
+                                    inner join Asset A on A.ID = P.AssetID;
                         
                         select  T.uid, 
                                 Items.count as UseCount 
@@ -453,6 +453,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
         {
             string value = "";
             Guid exceptUid = Guid.Empty;
+            int maxNumberOfResults = 200;
             bool ignoreCounts = false;
             foreach (var queryitem in queryParams)
             {
@@ -475,18 +476,26 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                     case "value":
                         value = $"%{queryitem.Value.ToLower()}%";
                         break;
+                    case "maxnumberofresults":
+                        int size = 200;
+                        if (int.TryParse(queryitem.Value, out size))
+                        {
+                            maxNumberOfResults = size;
+                        }
+                        else throw new Exception("Invalid value for page size parametar!");
+                        break;
                 }
             }
             string sql = string.Empty;
             if (!ignoreCounts)
             {
-                sql = @"select T.Value as name, T.uid as code, Results.count from Tag T 
+                sql = $@"select top {maxNumberOfResults} T.Value as name, T.uid as code, Results.count from Tag T 
                             cross apply (select count(*) from AssetTag where TagID = T.ID)Results(count)
                             where State = 1 and T.Value like @value and T.uid != @exceptUid";
             }
             else
             {
-                sql = @"select T.Value as name, T.uid as code from Tag T 
+                sql = $@"select top {maxNumberOfResults} T.Value as name, T.uid as code from Tag T 
                         where State = 1 and T.Value like @value and T.uid != @exceptUid";
             }
 
@@ -525,6 +534,10 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
         public bool DoesAssetTagExists(int tagId, long assetId)
         {
             return companyContext.AssetTags.Any(x => x.TagID == tagId && x.AssetID == assetId);
+        }
+        public int? GetAssetTagDetails(int tagId, long assetId)
+        {
+            return companyContext.AssetTags.FirstOrDefault(x => x.TagID == tagId && x.AssetID == assetId).CreatedBy;
         }
 
         public AssetTag CreateAssetTag(int tagId, long assetId)
@@ -706,6 +719,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         select 
                         ADV.*, 
                         A.Id as AssetID,
+                        A.[Uid] as AssetUid,
 						CASE 
 							WHEN AST.Object = 'TaxonomyType' THEN 'Model ' + AST.Name
 							WHEN AST.Object = 'ArtifactType' THEN 'Glossary ' + AST.Name
@@ -734,14 +748,35 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
             return result;
         }
 
-        public IEnumerable<dynamic> GetTooltip(Guid guid)
+        public IEnumerable<dynamic> GetTooltip(Guid tagUid, Guid? assetUid)
         {
-            string sql = @"select T.Value, T.CreatedOn, ADV.DisplayValue as CreatedBy from Tag T 
-                            inner join Asset R on R.Object = 'Resource' and R.ObjectID = T.CreatedBy
-                            cross apply dbo.GetAssetDisplayValueById(R.ID)ADV
-                            where T.Uid = @uid";
+            string sql;
+            if (assetUid.HasValue)
+            {
+                sql = @"select	T.Value, 
+									TA.CreatedOn, 
+									ADV.DisplayValue as CreatedBy 
+							from	AssetTag TA
+									inner join Tag T on T.ID = TA.TagID
+									inner join Asset A on A.ID = TA.AssetID
+									inner join Asset R on R.Object = 'Resource' and R.ObjectID = TA.CreatedBy
+									cross apply dbo.GetAssetDisplayValueById(R.ID)ADV
+                            where	T.[Uid] = @tagUid 
+									and A.[Uid] = @assetUid";
+            }
+            else
+            {
+                sql = @"select  T.Value, 
+                                T.CreatedOn, 
+                                ADV.DisplayValue as CreatedBy 
+                        from    Tag T 
+                                inner join Asset R on R.Object = 'Resource' and R.ObjectID = T.CreatedBy
+                                cross apply dbo.GetAssetDisplayValueById(R.ID)ADV
+                        where   T.[Uid] = @tagUid";
+            }
 
-            var result = companyContext.Query<dynamic>(sql, new { uid = guid });
+
+            var result = companyContext.Query<dynamic>(sql, new { tagUid, assetUid });
             return result;
         }
 

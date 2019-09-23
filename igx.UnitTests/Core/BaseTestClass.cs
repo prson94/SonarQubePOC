@@ -106,7 +106,7 @@ namespace igx.UnitTests
         public IAssetRepository GetAssetRepository()
         {
             var mockRepo = new Mock<IAssetRepository>();
-            var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage());
+            var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage(),GetCommunity());
 
             mockRepo.Setup(x => x.GetAssetType(It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>()))
                 .Returns(
@@ -356,8 +356,8 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetRelationshipTypes(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<string>()))
                 .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>() { new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel() }));
 
-            mock.Setup(x => x.DeleteRelationships(It.IsAny<IntersectType>(), It.IsAny<RelationshipDeletes>(), It.IsAny<bool>()))
-                .Returns(Task.FromResult(new RelationshipDeleteResult(HttpStatusCode.OK, "", "", new List<RelationshipDeleteApiStatus>() { new RelationshipDeleteApiStatus() })));
+            mock.Setup(x => x.DeleteRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipDeletes>(), 3600, It.IsAny<bool>()))
+                .Returns(Task.FromResult(new List<DatabaseBulkRelationshipResult>()));
 
             return mock.Object;
         }

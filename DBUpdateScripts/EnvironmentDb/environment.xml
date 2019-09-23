@@ -300,5 +300,20 @@
   <include file="scripts/GOV-8096.xml"/> <!-- IGC: [integration].[CompleteExecution] -->
   <include file="scripts/GOV-7788.xml"/> <!-- Add Column ExecutionItemUid on api.ExecutionRelationship -->
   <include file="scripts/GOV-7941.xml"/> <!-- graph.SynchronizeTables - new proc to sync graph tables -->
+  <include file="scripts/GOV-7991.xml"/> <!-- graph procs to update single edge/node/path -->
   <include file="scripts/GOV-7680.xml"/> <!-- AddAuditEntry - proc -->
+  <include file="scripts/GOV-8183.xml"/> <!-- Asset Browser - Proc Updates -->
+  <include file="scripts/GOV-8177.xml"/> <!-- IGC - Proc Updates -->
+  <include file="scripts/GOV-8160.xml"/> <!-- GetDynamicAssets proc - Field from relationship optimization -->
+  <include file="scripts/GOV-7979.xml"/> <!-- Tag triggers to queue re-index of impacted assets -->
+  <include file="scripts/GOV-8206.xml"/> <!-- FollowDetail - fix scoring -->
+  <include file="scripts/GOV-8222.xml"/> <!-- [bulkload].[GetLoadColumns] - exclude tag fields -->
+  <include file="scripts/GOV-8216.xml"/> <!-- IGC - Proc Updates -->
+  <include file="scripts/GOV-7956.xml"/> <!-- [graph].[PopulatePathsForAssetType], two new functions -->
+  <include file="scripts/GOV-8247.xml"/> <!-- add unique constraint on AssetTag -->
+  <include file="scripts/GOV-8240.xml"/> <!-- add api.ExecutionDeletedRelationship table -->
+  <include file="scripts/GOV-8251.xml"/> <!-- UserAssetPermission - ensure that valid AssetTypeID comes back in every union -->
+  
+    <!-- Sprint 8 2019 Start-->
+	<include file="scripts/GOV-7816.xml"/> <!-- Dropped Artifact and ArtifactType tables -->
 </databaseChangeLog>

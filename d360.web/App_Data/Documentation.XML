@@ -2838,7 +2838,16 @@
             <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
             <returns></returns>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeleteRelationship(System.Guid,d360.core.entities.RelationshipDeletes,System.Boolean)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeleteBulkRelationshipsAsync(System.Guid,d360.core.entities.RelationshipDeletes,System.Boolean)">
+            <summary>
+            Removes a given set of relationships based on the specific relationship type Uid. This endpoint is meant for a greater number of items as it stores the relationship list for asynchronous or batch processing.
+            </summary>
+            <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
+            <param name="relationships">The payload of your request. Must include Uid.</param>
+            <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeleteRelationships(System.Guid,d360.core.entities.RelationshipDeletes,System.Boolean)">
             <summary>
             Deletes a relationship and children of a given uid.
             </summary>
@@ -3230,6 +3239,9 @@
             GET a list of tagged assets by tag Uid.
             </summary>
             <returns>A excel file containing tagged assets.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.TagsController.DoesTagExist(d360.core.entities.TagApiModel)">
+            <param name="tag">The tag to be created.</param>
         </member>
         <member name="M:d360.web.Controllers.V2.WorkflowController.GetWorkflowTypeAsync(System.Nullable{d360.core.enums.Workflow.ChangeType},System.Nullable{d360.core.enums.State})">
             <summary>

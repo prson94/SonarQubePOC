@@ -62,7 +62,7 @@ namespace d360.core.entities.Views
         public int OpenEventCount { get; set; }
 
         [DataMember]
-        public int? CurrentScore { get; set; }
+        public decimal? CurrentScore { get; set; }
 
 
         [DataMember]

@@ -15,6 +15,7 @@ import {
     SharedModule,
     TooltipModule,
     AutoCompleteModule,
+    OverlayPanelModule,
 } from 'primeng/primeng';
 
 import { TableModule } from 'primeng/table';
@@ -70,6 +71,7 @@ import { TagView } from "../../shared/tags/d3s-tag-view";
         TableModule,
         DirectivesModule,
         SiteModalModule,
+        OverlayPanelModule,
 
         //color picker
         ColorPickerModule,

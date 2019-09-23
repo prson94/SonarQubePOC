@@ -10,6 +10,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { Node } from '@angular/compiler/src/render3/r3_ast';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { Array } from 'core-js';
 declare var CompanySettings;
 
 @Component({
@@ -104,7 +105,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     private clearAllSelectedItems() {
-        this.tableEl.el.nativeElement.querySelectorAll("tr.ui-state-highlight")
+        var nodeList = this.tableEl.el.nativeElement.querySelectorAll("tr.ui-state-highlight");
+        Array.from(nodeList)
             .forEach(x => {
                 this.deselectElement(x);
             });
@@ -169,10 +171,8 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
 
-    closeEditor() {
-        this.showEditor = false;
-        if (this.selected.length == 0 && this.tags.length > 0)
-            this.selectSingleItem(null, this.tags[0]);
+    closeEditor() {        
+        this.showEditor = false;        
     }
 
     add() {

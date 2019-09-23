@@ -1,7 +1,7 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { TagType, TagApiModel } from '../../../models/tag.model';
+import { TagType, TagApiModel, Tag } from '../../../models/tag.model';
 import { TagService } from '../../../services/tag.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AdminBaseComponent } from '../../admin/admin-base.component';
@@ -10,7 +10,17 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CoreModule } from '../core.module';
 import { Router } from '@angular/router';
+import {
+    AutoCompleteModule,
+    TreeModule,
+    OverlayPanelModule,
+    SharedModule,
+    DialogModule,
+} from 'primeng/primeng';
+import { debounceTime } from 'rxjs/operators';
+import { AuthenticationService } from '../../../services/authentication.service';
 
+declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-tag-view',
@@ -22,28 +32,45 @@ import { Router } from '@angular/router';
 
 export class TagView extends AdminBaseComponent implements OnInit {
     public theDeleteCallback: Function;
+    @ViewChild('tagInput') tagInput: ElementRef;
     @Input() data: any;
     @Input() isEditable: boolean = false;
+    @Input() allowAddTag: boolean = false;
     @Input() assetUID: string;
     showEditor: boolean = false;
     showDelete: boolean = false;
+    private searchResults: any[] = [];
     private tags: any[];
+    private searchTags: any[];
+    private resultPanel: any;
+    private targetPanel: any;
+    private tagsLoading = false;
     private tagID: any;
     existingTag: boolean = false;
     selected: TagType[] = [];
+    private selectedtag: TagType = new TagType();
     private editPopupTitle: string = 'Edit Tag';
     private deletePopupTitle: string = 'Delete Tag';
     private isShowAll: boolean = false;
+    showDeleteOption: boolean = false;
     @ViewChild("container") container: ElementRef;
     error: any;
+    timeouthandle: any;
 
     private tagTooltip: TagType;
     private isTooltipLoaded: boolean = false;
 
-    constructor(private router: Router, private tagService: TagService, private messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, rightSidebarService: RightSidebarService, private ref: ChangeDetectorRef) {
+    constructor(private router: Router,
+        private tagService: TagService,
+        private messagesService: MessagesObservableService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
+        titleService: Title,
+        rightSidebarService: RightSidebarService,
+        private ref: ChangeDetectorRef,
+        private auth: AuthenticationService) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
     }
-
+    
     ngOnInit() {
         this.theDeleteCallback = this.deleteTags.bind(this);
         try {
@@ -55,8 +82,63 @@ export class TagView extends AdminBaseComponent implements OnInit {
         {
             console.warn("d3s-tag-view::Error while parsing tags!");
         }
-        //this.getTags();
+        if (this.tags) {
+            this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
+        }
         this.selected = this.tags;
+    }
+
+    addTag(event,tag) {
+        this.tagInput.nativeElement.style.background = "white";
+        this.selectedtag.Value = tag.name;
+        this.selectedtag.uid = tag.code;
+        this.tagInput.nativeElement.value = tag.name;
+        this.search(event, tag.name);
+        this.saveTag({ Value: this.selectedtag.Value, uid: this.selectedtag.uid });
+    }
+
+    show(event, searchPanel, target) {
+        this.resultPanel = searchPanel;
+        this.targetPanel = target;
+        searchPanel.show(event);
+        this.tagInput.nativeElement.style.background = "white";
+        target.style.background = "white";
+        target.style.border = "1px solid #66A9D6";
+        let lineDims = target.getBoundingClientRect();
+        window.setTimeout(() => {
+            let dispPanel = searchPanel.el.nativeElement.children[0];
+            dispPanel.style.maxWidth = (window.innerWidth - lineDims.left - 5) + "px";
+        }, 150);
+    }
+
+    search(event, searchValue) {
+        if (event.key != "Enter" && event.key != undefined) {
+            this.selectedtag.Value = undefined;
+            this.selectedtag.uid = undefined;
+        }
+        if (event.key == "Enter") {
+            if (this.selectedtag.Value == undefined)
+                this.selectedtag.Value = searchValue;
+            if (this.selectedtag.Value != "")
+                this.saveTag({ Value: this.selectedtag.Value, uid: this.selectedtag.uid });
+        }
+        this.tagsLoading = true;
+        clearTimeout(this.timeouthandle);
+        this.timeouthandle = window.setTimeout(() => {
+            this.tagService.searchTagsTypeAhead(searchValue, 10)
+                .subscribe(res => {
+                    if (res && res.length > 0) {
+                        this.searchResults = res.sort((a, b) => a.name.localeCompare(b.name));
+                        this.tagsLoading = false;
+                        this.ref.markForCheck();
+                    }
+                    else if (res && res.length == 0) {
+                        this.searchResults = res;
+                        this.tagsLoading = false;
+                        this.ref.markForCheck();
+                    }
+            }, err => this.error = err);
+        }, 400);
     }
 
     getTags() {
@@ -72,22 +154,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
     openDeleteModal(tag: any) {
         if (this.isEditable == true) {
-            this.selected.push(tag);
             this.deleteTags(tag);
-            this.deletePopupTitle = this.selected.length == 1 ? 'Delete Tag' : 'Delete Tags';
         }
-    }
-
-    closeEditor() {
-        this.showEditor = false;
-        this.editPopupTitle = 'Edit Tag';
-        this.selected = [];
-    }
-
-    add() {
-        this.selected = [];
-        this.editPopupTitle = 'Add Tag';
-        this.showEditor = true;
     }
 
     saveTag(event) {
@@ -95,42 +163,47 @@ export class TagView extends AdminBaseComponent implements OnInit {
         var tags = Array<TagApiModel>();
         let tag = new TagApiModel();
         tag.AssetUID = this.assetUID;
-        tag.TagName = event.item.Value;
+        tag.TagName = event.Value;
         tags.push(tag);
         this.tags.forEach(x => {
-            if (x.Value == event.item.Value) {
+            if (x.Value == event.Value) {
                 this.existingTag = true;
                 this.showEditor = false;
                 this.messagesService.showError('Error', 'Tag already assigned to Asset');
             }
         })
+        if (event.Value.includes("|")) {
+            this.existingTag = true;
+            this.messagesService.showError('Error', "Tag can't contain | character");
+        }
         if (!this.existingTag) {
-            this.tagService.doesTagExist(event.item.Value)
+            this.tagService.doesTagExist(event)
                 .subscribe(result => {
                     if (result == null) {
-                        this.tagService.saveTag(event.item)
+                        this.tagService.saveTag(event)
                             .subscribe(result => {
                                 let msg: string = '';
-                                if (event.item.uid == undefined) {
-                                    msg = `${event.item.Value} succesfully created`;
+                                if (event.uid == undefined) {
+                                    msg = `${event.Value} succesfully created`;
                                 }
                                 this.showMessageForResult(this.messagesService, result, msg);
                                 this.tagService.createAssetTag(tags)
                                     .subscribe(result => {
                                         let msg: string = '';
-                                        if (event.item.uid == undefined) {
-                                            msg = `${event.item.Value} succesfully added to Asset`;
+                                        if (event.uid == undefined) {
+                                            msg = `${event.Value} succesfully added to Asset`;
                                         }
                                         this.showMessageForResult(this.messagesService, result, msg);
-                                        if (event.item.uid == undefined) {
-                                            event.item.uid = result[0].Uid;
-                                            this.tags.push(event.item);
+                                        if (event.uid == undefined) {
+                                            event.uid = result[0].Uid;
+                                            this.tags.push(event);
                                         }
                                         this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
-
-                                        this.selected = [];
-                                        event.item.UseCount = 0;
-                                        this.selected.push(event.item);
+                                        event.UseCount = 0;
+                                        this.searchResults = [];
+                                        this.tagInput.nativeElement.value = "";
+                                        this.resetStyle();
+                                        this.resultPanel.hide();
                                         this.ref.markForCheck();
                                     });
                             });
@@ -139,19 +212,18 @@ export class TagView extends AdminBaseComponent implements OnInit {
                         this.tagService.createAssetTag(tags)
                             .subscribe(result => {
                                 let msg: string = '';
-                                if (event.item.uid == undefined) {
-                                    msg = `${event.item.Value} succesfully added to Asset`;
+                                if (result != null) {
+                                    msg = `${event.Value} succesfully added to Asset`;
                                 }
                                 this.showMessageForResult(this.messagesService, result, msg);
-                                if (event.item.uid == undefined) {
-                                    event.item.uid = result[0].Uid;
-                                    this.tags.push(event.item);
-                                }
+                                event.uid = result[0].Uid;
+                                this.tags.push(event);
                                 this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
-
-                                this.selected = [];
-                                event.item.UseCount = 0;
-                                this.selected.push(event.item);
+                                event.UseCount = 0;
+                                this.tagInput.nativeElement.value = "";
+                                this.searchResults = [];
+                                this.resetStyle();
+                                this.resultPanel.hide();
                                 this.ref.markForCheck();
 
                             });
@@ -162,7 +234,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     deleteTags(selectedTag) {
-        this.tagID = this.selected[0].uid;
+        this.tagID = selectedTag.uid;
         var tags = Array<TagApiModel>();
         let tag = new TagApiModel();
         tag.AssetUID = this.assetUID;
@@ -175,20 +247,54 @@ export class TagView extends AdminBaseComponent implements OnInit {
                 this.showMessageForResult(this.messagesService, result, msg);
                 //remove the template with this id from the grid
                 if (result.type != 'error') {
-                    this.selected.forEach(t => {
-                        this.tags.splice(this.findTagIndex(t.TooltipID), 1);
-                    })
-                    this.selected = [];
+                    this.tags.splice(this.findTagIndex1(selectedTag.uid), 1);
                 }
                 this.ref.markForCheck();
 
             }, err => this.showMessageForResult(this.messagesService, err));
     }
 
+    showRemoveTag() {
+        if (this.isEditable) {
+            if (!this.auth.isAdmin || !this.hasModifyAssetPermissions())
+                this.showDeleteOption = false;
+            if (this.auth.isAdmin || this.hasModifyAssetPermissions())
+                this.showDeleteOption = true;
+            if (!this.showDeleteOption) {
+                var tagElements = this.container.nativeElement.querySelectorAll('.tagging');
+                (function () {
+                    if (typeof NodeList.prototype.forEach === "function") return false;
+                    tagElements.forEach = Array.prototype.forEach;
+                })();
+                tagElements.forEach(tagEle => {
+                    this.tags.forEach(tag => {
+                        this.tagService.getAssetTagDetails(tag.TooltipID, this.assetUID).
+                            subscribe(result => {
+                                if (tagEle.children[1].innerText.trim() == tag.Value.trim()) {
+                                    if (result == CurrentResourceID)
+                                        this.showDeleteOption = true;
+                                    if (result != CurrentResourceID)
+                                        tagEle.children[2].parentElement.removeChild(tagEle.children[2]);
+
+                                }
+                            }, err => this.showMessageForResult(this.messagesService, err));
+                    })
+                })
+            }
+
+        }
+    }
+
     showAllToggle(event: MouseEvent) {
         this.isShowAll = !this.isShowAll;
         event.stopPropagation();
         this.setVisibility();
+    }
+    resetStyle() {
+        this.tagInput.nativeElement.value = "";
+        this.targetPanel.style.background = "#f0f0f0";
+        this.targetPanel.style.border = "1px solid #f0f0f0";
+        this.tagInput.nativeElement.style.background = "#f0f0f0";
     }
 
     setVisibility() {
@@ -227,7 +333,9 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
     ngAfterViewInit() {
         this.manageWidth();
+        this.showRemoveTag();
     }
+
 
     openTagPage(event: MouseEvent, item: any) {
         if ((this.isEditable != true && this.showDelete == false) || (<HTMLElement>event.target).className == 'tag-item-wrapper')
@@ -237,7 +345,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
     enter(tag: any, el: HTMLElement) {
         this.isTooltipLoaded = false;
-        this.tagService.getTagTooltip(tag.uid)
+        this.tagService.getTagTooltip(tag.uid, this.assetUID)
             .subscribe(t => {
                 this.tagTooltip = t[0];
                 this.isTooltipLoaded = true;
@@ -292,10 +400,15 @@ export class TagView extends AdminBaseComponent implements OnInit {
     declarations: [
     ],
     exports: [
-    ]
-    , imports: [
+    ],
+    imports: [
         CommonModule,
-        CoreModule
+        CoreModule,
+        AutoCompleteModule,
+        TreeModule,
+        OverlayPanelModule,
+        SharedModule,
+        DialogModule
     ]
 
 })

@@ -81,6 +81,35 @@ namespace d360.extensions.queue
             await client.SendBatchAsync(list);
         }
 
+        public void CreateTopicMessage<T>(string topicName, T e)
+        {
+
+        }
+
+        public async Task CreateTopicMessageAsync<T>(string topicName, T e)
+        {
+            var bm = new BrokeredMessage(e);
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+            await client.SendAsync(bm);
+        }
+
+        public void CreateTopicMessages<T>(string topicName, List<T> events)
+        {
+
+        }
+
+        public async Task CreateTopicMessagesAsync<T>(string topicName, List<T> events)
+        {
+            var list = new List<BrokeredMessage>();
+            foreach (var e in events)
+            {
+                var bm = new BrokeredMessage(e);
+                list.Add(bm);
+            }
+
+            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, "Events");
+            await client.SendBatchAsync(list);
+        }
         public string GetTopicNameBySetting(string settingName)
         {
             return CloudConfigurationManager.GetSetting(settingName);

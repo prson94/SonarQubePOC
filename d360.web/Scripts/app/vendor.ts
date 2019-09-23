@@ -10,6 +10,7 @@ import '@angular/platform-browser/animations';
 import 'rxjs';
 
 import 'primeng/primeng';
+import 'primeng/table';
 import 'lodash';
 import 'angular2-highcharts';
 import 'highcharts/highcharts';

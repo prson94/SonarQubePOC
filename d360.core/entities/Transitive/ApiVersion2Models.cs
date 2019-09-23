@@ -17,6 +17,13 @@ namespace d360.core.entities
         bool Success { get; set; }
     }
 
+    public interface IGraphAsset
+    {
+        bool Success { get; set; }
+        Guid uid { get; set; }
+        string Object { get; set; }
+    }
+
     public interface IAssetUpsert
     {
         Guid Uid { get; set; }
@@ -87,7 +94,6 @@ namespace d360.core.entities
         [DataMember] public Guid? PredicateUid { get; set; }
     }
 
-
     [DataContract(Name = "IconStyle")]
     public class IconStyleInsert
     {
@@ -97,7 +103,6 @@ namespace d360.core.entities
         [DataMember]
         public string BackColor { get; set; }
     }
-
 
     [DataContract(Name = "asset")]
     public class AssetInsert : IAssetUpsert, IExecutionItem
@@ -183,7 +188,7 @@ namespace d360.core.entities
     }
 
     [DataContract]
-    public class DatabaseBulkAssetResult: IWorkflowEnabledAsset
+    public class DatabaseBulkAssetResult: IWorkflowEnabledAsset, IGraphAsset
     {
         [DataMember]
         public int ItemNumber { get; set; }
@@ -237,8 +242,6 @@ namespace d360.core.entities
         public String Message { get; set; }
         [DataMember]
         public bool Success { get; set; }
-       
-
     }
 
     [DataContract]
@@ -278,34 +281,24 @@ namespace d360.core.entities
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
-
     [JsonArray]
     [DataContract(Name = "relationships")]
     public class RelationshipDeletes : List<RelationshipDelete>
     {
     }
+
     public class RelationshipDelete
     {
         [DataMember]
         public Guid Uid { get; set; }
 
         [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
         public bool Cascade { get; set; }
 
     }
-
-    public class RelationshipDeleteApiStatus
-    {
-        [DataMember]
-        public Guid Uid { get; set; }
-
-        [DataMember]
-        public string Message { get; set; }
-
-        [DataMember]
-        public bool Success { get; set; }
-    }
-
 
     public class RelationshipImportRequest
     {
@@ -320,7 +313,7 @@ namespace d360.core.entities
     }
 
     [DataContract]
-    public class DatabaseBulkRelationshipResult: IWorkflowEnabledAsset
+    public class DatabaseBulkRelationshipResult: IWorkflowEnabledAsset, IGraphAsset
     {
         public Guid ExecutionID { get; set; }
 

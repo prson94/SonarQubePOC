@@ -2342,6 +2342,40 @@ where	I.ID is null";
             Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
         }
 
+        public void UpdateAssetGraphNode(Guid uid, List<string> changedFieldNames = null)
+        {
+            
+            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
+            {
+                CompanyID = CurrentCompanyID,
+                Uid = uid,
+                Type = AssetEventType.Node,
+                ChangedFieldNames = changedFieldNames
+            });
+        }
+
+        public void UpdateAssetGraphNodePath(Guid uid)
+        {
+
+            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
+            {
+                CompanyID = CurrentCompanyID,
+                Uid = uid,
+                Type = AssetEventType.Path
+            });
+        }
+
+        public void UpdateAssetGraphEdge(Guid uid)
+        {
+
+            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
+            {
+                CompanyID = CurrentCompanyID,
+                Uid = uid,
+                Type = AssetEventType.Edge
+            });
+        }
+
         private void AddQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
         {
             // if assettype id is specified lookup object type info as workflow subscriber still works off object objectid...
@@ -3139,8 +3173,8 @@ select @err";
                 {
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                     columns += $@"case     
-    when {name}_T.Value is not null then cast({name}_T.FormattedValue as decimal(38,6))
-    when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
+    when {name}_T.Value is not null then try_cast({name}_T.FormattedValue as decimal(38,6))
+    when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as decimal(38,6))
     else null 
 end as [{(useFriendlyName ? friendlyName : name)}], ";
 
@@ -3152,7 +3186,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                     columns += $@"case     
     when {name}_T.Value is not null then try_cast({name}_T.FormattedValue as bigint)
-    when {name}_TT.DefaultValue is not null then cast({name}_TT.DefaultFormattedValue  as bigint)
+    when {name}_TT.DefaultValue is not null then try_cast({name}_TT.DefaultFormattedValue  as bigint)
     else null 
 end as [{(useFriendlyName ? friendlyName : name)}], ";
 
@@ -3175,8 +3209,6 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
                 {
                     string assetIdPath = "A.Id";
 
-                    if (type == SystemObjects.Rule.ToString())
-                        assetIdPath = "O.Id";
 
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
                     columns += $@"(select T.Value,T.uid from AssetTag AT inner join Tag T on T.ID = AT.TagID where AssetId = {assetIdPath} order by T.Value for json path) as [{(useFriendlyName ? friendlyName : name)}], ";
@@ -3259,7 +3291,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             string sql = $@"SELECT 
                             cast(S.Value * 100 as int) as 'Score',
                             S.EffectiveDate as 'EffectiveDate',  
-                            f.FormattedValue as Status 
+                            COALESCE(f.FormattedValue,ft.DefaultFormattedValue) as Status 
                             from Asset A
                             left Join AssetType AT on A.AssetTypeID = AT.ID
                             left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'

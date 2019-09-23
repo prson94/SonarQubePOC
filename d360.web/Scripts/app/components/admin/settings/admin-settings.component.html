@@ -97,10 +97,9 @@
                             <div class="errorMessage">{{graphValidationMessage}}</div>
                             <div class="directions">You may submit a request to rebuild the Asset Browser graph. This may take up to thirty minutes, depending on the number of assets contained within your environment.</div>
                         </div>
-                        <div class="col s3">
-                            <button pButton type="button" (click)="rebuildAssetGraph()" [disabled]="disableRebuildAssetGraph" label="Rebuild"></button>
+                        <div class="right">
+                            <button pButton type="button" (click)="rebuildAssetGraph()" [disabled]="disableRebuildAssetGraph" label="Rebuild"></button>&nbsp;
                         </div>
-                        <div class="col s1">&#160;</div>
                     </div>
 
                     <div class="row">
@@ -109,10 +108,9 @@
                             <div class="errorMessage">{{displayValueValidationMessage}}</div>
                             <div class="directions">To submit a request to rebuild the Govern object display values click the below button.</div>
                         </div>
-                        <div class="col s2">
-                            <button pButton type="button" (click)="rebuildDisplayValues()" [disabled]="disableRebuildDisplayValue" label="Rebuild"></button>
+                        <div class="right">
+                            <button pButton type="button" (click)="rebuildDisplayValues()" [disabled]="disableRebuildDisplayValue" label="Rebuild"></button>&nbsp;
                         </div>
-                        <div class="col s1">&#160;</div>
                     </div>
 
                     <div class="row">
@@ -121,10 +119,9 @@
                             <div class="errorMessage">{{indexValidationMessage}}</div>
                             <div class="directions">To submit a request to refresh/rebuild the search index click the below button.</div>
                         </div>
-                        <div class="col s2">
-                            <button pButton type="button" (click)="rebuildIndex()" [disabled]="disableRebuildIndex" label="Rebuild"></button>
+                        <div class="right">
+                            <button pButton type="button" (click)="rebuildIndex()" [disabled]="disableRebuildIndex" label="Rebuild"></button>&nbsp;
                         </div>
-                        <div class="col s1">&#160;</div>
                     </div>
                 
                 </div>

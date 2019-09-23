@@ -30,11 +30,13 @@ namespace d360.web.Controllers.V2
     public class TagsController : BaseV2ApiController
     {
         ITagRepository tagRepository;
+        IAssetRepository assetRepository;
 
-        public TagsController(ICommunityContext community, ICompanyContext company, ITagRepository repository)
+        public TagsController(ICommunityContext community, ICompanyContext company, ITagRepository repository,IAssetRepository assetRep)
             : base(community, company)
         {
             this.tagRepository = repository;
+            this.assetRepository = assetRep;
         }
 
 
@@ -519,14 +521,14 @@ namespace d360.web.Controllers.V2
             return ResponseMessage(result);
         }
 
-        [HttpGet, MapToApiVersion("2.0"), Route("{uid}/tooltip"), ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<IHttpActionResult> GetTagTooltipData(string uid)
+        [HttpGet, MapToApiVersion("2.0"), Route("{tagUid}/tooltip"), ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<IHttpActionResult> GetTagTooltipData(string tagUid, Guid? assetUid = null)
         {
             try
             {
-                Guid guid = Guid.Parse(uid);
+                Guid tagGuid = Guid.Parse(tagUid);
 
-                IEnumerable<dynamic> result = tagRepository.GetTooltip(guid);
+                IEnumerable<dynamic> result = tagRepository.GetTooltip(tagGuid, assetUid);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 
@@ -539,12 +541,15 @@ namespace d360.web.Controllers.V2
 
         }
 
-        [HttpGet, MapToApiVersion("2.0"), Route("exists"), ApiExplorerSettings(IgnoreApi = true)]
-        public IHttpActionResult DoesTagExist(string name)
+        /// <param name="tag">The tag to be created.</param>
+        [HttpPost, 
+        Route("exists"),
+        SwaggerConsumes("application/json"), SwaggerProduces("application/json")]
+        public IHttpActionResult DoesTagExist(TagApiModel tag)
         {
             try
             {
-                var result = tagRepository.GetTagByName(name);
+                var result = tagRepository.GetTagByName(tag.Value);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 
@@ -553,6 +558,26 @@ namespace d360.web.Controllers.V2
             {
 
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error while checking if tag exists", e.Message);
+            }
+
+        }
+        [HttpGet,
+        Route("getAssetTagDetails"),
+        ApiExplorerSettings(IgnoreApi = true)]
+        public IHttpActionResult getAssetTagDetails(int tagID, Guid assetUID)
+        {
+            try
+            {
+                var asset = assetRepository.GetAssetByUID(assetUID);
+                var result = tagRepository.GetAssetTagDetails(tagID,asset.ID);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+
+            }
+            catch (Exception e)
+            {
+
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting asset tag details", e.Message);
             }
 
         }

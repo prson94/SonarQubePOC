@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChange} from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChange, ElementRef, ViewChild} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import {SelectItem} from 'primeng/primeng';
@@ -13,7 +13,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
     selector: 'd3s-search-input',
     template: ` <div *ngIf="newSearch && !isAdvancedMode"
                 class="titlebar-search">           
-                        <div class="field grow mr10"><input (keydown.enter)="triggerSearch()" [ngModel]="searchText" (keyup)="checkSearchKey($event);" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);" autofocus autocomplete="off" type="text" placeholder="Please enter search terms"><i *ngIf="!autocompleteLoading" (click)="triggerSearch()" class="fa fa-search"></i><i *ngIf="autocompleteLoading" class="fa fa-spinner fa-spin"></i></div>
+                        <div class="field grow mr10"><input #searchip (keydown.enter)="triggerSearch()" [ngModel]="searchText" (keyup)="checkSearchKey($event);" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);autocompleteWidth=searchip.offsetWidth;" autofocus autocomplete="off" type="text" placeholder="Please enter search terms"><i *ngIf="!autocompleteLoading" (click)="triggerSearch()" class="fa fa-search"></i><i *ngIf="autocompleteLoading" class="fa fa-spinner fa-spin"></i></div>
                         <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match Whole Words</span></label>
                         <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>                        
                         <button class="button" (click)="handleAdvancedClick()">Advanced Search</button>
@@ -21,7 +21,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                 <div *ngIf="!isAdvancedMode">
                     <div *ngIf="!newSearch" class="search-input-container">           
                         <div class="search-input-text-container">                        
-                            <input #search [ngModel]="searchText" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);" (keyup)="checkSearchKey($event);" type="text" id="home-search-text" placeholder="What do you want to find?" class="search-input-text" autofocus autocomplete="off" />                        
+                            <input #searchip [ngModel]="searchText" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);autocompleteWidth=searchip.offsetWidth;" (keyup)="checkSearchKey($event);" type="text" id="home-search-text" placeholder="What do you want to find?" class="search-input-text" autofocus autocomplete="off" />                        
                         </div>
                         <div class="search-input-exact-container hide-on-med-and-down">
                             <div class="adv-search-btn">
@@ -42,7 +42,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                             </button>
                         </div>                    
                     </div>   
-                    <d3s-search-autocomplete-list [searchText]="searchText" [element]="search" [autocompletions]="autocompletions"></d3s-search-autocomplete-list>            
+                    <d3s-search-autocomplete-list [searchText]="searchText" [setwidth]="autocompleteWidth" [autocompletions]="autocompletions"></d3s-search-autocomplete-list>            
                 </div>
                 <div *ngIf="isAdvancedMode" class="tile tile-detail">                             
                     <form (ngSubmit)="triggerAdvancedSearch()" #advSearchForm="ngForm">
@@ -144,6 +144,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
     private autocompleteResultSize: number = 20;
 
     private autocompletions: SearchResult[] = [];
+    private autocompleteWidth: number = 0;
 
     constructor(private router: Router, private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
         super();

@@ -20,16 +20,20 @@ namespace d360.extensions
 
         void CreateTopicMessage(EventInfo e);
         void CreateTopicMessage(string topicName, EventInfo e);
+        void CreateTopicMessage<T>(string topicName, T e);
 
         Task CreateTopicMessageAsync(EventInfo e);
         Task CreateTopicMessageAsync(string topicName, EventInfo e);
+        Task CreateTopicMessageAsync<T>(string topicName, T e);
 
         void CreateTopicMessages(List<EventInfo> events);
         void CreateTopicMessages(string topicName, List<EventInfo> events);
+        void CreateTopicMessages<T>(string topicName, List<T> events);
 
         Task CreateTopicMessagesAsync(List<EventInfo> events);
         Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events);
 
         string GetTopicNameBySetting(string settingName);
+        Task CreateTopicMessagesAsync<T>(string topicName, List<T> events);
     }
 }

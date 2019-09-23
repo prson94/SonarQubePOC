@@ -53,8 +53,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     @ViewChild('badge') badge: ElementRef;
     @ViewChild('noScore') noScore: ElementRef;
     @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
-    private statistics: ObjectStatistics;
-    private lastCalculatedDate: number;
+    private statistics: ObjectStatistics;    
     private actionsAssigned: boolean = false;
     private currentResouceID: number;
 
@@ -226,9 +225,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         );
         this.workflowService.getIssues(objectID, objectName)
             .subscribe(result => {
-                let issues = result;
-                if (issues.length && issues.length > 0)
-                    this.actionsAssigned = issues.find(x => x.ResourceID === this.currentResouceID) !== undefined;
+                let issues = result;                
+                if (issues.length && issues.length > 0) {                    
+                    this.actionsAssigned = true;
+                }
+                this.ref.markForCheck();
             });  
 
         this.surveysService.getObjectSurvey(objectTypeID, objectType, objectID, objectName)
@@ -303,24 +304,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     getCertificationStatusColor(status: string) {
-        status = status.toLowerCase().trim();
-
-        switch (status) {
-            case 'draft':
-                return '#BBBBBB';
-            case 'certified':
-                return '#3f9d40';
-            case 'under review':
-                return '#e2792a';
-            default:
-                //custom status, we need to generate a color
-                let hash = 0;
-                for (let i = 0; i < status.length; i++) {
-                    hash = status.charCodeAt(i) + ((hash << 5) - hash);
-                    hash = hash & hash;
-                }
-                return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
-        }
+        return this.objectStatisticsService.getCertificationStatusColor(status);
     }
 
     private requestCertification() {

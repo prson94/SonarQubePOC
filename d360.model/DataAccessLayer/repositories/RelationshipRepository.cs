@@ -36,6 +36,7 @@ namespace d360.model.DataAccessLayer
         {
             return companyContext.Filter<IntersectType>(i => i.uid == relationshipTypUid).SingleOrDefault();
         }
+
         public async Task<IEnumerable<PredicateApiViewModel>> GetPredicates()
         {
             return await companyContext.QueryAsync<PredicateApiViewModel>("select Uid, Name, Inverse, IsSystem, [Type] from [Predicate] order by [Type], Name");
@@ -242,11 +243,11 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             return models;
         }
 
-
         public IQueryable<IntersectType> GetIntersectTypeById(int id)
         {
             return companyContext.Filter<IntersectType>(i => i.ID == id);
         }
+
         public IntersectType GetIntersectTypeByUid(Guid intersectTypeUid)
         {
             return companyContext.Filter<IntersectType>(i => i.uid == intersectTypeUid).SingleOrDefault();
@@ -335,7 +336,6 @@ from	IntersectType I
             return this.GetRelationshipTypes(null, $"where I.State = 1 and ((I.SubjectID = {id} and I.[Subject] = '{type.ToString()}') or (I.ObjectID = {id} and I.Object = '{type.ToString()}'))");
         }
 
-
         public async Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool triggerWorkflow = false)
         {
             var executionInfo = new ApiExecutionInfo
@@ -405,6 +405,7 @@ from	IntersectType I
         {
             return companyContext.Any<Predicate>(i => i.UID == uid);
         }
+
         public List<DatabaseBulkAssetResult> GetBulkResults(ApiExecutionInfo info)
         {
             List<DatabaseBulkAssetResult> results = null;
@@ -420,83 +421,32 @@ from	IntersectType I
             return results;
         }
 
-        public async Task<RelationshipDeleteResult> DeleteRelationships(IntersectType intersectType, RelationshipDeletes relationships, bool triggerWorkflow = false)
+        public async Task<List<DatabaseBulkRelationshipResult>> DeleteRelationships(ApiExecution execution, IntersectType intersectType, RelationshipDeletes relationships, int timeout = 3600, bool triggerWorkflow = false)
         {
-            var response = new List<RelationshipDeleteApiStatus>();
-            StringBuilder relationshipUids = new StringBuilder();
-            foreach (var rel in relationships)
-            {
-                relationshipUids.Append($"('{rel.Uid.ToString()}')");
-                if (rel != relationships.Last())
-                    relationshipUids.Append(",");
-            }
-
-            //Get Intersect ID for delete and union all child Intersects
-            var getRelationshipIDsForDeleting = @"declare @relationships table(uid uniqueidentifier)
-                                                      insert into @relationships values " + relationshipUids.ToString() + @"
-                                                   
-                                                      declare @results table(ID int, Uid uniqueidentifier,ParentUid uniqueidentifier )
-                                                      ;WITH ITS AS
-                                                          (  
-                                                            SELECT T.*, REL.uid as ParentUid
-                                                            FROM [Intersect] as T
-                                                              inner join @relationships REL on REL.uid = T.uid
-                                                            WHERE T.uid in (select uid from @relationships)  AND T.IntersectTypeID = @intersectTypeId
-                                                      )
-                                                      insert into @results (ID, Uid, ParentUid) select ID, Uid, ParentUid from ITS
-                                                   
-                                                      ;WITH CHILDREN AS
-                                                       (
-                                                        SELECT I.ID, I.uid, RES.ParentUid FROM [Intersect] AS I
-	                                                      inner join @results RES on (I.Subject = 'Intersect' and I.SubjectID = RES.ID) OR (I.Object = 'Intersect' and I.ObjectID = RES.ID)
-                                                        )
-                                                      insert into @results (ID, Uid, ParentUid) select ID, Uid, ParentUid from CHILDREN
-                                                   
-                                                      select * from @results";
-
-            var forDeleteCheck = await companyContext.QueryAsync<dynamic>(getRelationshipIDsForDeleting, new { intersectTypeId = intersectType.ID });
-
-
-            List<int> parentRelationships = new List<int>();
-            List<int> childrenRelationships = new List<int>();
-
-            foreach (var rel in relationships)
-            {
-                var status = new RelationshipDeleteApiStatus();
-                status.Uid = rel.Uid;
-                status.Message = "Relationship deleted";
-
-                var deleteItems = forDeleteCheck.Where(x => x.ParentUid == rel.Uid);
-                if (deleteItems.Count() == 0)
-                {
-                    return new RelationshipDeleteResult(HttpStatusCode.NotFound, "Not found", $"Relationship with Uid {rel.Uid} could not be found.", null);
-                }
-
-                if (deleteItems.Count() > 1 && !rel.Cascade)
-                {
-                    return new RelationshipDeleteResult(HttpStatusCode.BadRequest, "Bad request", $"Relationship with Uid {rel.Uid} have child relationships. Use Cascade = true to delete all child relationships.", null);
-                }
-
-                status.Success = true;
-
-
-                foreach (var item in deleteItems)
-                {
-                    if (rel.Uid == Guid.Parse(item.Uid.ToString()))
-                        parentRelationships.Add(int.Parse(item.ID.ToString()));
-                    else
-                        childrenRelationships.Add(int.Parse(item.ID.ToString()));
-                }
-
-                response.Add(status);
-            }
-
-            companyContext.DeleteRelationships(parentRelationships, childrenRelationships, triggerWorkflow);
-
-            return new RelationshipDeleteResult(HttpStatusCode.OK, "", "", response);
-
+            return companyContext.DeleteRelationships(execution, intersectType, relationships, timeout, triggerWorkflow);
         }
 
+        public async Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool triggerWorkflow = false)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = companyContext.CurrentCompanyID,
+                ResourceID = companyContext.CurrentResourceID,
+                CompanyDomainPrefix = companyContext.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                Action = ApiExecutionAction.DeleteRelationships,
+                SendWorkflowEvents = triggerWorkflow
+            };
+
+            Storage.CreateFolder(executionInfo.StorageFolder);
+            Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
+
+            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            var execution = getApiExecution(relationships.Count, new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid }, 0, 0);
+            execution.ExecutionID = executionInfo.ExecutionID;
+            companyContext.Add(execution);
+            return executionInfo;
+        }
 
     }
 }

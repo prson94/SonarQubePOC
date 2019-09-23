@@ -5,7 +5,7 @@
     font-family: 'Nunito Sans';
     font-style: normal;
     font-weight: 400;
-    src: local('Nunito Sans Regular'), local('NunitoSans-Regular'), url(/fonts/nunitosans/nunito-sans-regular2.woff2) format('woff2');
+    src: local('Nunito Sans Regular'), local('NunitoSans-Regular'), url(/fonts/nunitosans/nunito-sans-regular2.woff2) format('woff2'), url(/fonts/nunitosans/nunito-sans-regular2.woff) format('woff');
     unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
 }
 /* latin-ext */
@@ -13,7 +13,7 @@
     font-family: 'Nunito Sans';
     font-style: normal;
     font-weight: 400;
-    src: local('Nunito Sans Regular'), local('NunitoSans-Regular'), url(/fonts/nunitosans/nunito-sans-regular2.woff2) format('woff2');
+    src: local('Nunito Sans Regular'), local('NunitoSans-Regular'), url(/fonts/nunitosans/nunito-sans-regular2.woff2) format('woff2'), url(/fonts/nunitosans/nunito-sans-regular2.woff) format('woff');
     unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 /* latin */
@@ -21,7 +21,7 @@
     font-family: 'Nunito Sans';
     font-style: normal;
     font-weight: 400;
-    src: local('Nunito Sans Regular'), local('NunitoSans-Regular'), url(/fonts/nunitosans/nunito-sans-regular.woff2) format('woff2');
+    src: local('Nunito Sans Regular'), local('NunitoSans-Regular'), url(/fonts/nunitosans/nunito-sans-regular.woff2) format('woff2'), url(/fonts/nunitosans/nunito-sans-regular.woff) format('woff');
     unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -1341,6 +1341,16 @@ a.breadcrumb {
 }
 
 .search-results {
+    z-index: 10;
+    position: absolute;
+
+    .ui-overlaypanel {
+        position: absolute !important;
+        top: 33px !important;
+        left: -131px !important;
+        margin-bottom: 10px;
+    }
+
     .ui-overlaypanel-content {
         padding: 0px;
         border-radius: 3px;
@@ -1406,6 +1416,30 @@ a.breadcrumb {
         }
     }
 
+    .breadcrumb-search-result-tag {
+        cursor: pointer;
+        padding-left: 20px;
+        padding-right: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: medium;
+        color: black;
+        white-space: nowrap;
+
+
+        &:hover, &.hover {
+            background-color: @igx-lightblue-xlight;
+        }
+
+        &:active, &.active {
+            background: @igx-lightblue-light;
+        }
+
+        &.current-crumb {
+            font-weight: bold;
+        }
+    }
+
     .global-search-typeahead {
         .ui-autocomplete-panel {
             top: 40px !important;
@@ -1428,6 +1462,10 @@ a.breadcrumb {
         flex-shrink: 0;
     }
 
+    .folder-icon.searchall {
+        background: @igx-blue-color;
+    }
+
     i.fa {
         padding-left: unset !important;
     }
@@ -1437,13 +1475,24 @@ a.breadcrumb {
         max-width: 20px;
         vertical-align: middle;
     }
+
+    .category {
+        margin-top: 8px;
+        color: @d3s-gray-2;
+        float: right;
+
+        i.fa {
+            padding: 0 7px !important;
+            color: @d3s-gray-2 !important;
+        }
+    }
 }
 
 .global-search-typeahead {
     .ui-autocomplete-panel {
         top: 36px !important;
-        left: -10px !important;
-        width: 302px !important;
+        left: -210px !important;
+        width: 602px !important;
     }
 }
 
@@ -1494,7 +1543,8 @@ a.breadcrumb {
         color: #202020;
         font-size: 16px;
         padding-left: 10px;
-        &.spin{
+
+        &.spin {
             padding: 0px;
         }
 
@@ -1505,6 +1555,14 @@ a.breadcrumb {
         &.pre {
             padding-left: 0;
             padding-right: 10px;
+        }
+    }
+
+    li.ui-autocomplete-list-item {
+        border: 0 none;
+
+        &:not(.ui-state-highlight):nth-child(even) {
+            background-color: #f7f7f7;
         }
     }
 }
@@ -1907,6 +1965,9 @@ div.home-image-title-text {
     min-width: 400px;
     max-width: 800px;
     overflow-y: auto;
+    thead th {
+        color: black !important;
+    }
 }
 /* end tooltip*/
 .homeTileArea {
@@ -2873,6 +2934,11 @@ button.tab-scroller {
         background: @igx-green-light;
     }
 
+    &.fail {
+        background: @igx-red-light;
+    }
+
+
     &.primary {
         background: @igx-blue;
     }
@@ -3739,8 +3805,26 @@ button.tab-scroller {
         }
     }
 
+    input {
+        border: 1px solid transparent;
+        background-color: #f1f1f1;
+        height: 24px;
+        width: 110px;
+
+        input[type=text] {
+            background-color: #f1f1f1;
+        }
+
+        &:focus {
+            background: white;
+            border-style: inset;
+            outline-color: white;
+        }
+    }
+
     a.link-button {
         margin-bottom: 6px;
+        padding: 0px 10px !important;
 
         &:hover {
             text-decoration: none;
@@ -3750,6 +3834,12 @@ button.tab-scroller {
             border-radius: 2px;
             height: 24px;
             padding: 0px 8px !important;
+        }
+
+        .input:focus {
+            background: white;
+            border-style: inset;
+            outline-color: white;
         }
 
         .tag-tooltip {
@@ -3868,9 +3958,14 @@ button.tab-scroller {
             min-width: unset;
         }
 
+        .button {
+            flex-shrink: 0;
+        }
+
         .checkbox {
             display: flex;
             align-self: center;
+            flex-shrink: 0;
 
             input {
                 width: 17px;
@@ -4020,6 +4115,7 @@ button.tab-scroller {
                                 img {
                                     max-width: 32px;
                                     max-height: 32px;
+                                    margin-left: -10px;
                                 }
                             }
                         }

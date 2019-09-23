@@ -70,12 +70,8 @@ namespace d360.web.Controllers
         
         List<DetailReadOnlyRowModel> loadDynamicDisplayFields(SystemObjects type, int id)
         {
-            var list = new List<DetailReadOnlyRowModel>();
-            var tagList = new List<ReadOnlyFieldValue>();
-            string tagDisplayDescription = "";
-            string tagDisplayName = "";
-            string tagCategory = "";
-            
+            var list = new List<DetailReadOnlyRowModel>();            
+                        
             var details = Company.GetObjectDetail(type.ToString(), id);
             if (details != null)
             {
@@ -256,18 +252,7 @@ namespace d360.web.Controllers
                     }
                     else if (ft.Type == DataType.Tag.ToString())
                     {
-                        tagDisplayDescription = ft.DisplayDescription;
-                        tagDisplayName = ft.FriendlyName;
-                        tagCategory = ft.Category;
-                        var ro = new ReadOnlyFieldValue
-                        {
-                            Value = ft.FriendlyName,
-                            TooltipType = "tag",
-                            TooltipID = ft.ObjectID,
-                            TooltipContext = "Preview",
-                            TooltipUrl = ""
-                        };
-                        tagList.Add(ro);
+                        list.AddRange(RenderTagField(ft, type, id));
                     }
                     else if (ft.Type == DataType.Attribute.ToString())
                     {
@@ -494,7 +479,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 });
             }
 
-            if (tagList.Count > 0)
+           /* if (tagList.Count > 0)
             {
                 var title = new ReadOnlyField
                 {
@@ -511,7 +496,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     Category = tagCategory
                 });
 
-            }
+            }*/
             return list;
         }
 
@@ -527,6 +512,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     Value = x.Value,
                     TooltipType = "tag",
                     TooltipID = x.ID,
+                    CreatedBy = x.CreatedBy,
                     TooltipContext = "Preview",
                     TooltipUrl = "",
                     uid = x.uid
@@ -971,7 +957,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                         items.InsertRange(0, targetKeyFields);
                     }
 
-                    if (targetType == SystemObjects.ReferenceItemType.ToString() || targetType == SystemObjects.FusionAttributeType.ToString() || targetType == SystemObjects.ResourceType.ToString() || targetType == SystemObjects.GroupType.ToString())
+                    if (targetType == SystemObjects.ReferenceItemType.ToString() || targetType == SystemObjects.FusionAttributeType.ToString() || targetType == SystemObjects.ResourceType.ToString() || targetType == SystemObjects.GroupType.ToString() || targetType == SystemObjects.FusionQueryAttributeType.ToString())
                     {
                         columns.Add(
                             new GridColumn { text = "Name", datafield = "Name", columntype = GridColumn.COLUMN_TYPE_STRING, filtertype = GridColumn.FILTER_TYPE_STRING }
@@ -1687,6 +1673,35 @@ order by 'Name'";
             }
 
             return Request.CreateResponse(HttpStatusCode.OK, list);
+        }
+
+        #endregion
+
+        #region Tag Fields
+
+        private List<DetailReadOnlyRowModel> RenderTagField(FieldType ft, SystemObjects type, int id)
+        {
+            var list = new List<DetailReadOnlyRowModel>();
+            
+            list.Add(new DetailReadOnlyRowModel
+            {
+                columns = 1,
+                FirstColumnFields = new List<ReadOnlyField> {
+                    new ReadOnlyField {
+                        Column = 1,
+                        Name = ft.FriendlyName,
+                        FieldDescription = ft.DisplayDescription,
+                        FieldName = ft.Name,
+                        ShowIfEmpty = true,
+                        DataType = "tag",
+                        Values = GetTagsValues(type, id)
+
+                    }
+                },
+                Category = ft.Category
+            });
+
+            return list;
         }
 
         #endregion
@@ -2958,28 +2973,32 @@ order by    rnk, [Name]";
 
                                 // Add the fields that you need to create link in Angular component.
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{context}'", datafield = $"{dataField}_Context" });
+
+
                                 columnModels.Add(new ComplexColumnModel
                                 {
                                     DisplayColumn = $@"
-    case 
-        when {tbPrefix}.Value is not null then {tbtPrefix}.[LookupObjectType]
-        when {tbtPrefix}.DefaultValue is not null then replace({tbtPrefix}.[LookupObjectType], 'Type', '')
-        else '' 
-    end
-    ",
+                                    case 
+                                        when {tbPrefix}.Value is not null then '{(ft.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : ft.LookupObjectType)}'
+                                        when {tbtPrefix}.DefaultValue is not null then replace({tbtPrefix}.[LookupObjectType], 'Type', '')
+                                        else '' 
+                                    end
+                                    ",
                                     datafield = $"{dataField}_Object"
                                 });
                                 columnModels.Add(new ComplexColumnModel
                                 {
                                     DisplayColumn = $@"
-    case 
-        when {tbPrefix}.Value is not null then cast({tbPrefix}.Value as varchar)
-        when {tbtPrefix}.DefaultValue is not null then cast({tbtPrefix}.DefaultValue as varchar)
-        else '' 
-    end
-    ",
+                                    case 
+                                        when {tbPrefix}.Value is not null then cast({tbtPrefix}.LookupObjectID as varchar)
+                                        when {tbtPrefix}.DefaultValue is not null then cast({tbtPrefix}.DefaultValue as varchar)
+                                        else '' 
+                                    end
+                                    ",
                                     datafield = $"{dataField}_ObjectID"
                                 });
+                                
+
                                 columnModels.Add(new ComplexColumnModel
                                 {
                                     DisplayColumn = $@"
@@ -3000,8 +3019,7 @@ order by    rnk, [Name]";
                             }
                             else if (i.FieldTypeName.ToLower() == "name") //special case for name
                             {
-                                fc.datafieldtype = "lookup";
-                                fc.datafieldtype = "lookup";
+                                fc.datafieldtype = "preview";
                                 fc.contextfield = $"{dataField}_Context";
                                 fc.objectfield = $"{dataField}_Object";
                                 fc.objectidfield = $"{dataField}_ObjectID";
@@ -3081,7 +3099,7 @@ outer apply (
                             columnModels.Add(new ComplexColumnModel { DisplayColumn = $"{tbDetailPrefix}.Url", datafield = $"{dataField}_Url" });
 
                             // Now set the fields to reference to create the preview link in Angular component.
-                            fc.datafieldtype = "lookup";
+                            fc.datafieldtype = "preview";
                             fc.contextfield = $"{dataField}_Context";
                             fc.objectfield = $"{dataField}_Object";
                             fc.objectidfield = $"{dataField}_ObjectID";
@@ -3191,7 +3209,7 @@ outer apply (
                                 };
 
                                 setColumnTypeInfo(ft, i, ac);
-                                ac.datafieldtype = "lookup"; //must be done after function call above.
+                                ac.datafieldtype = "preview"; //must be done after function call above.
                                 columnModels.Add(ac);
                                 // Add the fields that you need to create link in Angular component.
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
@@ -3218,7 +3236,7 @@ outer apply (
                                     urlfield = $"{dataField}_Url"
                                 };
                                 setColumnTypeInfo(ft, i, oc);
-                                oc.datafieldtype = "lookup"; //must be done after function call above.
+                                oc.datafieldtype = "preview"; //must be done after function call above.
                                 columnModels.Add(oc);
 
                                 // Add the fields that you need to create link in Angular component.
@@ -3247,7 +3265,7 @@ outer apply (
                                     urlfield = $"{dataField}_Url"
                                 };
                                 setColumnTypeInfo(ft, i, pc);
-                                pc.datafieldtype = "lookup"; //must be done after function call above.
+                                pc.datafieldtype = "preview"; //must be done after function call above.
                                 columnModels.Add(pc);
 
                                 // Add the fields that you need to create link in Angular component.
@@ -3278,7 +3296,7 @@ outer apply (
                                     };
 
                                     setColumnTypeInfo(ft, i, rec);
-                                    rec.datafieldtype = "lookup"; //must be done after function call above.
+                                    rec.datafieldtype = "preview"; //must be done after function call above.
                                     columnModels.Add(rec);
                                     // Add the fields that you need to create link in Angular component.
                                     columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
@@ -3321,7 +3339,7 @@ outer apply (
                                     urlfield = $"{dataField}_Url"
                                 };
                                 setColumnTypeInfo(ft, i, rc);
-                                rc.datafieldtype = "lookup"; //must be done after function call above.
+                                rc.datafieldtype = "preview"; //must be done after function call above.
                                 columnModels.Add(rc);
 
                                 // Add the fields that you need to create link in Angular component.
@@ -3349,7 +3367,7 @@ outer apply (
                                     urlfield = $"{dataField}_Url"
                                 };
                                 setColumnTypeInfo(ft, i, tc);
-                                tc.datafieldtype = "lookup"; //must be done after function call above.
+                                tc.datafieldtype = "preview"; //must be done after function call above.
                                 columnModels.Add(tc);
 
                                 // Add the fields that you need to create link in Angular component.
@@ -3379,7 +3397,7 @@ outer apply (
                                         urlfield = $"{dataField}_Url"
                                     };
                                     setColumnTypeInfo(ft, i, ric);
-                                    ric.datafieldtype = "lookup"; //must be done after function call above.
+                                    ric.datafieldtype = "preview"; //must be done after function call above.
                                     columnModels.Add(ric);
 
                                     // Add the fields that you need to create link in Angular component.
@@ -5163,17 +5181,18 @@ order by    Name
                 var joins = "";
                 var columns = "";
 
-                getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
+                getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false,coreTableIdJoinColumn:"A.ObjectID");
+             
 
                 var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = O.ID  or (u.AssetID = 0 and u.AssetTypeID = O.AssetTypeID))
+                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                ) 
 						                    then 1
 						                    else 0
 
                                         end as P_CanEdit,
 		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = O.ID  or (u.AssetID = 0 and u.AssetTypeID = O.AssetTypeID))
+                                                             select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                                   ) 
 						                                   then 1
 						                                   else 0
@@ -5186,20 +5205,20 @@ order by    Name
                 }
 
                 var querySql = string.Format(@"
-select	O.ID as AssetID,
-        O.[Uid],
-        A.ID,
-        A.Threshold,
-        dbo.GenerateAssetUrl(O.ID) as Url,
+select	A.ID as AssetID,
+        A.[Uid],
+        A.ObjectId as ID,
+        R.Threshold,
+        dbo.GenerateAssetUrl(A.ID) as Url,
         {0}
-        A.RuleTypeID,
+        R.RuleTypeID,
         {2}
-from	[Rule] A
-        inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
+from	[Rule] R
+        inner join Asset A on A.Object = 'Rule' and A.ObjectID = R.ID 
         {1} 
-where   A.RuleTypeID = @id 
-        and O.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
-        "and O.AssetTypeID not in (" + Company.GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
+where   R.RuleTypeID = @id 
+        and A.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
+        "and A.AssetTypeID not in (" + Company.GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
 
                 var query = Company.Query<dynamic>(querySql, dbArgs);
 
@@ -5339,7 +5358,10 @@ where    A.RuleID = @id", new { id });
 
             var sql = "select FormattedValue from field where objecttype = @obj and objectid = @id and fieldtypeid = @fieldId";
 
-            return Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
+            string status = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
+            if (string.IsNullOrEmpty(status))
+                status = fieldType.DefaultFormattedValue;
+            return status;
         }
 
         [Route("{type}/{id:int}/style")]
@@ -5367,7 +5389,6 @@ where    A.RuleID = @id", new { id });
         public DetailReadOnlyModel GetObjectDetailFields(SystemObjects type, int id)
         {
             var model = new DetailReadOnlyModel() { columns = 2 };
-            var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
             int row = 0;
             switch (type)
@@ -6431,34 +6452,14 @@ where    A.RuleID = @id", new { id });
                                 new ReadOnlyField { Name = Fields.ID_Name, FieldName = "PolicyTypeID", FieldDescription = Fields.ID_Description, Value = policyType.ObjectID.ToString() }
                             }
                         });
-
-                        if (lineageVersion == 3)
+                        model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 2,
-                                FirstColumnFields = new List<ReadOnlyField>
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = objectDetail.UID.ToString()  }
-                            },
-                                SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField{ Name = Resources.FieldInfo.UseAsTransformation_Name, FieldName = "UseAsTransformation", DataType="bool", FieldDescription = Resources.FieldInfo.UseAsTransformation_Description, Value = policyType.UseAsTransformation.ToString()  }
                             }
-                            });
-                        }
-                        else
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                                {
-                                    new ReadOnlyField{ Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = objectDetail.UID.ToString()  }
-                                }
-                            });
-                        }
-
+                        });
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -6525,38 +6526,26 @@ where    A.RuleID = @id", new { id });
                                 }
                         });
 
-                        var useAsTransformationField = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField{ Name = Resources.FieldInfo.UseAsTransformation_Name, FieldName = "UseAsTransformation", DataType="bool", FieldDescription = Resources.FieldInfo.UseAsTransformation_Description, Value = refType.UseAsTransformation.ToString()  }
-                            };
-
-
                         var parentRefType = Company.GetParentType(refType.ObjectID, SystemObjects.ReferenceItemType);
 
                         var heirarchyColumns = new DetailReadOnlyRowModel
                         {
-                            columns = (parentRefType != null) ? 2 : lineageVersion == 3 ? 2 : 1,
+                            columns = (parentRefType != null) ? 2 : 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = "Hierarchical", FieldName = "Hierarchical", FieldDescription = "Is this reference list a hierarchical reference list", Value = parentRefType != null ? "Yes":"No" }
-                            },
-                            SecondColumnFields = parentRefType != null ?
-                                new List<ReadOnlyField>
-                                {
-                                    new ReadOnlyField { Name = "Parent", FieldName = "Parent", FieldDescription = "Parent Reference List", Value = parentRefType.Name }
-                                } : lineageVersion == 3 ? useAsTransformationField : null
+                            }
                         };
 
-                        model.rows.Add(heirarchyColumns);
-
-                        if (parentRefType != null && lineageVersion == 3)
+                        if (parentRefType != null)
                         {
-                            model.rows.Add(new DetailReadOnlyRowModel
+                            heirarchyColumns.SecondColumnFields = new List<ReadOnlyField>
                             {
-                                columns = 1,
-                                FirstColumnFields = useAsTransformationField
-                            });
+                                new ReadOnlyField { Name = "Parent", FieldName = "Parent", FieldDescription = "Parent Reference List", Value = parentRefType.Name }
+                            };
                         }
+
+                        model.rows.Add(heirarchyColumns);
                     }
                     break;
                 #endregion
@@ -6953,15 +6942,11 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
-                            columns = lineageVersion == 3 ? 2 : 1,
+                            columns = 1,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Fields.Description_Name, FieldName = "TaxonomyTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(taxonomyType.Description) ? "None provided" : taxonomyType.Description }
-                            },
-                            SecondColumnFields = lineageVersion == 3 ? new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField{ Name = Resources.FieldInfo.UseAsTransformation_Name, FieldName = "UseAsTransformation", DataType="bool", FieldDescription = Resources.FieldInfo.UseAsTransformation_Description, Value = taxonomyType.UseAsTransformation.ToString()  }
-                            } : null
+                            }
                         });
                     }
                     taxonomyType = null;
@@ -7254,6 +7239,7 @@ where v.id = {0}", id)).FirstOrDefault();
         {
             var joins = "";
             var columns = "";
+            var assetColumns = ", cast(1 as bit) as CanEdit, cast(1 as bit) as CanDelete ";
 
             getDynamicFieldJoinStatements(intersectTypeID, "Intersect", out joins, out columns, true, false);
 
@@ -7262,22 +7248,19 @@ where v.id = {0}", id)).FirstOrDefault();
 
             getDynamicFieldJoinStatements(targetID, targetType.ToString().Replace("Type", ""), out sourceJoins, out sourceColumns, false, false, false, true, "A.ObjectID", "A.Name", false);
 
-            joins = joins + sourceJoins;
-            columns = columns + sourceColumns;
+            joins += sourceJoins;
+            columns += sourceColumns;
 
-            var attributesTypes = Company.Filter<AttributeTypeRelation>(i => i.ObjectType == "IntersectType" && i.ObjectID == intersectTypeID && !i.AllowMultipleEntries).ToList();
-            foreach (var f in attributesTypes)
-            {
-                var name = $"AttributeType{f.AttributeType.ID}";
-                columns += $"{name}_T.FormattedValue as [{name}], ";
-                joins += $" left join AttributeDetail {name}_T on {name}_T.ObjectType = 'Intersect' and {name}_T.ObjectID = A.ID and {name}_T.AttributeTypeID = {f.AttributeTypeID}";
-            }
-
-            var intersectType = Company.IntersectTypes.Where(x => x.ID == intersectTypeID).FirstOrDefault();
+            var intersectType = Company.GetById<IntersectType>(intersectTypeID);
 
             if (intersectType == null) throw new NotFoundException("intersect type id");
 
-            var isTargetObject = intersectType.Object == targetType.ToString() && intersectType.ObjectID == targetID;
+            var sTargetType = targetType.ToString();
+            var targetAssetType = Company.Filter<AssetType>(i => i.Object == sTargetType && i.ObjectID == targetID).SingleOrDefault();
+            if (targetAssetType == null) throw new NotFoundException("target asset type");
+
+
+            var isTargetObject = intersectType.Object == sTargetType && intersectType.ObjectID == targetID;
             var isTargetSubjectSame = intersectType.Object == intersectType.Subject && intersectType.ObjectID == intersectType.SubjectID;
             var isTargetReferenceItemType = targetType.ToString() == "ReferenceItemType" && targetID == 0;
             var isTargetFusion = targetType.ToString().StartsWith("Fusion");
@@ -7285,52 +7268,64 @@ where v.id = {0}", id)).FirstOrDefault();
             var innerSql = "";
             var assetJoin = "";
 
+            var permissionColumns = Company.CurrentResourceIsAdmin ? assetColumns : @"
+, case when PE.AssetID is not null then cast(1 as bit) else cast(0 as bit) end as CanEdit
+, case when PD.AssetID is not null then cast(1 as bit) else cast(0 as bit) end as CanDelete ";
+
+            var permissionJoins = @"
+left join UserAssetPermissions(@userId,@targetAssetTypeId) PE on PE.PermissionsBitMask & 1024 = 1024 and PE.AssetTypeID = @targetAssetTypeId and (PE.AssetID = IA.ID or PE.AssetID = 0)
+left join UserAssetPermissions(@userId,@targetAssetTypeId) PD on PD.PermissionsBitMask & 2048 = 2048 and PD.AssetTypeID = @targetAssetTypeId and (PD.AssetID = IA.ID or PD.AssetID = 0) ";
 
             if (isTargetSubjectSame)
             {
                 if (isTargetReferenceItemType)
                 {
-                    assetJoin = $@"inner join (select 'Reference List' as Name) AST on 1 = 1
-		                        inner join AssetType IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
-								    and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end
-                                inner join (select ID, Name  as TextPath from AssetType) P on P.ID = IA.ID";
+                    assetJoin = $@"
+inner join (select 'Reference List' as Name) AST on 1 = 1 
+inner join AssetType IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
+							and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end 
+inner join (select ID, Name  as TextPath from AssetType) P on P.ID = IA.ID";
                 }
                 else
                 {
-                    assetJoin = $@"inner join AssetType AST on AST.Object = case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end
-							        and AST.ObjectID = case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end
-		                        inner join Asset IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
-								    and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end
-                                cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P";
+                    assetColumns = permissionColumns;
+                    assetJoin = $@"
+inner join AssetType AST on AST.Object = case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end
+						    and AST.ObjectID = case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end 
+inner join Asset IA on	IA.Object = case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end
+						and IA.ObjectID = case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end 
+cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P 
+{permissionJoins}";
                 }
 
-                innerSql = $@"select	I.[Uid],
-                                I.ID,
-                                IntersectTypeID,
-                                case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
-		                        case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
-		                        P.TextPath as Name,
-                                --case when I.Subject = @type and I.SubjectID = @id then ObjectUrl else SubjectUrl end as Url,
-		                        case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end as Type,
-		                        case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
-		                        AST.Name as TypeName,
-                                IA.uid as ObjectUid,
-		                        T.HasTechnicalRelationships
-                        from	[Intersect] I
-                                inner join IntersectType IT on IT.ID = I.IntersectTypeID
-		                        {assetJoin}
-		                        cross apply (
-					                        select	case 
-								                        when count(1) > 0 then cast(1 as bit)
-								                        else cast(0 as bit)
-							                        end as HasTechnicalRelationships
-					                        from	[Intersect]
-					                        where	Subject = 'Intersect' and SubjectID = I.ID) T
-                        where	(
-                                (I.Subject = @type  and I.SubjectID = @id) or
-                                (I.Object = @type and I.ObjectID = @id)
-                                )
-                                and IntersectTypeID = {intersectTypeID} ";
+                innerSql = $@"
+select	I.[Uid],
+        I.ID,
+        IntersectTypeID,
+        case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
+		case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
+		P.TextPath as Name,
+		case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end as Type,
+		case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
+		AST.Name as TypeName,
+        IA.uid as ObjectUid,
+		T.HasTechnicalRelationships
+        {assetColumns}
+from	[Intersect] I
+        inner join IntersectType IT on IT.ID = I.IntersectTypeID
+		{assetJoin}
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasTechnicalRelationships
+					from	[Intersect]
+					where	Subject = 'Intersect' and SubjectID = I.ID) T
+where	(
+        (I.Subject = @type  and I.SubjectID = @id) or
+        (I.Object = @type and I.ObjectID = @id)
+        )
+        and I.IntersectTypeID = {intersectTypeID} ";
             }
             else if (isTargetObject)
             {
@@ -7343,96 +7338,102 @@ where v.id = {0}", id)).FirstOrDefault();
                 }
                 else
                 {
-                    assetJoin = $@"inner join AssetType AST on AST.Object = (case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end)
-									                        and AST.ObjectID = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end)" : "IT.ObjectID")}
-		                        inner join Asset IA on	IA.Object = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end)" : "I.Object")}
-								                        and IA.ObjectID = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end)" : "I.ObjectID")}
-		                        cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P";
+                    assetColumns = permissionColumns;
+                    assetJoin = $@"
+inner join AssetType AST on AST.Object = (case when I.Subject = @type and I.SubjectID = @id then IT.Object else IT.Subject end)
+						    and AST.ObjectID = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end)" : "IT.ObjectID")} 
+inner join Asset IA on	IA.Object = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end)" : "I.Object")}
+						and IA.ObjectID = {(includeInverse ? "(case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end)" : "I.ObjectID")} 
+cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P 
+{permissionJoins}";
                 }
 
-                innerSql = $@"select	I.[Uid],
-                        I.ID,
-                        IntersectTypeID,
-                        case when I.Subject = @type and I.SubjectID = @id then
-                            I.Object
-                        else
-                            I.Subject
-                        end as Object,
-		                case when I.Subject = @type and I.SubjectID = @id then
-                            I.ObjectID
-                        else
-                            I.SubjectID
-                        end as ObjectID,
-                        IA.uid as ObjectUid,
-		                P.TextPath as Name,        
-		                IT.Object Type,
-		                IT.ObjectID TypeID,
-		                AST.Name as TypeName,
-		                T.HasTechnicalRelationships
-                from	[Intersect] I
-		                inner join IntersectType IT on IT.ID = I.IntersectTypeID
-		                {assetJoin}
-		                cross apply (
-					                select	case 
-								                when count(1) > 0 then cast(1 as bit)
-								                else cast(0 as bit)
-							                end as HasTechnicalRelationships
-					                from	[Intersect]
-					                where	Subject = 'Intersect' and SubjectID = I.ID
-					                ) T
-                where	((I.Subject = @type  and I.SubjectID = @id) {(includeInverse ? " or (I.Object = @type  and I.ObjectID = @id) " : "")})        
-                        and IntersectTypeID = {intersectTypeID} ";
+                innerSql = $@"
+select	I.[Uid],
+        I.ID,
+        IntersectTypeID,
+        case when I.Subject = @type and I.SubjectID = @id then I.Object else I.Subject end as Object,
+		case when I.Subject = @type and I.SubjectID = @id then I.ObjectID else I.SubjectID end as ObjectID,
+        IA.uid as ObjectUid,
+		P.TextPath as Name,        
+		IT.Object Type,
+		IT.ObjectID TypeID,
+		AST.Name as TypeName,
+		T.HasTechnicalRelationships
+        {assetColumns}
+from	[Intersect] I
+		inner join IntersectType IT on IT.ID = I.IntersectTypeID
+		{assetJoin}
+		cross apply (
+					select	case 
+								when count(1) > 0 then cast(1 as bit)
+								else cast(0 as bit)
+							end as HasTechnicalRelationships
+					from	[Intersect]
+					where	Subject = 'Intersect' and SubjectID = I.ID
+					) T
+where	((I.Subject = @type  and I.SubjectID = @id) {(includeInverse ? " or (I.Object = @type  and I.ObjectID = @id) " : "")})        
+        and I.IntersectTypeID = {intersectTypeID} ";
             }
             else
             {
                 if (isTargetReferenceItemType)
                 {
-                    assetJoin = $@"inner join (select 'Reference List' as Name) AST on 1 = 1
-                                inner join AssetType IA on IA.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.Subject else I.Object end)" : "I.Subject")}
-                                                        and IA.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.SubjectID else I.ObjectID end)" : "I.SubjectID")}
-                                inner join (select ID, Name as TextPath from AssetType) P on P.ID = IA.ID";
+                    assetJoin = $@"
+inner join (select 'Reference List' as Name) AST on 1 = 1 
+inner join AssetType IA on IA.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.Subject else I.Object end)" : "I.Subject")}
+                           and IA.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.SubjectID else I.ObjectID end)" : "I.SubjectID")} 
+inner join (select ID, Name as TextPath from AssetType) P on P.ID = IA.ID";
                 }
                 else
                 {
-                    assetJoin = $@"inner join AssetType AST on AST.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then IT.Subject else IT.Object end)" : "IT.Subject")}
-                                                            and AST.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then IT.SubjectID else IT.ObjectID end)" : "IT.SubjectID")}
-                                inner join Asset IA on IA.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.Subject else I.Object end)" : "I.Subject")}
-                                                        and IA.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.SubjectID else I.ObjectID end)" : "I.SubjectID")}
-                                cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P";
+                    assetColumns = permissionColumns;
+                    assetJoin = $@"
+inner join AssetType AST on AST.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then IT.Subject else IT.Object end)" : "IT.Subject")}
+                            and AST.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then IT.SubjectID else IT.ObjectID end)" : "IT.SubjectID")}
+inner join Asset IA on IA.Object = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.Subject else I.Object end)" : "I.Subject")}
+                       and IA.ObjectID = {(includeInverse ? "(case when I.Object = @type and I.ObjectID = @id then I.SubjectID else I.ObjectID end)" : "I.SubjectID")}
+cross apply dbo.GetAssetTextPathById(IA.ID, '{(isTargetFusion ? '.' : '/')}') P
+{permissionJoins}";
                 }
 
-                innerSql = $@"select	I.[Uid],
-                    I.ID,
-                    IntersectTypeID,
-                    case when I.Object = @type and I.ObjectID = @id then
-                        I.Subject
-                    else
-                        I.Object
-                    end as Object,
-                    case when I.Object = @type and I.ObjectID = @id then
-                        I.SubjectID
-                    else
-                        I.ObjectID
-                    end as ObjectID,
-                    IA.uid as ObjectUid,
-		            P.TextPath as Name,        
-		            IT.Subject as Type,
-		            IT.SubjectID as TypeID,
-		            AST.Name as TypeName,
-		            T.HasTechnicalRelationships
-                    from [Intersect] I
-                inner join IntersectType IT on IT.ID = I.IntersectTypeID
-                    {assetJoin}
-                    cross apply(
-                                select	case 
-                                            when count(1) > 0 then cast(1 as bit)
-								            else cast(0 as bit)
-                                        end as HasTechnicalRelationships
-                                from[Intersect]
-                                where   Subject = 'Intersect' and SubjectID = I.ID
-                                ) T
-            where( (I.Object = @type and I.ObjectID = @id) {(includeInverse ? " or (I.Subject = @type  and I.SubjectID = @id) " : "")})
-                    and IntersectTypeID = {intersectTypeID}";
+                innerSql = $@"
+select	I.[Uid],
+        I.ID,
+        IntersectTypeID,
+        case when I.Object = @type and I.ObjectID = @id then
+            I.Subject
+        else
+            I.Object
+        end as Object,
+        case when I.Object = @type and I.ObjectID = @id then
+            I.SubjectID
+        else
+            I.ObjectID
+        end as ObjectID,
+        IA.uid as ObjectUid,
+		P.TextPath as Name,        
+		IT.Subject as Type,
+		IT.SubjectID as TypeID,
+		AST.Name as TypeName,
+		T.HasTechnicalRelationships
+        {assetColumns}
+from    [Intersect] I 
+        inner join IntersectType IT on IT.ID = I.IntersectTypeID 
+        {assetJoin} 
+        cross apply(
+                    select	case 
+                                when count(1) > 0 then cast(1 as bit)
+							    else cast(0 as bit)
+                            end as HasTechnicalRelationships
+                    from    [Intersect]
+                    where   Subject = 'Intersect' and SubjectID = I.ID
+                    ) T 
+where   ( 
+        (I.Object = @type and I.ObjectID = @id) 
+        {(includeInverse ? " or (I.Subject = @type  and I.SubjectID = @id) " : "")}
+        ) 
+        and IntersectTypeID = {intersectTypeID}";
             }
 
             var querySql = $"select {columns} A.* from ({innerSql}) A {joins}";
@@ -7442,7 +7443,14 @@ where v.id = {0}", id)).FirstOrDefault();
 
             sql += " order by AA.Name";
 
-            return Company.Query<dynamic>(sql, new { it = intersectTypeID, type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 20 }, id });
+            return Company.Query<dynamic>(sql, 
+                new {
+                    userId = Company.CurrentResourceID,
+                    it = intersectTypeID,
+                    type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 20 },
+                    id,
+                    targetAssetTypeId = targetAssetType.ID
+                });
         }
 
         [Route("export/{type}/{id:int}/relationships/{targetType}/{targetID:int}/{intersectTypeID:int}/excel.xls"), HttpGet]
