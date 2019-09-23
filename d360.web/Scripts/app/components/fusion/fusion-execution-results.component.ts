@@ -1,5 +1,6 @@
 ﻿import {Component, Input} from '@angular/core';
-import {DataTable, LazyLoadEvent} from 'primeng/primeng';
+import { LazyLoadEvent } from 'primeng/primeng';
+import { Table } from 'primeng/table';
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
 
@@ -146,7 +147,7 @@ export class FusionExecutionResultsComponent extends BaseComponent {
         this.getData();
     }
 
-    private checkSimpleSearchEnter(event, dt: DataTable) {
+    private checkSimpleSearchEnter(event, dt: Table) {
         if (event.keyCode == 13) {
             this.doSimpleSearch(dt);
         } else {
@@ -159,7 +160,7 @@ export class FusionExecutionResultsComponent extends BaseComponent {
         }
     }
 
-    private doSimpleSearch(dt: DataTable) {
+    private doSimpleSearch(dt: Table) {
         if (dt) {
             dt.reset();
         }

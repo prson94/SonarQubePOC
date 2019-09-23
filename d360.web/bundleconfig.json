@@ -15,48 +15,6 @@
     ]
   },
   {
-    "outputFileName": "content/primeng/d3s/theme.min.css",
-    "inputFiles": [
-      "Content/primeng/d3s/theme.css"
-    ]
-  },
-  {
-    "outputFileName": "content/primeng/v4.1.0-rc2/theme.min.css",
-    "inputFiles": [
-      "Content/primeng/v4.1.0-rc2/theme.css"
-    ]
-  },
-  {
-    "outputFileName": "content/primeng/v4.1.0/theme.min.css",
-    "inputFiles": [
-      "Content/primeng/v4.1.0/theme.css"
-    ]
-  },
-  {
-    "outputFileName": "content/primeng/v4.1.1/theme.min.css",
-    "inputFiles": [
-      "Content/primeng/v4.1.1/theme.css"
-    ]
-  },
-  {
-    "outputFileName": "content/primeng/v4.1.2/theme.min.css",
-    "inputFiles": [
-      "Content/primeng/v4.1.2/theme.css"
-    ]
-  },
-  {
-    "outputFileName": "content/primeng/v4.3.0/theme.min.css",
-    "inputFiles": [
-      "Content/primeng/v4.3.0/theme.css"
-    ]
-  },
-  {
-    "outputFileName": "content/primeng/v5.0.2/theme.min.css",
-    "inputFiles": [
-      "Content/primeng/v5.0.2/theme.css"
-    ]
-  },
-  {
     "outputFileName": "content/quill/v1.3.4/quill.snow.min.css",
     "inputFiles": [
       "Content/quill/v1.3.4/quill.snow.css"
@@ -75,21 +33,21 @@
     ]
   },
   {
-    "outputFileName": "Content/primeng/v6.0.1/theme.min.css",
+    "outputFileName": "Content/primeng/v7.1.3/theme.min.css",
     "inputFiles": [
       "Content/primeng/v6.0.1/theme.css"
     ]
   },
   {
-    "outputFileName": "Content/primeng/v6.0.1/primeng.min.css",
+    "outputFileName": "Content/primeng/v7.1.3/primeng.min.css",
     "inputFiles": [
-      "Content/primeng/v6.0.1/primeng.css"
+      "Content/primeng/v7.1.3/primeng.css"
     ]
-  },
+  },   
   {
-    "outputFileName": "Content/primeicons/1.0.0-beta.10/primeicons.min.css",
+    "outputFileName": "Content/primeicons/2.0.0/primeicons.min.css",
     "inputFiles": [
-      "Content/primeicons/1.0.0-beta.10/primeicons.css"
+      "Content/primeicons/2.0.0/primeicons.css"
     ]
   }
 ]

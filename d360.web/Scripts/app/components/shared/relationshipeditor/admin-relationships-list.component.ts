@@ -14,8 +14,10 @@ import { MessagesObservableService } from '../../../services/messages-observable
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div  *ngIf="!showEditor && !showDelete && !isLoading" class="row">                    
                     <div class="col s12">
-                        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                        <p-table #dt [value]="relationships" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Id','Subject.Name','Predicate.Name','Predicate.Inverse','Object.Name']" [pageLinks]="3" [paginator]="true" [rows]="20"  [selection]="selected" (selectionChange)="selected=$event;selectedChange.emit(selected)">
+                        <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter"  [ngModel]="dt.filters['global']?.value">
+                        <p-table #dt [value]="relationships" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Id','Subject.Name','Predicate.Name','Predicate.Inverse','Object.Name']" [pageLinks]="3" [paginator]="true" [rows]="20"  [selection]="selected" 
+                            [stateStorage]="gridStateStorage" stateKey="admin-relationships-grid"
+                            (selectionChange)="selected=$event;selectedChange.emit(selected)">
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th [pSortableColumn]="'Id'" style="width: 10%;">

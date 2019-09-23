@@ -2,7 +2,8 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { RulesService } from '../../services/rules.service';
 import { BaseComponent } from '../shared/base.component';
-import { LazyLoadEvent, DataTable } from 'primeng/primeng';
+import { LazyLoadEvent } from 'primeng/primeng';
+import { Table } from 'primeng/table';
 import { Rule, RuleResult, RuleResultPagedResults, RuleResultFilter } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
@@ -210,7 +211,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
         this.getData();
     }
 
-    private checkSimpleSearchEnter(event, dt: DataTable) {
+    private checkSimpleSearchEnter(event, dt: Table) {
         if (event.keyCode == 13) this.doSimpleSearch(dt);
         else {
             if (this.simpleSearchID > 0) {
@@ -223,7 +224,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
         }
     }
 
-    private doSimpleSearch(dt: DataTable) {
+    private doSimpleSearch(dt: Table) {
         if (dt) dt.reset();
         this.getData();
     }
