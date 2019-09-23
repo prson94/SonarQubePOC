@@ -17,7 +17,7 @@ declare var CompanySettings;
 
 export class BaseComponent {
     public isLoading = false;
-    public gridStateStorage: string = 'local';
+    public gridStateStorage: string = 'session';
 
     // current object info
     uid: string;
