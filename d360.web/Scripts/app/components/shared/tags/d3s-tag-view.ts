@@ -106,13 +106,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
         target.style.border = "1px solid #66A9D6";
         let lineDims = target.getBoundingClientRect();
         window.setTimeout(() => {
-
             let dispPanel = searchPanel.el.nativeElement.children[0];
-            dispPanel.style.top = (lineDims.bottom + dispPanel.getBoundingClientRect().height + 1) + "px";
-            dispPanel.style.left = (lineDims.left) + "px";
-            dispPanel.style.display = "table";
-            dispPanel.style.position = "fixed";
-            dispPanel.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
+            dispPanel.style.maxWidth = (window.innerWidth - lineDims.left - 5) + "px";
         }, 150);
     }
 
