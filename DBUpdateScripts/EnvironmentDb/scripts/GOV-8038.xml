@@ -6,13 +6,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="GOV-8008">
+  <changeSet author="Pappas" id="GOV-8038-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'IntegrationAssetTypeError' AND COLUMN_NAME = 'ErrorCode'))
+IF (NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'ExecutionAssetTypeError' AND COLUMN_NAME = 'ErrorCode'))
 BEGIN
 	alter table integration.ExecutionAssetTypeError add ErrorCode int null
 END
@@ -20,7 +20,7 @@ END
     </sql>
 	<rollback>
 		<![CDATA[
-IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'IntegrationAssetTypeError' AND COLUMN_NAME = 'ErrorCode'))
+IF (EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'ExecutionAssetTypeError' AND COLUMN_NAME = 'ErrorCode'))
 BEGIN
 	alter table integration.ExecutionAssetTypeError drop column ErrorCode
 END
