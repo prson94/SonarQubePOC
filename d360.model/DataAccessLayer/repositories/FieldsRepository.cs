@@ -979,6 +979,25 @@ from	IntersectType I
                         newFieldType.Pattern = f.Type.Text.Validation.Pattern;
                     }
                 }
+                else if (f.Type.Tag != null)
+                {
+                    newFieldType.Type = DataType.Tag.ToString();
+                    newFieldType.ColumnOrder = f.Type.Text.ColumnOrder;
+                    newFieldType.ColumnWidth = f.Type.Text.ColumnWidth;
+                    newFieldType.DefaultValue = f.Type.Text.DefaultValue;
+                    if (f.Type.Text.Description != null)
+                    {
+                        newFieldType.DisplayDescription = f.Type.Text.Description.Display;
+                        newFieldType.FormDescription = f.Type.Text.Description.Form;
+                    }
+                    newFieldType.IsDisplayable = f.Type.Text.IsDisplayable;
+                    newFieldType.IsEditable = f.Type.Text.IsEditable;
+                    newFieldType.IsListable = f.Type.Text.IsListable;
+                    newFieldType.IsPartOfKey = f.Type.Text.IsPartOfKey;
+                    newFieldType.IsPrimaryFilter = f.Type.Text.IsPrimaryFilter;
+                    newFieldType.ShowIfEmpty = f.Type.Text.ShowIfEmpty;
+                    newFieldType.SortOrder = f.Type.Text.SortOrder;
+                }
                 else
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "No valid type defined", $"You have not included a valid type for the field type [{f.Name}].");

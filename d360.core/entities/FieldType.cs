@@ -498,7 +498,11 @@ namespace d360.core.entities
         [DataMember]
         public FieldTypeDescriptionApiViewModel_ValidationText Validation { get; set; }
     }
-
+    public class FieldTypeDataTypeTagApiViewModel : FieldTypeEditableApiViewModel
+    {
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
+    }
     public class FieldTypeDataTypeApiViewModel
     {
         [DataMember]
@@ -533,6 +537,8 @@ namespace d360.core.entities
         public FieldTypeDataTypeRelationshipApiViewModel Relationship { get; set; }
         [DataMember]
         public FieldTypeDataTypeTextApiViewModel Text { get; set; }
+        [DataMember]
+        public FieldTypeDataTypeTagApiViewModel Tag { get; set; }
 
         public bool IsOnlyOneTypeModelDefined()
         {
@@ -554,6 +560,7 @@ namespace d360.core.entities
             childPopulatedCount += (Number != null) ? 1 : 0;
             childPopulatedCount += (Relationship != null) ? 1 : 0;
             childPopulatedCount += (Text != null) ? 1 : 0;
+            childPopulatedCount += (Tag != null) ? 1 : 0;
 
             return (childPopulatedCount == 1);
         }
