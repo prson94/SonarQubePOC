@@ -267,15 +267,20 @@ export class TagView extends AdminBaseComponent implements OnInit {
                 this.showDeleteOption = true;
             if (!this.showDeleteOption) {
                 var tagElements = this.container.nativeElement.querySelectorAll('.tagging');
+                (function () {
+                    if (typeof NodeList.prototype.forEach === "function") return false;
+                    tagElements.forEach = Array.prototype.forEach;
+                })();
                 tagElements.forEach(tagEle => {
                     this.tags.forEach(tag => {
                         this.tagService.getAssetTagDetails(tag.TooltipID, this.assetUID).
                             subscribe(result => {
-                                if (tagEle.children[1].innerText == tag.Value) {
+                                if (tagEle.children[1].innerText.trim() == tag.Value.trim()) {
                                     if (result == CurrentResourceID)
                                         this.showDeleteOption = true;
                                     if (result != CurrentResourceID)
-                                        tagEle.children[2].remove();
+                                        tagEle.children[2].parentElement.removeChild(tagEle.children[2]);
+
                                 }
                             }, err => this.showMessageForResult(this.messagesService, err));
                     })
