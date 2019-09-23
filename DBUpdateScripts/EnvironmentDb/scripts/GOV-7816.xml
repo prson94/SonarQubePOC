@@ -1,0 +1,107 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-7816">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'Artifact-retired'))
+BEGIN
+	DROP TABLE [dbo].[Artifact-retired]
+END
+
+IF (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'ArtifactType-retired'))
+BEGIN
+DROP TABLE [dbo].[ArtifactType-retired]
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+
+IF (NOT EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'ArtifactType-retired'))
+BEGIN
+			CREATE TABLE [dbo].[ArtifactType-retired](
+			[ID] [int] IDENTITY(1,1) NOT NULL,
+			[ParentID] [int] NULL,
+			[Name] [nvarchar](250) NOT NULL,
+			[Description] [nvarchar](max) NULL,
+			[CanOwnFusion] [bit] NOT NULL,
+			[UpdatedOn] [datetime] NULL,
+			[UpdatedBy] [int] NULL,
+			[AllowHierarchy] [bit] NOT NULL,
+			[AutoDisplayDescription] [bit] NOT NULL,
+			[DisplayFormat] [nvarchar](250) NULL,
+		 CONSTRAINT [PK_ArtifactType] PRIMARY KEY CLUSTERED 
+		(
+			[ID] ASC
+		)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+		) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+		ALTER TABLE [dbo].[ArtifactType-retired] ADD  CONSTRAINT [DF_Artifact_CanOwnFusion]  DEFAULT ((0)) FOR [CanOwnFusion]
+
+		ALTER TABLE [dbo].[ArtifactType-retired] ADD  CONSTRAINT [DF_Artifact_AllowHierarchy]  DEFAULT ((0)) FOR [AllowHierarchy]
+		ALTER TABLE [dbo].[ArtifactType-retired] ADD  CONSTRAINT [DF_ArtifactType_AutoDisplayDescription]  DEFAULT ((0)) FOR [AutoDisplayDescription]
+
+		ALTER TABLE [dbo].[ArtifactType-retired] ADD  CONSTRAINT [DF_ArtifactType_DisplayFormat]  DEFAULT ('{Name}') FOR [DisplayFormat]
+
+		ALTER TABLE [dbo].[ArtifactType-retired]  WITH CHECK ADD  CONSTRAINT [FK_ArtifactType_ParentArtifactType] FOREIGN KEY([ParentID])
+		REFERENCES [dbo].[ArtifactType-retired] ([ID])
+
+		ALTER TABLE [dbo].[ArtifactType-retired] CHECK CONSTRAINT [FK_ArtifactType_ParentArtifactType]
+
+END
+
+IF (NOT EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'Artifact-retired'))
+BEGIN
+    CREATE TABLE [dbo].[Artifact-retired](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[ArtifactTypeID] [int] NOT NULL,
+	[UpdatedOn] [datetime] NULL,
+	[UpdatedBy] [int] NULL,
+	[CreatedOn] [datetime] NOT NULL,
+	[SourceID] [nvarchar](250) NULL,
+	[CreatedBy] [int] NULL,
+	[KeyHash] [varchar](50) NULL,
+	[FieldHash] [varchar](50) NULL,
+ CONSTRAINT [PK_Artifact] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+ALTER TABLE [dbo].[Artifact-retired] ADD  CONSTRAINT [DF_Artifact_CreatedOn]  DEFAULT (getdate()) FOR [CreatedOn]
+
+ALTER TABLE [dbo].[Artifact-retired]  WITH CHECK ADD  CONSTRAINT [FK_Artifact_ArtifactType] FOREIGN KEY([ArtifactTypeID])
+REFERENCES [dbo].[ArtifactType-retired] ([ID])
+
+ALTER TABLE [dbo].[Artifact-retired] CHECK CONSTRAINT [FK_Artifact_ArtifactType]
+END
+
+
+
+
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

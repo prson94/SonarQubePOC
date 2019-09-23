@@ -12,7 +12,6 @@ import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
 import { ActionsRoutingModule } from './actions.routes';
 import { ActionsComponent } from './actions.component';
-import { ResourceModule } from '../../resource/resource.module';
 import { WorkflowModule } from '../../workflow/workflow.module';
 import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -32,7 +31,6 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
         //d3s        
         CoreModule,
         TilesModule,
-        ResourceModule,
         WorkflowModule,
     ],
     declarations: [

@@ -52,6 +52,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     private editPopupTitle: string = 'Edit Tag';
     private deletePopupTitle: string = 'Delete Tag';
     private isShowAll: boolean = false;
+    showDeleteOption: boolean = false;
     @ViewChild("container") container: ElementRef;
     error: any;
     timeouthandle: any;
@@ -81,17 +82,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
         {
             console.warn("d3s-tag-view::Error while parsing tags!");
         }
-        if (!this.auth.isAdmin || !this.hasModifyAssetPermissions())
-            this.isEditable = false;
-        if (this.auth.isAdmin || this.hasModifyAssetPermissions())
-            this.isEditable = true;
         if (this.tags) {
             this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
-            this.tags.forEach(tag => {
-                if (tag.CreatedBy == CurrentResourceID) {
-                    this.isEditable = true;
-                }
-            })
         }
         this.selected = this.tags;
     }
@@ -114,13 +106,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
         target.style.border = "1px solid #66A9D6";
         let lineDims = target.getBoundingClientRect();
         window.setTimeout(() => {
-
             let dispPanel = searchPanel.el.nativeElement.children[0];
-            dispPanel.style.top = (lineDims.bottom + dispPanel.getBoundingClientRect().height + 1) + "px";
-            dispPanel.style.left = (lineDims.left) + "px";
-            dispPanel.style.display = "table";
-            dispPanel.style.position = "fixed";
-            dispPanel.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
+            dispPanel.style.maxWidth = (window.innerWidth - lineDims.left - 5) + "px";
         }, 150);
     }
 
@@ -138,7 +125,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.tagsLoading = true;
         clearTimeout(this.timeouthandle);
         this.timeouthandle = window.setTimeout(() => {
-            this.tagService.searchTagsTypeAhead(searchValue.toLowerCase(), 10)
+            this.tagService.searchTagsTypeAhead(searchValue, 10)
                 .subscribe(res => {
                     if (res && res.length > 0) {
                         this.searchResults = res.sort((a, b) => a.name.localeCompare(b.name));
@@ -267,6 +254,37 @@ export class TagView extends AdminBaseComponent implements OnInit {
             }, err => this.showMessageForResult(this.messagesService, err));
     }
 
+    showRemoveTag() {
+        if (this.isEditable) {
+            if (!this.auth.isAdmin || !this.hasModifyAssetPermissions())
+                this.showDeleteOption = false;
+            if (this.auth.isAdmin || this.hasModifyAssetPermissions())
+                this.showDeleteOption = true;
+            if (!this.showDeleteOption) {
+                var tagElements = this.container.nativeElement.querySelectorAll('.tagging');
+                (function () {
+                    if (typeof NodeList.prototype.forEach === "function") return false;
+                    tagElements.forEach = Array.prototype.forEach;
+                })();
+                tagElements.forEach(tagEle => {
+                    this.tags.forEach(tag => {
+                        this.tagService.getAssetTagDetails(tag.TooltipID, this.assetUID).
+                            subscribe(result => {
+                                if (tagEle.children[1].innerText.trim() == tag.Value.trim()) {
+                                    if (result == CurrentResourceID)
+                                        this.showDeleteOption = true;
+                                    if (result != CurrentResourceID)
+                                        tagEle.children[2].parentElement.removeChild(tagEle.children[2]);
+
+                                }
+                            }, err => this.showMessageForResult(this.messagesService, err));
+                    })
+                })
+            }
+
+        }
+    }
+
     showAllToggle(event: MouseEvent) {
         this.isShowAll = !this.isShowAll;
         event.stopPropagation();
@@ -315,7 +333,9 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
     ngAfterViewInit() {
         this.manageWidth();
+        this.showRemoveTag();
     }
+
 
     openTagPage(event: MouseEvent, item: any) {
         if ((this.isEditable != true && this.showDelete == false) || (<HTMLElement>event.target).className == 'tag-item-wrapper')
@@ -325,7 +345,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
     enter(tag: any, el: HTMLElement) {
         this.isTooltipLoaded = false;
-        this.tagService.getTagTooltip(tag.uid)
+        this.tagService.getTagTooltip(tag.uid, this.assetUID)
             .subscribe(t => {
                 this.tagTooltip = t[0];
                 this.isTooltipLoaded = true;

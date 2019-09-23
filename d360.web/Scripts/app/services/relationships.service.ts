@@ -42,7 +42,7 @@ export class RelationshipsService extends BaseObservableService {
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
         };
-        return this.http.delete(`api/v2/relationships/types/${intersectTypeUid}/?triggerWorkflow=true`, httpHeaders).pipe(
+        return this.http.delete(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true`, httpHeaders).pipe(
             map(response => response),
             catchError(err => this.handleError(err, true))
         );

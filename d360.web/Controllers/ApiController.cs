@@ -2973,28 +2973,32 @@ order by    rnk, [Name]";
 
                                 // Add the fields that you need to create link in Angular component.
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'{context}'", datafield = $"{dataField}_Context" });
+
+
                                 columnModels.Add(new ComplexColumnModel
                                 {
                                     DisplayColumn = $@"
-    case 
-        when {tbPrefix}.Value is not null then {tbtPrefix}.[LookupObjectType]
-        when {tbtPrefix}.DefaultValue is not null then replace({tbtPrefix}.[LookupObjectType], 'Type', '')
-        else '' 
-    end
-    ",
+                                    case 
+                                        when {tbPrefix}.Value is not null then '{(ft.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : ft.LookupObjectType)}'
+                                        when {tbtPrefix}.DefaultValue is not null then replace({tbtPrefix}.[LookupObjectType], 'Type', '')
+                                        else '' 
+                                    end
+                                    ",
                                     datafield = $"{dataField}_Object"
                                 });
                                 columnModels.Add(new ComplexColumnModel
                                 {
                                     DisplayColumn = $@"
-    case 
-        when {tbPrefix}.Value is not null then cast({tbPrefix}.Value as varchar)
-        when {tbtPrefix}.DefaultValue is not null then cast({tbtPrefix}.DefaultValue as varchar)
-        else '' 
-    end
-    ",
+                                    case 
+                                        when {tbPrefix}.Value is not null then cast({tbtPrefix}.LookupObjectID as varchar)
+                                        when {tbtPrefix}.DefaultValue is not null then cast({tbtPrefix}.DefaultValue as varchar)
+                                        else '' 
+                                    end
+                                    ",
                                     datafield = $"{dataField}_ObjectID"
                                 });
+                                
+
                                 columnModels.Add(new ComplexColumnModel
                                 {
                                     DisplayColumn = $@"
@@ -3015,8 +3019,7 @@ order by    rnk, [Name]";
                             }
                             else if (i.FieldTypeName.ToLower() == "name") //special case for name
                             {
-                                fc.datafieldtype = "lookup";
-                                fc.datafieldtype = "lookup";
+                                fc.datafieldtype = "preview";
                                 fc.contextfield = $"{dataField}_Context";
                                 fc.objectfield = $"{dataField}_Object";
                                 fc.objectidfield = $"{dataField}_ObjectID";
@@ -3096,7 +3099,7 @@ outer apply (
                             columnModels.Add(new ComplexColumnModel { DisplayColumn = $"{tbDetailPrefix}.Url", datafield = $"{dataField}_Url" });
 
                             // Now set the fields to reference to create the preview link in Angular component.
-                            fc.datafieldtype = "lookup";
+                            fc.datafieldtype = "preview";
                             fc.contextfield = $"{dataField}_Context";
                             fc.objectfield = $"{dataField}_Object";
                             fc.objectidfield = $"{dataField}_ObjectID";
@@ -3206,7 +3209,7 @@ outer apply (
                                 };
 
                                 setColumnTypeInfo(ft, i, ac);
-                                ac.datafieldtype = "lookup"; //must be done after function call above.
+                                ac.datafieldtype = "preview"; //must be done after function call above.
                                 columnModels.Add(ac);
                                 // Add the fields that you need to create link in Angular component.
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
@@ -3233,7 +3236,7 @@ outer apply (
                                     urlfield = $"{dataField}_Url"
                                 };
                                 setColumnTypeInfo(ft, i, oc);
-                                oc.datafieldtype = "lookup"; //must be done after function call above.
+                                oc.datafieldtype = "preview"; //must be done after function call above.
                                 columnModels.Add(oc);
 
                                 // Add the fields that you need to create link in Angular component.
@@ -3262,7 +3265,7 @@ outer apply (
                                     urlfield = $"{dataField}_Url"
                                 };
                                 setColumnTypeInfo(ft, i, pc);
-                                pc.datafieldtype = "lookup"; //must be done after function call above.
+                                pc.datafieldtype = "preview"; //must be done after function call above.
                                 columnModels.Add(pc);
 
                                 // Add the fields that you need to create link in Angular component.
@@ -3293,7 +3296,7 @@ outer apply (
                                     };
 
                                     setColumnTypeInfo(ft, i, rec);
-                                    rec.datafieldtype = "lookup"; //must be done after function call above.
+                                    rec.datafieldtype = "preview"; //must be done after function call above.
                                     columnModels.Add(rec);
                                     // Add the fields that you need to create link in Angular component.
                                     columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
@@ -3336,7 +3339,7 @@ outer apply (
                                     urlfield = $"{dataField}_Url"
                                 };
                                 setColumnTypeInfo(ft, i, rc);
-                                rc.datafieldtype = "lookup"; //must be done after function call above.
+                                rc.datafieldtype = "preview"; //must be done after function call above.
                                 columnModels.Add(rc);
 
                                 // Add the fields that you need to create link in Angular component.
@@ -3364,7 +3367,7 @@ outer apply (
                                     urlfield = $"{dataField}_Url"
                                 };
                                 setColumnTypeInfo(ft, i, tc);
-                                tc.datafieldtype = "lookup"; //must be done after function call above.
+                                tc.datafieldtype = "preview"; //must be done after function call above.
                                 columnModels.Add(tc);
 
                                 // Add the fields that you need to create link in Angular component.
@@ -3394,7 +3397,7 @@ outer apply (
                                         urlfield = $"{dataField}_Url"
                                     };
                                     setColumnTypeInfo(ft, i, ric);
-                                    ric.datafieldtype = "lookup"; //must be done after function call above.
+                                    ric.datafieldtype = "preview"; //must be done after function call above.
                                     columnModels.Add(ric);
 
                                     // Add the fields that you need to create link in Angular component.
@@ -5178,17 +5181,18 @@ order by    Name
                 var joins = "";
                 var columns = "";
 
-                getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false);
+                getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false,coreTableIdJoinColumn:"A.ObjectID");
+             
 
                 var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = O.ID  or (u.AssetID = 0 and u.AssetTypeID = O.AssetTypeID))
+                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                ) 
 						                    then 1
 						                    else 0
 
                                         end as P_CanEdit,
 		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, O.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = O.ID  or (u.AssetID = 0 and u.AssetTypeID = O.AssetTypeID))
+                                                             select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
 						                                   ) 
 						                                   then 1
 						                                   else 0
@@ -5201,20 +5205,20 @@ order by    Name
                 }
 
                 var querySql = string.Format(@"
-select	O.ID as AssetID,
-        O.[Uid],
-        A.ID,
-        A.Threshold,
-        dbo.GenerateAssetUrl(O.ID) as Url,
+select	A.ID as AssetID,
+        A.[Uid],
+        A.ObjectId as ID,
+        R.Threshold,
+        dbo.GenerateAssetUrl(A.ID) as Url,
         {0}
-        A.RuleTypeID,
+        R.RuleTypeID,
         {2}
-from	[Rule] A
-        inner join Asset O on O.Object = 'Rule' and O.ObjectID = A.ID 
+from	[Rule] R
+        inner join Asset A on A.Object = 'Rule' and A.ObjectID = R.ID 
         {1} 
-where   A.RuleTypeID = @id 
-        and O.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
-        "and O.AssetTypeID not in (" + Company.GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
+where   R.RuleTypeID = @id 
+        and A.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
+        "and A.AssetTypeID not in (" + Company.GetAssetTypeNoReadSqlStatement("@r") + ")", columns, joins, permissionSql);
 
                 var query = Company.Query<dynamic>(querySql, dbArgs);
 

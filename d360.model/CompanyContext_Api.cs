@@ -1208,7 +1208,7 @@ from	IntersectType I
                                 row["ItemNumber"] = i;
                                 if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
                                 row["Uid"] = model.Uid;
-                                row["Cascade"] = model.Cascade;
+                                row["Cascade"] = model.Cascade ?? false;
 
                                 table.Rows.Add(row);
                             }
@@ -2114,7 +2114,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             return results;
         }
 
-        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
+        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500)
         {
             var results = new List<DatabaseBulkAssetResult>();
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
@@ -2623,7 +2623,7 @@ from	api.ExecutionAsset T
 
                     if (generalChecksCompleted)
                     {
-                        int loopSize = 500;
+                        int loopSize = mergeBlockSize;
                         int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
                         int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                         int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
@@ -3037,9 +3037,13 @@ from	api.ExecutionAsset T
 
                         Connection.Close();
 
-                        var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
+                        try
+                        {
+                            var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
+                            SendAssetGraphEvents(results, changedFields);
+                        }
+                        catch { }
 
-                        SendAssetGraphEvents(results, changedFields);
 
                         if (sendWorkflowEvents)
                         {
@@ -3500,21 +3504,297 @@ end",
             return results;
         }
 
-        public void DeleteRelationships(List<DatabaseBulkRelationshipResult> parentRelationships, List<DatabaseBulkRelationshipResult> childrenRelationships, bool sendWorkflowEvents)
+        public List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false)
         {
-            if (!sendWorkflowEvents)
-                this.IsEventingEnabled = false;
+            var results = new List<DatabaseBulkRelationshipResult>();
+            bool generalChecksCompleted = false;
+            CurrentExecutionLocationModel currentLocation = null;
 
-            var parentIds = parentRelationships.Select(p => p.ObjectID).ToList();
-            var childIds = childrenRelationships.Select(c => c.ObjectID).ToList();
+            try
+            {
+                currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionDeletedRelationship");
 
-            Delete<Intersect>(x => childIds.Contains(x.ID));
-            Delete<Intersect>(x => parentIds.Contains(x.ID));
+                if (currentLocation.HighestItemNumberProcessed > 0)
+                {
+                    results.AddRange(
+                        Query<DatabaseBulkRelationshipResult>(
+                            $"select * from api.ExecutionDeletedRelationship where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                            new { execution.ExecutionID }
+                        )
+                    );
+                }
 
-            SendAssetGraphEvents(parentRelationships);
-            SendAssetGraphEvents(childrenRelationships);
+                #region Build data tables for bulk load.
 
-            this.IsEventingEnabled = true;
+                var table = new DataTable();
+                table.Columns.Add("ExecutionID", typeof(Guid));
+                table.Columns.Add("ItemNumber", typeof(int));
+                table.Columns.Add("ExecutionItemUid", typeof(Guid));
+                table.Columns.Add("Uid", typeof(Guid));
+                table.Columns.Add("Cascade", typeof(bool));
+
+                #endregion
+
+                #region Generate data sets
+
+                for (int i = currentLocation.HighestItemNumber+1; i <= import.Count; i++)
+                {
+                    var model = import[i - 1];
+
+                    var row = table.NewRow();
+
+                    row["ExecutionID"] = execution.ExecutionID;
+                    row["ItemNumber"] = i;
+                    row["Uid"] = model.Uid;
+                    row["Cascade"] = model.Cascade;
+                    if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
+                    table.Rows.Add(row);
+                }
+
+                #endregion
+
+                if (Database.Connection.State != ConnectionState.Open)
+                    Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                #region Bulk Copy
+
+                SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+
+                bulkCopy.BatchSize = table.Rows.Count;
+                bulkCopy.DestinationTableName = "api.ExecutionDeletedRelationship";
+                bulkCopy.BulkCopyTimeout = timeout;
+
+                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
+
+                bulkCopy.WriteToServer(table);
+
+                bulkCopy = null;
+
+                #endregion
+
+                #region Validate Intersect Uid / Intersect Type Uid
+
+                Connection.Execute(@"
+update	T
+set		T.IntersectID = I.ID,
+        T.Success = case 
+                        when I.ID is null then 0
+                        else null
+                    end,
+        T.Message = case 
+                        when IT.ID is null then coalesce(T.[Message] + '; ', '') + 'No relationship type with the specified Uid found.'
+                        when I.ID is null then coalesce(T.[Message] + '; ', '') + 'No relationship with the specified Uid found.'
+                        else T.Message
+                    end
+from	api.ExecutionDeletedRelationship T
+        left join IntersectType IT on IT.uid = @uid
+        left join [Intersect] I on I.IntersectTypeId = IT.Id and I.Uid = T.Uid
+where   T.ExecutionID = @ExecutionID;",
+                new { execution.ExecutionID, it.uid }, commandTimeout: timeout);
+
+                #endregion
+
+                #region Permissions Validation
+
+                Connection.Execute(@"
+declare @IsAdministrator bit = 0
+select	@IsAdministrator = IsAdministrator
+from	reporting.Global_Resource
+where	ResourceID = @ResourceID
+
+if @IsAdministrator = 0
+begin
+update	T
+set		T.Message = coalesce(T.Message + '; ', '') + 'You do not have permission to remove relationships on the subject asset.',
+	    T.Success = 0
+from	api.ExecutionDeletedRelationship T
+        inner join	(
+                    select	R.ExecutionID, R.ItemNumber
+	                from	api.ExecutionDeletedRelationship R 
+                            inner join [Intersect] I on I.ID = R.IntersectID and R.ExecutionID = @ExecutionID 
+			                inner join Asset A on A.Object = I.Subject and A.ObjectID = I.SubjectID
+			                outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
+	                where	R.FromHierarchy = 0
+                            and P.AssetTypeID = A.AssetTypeID
+                            and ( P.AssetID = A.ID or P.AssetID = 0 )
+			                and (
+				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & 2048 <> 2048) 
+				                or 
+				                P.PermissionsBitMask is null
+				                )
+                    group by R.ExecutionID, R.ItemNumber
+                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+
+update	T
+set		T.Message = coalesce(T.Message + '; ', '') + 'You do not have permission to remove relationships on the object asset.',
+	    T.Success = 0
+from	api.ExecutionDeletedRelationship T
+        inner join	(
+                    select	R.ExecutionID, R.ItemNumber
+	                from	api.ExecutionDeletedRelationship R
+			                inner join [Intersect] I on I.ID = R.IntersectID and R.ExecutionID = @ExecutionID
+                            inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+			                outer apply dbo.UserAssetPermissions(@ResourceID, A.AssetTypeID) P
+	                where	R.FromHierarchy = 0
+                            and P.AssetTypeID = A.AssetTypeID
+                            and ( P.AssetID = A.ID or P.AssetID = 0 )
+			                and (
+				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & 2048 <> 2048) 
+				                or 
+				                P.PermissionsBitMask is null
+				                )
+                    group by R.ExecutionID, R.ItemNumber
+                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+end",
+                new { execution.ExecutionID, execution.ResourceID }, commandTimeout: timeout);
+
+                #endregion
+
+                #region Cascade Validation
+
+                Connection.Execute(@"
+update	T
+set		T.Message = coalesce(T.Message + '; ', '') + 'You have not enabled Cascade on this relationship, and there are ' + cast(S.[Count] as nvarchar) + ' child relationship(s) associated with it.',
+	    T.Success = 0
+from	api.ExecutionDeletedRelationship T
+        inner join	(
+                    select  S.ExecutionID,
+                            S.ItemNumber,
+                            count(1) as [Count]
+                    from    api.ExecutionDeletedRelationship S
+                            inner join [Intersect] T on T.Subject = 'Intersect' and T.SubjectID = S.IntersectID and S.ExecutionID = @ExecutionID and S.Success is null
+                    where   S.[Cascade] = 0
+                    group by S.ExecutionID, S.ItemNumber
+                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;",
+                new { execution.ExecutionID }, commandTimeout: timeout);
+
+                #endregion
+
+                #region Finally, load any child intersects
+
+                Connection.Execute(@"
+insert into api.ExecutionDeletedRelationship (ExecutionID, ItemNumber, [Uid], IntersectID, FromHierarchy, HierarchyIntersectID)
+    select  S.ExecutionID,
+            S.ItemNumber,
+            T.[Uid],
+            T.ID,
+            1 as FromHierarchy,
+            S.IntersectID as HierarchyIntersectID
+    from    api.ExecutionDeletedRelationship S
+            inner join [Intersect] T on T.Subject = 'Intersect' and T.SubjectID = S.IntersectID and S.ExecutionID = @ExecutionID and S.Success is null;",
+                new { execution.ExecutionID }, commandTimeout: timeout);
+
+                #endregion
+
+                generalChecksCompleted = true;
+            }
+            catch (Exception generalEx)
+            {
+                generalChecksCompleted = false;
+                var msg = generalEx.GetFullExceptionData(false);
+                execution.ErrorMessage = msg;
+                execution.Processed = 0;
+                execution.Error = import.Count();
+
+                results = new List<DatabaseBulkRelationshipResult>();
+                results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+            }
+
+            if (generalChecksCompleted)
+            {
+                int loopSize = 100;
+                int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+
+                for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                {
+                    bool runCompleted = false;
+                    int retryCount = 0;
+
+                    while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                    {
+                        using (var trans = Connection.BeginTransaction())
+                        {
+                            try
+                            {
+                                #region Field table delete
+
+                                Connection.Execute($@"
+delete  T
+from    [Field] T
+        inner join api.ExecutionDeletedRelationship S on T.ObjectType = 'Intersect' 
+            and S.IntersectID = T.ObjectID 
+            and S.ExecutionID = @ExecutionID 
+            and S.ItemNumber between {beginItemNumber} and {endItemNumber};",
+            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                                #endregion
+
+                                #region Intersect table delete
+
+                                Connection.Execute($@"
+delete  T
+from    [Intersect] T
+        inner join api.ExecutionDeletedRelationship S on S.IntersectID = T.ID 
+            and S.ExecutionID = @ExecutionID 
+            and S.ItemNumber between {beginItemNumber} and {endItemNumber};", 
+            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                                #endregion
+
+                                // Update success flag
+                                Connection.Execute(
+                                    $"update api.ExecutionDeletedRelationship set Success = 1 where Success is null and ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber} and IntersectID is not null;",
+                                    new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                                trans.Commit();
+
+                                runCompleted = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                trans.Rollback();
+
+                                retryCount++;
+
+                                if (retryCount > API_V2_RETRY_LIMIT)
+                                {
+                                    LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionRelationship", ex.GetFullExceptionData(false), timeout);
+                                }
+                            }
+                        }
+                    }
+
+                    results.AddRange(
+                        Query<DatabaseBulkRelationshipResult>(
+                            $"select * from api.ExecutionDeletedRelationship where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber}",
+                            new { execution.ExecutionID }
+                        )
+                    );
+
+                    OnRelationshipsPartiallyProcessed(new RelationshipsPartiallyProcessedEventArgs
+                    {
+                        Results = results
+                    });
+
+                    beginItemNumber += loopSize;
+                    endItemNumber += loopSize;
+                }
+
+                Connection.Close();
+
+                SendAssetGraphEvents(results);
+
+                if (sendWorkflowEvents)
+                    SendWorkflowEvents("IntersectType", it.ID, results);
+            }
+
+            return results;
         }
 
         private void ValidateAssetCrossReference(ApiExecution execution,  int timeout = 3600)
@@ -3552,7 +3832,8 @@ end",
                             Where ECR.Success is null  and ExecutionID=@executionID ",
                         new { executionID = execution.ExecutionID }, commandTimeout: timeout);
         }
-        public List<AssetCrossReferenceResult> ImportCrossRefernces(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600)
+
+        public List<AssetCrossReferenceResult> ImportCrossReferences(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600)
         {
 
             List<AssetCrossReferenceResult> bulkResult = new List<AssetCrossReferenceResult>();

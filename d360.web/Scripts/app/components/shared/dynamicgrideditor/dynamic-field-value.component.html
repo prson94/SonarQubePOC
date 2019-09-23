@@ -44,7 +44,7 @@
               [innerHtml]="fieldValue | safeHtml"></span>
     </span>
     <span *ngSwitchCase="'tag'">
-        <d3s-tag-view [data]="fieldValue"></d3s-tag-view>
+        <d3s-tag-view [data]="fieldValue" [assetUID]="item?.Uid"></d3s-tag-view>
     </span>
     <ng-template ngSwitchDefault>
         <span *ngIf="fieldValue != null"

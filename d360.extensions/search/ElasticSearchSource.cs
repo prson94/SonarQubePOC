@@ -412,29 +412,29 @@ namespace d360.extensions.search
             {
                 phrase = phrase.Replace("\\", "?");  // replace backslash with wildcard LEAVE FIRST
                 
-                phrase = phrase.Replace(":", "\\\\:"); // escape colon
+                phrase = phrase.Replace(":", "\\:"); // escape colon
 
-                phrase = phrase.Replace("^", "\\\\^"); // escape carat
+                phrase = phrase.Replace("^", "\\^"); // escape carat
 
-                phrase = phrase.Replace("~", "\\\\~"); // escape carat
+                phrase = phrase.Replace("~", "\\~"); // escape carat
 
-                phrase = phrase.Replace("!", "\\\\!"); //  escape exclamation
+                phrase = phrase.Replace("!", "\\!"); //  escape exclamation
 
-                phrase = phrase.Replace("[", "\\\\["); //  escape square bracket
+                phrase = phrase.Replace("[", "\\["); //  escape square bracket
 
-                phrase = phrase.Replace("]", "\\\\]"); //  escape square bracket
+                phrase = phrase.Replace("]", "\\]"); //  escape square bracket
 
-                phrase = phrase.Replace("{", "\\\\{"); //  escape curyly bracket
+                phrase = phrase.Replace("{", "\\{"); //  escape curyly bracket
 
-                phrase = phrase.Replace("}", "\\\\}"); //  escape curyly bracket
+                phrase = phrase.Replace("}", "\\}"); //  escape curyly bracket
 
-                phrase = phrase.Replace("-", "\\\\-"); // escape hyphen
+                phrase = phrase.Replace("-", "\\-"); // escape hyphen
 
-                phrase = phrase.Replace("/", "\\\\/"); // replace / with escaped slash                
+                phrase = phrase.Replace("/", "\\/"); // replace / with escaped slash                
 
-                phrase = phrase.Replace("(", "\\\\("); // replace / with escaped slash       
+                phrase = phrase.Replace("(", "\\("); // replace / with escaped slash       
 
-                phrase = phrase.Replace(")", "\\\\)"); // replace / with escaped slash   
+                phrase = phrase.Replace(")", "\\)"); // replace / with escaped slash   
             }
 
             if(padWithQuotes)
@@ -466,20 +466,25 @@ namespace d360.extensions.search
                 //Regular search
                 if (phrase.StartsWith("'") && phrase.EndsWith("'"))
                 {
+                    phrase = EscapeSpecialCharacters(phrase.Trim('\''));
                     coreQuery = new MatchPhraseQuery
                     {
                         Field = fldName,
-                        Query = phrase.Trim('\'')
+                        Query = phrase
                     };
-                    tagSearch = phrase.Trim('\'');
+                    tagSearch = phrase;
                 }
                 else
                 {
+                    if(phrase.EndsWith("*")) //If we have trailing *, remove before escaping
+                        phrase = phrase.Remove(phrase.Length - 1);
+                    phrase = EscapeSpecialCharacters(phrase) + "*";
+
                     coreQuery = new QueryStringQuery
                     {
-                        Query = phrase + (!phrase.EndsWith("*") ? "*" : "")
+                        Query = phrase
                     };
-                    tagSearch = phrase + (!phrase.EndsWith("*") ? "*" : "");
+                    tagSearch = phrase;
                 }
             }
             else if (!string.IsNullOrEmpty(advancedFilterJSON))
@@ -500,14 +505,14 @@ namespace d360.extensions.search
                         field = "d3sGroup";
                     else if (field == "d3sTags")
                     {
-                        tagSearch = item.value;
+                        tagSearch = EscapeSpecialCharacters(item.value);
                         continue;
                     }
 
                     if (!string.IsNullOrEmpty(compositeSearchTerm)) compositeSearchTerm += $" {con.ToString().ToUpper()} ";
                     con = item.connector;
 
-                    var searchTerm = item.value.Replace(":","\\:");
+                    var searchTerm = EscapeSpecialCharacters(item.value);
                     if (item.exact)
                     {
                         searchTerm = searchTerm.Replace("\"", "");
@@ -706,20 +711,20 @@ namespace d360.extensions.search
              * For searching tags, an asterkiks is appended and a regular 'query_string' query is used 
              */
             Queue<string> parts = new Queue<string>( phrase.ToLower().Split(' '));
-            string tagSearch = phrase.ToLower() + (!phrase.EndsWith("*") ? "*" :  "");
+            string tagSearch = EscapeSpecialCharacters(phrase.ToLower()) + (!phrase.EndsWith("*") ? "*" :  "");
 
             while (parts.Count > 1)
             {
                 mustClauses.Add(new MatchQuery
                 {
                     Field = fldName,
-                    Query = parts.Dequeue()
+                    Query = EscapeSpecialCharacters(parts.Dequeue())
                 });
             }
             mustClauses.Add(new PrefixQuery
             {
                 Field = fldName,
-                Value = parts.Dequeue()
+                Value = EscapeSpecialCharacters(parts.Dequeue())
             });
 
             if (!string.IsNullOrEmpty(type))
@@ -799,6 +804,7 @@ namespace d360.extensions.search
                 Type = GetPropertyValue<string>(h._source, "Type"),
                 Url = GetPropertyValue<string>(h._source, "Url"),
                 Uid = GetGuidPropertyIfExists(h, "Uid"),
+                AssetTypeUid = GetGuidPropertyIfExists(h, "AssetTypeUid"),
                 Tags = GetTags(h, true)
             });
         }
@@ -827,6 +833,8 @@ namespace d360.extensions.search
 
             Nest.Field fldType = new Nest.Field("Type");
             Nest.Field fldTag = new Nest.Field("d3sTags.Value");
+
+            phrase = EscapeSpecialCharacters(phrase);
 
             SearchRequest sReq = new SearchRequest
             {

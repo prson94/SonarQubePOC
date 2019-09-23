@@ -1042,6 +1042,8 @@
     <Content Include="fonts\nunitosans\NunitoSans-Regular.ttf" />
     <Content Include="fonts\nunitosans\NunitoSans-SemiBold.ttf" />
     <Content Include="fonts\nunitosans\NunitoSans-SemiBoldItalic.ttf" />
+    <Content Include="fonts\nunitosans\nunito-sans-regular.woff" />
+    <Content Include="fonts\nunitosans\nunito-sans-regular2.woff" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east-uat - Web Deploy.pubxml" />

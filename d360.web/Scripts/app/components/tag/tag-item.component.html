@@ -43,7 +43,7 @@
                         <td>{{item.DisplayValue}}</td>
                         <td [innerHTML]="formatValue(item)"></td>
                         <td>
-                            <d3s-tag-view [data]="item.Tags" ></d3s-tag-view>
+                            <d3s-tag-view [data]="item.Tags" [assetUID]="item.AssetUid" ></d3s-tag-view>
                         </td>
                         <td>
                             <div class="RowTools">

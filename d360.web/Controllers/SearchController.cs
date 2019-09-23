@@ -88,18 +88,34 @@ namespace d360.web.Controllers
             }
         }
 
-        private string GetIcon(Guid? Uid, string type)
+        private string GetIcon(Guid? AssetTypeUid, string type)
         {
             TopNavigationItem menuItem = null;
 
-            if (Uid != null)
+            if (AssetTypeUid != null)
             {
-                menuItem = Company.Query<TopNavigationItem>($@" select Icon, ImageIconUrl FROM [dbo].[SiteNav] WHERE ID = (
-                    SELECT TOP 1 s.ParentId
-                    FROM [dbo].[Asset] a
-                    INNER JOIN [dbo].[AssetType] at on a.AssetTypeID = at.ID
-                    INNER JOIN [dbo].[SiteNav] s on at.Object = s.Object and at.ObjectID = s.ObjectID
-                    WHERE a.uid = '{Uid.ToString()}');").FirstOrDefault();
+                //CTE query to get lower levels of children unioned with a query to get first level
+                menuItem = Company.Query<TopNavigationItem>($@"WITH cteParents(Object, ObjectID, Subject, SubjectID, Level)
+                    AS (SELECT it.Object, it.ObjectID, it.Subject, it.SubjectID, 1
+                        FROM [dbo].[IntersectType] it 
+                        INNER JOIN [dbo].[Predicate] p ON p.ID = it.PredicateID AND p.Type = 3
+                        INNER JOIN [dbo].[AssetType] at ON at.Object = it.Object AND at.ObjectID = it.ObjectID
+                        AND at.uid = '{AssetTypeUid.ToString()}'
+                        UNION ALL
+                        SELECT cteParents.Object, cteParents.ObjectID, it.Subject, it.SubjectID, cteParents.Level+1
+                            FROM cteParents
+                            INNER JOIN [dbo].[IntersectType] it ON it.Object = cteParents.Subject and it.ObjectID = cteParents.SubjectID
+                            INNER JOIN [dbo].[Predicate] p ON P.ID = it.PredicateID and p.Type = 3)
+                    SELECT nav.Icon, nav.ImageIconUrl
+                    FROM cteParents
+                    INNER JOIN SiteNav nav1 on cteParents.Subject = nav1.Object and cteParents.SubjectID = nav1.ObjectID
+                    INNER JOIN SiteNav nav on nav1.ParentID = nav.ID
+                    UNION ALL
+                    SELECT nav.Icon, nav.ImageIconUrl
+                    FROM [dbo].[AssetType] at
+                    INNER JOIN SiteNav nav1 on at.Object = nav1.Object and at.ObjectID = nav1.ObjectID
+                    INNER JOIN SiteNav nav on nav1.ParentID = nav.ID
+                    WHERE at.uid = '{AssetTypeUid.ToString()}';").FirstOrDefault();
             }
 
             if (menuItem == null) {
@@ -135,9 +151,6 @@ namespace d360.web.Controllers
                         siteNavName = "#Policy";
                         break;
                 }
-                //For typeahead results, Type is a concatenation of Type and subtype for Artifacts
-                if (siteNavName == null && type.Length >= 8 && type.Substring(0, 8) == "Glossary")
-                    siteNavName = "#Glossary";
 
                 if (siteNavName != null)
                 {
@@ -158,7 +171,7 @@ namespace d360.web.Controllers
 
         private TypeaheadResult AddIcon(TypeaheadResult result)
         {
-            string icon = GetIcon(result.Uid, result.Group);
+            string icon = GetIcon(result.AssetTypeUid, result.Group);
             if(icon.Substring(0, 3) == "fa-")
             {
                 result.Icon = icon;
