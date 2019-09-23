@@ -9532,12 +9532,12 @@ select	'FusionAttribute' as [Object],
 from	FusionAttribute FA with(nolock)
 		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
         inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectId = FA.ID 
-        {PermissionJoins}
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]
 					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
+        {PermissionJoins} 
         and FA.ID != @id 
 order by F.Name, FA.TextPath";
                     }
@@ -9604,13 +9604,13 @@ from	FusionAttribute FA with(nolock)
         inner join FusionOwner FO on FO.FusionID = FA.FusionID
         inner join @h H on H.ID = FO.ASSETID
         inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectID = FA.ID 
-        {PermissionJoins}
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]
 					where	IntersectTypeID = @it and ( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
         and FA.ID != @id 
+        {PermissionJoins} 
 order by 3";
                     }
                     break;
