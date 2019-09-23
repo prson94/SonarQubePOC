@@ -318,6 +318,11 @@ order by wi.StartedOn desc";
                     var fieldElement = XElement.Parse(itemStep.Fields);
                     var reassigned = new XElement("Reassigned");
                     reassigned.Add(new XAttribute("reassignType", "Resource"));
+                    reassigned.Add(new XAttribute("toResourceId", resourceId.ToString()));
+                    reassigned.Add(new XAttribute("fromResourceId", Company.CurrentResourceID.ToString()));
+                    reassigned.Add(new XAttribute("byResourceId", Company.CurrentResourceID.ToString()));
+                    reassigned.Add(new XAttribute("reassignOn", DateTime.UtcNow));
+
                     fieldElement.Add(reassigned);
                     itemStep.Fields = fieldElement.ToString();
                     Company.SaveChanges();
