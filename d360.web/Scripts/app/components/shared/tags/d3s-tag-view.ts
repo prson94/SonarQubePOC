@@ -106,13 +106,8 @@ export class TagView extends AdminBaseComponent implements OnInit {
         target.style.border = "1px solid #66A9D6";
         let lineDims = target.getBoundingClientRect();
         window.setTimeout(() => {
-
             let dispPanel = searchPanel.el.nativeElement.children[0];
-            dispPanel.style.top = (lineDims.bottom + dispPanel.getBoundingClientRect().height + 1) + "px";
-            dispPanel.style.left = (lineDims.left) + "px";
-            dispPanel.style.display = "table";
-            dispPanel.style.position = "fixed";
-            dispPanel.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
+            dispPanel.style.maxWidth = (window.innerWidth - lineDims.left - 5) + "px";
         }, 150);
     }
 
@@ -267,15 +262,20 @@ export class TagView extends AdminBaseComponent implements OnInit {
                 this.showDeleteOption = true;
             if (!this.showDeleteOption) {
                 var tagElements = this.container.nativeElement.querySelectorAll('.tagging');
+                (function () {
+                    if (typeof NodeList.prototype.forEach === "function") return false;
+                    tagElements.forEach = Array.prototype.forEach;
+                })();
                 tagElements.forEach(tagEle => {
                     this.tags.forEach(tag => {
                         this.tagService.getAssetTagDetails(tag.TooltipID, this.assetUID).
                             subscribe(result => {
-                                if (tagEle.children[1].innerText == tag.Value) {
+                                if (tagEle.children[1].innerText.trim() == tag.Value.trim()) {
                                     if (result == CurrentResourceID)
                                         this.showDeleteOption = true;
                                     if (result != CurrentResourceID)
-                                        tagEle.children[2].remove();
+                                        tagEle.children[2].parentElement.removeChild(tagEle.children[2]);
+
                                 }
                             }, err => this.showMessageForResult(this.messagesService, err));
                     })

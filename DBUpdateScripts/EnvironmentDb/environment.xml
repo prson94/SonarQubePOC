@@ -314,6 +314,7 @@
   <include file="scripts/GOV-8240.xml"/> <!-- add api.ExecutionDeletedRelationship table -->
   <include file="scripts/GOV-8251.xml"/> <!-- UserAssetPermission - ensure that valid AssetTypeID comes back in every union -->
   
-      <!-- Sprint 8 2019 Start-->
+  <!-- Sprint 8 2019 Start-->
   <include file="scripts/GOV-7958.xml"/> <!-- Dropped ReferenceItem and ReferenceItemType tables -->
+	<include file="scripts/GOV-7816.xml"/> <!-- Dropped Artifact and ArtifactType tables -->
 </databaseChangeLog>
