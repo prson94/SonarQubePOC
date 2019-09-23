@@ -267,7 +267,7 @@ namespace igx.IntegrationTests.ApiTests
         {
             RelationshipTestData.RelationshipItem = RelationshipTestData.Relationships["items"][0] as JObject;
 
-            string endPointUrl = $"{URIHelper.RelationshipsUri}/types/{RelationshipTestData.RelationshipItem["RelationshipTypeUid"].ToString()}";
+            string endPointUrl = $"{URIHelper.RelationshipsUri}/{RelationshipTestData.RelationshipItem["RelationshipTypeUid"].ToString()}";
 
             HttpRequestMessage request = new HttpRequestMessage
             {
