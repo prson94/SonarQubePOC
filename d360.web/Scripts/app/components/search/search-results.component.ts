@@ -67,4 +67,8 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
         */
         this.paginateClick.emit({page: data.page, size: data.size, first: data.first});
     }
+
+    private pageNumber() {
+        return Math.floor(this.from / this.itemsPerPage);
+    }
 };

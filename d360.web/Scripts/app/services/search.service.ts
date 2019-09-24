@@ -11,7 +11,7 @@ export class SearchService extends BaseObservableService  {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getSearchResults(term: string, size: number, pageNum: number, searchTypes: string[], category?: SearchCategories, isExactMatch?: boolean, advancedSearchFilter?: AdvancedSearchFilter[]): Observable<SearchResultsObject> {
+    getSearchResults(term: string, size: number, fromNum: number, searchTypes: string[], category?: SearchCategories, isExactMatch?: boolean, advancedSearchFilter?: AdvancedSearchFilter[]): Observable<SearchResultsObject> {
 
         term = (isExactMatch ? `'${term}'` : term);
 
@@ -22,9 +22,9 @@ export class SearchService extends BaseObservableService  {
         let url = '';
 
         if (category && category.Categories)
-            url = `from=${pageNum}&size=${size}&search=${advancedSearchFilter ? '' : encodeURIComponent(term)}&group=&type=${category.Name}&adv=${advancedSearchFilter ? encodeURIComponent(JSON.stringify(advancedSearchFilter)) : ''}`;
+            url = `from=${fromNum}&size=${size}&search=${advancedSearchFilter ? '' : encodeURIComponent(term)}&group=&type=${category.Name}&adv=${advancedSearchFilter ? encodeURIComponent(JSON.stringify(advancedSearchFilter)) : ''}`;
         else
-            url = `from=${pageNum}&size=${size}&search=${advancedSearchFilter ? '' : encodeURIComponent(term)}&group=${category && !category.DisplayName ? category.Name : ''}&type=${searchTypes ? searchTypes.join(',') : ''}&adv=${advancedSearchFilter ? encodeURIComponent(JSON.stringify(advancedSearchFilter)) : ''}`;
+            url = `from=${fromNum}&size=${size}&search=${advancedSearchFilter ? '' : encodeURIComponent(term)}&group=${category && !category.DisplayName ? category.Name : ''}&type=${searchTypes ? searchTypes.join(',') : ''}&adv=${advancedSearchFilter ? encodeURIComponent(JSON.stringify(advancedSearchFilter)) : ''}`;
 
        return this.http
             .post('search/results', url, { headers })

@@ -36,7 +36,7 @@
                     </div>
                 </div>
                 <d3s-loading [isLoading]="loading"></d3s-loading>
-                <d3s-paginator [page]="0" [rows]="itemsPerPage" [totalRecords]="results?.Result?.Matches" (onPageChange)="paginate($event)"></d3s-paginator>
+                <d3s-paginator [page]="pageNumber()" [rows]="itemsPerPage" [totalRecords]="results?.Result?.Matches" (onPageChange)="paginate($event)"></d3s-paginator>
             </div>
         </div>
     </div>
