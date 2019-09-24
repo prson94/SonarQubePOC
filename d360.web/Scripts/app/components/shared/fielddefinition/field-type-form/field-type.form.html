@@ -759,7 +759,7 @@
                     <p-dropdown [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_Relationships"
                                 [ngModel]="model.cardinalRelationship"
-                                (ngModelChange)="model.cardinalRelationship=$event;cardinalRelationshipSelected($event);"
+                                (ngModelChange)="model.cardinalRelationship=$event;cardinalRelationshipSelected($event).subscribe();"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
