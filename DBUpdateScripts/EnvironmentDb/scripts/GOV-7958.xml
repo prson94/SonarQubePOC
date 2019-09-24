@@ -1,0 +1,105 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-7958">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'ReferenceItem'))
+BEGIN
+	DROP TABLE [dbo].[ReferenceItem]
+END
+
+IF (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'ReferenceItemType'))
+BEGIN
+DROP TABLE [dbo].[ReferenceItemType]
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+
+IF (NOT EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'ReferenceItemType'))
+BEGIN
+CREATE TABLE [dbo].[ReferenceItemType](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[Name] [nvarchar](250) NOT NULL,
+	[DisplayFormat] [nvarchar](250) NOT NULL,
+	[Description] [nvarchar](max) NULL,
+	[CreatedOn] [datetime] NULL,
+	[CreatedBy] [int] NULL,
+	[UpdatedOn] [datetime] NULL,
+	[UpdatedBy] [int] NULL,
+	[SourceNotes] [nvarchar](max) NULL,
+ CONSTRAINT [PK_ReferenceItemType] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [CONST_Reference_Item_Type_Name] UNIQUE NONCLUSTERED 
+(
+	[Name] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+END
+
+IF (NOT EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'ReferenceItem'))
+BEGIN
+   CREATE TABLE [dbo].[ReferenceItem](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[ReferenceItemTypeID] [int] NOT NULL,
+	[CreatedOn] [datetime] NULL,
+	[CreatedBy] [int] NULL,
+	[UpdatedOn] [datetime] NULL,
+	[UpdatedBy] [int] NULL,
+	[Code] [nvarchar](250) NULL,
+	[Visible] [bit] NOT NULL,
+	[DisplayValue]  AS ([utility].[GetObjectDisplayValueWrapper]('ReferenceItem',[ID],[ReferenceItemTypeID])),
+	[SourceID] [nvarchar](500) NULL,
+	[KeyHash] [varchar](50) NULL,
+	[FieldHash] [varchar](50) NULL,
+ CONSTRAINT [PK_ReferenceItem] PRIMARY KEY NONCLUSTERED 
+(
+	[ID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+
+ALTER TABLE [dbo].[ReferenceItem] ADD  CONSTRAINT [DF_ReferenceItem_Visible]  DEFAULT ((1)) FOR [Visible]
+
+
+ALTER TABLE [dbo].[ReferenceItem]  WITH CHECK ADD  CONSTRAINT [FK_ReferenceItem_ReferenceItemType] FOREIGN KEY([ReferenceItemTypeID])
+REFERENCES [dbo].[ReferenceItemType] ([ID])
+ON DELETE CASCADE
+
+
+ALTER TABLE [dbo].[ReferenceItem] CHECK CONSTRAINT [FK_ReferenceItem_ReferenceItemType]
+END
+
+
+
+
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
