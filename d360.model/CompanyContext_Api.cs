@@ -860,7 +860,7 @@ from	api.ExecutionField T
                 string fieldName = k.Key.Trim();
                 string fieldValue = (k.Value + "").Trim();
                 int? fieldTypeId = null;
-                string decimalFormatString = $"#.{string.Join("", Enumerable.Repeat("#", 18))}";
+                string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
                 
 
                 // Validation of field and value;
