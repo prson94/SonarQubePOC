@@ -3612,7 +3612,7 @@ update	T
 set		T.Message = coalesce(T.Message + '; ', '') + 'You do not have permission to remove relationships on the subject asset.',
 	    T.Success = 0
 from	api.ExecutionDeletedRelationship T
-        inner join	(
+        left join	(
                     select	R.ExecutionID, R.ItemNumber
 	                from	api.ExecutionDeletedRelationship R 
                             inner join [Intersect] I on I.ID = R.IntersectID and R.ExecutionID = @ExecutionID 
@@ -3622,18 +3622,20 @@ from	api.ExecutionDeletedRelationship T
                             and P.AssetTypeID = A.AssetTypeID
                             and ( P.AssetID = A.ID or P.AssetID = 0 )
 			                and (
-				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & 2048 <> 2048) 
+				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & 2048 = 2048) 
 				                or 
 				                P.PermissionsBitMask is null
 				                )
                     group by R.ExecutionID, R.ItemNumber
-                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber 
+where	T.ExecutionID = @ExecutionID 
+		and S.ItemNumber is null;
 
 update	T
 set		T.Message = coalesce(T.Message + '; ', '') + 'You do not have permission to remove relationships on the object asset.',
 	    T.Success = 0
 from	api.ExecutionDeletedRelationship T
-        inner join	(
+        left join	(
                     select	R.ExecutionID, R.ItemNumber
 	                from	api.ExecutionDeletedRelationship R
 			                inner join [Intersect] I on I.ID = R.IntersectID and R.ExecutionID = @ExecutionID
@@ -3643,12 +3645,14 @@ from	api.ExecutionDeletedRelationship T
                             and P.AssetTypeID = A.AssetTypeID
                             and ( P.AssetID = A.ID or P.AssetID = 0 )
 			                and (
-				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & 2048 <> 2048) 
+				                (P.PermissionsBitMask is not null and P.PermissionsBitMask & 2048 = 2048) 
 				                or 
 				                P.PermissionsBitMask is null
 				                )
                     group by R.ExecutionID, R.ItemNumber
-                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
+                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber 
+where	T.ExecutionID = @ExecutionID 
+		and S.ItemNumber is null;
 end",
                 new { execution.ExecutionID, execution.ResourceID }, commandTimeout: timeout);
 
@@ -3730,7 +3734,8 @@ from    [Field] T
         inner join api.ExecutionDeletedRelationship S on T.ObjectType = 'Intersect' 
             and S.IntersectID = T.ObjectID 
             and S.ExecutionID = @ExecutionID 
-            and S.ItemNumber between {beginItemNumber} and {endItemNumber};",
+            and S.ItemNumber between {beginItemNumber} and {endItemNumber}
+            and S.Success is null;",
             new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
                                 #endregion
@@ -3742,7 +3747,8 @@ delete  T
 from    [Intersect] T
         inner join api.ExecutionDeletedRelationship S on S.IntersectID = T.ID 
             and S.ExecutionID = @ExecutionID 
-            and S.ItemNumber between {beginItemNumber} and {endItemNumber};", 
+            and S.ItemNumber between {beginItemNumber} and {endItemNumber}
+            and S.Success is null;", 
             new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
                                 #endregion
