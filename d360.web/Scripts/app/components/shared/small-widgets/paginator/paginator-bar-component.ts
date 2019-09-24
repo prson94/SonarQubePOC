@@ -62,8 +62,9 @@ export class PaginatorComponent implements OnChanges, OnInit {
         this.page = 0;
         this.CheckVisableNumbers();
     }
-    changePageNumber(number: number) {
-        this.itemsPerPage = number;
+    changePageNumber(newItemsPerPage: number) {
+        this.page = Math.floor((this.page * this.itemsPerPage) / newItemsPerPage);
+        this.itemsPerPage = newItemsPerPage;
         this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
     }
     isFirstPage(): boolean {
