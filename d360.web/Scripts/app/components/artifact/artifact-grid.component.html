@@ -79,6 +79,7 @@
       [value]="items"
       selectionMode="single"
       [metaKeySelection]="true"
+      dataKey="ID"
       [globalFilterFields]="globalFilterFields"
       [sortField]="stateService.artifactTypeFilters.sortField"
       [sortOrder]="stateService.artifactTypeFilters.sortOrder"
@@ -93,7 +94,7 @@
       [scrollable]="true"
       scrollWidth="100%"
       [loading]="isLoading"
-      [loadingIcon]="'fa fa-spinner fa-spin'"
+      [loadingIcon]="'fa fa-spinner fa-spin'"      
     >
       <ng-template pTemplate="colgroup">
         <colgroup>
