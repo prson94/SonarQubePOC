@@ -85,6 +85,9 @@ export class HeaderActionsComponent {
                 else {
                     this.notTopArtifact = true;
                 }
+                
+                let isHomeUrl: boolean = false;
+                isHomeUrl = (this.uri && this.uri.toUpperCase() == SiteUrlHelpers.SITE_URL_HOME_ROOT.toUpperCase());
 
                 //dont show raise issue button on raise issue screen or any admin screens or user profile    
                 this.isAdminUrl = (this.uri || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
@@ -95,7 +98,8 @@ export class HeaderActionsComponent {
                     this.isAdminSidebarUrl = (this.uri || '').toUpperCase().startsWith('sidebar'.toUpperCase()) && (this.previousUrl || '').toUpperCase().startsWith(SiteUrlHelpers.SITE_URL_ADMIN_ROOT.toUpperCase());
                 }
 
-                this.hasRaiseIssueButton = ((!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !this.isAdminUrl && !isResourceUrl && !this.isAdminSidebarUrl && (CompanySettings.DisableIssueManagement === 'false')) == true);                
+                this.hasRaiseIssueButton = ((!e.urlAfterRedirects.toLowerCase().endsWith('workflow/raiseissue') && !isHomeUrl &&
+                    !this.isAdminUrl && !isResourceUrl && !this.isAdminSidebarUrl && (CompanySettings.DisableIssueManagement === 'false')) == true);                
                 setTimeout(() => { this.calculateControlWidth();}, 250);
             }
         });
