@@ -1,12 +1,13 @@
-﻿import {Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild} from '@angular/core';
-import {Router} from '@angular/router';
-import {Lookup, LookupItem} from '../../../models/lookup.model';
-import {GridDefinition, GridColumn, GridField} from '../../../models/grid-definition.model';
-import {GridDefinitionService} from '../../../services/grid-definition.service';
-import {RelationshipsService} from '../../../services/relationships.service';
-import {BaseComponent} from '../base.component';
-import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
+import { Lookup, LookupItem } from '../../../models/lookup.model';
+import { GridDefinition, GridColumn, GridField } from '../../../models/grid-definition.model';
+import { GridDefinitionService } from '../../../services/grid-definition.service';
+import { RelationshipsService } from '../../../services/relationships.service';
+import { BaseComponent } from '../base.component';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 declare var CompanySettings;
 
@@ -174,62 +175,61 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 this.getData();
                 this.closeEditor();
                 if (event.action == 'new') {
-                    this.showMessageForResult(this.messagesService, res, 'Relationships succesfully added!');
+                    this.showMessageForApiResults(this.messagesService, res, ' Relationships succesfully added!');
                 }
                 else {
-                    this.showMessageForResult(this.messagesService, res, 'Relationships succesfully updated!');
+                    this.showMessageForApiResults(this.messagesService, res, ' Relationships succesfully updated!');
                 }
-
             });
+}
+
+deleteItem(item) {
+    let model: any[] = [];
+    let deleteItem: any = {};
+
+    deleteItem['Cascade'] = true;
+    deleteItem['uid'] = item;
+    model.push(deleteItem);
+
+    this.relationshipsService.deleteRelationshipV2(this.intersectTypeID, model)
+        .subscribe(res => {
+            this.relations = this.relations.filter(x => x.Uid != item);
+            this.relationshipRemoved.emit();
+            this.deleteOff.emit();
+            this.showDelete = false;
+            this.showMessageForResult(this.messagesService, res, 'Relationship succesfully deleted!');
+
+        });
+
+}
+
+doDelete() {
+    this.deleteOn.emit();
+    this.showDelete = true;
+}
+
+cancelDelete() {
+    this.deleteOff.emit();
+    this.showDelete = false;
+}
+
+selectObject(item) {
+    this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(item.Object, item.ObjectID, item.TypeID));
+}
+
+onFilter(event: any) {
+
+    let count = 0;
+    let qstring: string = "";
+
+    for (var key in event.filters) {
+        var matchcondition: string = event.filters[key].matchMode == "startsWith" ? "STARTS_WITH" : event.filters[key].matchMode;
+        qstring += `&filterdatafield${count}=${key}&filtercondition${count}=${matchcondition}&filtervalue${count}=${event.filters[key].value}`;
+        count++;
     }
+    qstring += '&filterscount=' + count;
+    this.onFilterChange.emit(qstring);
 
-    deleteItem(item) {
-        let model: any[] = [];
-        let deleteItem: any = {};
-
-        deleteItem['Cascade'] = true;
-        deleteItem['uid'] = item;
-        model.push(deleteItem);
-
-        this.relationshipsService.deleteRelationshipV2(this.intersectTypeID, model)
-            .subscribe(res => {
-                this.relations = this.relations.filter(x => x.Uid != item);
-                this.relationshipRemoved.emit();
-                this.deleteOff.emit();
-                this.showDelete = false;
-                this.showMessageForResult(this.messagesService, res, 'Relationship succesfully deleted!');
-
-            });
-
-    }
-
-    doDelete() {
-        this.deleteOn.emit();
-        this.showDelete = true;
-    }
-
-    cancelDelete() {
-        this.deleteOff.emit();
-        this.showDelete = false;
-    }
-
-    selectObject(item) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(item.Object, item.ObjectID, item.TypeID));
-    }
-
-    onFilter(event: any) {
-
-        let count = 0;
-        let qstring: string = "";
-
-        for (var key in event.filters) {
-            var matchcondition: string = event.filters[key].matchMode == "startsWith" ? "STARTS_WITH" : event.filters[key].matchMode;
-            qstring += `&filterdatafield${count}=${key}&filtercondition${count}=${matchcondition}&filtervalue${count}=${event.filters[key].value}`;
-            count++;
-        }
-        qstring += '&filterscount=' + count;
-        this.onFilterChange.emit(qstring);
-
-    }
+}
 
 }
