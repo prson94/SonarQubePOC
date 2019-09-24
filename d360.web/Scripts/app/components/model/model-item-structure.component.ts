@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -42,7 +42,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     columns: GridColumn[] = [];
     fields: GridField[] = [];
 
-    searchValue: string;
+    searchValue: string = '';
     showEditor: boolean;
     showDelete: boolean;
     selectedLevel: number = 0;
@@ -69,6 +69,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         router.events.subscribe(
             (value) => {
                 this.showEditor = false;
+                this.filter(null);
             }
         );
     }
