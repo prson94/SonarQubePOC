@@ -18,12 +18,13 @@ import { MessagesObservableService } from '../../../services/messages-observable
 export class AdminGovernanceComponent extends AdminBaseComponent implements OnDestroy {
     private formMode = FormMode.Default;
     private FormMode = FormMode;
+    private forceRulesReloadFlag: boolean = false;
 
     private responsibilityTypeItems = new Array<ResponsibilityType>();
     private selectedRow = new ResponsibilityType();
 
     constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesObservableService) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);        
+        super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = "Responsibilities";
         this.adminHeading = "Security";
         this.tabTitle = 'Responsibility Types';
@@ -85,5 +86,9 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
 
     cancel() {
         this.formMode = FormMode.Default;
+    }
+
+    responsibilityRelationDelete() {
+        this.forceRulesReloadFlag = !this.forceRulesReloadFlag;
     }
 }

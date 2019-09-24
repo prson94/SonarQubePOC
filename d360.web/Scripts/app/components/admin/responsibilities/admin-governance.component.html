@@ -46,10 +46,10 @@
             <object-detail [objectType]="'ResponsibilityType'" [objectID]="selectedRow?.ID"></object-detail>
         </div>
         <div *ngSwitchDefault class="tile tile-detail">
-            <d3s-responsibility-relations queryType="R" [id]="selectedRow?.ID"></d3s-responsibility-relations>
+            <d3s-responsibility-relations queryType="R" [id]="selectedRow?.ID" (onDelete)="responsibilityRelationDelete()"></d3s-responsibility-relations>
         </div>
         <div *ngSwitchDefault class="tile tile-detail">
-            <d3s-responsibility-rules [id]="selectedRow?.ID"></d3s-responsibility-rules>
+            <d3s-responsibility-rules [id]="selectedRow?.ID" [forceReload]="forceRulesReloadFlag"></d3s-responsibility-rules>
         </div>
         <div *ngSwitchCase="FormMode.Editing" class="tile tile-detail" style="padding:10px;">
             <header>Edit Role</header>
