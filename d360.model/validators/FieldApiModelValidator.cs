@@ -12,7 +12,7 @@ namespace d360.model.validators
 {
     public static class FieldApiModelValidator
     {
-        public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel)
+        public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, List<FieldType> existingFieldTypes = null)
         {
             var baseValidation = BaseModelValidation(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
             if (baseValidation.StatusCode != HttpStatusCode.OK)
@@ -52,6 +52,48 @@ namespace d360.model.validators
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Reference item types cannot have field property 'IsPartOfKey' set to true.");
                     }
                 }
+                if (field.Type.Tag != null)
+                {
+                    if (actionTypeIdentifierInfoModel != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Asset type error", $"Actions cannot have Tag field type!");
+                    }
+                    if (relationshipTypeIdentifierInfoModel != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Asset type error", $"Relationships cannot have Tag field type!");
+                    }
+                    if (assetTypeIdentifierInfoModel != null)
+                    {
+                        var allowedTypes = new List<string>() { SystemObjects.ArtifactType.ToString(), SystemObjects.PolicyType.ToString(), SystemObjects.TaxonomyType.ToString(), SystemObjects.RuleType.ToString() };
+                        if (!allowedTypes.Contains(assetTypeIdentifierInfoModel.Object))
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Asset type error", $"Only Artifacts, Policies, Models and Rules are allowed to have Tag field type!");
+                        }
+                    }
+
+                    if (field.Type.Tag.IsEditable == true)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Fields contain errors", $"Tag field type must have property 'IsEditable' set to 'false'!");
+                    }
+                    if (field.Type.Tag.IsPartOfKey == true)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Fields contain errors", $"Tag field type must have field property 'IsPartOfKey' set to 'false'!");
+                    }
+                    if (field.Type.Tag.ShowIfEmpty == false)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Fields contain errors", $"Tag field type must have field property 'ShowIfEmpty' set to 'true'!");
+                    }
+                    
+                    if(existingFieldTypes != null)
+                    {
+                        if(existingFieldTypes.Any(x=> x.Type == SystemObjects.Tag.ToString() && x.Name != field.Name))
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Asset type error", $"Asset type can have only one Tag field type!");
+                        }
+                    }
+
+                }
+
             }
             if (fieldsHaveErrors)
             {
@@ -88,10 +130,10 @@ namespace d360.model.validators
             var anyInvalidFields = fieldNamesToDelete.Any(f => !currentFieldTypes.Any(c => c.Name == f));
             if (anyInvalidFields)
             {
-                return (new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid fields", $"You are attempting to remove one or more fields that do not exist on this type."),null);
+                return (new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid fields", $"You are attempting to remove one or more fields that do not exist on this type."), null);
             }
 
-            return (new WorkHttpStatus(HttpStatusCode.OK,"",""),
+            return (new WorkHttpStatus(HttpStatusCode.OK, "", ""),
                         fieldNamesToDelete);
         }
 

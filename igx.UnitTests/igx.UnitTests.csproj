@@ -106,6 +106,7 @@
     <Compile Include="V2ControllerTests\TagsControllerTest.cs" />
     <Compile Include="V2ControllerTests\ResponsibilitiesControllerTest.cs" />
     <Compile Include="V2ControllerTests\WorkflowControllerTest.cs" />
+    <Compile Include="ValidatorTests\FieldValidatorTagTests.cs" />
     <Compile Include="ValidatorTests\TagValidatorTests.cs" />
     <Compile Include="ValidatorTests\FieldValidatorTests.cs" />
     <Compile Include="V2ControllerTests\CrossReferenceControllerTest.cs" />
