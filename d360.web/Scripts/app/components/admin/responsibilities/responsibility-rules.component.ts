@@ -13,6 +13,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 export class ResponsibilityRulesComponent extends BaseComponent implements OnChanges {
     @Input() id: number;
     @Input() title: string = 'Ownership Rules';
+    @Input() forceReload: boolean = false;
 
     @Input() showAddButton: boolean = true;
     @Input() showEditButton: boolean = true;
@@ -57,7 +58,6 @@ export class ResponsibilityRulesComponent extends BaseComponent implements OnCha
     }
 
     load(): void {
-
         if (this.id == null)
             return;
 

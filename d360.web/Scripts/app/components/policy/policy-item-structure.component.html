@@ -78,7 +78,7 @@
                 <td>
                     <div class="RowTools"
                          *ngIf="item.P_CanDelete">
-                        <a *ngIf="!rowNode.node.children"
+                        <a *ngIf="!rowNode.node.children || rowNode.node.children.length ==0"
                            style="cursor:pointer;"
                            (click)="selected=rowNode.node;showDelete=true;"><i class="fa fa-trash-o"></i></a>
                     </div>

@@ -373,7 +373,8 @@ namespace d360.web.Controllers
             DataType.OwnershipLookup.ToString(),
             DataType.RefListRelationship.ToString(),
             DataType.JsonElement.ToString(),
-            DataType.Tag.ToString()
+            DataType.Tag.ToString(),
+            DataType.JSON.ToString()
         };
 
         public BaseController(ICommunityContext community, ICompanyContext company)

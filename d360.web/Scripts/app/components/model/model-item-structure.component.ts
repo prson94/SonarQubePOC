@@ -1,21 +1,21 @@
-﻿import {Input, Component, EventEmitter, Output, OnInit, OnDestroy, ViewChild} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {BaseComponent} from '../shared/base.component';
-import {Title} from '@angular/platform-browser';
-import {ModelsService} from '../../services/models.service';
-import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
-import {PermissionsService} from '../../services/permissions.service';
-import {RightSidebarService} from '../../services/right-sidebar.service';
-import {HeaderActionsService} from '../../services/header-actions.service';
-import {Breadcrumb} from '../../models/breadcrumb.model';
-import {Model, ModelHierarchy} from '../../models/model.model';
-import {TreeNode} from 'primeng/primeng';
-import {SiteUrlHelpers} from '../../static/site-url-helpers';
-import {StringConstants} from '../../static/string-constants';
-import {LevelsService} from '../../services/levels.service';
-import {RightSidebarItem} from '../../models/rightsidebar.model';
-import {GridColumn, GridField} from '../../models/grid-definition.model';
-import {GridDefinitionService} from '../../services/grid-definition.service';
+﻿import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { BaseComponent } from '../shared/base.component';
+import { Title } from '@angular/platform-browser';
+import { ModelsService } from '../../services/models.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { PermissionsService } from '../../services/permissions.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { Model, ModelHierarchy } from '../../models/model.model';
+import { TreeNode } from 'primeng/primeng';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
+import { LevelsService } from '../../services/levels.service';
+import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { GridColumn, GridField } from '../../models/grid-definition.model';
+import { GridDefinitionService } from '../../services/grid-definition.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({
@@ -42,7 +42,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     columns: GridColumn[] = [];
     fields: GridField[] = [];
 
-    searchValue: string;
+    searchValue: string = '';
     showEditor: boolean;
     showDelete: boolean;
     selectedLevel: number = 0;
@@ -65,22 +65,26 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     ) {
         super();
 
-        this.rightSidebarService = rightSidebarService;        
+        this.rightSidebarService = rightSidebarService;
         router.events.subscribe(
             (value) => {
                 this.showEditor = false;
+                this.filter(null);
             }
         );
     }
 
     private filterQ: any;
     filter(event) {
+        if (event) {
+            this.searchValue = event.target.value;
+        }
         window.clearTimeout(this.filterQ);
         this.filterQ = setTimeout(() => {
-            this.filterTreeTable(this.unfilteredTreeNode, event.target.value, this.treeTable);
-        }, 600);
+            this.filterTreeTable(this.unfilteredTreeNode, this.searchValue, this.treeTable);
+        }, event ? 600 : 0);
     }
-
+    
     ngOnInit() {
 
         this.routeParamsSubscription = this.route.params.subscribe(params => {
@@ -96,7 +100,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
             this.getFieldsDefinition();
 
-            
+
             this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomyType, this.modelId);
             this.setObjectInfo(StringConstants.ObjectTaxonomyType, this.modelId);
 
@@ -109,12 +113,12 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                     this.headerBreadcrumbService.getFolderTitle('#Models').then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID), undefined, 'TAXONOMYTYPE', this.model.ID, undefined, undefined,true));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID), undefined, 'TAXONOMYTYPE', this.model.ID, undefined, undefined, true));
                         this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
                             this.rightSidebarService.setCurrentArea(this.model.Name, icon, 'Model');
                             this.rightSidebarService.setCurrentObject('TaxonomyType', this.model.ID, this.model.Name, null, true);
                             this.setCommonRightSideBar(true, false, this.model.HasDashboards);
-                            this.rightSidebarService.showItem(new RightSidebarItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`,null,7))
+                            this.rightSidebarService.showItem(new RightSidebarItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
                             this.rightSidebarService.showHeader(true);
                         });
 
@@ -152,6 +156,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 this.unfilteredTreeNode = JSON.parse(JSON.stringify(this.treeNodeArray));
 
                 this.isLoading = false;
+                this.filter(null);
             }
         );
     }
@@ -219,10 +224,15 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     public onDeleted() {
         this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
         this.deleteSelectedTreeNode(this.selected.data.ID);
-        this.selected = null;                
+        this.modelHierarchy = this.modelHierarchy.filter(x => x.ID != this.selected.data.ID);
+        this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy, 1);
+        this.unfilteredTreeNode = JSON.parse(JSON.stringify(this.treeNodeArray));
+
+        this.selected = null;
         this.showDelete = false;
+        this.filter(null);
     }
-    
+
     private deleteSelectedTreeNode(id: number): TreeNode {
         let nodes: TreeNode[] = [];
 
@@ -268,6 +278,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
             node = nodes[0];
         }
+
     }
 
     private saveTaxonomy(event) {

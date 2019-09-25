@@ -24,7 +24,7 @@ declare var CompanySettings;
                             <d3s-search-input [newSearch]="true" (search)="doSearch()" [isAdvancedMode]="showAdvanced" (advancedFiltersChange)="changeheight()" (isAdvancedModeChange)="handleAdvancedChange($event)" [(advancedFilters)]="advancedFilters" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [hasAdvanced]="true" [(searchText)]="searchText" [style.width]="'100%'" [style.height.px]="32"></d3s-search-input>
                         </div>
                     </div>
-                <d3s-search-results [from]="pageNumber" 
+                <d3s-search-results [from]="fromNumber" 
                     [loading]="isLoading" [itemsPerPage]="resultsPerPage"
                     [useSubscription]="true"
                     [results]="searchResults" 
@@ -47,7 +47,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public advancedFilters: AdvancedSearchFilter[] = [];
 
     public resultsPerPage: number = 10;
-    public pageNumber: number = 0;
+    public fromNumber: number = 0;
     public sub: any;
     public showAdvanced: boolean = false;
 
@@ -115,7 +115,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
     public doSearch(filterCategory?: SearchCategories) {
         this.isLoading = true;
-        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.pageNumber, (this.showAdvanced ? undefined : this.searchTypes), filterCategory, this.isExactMatch, this.showAdvanced ? this.advancedFilters : undefined)
+        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.fromNumber, (this.showAdvanced ? undefined : this.searchTypes), filterCategory, this.isExactMatch, this.showAdvanced ? this.advancedFilters : undefined)
             .subscribe(res => {
                 this.isLoading = false;
                 this.searchResults = res;
@@ -125,7 +125,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
     public filterByCategory(category) {
         this.selectedCategory = category;
-        this.pageNumber = 0;
+        this.fromNumber = 0;
         this.doSearch(this.selectedCategory);
     }
 
@@ -150,7 +150,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
         this.resultsPerPage = event.size;
         
-        this.pageNumber=event.first;
+        this.fromNumber = event.first;
 
         this.doSearch(this.selectedCategory);
     }

@@ -7273,8 +7273,8 @@ where v.id = {0}", id)).FirstOrDefault();
 , case when PD.AssetID is not null then cast(1 as bit) else cast(0 as bit) end as CanDelete ";
 
             var permissionJoins = @"
-left join UserAssetPermissions(@userId,@targetAssetTypeId) PE on PE.PermissionsBitMask & 1024 = 1024 and PE.AssetTypeID = @targetAssetTypeId and (PE.AssetID = IA.ID or PE.AssetID = 0)
-left join UserAssetPermissions(@userId,@targetAssetTypeId) PD on PD.PermissionsBitMask & 2048 = 2048 and PD.AssetTypeID = @targetAssetTypeId and (PD.AssetID = IA.ID or PD.AssetID = 0) ";
+outer apply (select top 1 * from UserAssetPermissions(@userId,@targetAssetTypeId) where PermissionsBitMask & 1024 = 1024 and AssetTypeID = @targetAssetTypeId and (AssetID = IA.ID or AssetID = 0)) PE 
+outer apply (select top 1 * from UserAssetPermissions(@userId,@targetAssetTypeId) where PermissionsBitMask & 2048 = 2048 and AssetTypeID = @targetAssetTypeId and (AssetID = IA.ID or AssetID = 0)) PD ";
 
             if (isTargetSubjectSame)
             {

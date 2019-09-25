@@ -433,7 +433,20 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Text' then FT.IsListable else null end as 'Type.Text.IsListable',
 		        case when FT.Type = 'Text' then FT.IsPartOfKey else null end as 'Type.Text.IsPartOfKey',
 		        case when FT.Type = 'Text' then FT.IsPrimaryFilter else null end as 'Type.Text.IsPrimaryFilter',
-		        case when FT.Type = 'Text' then FT.ShowIfEmpty else null end as 'Type.Text.ShowIfEmpty'
+		        case when FT.Type = 'Text' then FT.ShowIfEmpty else null end as 'Type.Text.ShowIfEmpty',
+
+		        case when FT.Type = 'Tag' then FT.ColumnOrder else null end as 'Type.Tag.ColumnOrder',
+		        case when FT.Type = 'Tag' then FT.ColumnWidth else null end as 'Type.Tag.ColumnWidth',
+		        case when FT.Type = 'Tag' then FT.SortOrder else null end as 'Type.Tag.SortOrder',
+		        case when FT.Type = 'Tag' then FT.DisplayDescription else null end as 'Type.Tag.Description.Display',
+		        case when FT.Type = 'Tag' then FT.FormDescription else null end as 'Type.Tag.Description.Form',
+		        case when FT.Type = 'Tag' then FT.IsRequired else null end as 'Type.Tag.Validation.IsRequired',
+		        case when FT.Type = 'Tag' then FT.IsDisplayable else null end as 'Type.Tag.IsDisplayable',
+		        case when FT.Type = 'Tag' then FT.IsEditable else null end as 'Type.Tag.IsEditable',
+		        case when FT.Type = 'Tag' then FT.IsListable else null end as 'Type.Tag.IsListable',
+		        case when FT.Type = 'Tag' then FT.IsPartOfKey else null end as 'Type.Tag.IsPartOfKey',
+		        case when FT.Type = 'Tag' then FT.IsPrimaryFilter else null end as 'Type.Tag.IsPrimaryFilter',
+		        case when FT.Type = 'Tag' then FT.ShowIfEmpty else null end as 'Type.Tag.ShowIfEmpty'
         from	FieldType FT
 				left join AssetType O_A on O_A.ID = FT.AssetTypeID 
 				left join IssueType O_I on FT.Object = 'IssueType' and O_I.ID = FT.ObjectID 
@@ -978,6 +991,24 @@ from	IntersectType I
                         newFieldType.MinimumLength = f.Type.Text.Validation.MinimumLength;
                         newFieldType.Pattern = f.Type.Text.Validation.Pattern;
                     }
+                }
+                else if (f.Type.Tag != null)
+                {
+                    newFieldType.Type = DataType.Tag.ToString();
+                    newFieldType.ColumnOrder = f.Type.Tag.ColumnOrder;
+                    newFieldType.ColumnWidth = f.Type.Tag.ColumnWidth;
+                    if (f.Type.Tag.Description != null)
+                    {
+                        newFieldType.DisplayDescription = f.Type.Tag.Description.Display;
+                        newFieldType.FormDescription = f.Type.Tag.Description.Form;
+                    }
+                    newFieldType.IsDisplayable = f.Type.Tag.IsDisplayable;
+                    newFieldType.IsEditable = f.Type.Tag.IsEditable;
+                    newFieldType.IsListable = f.Type.Tag.IsListable;
+                    newFieldType.IsPartOfKey = f.Type.Tag.IsPartOfKey;
+                    newFieldType.IsPrimaryFilter = f.Type.Tag.IsPrimaryFilter;
+                    newFieldType.ShowIfEmpty = f.Type.Tag.ShowIfEmpty;
+                    newFieldType.SortOrder = f.Type.Tag.SortOrder;
                 }
                 else
                 {

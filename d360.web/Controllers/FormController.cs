@@ -9461,15 +9461,30 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             var targetType = "";
             var targetTypeID = 0;
+            var IntersectDirectionSql = "";
+            var IntersectCardinalitySql = "";
+            var IntersectTypeDirectionSql = "";
             if (relationshipType.Subject == parentType && relationshipType.SubjectID == objectTypeID)
             {
                 targetType = relationshipType.Object;
                 targetTypeID = relationshipType.ObjectID;
+                IntersectDirectionSql = "and I.Subject = @source and I.SubjectID = @id and I.Object = A.[Object] and I.ObjectID = A.ObjectID ";
+                IntersectCardinalitySql = "and not exists (select ID from [Intersect] where IntersectTypeID = @it and IT.SubjectCardinality = 1 and Object = A.[Object] and ObjectID = A.ObjectID) ";
+                IntersectTypeDirectionSql = " and IT.Object = T.Object and IT.ObjectID = T.ObjectID ";
             }
             else
             {
                 targetType = relationshipType.Subject;
                 targetTypeID = relationshipType.SubjectID;
+                IntersectDirectionSql = "and I.Subject = A.[Object] and I.SubjectID = A.ObjectID and I.Object = @source and I.ObjectID = @id ";
+                IntersectCardinalitySql = "and not exists (select ID from [Intersect] where IntersectTypeID = @it and IT.ObjectCardinality = 1 and Subject = A.[Object] and SubjectID = A.ObjectID) ";
+                IntersectTypeDirectionSql = " and IT.Subject = T.Object and IT.SubjectID = T.ObjectID ";
+            }
+
+            if (relationshipType.Subject == relationshipType.Object && relationshipType.SubjectID == relationshipType.ObjectID)
+            {
+                IntersectDirectionSql = @"and (  ( (I.Subject = @source and I.SubjectID = @id) AND(I.Object = A.[Object] and I.ObjectID = A.ObjectID) ) OR
+                                          ( (I.Subject = A.[Object] and I.SubjectID = A.ObjectID) AND(I.Object = @source and I.ObjectID = @id) )   )";
             }
 
             var targetAssetType = Company.Filter<AssetType>(i => i.Object == targetType && i.ObjectID == targetTypeID).SingleOrDefault();
@@ -9484,7 +9499,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var PermissionJoins = "";
             if (!Company.CurrentResourceIsAdmin)
             {
-                PermissionJoins = @"inner join UserAssetPermissions(@userId,@targetAssetTypeId) P on P.PermissionsBitMask & 1024 = 1024 and P.AssetTypeID = A.AssetTypeID and (P.AssetID = A.ID or P.AssetID = 0)";
+                PermissionJoins = @" and exists (select 1 from UserAssetPermissions(@userId,@targetAssetTypeId) P where P.PermissionsBitMask & 1024 = 1024 and P.AssetTypeID = A.AssetTypeID and (P.AssetID = A.ID or P.AssetID = 0)) ";
             }
 
             var subSql = $@"(
@@ -9494,15 +9509,13 @@ select		A.ID,
             A.Uid
 from		Asset A
             inner join AssetType T on A.AssetTypeID = T.ID
-			left join [Intersect] I on	I.IntersectTypeID = @it and (
-											( (I.Subject = @source and I.SubjectID = @id) AND (I.Object = A.[Object] and I.ObjectID = A.ObjectID) ) OR
-											( (I.Subject = A.[Object] and I.SubjectID = A.ObjectID) AND (I.Object = @source and I.ObjectID = @id) )
-										) {PermissionJoins}
+            inner join IntersectType IT on IT.ID = @it {IntersectTypeDirectionSql}
+			left join [Intersect] I on	I.IntersectTypeID = IT.ID {IntersectDirectionSql}
 where		I.ID is null 
             and A.[State] = 1 
             and T.ObjectID = @targetTypeID 
             and T.[Object] = @targetType 
-            and A.ObjectID != @id
+            and A.ObjectID != @id {IntersectCardinalitySql} {PermissionJoins}
 ) C";
 
             switch (targetType)
@@ -9519,12 +9532,12 @@ select	'FusionAttribute' as [Object],
 from	FusionAttribute FA with(nolock)
 		inner join Fusion F with(nolock) on F.ID = FA.FusionID and FA.FusionAttributeTypeID = @targetTypeID and FA.Deleted = 0
         inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectId = FA.ID 
-        {PermissionJoins}
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]
 					where	( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
+        {PermissionJoins} 
         and FA.ID != @id 
 order by F.Name, FA.TextPath";
                     }
@@ -9591,13 +9604,13 @@ from	FusionAttribute FA with(nolock)
         inner join FusionOwner FO on FO.FusionID = FA.FusionID
         inner join @h H on H.ID = FO.ASSETID
         inner join Asset A on A.Object = 'FusionAttribute' and A.ObjectID = FA.ID 
-        {PermissionJoins}
 where	FA.ID not in (
 					select	1 
 					from	[IntersectDetail]
 					where	IntersectTypeID = @it and ( (Subject = @source and SubjectID = @id) AND (ObjectType = @targetType and ObjectTypeID = @targetTypeID) )
 					)
         and FA.ID != @id 
+        {PermissionJoins} 
 order by 3";
                     }
                     break;

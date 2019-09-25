@@ -186,8 +186,8 @@ namespace d360.web.Controllers.V2
                 #endregion
 
                 #region Validation
-
-                var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
+                var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
+                var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
 
@@ -205,7 +205,6 @@ namespace d360.web.Controllers.V2
                 #endregion
 
                 #region Validation done, time to do some work
-
                 var status = FieldsRepository.UpdateFields(model, typeIdentifierInfoModel);
                 if(status.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(status.StatusCode, status.Error, status.Message);
