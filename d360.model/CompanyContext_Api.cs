@@ -358,8 +358,8 @@ update	{targetTable}
 set		Success = 0,
 		[Message] = @msg
 where	ExecutionID = @executionID 
-         and ItemNumber between {beginItemNumber} and {endItemNumber};",
-         new { executionID, msg }, commandTimeout: timeout);
+         and ItemNumber between @beginItemNumber and @endItemNumber;",
+         new { executionID, msg, beginItemNumber, endItemNumber }, commandTimeout: timeout);
         }
 
         private void DeleteEmptyAssetListFieldByApiExecutionUid(Guid executionUid, SqlTransaction trans, int beginItemNumber, int endItemNumber, int timeout = 3600)
@@ -387,7 +387,7 @@ using       (
                 from    api.ExecutionAsset A
                         cross apply GetAssetDisplayValueByID(A.AssetID) ADV
                 where   A.ExecutionID = @executionID
-                        and A.ItemNumber between {beginItemNumber} and {endItemNumber} 
+                        and A.ItemNumber between @beginItemNumber and @endItemNumber 
                         and A.Success is null 
                         and A.[Object] not in( 'FusionAttribute', 'FusionQueryAttribute')
                         and ADV.DisplayValue is not null
@@ -402,7 +402,7 @@ update		set
 when		not matched by target then
 insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
 values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
-            new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+            new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
         private void MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600)
@@ -424,7 +424,7 @@ using       (
 						and A.Success is null
                     inner join FieldType FT on FT.Id = F.FieldTypeID
             where   A.ExecutionID = @executionID
-                    and A.ItemNumber between {beginItemNumber} and {endItemNumber} 
+                    and A.ItemNumber between @beginItemNumber and @endItemNumber 
                     and (F.Ignore = 0 or F.Ignore is null)
                     and FT.Type != 'Relationship'
             ) as S 
@@ -436,7 +436,7 @@ update		set
 when		not matched by target then
 insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
 values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
-            new { executionID }, transaction: trans, commandTimeout: timeout);
+            new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
         private void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
@@ -468,7 +468,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                             and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
                                 or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
             where   A.ExecutionID = @executionID
-                    and A.ItemNumber between {beginItemNumber} and {endItemNumber} 
+                    and A.ItemNumber between @beginItemNumber and @endItemNumber 
                     and (F.Ignore = 0 or F.Ignore is null)
                     and FT.Type = 'Relationship'
             )
@@ -492,7 +492,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 				else SubjectId
 			END AS Object 
 			from Relationships ",
-                new { executionID }, transaction: trans, commandTimeout: timeout);
+                new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
             }
             else
             {
@@ -521,7 +521,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                             and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
                                 or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
             where   A.ExecutionID = @executionID
-                    and A.ItemNumber between {beginItemNumber} and {endItemNumber} 
+                    and A.ItemNumber between @beginItemNumber and @endItemNumber 
                     and (F.Ignore = 0 or F.Ignore is null)
                     and FT.Type = 'Relationship'
             )
@@ -556,9 +556,9 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 select  F.ID, 
         F.Value 
 from    Field F 
-        inner join api.ExecutionField E on E.ExecutionID = @executionID and E.ItemNumber between {beginItemNumber} and {endItemNumber} and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
+        inner join api.ExecutionField E on E.ExecutionID = @executionID and E.ItemNumber between @beginItemNumber and @endItemNumber and E.FieldTypeID = F.FieldTypeID and E.FieldTypeID in ({jsonFieldTypeIDs})
         inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
-        new { executionID }, transaction: trans, commandTimeout: timeout);
+        new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
             var collectionFieldroperties = new List<FieldJsonProperty>();
 
@@ -1301,7 +1301,7 @@ from	IntersectType I
 
                             while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
                             {
-                                var querySuffix = $"S.Success is null and S.ExecutionID = @ExecutionID and S.ItemNumber between {beginItemNumber} and {endItemNumber}";
+                                var querySuffix = $"S.Success is null and S.ExecutionID = @ExecutionID and S.ItemNumber between @beginItemNumber and @endItemNumber";
                                 using (var trans = Connection.BeginTransaction())
                                 {
                                     try
@@ -1375,7 +1375,7 @@ from	IntersectType I
                                                     	insert into @result values(1,'Success')
                                                     end
                                                     select * from @result",
-                                                    new { execution.ExecutionID, isCascade = fusion.Cascade.HasValue ? fusion.Cascade.Value : false }, transaction: trans, commandTimeout: timeout).FirstOrDefault();
+                                                    new { execution.ExecutionID, isCascade = fusion.Cascade.HasValue ? fusion.Cascade.Value : false, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).FirstOrDefault();
 
                                             bool IsDeleted = false;
                                             if (bool.TryParse(data.Status.ToString(), out IsDeleted))
@@ -1384,7 +1384,7 @@ from	IntersectType I
                                                 {
                                                     Connection.Execute(
                                                         $"update S set S.Success = 0, S.Message = '{data.Message.ToString()}' from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
-                                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                                     runCompleted = true;
                                                     trans.Commit();
                                                     continue;
@@ -1393,7 +1393,7 @@ from	IntersectType I
                                                 {
                                                     Connection.Execute(
                                                         $"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
-                                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                                     runCompleted = true;
                                                     trans.Commit();
                                                     continue;
@@ -1433,7 +1433,7 @@ from	IntersectType I
 	            from	api.ExecutionDeletedAsset D
 			            inner join Asset A on D.ExecutionID = @ExecutionID and A.ID = D.AssetID
 	            where	D.AssetID is not null
-                        and D.ItemNumber between {beginItemNumber} and {endItemNumber}
+                        and D.ItemNumber between @beginItemNumber and @endItemNumber
 	            union all
 	            select	P.ExecutionID,
 			            P.ItemNumber,
@@ -1447,7 +1447,7 @@ from	IntersectType I
 	            from	PredicateIntersect I 
 			            inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = @predicateTypeValue and P.Object = I.Subject and P.ObjectID = I.SubjectID
 			            inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-                where   P.ItemNumber between {beginItemNumber} and {endItemNumber} and P.[Level] <= 15
+                where   P.ItemNumber between @beginItemNumber and @endItemNumber and P.[Level] <= 15
             )
 
             insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[FromHierarchy],[Root])
@@ -1477,7 +1477,7 @@ from	IntersectType I
                                             having (count (*) > 0)
                                 ) E on S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
 			where	{querySuffix}  and AssetId is not null
-			        and S.[Cascade] = 0", new { execution.ExecutionID, predicateTypeValue = predicateType.HasValue ? (int)predicateType : -1 }, transaction: trans, commandTimeout: timeout);
+			        and S.[Cascade] = 0", new { execution.ExecutionID, predicateTypeValue = predicateType.HasValue ? (int)predicateType : -1, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                             }
 
                                             // Workflows
@@ -1604,7 +1604,7 @@ from	IntersectType I
 	    from	PredicateIntersect I 
 			    inner join h as P on P.ExecutionID = @ExecutionID and I.PredicateType = {(int)predicateType} and P.Object = I.Subject and P.ObjectID = I.SubjectID
 			    inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
-        where   P.ItemNumber between {beginItemNumber} and {endItemNumber} and P.[Level] <= 15
+        where   P.ItemNumber between @beginItemNumber and @endItemNumber and P.[Level] <= 15
     )
     insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy])
         select  distinct 
@@ -1618,7 +1618,7 @@ from	IntersectType I
         where   IntersectID is not null 
                 and [Level] > 0 
                 and Uid not in (select Uid from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID)",
-                                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                             }
 
                                             #region Delete workflow items
@@ -1842,7 +1842,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                                             // Update success flag
                                             Connection.Execute(
                                                 $"update S set S.Success = 1 from api.ExecutionDeletedAsset S where	{querySuffix} and S.AssetID is not null;",
-                                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             trans.Commit();
                                             runCompleted = true;
@@ -1866,8 +1866,8 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                             results.AddRange(
                                 Query<DatabaseBulkAssetResult>(
-                                    $"select * from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber} and FromHierarchy = 0",
-                                    new { execution.ExecutionID }
+                                    $"select * from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber and FromHierarchy = 0",
+                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }
                                 )
                             );
 
@@ -2637,11 +2637,11 @@ from	api.ExecutionAsset T
                             {
                                 #region common sql
 
-                                var executionAssetWhereSql = $"ExecutionID = @ExecutionID and Success is null and ItemNumber between {beginItemNumber} and {endItemNumber}";
+                                var executionAssetWhereSql = $"ExecutionID = @ExecutionID and Success is null and ItemNumber between @beginItemNumber and @endItemNumber";
                                 var updateAssetInfoOnExecutionRecordsSql = $@"update  T
     set     T.AssetID = S.ID, T.Uid = S.Uid
     from    api.ExecutionAsset T
-            inner join Asset S on T.Executionid = @ExecutionID and S.AssetTypeID = @AssetTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID and T.ItemNumber between {beginItemNumber} and {endItemNumber};";
+            inner join Asset S on T.Executionid = @ExecutionID and S.AssetTypeID = @AssetTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID and T.ItemNumber between @beginItemNumber and @endItemNumber;";
 
                                 #endregion
 
@@ -2745,13 +2745,13 @@ from	api.ExecutionAsset T
     update	T
     set		T.Name = N.FieldValue
     from	FusionAttribute T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between {beginItemNumber} and {endItemNumber}
+		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between @beginItemNumber and @endItemNumber
             inner join api.ExecutionField N on N.ExecutionID = S.ExecutionID and N.ItemNumber = S.ItemNumber and N.FieldName = 'Name';
 
     update	api.ExecutionAsset
     set		IsNew = 0
     where	{executionAssetWhereSql};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                                 }
 
                                                 #region Recalculate the text paths
@@ -2933,13 +2933,13 @@ from	api.ExecutionAsset T
                                                                 T.UpdatedBy = @R,
                                                                 T.UpdatedOn = @D
                                                         from	Asset T
-		                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and S.[Object]=T.[Object] and T.[Object]='ReferenceItem'  and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between {beginItemNumber} and {endItemNumber}
+		                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and S.[Object]=T.[Object] and T.[Object]='ReferenceItem'  and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between @beginItemNumber and @endItemNumber
                                                                 inner join api.ExecutionField C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code';
 
                                                         update	api.ExecutionAsset
                                                         set		IsNew = 0
                                                         where	{executionAssetWhereSql};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 break;
                                                 #endregion
@@ -3021,8 +3021,8 @@ from	api.ExecutionAsset T
 
                             results.AddRange(
                                 Query<DatabaseBulkAssetResult>(
-                                    $"select * from api.ExecutionAsset where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber}",
-                                    new { execution.ExecutionID }
+                                    $"select * from api.ExecutionAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }
                                 )
                             );
 
@@ -3429,7 +3429,7 @@ end",
 			        select      *
 			        from        api.ExecutionRelationship
 			        where		ExecutionID = @ExecutionID
-                                and ItemNumber between {beginItemNumber} and {endItemNumber}
+                                and ItemNumber between @beginItemNumber and @endItemNumber
                                 and Success is null	
                 ) S
         on      ( T.IntersectTypeID = {rt.ID} and T.Subject = S.Subject and T.SubjectID = S.SubjectID and T.Object = S.Object and T.ObjectID = S.ObjectID )
@@ -3448,7 +3448,7 @@ end",
         from	api.ExecutionRelationship T
 		        inner join #ObjectMergeTableResult S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber
                 inner join [Intersect] IT on IT.ID = S.ID
-        where   T.ItemNumber between {beginItemNumber} and {endItemNumber};", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+        where   T.ItemNumber between @beginItemNumber and @endItemNumber;", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                     #endregion
 
@@ -3456,8 +3456,8 @@ end",
 
                                     // Update success flag
                                     Connection.Execute(
-                                        $"update api.ExecutionRelationship set Success = 1 where Success is null and ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber} and IntersectID is not null;",
-                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                        $"update api.ExecutionRelationship set Success = 1 where Success is null and ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber and IntersectID is not null;",
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                     trans.Commit();
 
@@ -3479,8 +3479,8 @@ end",
 
                         results.AddRange(
                             Query<DatabaseBulkRelationshipResult>(
-                                $"select * from api.ExecutionRelationship where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber}",
-                                new { execution.ExecutionID }
+                                $"select * from api.ExecutionRelationship where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                new { execution.ExecutionID, beginItemNumber, endItemNumber }
                             )
                         );
 
@@ -3734,9 +3734,9 @@ from    [Field] T
         inner join api.ExecutionDeletedRelationship S on T.ObjectType = 'Intersect' 
             and S.IntersectID = T.ObjectID 
             and S.ExecutionID = @ExecutionID 
-            and S.ItemNumber between {beginItemNumber} and {endItemNumber}
+            and S.ItemNumber between @beginItemNumber and @endItemNumber
             and S.Success is null;",
-            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                 #endregion
 
@@ -3747,16 +3747,16 @@ delete  T
 from    [Intersect] T
         inner join api.ExecutionDeletedRelationship S on S.IntersectID = T.ID 
             and S.ExecutionID = @ExecutionID 
-            and S.ItemNumber between {beginItemNumber} and {endItemNumber}
+            and S.ItemNumber between @beginItemNumber and @endItemNumber
             and S.Success is null;",
-            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                 #endregion
 
                                 // Update success flag
                                 Connection.Execute(
-                                    $"update api.ExecutionDeletedRelationship set Success = 1 where Success is null and ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber} and IntersectID is not null;",
-                                    new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                    $"update api.ExecutionDeletedRelationship set Success = 1 where Success is null and ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber and IntersectID is not null;",
+                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                 trans.Commit();
 
@@ -3778,8 +3778,8 @@ from    [Intersect] T
 
                     results.AddRange(
                         Query<DatabaseBulkRelationshipResult>(
-                            $"select * from api.ExecutionDeletedRelationship where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber}",
-                            new { execution.ExecutionID }
+                            $"select * from api.ExecutionDeletedRelationship where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                            new { execution.ExecutionID, beginItemNumber, endItemNumber }
                         )
                     );
 
