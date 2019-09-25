@@ -545,7 +545,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 				else SubjectId
 			END AS Object 
 			from Relationships ",
-                new { executionID }, transaction: trans, commandTimeout: timeout);
+                new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
             }
         }
 
@@ -1529,7 +1529,7 @@ from	IntersectType I
                                             having (count (*) > 0)
                                 ) E on S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
 			where	{querySuffix}  and AssetId is not null
-			        and S.[Cascade] = 0", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+			        and S.[Cascade] = 0", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             // Rule Implementations
                                             if (at.Object == "RuleType")
@@ -1569,7 +1569,7 @@ from	IntersectType I
                                             having (count (*) > 0)
                                 ) E on S.Uid= E.UID and s.ItemNumber=E.ItemNumber and s.ExecutionID = e.ExecutionID
 			where	{querySuffix}  and AssetId is not null
-			        and S.[Cascade] = 0", new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+			        and S.[Cascade] = 0", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             }
 
@@ -1655,7 +1655,7 @@ from	IntersectType I
  
     delete  [workflow].[Item] 
     where	ID in (Select ItemID from #w);",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             #endregion
 
@@ -1683,7 +1683,7 @@ from	IntersectType I
 			    'This asset has been removed.' 
 	    from	AssetDetail O
 			    inner join api.ExecutionDeletedAsset S on S.AssetID = O.ID and {querySuffix} and S.Object is not null and S.ObjectID is not null;",
-                                            new { execution.ExecutionID, r = CurrentResourceID, dt }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, r = CurrentResourceID, dt, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             #endregion
 
@@ -1701,7 +1701,7 @@ from	IntersectType I
 
                                             Connection.Execute(
                                                 $"delete Asset where Uid in (select S.Uid from api.ExecutionDeletedAsset S where {querySuffix})",
-                                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             #endregion
 
@@ -1731,13 +1731,13 @@ delete T from RuleResultQualifier T inner join RuleResult R on R.ID = T.RuleResu
 delete T from RuleResult T inner join RuleImplementation S on S.ID = T.RuleImplementationID and S.RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});
 delete T from RuleResultQualifierType T inner join RuleImplementation S on S.ID = T.RuleImplementationID and S.RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});
 delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});",
-                                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout
+                                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout
                                                     );
                                                 }
 
                                                 Connection.Execute(
                                                     $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
-                                                    new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                             }
 
                                             #endregion
@@ -1753,7 +1753,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
     delete	T
     from	[Attribute] T
 		    inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             #endregion
 
@@ -1765,7 +1765,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
     delete	T
     from	[Intersect] T 
 		    inner join api.ExecutionDeletedAsset S on S.IntersectID = T.ID and {querySuffix};",
-                                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                                new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                             }
 
                                             Connection.Execute($@"
@@ -1776,7 +1776,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
     delete	T
     from	[Intersect] T
             inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             #endregion
 
@@ -1803,7 +1803,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
     delete	T
     from	Follow T
 		    inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             #endregion
 
@@ -1821,7 +1821,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
     delete	T
     from	Nym T
 		    inner join api.ExecutionDeletedAsset S on S.Object = T.Object and S.ObjectID = T.ObjectID and {querySuffix};",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             #endregion
 
@@ -1835,7 +1835,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
     delete	T
     from	ResponsibilityRuleResultAsset T
 		    inner join api.ExecutionDeletedAsset S on S.AssetID = T.AssetID and {querySuffix};",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             #endregion
 
@@ -2696,7 +2696,7 @@ from	api.ExecutionAsset T
                                                         update	api.ExecutionAsset
                                                         set		IsNew = 0
                                                         where	{executionAssetWhereSql};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 break;
                                             #endregion
@@ -2777,7 +2777,7 @@ from	api.ExecutionAsset T
     set		T.TextPath = cte.ItemPath
     from	FusionAttribute T
 		    inner join hierarchy cte on cte.RootID = T.ID and cte.ParentID is null option (MAXRECURSION 10);",
-                                                new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                                 #endregion
 
@@ -2832,7 +2832,7 @@ from	api.ExecutionAsset T
     update	api.ExecutionAsset
     set		IsNew = 0
     where	{executionAssetWhereSql};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 break;
                                             #endregion
@@ -2887,7 +2887,7 @@ from	api.ExecutionAsset T
     update	api.ExecutionAsset
     set		IsNew = 0
     where	{executionAssetWhereSql};",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 break;
                                             #endregion
@@ -2999,7 +2999,7 @@ from	api.ExecutionAsset T
                                         // Update success flag.
                                         Connection.Execute(
                                             $@"update api.ExecutionAsset set Success = 1 where {executionAssetWhereSql} and Object is not null and ObjectID is not null;",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                         trans.Commit();
 
@@ -3432,14 +3432,14 @@ end",
                                 and ItemNumber between @beginItemNumber and @endItemNumber
                                 and Success is null	
                 ) S
-        on      ( T.IntersectTypeID = {rt.ID} and T.Subject = S.Subject and T.SubjectID = S.SubjectID and T.Object = S.Object and T.ObjectID = S.ObjectID )
+        on      ( T.IntersectTypeID = @rtID and T.Subject = S.Subject and T.SubjectID = S.SubjectID and T.Object = S.Object and T.ObjectID = S.ObjectID )
         when matched then
 	        update set
-			        T.UpdatedBy = {CurrentResourceID},
+			        T.UpdatedBy = @CurrentResourceID,
 			        T.UpdatedOn = getutcdate()
         when not matched by target then
 	        insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, [State], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, [Owner])
-	        values  ({rt.ID}, S.Subject, S.SubjectID, S.Object, S.ObjectID, 1, {CurrentResourceID}, getutcdate(), {CurrentResourceID}, getutcdate(), 'BULK_API')
+	        values  (@rtID, S.Subject, S.SubjectID, S.Object, S.ObjectID, 1, @CurrentResourceID, getutcdate(), @CurrentResourceID, getutcdate(), 'BULK_API')
         output inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
         update	T
@@ -3448,7 +3448,7 @@ end",
         from	api.ExecutionRelationship T
 		        inner join #ObjectMergeTableResult S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber
                 inner join [Intersect] IT on IT.ID = S.ID
-        where   T.ItemNumber between @beginItemNumber and @endItemNumber;", new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+        where   T.ItemNumber between @beginItemNumber and @endItemNumber;", new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
 
                                     #endregion
 
