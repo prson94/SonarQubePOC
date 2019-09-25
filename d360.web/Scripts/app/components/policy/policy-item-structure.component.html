@@ -3,7 +3,7 @@
      *ngIf="!isLoading">
     <header *ngIf="!showDelete && !showEditor">
         <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()"
-                          (addClick)="add()"></d3s-tile-actions>
+                          (addClick)="selected=null;add()"></d3s-tile-actions>
     </header>
     <input type="text"
            pInputText
