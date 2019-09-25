@@ -9348,27 +9348,34 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 if ((targetCardinality == Cardinality.One && items.Count > 1))
                     return jsonException("Invalid relationship cardinality for multiple items.", HttpStatusCode.BadRequest);
 
-                if (items
-                    .Select(i => i.Split('|'))
-                    .Any(i => i.Length == 2 && string.Compare(i[0], source, true) == 0 && string.Compare(i[1], sourceID.ToString(), true) == 0))
+                List<Asset> assetToAddIntersect = new List<Asset>();
+
+                items.ForEach(item =>
+                {
+                    Guid uid = Guid.Parse(item);
+                    var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
+                    assetToAddIntersect.Add(asset);
+                });
+
+                if(assetToAddIntersect.Any(x=> x.Object == source && x.ObjectID == sourceID))
                 {
                     return jsonException("The item cannot be related to itself.", HttpStatusCode.BadRequest);
                 }
 
-                items.ForEach(item =>
+                foreach (var asset in assetToAddIntersect)
                 {
-                    var itemInfo = item.Split('|');
-                    if (itemInfo.Length == 2)
+                    if (asset != null)
                     {
+
                         var intersect = Company.AddIntersect(typeID,
                             source, sourceID,
-                            itemInfo[0], int.Parse(itemInfo[1])
+                            asset.Object, asset.ObjectID
                         );
 
                         var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Intersect, intersect.ID, Company.GetFieldTypesByObject(SystemObjects.IntersectType, typeID).ToList(), form, Server);
                         Company.AddOrUpdateFields(fields);
                     }
-                });
+                }
                 var name = Company.GetIntersectTypeName(relationshipType);
 
                 return jsonSuccess(name + " successfully created.", "0", "add", HttpStatusCode.Created, new { ObjectType = SystemObjects.Intersect.ToString(), ObjectID = 0 });
