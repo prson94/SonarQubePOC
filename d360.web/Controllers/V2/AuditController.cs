@@ -108,6 +108,7 @@ namespace d360.web.Controllers.V2
 	                                 fa.[Version] as 'Version',	    
 	                                CASE 
 	                                     WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
+                                         WHEN ga.Object = 'Tag' and ga.Action = 'Removed' THEN ga.ObjectName + ' removed'
 		                                 ELSE ( select top 1 fa_sub.value as 'value'			                            
                                                        from reporting.global_fieldaudit fa_sub
                                                        inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
@@ -264,6 +265,7 @@ namespace d360.web.Controllers.V2
 	                                 fa.[Version] as 'Version',	    
 	                                CASE 
 	                                     WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
+                                         WHEN ga.Object = 'Tag' and ga.Action = 'Removed' THEN ga.ObjectName + ' removed'
 		                                 ELSE ( select top 1 fa_sub.value as 'value'			                            
                                                        from reporting.global_fieldaudit fa_sub
                                                        inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
