@@ -55,7 +55,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     columns: GridColumn[] = [];
     fields: GridField[] = [];
 
-    searchValue: string;
+    searchValue: string = '';
 
     showDelete = false;
     showEditor = false;
@@ -88,10 +88,13 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     private filterQ: any;
     filter(event) {
+        if (event) {
+            this.searchValue = event.target.value;
+        }
         window.clearTimeout(this.filterQ);
         this.filterQ = setTimeout(() => {
-            this.filterTreeTable(this.unfilteredTreeNode, event.target.value, this.treeTable);
-        }, 600);
+            this.filterTreeTable(this.unfilteredTreeNode, this.searchValue, this.treeTable);
+        }, event ? 600 : 0);
     }
 
     ngOnInit() {
@@ -166,6 +169,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                 this.policies = result;
                 this.treeNodeArray = this.buildTreeNodeArray(this.policies, 1);
                 this.unfilteredTreeNode = JSON.parse(JSON.stringify(this.treeNodeArray));
+                this.filter(null);
+                this.isLoading = false;
             }
         );
     }
@@ -222,8 +227,13 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     public onDeleted() {
         this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
         this.deleteSelectedTreeNode(this.selected.data.ID);
+
+        this.policies = this.policies.filter(x => x.ID != this.selected.data.ID);
+        this.treeNodeArray = this.buildTreeNodeArray(this.policies, 1);
+        this.unfilteredTreeNode = JSON.parse(JSON.stringify(this.treeNodeArray));
         this.selected = null;
         this.showDelete = false;
+        this.filter(null);
     }
 
     private add() {
@@ -313,7 +323,6 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                 this.loadPolicyHierarchy(this.policyTypeId);
                 this.showEditor = false;
 
-                this.isLoading = false;
             }
         );
     }

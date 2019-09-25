@@ -90,7 +90,7 @@
                              [uid]="selected?.data?.Uid"
                              [assetTypeUid]="policyType?.AssetTypeUID"
                              [displayValue]="(selected?.data?.DisplayValue ? selected?.data?.DisplayValue : 'Policy')"
-                             (onCancel)="showDelete = false"
+                             (onCancel)="showDelete = false;filter(null);"
                              (onDeleted)="onDeleted()">
     </d3s-asset-delete-editor>        
         <d3s-dynamic-editor *ngIf="showEditor"
@@ -100,5 +100,5 @@
                             [title]="policyEditorTitle()"
                             [selection]="selected?.data"
                             (saveClick)="savePolicy($event)"
-                            (closeClick)="showEditor=false"></d3s-dynamic-editor>
+                            (closeClick)="showEditor=false;filter(null);"></d3s-dynamic-editor>
 </div>
