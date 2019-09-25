@@ -103,7 +103,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
         );
     }
 
-    getData() {
+    getData(forceEditorOpen: boolean = false) {
         this.isLoading = true;
         this.relationshipsService.getObjectRelationships(this.objectType, this.objectID, this.targetType, this.targetTypeID, this.intersectTypeID)
             .subscribe(result => {
@@ -111,7 +111,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 this.isLoading = false;
                 if (this.relations.length > 0) this.selected = this.relations[0];
                 this.relationshipAdded.emit({ count: result.length });
-                if (this.shouldShowEditor()) this.closeEditor();
+                if (this.shouldShowEditor() && !forceEditorOpen) this.closeEditor();
             });
     }
 
@@ -172,13 +172,21 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
         this.relationshipsService.saveRelationships(this.intersectTypeID, model)
             .subscribe(res => {
-                this.getData();
-                this.closeEditor();
+
                 if (event.action == 'new') {
                     this.showMessageForApiResults(this.messagesService, res, ' Relationships succesfully added!');
                 }
                 else {
                     this.showMessageForApiResults(this.messagesService, res, ' Relationships succesfully updated!');
+                }
+
+                if (!res.some(x => x.Success != true)) {
+                    this.closeEditor();
+                    this.getData();
+
+                }
+                else {
+                    this.getData(true);
                 }
             });
 }
@@ -193,12 +201,14 @@ deleteItem(item) {
 
     this.relationshipsService.deleteRelationshipV2(this.intersectTypeID, model)
         .subscribe(res => {
-            this.relations = this.relations.filter(x => x.Uid != item);
-            this.relationshipRemoved.emit();
-            this.deleteOff.emit();
+          
+            this.showMessageForApiResults(this.messagesService, res, ' Relationship succesfully deleted!');
+            if (!res.some(x => x.Success != true)) {
+                this.relations = this.relations.filter(x => x.Uid != item);
+                this.relationshipRemoved.emit();
+            }
             this.showDelete = false;
-            this.showMessageForResult(this.messagesService, res, 'Relationship succesfully deleted!');
-
+            this.deleteOff.emit();
         });
 
 }
