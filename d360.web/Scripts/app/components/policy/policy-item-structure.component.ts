@@ -260,7 +260,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
             return thisLevel[0].Name;
         }
 
-        return `(Level ${this.selected.data.Level + 1}) Item`;
+        return `(Level ${this.selected.data.Level}) Item`;
     }
 
     private deleteSelectedTreeNode(id: number): TreeNode {
