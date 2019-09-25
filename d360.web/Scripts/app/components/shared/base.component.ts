@@ -334,6 +334,21 @@ export class BaseComponent {
         }
     }
 
+    showMessageForApiResults(messagesService: MessagesObservableService, results: ApiResult[], defaultMessage : string) {
+        var succeeded = results.filter(x => x.Success == true);
+        var failed = results.filter(x => x.Success != true);
+
+        if (succeeded.length > 0) {
+            messagesService.showInfoMessage('Success', succeeded.length + defaultMessage);
+        }
+
+        if (failed.length > 0) {
+            failed.forEach(f => {
+                messagesService.showError('Error', f.Message);
+            });
+        } 
+    }
+
     showHttpErrorMessage(messagesService: MessagesObservableService, err: HttpErrorResponse) {
         messagesService.showError('An error occurred', err.error);
     }

@@ -8,6 +8,7 @@ import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 import { HierarchyArtifactsModel, HierarchyArtifactItem, HierarchyPostModel } from '../models/relations.model';
 import { Observable } from 'rxjs';
+import { ApiResult } from '../models/apiresult.model';
 
 
 @Injectable()
@@ -31,14 +32,14 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
-    saveRelationships(intersectTypeUid: number, model: any[]): Observable<any> {
+    saveRelationships(intersectTypeUid: number, model: any[]): Observable<ApiResult[]> {
         return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true`, model).pipe(
             map(response => response),
             catchError(err => this.handleError(err, true))
         );
     }
 
-    deleteRelationshipV2(intersectTypeUid: number, model: any[]): Observable<any> {
+    deleteRelationshipV2(intersectTypeUid: number, model: any[]): Observable<ApiResult[]> {
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
         };
