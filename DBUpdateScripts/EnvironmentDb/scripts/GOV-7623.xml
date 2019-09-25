@@ -902,10 +902,7 @@ begin
    inner join @ht t on t.ObjectID = nav.ObjectID and nav.Object = @Object;      
   END      
       
-  IF @ClearPromotion = 1      
-  BEGIN      
-   delete from fusion.rulepromotion where objecttype = @Object and objectid = @ObjectID      
-  END       
+     
         
   IF @ClearFavorites = 1      
   BEGIN      
