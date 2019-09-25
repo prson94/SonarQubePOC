@@ -317,4 +317,5 @@
   <!-- Sprint 8 2019 Start-->
   <include file="scripts/GOV-7958.xml"/> <!-- Dropped ReferenceItem and ReferenceItemType tables -->
 	<include file="scripts/GOV-7816.xml"/> <!-- Dropped Artifact and ArtifactType tables -->
+  <include file="scripts/GOV-8290.xml"/> <!-- Missing index on workflow itemstep table -->
 </databaseChangeLog>
