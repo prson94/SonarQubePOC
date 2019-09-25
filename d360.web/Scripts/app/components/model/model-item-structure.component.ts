@@ -155,8 +155,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy, 1);
                 this.unfilteredTreeNode = JSON.parse(JSON.stringify(this.treeNodeArray));
 
-                this.isLoading = false;
                 this.filter(null);
+                this.isLoading = false;
+
             }
         );
     }
@@ -288,7 +289,6 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 this.showMessageForResult(this.messagesService, result);
                 this.loadModelHierarchy(this.modelId);
                 this.headerActionsService.emitFavoritesChange();
-                this.isLoading = false;
                 this.showEditor = false;
             }
         );
