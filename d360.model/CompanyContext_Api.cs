@@ -760,7 +760,7 @@ from	api.ExecutionField T
                         from    api.ExecutionAsset T
                                 inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Threshold' and ISNUMERIC(S.FieldValue) = 0;
                         ", new { executionID }, commandTimeout: timeout);
-        } 
+        }
 
         private void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null)
         {
@@ -827,7 +827,7 @@ from	api.ExecutionField T
             _ = QueueSource.CreateTopicMessagesAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
 
         }
-        
+
         #region Validation
 
         private List<DataRow> ValidateFields(
@@ -861,7 +861,7 @@ from	api.ExecutionField T
                 string fieldValue = (k.Value + "").Trim();
                 int? fieldTypeId = null;
                 string decimalFormatString = $"0.{string.Join("", Enumerable.Repeat("#", 18))}";
-                
+
 
                 // Validation of field and value;
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
@@ -2666,7 +2666,7 @@ from	api.ExecutionAsset T
                                                                 from    api.ExecutionAsset
                                                                 where   ExecutionID = @ExecutionID
                                                                         and Success is null
-                                                                        and ItemNumber between {beginItemNumber} and {endItemNumber}
+                                                                        and ItemNumber between @beginItemNumber and @endItemNumber
                                                                 ) S
                                                         on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
                                                         when    not matched then
@@ -2682,7 +2682,7 @@ from	api.ExecutionAsset T
                                                                 inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
                                                         {updateAssetInfoOnExecutionRecordsSql}",
-                                                        new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                        new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 else
                                                 {
@@ -2721,7 +2721,7 @@ from	api.ExecutionAsset T
                     left join api.ExecutionField FS on FS.ExecutionID = A.ExecutionID and FS.ItemNumber = A.ItemNumber and FS.FieldName = 'SourceID'
             where   A.ExecutionID = @ExecutionID
                     and A.Success is null
-                    and A.ItemNumber between {beginItemNumber} and {endItemNumber}
+                    and A.ItemNumber between @beginItemNumber and @endItemNumber
             ) S
     on      (T.FusionAttributeTypeID = @ObjectID and T.SourceID = @NonExistentUid)
     when    not matched then
@@ -2737,7 +2737,7 @@ from	api.ExecutionAsset T
             inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
     {updateAssetInfoOnExecutionRecordsSql}",
-                                                    new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
+                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 else
                                                 {
@@ -2789,7 +2789,7 @@ from	api.ExecutionAsset T
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)
                                                     @object = "Policy";
-                                                
+
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
@@ -2802,7 +2802,7 @@ from	api.ExecutionAsset T
             from    api.ExecutionAsset
             where   ExecutionID = @ExecutionID
                     and Success is null
-                    and ItemNumber between {beginItemNumber} and {endItemNumber}
+                    and ItemNumber between @beginItemNumber and @endItemNumber
             ) S
     on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
     when    not matched then
@@ -2818,7 +2818,7 @@ from	api.ExecutionAsset T
             inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
     {updateAssetInfoOnExecutionRecordsSql}",
-                                                    new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
+                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 else
                                                 {
@@ -2852,7 +2852,7 @@ from	api.ExecutionAsset T
                     inner join api.ExecutionField T on T.ExecutionID = A.ExecutionID and T.ItemNumber = A.ItemNumber and T.FieldName = 'Threshold'
             where   A.ExecutionID = @ExecutionID
                     and A.Success is null
-                    and A.ItemNumber between {beginItemNumber} and {endItemNumber}
+                    and A.ItemNumber between @beginItemNumber and @endItemNumber
             ) S
     on      (T.RuleTypeID = @ObjectID and T.SourceID = @NonExistentUid)
     when    not matched then
@@ -2868,7 +2868,7 @@ from	api.ExecutionAsset T
             inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
     {updateAssetInfoOnExecutionRecordsSql}",
-                                                    new { execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow },
+                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow },
                                                     transaction: trans,
                                                     commandTimeout: timeout);
                                                 }
@@ -2907,7 +2907,7 @@ from	api.ExecutionAsset T
                                                                         inner join api.ExecutionField C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code'
                                                                 where   A.ExecutionID = @ExecutionID
                                                                         and A.Success is null
-                                                                        and A.ItemNumber between {beginItemNumber} and {endItemNumber}
+                                                                        and A.ItemNumber between @beginItemNumber and @endItemNumber
                                                                 ) S
                                                         on      (T.AssetTypeID = @AssetTypeID and T.[Code] = @NonExistentUid)
                                                         when    not matched then
@@ -2923,7 +2923,7 @@ from	api.ExecutionAsset T
                                                                 inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
                                                         {updateAssetInfoOnExecutionRecordsSql}",
-                                                    new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
+                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 else
                                                 {
@@ -2957,7 +2957,7 @@ from	api.ExecutionAsset T
                 from    api.ExecutionAsset 
                 where   ExecutionID = @ExecutionID 
                         and Success is null 
-                        and ItemNumber between {beginItemNumber} and {endItemNumber}
+                        and ItemNumber between @beginItemNumber and @endItemNumber
                         and IntersectTypeID is not null
                         and ParentObject is not null 
                         and ParentObjectID is not null 
@@ -2973,7 +2973,7 @@ from	api.ExecutionAsset T
     when not matched by target then
 	    insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
 	    values  (S.IntersectTypeID, S.ParentObject, S.ParentObjectID, S.Object, S.ObjectID, @R, @R);",
-                                            new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                            new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
 
                                         }
 
@@ -3065,7 +3065,7 @@ from	api.ExecutionAsset T
             if (executionItemDupes.Any())
             {
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid,   Message = execution.ErrorMessage, Success = false }));
+                results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
             {
@@ -3135,7 +3135,7 @@ from	api.ExecutionAsset T
                             }
                             else
                             {
-                                results.Add(new DatabaseBulkRelationshipResult { IntersectID = 0, ExecutionItemUid =model.ExecutionItemUid, IsNew = false, ItemNumber = i, Message = errorMessage, Success = false });
+                                results.Add(new DatabaseBulkRelationshipResult { IntersectID = 0, ExecutionItemUid = model.ExecutionItemUid, IsNew = false, ItemNumber = i, Message = errorMessage, Success = false });
                             }
                         }
                     }
@@ -3396,7 +3396,7 @@ end",
                     execution.Error = import.Count();
 
                     results = new List<DatabaseBulkRelationshipResult>();
-                    results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid =i.ExecutionItemUid,  Message = msg, Success = false }));
+                    results.AddRange(import.Select(i => new DatabaseBulkRelationshipResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
                 }
 
                 if (generalChecksCompleted)
@@ -3537,7 +3537,7 @@ end",
 
                 #region Generate data sets
 
-                for (int i = currentLocation.HighestItemNumber+1; i <= import.Count; i++)
+                for (int i = currentLocation.HighestItemNumber + 1; i <= import.Count; i++)
                 {
                     var model = import[i - 1];
 
@@ -3748,7 +3748,7 @@ from    [Intersect] T
         inner join api.ExecutionDeletedRelationship S on S.IntersectID = T.ID 
             and S.ExecutionID = @ExecutionID 
             and S.ItemNumber between {beginItemNumber} and {endItemNumber}
-            and S.Success is null;", 
+            and S.Success is null;",
             new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
                                 #endregion
@@ -3803,7 +3803,7 @@ from    [Intersect] T
             return results;
         }
 
-        private void ValidateAssetCrossReference(ApiExecution execution,  int timeout = 3600)
+        private void ValidateAssetCrossReference(ApiExecution execution, int timeout = 3600)
         {
             Connection.Execute(@"Update api.ExecutionAssetCrossReference
                                     Set Success=0,
@@ -3857,7 +3857,7 @@ from    [Intersect] T
             table.Columns.Add("Success", typeof(bool));
 
 
-           
+
             int i = 0;
             foreach (var item in import)
             {
@@ -3878,17 +3878,17 @@ from    [Intersect] T
             try
             {
 
-           
-            if (Database.Connection.State != ConnectionState.Open)
-                Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-            #region Bulk Copy
-            var bulkCopy = new SqlBulkCopy(Connection)
-            {
-                BatchSize = table.Rows.Count,
-                DestinationTableName = "api.ExecutionAssetCrossReference",
-                BulkCopyTimeout = timeout
-            };
+                if (Database.Connection.State != ConnectionState.Open)
+                    Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                #region Bulk Copy
+                var bulkCopy = new SqlBulkCopy(Connection)
+                {
+                    BatchSize = table.Rows.Count,
+                    DestinationTableName = "api.ExecutionAssetCrossReference",
+                    BulkCopyTimeout = timeout
+                };
 
                 bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                 bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -3901,13 +3901,13 @@ from    [Intersect] T
 
                 bulkCopy.WriteToServer(table);
 
-            bulkCopy = null;
+                bulkCopy = null;
 
-            #endregion
+                #endregion
 
-            this.ValidateAssetCrossReference(execution, timeout);
+                this.ValidateAssetCrossReference(execution, timeout);
 
-            Connection.Execute(@"
+                Connection.Execute(@"
                             insert into AssetCrossReference
                             (Uid,DataSource,Type,ExternalID,FieldHash)
                             Select Uid,DataSource,Type,ExternalID,FieldHash from api.ExecutionAssetCrossReference
@@ -3917,12 +3917,12 @@ from    [Intersect] T
                             Set Success =1,
                             Message ='Added Successfully'
                             Where ExecutionID=@executionID and Success is null; ",
-                new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+                    new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
                 bulkResult = Query<AssetCrossReferenceResult>(
                                         $"select ItemNumber,Uid,Message,Success from api.ExecutionAssetCrossReference where ExecutionID = @ExecutionID",
                                         new { ExecutionID = execution.ExecutionID }).ToList();
-           
+
 
             }
             finally
@@ -3932,6 +3932,6 @@ from    [Intersect] T
             }
             return bulkResult;
         }
-        
+
     }
 }
