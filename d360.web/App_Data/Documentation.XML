@@ -2770,10 +2770,14 @@
             <summary>
             Deletes a predicates of a given predicate list.
             </summary>
-            <param name="predicates">The list of predicates for deletions.</param>
-            <remarks>
-            The "types/" prefix in the URI will be removed in a subsequent release. Please use the DELETE endpoint without this prefix.
-            </remarks>
+            <param name="predicates">The list of predicates for deletion.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.InsertPredicates(d360.core.entities.PredicateInserts)">
+            <summary>
+            Inserts a predicates of a given predicate list.
+            </summary>
+            <param name="predicates">The list of predicates for insertion.</param>
             <returns>An HTTP status code and message.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetPredicatesTypesAsync">

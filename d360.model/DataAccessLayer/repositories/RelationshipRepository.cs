@@ -474,6 +474,30 @@ from	IntersectType I
             return results;
         }
 
+        public List<PredicateInsertResult> InsertPredicates(PredicateInserts predicates, ApiExecution execution)
+        {
+            companyContext.Add(execution);
+
+            List<PredicateInsertResult> results = null;
+            try
+            {
+                results = companyContext.AddPredicates(execution, predicates);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                companyContext.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                companyContext.Update(execution);
+            }
+
+            return results;
+        }
 
 
     }

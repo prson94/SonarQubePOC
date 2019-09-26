@@ -319,5 +319,6 @@ namespace d360.model
         int GetObjectId(Guid uid, SystemObjects objectType);
 
         List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600);
+        List<PredicateInsertResult> AddPredicates(ApiExecution execution, PredicateInserts import, int timeout = 3600);
     }
 }

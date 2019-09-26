@@ -4138,6 +4138,234 @@ from    [Intersect] T
 
             return results;
         }
+        public List<PredicateInsertResult> AddPredicates(ApiExecution execution, PredicateInserts import, int timeout = 3600)
+        {
+            var results = new List<PredicateInsertResult>();
+            bool generalChecksCompleted = false;
+            CurrentExecutionLocationModel currentLocation = null;
 
+            var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            if (executionItemDupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new PredicateInsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                try
+                {
+                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionPredicate");
+
+                    if (currentLocation.HighestItemNumberProcessed > 0)
+                    {
+                        results.AddRange(
+                            Query<PredicateInsertResult>(
+                                $"select * from api.ExecutionPredicate where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                new { execution.ExecutionID }
+                            )
+                        );
+                    }
+
+                    #region Build data tables.
+
+                    var table = new DataTable();
+                    table.Columns.Add("ExecutionID", typeof(Guid));
+                    table.Columns.Add("ItemNumber", typeof(int));
+                    table.Columns.Add("PredicateID", typeof(long));
+                    table.Columns.Add("uid", typeof(Guid));
+                    table.Columns.Add("Type", typeof(string));
+                    table.Columns.Add("Name", typeof(string));
+                    table.Columns.Add("Inverse", typeof(string));
+                    table.Columns.Add("Message", typeof(string));
+                    table.Columns.Add("Success", typeof(bool));
+                    table.Columns.Add("ExecutionItemUid", typeof(Guid));
+
+                    #endregion
+
+                    #region Generate data sets
+
+                    for (int i = 1; i <= import.Count; i++)
+                    {
+                        if (i > currentLocation.HighestItemNumber)
+                        {
+                            var model = import[i - 1];
+
+                            var row = table.NewRow();
+
+                            row["ExecutionID"] = execution.ExecutionID;
+                            row["ItemNumber"] = i;
+                            if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
+                            else row["ExecutionItemUid"] = Guid.NewGuid();
+                            row["Type"] = model.Type; 
+                            row["Name"] = model.Name; 
+                            row["Inverse"] = model.Inverse; 
+
+                            table.Rows.Add(row);
+                        }
+                    }
+
+                    #endregion
+
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                    #region Bulk Copy
+
+                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+
+                    bulkCopy.BatchSize = table.Rows.Count;
+                    bulkCopy.DestinationTableName = "api.ExecutionPredicate";
+                    bulkCopy.BulkCopyTimeout = timeout;
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("Type", "Type");
+                    bulkCopy.ColumnMappings.Add("Name", "Name");
+                    bulkCopy.ColumnMappings.Add("Inverse", "Inverse");
+
+                    bulkCopy.WriteToServer(table);
+
+                    bulkCopy = null;
+
+                    #endregion
+
+
+                    #region Log data errors
+
+                    var allowedTypes = Enum.GetValues(typeof(PredicateType)).Cast<PredicateType>().Select(x => "''"+ x.ToString()+"''").ToList();
+                    string checkTypeSQL = $"Type not in ({string.Join(",",allowedTypes)})";
+
+                    var checkSQL = $@"update	api.ExecutionPredicate
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Name field cannot be empty'
+    where	ExecutionID = @ExecutionID and (Name is null or TRIM(Name) = '');
+
+    update	api.ExecutionPredicate
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Inverse field cannot be empty'
+    where	ExecutionID = @ExecutionID and (Inverse is null or TRIM(Inverse) = '');
+
+    update	api.ExecutionPredicate
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate Type invalid. Allowed values are {string.Join(",", allowedTypes)}'
+    where	ExecutionID = @ExecutionID and {checkTypeSQL.Replace("''","'")};";
+
+                    Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
+
+                    #endregion
+
+                    generalChecksCompleted = true;
+                }
+                catch (Exception generalEx)
+                {
+                    generalChecksCompleted = false;
+                    var msg = generalEx.GetFullExceptionData(false);
+                    execution.ErrorMessage = msg;
+                    execution.Processed = 0;
+                    execution.Error = import.Count();
+
+                    results = new List<PredicateInsertResult>();
+                    results.AddRange(import.Select(i => new PredicateInsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+                }
+
+                if (generalChecksCompleted)
+                {
+                    int loopSize = 250;
+                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+                    var predicateTypes = Enum.GetValues(typeof(PredicateType)).Cast<PredicateType>().ToList();
+
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {
+                            var querySuffix = $"P.Success is null and P.ExecutionID = @ExecutionID and P.ItemNumber between @beginItemNumber and @endItemNumber";
+                            using (var trans = Connection.BeginTransaction())
+                            {
+                                try
+                                {
+                                    var buildPredicateTypeTable = string.Empty;
+                                    foreach(var item in predicateTypes)
+                                    {
+                                        buildPredicateTypeTable += $"insert into #PredicateTypeMap values ({(int)item},'{item.ToString()}')";
+                                    }
+
+                                    var insertSQL = $@"drop table if exists #PredicateTypeMap;
+                                            create table #PredicateTypeMap(ID int, name nvarchar(255))
+                                            {buildPredicateTypeTable}
+
+                                            drop table if exists #mergeResultTable
+                                            create table #mergeResultTable (PredicateId int, PredicateUid uniqueidentifier, ExecutionItemUid uniqueidentifier) 
+
+                                            merge into [Predicate] P
+                                            using ( select * 
+	                                                from api.ExecutionPredicate
+		                                            where ExecutionID = @ExecutionID
+                                                          and ItemNumber between @beginItemNumber and @endItemNumber
+                                                          and PredicateID is null
+                                                          and Success is null
+	                                              ) S
+                                            on (P.Id = S.PredicateId)
+                                            when not matched then
+	                                            insert (Name, Inverse, Type, IsSystem)
+	                                            values (S.Name,S.Inverse, (select top 1 ID from #PredicateTypeMap where name = S.Type), 0)
+	                                            output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
+
+                                            update EP
+                                            set EP.PredicateID = Res.PredicateId,
+	                                            EP.uid = Res.PredicateUid
+                                            from api.ExecutionPredicate EP
+                                                 inner join #mergeResultTable Res on Res.ExecutionItemUid = EP.ExecutionItemUid
+                                            where EP.ExecutionID = @ExecutionID";
+
+                                    Connection.Execute(insertSQL,
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                    Connection.Execute(
+                                        $"update P set P.Success = 1 from api.ExecutionPredicate P where	{querySuffix} and P.PredicateID is not null;",
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                    trans.Commit();
+                                    runCompleted = true;
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    trans.Rollback();
+
+                                    retryCount++;
+
+                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    {
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionPredicate", ex.GetFullExceptionData(false), timeout);
+                                    }
+                                }
+                            }
+                        }
+
+                        results.AddRange(
+                            Query<PredicateInsertResult>(
+                                $"select * from api.ExecutionPredicate where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                            )
+                        );
+
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
+                    }
+
+                    Connection.Close();
+
+                }
+            }
+
+            return results;
+        }
     }
 }
