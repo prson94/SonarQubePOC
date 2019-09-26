@@ -5,15 +5,13 @@ import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import {
-    ButtonModule,
-    ColorPickerModule,
-    DropdownModule,
-    SpinnerModule,
-    EditorModule,
-    InputTextModule,
-    SharedModule,
-} from 'primeng/primeng';
+import { ColorPickerModule } from 'primeng/colorpicker';
+import { SpinnerModule } from 'primeng/spinner';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { EditorModule } from 'primeng/editor';
 
 import { CoreModule } from '../core.module';
 import { TilesModule } from '../tiles/tiles.module';

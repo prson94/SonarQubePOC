@@ -21,20 +21,19 @@ import { ModelListComponent } from './model-list.component';
 import { ModelItemComponent } from './model-item.component';
 import { ModelItemStructureComponent } from './model-item-structure.component';
 
-import {
-    GrowlModule,
-    InputTextModule,
-    InputMaskModule,
-    TreeTableModule,
-    ButtonModule,
-    DropdownModule,        
-    SelectButtonModule,    
-    MultiSelectModule,    
-    TooltipModule,    
-    TreeModule,
-    SharedModule,
-} from 'primeng/primeng';
+import { ButtonModule } from 'primeng/button';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputMaskModule } from 'primeng/inputmask';
+import { DropdownModule } from 'primeng/dropdown';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TooltipModule } from 'primeng/tooltip';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { TreeTableModule } from 'primeng/treetable';
+import { GrowlModule } from 'primeng/growl';
+import { TreeModule } from 'primeng/tree';
 import { TableModule } from 'primeng/table';
+
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 
 

@@ -6,7 +6,7 @@ import { RouterModule } from '@angular/router';
 
 import {
     ButtonModule,
-} from 'primeng/primeng';
+} from 'primeng/button';
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';

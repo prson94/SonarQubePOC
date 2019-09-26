@@ -1,5 +1,5 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/api';
 import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../../models/grid-definition.model';
 import { FilterField, FilterFieldType, FilterExpression } from '../../models/filter-field.model';
 import { setTimeout } from 'timers';

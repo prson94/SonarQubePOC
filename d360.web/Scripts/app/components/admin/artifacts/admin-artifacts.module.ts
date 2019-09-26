@@ -26,18 +26,17 @@ import {AdminArtifactsRoutingModule} from './admin-artifacts.routes';
 import {SimpleAccordionModule} from '../../shared/simple-accordion.part';
 import {ArtifactTypeDeleteComponent} from './artifact-type-delete.component';
 
-import {
-    ButtonModule,
-    CheckboxModule,
-    SpinnerModule,
-    ColorPickerModule,
-    DropdownModule,
-    EditorModule,
-    InputTextModule,
-    MultiSelectModule,
-    SharedModule,
-    TreeTableModule,
-} from 'primeng/primeng';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { SpinnerModule } from 'primeng/spinner';
+import { CheckboxModule } from 'primeng/checkbox';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { ColorPickerModule } from 'primeng/colorpicker';
+import { TreeTableModule } from 'primeng/treetable';
+import { EditorModule } from 'primeng/editor';
+
 import {AdminResponsibilitiesModule} from '../responsibilities/admin-responsibilities.module';
 
 

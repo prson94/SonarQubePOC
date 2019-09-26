@@ -1,6 +1,6 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit, Output, EventEmitter, Input, OnChanges, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
 import * as _ from 'lodash';
-import { Column, Header, MenuItem, Editor } from 'primeng/primeng';
+import { Editor } from 'primeng/editor';
 
 import { BaseComponent } from '../../../shared/base.component';
 import {

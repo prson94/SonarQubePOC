@@ -2,12 +2,12 @@
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 import { RouterModule } from '@angular/router';
 
 import {    
     SharedModule,
-} from 'primeng/primeng';
+} from 'primeng/shared';
 
 import { CoreModule } from '../../shared/core.module';
 import { SharedDiagramModule } from '../../shared/diagram/shared-diagram.module';

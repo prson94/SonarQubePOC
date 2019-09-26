@@ -16,15 +16,11 @@ import { ShortcutListComponent } from './shortcut-list.component';
 import { ShortcutItemComponent } from './shortcut-item.component';
 import { ShortcutDisplayComponent } from './shortcut-display.component';
 
-
-import {
-    ColorPickerModule,
-    ButtonModule,
-    SharedModule
-
-} from 'primeng/primeng';
-
+import { ButtonModule } from 'primeng/button';
+import { SharedModule } from 'primeng/shared';
+import { ColorPickerModule } from 'primeng/colorpicker';
 import { TableModule } from 'primeng/table';
+
 
 @NgModule({
     imports: [CommonModule,

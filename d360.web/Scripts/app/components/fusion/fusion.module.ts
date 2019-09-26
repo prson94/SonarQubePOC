@@ -48,23 +48,20 @@ import { FusionAttributeComponent } from './fusion-attribute.component';
 import { FusionDataProfileDetailComponent } from './fusion-data-profile-detail.component';
 
 
-import {
-    GrowlModule,
-    InputTextModule,
-    InputMaskModule,
-    TreeTableModule,
-    ButtonModule,
-    DropdownModule,        
-    SelectButtonModule,    
-    MultiSelectModule,    
-    TooltipModule,        
-    TreeModule,
-    FileUploadModule,
-    SharedModule,
-    TabViewModule,
-} from 'primeng/primeng';
-
+import { TabViewModule } from 'primeng/tabview';
+import { ButtonModule } from 'primeng/button';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputMaskModule } from 'primeng/inputmask';
+import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TooltipModule } from 'primeng/tooltip';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { TreeTableModule } from 'primeng/treetable';
+import { GrowlModule } from 'primeng/growl';
+import { FileUploadModule } from 'primeng/fileupload';
+import { TreeModule } from 'primeng/tree';
 
 import { CodemirrorModule } from 'ng2-codemirror';
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';

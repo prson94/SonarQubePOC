@@ -6,9 +6,7 @@ import { GovernRequestInterceptor } from "../../../http-interceptors/govern-requ
 
 import { RouterModule } from '@angular/router';
 
-import {
-    ButtonModule,
-} from 'primeng/primeng';
+import { ButtonModule } from 'primeng/button';
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';

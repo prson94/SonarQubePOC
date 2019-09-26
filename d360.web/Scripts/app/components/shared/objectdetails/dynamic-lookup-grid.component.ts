@@ -1,5 +1,4 @@
-﻿import { Component, Input, Output, OnInit} from '@angular/core';
-import { Column } from 'primeng/primeng';
+﻿import { Component, Input, OnInit} from '@angular/core';
 import { Lookup, LookupItem } from '../../../models/lookup.model';
 import { LookupGrid, GridColumn, GridField, GridFilterColumn } from '../../../models/grid-definition.model';
 import { Router } from '@angular/router';

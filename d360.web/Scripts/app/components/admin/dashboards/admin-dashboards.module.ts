@@ -22,16 +22,13 @@ import { AdminDashboardsRoutingModule } from './admin-dashboards.routes';
 
 import { CodemirrorModule } from 'ng2-codemirror';
 
-import {
-    ButtonModule,
-    DropdownModule,
-    EditorModule,
-    InputTextModule,
-    MultiSelectModule,
-    SharedModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
+import { ButtonModule } from 'primeng/button';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
+import { DropdownModule } from 'primeng/dropdown';
+import { EditorModule } from 'primeng/editor';
+import { InputTextModule } from 'primeng/inputtext';
 
 @NgModule({
     imports: [CommonModule,

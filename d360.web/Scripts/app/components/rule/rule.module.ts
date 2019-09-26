@@ -30,22 +30,20 @@ import { RuleQualifierEditorComponent } from './rule-qualifier-editor.component'
 import { RuleQualifiersComponent } from './rule-qualifiers.component';
 import { RuleImplementationSummaryComponent } from './rule-implementation-summary.component';
 
-import {
-    GrowlModule,
-    InputTextModule,
-    InputMaskModule,
-    TreeTableModule,
-    ButtonModule,
-    DropdownModule,
-    CheckboxModule,    
-    SelectButtonModule,
-    MultiSelectModule,   
-    TabViewModule,
-    TooltipModule,
-    SharedModule,
-} from 'primeng/primeng';
-
+import { TabViewModule } from 'primeng/tabview';
+import { CheckboxModule } from 'primeng/checkbox';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { GrowlModule } from 'primeng/growl';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { InputMaskModule } from 'primeng/inputmask';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { TreeTableModule } from 'primeng/treetable';
+import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
+
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 
 @NgModule({

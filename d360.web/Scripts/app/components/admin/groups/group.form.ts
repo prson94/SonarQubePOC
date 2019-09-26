@@ -1,8 +1,6 @@
 ﻿import {Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange} from '@angular/core';
-import {SelectItem} from 'primeng/primeng';
-import {Group, GroupEditorModel, GroupSearchResultModel, ResourceGroup} from '../../../models/group.model';
+import { Group, GroupEditorModel } from '../../../models/group.model';
 import {FormEvents, FormHelper} from '../../../models/form.model';
-import {JsonResult} from '../../../models/jsonresult.model';
 import {GroupService} from '../../../services/group.service';
 import * as _ from 'lodash';
 import {EditorField} from '../../../models/editor-field.model';

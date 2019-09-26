@@ -21,14 +21,11 @@ import { ReferenceComponent } from './reference.component';
 import { ReferenceListComponent } from './reference-list.component';
 import { ReferenceItemTypeGridComponent } from './reference-item-type-list.component';
 
-
-import {
-    ButtonModule,
-    EditorModule,
-    InputTextModule,
-    SharedModule,
-    TooltipModule,
-} from 'primeng/primeng';
+import { ButtonModule } from 'primeng/button';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { EditorModule } from 'primeng/editor';
+import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 
 @NgModule({

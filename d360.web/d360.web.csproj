@@ -1624,7 +1624,6 @@
     <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\reference.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\relations.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\Dropdown.model.ts" />

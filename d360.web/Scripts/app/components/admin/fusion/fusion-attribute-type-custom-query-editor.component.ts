@@ -1,8 +1,5 @@
 ﻿import {Input, Component, EventEmitter, Output, OnInit} from '@angular/core';
-import {NgForm} from '@angular/forms';
 import {FusionService} from '../../../services/fusion.service';
-import {SelectItem} from 'primeng/primeng';
-import {DropdownOption} from '../../../models/dropdown.model';
 import {BaseComponent} from '../../shared/base.component';
 import {FusionAttributeType, FusionAttributeTypeCustomQuery} from '../../../models/fusion.model';
 import 'codemirror/mode/sql/sql.js';

@@ -3,10 +3,9 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
-import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship, RelationshipRole } from '../models/relationship.model';
+import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
-import { HierarchyArtifactsModel, HierarchyArtifactItem, HierarchyPostModel } from '../models/relations.model';
 import { Observable } from 'rxjs';
 import { ApiResult } from '../models/apiresult.model';
 
@@ -204,38 +203,5 @@ export class RelationshipsService extends BaseObservableService {
                 catchError(err => this.handleError(err))
             );
     }
-
-    deleteHierarchyItem(id: number) {
-        return this.http.delete(`relations/hierarchy/delete/${id}`)
-            .pipe(
-                catchError(err => this.handleError(err))
-            );
-    }
     
-    postHierarchy(model: HierarchyPostModel): Observable<any> {
-        return this.http.post('relations/hierarchy/save', model)
-            .pipe(
-                map(response => response),
-                catchError(err=> this.handleError(err))
-            );
-    }
-
-    getRelationshipRoles(): Observable<RelationshipRole[]> {
-        return this.http.get('relations/IntersectRoles')
-            .pipe(
-                map(response => <RelationshipRole[]>response),
-                catchError(err=>this.handleError(err))
-            );
-    }
-
-    deleteRelationshipRole(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'relationshiprole', id)
-    }
-
-    saveRelationshipRole(relationshipRole: RelationshipRole): Observable<JsonResult> {
-        if (relationshipRole.ID == undefined || !relationshipRole.ID) {
-            return this.postDynamic(this.http, 'relationshiprole', relationshipRole);
-        }
-        return this.putDynamic(this.http, 'relationshiprole', relationshipRole);
-    }
 }

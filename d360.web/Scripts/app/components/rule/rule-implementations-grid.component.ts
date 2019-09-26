@@ -2,7 +2,6 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { RulesService } from '../../services/rules.service';
 import { BaseComponent } from '../shared/base.component';
-import { LazyLoadEvent } from 'primeng/primeng';
 import { Table } from 'primeng/table';
 import { Rule, RuleImplementation, RuleImplementationPagedResults, RuleImplementationFilter } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';

@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
-import { SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/api';
 
 import {
     FieldType,
