@@ -65,10 +65,3 @@ export class PossibleTechnicalRelationship {
     ObjectType: string;
     ParentIntersectTypeID: number;
 }
-
-export class RelationshipRole {
-    ID: number;
-    Name: string;
-    Description: string;
-    IsUsed: boolean;
-}

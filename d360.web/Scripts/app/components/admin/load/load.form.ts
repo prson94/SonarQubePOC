@@ -1,8 +1,8 @@
-﻿import {Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange} from '@angular/core';
-import {SelectItem} from 'primeng/primeng';
-import {LoadFilePostModel, LoadColumn} from '../../../models/load.model';
-import {LoadService} from '../../../services/load.service';
-import {FormHelper} from '../../../models/form.model';
+﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
+import { SelectItem } from 'primeng/api';
+import { LoadFilePostModel, LoadColumn } from '../../../models/load.model';
+import { LoadService } from '../../../services/load.service';
+import { FormHelper } from '../../../models/form.model';
 import * as _ from 'lodash';
 
 @Component({

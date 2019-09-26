@@ -8,11 +8,7 @@ import { RouterModule } from '@angular/router';
 
 import { TagUsageInfoBox } from './tags-usage-info.component';
 import { PipesModule } from '../../../pipes/pipes.module';
-
-
-import {    
-    TooltipModule,    
-} from 'primeng/primeng';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [CommonModule,

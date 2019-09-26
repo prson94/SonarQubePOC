@@ -5,9 +5,7 @@ import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 import { RouterModule } from '@angular/router';
 
-import {
-    SharedModule,
-} from 'primeng/primeng';
+import { SharedModule } from 'primeng/shared';
 
 import { TableModule } from 'primeng/table';
 

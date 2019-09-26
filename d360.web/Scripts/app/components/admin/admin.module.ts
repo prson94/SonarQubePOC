@@ -15,17 +15,13 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedAssetTypeEditorModule } from '../shared/assettypeeditor/shared-asset-type-editor.module';
 
-
-import {        
-    ButtonModule,  
-    ColorPickerModule,
-    DropdownModule,
-    SpinnerModule,
-    EditorModule,
-    InputTextModule,    
-    SharedModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { ColorPickerModule } from 'primeng/colorpicker';
+import { SpinnerModule } from 'primeng/spinner';
+import { EditorModule } from 'primeng/editor';
 import { TableModule } from 'primeng/table';
 
 import { AdminAllocationComponent } from './admin-allocation.component';

@@ -1,4 +1,4 @@
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { TagType, TagApiModel, Tag } from '../../../models/tag.model';
@@ -10,13 +10,13 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CoreModule } from '../core.module';
 import { Router } from '@angular/router';
-import {
-    AutoCompleteModule,
-    TreeModule,
-    OverlayPanelModule,
-    SharedModule,
-    DialogModule,
-} from 'primeng/primeng';
+
+import { TreeModule } from 'primeng/tree';
+import { SharedModule } from 'primeng/shared';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { DialogModule } from 'primeng/dialog';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+
 import { debounceTime } from 'rxjs/operators';
 import { AuthenticationService } from '../../../services/authentication.service';
 

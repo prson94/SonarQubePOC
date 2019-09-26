@@ -3,10 +3,7 @@ import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import {
-    SharedModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
 import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../core.module';

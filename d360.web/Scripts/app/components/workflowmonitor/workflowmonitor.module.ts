@@ -29,19 +29,17 @@ import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object
 import { D3SSharedModule } from '../shared/shared.module';
 import { SimpleAccordionModule } from '../shared/simple-accordion.part';
 
-import {
-    GrowlModule,
-    SharedModule,
-    DropdownModule,
-    SelectButtonModule,
-    MultiSelectModule,
-    InputTextModule,
-    TooltipModule,
-    ButtonModule,
-    CalendarModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
+import { GrowlModule } from 'primeng/growl';
+import { CalendarModule } from 'primeng/calendar';
+import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
+import { ButtonModule } from 'primeng/button';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { DropdownModule } from 'primeng/dropdown';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { TooltipModule } from 'primeng/tooltip';
+
 
 @NgModule({
     imports: [CommonModule,

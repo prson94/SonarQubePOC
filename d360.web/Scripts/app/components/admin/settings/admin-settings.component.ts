@@ -8,11 +8,9 @@ import { SiteMenuService } from '../../../services/site-menu.service';
 import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
-import { FormMode } from '../../../models/form.model';
-import { SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/api';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { DynamicButton } from '../../../models/rightsidebar.model';
-import { Subscriber, Subscription } from 'rxjs';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({

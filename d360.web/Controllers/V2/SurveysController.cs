@@ -37,7 +37,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Get a list of surveys contained within the system.          
+        /// Returns survey results for a specific survey type Uid.          
         /// </summary>        
         /// <param name="surveyTypeUid">Uid of survey type</param>
         /// <returns>A list of survey results</returns>

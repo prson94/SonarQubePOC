@@ -8,7 +8,7 @@ import { EditorField } from '../../models/editor-field.model';
 import { BaseComponent } from './base.component';
 import { UriBasedService } from '../../services/uri-based.service';
 import { ResourcesService } from '../../services/resources.service';
-import { LazyLoadEvent } from 'primeng/primeng';
+import { LazyLoadEvent } from 'primeng/api';
 import { GridFilterExpression } from '../../models/grid-definition.model';
 import { SimpleChanges } from '@angular/core/src/metadata/lifecycle_hooks';
 

@@ -2,8 +2,7 @@
 import {TreeNode} from 'primeng/components/common/api';
 import {
     ArtifactTypeEditorModel,
-    ArtifactType,
-    ArtifactTypeStatusCount
+    ArtifactType    
 } from '../models/artifact-type.model';
 import {BaseObservableService} from './baseObservable.service';
 import {MessagesObservableService} from './messages-observable.service';
@@ -46,18 +45,7 @@ export class ArtifactTypeService extends BaseObservableService {
             )
             ;
     }
-
-    putArtifactType(model: ArtifactTypeEditorModel): Observable<any> {
-        return this
-            .http
-            .put('form/ArtifactType', model)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            )
-            ;
-    }
-
+    
     getArtifactTypeTree(): Observable<TreeNode[]> {
         return this
             .http.get('internal/artifacts/types')
@@ -108,17 +96,6 @@ export class ArtifactTypeService extends BaseObservableService {
             node.children.push(child);
             this.formTreeR(child, data);
         });
-    }
-
-    public getArtifactTypeStatus(artifactTypeId: number): Observable<ArtifactTypeStatusCount[]> {
-        return this
-            .http
-            .get(`/queries/${artifactTypeId}/StatusBreakdownByArtifactType`)
-            .pipe(
-                map(response => <ArtifactTypeStatusCount[]>response),
-                catchError(err => this.handleError(err))
-            )
-            ;
     }
 
     public getPossibleArtifactOwners(artifactTypeId: number): Observable<any[]> {

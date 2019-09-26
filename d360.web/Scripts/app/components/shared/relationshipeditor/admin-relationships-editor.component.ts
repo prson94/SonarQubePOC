@@ -1,6 +1,5 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
-import { NgForm } from '@angular/forms';
-import { SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/api';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipDetail } from '../../../models/relationship.model';
 import { ViewEncapsulation } from '@angular/core';

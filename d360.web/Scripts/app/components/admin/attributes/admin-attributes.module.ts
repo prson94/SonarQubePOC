@@ -4,9 +4,6 @@ import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import { RouterModule } from '@angular/router';
-
-
 import { CoreModule } from '../../shared/core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
@@ -23,16 +20,13 @@ import { AdminAttributeAllocationComponent } from './admin-attribute-allocation.
 
 import { AdminAttributesRoutingModule } from './admin-attributes.routes';
 
-import {
-    ButtonModule,
-    DropdownModule,
-    EditorModule,
-    InputTextModule,
-    MultiSelectModule,
-    SharedModule,
-    TreeTableModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TreeTableModule } from 'primeng/treetable';
+import { EditorModule } from 'primeng/editor';
 import { TableModule } from 'primeng/table';
 
 @NgModule({

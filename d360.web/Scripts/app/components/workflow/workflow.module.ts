@@ -26,22 +26,19 @@ import { WorkflowBulkReassignComponent } from './workflow-bulk-reassign.componen
 
 import { WorkflowRoutingModule } from './workflow.routes';
 
-import {
-    GrowlModule,
-    CalendarModule,    
-    InputTextModule,
-    ToggleButtonModule,
-    ButtonModule,
-    DropdownModule,
-    CheckboxModule,
-    MultiSelectModule,
-    TooltipModule,
-    EditorModule,
-    AutoCompleteModule,
-    SharedModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
+import { GrowlModule } from 'primeng/growl';
+import { CalendarModule } from 'primeng/calendar';
+import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
+import { ToggleButtonModule } from 'primeng/togglebutton';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { CheckboxModule } from 'primeng/checkbox';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TooltipModule } from 'primeng/tooltip';
+import { EditorModule } from 'primeng/editor';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 
 @NgModule({
     imports: [CommonModule,

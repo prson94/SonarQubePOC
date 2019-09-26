@@ -2,8 +2,6 @@
 import { BaseComponent } from '../shared/base.component';
 import { SearchService } from '../../services/search.service';
 import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../models/search-result.model';
-import { Paginator } from 'primeng/primeng';
-import { NgIf } from '@angular/common';
 
 @Component({
     selector: 'd3s-search-results',

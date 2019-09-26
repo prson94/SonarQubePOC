@@ -1,13 +1,10 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
-import {AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {MenuItem} from 'primeng/primeng';
-
-import {HierarchyDiagramModel} from '../../../models/model.model';
-
-import {DiagramService} from '../../../services/diagram.service';
-
-import {DiagramBaseComponent} from './diagram-base.component';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { MenuItem } from 'primeng/api';
+import { HierarchyDiagramModel } from '../../../models/model.model';
+import { DiagramService } from '../../../services/diagram.service';
+import { DiagramBaseComponent } from './diagram-base.component';
 
 declare var window: any;
 

@@ -4,8 +4,6 @@ import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import { RouterModule } from '@angular/router';
-
 import { CoreModule } from '../../shared/core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
@@ -24,15 +22,12 @@ import { AdminTaxonomyDetailComponent } from './admin-taxonomy-detail.component'
 
 import { AdminTaxonomiesRoutingModule } from './admin-taxonomies.routes';
 
-import {
-    ButtonModule,
-    ColorPickerModule,
-    EditorModule,
-    DropdownModule,
-    InputTextModule,
-    SharedModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { EditorModule } from 'primeng/editor';
+import { ColorPickerModule } from 'primeng/colorpicker';
+import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 
 

@@ -1,4 +1,4 @@
-﻿import { MenuItem } from 'primeng/primeng';
+﻿import { MenuItem } from 'primeng/api';
 import * as go from 'gojs';
 import * as _ from 'lodash';
 import {

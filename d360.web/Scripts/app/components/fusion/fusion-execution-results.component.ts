@@ -1,15 +1,12 @@
-﻿import {Component, Input} from '@angular/core';
-import { LazyLoadEvent } from 'primeng/primeng';
+﻿import { Component, Input } from '@angular/core';
+import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
-import {takeUntil} from "rxjs/operators";
-import {Subject} from "rxjs";
-
-import {SortOrder} from '../../models/enums.model';
-import {FusionExecutionResult} from '../../models/fusion.model';
-
-import {FusionService} from '../../services/fusion.service';
-
-import {BaseComponent} from '../shared/base.component';
+import { takeUntil } from "rxjs/operators";
+import { Subject } from "rxjs";
+import { SortOrder } from '../../models/enums.model';
+import { FusionExecutionResult } from '../../models/fusion.model';
+import { FusionService } from '../../services/fusion.service';
+import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-fusion-execution-results',

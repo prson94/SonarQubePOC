@@ -2,7 +2,7 @@
 import { Input, Output, Component, EventEmitter, OnChanges, SimpleChanges, OnInit } from "@angular/core";
 import { BaseComponent } from "../../shared/base.component";
 import { ExportTemplateStyle, ExportViewType } from "../../../models/export-template.model";
-import { SelectItem, Column } from "primeng/primeng";
+import { SelectItem } from "primeng/api";
 import { ExportTemplateService } from "../../../services/export-template.service";
 import * as _ from "lodash";
 import { MessagesObservableService } from "../../../services/messages-observable.service";

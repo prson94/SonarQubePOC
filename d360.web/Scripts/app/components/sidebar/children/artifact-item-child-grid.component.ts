@@ -7,7 +7,7 @@ import {GridDefinitionService} from '../../../services/grid-definition.service';
 import {GridColumn, GridField} from '../../../models/grid-definition.model';
 import {SortOrder} from '../../../models/enums.model';
 import {Artifacts} from '../../../models/artifacts.model';
-import { LazyLoadEvent } from 'primeng/primeng';
+import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import {StringConstants} from '../../../static/string-constants';

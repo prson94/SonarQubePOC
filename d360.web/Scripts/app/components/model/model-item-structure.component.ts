@@ -9,7 +9,7 @@ import { RightSidebarService } from '../../services/right-sidebar.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
-import { TreeNode } from 'primeng/primeng';
+import { TreeNode } from 'primeng/api';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { LevelsService } from '../../services/levels.service';

@@ -4,7 +4,7 @@ import {AttributeTypeService} from '../../../services/attribute-type.service';
 import {RightSidebarService} from '../../../services/right-sidebar.service';
 import {AdminBaseComponent} from '../admin-base.component';
 import {AttributeType} from '../../../models/attribute-type.model';
-import {TreeNode} from 'primeng/primeng';
+import {TreeNode} from 'primeng/api';
 import {Title} from '@angular/platform-browser';
 import {type} from 'os';
 import { MessagesObservableService } from '../../../services/messages-observable.service';

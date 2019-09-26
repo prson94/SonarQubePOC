@@ -1,5 +1,4 @@
 ﻿import {Input, Component, EventEmitter, Output} from '@angular/core';
-import {SelectItem} from 'primeng/primeng';
 import {LevelsService} from '../../services/levels.service';
 import {TaxonomyLevel} from '../../models/taxonomy.model';
 import {BaseComponent} from '../shared/base.component';

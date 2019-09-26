@@ -1,10 +1,10 @@
-﻿import {Input, Output, Component, OnChanges, SimpleChange} from '@angular/core';
-import {TreeNode} from 'primeng/primeng';
-import {FusionAttributeType, FusionType} from '../../../models/fusion.model';
-import {AssetTypeEditorModel, AssetType, AssetTypeClass} from "../../../models/asset.model";
-import {FusionService} from '../../../services/fusion.service';
-import {ObjectStyleService} from '../../../services/object-style.service';
-import {FormMode} from '../../../models/form.model';
+﻿import {Input, Component, OnChanges, SimpleChange} from '@angular/core';
+import { TreeNode } from 'primeng/api';
+import { FusionType} from '../../../models/fusion.model';
+import { AssetTypeEditorModel } from "../../../models/asset.model";
+import { FusionService } from '../../../services/fusion.service';
+import { ObjectStyleService } from '../../../services/object-style.service';
+import { FormMode } from '../../../models/form.model';
 import * as _ from 'lodash';
 
 @Component({

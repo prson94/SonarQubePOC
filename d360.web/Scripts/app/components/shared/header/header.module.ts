@@ -5,13 +5,11 @@ import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 import { RouterModule } from '@angular/router';
 
-import {    
-    AutoCompleteModule,    
-    TreeModule,
-    OverlayPanelModule,
-    SharedModule,
-    DialogModule,    
-} from 'primeng/primeng';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { TreeModule } from 'primeng/tree';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { DialogModule } from 'primeng/dialog';
+import { SharedModule } from 'primeng/shared';
 
 import { PipesModule } from '../../../pipes/pipes.module';
 

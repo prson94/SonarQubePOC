@@ -16,7 +16,6 @@ import {
 } from '../../../../models/workflow.model';
 import { Resource } from '../../../../models/resource.model';
 import { FieldType } from '../../../../models/fields.model';
-import { Column, Header, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { ResourcesService } from '../../../../services/resources.service';
 import { map } from 'rxjs/operators';

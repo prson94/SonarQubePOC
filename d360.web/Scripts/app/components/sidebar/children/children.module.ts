@@ -6,14 +6,10 @@ import { GovernRequestInterceptor } from "../../../http-interceptors/govern-requ
 
 import { RouterModule } from '@angular/router';
 
-import {
-    SharedModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
 import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../../shared/core.module';
-import { SharedResponsibilitiesModule } from '../../shared/responsibilities/shared-responsibilities.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
