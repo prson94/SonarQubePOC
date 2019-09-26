@@ -25,6 +25,7 @@ export class FusionAttributesTile implements OnChanges {
     selectedRow: TreeNode;
 
     editorModel: AssetTypeEditorModel;
+    assetTypeClass: AssetTypeClass = AssetTypeClass.FusionAttribute;
 
     constructor(
         private fusionService: FusionService,

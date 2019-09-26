@@ -547,7 +547,7 @@ namespace d360.model.DataAccessLayer
         }
         public Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeInsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate)
         {
-            List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
+            List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Technical, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
 
             bool shouldRemoveOldRelationshipType = false;
             bool shouldRemoveExistingParentChildRelationshipType = false;
@@ -555,15 +555,50 @@ namespace d360.model.DataAccessLayer
             switch (model.Class)
             {
                 case AssetTypeClass.Glossary:
-                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Glossary.ToString()}", $"Not valid {AssetTypeClass.Glossary.ToString()} provided.Please check your request and try again.");
+                case AssetTypeClass.Policy:
+                case AssetTypeClass.Reference:
+                case AssetTypeClass.Technical:
+                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {model.Class.ToString()}", $"Not valid {model.Class.ToString()} provided.Please check your request and try again.");
 
                     assetType.Name = model.Name;
                     assetType.DisplayFormat = model.DisplayFormat;
                     assetType.Description = model.Description;
                     assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
-                    assetType.UseAsTransformation = model.UseAsTransformation;
+                    if (model.Class == AssetTypeClass.Glossary || model.Class == AssetTypeClass.Technical)
+                    {
+                        assetType.UseAsTransformation = model.UseAsTransformation;
+                    }
+                    else
+                    {
+                        assetType.UseAsTransformation = false;
+                    }
+                    assetType.Class = model.Class;
+                    assetType.Notes = model.Notes;
+
+                    if (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy)
+                    {
+                        if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
+                            return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", "Invalid Maximum Depth,Model level specified must be a value between 1 and 10.");
+
+                        for (int i = 1; i <= assetType.HierarchyMaximumDepth; i++)
+                        {
+                            var level = assetType.AssetTypeLevels.SingleOrDefault(l => l.Level == i);
+                            if (level == null)
+                            {
+                                CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = assetType.ID });
+                            }
+                        }
+                        CompanyContext.Delete<AssetTypeLevel>(l => l.Level > assetType.HierarchyMaximumDepth);
+                    }
+
                     CompanyContext.Update(assetType);
+
+                    if (model.Class == AssetTypeClass.Reference)
+                    {
+                        shouldRemoveOldRelationshipType = true;
+                        shouldRemoveExistingParentChildRelationshipType = true;
+                    }
 
                     break;
                 case AssetTypeClass.Organization:
@@ -573,59 +608,6 @@ namespace d360.model.DataAccessLayer
                     org.Description = model.Description;
                     org.DisplayFormat = model.DisplayFormat;
                     CompanyContext.Update(org);
-
-
-                    break;
-                case AssetTypeClass.Policy:
-                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Policy.ToString()}", $"Not valid {AssetTypeClass.Policy.ToString()} provided.Please check your request and try again.");
-
-                    assetType.Name = model.Name;
-                    assetType.DisplayFormat = model.DisplayFormat;
-                    assetType.Description = model.Description;
-                    assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
-                    assetType.UseAsTransformation = model.UseAsTransformation;
-                    CompanyContext.Update(assetType);
-
-                    break;
-                case AssetTypeClass.Reference:
-                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Reference.ToString()}", $"Not valid {AssetTypeClass.Reference.ToString()} provided.Please check your request and try again.");
-                    assetType.Name = model.Name;
-                    assetType.DisplayFormat = model.DisplayFormat;
-                    assetType.Description = model.Description;
-                    assetType.Notes = model.Notes;
-
-                    CompanyContext.Update(assetType);
-
-                    shouldRemoveOldRelationshipType = true;
-                    shouldRemoveExistingParentChildRelationshipType = true;
-
-                    break;
-                case AssetTypeClass.Model:
-                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Model.ToString()}", $"Not valid {AssetTypeClass.Model.ToString()} provided.Please check your request and try again.");
-
-                    assetType.Name = model.Name;
-                    assetType.DisplayFormat = model.DisplayFormat;
-                    assetType.Description = model.Description;
-                    assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
-                    assetType.UseAsTransformation = model.UseAsTransformation;
-
-                    if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
-                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", "Invalid Maximum Depth,Model level specified must be a value between 1 and 10.");
-
-
-                    CompanyContext.Update(assetType);
-
-                    for (int i = 1; i <= assetType.HierarchyMaximumDepth; i++)
-                    {
-                        var level = assetType.AssetTypeLevels.SingleOrDefault(l => l.Level == i);
-                        if (level == null)
-                        {
-                            CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = assetType.ID });
-                        }
-                    }
-                    CompanyContext.Delete<AssetTypeLevel>(l => l.Level > assetType.HierarchyMaximumDepth);
-                    CompanyContext.SaveChanges();
-
 
                     break;
                 case AssetTypeClass.Rule:
@@ -725,6 +707,7 @@ namespace d360.model.DataAccessLayer
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
+
         public List<DatabaseBulkAssetResult> DeleteAsset(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             CompanyContext.Add(execution);
@@ -749,6 +732,7 @@ namespace d360.model.DataAccessLayer
 
             return results;
         }
+
         public async Task<ApiExecutionInfo> DeleteBulkAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution)
         {
             var executionInfo = new ApiExecutionInfo
@@ -771,6 +755,7 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
+
         public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
@@ -794,6 +779,7 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
+
         public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
@@ -819,6 +805,7 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
+
         public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
@@ -843,22 +830,27 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
+
         public Predicate GetPredicateByUID(Guid predicateGuid)
         {
             return CompanyContext.Filter<Predicate>(x => x.UID == predicateGuid).SingleOrDefault();
         }
+
         public AssetType GetAssetTypeByUID(Guid assetTypeUid)
         {
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
         }
+
         public AssetType GetAssetTypeByModel(AssetTypeInsert model)
         {
             return CompanyContext.Filter<AssetType>(x => x.ObjectID == model.ObjectID && x.Object == model.Object).SingleOrDefault();
         }
+
         public ApiExecution GetExecutionItemByUid(Guid executionUid)
         {
             return CompanyContext.Filter<ApiExecution>(i => i.ExecutionID == executionUid).SingleOrDefault();
         }
+
         public void UpsertObjectStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx")
         {
             var style = CompanyContext.GetObjectStyle(type, id);
@@ -916,6 +908,7 @@ namespace d360.model.DataAccessLayer
             }
             return reached;
         }
+        
         #region Private
         private void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns)
         {

@@ -270,10 +270,10 @@ namespace d360.web.Controllers.V2
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
 
-                if(model.UseAsTransformation == true && model.Class != AssetTypeClass.Glossary)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", "Use As Transformation can be set only for Glossary"));
+                if (model.UseAsTransformation && (model.Class != AssetTypeClass.Glossary && model.Class != AssetTypeClass.Technical))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", "Use As Transformation can be set only asset types that are a Glossary or Technical class"));
 
-                if(AssetRepository.IsReachedTransformationLimit(model))
+                if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", "The total number of asset types exceeds the Transformation limit "));
 
                 AssetType assetType = null;
@@ -379,8 +379,8 @@ namespace d360.web.Controllers.V2
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
 
-                if (model.UseAsTransformation == true && model.Class != AssetTypeClass.Glossary)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", "Use As Transformation can be set only for Glossary"));
+                if (model.UseAsTransformation && (model.Class != AssetTypeClass.Glossary && model.Class != AssetTypeClass.Technical))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", "Use As Transformation can be set only asset types that are a Glossary or Technical class"));
 
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", "The total number of asset types exceeds the Transformation limit "));

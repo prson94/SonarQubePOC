@@ -966,6 +966,7 @@ namespace d360.web.Controllers
                         appendTitle = FormInfo.FusionAttributeType;
                         break;
                     case AssetTypeClass.Glossary:
+                    case AssetTypeClass.Technical:
                         ot = SystemObjects.ArtifactType;
                         appendTitle = FormInfo.ArtifactType;
                         break;
@@ -1018,8 +1019,9 @@ namespace d360.web.Controllers
                             model.AssetType.Name = f.Name;
                             model.ScanEnabled = f.ScanEnabled;
                             break;
-                        case AssetTypeClass.Glossary:                            
-                            model.CanOwnFusion = assetType.CanOwnFusion;
+                        case AssetTypeClass.Glossary:
+                        case AssetTypeClass.Technical:
+                            model.CanOwnFusion = (@class == AssetTypeClass.Glossary) ? assetType.CanOwnFusion : false;
                             model.AutoDisplayDescription = assetType.AutoDisplayDescription;
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;
@@ -1054,7 +1056,7 @@ namespace d360.web.Controllers
                     model.FormName = string.Format(FormInfo.Add_Asset_Type_Title, appendTitle);
                     model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
 
-                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.Glossary || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType)
+                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.Glossary || @class == AssetTypeClass.Technical || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType)
                     {
                         var intersectType = Company.Filter<IntersectType>(i =>
                             i.Object == assetType.Object &&
@@ -1179,7 +1181,7 @@ namespace d360.web.Controllers
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
                             UseAsTransformation = model.AssetType.UseAsTransformation,
-                            Class = AssetTypeClass.Glossary
+                            Class = model.AssetType.Class
                         };
                         Company.Add(a);
                         parentType = SystemObjects.ArtifactType;
@@ -1313,8 +1315,8 @@ namespace d360.web.Controllers
 
                 dynamic custom = new
                 {
-                    ParentID = model.ParentID,
-                    Name = model.AssetType.Name,
+                    model.ParentID,
+                    model.AssetType.Name,
                     action = "add"
                 };
 
@@ -1396,6 +1398,7 @@ namespace d360.web.Controllers
                         a.DisplayFormat = model.AssetType.DisplayFormat;
                         a.Description = model.AssetType.Description;
                         a.CanOwnFusion = model.CanOwnFusion ?? false;
+                        a.Class = model.AssetType.Class;
                         a.AutoDisplayDescription = model.AutoDisplayDescription ?? false;
                         a.UseAsTransformation = model.AssetType.UseAsTransformation;
                         Company.Update(a);
@@ -1566,8 +1569,8 @@ namespace d360.web.Controllers
 
                 dynamic custom = new
                 {
-                    ParentID = model.ParentID,
-                    Name = model.AssetType.Name,
+                    model.ParentID,
+                    model.AssetType.Name,
                     action = "edit"
                 };
 
@@ -14995,7 +14998,7 @@ order by	case
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
 
-            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Glossary).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Glossary || f.Class == AssetTypeClass.Technical).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
             
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
@@ -15017,7 +15020,7 @@ order by	case
             
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names});
 
-            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Glossary).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Glossary || f.Class == AssetTypeClass.Technical).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Glossary Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() });

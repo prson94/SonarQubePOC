@@ -49,10 +49,10 @@ namespace d360.core.enums
         ]
         Rule = 7,
         [
-            Name("Map"),
-            Description("Map asset.")
+            Name("Technical"),
+            Description("Technical asset that replaces fusion attribute types.")
         ]
-        Map = 8,
+        Technical = 8,
         [
             Name("Reference"),
             Description("Reference asset.")

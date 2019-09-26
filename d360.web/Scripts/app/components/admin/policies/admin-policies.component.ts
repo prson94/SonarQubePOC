@@ -15,6 +15,7 @@ import { AssetTypeService } from "../../../services/asset-type.services";
 
 import { AdminBaseComponent } from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { AssetTypeClass } from '../../../models/asset.model';
 
 @Component({
     selector: 'd3s-admin-policies-component',
@@ -23,7 +24,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
         <div class="tile tile-detail"
              *ngIf="showEditor || showDelete">
             <d3s-asset-type-editor *ngIf="showEditor"
-                                   [assetTypeClass]="'P'"
+                                   [assetTypeClass]="assetTypeClass"
                                    [id]="selected?.AssetTypeID"
                                    [title]="(selected == null ? 'New' : 'Edit') +' Policy Type'"
                                    (onCancel)="closeEditor()"
@@ -174,7 +175,7 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     showEditor = false;
     showDelete = false;
     theDeleteCallback: Function;
-
+    assetTypeClass: AssetTypeClass = AssetTypeClass.Policy;
     protected assetTypeService: AssetTypeService = null;
 
     constructor(

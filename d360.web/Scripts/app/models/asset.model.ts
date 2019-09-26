@@ -35,7 +35,7 @@ export enum AssetTypeClass {
     AttributeGroup = 5,
     Policy = 6,
     Rule = 7,
-    Map = 8,
+    Technical = 8,
     Reference = 9,
     Organization = 10,
     ReferenceItemType = 14
