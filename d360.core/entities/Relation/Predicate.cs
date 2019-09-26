@@ -48,5 +48,8 @@ namespace d360.core.entities
 
         [DataMember]
         public bool IsSystem { get; set; }
+
+        [DataMember]
+        public bool IsInUse { get; set; }
     }
 }

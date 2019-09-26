@@ -39,7 +39,19 @@ namespace d360.model.DataAccessLayer
 
         public async Task<IEnumerable<PredicateApiViewModel>> GetPredicates()
         {
-            return await companyContext.QueryAsync<PredicateApiViewModel>("select Uid, Name, Inverse, IsSystem, [Type] from [Predicate] order by [Type], Name");
+            return await companyContext.QueryAsync<PredicateApiViewModel>(@"select 
+                                                                             P.Uid,
+                                                                             P.Name,
+                                                                             P.Inverse,
+                                                                             P.IsSystem,
+                                                                             P.[Type],
+                                                                             CASE
+                                                                             WHEN Usage.Id is null then 0
+                                                                             ELSE 1
+                                                                             END AS IsInUse
+                                                                            from[Predicate] P
+                                                                            outer apply(select top 1 id from IntersectType where PredicateID = P.Id)Usage
+                                                                            order by[Type], Name");
         }
 
         public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
