@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef  } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
-import { TreeNode } from 'primeng/primeng';
+import { TreeNode } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model';

@@ -6,19 +6,17 @@ import { GovernRequestInterceptor } from "../../../http-interceptors/govern-requ
 
 import { RouterModule } from '@angular/router';
 
-import {    
-    EditorModule,
-    InputSwitchModule,
-    SharedModule,
-    AutoCompleteModule,
-    ButtonModule,
-    InputTextareaModule,
-    ListboxModule,
-    DropdownModule,
-    MenubarModule,
-} from 'primeng/primeng';
 
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { ButtonModule } from 'primeng/button';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { SharedModule } from 'primeng/shared';
 import { TableModule } from 'primeng/table';
+import { EditorModule } from 'primeng/editor';
+import { ListboxModule } from 'primeng/listbox';
+import { DropdownModule } from 'primeng/dropdown';
+import { MenubarModule } from 'primeng/menubar';
 
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage/lineage.component';

@@ -2,7 +2,7 @@
 import {FormMode, FormHelper} from '../../models/form.model';
 import {AttributeHeirarchyItem, ToolbarItem} from '../../models/object-detail.model';
 import {ObjectDetailService} from '../../services/object-detail.service';
-import {TreeNode, MenuItem} from 'primeng/primeng';
+import { TreeNode, MenuItem } from 'primeng/api';
 import * as _ from 'lodash';
 
 

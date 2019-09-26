@@ -40,19 +40,18 @@ export function highchartsFactory() {
     return hc;
 }
 
-import {    
-    InputTextModule,    
-    CalendarModule,
-    TreeTableModule,
-    ButtonModule,
-    DropdownModule,    
-    SelectButtonModule,    
-    MultiSelectModule,    
-    TooltipModule,        
-    SharedModule,
-} from 'primeng/primeng';
 
+import { SharedModule } from 'primeng/shared';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { TreeTableModule } from 'primeng/treetable';
+import { CalendarModule } from 'primeng/calendar';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TooltipModule } from 'primeng/tooltip';
+
 import {GovernRequestInterceptor} from "../../http-interceptors/govern-request.interceptor";
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 

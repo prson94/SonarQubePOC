@@ -1,8 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewChild } from '@angular/core';
-import { Router, ActivatedRoute } from '@angular/router';
 import { RulesService } from '../../services/rules.service';
 import { BaseComponent } from '../shared/base.component';
-import { LazyLoadEvent } from 'primeng/primeng';
+import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
 import { Rule, RuleResult, RuleResultPagedResults, RuleResultFilter } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';

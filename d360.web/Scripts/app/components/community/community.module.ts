@@ -18,11 +18,8 @@ import { CommunityResponsibilityCountComponent } from './community-responsibilit
 
 import { CommunityRoutingModule } from './community.routes';
 
-import {
-    SharedModule,
-    GrowlModule
-} from 'primeng/primeng';
-
+import { GrowlModule } from 'primeng/growl';
+import { SharedModule } from 'primeng/shared';
 import { TableModule } from 'primeng/table';
 
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';

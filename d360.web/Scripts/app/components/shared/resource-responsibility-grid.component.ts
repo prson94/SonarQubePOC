@@ -1,8 +1,6 @@
 ﻿import { Component, Input, OnChanges } from '@angular/core';
-import { Column, Header } from 'primeng/primeng';
 import { ResponsibilityDetailForResource } from '../../models/resource.model';
 import { ResourcesService } from '../../services/resources.service';
-import { FormHelper } from '../../models/form.model';
 import { Router } from '@angular/router';
 
 @Component({

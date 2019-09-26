@@ -12,7 +12,7 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef
 } from '@angular/core';
-import { LazyLoadEvent } from 'primeng/primeng';
+import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
 import {Router, ActivatedRoute} from '@angular/router';
 

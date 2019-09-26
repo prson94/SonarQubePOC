@@ -1,12 +1,10 @@
-﻿import { NgModule, Component } from '@angular/core';
+﻿import { NgModule } from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 
-import {
-    ButtonModule,
-} from 'primeng/primeng';
+import { ButtonModule } from 'primeng/button';
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';

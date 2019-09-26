@@ -19,15 +19,14 @@ import { PaginatorModule } from '../shared/small-widgets/paginator/paginator-bar
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SearchRoutingModule} from './search.routes';
 
-import {    
-    InputTextModule,        
-    ButtonModule,
-    DropdownModule,
-    CheckboxModule,                  
-    MultiSelectModule,    
-    TooltipModule,    
-    SharedModule,
-} from 'primeng/primeng';
+import { CheckboxModule } from 'primeng/checkbox';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { TooltipModule } from 'primeng/tooltip';
+
 
 @NgModule({
     imports: [CommonModule,

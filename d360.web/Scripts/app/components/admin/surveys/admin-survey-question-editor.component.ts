@@ -1,8 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
-import { NgForm } from '@angular/forms';
-import { SelectItem } from 'primeng/primeng';
 import { SurveysService } from '../../../services/surveys.service';
-import { SurveyQuestionType, SurveyQuestionTypeDetails } from '../../../models/survey.model';
+import { SurveyQuestionTypeDetails } from '../../../models/survey.model';
 import { DropdownOption } from '../../../models/dropdown.model';
 import * as _ from 'lodash';
 

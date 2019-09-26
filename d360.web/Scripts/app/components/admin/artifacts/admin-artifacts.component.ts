@@ -1,5 +1,5 @@
 ﻿import { Component, OnDestroy } from '@angular/core';
-import { TreeNode } from 'primeng/primeng';
+import { TreeNode } from 'primeng/api';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';

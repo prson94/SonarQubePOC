@@ -1,6 +1,5 @@
 ﻿import { Component, Input, Output, EventEmitter, NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { TreeTable } from 'primeng/primeng';
+import { TreeTable } from 'primeng/treetable';
 
 @Component({
     selector: 'd3s-treeTableToggler',

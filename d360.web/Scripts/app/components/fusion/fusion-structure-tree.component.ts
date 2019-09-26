@@ -1,5 +1,5 @@
 ﻿import {Component, EventEmitter, Input, OnChanges, Output, SimpleChange} from '@angular/core';
-import {TreeNode} from 'primeng/primeng';
+import {TreeNode} from 'primeng/api';
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
 

@@ -4,11 +4,9 @@ import { RouterModule }    from '@angular/router';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import {
-    ButtonModule,
-    SharedModule,   
-    TreeTableModule,
-} from 'primeng/primeng';
+import { ButtonModule } from 'primeng/button';
+import { SharedModule } from 'primeng/shared';
+import { TreeTableModule } from 'primeng/treetable';
 
 import { ChartModule } from 'angular2-highcharts';
 

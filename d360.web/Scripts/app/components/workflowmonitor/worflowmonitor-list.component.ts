@@ -1,6 +1,6 @@
 ﻿import { Component, OnDestroy, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, Input, OnChanges, SimpleChanges, Output, EventEmitter } from "@angular/core";
 import { BaseComponent } from "../shared/base.component";
-import { LazyLoadEvent } from "primeng/primeng";
+import { LazyLoadEvent } from "primeng/api";
 import { WorkflowMonitorService } from "../../services/workflowmonitor.service";
 import { Subscription } from "rxjs";
 import { WorkflowMonitorItem } from "../../models/workflowmonitor.model";

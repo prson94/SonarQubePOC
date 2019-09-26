@@ -20,15 +20,12 @@ import { ActivityDetailsTile } from './activity-details-tile.component';
 import { BoardTile} from './board-tile.component';
 import { HomeRoutingModule } from './home.routes';
 
-import {
-    GrowlModule,
-    ButtonModule,
-    TooltipModule,    
-    SharedModule,
-    InputTextModule,
-} from 'primeng/primeng';
-
+import { ButtonModule } from 'primeng/button';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
+import { GrowlModule } from 'primeng/growl';
 
 @NgModule({
     imports: [CommonModule,     

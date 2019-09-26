@@ -4,19 +4,19 @@ import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import {
-    CalendarModule,
-    ButtonModule,
-    DropdownModule,
-    InputTextModule,
-    InputTextareaModule,
-    EditorModule,
-    MultiSelectModule,    
-    SharedModule,
-    CheckboxModule
-} from 'primeng/primeng';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { TableModule } from 'primeng/table';
+
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { CalendarModule } from 'primeng/calendar';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DropdownModule } from 'primeng/dropdown';
+import { SharedModule } from 'primeng/shared';
+import { EditorModule } from 'primeng/editor';
+import { MultiSelectModule } from 'primeng/multiselect';
+
 
 import { CoreModule } from '../core.module';
 import { TilesModule  } from '../tiles/tiles.module';

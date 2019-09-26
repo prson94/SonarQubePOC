@@ -1,5 +1,5 @@
 ﻿import { BaseEditorModel } from '../models/form.model';
-import { Predicate } from "./predicate.model";
+
 
 export class ArtifactTypeEditorModel extends BaseEditorModel {
     IconBackColor: string;
@@ -32,19 +32,4 @@ export class AssetTypeExportTemplate {
     ID: number;
     Name: string;
     Description: string;
-}
-
-export class ArtifactTypeStatusCount {
-    Status: string;
-    Count: number;
-    BackColor: string;
-}
-
-export class ArtifactTypeUsedVsUnusedResponsibility {
-    ArtifactType: string;
-    ArtifactTypeID: number;
-    AssignedCount: number;
-    Responsibility: string;
-    Total: number;
-    UnassignedCount: number;
 }

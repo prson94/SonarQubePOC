@@ -4,8 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import { RouterModule } from '@angular/router';
-
 
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
@@ -25,14 +23,9 @@ import { AdminCustomAPIServiceNamespaceComponent } from './admin-customapi-servi
 
 import { AdminCustomAPIRoutingModule } from './admin-customapi.routes';
 
-import {
-    ButtonModule,
-    EditorModule,
-    InputTextModule,
-    SharedModule,
-    MultiSelectModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
+import { ButtonModule } from 'primeng/button';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
 
 @NgModule({

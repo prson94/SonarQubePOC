@@ -11,10 +11,7 @@ import { SiteMenuMegaItemComponent } from './site-menu-mega-item.component';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 
-
-import {    
-    TooltipModule,    
-} from 'primeng/primeng';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [CommonModule,
