@@ -344,8 +344,37 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetIntersectTypeByUid(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new IntersectType() : null);
 
-            mock.Setup(x => x.GetPredicates())
-                .Returns(Task.FromResult(DataConstants.GetPredicates()));
+            mock.Setup(x => x.GetPredicates(It.IsAny<Guid?>(), It.IsAny<PredicateType?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool?>()))
+                .Returns((Guid? PredicateUid, PredicateType? Type, string Name, string Inverse, bool? IsUsed) => {
+                    var predicates = DataConstants.GetPredicates();
+                    if (PredicateUid.HasValue)
+                    {
+                        predicates = predicates.Where(i => i.Uid == PredicateUid.Value);
+                    }
+
+                    if (Type.HasValue)
+                    {
+                        predicates = predicates.Where(i => i.Type == Type.Value);
+                    }
+
+                    if (!string.IsNullOrEmpty(Name) && !string.IsNullOrWhiteSpace(Name))
+                    {
+                        Name = Name.Trim().ToLower();
+                        predicates = predicates.Where(i => i.Name.ToLower() == Name);
+                    }
+
+                    if (!string.IsNullOrEmpty(Inverse) && !string.IsNullOrWhiteSpace(Inverse))
+                    {
+                        Inverse = Inverse.Trim().ToLower();
+                        predicates = predicates.Where(i => i.Inverse.ToLower() == Inverse);
+                    }
+
+                    if (IsUsed.HasValue)
+                    {
+                        predicates = predicates.Where(x => x.IsInUse == IsUsed);
+                    }
+                    return Task.FromResult(predicates);
+                });
 
             mock.Setup(x => x.GetRelationshipByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new Intersect() : null);
