@@ -3933,5 +3933,211 @@ from    [Intersect] T
             return bulkResult;
         }
 
+        public List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600)
+        {
+            var results = new List<PredicateDeleteResult>();
+            bool generalChecksCompleted = false;
+            CurrentExecutionLocationModel currentLocation = null;
+
+            var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            if (executionItemDupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new PredicateDeleteResult { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
+                if (uidDupes.Any())
+                {
+                    execution.ErrorMessage = $"Duplicate predicate Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
+                    results.AddRange(import.Select(i => new PredicateDeleteResult { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Message = execution.ErrorMessage, Success = false }));
+                }
+                else
+                {
+                    try
+                    {
+                        currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionDeletedPredicate");
+
+                        if (currentLocation.HighestItemNumberProcessed > 0)
+                        {
+                            results.AddRange(
+                                Query<PredicateDeleteResult>(
+                                    $"select * from api.ExecutionDeletedPredicate where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                    new { execution.ExecutionID }
+                                )
+                            );
+                        }
+
+                        #region Build data tables.
+
+                        var table = new DataTable();
+                        table.Columns.Add("ExecutionID", typeof(Guid));
+                        table.Columns.Add("ItemNumber", typeof(int));
+                        table.Columns.Add("ExecutionItemUid", typeof(Guid));
+                        table.Columns.Add("Uid", typeof(Guid));
+                        table.Columns.Add("PredicateID", typeof(long));
+                        table.Columns.Add("Message", typeof(string));
+                        table.Columns.Add("Success", typeof(bool));
+
+                        #endregion
+
+                        #region Generate data sets
+
+                        for (int i = 1; i <= import.Count; i++)
+                        {
+                            if (i > currentLocation.HighestItemNumber)
+                            {
+                                var model = import[i - 1];
+
+                                var row = table.NewRow();
+
+                                row["ExecutionID"] = execution.ExecutionID;
+                                row["ItemNumber"] = i;
+                                if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
+                                else row["ExecutionItemUid"] = Guid.NewGuid();
+                                row["Uid"] = model.Uid;
+
+                                table.Rows.Add(row);
+                            }
+                        }
+
+                        #endregion
+
+                        if (Database.Connection.State != ConnectionState.Open)
+                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                        #region Bulk Copy
+
+                        SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+
+                        bulkCopy.BatchSize = table.Rows.Count;
+                        bulkCopy.DestinationTableName = "api.ExecutionDeletedPredicate";
+                        bulkCopy.BulkCopyTimeout = timeout;
+
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
+
+                        bulkCopy.WriteToServer(table);
+
+                        bulkCopy = null;
+
+                        #endregion
+
+                        #region Resolve predicates based on UIDs
+
+                        Connection.Execute(@"
+    update	T
+    set		T.PredicateID = P.ID
+    from	api.ExecutionDeletedPredicate T
+		    inner join Predicate P on P.Uid = T.Uid and T.ExecutionID = @ExecutionID;",
+                    new { execution.ExecutionID }, commandTimeout: timeout);
+
+                        #endregion
+
+                        #region Log lookup errors
+
+                        Connection.Execute($@"
+    update	api.ExecutionDeletedPredicate
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid for this asset when you are attempting to delete it'
+    where	ExecutionID = @ExecutionID and ([Uid] is null or [Uid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER)); 
+
+    update	api.ExecutionDeletedPredicate
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
+    where	ExecutionID = @ExecutionID and PredicateID is null;
+
+    update T
+    set T.Success = 0, [Message] = coalesce([Message] + '; ', '') + 'Predicate in use cannot be deleted'
+    from	api.ExecutionDeletedPredicate T
+    cross apply (select * from IntersectType where PredicateId = T.PredicateId)Usage
+",
+                        new { execution.ExecutionID }, commandTimeout: timeout);
+
+                        #endregion
+
+                        generalChecksCompleted = true;
+                    }
+                    catch (Exception generalEx)
+                    {
+                        generalChecksCompleted = false;
+                        var msg = generalEx.GetFullExceptionData(false);
+                        execution.ErrorMessage = msg;
+                        execution.Processed = 0;
+                        execution.Error = import.Count();
+
+                        results = new List<PredicateDeleteResult>();
+                        results.AddRange(import.Select(i => new PredicateDeleteResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+                    }
+
+                    if (generalChecksCompleted)
+                    {
+                        int loopSize = 250;
+                        int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                        int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                        int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+
+                        for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                        {
+                            bool runCompleted = false;
+                            int retryCount = 0;
+
+                            while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                            {
+                                var querySuffix = $"P.Success is null and P.ExecutionID = @ExecutionID and P.ItemNumber between @beginItemNumber and @endItemNumber";
+                                using (var trans = Connection.BeginTransaction())
+                                {
+                                    try
+                                    {
+                                        Connection.Execute(
+                                            $"delete Predicate where Uid in (select P.Uid from api.ExecutionDeletedPredicate P where {querySuffix})",
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                        Connection.Execute(
+                                            $"update P set P.Success = 1 from api.ExecutionDeletedPredicate P where	{querySuffix} and P.PredicateID is not null;",
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                        trans.Commit();
+                                        runCompleted = true;
+
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        trans.Rollback();
+
+                                        retryCount++;
+
+                                        if (retryCount > API_V2_RETRY_LIMIT)
+                                        {
+                                            LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeletedPredicate", ex.GetFullExceptionData(false), timeout);
+                                        }
+                                    }
+                                }
+                            }
+
+                            results.AddRange(
+                                Query<PredicateDeleteResult>(
+                                    $"select * from api.ExecutionDeletedPredicate where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                                )
+                            );
+
+
+                            beginItemNumber += loopSize;
+                            endItemNumber += loopSize;
+                        }
+
+                        Connection.Close();
+
+                    }
+                }
+            }
+
+            return results;
+        }
+
     }
 }

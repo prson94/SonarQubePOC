@@ -28,5 +28,6 @@ namespace d360.model.DataAccessLayer
         Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool sendWorkflow = false);
         bool AnyExists(Guid uid);
         bool AnyPredicateExists(Guid uid);
+        List<PredicateDeleteResult> DeletePredicates(PredicateDeletes predicates, ApiExecution execution);
      }
 }

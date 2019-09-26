@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -447,6 +448,33 @@ from	IntersectType I
             companyContext.Add(execution);
             return executionInfo;
         }
+
+        public List<PredicateDeleteResult> DeletePredicates(PredicateDeletes predicates, ApiExecution execution)
+        {
+            companyContext.Add(execution);
+
+            List<PredicateDeleteResult> results = null;
+            try
+            {
+                results = companyContext.RemovePredicates(execution, predicates);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                companyContext.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                companyContext.Update(execution);
+            }
+
+            return results;
+        }
+
+
 
     }
 }

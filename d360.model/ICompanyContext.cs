@@ -317,5 +317,7 @@ namespace d360.model
         void AddAuditForCompanySettingChange(CompanySetting companySetting, string actionName, string key);
 
         int GetObjectId(Guid uid, SystemObjects objectType);
+
+        List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600);
     }
 }

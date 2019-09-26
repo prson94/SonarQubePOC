@@ -361,4 +361,37 @@ namespace d360.core.entities
     {
         public Guid AssetUid { get; set; }
     }
+
+
+    [JsonArray]
+    [DataContract(Name = "predicates")]
+    public class PredicateDeletes : List<PredicateDelete>
+    {
+    }
+
+    public class PredicateDelete
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+    }
+
+    [DataContract]
+    public class PredicateDeleteResult
+    {
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+
 }

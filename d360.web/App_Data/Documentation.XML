@@ -2766,6 +2766,16 @@
             <param name="Inverse">Filter by an predicate's Inverse.</param>
             <returns>A list of predicates contained within your Govern environment.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeletePredicates(d360.core.entities.PredicateDeletes)">
+            <summary>
+            Deletes a predicates of a given predicate list.
+            </summary>
+            <param name="predicates">The list of predicates for deletions.</param>
+            <remarks>
+            The "types/" prefix in the URI will be removed in a subsequent release. Please use the DELETE endpoint without this prefix.
+            </remarks>
+            <returns>An HTTP status code and message.</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetPredicatesTypesAsync">
             <summary>
             GET a list of predicate functional types.
