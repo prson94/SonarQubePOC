@@ -361,21 +361,26 @@ namespace d360.model.DataAccessLayer
                 offsetSql = $"offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
 
                 var sql = $@"
-                    select
-	                    a.id as AssetId,
-	                    a.uid as AssetUid,
-	                    att.uid as AssetTypeUid,
-	                    att.name as AssetTypeName
-                    from 
-	                   asset a
-	                   inner join assetType att on a.AssetTypeID = att.id
-                    where 
-	                    (exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) {responsibilityQueryAdditionalJoins} where rd.assetid = a.id and rr.applytotype = 0 {responsibilityQueryFilterSql} )		
-						    or 
-                        exists (select 1 from ResponsibilityTypeRelationOverrideItem rsa inner join ResponsibilityType rt on(rsa.ResponsibilityTypeID = rt.id)  where rsa.AssetID = a.ID {responsibilityQueryFilterSql} )
-						    or
-						exists (select 1 from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) {responsibilityQueryAdditionalJoins} where rd.AssetTypeID = a.assettypeid and rr.applytotype = 1 {responsibilityQueryFilterSql} )		
-						)
+with rs as (
+    select distinct a.assetId
+    from (
+        select rd.assetId from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) inner join asset a on (rd.assetid = a.id) {responsibilityQueryAdditionalJoins} where rr.applytotype = 0 {responsibilityQueryFilterSql}
+        union all
+        select rsa.assetId from ResponsibilityTypeRelationOverrideItem rsa inner join ResponsibilityType rt on(rsa.ResponsibilityTypeID = rt.id) inner join asset a on (rsa.assetId = a.id)  where 1=1 {responsibilityQueryFilterSql}
+        union all
+        select a.id as assetId from ResponsibilityRuleResultAsset rd inner join ResponsibilityTypeRelationRule rr on (rr.id = rd.RuleID) inner join ResponsibilityType rt on (rr.responsibilitytypeid = rt.id) inner join asset a on (rd.AssetTypeID = a.assettypeid) {responsibilityQueryAdditionalJoins} where rr.applytotype = 1 {responsibilityQueryFilterSql} 
+    ) a
+)
+select
+	a.id AS AssetId,
+	a.AssetTypeID as assettypeid,
+	a.uid AS AssetUid,
+	att.uid AS AssetTypeUid,
+	att.name AS AssetTypeName
+from		rs
+			inner join asset a on rs.assetId =  a.id
+			inner join assetType att ON a.assetTypeID = att.id
+where 1=1
                         {assetQueryFilterSql}
                         {permissionsFilter}   	                    
                         {orderBySql} {offsetSql} 

@@ -22,14 +22,11 @@ import { AdminHomeComponent } from './admin-home.component';
 import { AdminSettingsRoutingModule } from './admin-settings.routes';
 import { D3SSharedModule } from '../../shared/shared.module';
 
-import {
-    ButtonModule,
-    DropdownModule,
-    InputTextModule,
-    SharedModule,
-    ColorPickerModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
+import { ColorPickerModule } from 'primeng/colorpicker';
 import { TableModule } from 'primeng/table';
 
 @NgModule({

@@ -28,10 +28,10 @@ namespace igx.UnitTests.Core
         public static IEnumerable<PredicateApiViewModel> GetPredicates()
         {
             return new List<PredicateApiViewModel>(){
-                new PredicateApiViewModel() { Name = "Test name", Inverse = "Inverse", IsSystem = true, Type = PredicateType.DataLineage, Uid = Guid.Parse(ValidGUID) },
-                new PredicateApiViewModel(){ Name ="", Inverse = ""},
-                new PredicateApiViewModel(){ Name ="", Inverse = ""},
-                new PredicateApiViewModel(){ Name ="", Inverse = ""}
+                new PredicateApiViewModel() { Name = "Test name", Inverse = "Inverse", IsSystem = true, Type = PredicateType.DataLineage, Uid = Guid.Parse(ValidGUID), IsInUse = true },
+                new PredicateApiViewModel(){ Name ="", Inverse = "", IsInUse = true},
+                new PredicateApiViewModel(){ Name ="", Inverse = "", IsInUse = true},
+                new PredicateApiViewModel(){ Name ="", Inverse = "", IsInUse = false}
             };
         }
 

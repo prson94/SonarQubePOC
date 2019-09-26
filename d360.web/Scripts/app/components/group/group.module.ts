@@ -19,11 +19,8 @@ import { GroupItemComponent } from './group-item.component';
 import { GroupListComponent } from './group-list.component';
 import { GroupResponsibilityComponent } from './group-responsibility.component';
 
-import {
-    GrowlModule,    
-    SharedModule,
-} from 'primeng/primeng';
-
+import { GrowlModule } from 'primeng/growl';
+import { SharedModule } from 'primeng/shared';
 import { TableModule } from 'primeng/table';
 
 @NgModule({

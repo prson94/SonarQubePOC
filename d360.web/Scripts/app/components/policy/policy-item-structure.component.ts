@@ -7,7 +7,7 @@
 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { TreeNode } from 'primeng/primeng';
+import { TreeNode } from 'primeng/api';
 
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Policy, PolicyType } from '../../models/policy.model';
@@ -260,7 +260,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
             return thisLevel[0].Name;
         }
 
-        return `(Level ${this.selected.data.Level + 1}) Item`;
+        return `(Level ${this.selected.data.Level}) Item`;
     }
 
     private deleteSelectedTreeNode(id: number): TreeNode {

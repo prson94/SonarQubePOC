@@ -13,7 +13,7 @@ import {FusionAttributeService} from '../../services/fusion-attribute.service';
 import {GridDefinitionService} from '../../services/grid-definition.service';
 import {BaseComponent} from '../shared/base.component';
 import {FusionAttributeType} from '../../models/fusion.model';
-import {LazyLoadEvent} from 'primeng/primeng';
+import {LazyLoadEvent} from 'primeng/api';
 import {FusionAttributePagedResults} from '../../models/fusion-attribute.model';
 import {GridColumn, GridField, GridFilterColumn} from '../../models/grid-definition.model';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';

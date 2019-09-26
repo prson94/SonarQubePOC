@@ -16,8 +16,3 @@ export class TaxonomyLevel {
     Level: number;
     TaxonomyTypeID: number;
 }
-
-export class TaxonomyClassification {
-    Name: string;
-    ID: number;
-}

@@ -12,7 +12,7 @@ import {
     ViewChild
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { Editor } from 'primeng/primeng';
+import { Editor } from 'primeng/editor';
 import { Subject } from 'rxjs';
 
 import { EditorDropDownItem, EditorField } from '../../../models/editor-field.model';

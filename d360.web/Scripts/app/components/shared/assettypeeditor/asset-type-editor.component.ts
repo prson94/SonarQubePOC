@@ -1,5 +1,4 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
-import { SelectItem } from 'primeng/primeng';
 import { BaseComponent } from '../../shared/base.component';
 import { AssetTypeService } from "../../../services/asset-type.services";
 import { AssetTypeClass, AssetTypeEditorModel } from "../../../models/asset.model";

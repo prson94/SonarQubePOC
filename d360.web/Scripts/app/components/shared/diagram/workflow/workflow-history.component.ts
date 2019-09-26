@@ -16,7 +16,6 @@ import {
     EmailTaskRecipientType
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
-import { Column, Header, Editor } from 'primeng/primeng';
 import { WorkflowService } from '../../../../services/workflow.service';
 
 @Component({

@@ -1,6 +1,6 @@
 ﻿import * as _ from 'lodash';
 import * as go from 'gojs';
-import {MenuItem} from 'primeng/primeng';
+import { MenuItem } from 'primeng/api';
 import {AfterViewInit, Component, EventEmitter, Input, OnInit, Output, ViewChild} from '@angular/core';
 
 import {

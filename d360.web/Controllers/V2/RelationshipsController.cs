@@ -64,6 +64,7 @@ namespace d360.web.Controllers.V2
         /// <param name="Type">Filter by a predicate's functional type.</param>
         /// <param name="Name">Filter by an predicate's Name.</param>
         /// <param name="Inverse">Filter by an predicate's Inverse.</param>
+        /// <param name="IsUsed">Filter by an predicate's usage.</param>
         /// <returns>A list of predicates contained within your Govern environment.</returns>
         [
             HttpGet,
@@ -73,40 +74,14 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of predicates.", typeof(PredicatesApiViewModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
        ]
-        public async Task<HttpResponseMessage> GetPredicatesAsync(Guid? PredicateUid = null, core.enums.PredicateType? Type = null, string Name = null, string Inverse = null)
+        public async Task<HttpResponseMessage> GetPredicatesAsync(Guid? PredicateUid = null, PredicateType? Type = null, string Name = null, string Inverse = null, bool? IsUsed = null)
         {
             var prefix = "Relationships.GetPredicatesAsync => ";
             var errorMessage = "";
 
             try
             {
-                IEnumerable<PredicateApiViewModel> predicates = await RelationshipRepository.GetPredicates();
-
-                #region Where clause action
-
-                if (PredicateUid.HasValue)
-                {
-                    predicates = predicates.Where(i => i.Uid == PredicateUid.Value);
-                }
-
-                if (Type.HasValue)
-                {
-                    predicates = predicates.Where(i => i.Type == Type.Value);
-                }
-
-                if (!string.IsNullOrEmpty(Name) && !string.IsNullOrWhiteSpace(Name))
-                {
-                    Name = Name.Trim().ToLower();
-                    predicates = predicates.Where(i => i.Name.ToLower() == Name);
-                }
-
-                if (!string.IsNullOrEmpty(Inverse) && !string.IsNullOrWhiteSpace(Inverse))
-                {
-                    Inverse = Inverse.Trim().ToLower();
-                    predicates = predicates.Where(i => i.Inverse.ToLower() == Inverse);
-                }
-
-                #endregion
+                IEnumerable<PredicateApiViewModel> predicates = await RelationshipRepository.GetPredicates(PredicateUid, Type, Name, Inverse, IsUsed);
 
                 return Request.CreateResponse(HttpStatusCode.OK, predicates);
             }

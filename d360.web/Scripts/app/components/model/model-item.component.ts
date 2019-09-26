@@ -9,7 +9,7 @@ import {PermissionsService} from '../../services/permissions.service';
 import {RightSidebarService} from '../../services/right-sidebar.service';
 import {Breadcrumb} from '../../models/breadcrumb.model';
 import {Model, ModelHierarchy} from '../../models/model.model';
-import {TreeNode} from 'primeng/primeng';
+import {TreeNode} from 'primeng/api';
 import {MessageBarItem} from '../../models/message-bar-item.model';
 import {SurveyType} from '../../models/survey.model';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';

@@ -1,7 +1,7 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
 import {AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild} from '@angular/core';
-import {MenuItem} from 'primeng/primeng';
+import { MenuItem } from 'primeng/api';
 
 import {DiagramObjectType, LineageView, LinkModel, NodeModel,} from '../../../../models/lineage.model';
 

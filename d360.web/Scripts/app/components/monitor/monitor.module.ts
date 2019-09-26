@@ -18,17 +18,16 @@ import { WorkflowMonitorModule } from '../workflowmonitor/workflowmonitor.module
 import { WorkflowDiagramModule } from '../shared/diagram/workflow/workflow-diagram.module';
 import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object-details.module';
 
-import {
-    GrowlModule,
-    SharedModule,
-    DropdownModule,
-    MultiSelectModule,
-    InputTextModule,
-    TooltipModule,
-    ButtonModule,
-    TabViewModule,
-} from 'primeng/primeng';
+import { TabViewModule } from 'primeng/tabview';
+import { ButtonModule } from 'primeng/button';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TooltipModule } from 'primeng/tooltip';
+import { GrowlModule } from 'primeng/growl';
+
 import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.component';
 
 @NgModule({

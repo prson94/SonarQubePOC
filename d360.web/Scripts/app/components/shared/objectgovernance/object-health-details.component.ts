@@ -2,7 +2,7 @@
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, AverageScore } from '../../../models/score.model';
-import { TreeNode } from 'primeng/primeng';
+import { TreeNode } from 'primeng/api';
 declare var require: any;
 const Highcharts = require('highcharts/highstock.src');
 

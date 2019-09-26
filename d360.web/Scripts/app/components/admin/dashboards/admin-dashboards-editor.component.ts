@@ -1,13 +1,11 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
-import { NgForm } from '@angular/forms';
-import { SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/api';
 import { ReportsService} from '../../../services/reports.service';
 import { Report, ReportType } from '../../../models/report.model';
 import { DropdownOption } from '../../../models/dropdown.model';
 
 import * as _ from 'lodash';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
-import { parse } from 'path';
 
 declare var CompanySettings;
 
@@ -48,7 +46,7 @@ declare var CompanySettings;
                                 <input required style="width: 100%;" name="url" type="string" [(ngModel)]="editedReport.Url" #name="ngModel" maxlength="500">
                             </div>
                         </div>
-                        <div class="col s12" *ngIf="editedReport.ReportType == 'sagacity'">
+                        <div class="col s12" *ngIf="editedReport.ReportType == 'sagacity' || editedReport.ReportType == 'powerbi'">
                             <div class="FieldName">Show on Home Page?</div>
                             <div>
                                 <input name="showOnHomePage" type="checkbox" [(ngModel)]="editedReport.ShowOnHomePage" #name="ngModel" />
@@ -68,9 +66,9 @@ declare var CompanySettings;
                             <div><input type="file" (change)="changeFile($event);" accept=".pbix" style="width: 99%" name="File" formenctype="multipart/form-data" /></div>
                              <div class="errorMessage" [hidden]="isValid()">File is required</div>
                         </div>
-                        <div class="col s12" *ngIf="editedReport.ReportType == 'powerbi' && editedReport.ObjectType">
+                        <div class="col s12" *ngIf="editedReport.ReportType == 'powerbi' && !editedReport.ShowOnHomePage && editedReport.ObjectType">
                             <div class="FieldName">Restrict Visibility To</div>
-                            <div><p-multiSelect [options]="responsibilities" [(ngModel)]="editedReport.VisibleToRoles" [style]="{'width':'100%'}" name="responsibilities"></p-multiSelect></div>
+                            <div><p-multiSelect [options]="responsibilities" defaultLabel="Choose" [(ngModel)]="editedReport.VisibleToRoles" [style]="{'width':'100%'}" name="responsibilities"></p-multiSelect></div>
                         </div>
                         <div class="col s12">
                             <div class="FieldName">Description</div>

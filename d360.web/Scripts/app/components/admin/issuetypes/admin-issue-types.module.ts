@@ -4,14 +4,10 @@ import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import { RouterModule } from '@angular/router';
-
-import {
-    ButtonModule,
-    DropdownModule,
-    InputTextModule,
-    SharedModule,
-} from 'primeng/primeng';
+import { SharedModule } from 'primeng/shared';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { InputTextModule } from 'primeng/inputtext';
 
 import { TableModule } from 'primeng/table';
 
@@ -21,7 +17,6 @@ import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
 
 import { AdminIssueTypesComponent } from './admin-issue-types.component';

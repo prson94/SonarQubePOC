@@ -15,7 +15,6 @@ import {
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
 import { FormMode } from '../../../../models/form.model';
-import { Column, Header } from 'primeng/primeng';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 

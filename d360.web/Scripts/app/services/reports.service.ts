@@ -26,7 +26,7 @@ export class ReportsService extends BaseObservableService {
     }
 
     saveReport(report: Report, file?: File): Observable<JsonResult> {
-        if (report.VisibleToRoles != null && report.VisibleToRoles.length > 0) report.VisibleTo = report.VisibleToRoles.join(",");
+        if (report.VisibleToRoles != null && !report.ShowOnHomePage && report.VisibleToRoles.length > 0) report.VisibleTo = report.VisibleToRoles.join(",");
         else report.VisibleTo = null;
         if (report.ID == undefined || !report.ID) {
             return this.postDynamic(this.http, 'report', report, file, false);

@@ -11,7 +11,7 @@ import { ApiResult } from '../../models/apiresult.model';
 import { ResponsibilityTypeRelationPermission, Permission } from '../../models/responsibility-type.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessagesObservableService } from '../../services/messages-observable.service';
-import { TreeNode } from 'primeng/primeng';
+import { TreeNode } from 'primeng/api';
 
 declare var CompanySettings;
 

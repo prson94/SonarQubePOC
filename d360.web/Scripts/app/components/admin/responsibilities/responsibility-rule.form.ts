@@ -1,5 +1,5 @@
 ﻿import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange } from '@angular/core';
-import { SelectItem, CheckboxModule } from 'primeng/primeng';
+import { SelectItem } from 'primeng/api';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import {
     ResponsibilityType,

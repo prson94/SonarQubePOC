@@ -12,11 +12,10 @@ import { SocialCommentComponent} from './social-comment.component';
 import { SocialInputComponent } from './social-input.component';
 import { SocialTagInputComponent } from './social-tag-input.component';
 
-import {    
-    AutoCompleteModule,    
-    EditorModule,   
-    ButtonModule,             
-} from 'primeng/primeng';
+import { ButtonModule } from 'primeng/button';
+import { EditorModule } from 'primeng/editor';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+
 
 @NgModule({
     imports: [CommonModule,

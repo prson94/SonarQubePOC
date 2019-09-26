@@ -16,7 +16,7 @@ import {
     StepType,
 } from '../../../../models/workflow.model';
 import { FieldType } from '../../../../models/fields.model';
-import { Column, Header, Editor } from 'primeng/primeng';
+import { Editor } from 'primeng/editor';
 import { WorkflowService } from '../../../../services/workflow.service';
 import { WorkflowFieldsService } from '../../../../services/workflow-fields.service';
 

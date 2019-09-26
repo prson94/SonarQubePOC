@@ -1,14 +1,12 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
-import {AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
-import {MenuItem} from 'primeng/primeng';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { MenuItem } from 'primeng/api';
 
-import {FilterType, ImpactDiagramModel, ImpactFilter, LinkModel, NodeModel} from '../../../models/impact.model';
-
-import {PermissionsService} from '../../../services/permissions.service';
-import {DiagramService} from '../../../services/diagram.service';
-
-import {DiagramBaseComponent} from './diagram-base.component';
+import { FilterType, ImpactDiagramModel, ImpactFilter, LinkModel, NodeModel } from '../../../models/impact.model';
+import { PermissionsService } from '../../../services/permissions.service';
+import { DiagramService } from '../../../services/diagram.service';
+import { DiagramBaseComponent } from './diagram-base.component';
 
 declare var window: any;
 

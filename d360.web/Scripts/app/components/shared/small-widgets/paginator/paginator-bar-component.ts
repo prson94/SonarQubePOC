@@ -108,9 +108,7 @@ export class PaginatorComponent implements OnChanges, OnInit {
             return;
         else
             this.page = this.getPageCount() - 1;
-        let lastNumItems = this.totalRecords % this.itemsPerPage;
-        console.log(lastNumItems);
-        this.paginate(lastNumItems, this.page, (this.page * this.itemsPerPage));
+        this.paginate(this.itemsPerPage, this.page, (this.page * this.itemsPerPage));
     }
     onPageLinkClick(page: number): void {
         if (page !== undefined && (this.page !== page)) {
@@ -129,7 +127,7 @@ export class PaginatorComponent implements OnChanges, OnInit {
     }
 
     paginate(size, page, firstItemIndex) {
-        this.CheckVisableNumbers(); 
+        this.CheckVisableNumbers();
         this.onPageChange.emit({ size: size, page: page, first: firstItemIndex });
     }
 

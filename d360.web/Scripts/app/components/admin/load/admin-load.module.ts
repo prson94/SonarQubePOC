@@ -4,8 +4,6 @@ import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import { RouterModule } from '@angular/router';
-
 import { CoreModule } from '../../shared/core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
@@ -19,12 +17,10 @@ import { AdminLoadComponent } from './admin-load.component';
 
 import { AdminLoadRoutingModule } from './admin-load.routes';
 
-import {
-    ButtonModule,
-    DropdownModule,
-    InputTextModule,
-    SharedModule,
-} from 'primeng/primeng';
+import { SharedModule } from 'primeng/shared';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { InputTextModule } from 'primeng/inputtext';
 
 import { TableModule } from 'primeng/table';
 

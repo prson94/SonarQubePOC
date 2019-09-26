@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { CompanySettings, ICompanySettingsService } from '../models/settings.model';
 import { AuthenticationProperties } from '../models/authentication-properties.model';
-import { SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/api';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';

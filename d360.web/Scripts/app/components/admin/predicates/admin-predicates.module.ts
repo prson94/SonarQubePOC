@@ -16,13 +16,10 @@ import { AdminPredicatesComponent } from './admin-predicates.component';
 
 import { AdminPredicateRoutingModule } from './admin-predicates.routes';
 
-import {
-    ButtonModule,
-    InputTextModule,
-    SharedModule,
-    GrowlModule
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { GrowlModule } from 'primeng/growl';
 import { TableModule } from 'primeng/table';
 
 @NgModule({

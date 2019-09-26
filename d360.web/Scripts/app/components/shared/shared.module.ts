@@ -1,27 +1,23 @@
 ﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
-import { FormsModule, ReactiveFormsModule }    from '@angular/forms';
+import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 import { RouterModule } from '@angular/router';
 
-
-import {
-    GrowlModule,
-    InputSwitchModule,
-    InputTextModule,    
-    TreeTableModule,
-    ButtonModule, 
-    DropdownModule,        
-    SelectButtonModule,
-    AutoCompleteModule,
-    MultiSelectModule,    
-    EditorModule,
-    TooltipModule,
-    SharedModule
-} from 'primeng/primeng';
-
+import { ButtonModule } from 'primeng/button';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
+import { EditorModule } from 'primeng/editor';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TooltipModule } from 'primeng/tooltip';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { TreeTableModule } from 'primeng/treetable';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { GrowlModule } from 'primeng/growl';
 
 
 import { PipesModule } from '../../pipes/pipes.module';

@@ -6,18 +6,15 @@ import { GovernRequestInterceptor } from "../../../http-interceptors/govern-requ
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
-import {
-    CalendarModule,
-    ColorPickerModule,
-    DropdownModule,
-    EditorModule,
-    MultiSelectModule,
-    SharedModule,
-    TooltipModule,
-    AutoCompleteModule,
-    OverlayPanelModule,
-} from 'primeng/primeng';
-
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { CalendarModule } from 'primeng/calendar';
+import { ColorPickerModule } from 'primeng/colorpicker';
+import { DropdownModule } from 'primeng/dropdown';
+import { SharedModule } from 'primeng/shared';
+import { TooltipModule } from 'primeng/tooltip';
+import { EditorModule } from 'primeng/editor';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../core.module';

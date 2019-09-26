@@ -9,10 +9,7 @@ import { RouterModule } from '@angular/router';
 import { D3SModal } from './gov-modal.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 
-
-import {    
-    TooltipModule,    
-} from 'primeng/primeng';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
     imports: [CommonModule,

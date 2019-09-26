@@ -32,8 +32,7 @@ export enum Permission {
 
 export class ResponsibilityType {
     ID: number;
-    Name: string;
-    ResponsbilityTypeGroup: ResponsibilityTypeGroup;
+    Name: string;    
     Description: string;
     UpdatedOn: string;
     UpdatedBy: number;
@@ -79,11 +78,6 @@ export class ResponsibilityTypeRelationPermission {
 
         return false;
     }
-}
-
-export enum ResponsibilityTypeGroup {
-    People = 1,
-    Sourcing = 2
 }
 
 export class ResponsibilityTypeCount {
