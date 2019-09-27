@@ -1,6 +1,5 @@
-﻿import { Component, NgZone, Output, EventEmitter, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+﻿import { Component, Output, EventEmitter, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { BaseComponent } from '../../../shared/base.component';
-import { Column, Header, MenuItem } from 'primeng/primeng';
 
 @Component({
     selector: 'd3s-workflow-condition-list',

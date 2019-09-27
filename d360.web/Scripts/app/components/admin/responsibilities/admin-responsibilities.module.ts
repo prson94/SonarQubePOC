@@ -4,8 +4,6 @@ import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import { RouterModule } from '@angular/router';
-
 import { CoreModule } from '../../shared/core.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
@@ -26,17 +24,14 @@ import { AdminResponsibilitiesRoutingModule } from './admin-responsibilities.rou
 
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
 
-import {
-    ButtonModule, 
-    CheckboxModule,
-    DropdownModule,
-    EditorModule,
-    InputTextModule,
-    MultiSelectModule,
-    SharedModule,
-    TooltipModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DropdownModule } from 'primeng/dropdown';
+import { EditorModule } from 'primeng/editor';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 
 @NgModule({

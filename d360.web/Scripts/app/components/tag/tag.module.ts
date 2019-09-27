@@ -21,7 +21,7 @@ import { TagComponent } from './tag.component';
 import { TagItemComponent } from './tag-item.component';
 import { TagRoutingModule } from './tag.routes';
 import { TagViewModule } from '../shared/tags/d3s-tag-view';
-import { OverlayPanelModule } from 'primeng/primeng';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
 
 @NgModule({
     imports: [CommonModule,

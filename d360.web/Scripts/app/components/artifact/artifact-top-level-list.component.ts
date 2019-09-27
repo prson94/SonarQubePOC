@@ -1,7 +1,7 @@
 ﻿import { Input, Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { TreeNode } from 'primeng/primeng';
+import { TreeNode } from 'primeng/api';
 
 import { ArtifactTypeService } from '../../services/artifact-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';

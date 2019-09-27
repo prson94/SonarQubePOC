@@ -30,17 +30,15 @@ import { ResourceListComponent } from './resource-list.component';
 import { ResourcePasswordComponent } from './resource-password.component';
 import { ResourceKeyComponent } from './resource-key.component';
 import { ResourceChangePwdComponent } from './resource-change-pwd.component';
-  
-import { 
-    ButtonModule,    
-    InputTextModule, 
-    DropdownModule,
-    InputMaskModule,
-    MultiSelectModule,
-    TreeTableModule,
-    TooltipModule,
-    SharedModule,
-} from 'primeng/primeng';
+
+import { MultiSelectModule } from 'primeng/multiselect';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { InputMaskModule } from 'primeng/inputmask';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { TreeTableModule } from 'primeng/treetable';
+import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 
 @NgModule({

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using d360.core.queue;
 using Newtonsoft.Json.Linq;
 
@@ -14,7 +15,7 @@ namespace d360.model.DataAccessLayer
     {
         IntersectType GetRelationshipTypeByUID(Guid relationshipTypUid);
         Intersect GetRelationshipByUID(Guid relationshipUid);
-        Task<IEnumerable<PredicateApiViewModel>> GetPredicates();
+        Task<IEnumerable<PredicateApiViewModel>> GetPredicates(Guid? PredicateUid, PredicateType? Type, string Name, string Inverse ,bool? IsUsed);
         Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
         IQueryable<IntersectType> GetIntersectTypeById(int id);
         IntersectType GetIntersectTypeByUid(Guid intersectTypeUid);

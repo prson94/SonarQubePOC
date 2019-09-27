@@ -4,13 +4,10 @@ import { RouterModule }    from '@angular/router';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import {
-    ButtonModule,
-    InputTextModule,
-    SharedModule,
-    TooltipModule,
-} from 'primeng/primeng';
-
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SharedModule } from 'primeng/shared';
+import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../core.module';

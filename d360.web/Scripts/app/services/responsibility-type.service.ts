@@ -1,8 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import {
     IResponsibilityTypeService,
-    ResponsibilityType,
-    ResponsibilityTypeGroup,
+    ResponsibilityType,    
     ResponsibilityTypeRelation,
     ResponsibilityTypeCount,
     ResourceResponsibilityTypeCount,
@@ -15,7 +14,7 @@ import {
     ResponsibilityTypeRelationRuleDefinitionThenTestRow,
     ResponsibilityTypeRelation_FormData
 } from '../models/responsibility-type.model';
-import { SelectItem } from "primeng/primeng";
+import { SelectItem } from "primeng/api";
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -43,8 +42,8 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
-    getResponsibilityType(id: number, group: ResponsibilityTypeGroup = ResponsibilityTypeGroup.People): Observable<ResponsibilityType> {
-        return this.http.get(`form/ResponsibilityType?id=${id}&group=${group}`)
+    getResponsibilityType(id: number): Observable<ResponsibilityType> {
+        return this.http.get(`form/ResponsibilityType?id=${id}`)
             .pipe(
                 map(r => <any>r),
 

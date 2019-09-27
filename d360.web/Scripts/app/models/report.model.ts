@@ -17,6 +17,7 @@ export class Report {
     VisibleTo: string;
     Url: string;
     DisplayType: string;
+    ShowOnHomePage: boolean;
 }
 
 export class ReportTile {

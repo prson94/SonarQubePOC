@@ -2756,7 +2756,7 @@
             This service houses all endpoints handling glossary-related data such as artifacts and models.
             </summary>
         </member>
-        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetPredicatesAsync(System.Nullable{System.Guid},System.Nullable{d360.core.enums.PredicateType},System.String,System.String)">
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.GetPredicatesAsync(System.Nullable{System.Guid},System.Nullable{d360.core.enums.PredicateType},System.String,System.String,System.Nullable{System.Boolean})">
             <summary>
             GET a list of predicates.
             </summary>
@@ -2764,6 +2764,7 @@
             <param name="Type">Filter by a predicate's functional type.</param>
             <param name="Name">Filter by an predicate's Name.</param>
             <param name="Inverse">Filter by an predicate's Inverse.</param>
+            <param name="IsUsed">Filter by an predicate's usage.</param>
             <returns>A list of predicates contained within your Govern environment.</returns>
         </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.DeletePredicates(d360.core.entities.PredicateDeletes)">

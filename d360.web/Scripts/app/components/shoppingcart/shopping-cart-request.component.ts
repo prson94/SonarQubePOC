@@ -7,7 +7,6 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Title } from '@angular/platform-browser';
 import { Location } from '@angular/common';
 import { ShoppingCart, ShoppingCartListItem } from '../../models/shopping-cart.model';
-import { Header, Column } from 'primeng/primeng';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 
 @Component({

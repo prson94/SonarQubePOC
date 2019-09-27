@@ -4,31 +4,22 @@ import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 
-import { RouterModule } from '@angular/router';
-
 import { CoreModule } from '../../shared/core.module';
-import { PipesModule } from '../../../pipes/pipes.module';
 import { TilesModule  } from '../../shared/tiles/tiles.module';
 
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
-import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared-field-definition.module';
-
 
 import { AdminRelationshipsEditor } from './admin-relationships-editor.component';
 import { AdminRelationshipsListComponent } from './admin-relationships-list.component';
 
-
-
-import {
-    ButtonModule,
-    DropdownModule,
-    InputTextModule,    
-    SharedModule,
-} from 'primeng/primeng';
-
+import { ButtonModule } from 'primeng/button';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
+
 
 @NgModule({
     imports: [CommonModule,

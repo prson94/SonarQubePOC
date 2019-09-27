@@ -6,7 +6,7 @@ import { FusionAttributeService } from '../../services/fusion-attribute.service'
 import { FusionAttributeValueDetails } from '../../models/fusion-attribute.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { CoreModule } from './core.module';
-import { ButtonModule } from 'primeng/primeng';
+import { ButtonModule } from 'primeng/button';
 import { SharedObjectDetailsModule } from './objectdetails/shared-object-details.module';
 
 @Component({

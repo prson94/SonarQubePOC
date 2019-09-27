@@ -30,14 +30,11 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
 
 import { AdminOrganizationsRoutingModule } from './admin-organizations.routes';
 
-import {
-    ButtonModule,
-    DropdownModule,
-    InputTextModule,
-    SharedModule,
-    EditorModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { EditorModule } from 'primeng/editor';
+import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 
 @NgModule({

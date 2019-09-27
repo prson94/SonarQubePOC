@@ -16,10 +16,7 @@ import { MappingRoutingModule } from './mapping.routes';
 
 import { MappingComponent } from './mapping.component';
 
-import {    
-    SharedModule,
-} from 'primeng/primeng';
-
+import { SharedModule } from 'primeng/shared';
 import { TableModule } from 'primeng/table';
 
 @NgModule({

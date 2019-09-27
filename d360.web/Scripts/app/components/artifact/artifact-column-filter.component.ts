@@ -8,7 +8,7 @@
     Output,
     SimpleChange
 } from '@angular/core';
-import { SelectItem } from 'primeng/primeng';
+import { SelectItem } from 'primeng/api';
 import {RelationshipsService} from '../../services/relationships.service';
 import {AttributeTypeService} from '../../services/attribute-type.service';
 import {ArtifactTypeService} from '../../services/artifact-type.service';

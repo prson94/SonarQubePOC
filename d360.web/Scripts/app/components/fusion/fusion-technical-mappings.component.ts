@@ -1,14 +1,11 @@
-﻿import {Component, OnInit} from '@angular/core';
-import {takeUntil} from "rxjs/operators";
-import {Subject} from "rxjs";
-import {TreeNode} from 'primeng/primeng';
-
-import {MapRuleItemDetail} from '../../models/fusion.model';
-import {FormMode} from '../../models/form.model';
-
-import {FusionService} from '../../services/fusion.service';
-
-import {BaseComponent} from '../shared/base.component';
+﻿import { Component, OnInit } from '@angular/core';
+import { takeUntil } from "rxjs/operators";
+import { Subject } from "rxjs";
+import { TreeNode } from 'primeng/api';
+import { MapRuleItemDetail } from '../../models/fusion.model';
+import { FormMode } from '../../models/form.model';
+import { FusionService } from '../../services/fusion.service';
+import { BaseComponent } from '../shared/base.component';
 
 @Component({
     selector: 'd3s-fusion-technical-mappings',

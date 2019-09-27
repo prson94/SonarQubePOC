@@ -6,19 +6,15 @@ import { GovernRequestInterceptor } from "../../../../http-interceptors/govern-r
 
 import { RouterModule } from '@angular/router';
 
-import {
-    EditorModule,
-    InputSwitchModule,
-    SharedModule,
-    AutoCompleteModule,
-    ButtonModule,
-    CalendarModule,
-    InputMaskModule,
-    DataListModule,
-    ToggleButtonModule,
-    MultiSelectModule,
-} from 'primeng/primeng';
-
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { CalendarModule } from 'primeng/calendar';
+import { ButtonModule } from 'primeng/button';
+import { InputMaskModule } from 'primeng/inputmask';
+import { SharedModule } from 'primeng/shared';
+import { DataListModule } from 'primeng/datalist';
+import { EditorModule } from 'primeng/editor';
+import { ToggleButtonModule } from 'primeng/togglebutton';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../../core.module';

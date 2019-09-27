@@ -14,7 +14,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { AuthenticationService } from '../../services/authentication.service';
-import { TreeNode } from 'primeng/primeng';
+import { TreeNode } from 'primeng/api';
 
 declare var CompanySettings;
 

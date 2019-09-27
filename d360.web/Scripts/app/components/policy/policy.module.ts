@@ -22,21 +22,20 @@ import { PolicyItemComponent } from './policy-item.component';
 import { PolicyItemStructureComponent } from './policy-item-structure.component';
 import { PolicyListComponent } from './policy-list.component';
 
-import {
-    GrowlModule,
-    InputTextModule,
-    InputMaskModule,
-    TreeTableModule,
-    ButtonModule,
-    DropdownModule,
-    CheckboxModule,    
-    SelectButtonModule,    
-    MultiSelectModule,    
-    TooltipModule,        
-    TreeModule,
-    SharedModule,
-} from 'primeng/primeng';
+import { CheckboxModule } from 'primeng/checkbox';
+import { ButtonModule } from 'primeng/button';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputMaskModule } from 'primeng/inputmask';
+import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { TooltipModule } from 'primeng/tooltip';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { TreeTableModule } from 'primeng/treetable';
+import { GrowlModule } from 'primeng/growl';
+import { TreeModule } from 'primeng/tree';
+
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 
 @NgModule({

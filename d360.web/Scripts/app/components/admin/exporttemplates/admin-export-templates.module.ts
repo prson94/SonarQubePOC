@@ -24,20 +24,18 @@ import { AdminExportTemplatesRoutingModule } from './admin-export-templates.rout
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
 import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-interceptor';
 
-
-import {
-    ButtonModule,
-    CheckboxModule,
-    SpinnerModule,
-    ColorPickerModule,
-    DropdownModule,
-    EditorModule,
-    InputTextModule,
-    MultiSelectModule,
-    SharedModule,
-    FileUploadModule,
-} from 'primeng/primeng';
+import { SharedModule } from 'primeng/shared';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
+import { DropdownModule } from 'primeng/dropdown';
+import { ColorPickerModule } from 'primeng/colorpicker';
+import { SpinnerModule } from 'primeng/spinner';
+import { EditorModule } from 'primeng/editor';
 import { TableModule } from 'primeng/table';
+import { CheckboxModule } from 'primeng/checkbox';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { FileUploadModule } from 'primeng/fileupload';
+
 import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsibilities.module';
 import { AdminExportTemplateStylesComponent } from './admin-export-template-styles.component';
 import { AdminExportTemplateStyleFormComponent } from './admin-export-template-style-form.component';
