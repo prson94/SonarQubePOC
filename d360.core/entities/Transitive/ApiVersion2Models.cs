@@ -361,4 +361,11 @@ namespace d360.core.entities
     {
         public Guid AssetUid { get; set; }
     }
+
+    public class AssetFieldTypeUpdate
+    {
+        public string Object { get; set; }
+        public int ObjectId { get; set; }
+        public int Id { get; set; }
+    }
 }
