@@ -205,6 +205,21 @@ namespace d360.core.entities
         public string Pattern { get; set; }
     }
 
+    public class FieldTypeLimitedApiViewModel
+    {
+        [DataMember]
+        public int ColumnOrder { get; set; }
+        [DataMember]
+        public int? ColumnWidth { get; set; }
+        [DataMember]
+        public int SortOrder { get; set; }
+        [DataMember]
+        public bool IsDisplayable { get; set; }
+        [DataMember]
+        public bool IsListable { get; set; }
+        [DataMember]
+        public bool ShowIfEmpty { get; set; }
+    }
 
     public class FieldTypeEditableApiViewModel
     {
@@ -405,6 +420,26 @@ namespace d360.core.entities
         [DataMember]
         public bool ShowIfEmpty { get; set; }
     }
+
+    public class FieldTypeDataTypeJsonElementApiViewModel : FieldTypeLimitedApiViewModel
+    {
+        [DataMember]
+        public JsonAttributeApiViewModel JsonAttribute { get; set; }
+        public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
+    }
+
+    public class JsonAttributeApiViewModel
+    {
+        [DataMember]
+        public int FieldTypeID { get; set; }
+        [DataMember]
+        public string Path { get; set; }
+        [DataMember]
+        public string DataType { get; set; }
+    }
+
+
+
     public class FieldTypeDataTypeLinkApiViewModel_DefaultValue
     {
         [DataMember]
@@ -528,6 +563,8 @@ namespace d360.core.entities
         [DataMember]
         public FieldTypeDataTypeJsonApiViewModel Json { get; set; }
         [DataMember]
+        public FieldTypeDataTypeJsonElementApiViewModel JsonElement { get; set; }
+        [DataMember]
         public FieldTypeDataTypeLinkApiViewModel Link { get; set; }
         [DataMember]
         public FieldTypeDataTypeLookupApiViewModel Lookup { get; set; }
@@ -555,6 +592,7 @@ namespace d360.core.entities
             childPopulatedCount += (Decimal != null) ? 1 : 0;
             childPopulatedCount += (Html != null) ? 1 : 0;
             childPopulatedCount += (Json != null) ? 1 : 0;
+            childPopulatedCount += (JsonElement != null) ? 1 : 0;
             childPopulatedCount += (Link != null) ? 1 : 0;
             childPopulatedCount += (Lookup != null) ? 1 : 0;
             childPopulatedCount += (Number != null) ? 1 : 0;
