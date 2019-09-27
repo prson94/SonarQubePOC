@@ -4042,7 +4042,7 @@ from    [Intersect] T
                         Connection.Execute($@"
     update	api.ExecutionDeletedPredicate
     set		Success = 0,
-		    [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid for this asset when you are attempting to delete it'
+		    [Message] = coalesce([Message] + '; ', '') + 'You must provide a valid Uid for this predicate'
     where	ExecutionID = @ExecutionID and ([Uid] is null or [Uid] = CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER)); 
 
     update	api.ExecutionDeletedPredicate
@@ -4051,7 +4051,7 @@ from    [Intersect] T
     where	ExecutionID = @ExecutionID and PredicateID is null;
 
     update T
-    set T.Success = 0, [Message] = coalesce([Message] + '; ', '') + 'Predicate in use cannot be deleted'
+    set T.Success = 0, [Message] = coalesce([Message] + '; ', '') + 'This predicate is currently in use and may not be removed.'
     from	api.ExecutionDeletedPredicate T
     cross apply (select * from IntersectType where PredicateId = T.PredicateId)Usage
 ",
@@ -4196,7 +4196,7 @@ from    [Intersect] T
                             row["ItemNumber"] = i;
                             if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
                             else row["ExecutionItemUid"] = Guid.NewGuid();
-                            row["Type"] = model.Type; 
+                            row["Type"] = (int)model.Type; 
                             row["Name"] = model.Name; 
                             row["Inverse"] = model.Inverse; 
 
@@ -4232,11 +4232,21 @@ from    [Intersect] T
 
 
                     #region Log data errors
+                    var allowedPredicates = Enum.GetValues(typeof(PredicateType)).Cast<PredicateType>().Where(x => x.CanUserInsert()).ToList();
+                    var allowedTypes = allowedPredicates.Select(x => "''"+ x.ToString()+"''").ToList();
+                    var allowedTypesInt = allowedPredicates.Select(x =>(int)x).ToList();
 
-                    var allowedTypes = Enum.GetValues(typeof(PredicateType)).Cast<PredicateType>().Select(x => "''"+ x.ToString()+"''").ToList();
-                    string checkTypeSQL = $"Type not in ({string.Join(",",allowedTypes)})";
+                    string checkTypeSQL = $"Type not in ({string.Join(",", allowedTypesInt)})";
 
-                    var checkSQL = $@"update	api.ExecutionPredicate
+                    var checkSQL = $@"
+    update	api.ExecutionPredicate 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate with same Name and Type already exists'
+    from api.ExecutionPredicate EP
+    inner join [Predicate] P on P.Name = EP.Name and P.Type = EP.Type
+    where	ExecutionID = @ExecutionID
+
+    update	api.ExecutionPredicate
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Name field cannot be empty'
     where	ExecutionID = @ExecutionID and (Name is null or TRIM(Name) = '');
@@ -4289,16 +4299,8 @@ from    [Intersect] T
                             {
                                 try
                                 {
-                                    var buildPredicateTypeTable = string.Empty;
-                                    foreach(var item in predicateTypes)
-                                    {
-                                        buildPredicateTypeTable += $"insert into #PredicateTypeMap values ({(int)item},'{item.ToString()}')";
-                                    }
 
-                                    var insertSQL = $@"drop table if exists #PredicateTypeMap;
-                                            create table #PredicateTypeMap(ID int, name nvarchar(255))
-                                            {buildPredicateTypeTable}
-
+                                    var insertSQL = $@"
                                             drop table if exists #mergeResultTable
                                             create table #mergeResultTable (PredicateId int, PredicateUid uniqueidentifier, ExecutionItemUid uniqueidentifier) 
 
@@ -4313,7 +4315,7 @@ from    [Intersect] T
                                             on (P.Id = S.PredicateId)
                                             when not matched then
 	                                            insert (Name, Inverse, Type, IsSystem)
-	                                            values (S.Name,S.Inverse, (select top 1 ID from #PredicateTypeMap where name = S.Type), 0)
+	                                            values (S.Name,S.Inverse, S.Type, 0)
 	                                            output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
 
                                             update EP
