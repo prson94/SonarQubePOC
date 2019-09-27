@@ -49,17 +49,6 @@ export class ArtifactTypeService extends BaseObservableService {
             ;
     }
 
-    putArtifactType(model: ArtifactTypeEditorModel): Observable<any> {
-        return this
-            .http
-            .put('form/ArtifactType', model)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            )
-            ;
-    }
-
     getArtifactTypeTree(assetTypeClass: AssetTypeClass): Observable<TreeNode[]> {
         return this
             .http.get(`internal/artifacts/types/${assetTypeClass}`)

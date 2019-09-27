@@ -1,7 +1,7 @@
 ﻿import {Input, Component, OnChanges, SimpleChange} from '@angular/core';
 import { TreeNode } from 'primeng/api';
 import { FusionType} from '../../../models/fusion.model';
-import { AssetTypeEditorModel } from "../../../models/asset.model";
+import { AssetTypeEditorModel, AssetTypeClass } from "../../../models/asset.model";
 import { FusionService } from '../../../services/fusion.service';
 import { ObjectStyleService } from '../../../services/object-style.service';
 import { FormMode } from '../../../models/form.model';
