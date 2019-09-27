@@ -2999,7 +2999,7 @@ from	api.ExecutionAsset T
                                         }
 
                                         #endregion
-
+                                        fieldTypeUpdates.Clear();
                                         fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout);
                                         ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
 
@@ -3426,6 +3426,7 @@ end",
                     int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
                     int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                     int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+                    List<AssetFieldTypeUpdate> fieldTypeUpdates = new List<AssetFieldTypeUpdate>();
 
                     for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                     {
@@ -3472,8 +3473,8 @@ end",
         where   T.ItemNumber between @beginItemNumber and @endItemNumber;", new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
 
                                     #endregion
-
-                                    MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, timeout);
+                                    fieldTypeUpdates.Clear();
+                                    fieldTypeUpdates =  MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, timeout);
 
                                     // Update success flag
                                     Connection.Execute(
@@ -3519,7 +3520,7 @@ end",
                     SendAssetGraphEvents(results);
 
                     if (sendWorkflowEvents)
-                        SendWorkflowEvents("IntersectType", rt.ID, results);
+                        SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
                 }
             }
             return results;
