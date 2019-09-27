@@ -43,7 +43,7 @@ namespace igx.jobs.assetgraphprocessor
 begin
     declare @assetTypeId bigint, @assetId bigint;
 
-    select  @id = id,
+    select  @assetId = id,
             @assetTypeId = assetTypeId
     from    Asset
     where   [uid] = @uid;
