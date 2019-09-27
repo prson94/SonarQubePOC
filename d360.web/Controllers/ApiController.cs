@@ -1421,6 +1421,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("CanOwnFusion", assetType.CanOwnFusion);
             model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
             model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
+            model.Add("Class", assetType.Class);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
             model.Add("HasDashboards", hasDashboards);

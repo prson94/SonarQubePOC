@@ -2785,6 +2785,7 @@ from	api.ExecutionAsset T
                                             #endregion
                                             case AssetTypeClass.Policy:
                                             case AssetTypeClass.Glossary:
+                                            case AssetTypeClass.Technical:
                                                 #region
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)

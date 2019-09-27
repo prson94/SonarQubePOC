@@ -49,13 +49,31 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
             } catch (e) {
                 this.assetTypeClass = AssetTypeClass.Glossary;
             }
-            let className: string = AssetTypeClass[this.assetTypeClass];
+
             switch (this.assetTypeClass) {
                 case AssetTypeClass.Glossary:
-                    this.setBrowserTitle(this.titleService, 'Business Assets');
+
+                    this.headerBreadcrumbService.getFolderTitle('#Glossary').then(res => {
+                        this.folderTitle = res;
+                        this.setBrowserTitle(this.titleService, res);
+                        this.area = res;
+                    });
+                    
+                    break;
+                case AssetTypeClass.Technical:
+
+                    this.headerBreadcrumbService.getFolderTitle('#Technical').then(res => {
+                        this.folderTitle = res;
+                        this.setBrowserTitle(this.titleService, res);
+                        this.area = res;
+                    });
+
                     break;
                 default:
-                    this.setBrowserTitle(this.titleService, `${className} Assets`);
+                    let className: string = AssetTypeClass[this.assetTypeClass];
+                    this.folderTitle = `${className} Assets`;
+                    this.setBrowserTitle(this.titleService, this.folderTitle);
+                    this.area = this.folderTitle;
                     break;
             }
 

@@ -13,6 +13,7 @@ import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { Artifact } from '../../models/artifacts.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { debounce, debounceTime } from 'rxjs/operators';
+import { AssetTypeClass } from '../../models/asset.model';
 
 @Component({
     selector: 'd3s-artifact-list',
@@ -50,15 +51,28 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                 .artifactTypeService
                 .getArtifactTypeDetails(artifactTypeId)
                 .subscribe(artifactType => {
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.artifactType = artifactType;
-                    this.setObjectInfo('ArtifactType', this.artifactType.ID); 
 
-                    this.artifactTypeHierarchy.push(this.artifactType);
-                    this.createBreadcrumbHierarchy(artifactType);
-                    
-                    this.setBrowserTitle(this.titleService, this.artifactType.Name);
-                    this.isLoading = false;
+                    let folderName: string = '#Glossary';
+
+                    if (artifactType.Class == AssetTypeClass.Technical) {
+                        folderName = '#Technical';
+                    }
+
+                    this.headerBreadcrumbService.getFolderTitle(folderName).then(res => {
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+
+                        this.folderTitle = res;
+                        this.area = res;
+
+                        this.artifactType = artifactType;
+                        this.setObjectInfo('ArtifactType', this.artifactType.ID);
+
+                        this.artifactTypeHierarchy.push(this.artifactType);
+                        this.createBreadcrumbHierarchy(artifactType);
+
+                        this.setBrowserTitle(this.titleService, this.artifactType.Name);
+                        this.isLoading = false;
+                    });
                 });
         });
     }
