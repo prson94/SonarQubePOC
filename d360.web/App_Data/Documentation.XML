@@ -2767,6 +2767,20 @@
             <param name="IsUsed">Filter by an predicate's usage.</param>
             <returns>A list of predicates contained within your Govern environment.</returns>
         </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.DeletePredicates(d360.core.entities.PredicateDeletes)">
+            <summary>
+            Deletes a predicates of a given predicate list.
+            </summary>
+            <param name="predicates">The list of predicates for deletion.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
+        <member name="M:d360.web.Controllers.V2.RelationshipsController.InsertPredicates(d360.core.entities.PredicateInserts)">
+            <summary>
+            Inserts a predicates of a given predicate list.
+            </summary>
+            <param name="predicates">The list of predicates for insertion.</param>
+            <returns>An HTTP status code and message.</returns>
+        </member>
         <member name="M:d360.web.Controllers.V2.RelationshipsController.GetPredicatesTypesAsync">
             <summary>
             GET a list of predicate functional types.
