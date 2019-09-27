@@ -169,6 +169,10 @@ namespace d360.web.Controllers.V2
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
+                var validator = new AssetTypeValidator(this.Company);
+                if(!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request"));
+
                 var results = await AssetRepository.GetAssets(assetTypeUid, queryParams);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
