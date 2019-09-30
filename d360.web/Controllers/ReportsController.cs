@@ -244,7 +244,7 @@ namespace d360.web.Controllers
         }
 
         [Route("byid/{id:int}")]
-        public JsonNetResult GetReportsByObject(int id)
+        public JsonNetResult GetReportsByID(int id)
         {            
             var report = Company.Reports.FirstOrDefault(x => x.ID == id && x.ReportType != "legacy");
             var type = report.ObjectType;
