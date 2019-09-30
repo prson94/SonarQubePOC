@@ -1850,7 +1850,7 @@ chart {
 li.shortcut {
     display: inline-block;
     cursor: pointer;
-    width: 150px;
+    width: 216px;
     vertical-align: top;
     margin: 5px;
     box-sizing: border-box;
@@ -1859,9 +1859,9 @@ li.shortcut {
     color: #FFF;
     background: @igx-blue-color;
     padding-top: 10px;
-    min-height: 140px;
-    max-height: 140px;
-    border-radius: 5px;
+    min-height: 205px;
+    max-height: 205px;
+    border-radius: 4px;
 
     &:hover {
         background: @igx-blue-hover !important;
@@ -1872,27 +1872,36 @@ li.shortcut {
 
 
 
-li.shortcut div.shortcut-name {
-    font-size: 16px;
-    font-weight: 600;
-    text-align: center;
-    padding-top: 5px;
+li.shortcut div.shortcut-name {    
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    width: 140px;
-    padding: 10px 10px 0 10px;
-    margin: auto;
+    width: 140px;    
+    font-size: 18px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 1.22;
+    letter-spacing: normal;
+    text-align: center;
+    color: #ffffff;
 }
 
 li.shortcut div.shortcut-desc {
-    font-size: .75em;
-    text-align: center;
+    
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     width: 140px;
     margin: auto;
+    font-size: 14px;
+  font-weight: normal;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 1.14;
+  letter-spacing: normal;
+  text-align: center;
+  color: #ffffff;
 }
 
 li.shortcut div.icon {
