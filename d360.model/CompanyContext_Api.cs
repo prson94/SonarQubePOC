@@ -408,7 +408,8 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
         private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600)
         {
             return Connection.Query<AssetFieldTypeUpdate>($@"
-DECLARE @updatedFieldTypes TABLE
+drop table if exists #updatedFieldTypes
+create table #updatedFieldTypes
 (
   Id int,
   ObjectId int,
@@ -443,9 +444,9 @@ update		set
 when		not matched by target then
 insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
 values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue)
-output S.FieldTypeID,S.ObjectId, S.[Object] into @updatedFieldTypes;
+output S.FieldTypeID,S.ObjectId, S.[Object] into #updatedFieldTypes;
 
-select * from @updatedFieldTypes",
+select * from #updatedFieldTypes",
             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
         }
 
