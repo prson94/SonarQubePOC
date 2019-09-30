@@ -22,7 +22,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     dashboardName: string;
     reportID: number;
     showSingle: boolean = false;
-
+    showError: boolean;
     private folderTitle: string;
 
     constructor(
@@ -95,6 +95,9 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
                     if (result) {
                         this.selected = result;
                         this.showSingle = true;
+                    }
+                    else {
+                        this.showError = true;
                     }
 
                     if (this.showSingle || this.objectType == undefined) {

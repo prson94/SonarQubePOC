@@ -246,10 +246,10 @@ namespace d360.web.Controllers
         [Route("byid/{id:int}")]
         public JsonNetResult GetReportsByID(int id)
         {            
-            var report = Company.Reports.FirstOrDefault(x => x.ID == id && x.ReportType != "legacy");
+            var report = Company.Reports.Include(rpt => rpt.Responsibilities).FirstOrDefault(x => x.ID == id && x.ReportType != "legacy");
             var type = report.ObjectType;
             SystemObjects objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), type);
-            var objectId = id;
+            var objectId = report.ObjectID;
             if (objectType == SystemObjects.Artifact || objectType == SystemObjects.Taxonomy)
             {
                 var asset = Company.AssetDetails.Where(x => x.Object == objectType.ToString() && x.ObjectID == report.ObjectID).First();
@@ -262,17 +262,17 @@ namespace d360.web.Controllers
             List<ResponsibilityDetail> currentUserResponsibilityTypeList = new List<ResponsibilityDetail>();
             if (!string.IsNullOrEmpty(type) && !isType)
             {
-                currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
-                var asset = Company.GetAssetDetail(type, id);
+                currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == objectId && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
+                var asset = Company.GetAssetDetail(type, objectId);
 
                 if (asset != null)
                     currentUserResponsibilityTypeList.AddRange(Company.ResponsibilityDetails.Where(x => x.AssetTypeID == asset.AssetTypeID && x.AssetID == 0 && x.ResourceID == Company.CurrentResourceID).ToList());
 
             }
             else if (isType)
-                currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.TypeID == id && x.Type == type && x.ResourceID == Company.CurrentResourceID).ToList();
+                currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.TypeID == objectId && x.Type == type && x.ResourceID == Company.CurrentResourceID).ToList();
             else
-                currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
+                currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == objectId && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
 
             var currentUserResponsibilityTypeIDList = new List<int>();
 
