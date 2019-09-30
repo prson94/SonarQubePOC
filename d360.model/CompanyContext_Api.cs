@@ -1534,7 +1534,7 @@ from	IntersectType I
                         S.[Uid]
 	            from	workflow.Item wi
 			            inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
-			            inner join api.ExecutionDeletedAsset S on S.ObjectID = i.ObjectID 
+			            inner join api.ExecutionDeletedAsset S on S.Object = i.Object and S.ObjectID = i.ObjectID 
                 where   {querySuffix} ;
             
 			update  S 
@@ -1660,7 +1660,7 @@ from	IntersectType I
 	    select	wi.id 
 	    from	workflow.Item wi
 			    inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
-			    inner join api.ExecutionDeletedAsset S on S.ObjectID = i.ObjectID and {querySuffix};
+			    inner join api.ExecutionDeletedAsset S on S.Object = i.Object and S.ObjectID = i.ObjectID and {querySuffix};
 
     delete	T
     from	[workflow].[ItemAssignment] T
