@@ -60,6 +60,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     private load(): void {        
         this.isLoading = true;
+        
         if (CompanySettings != null && CompanySettings.FusionEnabled != null) {
             this.isFusionEnabled = CompanySettings.FusionEnabled == "false" ? false : true;
         }

@@ -44,6 +44,7 @@ export class CompanySettings {
     WriteActionDescription: boolean;
     CurrentCompanyLogoPath: string; 
     LineageVersion: number;
+    FusionEnabled: boolean = true;
 }
 
 export class IpRestriction {

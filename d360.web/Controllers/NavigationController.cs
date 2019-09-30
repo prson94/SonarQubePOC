@@ -847,7 +847,19 @@ order by	f.SortOrder";
         [HttpGet, Route("GetCounts")]
         public async Task<JsonNetResult> GetCounts()
         {
-            string sql = @"
+            List<string> ignoreObjects = new List<string>();
+            string ignoreObjectTypeSQL = string.Empty;
+            if (!Community.GetCompanySettingByKey<bool>("FusionEnabled"))
+            {
+                ignoreObjects.Add(SystemObjects.FusionType.ToString());
+                ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());
+                ignoreObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
+            }
+
+            if(ignoreObjects.Count > 0)
+                ignoreObjectTypeSQL = $" AND ATT.[Object] not in ({string.Join(",", ignoreObjects.Select(o => "'"+o+"'"))})";
+
+            string sql = $@"
 SELECT count(ATT.[Object]) as count, 
 		ATT.[Object], 
 		ATT.ObjectID,
@@ -855,6 +867,7 @@ SELECT count(ATT.[Object]) as count,
 		from    [Asset] A
 		inner join AssetType ATT on (a.AssetTypeID = Att.id)
 		WHERE A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
+        {ignoreObjectTypeSQL}
 		Group by 
 		ATT.[Object], 
 		ATT.ObjectID,

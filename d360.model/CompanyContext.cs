@@ -547,7 +547,13 @@ select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attribut
 
         public List<AllocationPossibility> GetAvailableAllocationOptions(int attributeTypeID)
         {
-            var list = Database.Connection.Query<AllocationPossibility>(@"
+            string ignoreFusionItems = string.Empty;
+            if (!Community.GetCompanySettingByKey<bool>("FusionEnabled"))
+            {
+                ignoreFusionItems = $" and A.ObjectType not in ('{SystemObjects.FusionType.ToString()}','{SystemObjects.FusionAttributeType.ToString()}')";
+            }
+
+            var list = Database.Connection.Query<AllocationPossibility>($@"
 select A.* from (
 select	Object as ObjectType, 
 		ObjectID as ObjectTypeID, 
@@ -564,7 +570,7 @@ where	Class in (1,2,3,6,7,9)
 union
 select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
 ) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
-where R.ObjectID is null", new { id = attributeTypeID }).ToList();
+where R.ObjectID is null {ignoreFusionItems}", new { id = attributeTypeID }).ToList();
 
             list = list.OrderBy(i => i.Name).ToList();
 
