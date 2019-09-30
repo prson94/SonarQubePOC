@@ -4871,7 +4871,7 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
         {
             string fusionQuery = string.Empty;
 
-            if (Community.GetCompanySettingByKey<bool>("FusionEnabled")) {
+            if (Community.IsFusionEnabled()) {
                 fusionQuery = @"            union
             select      'FusionType|' + cast(ObjectId as varchar(15)) as value,
                         'Fusion Type : ' + Name as title

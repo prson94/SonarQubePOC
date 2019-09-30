@@ -41,7 +41,7 @@ namespace d360.web.Controllers
             nodes = Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList();
 
             var features = Community.Filter<CompanyFeature>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
-            var isFusionEnabled = Community.GetCompanySettingByKey<bool>("FusionEnabled");
+            var isFusionEnabled = Community.IsFusionEnabled();
             if (!isFusionEnabled)
             {
                 nodes = nodes.Where(x => x.MenuID != "#Fusion").ToList();
@@ -849,7 +849,7 @@ order by	f.SortOrder";
         {
             List<string> ignoreObjects = new List<string>();
             string ignoreObjectTypeSQL = string.Empty;
-            if (!Community.GetCompanySettingByKey<bool>("FusionEnabled"))
+            if (!Community.IsFusionEnabled())
             {
                 ignoreObjects.Add(SystemObjects.FusionType.ToString());
                 ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());

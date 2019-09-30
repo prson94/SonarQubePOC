@@ -3471,7 +3471,7 @@ namespace d360.web.Controllers
                     })
                     .OrderBy(i => i.title).ToList();
 
-            if (!Community.GetCompanySettingByKey<bool>("FusionEnabled"))
+            if (!Community.IsFusionEnabled())
             {
                 dataTypeOptions = dataTypeOptions.Where(x => x.value != "FusionLookup").ToList();
             }
@@ -6011,7 +6011,7 @@ offset 0 rows fetch next 25 rows only
 
             List<string> ignoreObjects = new List<string>();
             string ignoreObjectTypeSQL = string.Empty;
-            if (!Community.GetCompanySettingByKey<bool>("FusionEnabled"))
+            if (!Community.IsFusionEnabled())
             {
                 ignoreObjects.Add(SystemObjects.FusionType.ToString());
                 ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());
@@ -10838,7 +10838,7 @@ order by r.Name";
         {
             List<string> ignoreObjects = new List<string>();
             string ignoreObjectTypeSQL = string.Empty;
-            if (!Community.GetCompanySettingByKey<bool>("FusionEnabled"))
+            if (!Community.IsFusionEnabled())
             {
                 ignoreObjects.Add(SystemObjects.FusionType.ToString());
                 ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());

@@ -347,7 +347,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                 }
             }
 
-            if (!communityContext.GetCompanySettingByKey<bool>("FusionEnabled"))
+            if (!communityContext.IsFusionEnabled())
             {
                 List<string> filteredObjects = new List<string>();
                 filteredObjects.Add(SystemObjects.FusionAttributeType.ToString());

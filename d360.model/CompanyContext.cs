@@ -548,7 +548,7 @@ select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attribut
         public List<AllocationPossibility> GetAvailableAllocationOptions(int attributeTypeID)
         {
             string ignoreFusionItems = string.Empty;
-            if (!Community.GetCompanySettingByKey<bool>("FusionEnabled"))
+            if (!Community.IsFusionEnabled())
             {
                 ignoreFusionItems = $" and A.ObjectType not in ('{SystemObjects.FusionType.ToString()}','{SystemObjects.FusionAttributeType.ToString()}')";
             }
@@ -1612,7 +1612,7 @@ where	R.SourceObject = 'FusionAttribute'
                 SystemObjects.FusionType.ToString(),
                 SystemObjects.OrganizationType.ToString()
             };
-            if (!Community.GetCompanySettingByKey<bool>("FusionEnabled"))
+            if (!Community.IsFusionEnabled())
             {
                 excludedClasses.Add(SystemObjects.FusionAttributeType.ToString());
                 excludedClasses.Add(SystemObjects.FusionQueryAttributeType.ToString());
