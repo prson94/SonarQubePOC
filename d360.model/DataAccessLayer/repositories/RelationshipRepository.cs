@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -37,9 +38,62 @@ namespace d360.model.DataAccessLayer
             return companyContext.Filter<IntersectType>(i => i.uid == relationshipTypUid).SingleOrDefault();
         }
 
-        public async Task<IEnumerable<PredicateApiViewModel>> GetPredicates()
+        public async Task<IEnumerable<PredicateApiViewModel>> GetPredicates(Guid? PredicateUid = null, PredicateType? Type = null, string Name = null, string Inverse = null, bool? IsUsed = null)
         {
-            return await companyContext.QueryAsync<PredicateApiViewModel>("select Uid, Name, Inverse, IsSystem, [Type] from [Predicate] order by [Type], Name");
+            string whereClause = string.Empty;
+            List<string> whereConditions = new List<string>();
+            var dbArgs = new DynamicParameters();
+
+            if (PredicateUid.HasValue)
+            {
+                whereConditions.Add("P.Uid = @PredicateUid");
+                dbArgs.Add("@PredicateUid", PredicateUid.Value);
+            }
+
+            if (Type.HasValue)
+            {
+                whereConditions.Add("P.Type = @Type");
+                dbArgs.Add("@Type", Type.Value);
+            }
+
+            if (!string.IsNullOrEmpty(Name) && !string.IsNullOrWhiteSpace(Name))
+            {
+                Name = Name.Trim().ToLower();
+                whereConditions.Add("P.Name = @Name");
+                dbArgs.Add("@Name", Name);
+            }
+
+            if (!string.IsNullOrEmpty(Inverse) && !string.IsNullOrWhiteSpace(Inverse))
+            {
+                Inverse = Inverse.Trim().ToLower();
+                dbArgs.Add("@Inverse", Inverse);
+                whereConditions.Add("P.Inverse = @Inverse");
+            }
+
+            if (IsUsed.HasValue)
+            {
+                if (IsUsed.Value)
+                    whereConditions.Add("Usage.Id is not null");
+                else whereConditions.Add("Usage.Id is null");
+            }
+
+            if (whereConditions.Count > 0)
+                whereClause = $"WHERE {string.Join(" AND ", whereConditions)}";
+
+            return await companyContext.QueryAsync<PredicateApiViewModel>($@"select 
+                                                                             P.Uid,
+                                                                             P.Name,
+                                                                             P.Inverse,
+                                                                             P.IsSystem,
+                                                                             P.[Type],
+                                                                             CASE
+                                                                             WHEN Usage.Id is null then 0
+                                                                             ELSE 1
+                                                                             END AS IsInUse
+                                                                            from[Predicate] P
+                                                                            outer apply(select top 1 id from IntersectType where PredicateID = P.Id)Usage
+                                                                            {whereClause}          
+                                                                            order by[Type], Name", dbArgs);
         }
 
         public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
@@ -447,6 +501,57 @@ from	IntersectType I
             companyContext.Add(execution);
             return executionInfo;
         }
+
+        public List<PredicateDeleteResult> DeletePredicates(PredicateDeletes predicates, ApiExecution execution)
+        {
+            companyContext.Add(execution);
+
+            List<PredicateDeleteResult> results = null;
+            try
+            {
+                results = companyContext.RemovePredicates(execution, predicates);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                companyContext.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                companyContext.Update(execution);
+            }
+
+            return results;
+        }
+
+        public List<PredicateInsertResult> InsertPredicates(PredicateInserts predicates, ApiExecution execution)
+        {
+            companyContext.Add(execution);
+
+            List<PredicateInsertResult> results = null;
+            try
+            {
+                results = companyContext.AddPredicates(execution, predicates);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                companyContext.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                companyContext.Update(execution);
+            }
+
+            return results;
+        }
+
 
     }
 }

@@ -12,47 +12,47 @@ namespace d360.core.enums
     public enum PredicateType
     {
         [
-            Name("Data Lineage"), 
-            Description("Allows you to define source paths between objects."), 
+            Name("Data Lineage"),
+            Description("Allows you to define source paths between objects."),
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),            
-            AllowMultiplePredicates(true), 
-            AllowDifferentSubjectObject(true), 
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false),
             AllowEditFromRelationshipEditor(true),
-            LineageVersionsSupported(1,2)
+            LineageVersionsSupported(1, 2)
         ]
         DataLineage = 1,
         [
-            Name("Reference Data Lineage"), 
-            Description("Allow for defining links between reference items across lists."), 
+            Name("Reference Data Lineage"),
+            Description("Allow for defining links between reference items across lists."),
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),            
-            AllowMultiplePredicates(true), 
-            AllowDifferentSubjectObject(true), 
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
             AllowEditFromRelationshipEditor(false),
             LineageVersionsSupported(2)
         ]
         ReferenceLineage = 2,
         [
-            Name("Inter-type Hierarchy"), 
-            Description("This hierarchy allows for creating a tree structure or hierarchy referencing different asset types at each level."), 
+            Name("Inter-type Hierarchy"),
+            Description("This hierarchy allows for creating a tree structure or hierarchy referencing different asset types at each level."),
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),            
-            AllowMultiplePredicates(true), 
-            AllowDifferentSubjectObject(true), 
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
             AllowEditFromRelationshipEditor(false)
         ]
         InterTypeHierarchy = 3,
         [
-            Name("Intra-type Hierarchy"), 
-            Description("This hierarchy allows for creating a tree structure or hierarchy referencing the same asset type at each level."), 
+            Name("Intra-type Hierarchy"),
+            Description("This hierarchy allows for creating a tree structure or hierarchy referencing the same asset type at each level."),
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),            
-            AllowMultiplePredicates(true), 
-            AllowDifferentSubjectObject(false), 
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(false),
             ForceDifferentSubjectObject(false),
             AllowEditFromRelationshipEditor(false)
         ]
@@ -61,7 +61,7 @@ namespace d360.core.enums
             Name("User Ownership - NOT USED YET"),
             Description("This allows owners to be associated with owned items."),
             ReadOnly(true),
-            AllowIntersectTypeAssignment(false),            
+            AllowIntersectTypeAssignment(false),
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
@@ -70,23 +70,23 @@ namespace d360.core.enums
         ]
         UserOwnership = 5,
         [
-            Name("Grammatic Association"), 
-            Description("Allows you to establish grammatic association between two objects."), 
+            Name("Grammatic Association"),
+            Description("Allows you to establish grammatic association between two objects."),
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),            
-            AllowMultiplePredicates(true), 
-            AllowDifferentSubjectObject(true), 
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false),
             AllowEditFromRelationshipEditor(true)
         ]
         Grammar = 6,
         [
-            Name("Simple"), 
-            Description("Allows you to create a simple association between two objects that do not fit into any other functional type, such as lineage."), 
+            Name("Simple"),
+            Description("Allows you to create a simple association between two objects that do not fit into any other functional type, such as lineage."),
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),            
-            AllowMultiplePredicates(true), 
-            AllowDifferentSubjectObject(true), 
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false),
             AllowEditFromRelationshipEditor(true)
         ]
@@ -95,7 +95,7 @@ namespace d360.core.enums
             Name("Mapping"),
             Description("Allows you to create mappings that are used in fusion rules."),
             ReadOnly(true),
-            AllowIntersectTypeAssignment(true),            
+            AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false),
@@ -107,7 +107,7 @@ namespace d360.core.enums
             Name("See Also"),
             Description("This type of predicate allows for items to be related together to express similarity between them."),
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),            
+            AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false),
@@ -118,7 +118,7 @@ namespace d360.core.enums
             Name("Usage"),
             Description("This type of predicate allows for items to be act as filters within a greater lineage diagram to indicate that only certain paths are used."),
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),            
+            AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
@@ -130,7 +130,7 @@ namespace d360.core.enums
             Name("Object Ownership"),
             Description("This type of predicate allows for fusion configurations to be owned by glossary-level objects."),
             ReadOnly(false),
-            AllowIntersectTypeAssignment(true),            
+            AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
@@ -163,6 +163,7 @@ namespace d360.core.enums
         ]
         BusinessToTechnical = 13
     }
+
 
     public class PredicateTypeInfo : BaseObject
     {
@@ -224,6 +225,11 @@ namespace d360.core.enums
         public static string GetDescription(this PredicateType type)
         {
             return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DescriptionAttribute>().Description;
+        }
+
+        public static bool CanUserInsert(this PredicateType type)
+        {
+            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<AllowIntersectTypeAssignmentAttribute>().Allowed;
         }
 
         public static List<PredicateTypeInfo> GetAsList(this PredicateType type)

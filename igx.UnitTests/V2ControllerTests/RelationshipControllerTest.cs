@@ -105,6 +105,20 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
+        public async void GetPredicatesAsyncByUsage()
+        {
+
+            var actionResult = await relationshipsController.GetPredicatesAsync(null, null, null, null, true);
+
+            var str = actionResult.Content.ReadAsStringAsync().Result;
+            var data = JsonConvert.DeserializeObject<List<PredicateApiViewModel>>(str);
+
+            Assert.True(actionResult.IsSuccessStatusCode);
+            Assert.True(data.Count == 3);
+
+        }
+
+        [Fact]
         public void GetPredicatesTypesAsync()
         {
 
