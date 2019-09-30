@@ -44,16 +44,16 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
                 let assetTypeClassString: keyof typeof AssetTypeClass = params['class'];
                 this.assetTypeClass = AssetTypeClass[assetTypeClassString];
                 if (!this.assetTypeClass) {
-                    this.assetTypeClass = AssetTypeClass.Glossary;
+                    this.assetTypeClass = AssetTypeClass.Business;
                 }
             } catch (e) {
-                this.assetTypeClass = AssetTypeClass.Glossary;
+                this.assetTypeClass = AssetTypeClass.Business;
             }
 
             switch (this.assetTypeClass) {
-                case AssetTypeClass.Glossary:
+                case AssetTypeClass.Business:
 
-                    this.headerBreadcrumbService.getFolderTitle('#Glossary').then(res => {
+                    this.headerBreadcrumbService.getFolderTitle('#Business').then(res => {
                         this.folderTitle = res;
                         this.setBrowserTitle(this.titleService, res);
                         this.area = res;

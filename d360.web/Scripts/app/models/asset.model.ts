@@ -27,7 +27,7 @@ export class AssetTypeEditorModel {
 }
 
 export enum AssetTypeClass {
-    Glossary = 1,
+    Business = 1,
     Model = 2,
     Fusion = 3,
     FusionAttribute = 4,

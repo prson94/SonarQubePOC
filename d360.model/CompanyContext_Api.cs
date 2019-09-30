@@ -2784,7 +2784,7 @@ from	api.ExecutionAsset T
                                                 break;
                                             #endregion
                                             case AssetTypeClass.Policy:
-                                            case AssetTypeClass.Glossary:
+                                            case AssetTypeClass.Business:
                                             case AssetTypeClass.Technical:
                                                 #region
                                                 string @object = "Artifact";

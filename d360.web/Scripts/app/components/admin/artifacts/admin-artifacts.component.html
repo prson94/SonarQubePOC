@@ -6,9 +6,9 @@
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add(0)"></d3s-tile-actions>
             </header>
             
-            <p-treeTable [value]="ArtifactTypes" #assetTypeTree selectionMode="single" [(selection)]="selectedRow" [globalFilterFields]="filterFields"  metaKeySelection="true" [paginator]="true" [pageLinks]="3" [rowsPerPageOptions]="defaultPagingOptions" [rows]="defaultInitialItemsPerPage">
+            <p-treeTable [value]="ArtifactTypes" #assetTypeTree selectionMode="single" [(selection)]="selectedRow" [globalFilterFields]="filterFields" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage">
                 <ng-template pTemplate="caption">
-                    <input type="text" pInputText (input)="assetTypeTree.filterGlobal($event.target.value, 'contains')" placeholder="Search..." style="width: 100%;margin-bottom:10px;">
+                    <input type="text" pInputText (input)="assetTypeTree.filterGlobal($event.target.value, 'contains')" placeholder="Search..." style="width: 100%;margin-bottom:10px;margin-right:0px;margin-left:0px">
                 </ng-template>
                 <ng-template pTemplate="header">
                     <tr>

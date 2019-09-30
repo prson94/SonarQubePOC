@@ -100,7 +100,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                 artifact => {
                     this.artifact = artifact;
 
-                    let folderName: string = '#Glossary';
+                    let folderName: string = '#Business';
 
                     if (artifact.Class == AssetTypeClass.Technical) {
                         folderName = '#Technical';

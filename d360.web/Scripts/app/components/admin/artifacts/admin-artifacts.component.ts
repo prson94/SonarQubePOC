@@ -64,27 +64,17 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 let assetTypeClassString: keyof typeof AssetTypeClass = params['class'];
                 this.assetTypeClass = AssetTypeClass[assetTypeClassString];
                 if (!this.assetTypeClass) {
-                    this.assetTypeClass = AssetTypeClass.Glossary;
+                    this.assetTypeClass = AssetTypeClass.Business;
                 }
             } catch (e) {
-                this.assetTypeClass = AssetTypeClass.Glossary;
+                this.assetTypeClass = AssetTypeClass.Business;
             }
 
             let className: string = AssetTypeClass[this.assetTypeClass];
-            let singularLabel: string = "";
+            let singularLabel: string = `${className} Asset`;
 
-            switch (this.assetTypeClass) {
-                case AssetTypeClass.Glossary:
-                    singularLabel = "Business Asset";
-                    this.tabTitle = `${singularLabel}s`;
-                    this.formTitle = `Edit ${singularLabel}`;
-                    break;
-                default:
-                    singularLabel = `${className} Asset`;
-                    this.tabTitle = `${singularLabel}s`;
-                    this.formTitle = `Edit ${singularLabel}`;
-                    break;
-            }
+            this.tabTitle = `${singularLabel}s`;
+            this.formTitle = `Edit ${singularLabel}`;
 
             this.load();
         });

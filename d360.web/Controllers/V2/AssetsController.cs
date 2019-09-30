@@ -29,7 +29,7 @@ using System.Web.Http.Description;
 namespace d360.web.Controllers.V2
 {
     /// <summary>
-    /// This service houses all endpoints handling glossary-related data such as artifacts and models.
+    /// This service houses all endpoints handling assets of varying types and classes.
     /// </summary>
     [
         ApiVersion("2.0"),
@@ -224,7 +224,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <remarks>
         /// This endpoint can add the following asset type class
-        /// Glossary,Model,Organization,Policy,Reference,Rule
+        /// Business,Technical,Model,Organization,Policy,Reference,Rule
         /// </remarks>
         /// <param name="model">Asset Type</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -270,8 +270,8 @@ namespace d360.web.Controllers.V2
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
 
-                if (model.UseAsTransformation && (model.Class != AssetTypeClass.Glossary && model.Class != AssetTypeClass.Technical))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", "Use As Transformation can be set only asset types that are a Glossary or Technical class"));
+                if (model.UseAsTransformation && (model.Class != AssetTypeClass.Business && model.Class != AssetTypeClass.Technical))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", "Use As Transformation can be set only asset types that are a Business or Technical class"));
 
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", "The total number of asset types exceeds the Transformation limit "));
@@ -336,7 +336,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <remarks>
         /// This endpoint can update the following asset type class
-        /// Glossary,Model,Organization,Policy,Reference,Rule
+        /// Business,Technical,Model,Organization,Policy,Reference,Rule
         /// </remarks>
         /// <param name="model"></param>
         /// <returns></returns>
@@ -379,8 +379,8 @@ namespace d360.web.Controllers.V2
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
 
-                if (model.UseAsTransformation && (model.Class != AssetTypeClass.Glossary && model.Class != AssetTypeClass.Technical))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", "Use As Transformation can be set only asset types that are a Glossary or Technical class"));
+                if (model.UseAsTransformation && (model.Class != AssetTypeClass.Business && model.Class != AssetTypeClass.Technical))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", "Use As Transformation can be set only asset types that are a Business or Technical class"));
 
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", "The total number of asset types exceeds the Transformation limit "));

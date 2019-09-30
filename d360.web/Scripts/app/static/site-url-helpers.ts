@@ -70,7 +70,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_FUSION = `fusion`;
     static SITE_URL_ADMIN_ATTRIBUTES = `attributes`;
     static SITE_URL_ADMIN_ASSET = `assets`;
-    static SITE_URL_ADMIN_ASSET_BUSINESS = `Glossary`;
+    static SITE_URL_ADMIN_ASSET_BUSINESS = `Business`;
     static SITE_URL_ADMIN_ASSET_TECHNICAL = `Technical`;
     static SITE_URL_ADMIN_CUSTOMIZATIONS = 'customizations';
     static SITE_URL_ADMIN_CUSTOM_API = 'customapi';

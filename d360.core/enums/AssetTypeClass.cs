@@ -14,10 +14,10 @@ namespace d360.core.enums
         ]
         Generic = 0,
         [
-            Name("Glossary"), 
-            Description("Glossary assets.")
+            Name("Business"), 
+            Description("Business assets.")
         ]
-        Glossary = 1,
+        Business = 1,
         [
             Name("Model"),
             Description("Model assets.")

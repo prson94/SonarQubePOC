@@ -64,7 +64,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             case AssetTypeClass.FusionAttribute:
                 this.showParentPredicates = false;
                 break;
-            case AssetTypeClass.Glossary:
+            case AssetTypeClass.Business:
                 this.showAssetArtifactSettings = true;
                 this.showFusionOwnerSettings = true;
                 break;

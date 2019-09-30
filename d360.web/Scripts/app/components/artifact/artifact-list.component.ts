@@ -52,7 +52,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                 .getArtifactTypeDetails(artifactTypeId)
                 .subscribe(artifactType => {
 
-                    let folderName: string = '#Glossary';
+                    let folderName: string = '#Business';
 
                     if (artifactType.Class == AssetTypeClass.Technical) {
                         folderName = '#Technical';

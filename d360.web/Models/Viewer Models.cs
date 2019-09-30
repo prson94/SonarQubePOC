@@ -618,6 +618,10 @@ namespace d360.web.Models
         [DataMember]
         public int AssetTypeID { get; set; }
         [DataMember]
+        public AssetTypeClass Class { get; set; }
+        [DataMember]
+        public string ClassName { get { return Class.GetDisplayName(); } }
+        [DataMember]
         public string ObjectType { get; set; }
         [DataMember]
         public int ObjectID { get; set; }

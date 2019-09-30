@@ -27,7 +27,7 @@ namespace igx.IntegrationTests.TestData
                 {
                     var @object = new JObject();
                     @object.Add(new JProperty("Name", "MetricsAssetTest" + Guid.NewGuid()));
-                    @object.Add(new JProperty("Class", "Glossary"));
+                    @object.Add(new JProperty("Class", "Business"));
                     @object.Add(new JProperty("Description", ""));
                     @object.Add(new JProperty("AutoDisplayDescription", true));
                     @object.Add(new JProperty("DisplayFormat", "{Name}"));

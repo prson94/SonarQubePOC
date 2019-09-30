@@ -135,8 +135,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     menu.ShouldDisplay = true;
 
                     switch (menu.MenuID) {
-                        case '#Glossary':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/Glossary`;
+                        case '#Business':
+                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/Business`;
                             break;
                         case '#Technical':
                             menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/Technical`;

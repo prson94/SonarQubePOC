@@ -136,8 +136,8 @@ namespace igx.jobs.reportlayer
                             var prefix = "Glossary";
                             string objectID;
 
-                            var assetTypes = companyConnection.Query<AssetType>($"select * from AssetType where [Class] in ({(int)AssetTypeClass.Glossary}, {(int)AssetTypeClass.Technical}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy})").ToList();
-                            var fieldTypes = companyConnection.Query<FieldType>($"select * from FieldType where AssetTypeID in (select ID from AssetType where [Class] in ({(int)AssetTypeClass.Glossary}, {(int)AssetTypeClass.Technical}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy}))").ToList();
+                            var assetTypes = companyConnection.Query<AssetType>($"select * from AssetType where [Class] in ({(int)AssetTypeClass.Business}, {(int)AssetTypeClass.Technical}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy})").ToList();
+                            var fieldTypes = companyConnection.Query<FieldType>($"select * from FieldType where AssetTypeID in (select ID from AssetType where [Class] in ({(int)AssetTypeClass.Business}, {(int)AssetTypeClass.Technical}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy}))").ToList();
 
                             assetTypes.ForEach(o =>
                             {
@@ -168,9 +168,9 @@ namespace igx.jobs.reportlayer
                                     "A.ID");
 
 
-                                if (o.Class == AssetTypeClass.Glossary || o.Class == AssetTypeClass.Technical)
+                                if (o.Class == AssetTypeClass.Business || o.Class == AssetTypeClass.Technical)
                                 {
-                                    #region Glossary
+                                    #region Business
 
                                     var parentIntersectType = companyConnection.Query<IntersectTypeDetail>($"select * from IntersectTypeDetail where Object = '{o.Object}' and ObjectID = {o.ObjectID} and PredicateType = @pt", new { id = o.ObjectID, pt = (int)PredicateType.InterTypeHierarchy }).FirstOrDefault();
 
@@ -211,7 +211,7 @@ from    AssetDetail A
         {parentSqlJoin} 
 where   A.Type = '{o.Object}' and A.TypeID = {o.ObjectID}";
 
-                                    #endregion Glossary
+                                    #endregion Business
                                 }
                                 else
                                 {

@@ -71,7 +71,7 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
 
     GetDisplayType(item: SearchResult) {
         var displayType = '';
-        if (item.Group == 'Glossary')
+        if (item.Group == 'Business' || item.Group == 'Technical')
             displayType += item.Group + ' - ';
         displayType += item.Type;
         return displayType;

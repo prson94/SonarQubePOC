@@ -1010,7 +1010,7 @@
         </member>
         <member name="P:Resources.FormInfo.ArtifactType">
             <summary>
-              Looks up a localized string similar to Glossary.
+              Looks up a localized string similar to Business.
             </summary>
         </member>
         <member name="P:Resources.FormInfo.AttributeTypeCategory_Directions">
@@ -2882,7 +2882,7 @@
         </member>
         <member name="T:d360.web.Controllers.V2.AssetsController">
             <summary>
-            This service houses all endpoints handling glossary-related data such as artifacts and models.
+            This service houses all endpoints handling assets of varying types and classes.
             </summary>
         </member>
         <member name="M:d360.web.Controllers.V2.AssetsController.GetAssetTypeClassesAsync">
@@ -2922,7 +2922,7 @@
             </summary>
             <remarks>
             This endpoint can add the following asset type class
-            Glossary,Model,Organization,Policy,Reference,Rule
+            Business,Technical,Model,Organization,Policy,Reference,Rule
             </remarks>
             <param name="model">Asset Type</param>
             <returns>An HTTP status code and message.</returns>
@@ -2933,7 +2933,7 @@
             </summary>
             <remarks>
             This endpoint can update the following asset type class
-            Glossary,Model,Organization,Policy,Reference,Rule
+            Business,Technical,Model,Organization,Policy,Reference,Rule
             </remarks>
             <param name="model"></param>
             <returns></returns>

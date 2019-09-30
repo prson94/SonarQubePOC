@@ -593,7 +593,7 @@ namespace igx.UnitTests
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
             
 
-            insertItem.Class = AssetTypeClass.Glossary;
+            insertItem.Class = AssetTypeClass.Business;
             responseMessageResult = await GetResponseForPostAsset(insertItem);
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
 
@@ -636,7 +636,7 @@ namespace igx.UnitTests
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
 
 
-            insertItem.Class = AssetTypeClass.Glossary;
+            insertItem.Class = AssetTypeClass.Business;
             responseMessageResult = await GetResponseForPutAsset(insertItem);
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
 
