@@ -1600,6 +1600,21 @@ where	R.SourceObject = 'FusionAttribute'
                 }
             }
 
+            List<string> excludedClasses = new List<string>()
+            {
+                SystemObjects.AttributeType.ToString(),
+                SystemObjects.FusionType.ToString(),
+                SystemObjects.OrganizationType.ToString()
+            };
+            if (!Community.GetCompanySettingByKey<bool>("FusionEnabled"))
+            {
+                excludedClasses.Add(SystemObjects.FusionAttributeType.ToString());
+                excludedClasses.Add(SystemObjects.FusionQueryAttributeType.ToString());
+            }
+
+            string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
+
+
 
             var sql = $@"
     SELECT		I.ID,
@@ -1623,7 +1638,7 @@ where	R.SourceObject = 'FusionAttribute'
 		                cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
                         left join FusionAttributeType FAT on T.Object = 'FusionAttributeType' and FAT.ID = T.ObjectID 
                         left join FusionType FT on FT.ID = FAT.FusionTypeID 
-                where	T.Object not in ('AttributeType', 'FusionType', 'OrganizationType'){classLimitSql}
+                where	T.Object not in ({excludeClassInStatement}){classLimitSql}
 			 	{noClassLimitSql}
                 ) I";
 

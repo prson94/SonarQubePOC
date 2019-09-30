@@ -41,6 +41,11 @@ namespace d360.web.Controllers
             nodes = Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList();
 
             var features = Community.Filter<CompanyFeature>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
+            var isFusionEnabled = Community.GetCompanySettingByKey<bool>("FusionEnabled");
+            if (!isFusionEnabled)
+            {
+                nodes = nodes.Where(x => x.MenuID != "#Fusion").ToList();
+            }
 
             if (nodes != null)
                 nodes.ForEach(n => {
