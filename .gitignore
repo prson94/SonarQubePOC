@@ -22,7 +22,7 @@
 \.vs\config\*.config
 
 # Ignore xml documentation files
-\d360.web\App_Data\*
+/d360.web/App_Data/Documentation.XML
 
 # Ignore compiled css files
 \d360.web\Content\styles\*.min.css
