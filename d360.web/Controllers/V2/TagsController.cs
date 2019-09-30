@@ -544,7 +544,7 @@ namespace d360.web.Controllers.V2
         /// <param name="tag">The tag to be created.</param>
         [HttpPost, 
         Route("exists"),
-        SwaggerConsumes("application/json"), SwaggerProduces("application/json")]
+        ApiExplorerSettings(IgnoreApi = true)]
         public IHttpActionResult DoesTagExist(TagApiModel tag)
         {
             try

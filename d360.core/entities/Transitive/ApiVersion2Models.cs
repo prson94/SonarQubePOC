@@ -44,10 +44,10 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid Uid { get; set; }
-        
+
         [DataMember]
         public string Name { get; set; }
-        
+
         [DataMember]
         [JsonConverter(typeof(StringEnumConverter))]
         public AssetTypeClass Class { get; set; }
@@ -58,7 +58,7 @@ namespace d360.core.entities
         [DataMember]
         public string DisplayFormat { get; set; }
         public HierarchyInsert Hierarchy { get; set; }
-        
+
         public IconStyleInsert IconStyle { get; set; }
 
         [DataMember]
@@ -90,7 +90,7 @@ namespace d360.core.entities
     [DataContract(Name = "Hierarchy")]
     public class HierarchyInsert
     {
-       [DataMember] public int MaximumDepth { get; set; }
+        [DataMember] public int MaximumDepth { get; set; }
         [DataMember] public Guid? PredicateUid { get; set; }
     }
 
@@ -144,7 +144,7 @@ namespace d360.core.entities
     }
 
     [DataContract(Name = "asset")]
-    public class AssetDelete: IExecutionItem
+    public class AssetDelete : IExecutionItem
     {
         [DataMember]
         public Guid Uid { get; set; }
@@ -188,7 +188,7 @@ namespace d360.core.entities
     }
 
     [DataContract]
-    public class DatabaseBulkAssetResult: IWorkflowEnabledAsset, IGraphAsset
+    public class DatabaseBulkAssetResult : IWorkflowEnabledAsset, IGraphAsset
     {
         [DataMember]
         public int ItemNumber { get; set; }
@@ -212,7 +212,7 @@ namespace d360.core.entities
     [DataContract]
     public class BulkAssetCrossReferenceResult
     {
-       
+
         [DataMember]
         public int Total { get; set; }
 
@@ -313,7 +313,7 @@ namespace d360.core.entities
     }
 
     [DataContract]
-    public class DatabaseBulkRelationshipResult: IWorkflowEnabledAsset, IGraphAsset
+    public class DatabaseBulkRelationshipResult : IWorkflowEnabledAsset, IGraphAsset
     {
         public Guid ExecutionID { get; set; }
 
@@ -361,4 +361,58 @@ namespace d360.core.entities
     {
         public Guid AssetUid { get; set; }
     }
+
+    [DataContract]
+    public class PredicateApiResult
+    {
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+    [JsonArray]
+    [DataContract(Name = "predicates")]
+    public class PredicateDeletes : List<PredicateDelete> { }
+
+    public class PredicateDelete
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+    }
+
+    [DataContract]
+    public class PredicateDeleteResult : PredicateApiResult { }
+
+    [JsonArray]
+    [DataContract(Name = "predicates")]
+    public class PredicateInserts : List<PredicateInsert> { }
+
+    public class PredicateInsert
+    {
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public PredicateType Type { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Inverse { get; set; }
+    }
+
+    [DataContract]
+    public class PredicateInsertResult : PredicateApiResult { }
+
 }

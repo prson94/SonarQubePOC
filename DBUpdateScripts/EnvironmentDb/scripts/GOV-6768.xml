@@ -1,0 +1,81 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-6768">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		IF (NOT EXISTS (SELECT * 
+                FROM INFORMATION_SCHEMA.TABLES 
+                WHERE TABLE_SCHEMA = 'api' 
+                AND  TABLE_NAME = 'ExecutionPredicate'))
+		BEGIN
+			CREATE TABLE [api].[ExecutionPredicate](
+				[ExecutionID] [uniqueidentifier] NOT NULL,
+				[ItemNumber] [int] NOT NULL,
+				[PredicateID] [int] NULL,
+				[uid] [uniqueidentifier] NULL,
+				[Type] [nvarchar](255) NOT NULL,
+				[Name] [nvarchar](100) NOT NULL,
+				[Inverse] [nvarchar](250) NOT NULL,
+				[Message] [nvarchar](2500) NULL,
+				[Success] [bit] NULL,
+				[ExecutionItemUid] [uniqueidentifier] NULL,
+			 CONSTRAINT [PK_ApiExecutionPredicate] PRIMARY KEY CLUSTERED 
+			(
+				[ExecutionID] DESC,
+				[ItemNumber] ASC
+			)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+			) ON [PRIMARY]
+		END
+
+		IF (NOT EXISTS (SELECT * 
+						 FROM INFORMATION_SCHEMA.TABLES 
+						 WHERE TABLE_SCHEMA = 'api' 
+						 AND  TABLE_NAME = 'ExecutionDeletedPredicate'))
+		BEGIN
+		CREATE TABLE [api].[ExecutionDeletedPredicate](
+				[ExecutionID] [uniqueidentifier] NOT NULL,
+				[ItemNumber] [int] NOT NULL,
+				[ExecutionItemUid] [uniqueidentifier] NULL,
+				[Uid] [uniqueidentifier] NOT NULL,
+				[PredicateID] [int] NULL,
+				[Message] [nvarchar](2500) NULL,
+				[Success] [bit] NULL,
+			 CONSTRAINT [PK_ApiExecutionDeletedPredicate] PRIMARY KEY CLUSTERED 
+			(
+				[ExecutionID] DESC,
+				[Uid] ASC
+			)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+			) ON [PRIMARY]
+		END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+		IF (EXISTS (SELECT * 
+                FROM INFORMATION_SCHEMA.TABLES 
+                WHERE TABLE_SCHEMA = 'api' 
+                AND  TABLE_NAME = 'ExecutionPredicate'))
+		BEGIN
+			DROP TABLE [api].[ExecutionPredicate]
+		END
+
+		IF (EXISTS (SELECT * 
+						 FROM INFORMATION_SCHEMA.TABLES 
+						 WHERE TABLE_SCHEMA = 'api' 
+						 AND  TABLE_NAME = 'ExecutionDeletedPredicate'))
+		BEGIN
+		DROP TABLE [api].[ExecutionDeletedPredicate]
+		END
+		]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
