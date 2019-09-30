@@ -187,7 +187,8 @@ namespace d360.web.Controllers.V2
 
                 #region Validation
                 var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
-                var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields);
+                var isFusionEnabled = Community.IsFusionEnabled();
+                var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, isFusionEnabled, existingFields);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
 
