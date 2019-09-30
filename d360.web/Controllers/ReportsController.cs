@@ -255,10 +255,10 @@ namespace d360.web.Controllers
             if (!string.IsNullOrEmpty(type) && !isType)
             {
                 currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == report.ObjectID && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
-                var asset = Company.GetAssetDetail(type, report.ObjectID);
-
+                var asset = Company.AssetTypes.FirstOrDefault(x => x.Object == (type + "Type") && x.ObjectID == report.ObjectID);
+                   
                 if (asset != null)
-                    currentUserResponsibilityTypeList.AddRange(Company.ResponsibilityDetails.Where(x => x.AssetTypeID == asset.AssetTypeID && x.AssetID == 0 && x.ResourceID == Company.CurrentResourceID).ToList());
+                    currentUserResponsibilityTypeList.AddRange(Company.ResponsibilityDetails.Where(x => x.AssetTypeID == asset.ID && x.AssetID == 0 && x.ResourceID == Company.CurrentResourceID).ToList());
 
             }
             else if (isType)
