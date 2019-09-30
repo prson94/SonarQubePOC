@@ -3664,7 +3664,7 @@ outer apply (
                     join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : (string.IsNullOrEmpty(permissionsWhere) ? "" : $" and {permissionsWhere}");
 
                     objColumn = $"'{currentObj}'";
-                    objIDColumn = $"A{i}.ID";
+                    objIDColumn = useAssetJoin ? $"A{i}.ObjectID" : $"A{i}.ID";
                     break;
                 #endregion
                 case ComplexLookupRelationType.ParentItem:
@@ -3691,7 +3691,7 @@ outer apply (
                     join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : (string.IsNullOrEmpty(permissionsWhere) ? "" : $" and {permissionsWhere}");
 
                     objColumn = $"'{currentObj}'";
-                    objIDColumn = $"A{i}.ID";
+                    objIDColumn = useAssetJoin ? $"A{i}.ObjectID" : $"A{i}.ID";
                     break;
                 #endregion
                 default:

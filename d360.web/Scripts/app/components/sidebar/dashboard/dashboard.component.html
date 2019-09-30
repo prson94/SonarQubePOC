@@ -1,7 +1,7 @@
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading"
      class="row">
-    <div class="col s12">
+    <div *ngIf="!showError" class="col s12">
         <div *ngIf="!showSingle" class="tile tile-detail">
             <header *ngIf="objectName">Dashboards for {{objectName}}</header>
             <header *ngIf="!objectName">Dashboards</header>
@@ -40,5 +40,11 @@
                 style="padding:30px;">Please choose a dashboard from the dropdown above and press
                 display to view the specified dashboards content.</h4>
         </div>
+    </div>
+    <div *ngIf="showError" class="col s12">
+        <div class="tile tile-detail">
+            <header>Dashboard not found.</header>
+        </div>
+
     </div>
 </div>
