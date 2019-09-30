@@ -242,7 +242,64 @@ namespace d360.web.Controllers
                 return new JsonNetResult { Data = reports, Formatting = Newtonsoft.Json.Formatting.None };
             }
         }
-        
+
+        [Route("byid/{id:int}")]
+        public JsonNetResult GetReportsByObject(int id)
+        {            
+            var report = Company.Reports.FirstOrDefault(x => x.ID == id && x.ReportType != "legacy");
+            var type = report.ObjectType;
+            SystemObjects objectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), type);
+            var objectId = id;
+            if (objectType == SystemObjects.Artifact || objectType == SystemObjects.Taxonomy)
+            {
+                var asset = Company.AssetDetails.Where(x => x.Object == objectType.ToString() && x.ObjectID == report.ObjectID).First();
+
+                objectId = asset.TypeID;
+            }
+
+            bool isType = type.Contains("Type");
+
+            List<ResponsibilityDetail> currentUserResponsibilityTypeList = new List<ResponsibilityDetail>();
+            if (!string.IsNullOrEmpty(type) && !isType)
+            {
+                currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
+                var asset = Company.GetAssetDetail(type, id);
+
+                if (asset != null)
+                    currentUserResponsibilityTypeList.AddRange(Company.ResponsibilityDetails.Where(x => x.AssetTypeID == asset.AssetTypeID && x.AssetID == 0 && x.ResourceID == Company.CurrentResourceID).ToList());
+
+            }
+            else if (isType)
+                currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.TypeID == id && x.Type == type && x.ResourceID == Company.CurrentResourceID).ToList();
+            else
+                currentUserResponsibilityTypeList = Company.ResponsibilityDetails.Where(x => x.ObjectID == id && x.Object == type && x.ResourceID == Company.CurrentResourceID).ToList();
+
+            var currentUserResponsibilityTypeIDList = new List<int>();
+
+            if (currentUserResponsibilityTypeList != null && currentUserResponsibilityTypeList.Count() > 0)
+            {
+                currentUserResponsibilityTypeIDList = currentUserResponsibilityTypeList.Select(i => i.ResponsibilityTypeID).ToList();
+            }
+
+            //check that the current user has access to the current report
+            if (report.Responsibilities != null && report.Responsibilities.Count > 0)
+            {
+                bool userHasAccess = false;
+
+                foreach (var responsibility in report.Responsibilities)
+                {
+                    if (currentUserResponsibilityTypeIDList.Contains(responsibility.ResponsibilityTypeID))
+                    {
+                        userHasAccess = true;
+                        break;
+                    }
+                }
+                if (!userHasAccess)
+                    report = null;
+            }
+            return new JsonNetResult { Data = report, Formatting = Newtonsoft.Json.Formatting.None };
+        }
+
         [Route("{reportID:int}/layout")]
         public JsonNetResult GetReportLayout(int reportID)
         {
