@@ -10,9 +10,12 @@
             splitStatements="true"
             stripComments="true">
 			      <![CDATA[
-			INSERT INTO [dbo].[Setting] 
- (ID,FieldName, Name, Description, DefaultValue)
- VALUES (70,'FusionEnabled','Enable Fusion','This setting indicates whether the Govern UI should display Fusion options','true')
+			IF NOT EXISTS(SELECT 1 FROM [dbo].[Setting] WHERE ID = 70)
+			BEGIN			
+			 INSERT INTO [dbo].[Setting] 
+			 (ID,FieldName, Name, Description, DefaultValue)
+			 VALUES (70,'FusionEnabled','Enable Fusion','This setting indicates whether the Govern UI should display Fusion options','true')
+			END
  		]]>
 		</sql>
 		<rollback>

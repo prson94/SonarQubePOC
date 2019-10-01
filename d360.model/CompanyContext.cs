@@ -550,7 +550,7 @@ select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attribut
             string ignoreFusionItems = string.Empty;
             if (!Community.IsFusionEnabled())
             {
-                ignoreFusionItems = $" and A.ObjectType not in ('{SystemObjects.FusionType.ToString()}','{SystemObjects.FusionAttributeType.ToString()}')";
+                ignoreFusionItems = $" and A.ObjectType not in ('{SystemObjects.FusionQueryAttributeType.ToString()}', '{SystemObjects.FusionType.ToString()}','{SystemObjects.FusionAttributeType.ToString()}')";
             }
 
             var list = Database.Connection.Query<AllocationPossibility>($@"

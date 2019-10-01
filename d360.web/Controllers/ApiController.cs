@@ -4869,15 +4869,6 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
         [Route("reports/targets")]
         public IEnumerable<dynamic> GetReportTargetAreas()
         {
-            string fusionQuery = string.Empty;
-
-            if (Community.IsFusionEnabled()) {
-                fusionQuery = @"            union
-            select      'FusionType|' + cast(ObjectId as varchar(15)) as value,
-                        'Fusion Type : ' + Name as title
-            from         AssetType where [object]='FusionType'";
-            }
-
             var items = Company.Query<dynamic>($@"
 select      *
 from        (                 
@@ -4911,8 +4902,10 @@ from        (
             select      'RuleType|' + cast(ObjectId as varchar(15)) as value,
                         'Rule Type : ' + Name as title
             from         AssetType where [object]='RuleType' 
-            {fusionQuery}
- 
+            union
+            select      'FusionType|' + cast(ObjectId as varchar(15)) as value,
+                        'Fusion Type : ' + Name as title
+            from         AssetType where [object]='FusionType'
 ) O
 order by    title
 
