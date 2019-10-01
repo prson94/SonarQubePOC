@@ -344,6 +344,15 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Json' then FT.IsEditable else null end as 'Type.Json.IsEditable',
 		        case when FT.Type = 'Json' then FT.ShowIfEmpty else null end as 'Type.Json.ShowIfEmpty',
 
+		        case when FT.Type = 'JsonElement' then FT.ColumnOrder else null end as 'Type.JsonElement.ColumnOrder',
+		        case when FT.Type = 'JsonElement' then FT.DisplayDescription else null end as 'Type.JsonElement.Description.Display',
+		        case when FT.Type = 'JsonElement' then FT.IsDisplayable else null end as 'Type.JsonElement.IsDisplayable',
+				case when FT.Type = 'JsonElement' then FT.ShowIfEmpty else null end as 'Type.JsonElement.ShowIfEmpty',
+				case when FT.Type = 'JsonElement' then FT.IsListable else null end as 'Type.JsonElement.IsListable',
+                case when FT.Type = 'JsonElement' then (select Name from FieldType where ID = JSON_VALUE(FT.Definition,'$.FieldTypeID')) else null end as 'Type.JsonElement.JsonAttribute.FieldName',
+				case when FT.Type = 'JsonElement' then JSON_VALUE(FT.Definition,'$.Path') else null end as 'Type.JsonElement.JsonAttribute.Path',
+				case when FT.Type = 'JsonElement' then JSON_VALUE(FT.Definition,'$.DataType') else null end as 'Type.JsonElement.JsonAttribute.DataType',
+
 		        case when FT.Type = 'Link' then FT.ColumnOrder else null end as 'Type.Link.ColumnOrder',
 		        case when FT.Type = 'Link' then FT.ColumnWidth else null end as 'Type.Link.ColumnWidth',
 		        case when FT.Type = 'Link' then FT.SortOrder else null end as 'Type.Link.SortOrder',
@@ -775,6 +784,28 @@ from	IntersectType I
                     newFieldType.IsDisplayable = f.Type.Json.IsDisplayable;
                     newFieldType.ShowIfEmpty = f.Type.Json.ShowIfEmpty;
                 }
+                else if (f.Type.JsonElement != null)
+                {
+                    if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a JSON Element type on an action type or relationship type for field {f.Name}.");
+                    }
+                    newFieldType.Type = DataType.JsonElement.ToString();
+                    newFieldType.ColumnOrder = f.Type.JsonElement.ColumnOrder;
+                    if (f.Type.JsonElement.Description != null)
+                    {
+                        newFieldType.DisplayDescription = f.Type.JsonElement.Description.Display;
+                    }
+                    newFieldType.IsDisplayable = f.Type.JsonElement.IsDisplayable;
+                    newFieldType.ShowIfEmpty = f.Type.JsonElement.ShowIfEmpty;
+                    newFieldType.IsListable = f.Type.JsonElement.IsListable;
+                    if(f.Type.JsonElement.JsonAttribute != null)
+                    {
+                        int FieldTypeID = Company.FieldTypes.FirstOrDefault(ft => ft.Object == newFieldType.Object && ft.ObjectID == newFieldType.ObjectID && ft.Name == f.Type.JsonElement.JsonAttribute.FieldName).ID;
+                        var obj = new { FieldTypeID, f.Type.JsonElement.JsonAttribute.Path, f.Type.JsonElement.JsonAttribute.DataType };
+                        newFieldType.Definition = JsonConvert.SerializeObject(obj);
+                    }
+                }
                 else if (f.Type.Link != null)
                 {
                     newFieldType.Type = DataType.Link.ToString();
@@ -1091,7 +1122,7 @@ from	IntersectType I
                     currentFieldType.SortOrder = newFieldType.SortOrder;
                     currentFieldType.Type = newFieldType.Type;
                     currentFieldType.ValidationDescription = newFieldType.ValidationDescription;
-
+                    currentFieldType.Definition = newFieldType.Definition;
                     fieldTypeNamesToDelete.Add(f.Name);
                 }
 
