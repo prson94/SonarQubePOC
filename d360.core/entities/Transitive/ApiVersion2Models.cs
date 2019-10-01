@@ -415,4 +415,12 @@ namespace d360.core.entities
     [DataContract]
     public class PredicateInsertResult : PredicateApiResult { }
 
+
+
+    public class AssetFieldTypeUpdate
+    {
+        public string Object { get; set; }
+        public int ObjectId { get; set; }
+        public int Id { get; set; }
+    }
 }

@@ -405,9 +405,17 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
             new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
-        private void MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600)
+        private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber,bool sendWorkflowEvents, int timeout = 3600)
         {
-            Connection.Execute($@"
+            return Connection.Query<AssetFieldTypeUpdate>($@"
+select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from api.ExecutionAsset EA 
+	inner join api.ExecutionField EF on EF.ExecutionID = EA.ExecutionID 
+                        and EF.ItemNumber = EA.ItemNumber 
+                        and EA.ObjectID is not null 
+                        and EF.FieldTypeID is not null
+	inner join Field F on F.FieldTypeId = EF.FieldTypeID and F.ObjectType = EA.Object and F.ObjectId = EA.ObjectID
+where EA.ExecutionID = @executionID and EA.IsNew <> 1 and F.Value <> EF.FieldValue and @sendWorkflowEvents = 1
+
 merge       Field as T
 using       (
             select  distinct 
@@ -436,7 +444,7 @@ update		set
 when		not matched by target then
 insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
 values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
-            new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+            new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
         }
 
         private void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
@@ -762,7 +770,7 @@ from	api.ExecutionField T
                         ", new { executionID }, commandTimeout: timeout);
         }
 
-        private void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null)
+        private void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null)
         {
             try
             {
@@ -771,6 +779,15 @@ from	api.ExecutionField T
                 {
                     if (result.Success)
                     {
+                        List<int> changedFieldsIDS = new List<int>();
+                        if(fieldUpdates != null)
+                        {
+                            foreach(var ftUpdate in fieldUpdates.Where(x=> x.Object == result.Object && x.ObjectId == result.ObjectID))
+                            {
+                                changedFieldsIDS.Add(ftUpdate.Id);
+                            }
+                        }
+
                         events.Add(new EventInfo
                         {
                             CompanyID = CurrentCompanyID,
@@ -782,7 +799,8 @@ from	api.ExecutionField T
                                 Object = (SystemObjects)Enum.Parse(typeof(SystemObjects), result.Object),
                                 ObjectType = (SystemObjects)Enum.Parse(typeof(SystemObjects), objectType),
                                 ObjectID = result.ObjectID,
-                                ObjectTypeID = objectTypeID
+                                ObjectTypeID = objectTypeID,
+                                ChangedFieldIds = changedFieldsIDS
                             }
                         });
 
@@ -1513,7 +1531,7 @@ from	IntersectType I
                         S.[Uid]
 	            from	workflow.Item wi
 			            inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
-			            inner join api.ExecutionDeletedAsset S on S.ObjectID = i.ObjectID 
+			            inner join api.ExecutionDeletedAsset S on S.Object = i.Object and S.ObjectID = i.ObjectID 
                 where   {querySuffix} ;
             
 			update  S 
@@ -1639,7 +1657,7 @@ from	IntersectType I
 	    select	wi.id 
 	    from	workflow.Item wi
 			    inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
-			    inner join api.ExecutionDeletedAsset S on S.ObjectID = i.ObjectID and {querySuffix};
+			    inner join api.ExecutionDeletedAsset S on S.Object = i.Object and S.ObjectID = i.ObjectID and {querySuffix};
 
     delete	T
     from	[workflow].[ItemAssignment] T
@@ -2184,6 +2202,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                     int? intersectTypeID = null;
                     CurrentExecutionLocationModel currentLocation = null;
                     bool hasLookupFieldTypes = false;
+                    List<AssetFieldTypeUpdate> fieldTypeUpdates = new List<AssetFieldTypeUpdate>();
 
                     try
                     {
@@ -2978,8 +2997,8 @@ from	api.ExecutionAsset T
                                         }
 
                                         #endregion
-
-                                        MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout);
+                                        fieldTypeUpdates.Clear();
+                                        fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
 
                                         if (jsonFieldTypes.Count > 0)
@@ -3047,7 +3066,7 @@ from	api.ExecutionAsset T
 
                         if (sendWorkflowEvents)
                         {
-                            SendWorkflowEvents(at.Object, at.ObjectID, results);
+                            SendWorkflowEvents(at.Object, at.ObjectID, results,null, fieldTypeUpdates);
                         }
                     }
                 }
@@ -3405,6 +3424,7 @@ end",
                     int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
                     int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                     int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+                    List<AssetFieldTypeUpdate> fieldTypeUpdates = new List<AssetFieldTypeUpdate>();
 
                     for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                     {
@@ -3451,8 +3471,8 @@ end",
         where   T.ItemNumber between @beginItemNumber and @endItemNumber;", new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
 
                                     #endregion
-
-                                    MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, timeout);
+                                    fieldTypeUpdates.Clear();
+                                    fieldTypeUpdates =  MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
 
                                     // Update success flag
                                     Connection.Execute(
@@ -3498,7 +3518,7 @@ end",
                     SendAssetGraphEvents(results);
 
                     if (sendWorkflowEvents)
-                        SendWorkflowEvents("IntersectType", rt.ID, results);
+                        SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
                 }
             }
             return results;

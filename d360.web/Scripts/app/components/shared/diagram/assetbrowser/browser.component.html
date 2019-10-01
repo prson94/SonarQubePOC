@@ -2,6 +2,7 @@
     <header>
         <span>Lineage</span>
         <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
+        <d3s-tile-actions  hasMenu="true" [menuItems]="menuItems" (menuClick)="menuAction($event)"></d3s-tile-actions>
     </header>
     <div>
         <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>

@@ -417,6 +417,7 @@
     </Content>
     <Content Include="Content\primeicons\2.0.0\fonts\primeicons.svg" />
     <Content Include="Content\primeicons\2.0.0\primeicons.css" />
+    <Content Include="Content\primeicons\2.0.0\primeicons.min.css" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\align-center.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\align-justify.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\align-left.svg" />
@@ -561,7 +562,9 @@
     <Content Include="Content\primeng\v7.1.3\images\loading.gif" />
     <Content Include="Content\primeng\v7.1.3\images\password-meter.png" />
     <Content Include="Content\primeng\v7.1.3\primeng.css" />
+    <Content Include="Content\primeng\v7.1.3\primeng.min.css" />
     <Content Include="Content\primeng\v7.1.3\theme.css" />
+    <Content Include="Content\primeng\v7.1.3\theme.min.css" />
     <Content Include="Content\quill\v1.3.4\quill.min.js" />
     <Content Include="Content\quill\v1.3.4\quill.snow.css" />
     <Content Include="Content\quill\v1.3.4\quill.snow.min.css">

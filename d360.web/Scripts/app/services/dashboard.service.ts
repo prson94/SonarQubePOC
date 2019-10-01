@@ -34,6 +34,16 @@ export class DashboardService extends BaseObservableService {
             );
     }
 
+    getDashboardByID(reportID: number): Observable<Dashboard> {
+        return this
+            .http
+            .get(`reports/byid/${reportID}`)
+            .pipe(
+                map(response => <Dashboard>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     getPowerBIReportTokens(reportId: string): Observable<DashboardTokens> {
         return this
             .http

@@ -135,7 +135,7 @@ export class SiteUrlHelpers {
             case 'RULEIMPLEMENTATION':
                 return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${parentId}/${objectId}`;
             case 'DASHBOARD':
-                return `${SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT}/${objectId}/${objectName}`;
+                return `${SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT}/${objectId}`;
             default:
                 console.log('Unable to generate object link', objectType, objectId);
         }
