@@ -311,8 +311,9 @@ from	{targetTable} T
 								                        and FT.ObjectID = @objID
 									                    and FT.[Type] = 'Relationship' and FT.LookupObjectType ='IntersectType'
 								                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
-								                    inner join IntersectType IT on IT.ID = FT.LookupObjectID
-								                    left join AssetDetail AD on AD.DisplayValue = F.FieldValue 
+								                    cross apply string_split(F.FieldValue,',') V
+                                                    inner join IntersectType IT on IT.ID = FT.LookupObjectID
+								                    left join AssetDetail AD on AD.DisplayValue = V.[value]
 									                    and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
 									                    or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
                                         where       A.ExecutionID = @executionID and AD.ID IS NULL
@@ -336,8 +337,9 @@ from	{targetTable} T
 								                        and FT.ObjectID = @objID
 									                    and FT.[Type] = 'Relationship' and FT.LookupObjectType ='IntersectType'
 								                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
-								                    inner join IntersectType IT on IT.ID = FT.LookupObjectID
-								                    left join AssetDetail AD on AD.ObjectID = cast(F.FieldValue as int)
+                                                    cross apply string_split(F.FieldValue, ',') V								                    
+                                                    inner join IntersectType IT on IT.ID = FT.LookupObjectID
+								                    left join AssetDetail AD on AD.ObjectID = cast(V.[value] as int)
 									                    and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
 									                    or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
                                         where       A.ExecutionID = @executionID and AD.ID IS NULL
@@ -470,9 +472,10 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                         and A.ObjectID is not null 
                         and F.FieldTypeID is not null
 						and A.Success is null
+                    cross apply string_split(F.FieldValue, ',') V
                     inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
                     inner join IntersectType IT on IT.ID = FT.LookupObjectId
-                    inner join AssetDetail AD on AD.DisplayValue = F.FieldValue 
+                    inner join AssetDetail AD on AD.DisplayValue = V.[value]
                             and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
                                 or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
             where   A.ExecutionID = @executionID
@@ -523,9 +526,10 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                         and A.ObjectID is not null 
                         and F.FieldTypeID is not null
 						and A.Success is null
+                    cross apply string_split(F.FieldValue, ',') V
                     inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
                     inner join IntersectType IT on IT.ID = FT.LookupObjectId
-                    inner join AssetDetail AD on AD.ObjectID = cast(F.FieldValue  as int)
+                    inner join AssetDetail AD on AD.ObjectID = cast(V.[value] as int)
                             and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
                                 or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
             where   A.ExecutionID = @executionID
