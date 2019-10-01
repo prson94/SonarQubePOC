@@ -8,8 +8,9 @@ import { Observable } from 'rxjs';
 @Component({
     selector: 'd3s-shortcut-display',
     template: ` 
+
     <ul>
-        <li *ngFor="let s of shortcuts" (click)="navigate(s)" class="shortcut" [style.background-color]="s.BackgroundColor">
+        <li *ngFor="let s of shortcuts | async" (click)="navigate(s)" class="shortcut" [style.background-color]="s.BackgroundColor">
             <div *ngIf="s.Icon != null" class="icon" [style.color]="s.IconColor">
                 <i [class]="'fa ' + s.Icon" style="display: block;"></i>
             </div>
