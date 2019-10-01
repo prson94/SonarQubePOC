@@ -184,6 +184,34 @@ namespace d360.core.validators
 
             return true;
         }
-      
+
+        public bool IsValidOrderByFieldForGetAssets(Guid uid,IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+          
+            if (!(queryParams.Any(p => p.Key.Trim().ToLower() == "_order")))
+                return true;
+            
+            var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
+            if (assetType == null)
+                return false;
+
+            var fieldName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value;
+
+            string[] validFields = { "name", "sourceid", "textpath", "code" };
+            if(assetType.Object == "FusionAttributeType")
+            {
+                var valid =   validFields.Contains(fieldName.Trim().ToLower());
+                if (valid) return true;
+            }
+           
+               
+            var field = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID && f.Name.ToLower()== fieldName.ToLower()).SingleOrDefault();
+
+            if (field == null) return false;
+            else return true;
+           
+
+        }
+
     }
 }
