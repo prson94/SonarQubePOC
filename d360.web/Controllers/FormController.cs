@@ -316,6 +316,9 @@ namespace d360.web.Controllers
                 case "INTERSECTTYPE":
                     objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
                     return DynamicEditorEditFields(o, objectId);
+                case "PREDICATE":
+                    objectId = Company.Predicates.FirstOrDefault(x => x.UID == uid).ID;
+                    return DynamicEditorEditFields(o, objectId);
             }
             throw new Exception("Invalid or non implemented editor type");
         }

@@ -65,7 +65,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                 </td>
                                 <td>
                                     <div class="RowTools">
-                                        <d3s-preview-tooltip objectType="Predicate" [objectId]="item.ID" icon="info">
+                                        <d3s-preview-tooltip objectType="Predicate" [objectId]="item.Uid" icon="info">
                                         </d3s-preview-tooltip>
                                     </div>
                                 </td>
@@ -76,10 +76,10 @@ import { MessagesObservableService } from '../../../services/messages-observable
                         </ng-template>
                     </p-table>
                 </span>
-                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'Predicate'" [title]="'Predicate'" [selection]="selected" (saveClick)="savePredicate($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
+                <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.Uid" [objectType]="'Predicate'" [title]="'Predicate'" [selection]="selected" (saveClick)="savePredicate($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
                 <d3s-delete-form *ngIf="showDelete"
                     [callback]="theDeleteCallback"
-                    [itemId]="selected?.ID"
+                    [itemId]="selected?.Uid"
                     [method]="'callback'"
                     [prompt]="'Are you sure you want to delete the predicate [' + [selected?.Name] + ']?'"                                         
                     (onCancel)="showDelete=false;"
@@ -128,13 +128,13 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
         this.clearSidebar();
     }
 
-    deletePredicate(id: number) {
-        this.predicatesService.deletePredicate(id)
+    deletePredicate(uid: number) {
+        this.predicatesService.deletePredicate(uid)
             .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
+                this.showMessageForApiResults(this.messagesService, result, " Predicate deleted");
                 this.showDelete = false;
-                if (result.type != 'error') {
-                    this.predicates = this.predicates.filter(x => x.ID != id);
+                if (!result.some(x => x.Success == false)) {
+                    this.predicates = this.predicates.filter(x => x.Uid != uid);
                 }
             });
     }
@@ -151,9 +151,16 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     }
 
     savePredicate(event) {
+        console.log(event);
         this.predicatesService.savePredicate(event.item)
             .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
+
+                if (event.action == 'new') {
+                    this.showMessageForApiResults(this.messagesService, result, ' Predicate succesfully added!');
+                }
+                else {
+                    this.showMessageForApiResults(this.messagesService, result, ' Predicate succesfully updated!');
+                }
                 this.getPredicates();
                 this.showEditor = false;
             });
