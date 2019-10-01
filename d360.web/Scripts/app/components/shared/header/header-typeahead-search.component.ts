@@ -11,7 +11,7 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-header-typeahead-search',    
     template: ` <span #item class="header-search header-table" (keyup)="checkKey($event,ac)" >
-                    <div class="header-search-input flat light">
+                    <div class="header-search-input">
                         <p-autoComplete #ac size="300" 
                                 styleClass="global-search-typeahead" 
                                 scrollHeight="400px"
@@ -19,7 +19,7 @@ declare var CompanySettings;
                                 [suggestions]="results" 
                                 field="Name"
                                 (completeMethod)="search($event)"                              
-                                placeholder="Search..."  
+                                placeholder="Search Govern..."  
                                 [minLength]="1"  
                                 (onBlur)="clearValue()"
                                 (onSelect)="selectItem(ac)">                       
@@ -44,7 +44,7 @@ declare var CompanySettings;
                                  </div>                            
                             </ng-template>
                         </p-autoComplete>
-                    <i class="fa fa-search" (click)="openSearch()"></i>
+                    <i class="fa fa-search head-search-button" (click)="openSearch()"></i>
                     </div>
                 <span>`,
     providers: [TypeaheadSearchService],
