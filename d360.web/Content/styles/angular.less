@@ -1874,8 +1874,6 @@ li.shortcut {
     }
 }
 
-
-
 li.shortcut div.shortcut-name {    
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -1887,26 +1885,31 @@ li.shortcut div.shortcut-name {
     line-height: 1.22;
     letter-spacing: normal;
     text-align: center;
-    padding:20px;
+    padding:20px 5px;
     color: #ffffff;
 }
 
-li.shortcut div.shortcut-desc {
-    
-    white-space: nowrap;
+li.shortcut .shortcut-desc {
     text-overflow: ellipsis;
-    overflow: hidden;
-    width: 140px;
-    margin: auto;
+    overflow: hidden;    
     font-size: 14px;
-  font-weight: normal;
-  font-style: normal;
-  font-stretch: normal;
-  line-height: 1.14;
-  letter-spacing: normal;
-  text-align: center;
-  color: #ffffff;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 1.14em;
+    max-height: 3.42em; /* people on IE need to deal without ...*/
+    letter-spacing: normal;
+    text-align: center;
+    padding-left: 25px;
+    padding-right: 25px;
+    color: #ffffff;
+    margin: auto;
+    display: block;
+    display: -webkit-box;    
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;    
 }
+
 
 li.shortcut div.icon {
     width: 72px;

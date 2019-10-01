@@ -20,9 +20,9 @@ import { Observable } from 'rxjs';
             <div class="shortcut-name" [title]="s.Name" [style.color]="s.TitleColor">
                 {{s.Name}}
             </div>
-            <div class="shortcut-desc" [title]="s.Description">
+            <p class="shortcut-desc" [title]="s.Description">
                 {{s.Description}}
-            </div>
+            </p>
         </li>
     </ul>
     `, providers: [ShortcutService]

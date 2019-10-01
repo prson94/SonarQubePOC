@@ -1,12 +1,10 @@
 ﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
-
 import { RouterModule } from '@angular/router';
 
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 import { CoreModule } from '../core.module';
-
 import { ShortcutDisplayComponent } from './shortcut-display.component';
 
 @NgModule({
