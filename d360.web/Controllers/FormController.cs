@@ -965,7 +965,8 @@ namespace d360.web.Controllers
                         ot = SystemObjects.FusionAttributeType;
                         appendTitle = FormInfo.FusionAttributeType;
                         break;
-                    case AssetTypeClass.Glossary:
+                    case AssetTypeClass.Business:
+                    case AssetTypeClass.Technical:
                         ot = SystemObjects.ArtifactType;
                         appendTitle = FormInfo.ArtifactType;
                         break;
@@ -1018,8 +1019,9 @@ namespace d360.web.Controllers
                             model.AssetType.Name = f.Name;
                             model.ScanEnabled = f.ScanEnabled;
                             break;
-                        case AssetTypeClass.Glossary:                            
-                            model.CanOwnFusion = assetType.CanOwnFusion;
+                        case AssetTypeClass.Business:
+                        case AssetTypeClass.Technical:
+                            model.CanOwnFusion = (@class == AssetTypeClass.Business) ? assetType.CanOwnFusion : false;
                             model.AutoDisplayDescription = assetType.AutoDisplayDescription;
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;
@@ -1054,7 +1056,7 @@ namespace d360.web.Controllers
                     model.FormName = string.Format(FormInfo.Add_Asset_Type_Title, appendTitle);
                     model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
 
-                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.Glossary || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType)
+                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.Business || @class == AssetTypeClass.Technical || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType)
                     {
                         var intersectType = Company.Filter<IntersectType>(i =>
                             i.Object == assetType.Object &&
@@ -1179,7 +1181,7 @@ namespace d360.web.Controllers
                             UpdatedBy = Company.CurrentResourceID,
                             UpdatedOn = DateTime.UtcNow,
                             UseAsTransformation = model.AssetType.UseAsTransformation,
-                            Class = AssetTypeClass.Glossary
+                            Class = model.AssetType.Class
                         };
                         Company.Add(a);
                         parentType = SystemObjects.ArtifactType;
@@ -1313,8 +1315,8 @@ namespace d360.web.Controllers
 
                 dynamic custom = new
                 {
-                    ParentID = model.ParentID,
-                    Name = model.AssetType.Name,
+                    model.ParentID,
+                    model.AssetType.Name,
                     action = "add"
                 };
 
@@ -1396,6 +1398,7 @@ namespace d360.web.Controllers
                         a.DisplayFormat = model.AssetType.DisplayFormat;
                         a.Description = model.AssetType.Description;
                         a.CanOwnFusion = model.CanOwnFusion ?? false;
+                        a.Class = model.AssetType.Class;
                         a.AutoDisplayDescription = model.AutoDisplayDescription ?? false;
                         a.UseAsTransformation = model.AssetType.UseAsTransformation;
                         Company.Update(a);
@@ -1566,8 +1569,8 @@ namespace d360.web.Controllers
 
                 dynamic custom = new
                 {
-                    ParentID = model.ParentID,
-                    Name = model.AssetType.Name,
+                    model.ParentID,
+                    model.AssetType.Name,
                     action = "edit"
                 };
 
@@ -6821,12 +6824,11 @@ offset 0 rows fetch next 25 rows only
                 select 
 			        D.DisplayValue as [Name],
 			        A.[Object] + '|' + cast(A.ObjectID as varchar) as ID,
-			        case when A.[Object] = 'Artifact' then
-				        'Glossary'
-			        when A.[Object] = 'Taxonomy' then
-				        'Model'
-			        else
-				        ''
+			        case 
+                        when A.[Object] = 'Artifact' and A.AssetTypeClass = 1 then 'Business'
+                        when A.[Object] = 'Artifact' and A.AssetTypeClass = 8 then 'Technical'
+			            when A.[Object] = 'Taxonomy' then 'Model'
+			            else ''
 			        end as Category,
 			        A.TypeName as [Type],
 			        cast(0 as bit) as Checked
@@ -6952,7 +6954,9 @@ offset 0 rows fetch next 25 rows only
 select * from (
 select 'FusionType|0' as value, 'Fusion' as title
 union
-select 'ArtifactType|0' as value, 'Glossary' as title
+select 'ArtifactType|0' as value, 'Business' as title
+union
+select 'ArtifactType|0' as value, 'Technical' as title
 union
 select 'TaxonomyType|0' as value, 'Model' as title
 union
@@ -6968,7 +6972,9 @@ select 'ReferenceItemType|0' as value, 'Reference' as title
 select * from (
 select 'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title from AttributeType where ParentID is null
 union
-select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 'Artifact: ' + Name as title from AssetType where Object = 'ArtifactType'
+select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 'Business: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 1
+union
+select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 'Technical: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 8
 union
 select 'TaxonomyType|' + cast(ObjectID  as varchar(10)) as value, 'Model: ' + Name as title from AssetType where object='TaxonomyType'
 union
@@ -10691,7 +10697,7 @@ order by r.Name";
                 .GetAllocationOptions()
                 .Select(i => new
                 {
-                    label = i.Name,
+                    label = $"{i.ClassName} :: {i.Name}",
                     value = string.Format("{0}|{1}", i.ObjectType, i.ObjectTypeID),
                 });
 
@@ -10810,33 +10816,25 @@ order by r.Name";
         [HttpGet, ActionName("ResponsibilityTypeRelation_FormData"), Route("ResponsibilityTypeRelation_FormData"), NonNullableParameters]
         public JsonNetResult GetResponsibilityTypeRelation_FormData()
         {
-            var AllocationOptions = Company.Query<dynamic>(@"
+            var AllocationOptions = Company.Query<ResponsibilityTypeRelationAllocationOption>(@"
 select	cast(0 as bit) as IsUsed,
         A.ID, 
-		case Object
-			when 'ArtifactType' then 'Artifacts :: '
-			when 'TaxonomyType' then 'Models :: '
-			when 'PolicyType' then 'Policies :: '
-			when 'RuleType' then 'Rules :: '
-			when 'FusionAttributeType' then 'Fusion Attributes :: '
-			when 'FusionType' then 'Fusion Types :: '
-			when 'ReferenceItemType' then 'Reference Item Type :: '
-		end + coalesce(FT.Name+ ' / ','') + P.[Path] as [Path]
+		A.[Class],
+        coalesce(FT.Name+ ' / ','') + P.[Path] as [Path]
 from	AssetType A
 		cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
 		left join FusionAttributeType FA on A.Object = 'FusionAttributeType' and FA.ID = A.ObjectID
 		left join FusionType FT on FT.ID = FA.FusionTypeID
-where	Class in (1,2,3,4,6,7,9)
-order by case Object
-			when 'ArtifactType' then 'Artifacts :: '
-			when 'TaxonomyType' then 'Models :: '
-			when 'PolicyType' then 'Policies :: '
-			when 'RuleType' then 'Rules :: '
-			when 'FusionAttributeType' then 'Fusion Attributes :: '
-			when 'FusionType' then 'Fusion Types :: '
-			when 'ReferenceItemType' then 'Reference Item Type :: '
-		end + coalesce(FT.Name+ ' / ','') + P.[Path]
-").ToList();
+where	Class in (1,2,3,4,6,7,8,9)")
+                .ToList()
+                .OrderBy(i => i.ClassName)
+                .ThenBy(i => i.Path)
+                .Select(i => new {
+                    i.ID,
+                    i.IsUsed,
+                    Path = $"{i.ClassName} :: {i.Path}"
+                })
+                .ToList();
             var PermissionOptions = Permission.DeleteAsset.GetList();
 
             return new JsonNetResult
@@ -14995,11 +14993,11 @@ order by	case
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
 
-            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Glossary).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Business || f.Class == AssetTypeClass.Technical).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
             
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
-            list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Glossary Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() , Value = template.IncludeUrl.ToString()});
+            list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Asset Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() , Value = template.IncludeUrl.ToString()});
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent Name", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = template.IncludeParent.ToString() });
             list.Add(new EditableField { Row = 7, Column = 1, Required = false, FieldName = "UsageNotes", Name = "Usage Notes", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = template.UsageNotes });
 
@@ -15017,10 +15015,10 @@ order by	case
             
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names});
 
-            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Glossary).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Business || f.Class == AssetTypeClass.Technical).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
-            list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Glossary Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
+            list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Asset Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
             list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent Name", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
             list.Add(new EditableField { Row = 7, Column = 1, Required = false, FieldName = "UsageNotes", Name = "Usage Notes", FieldDescription = "", FieldType = DataType.Text.ToString() });
 

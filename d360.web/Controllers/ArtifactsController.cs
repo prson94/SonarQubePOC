@@ -766,42 +766,42 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
             }
         }
 
-        [Route("types")]
-        public JsonNetResult GetTypes()
+        [Route("types/{assetTypeClass}")]
+        public JsonNetResult GetTypes(AssetTypeClass assetTypeClass)
         {
-
-            var models = Company.Query<dynamic>(@"
-select	    AT.ObjectID as ID,
-		    IT.SubjectID as ParentID,
-		    AT.Name,
-            AT.Description,
-			AT.AutoDisplayDescription,
-			AT.CanOwnFusion,
-			AT.DisplayFormat,
-		    AT.CreatedBy,
-			AT.CreatedOn,
-			AT.UpdatedBy,
-		    AT.UpdatedOn,
-            AT.ID as AssetTypeID,
-			K.kount
-from	   
-			 AssetType AT
-			left join (SELECT count(a.AssetTypeID) kount,a.AssetTypeID
-							FROM [dbo].[Asset] a
-							inner join AssetType b on a.AssetTypeID = b.ID
-							group by AssetTypeID
-						) K on K.AssetTypeID = AT.ID 
-		    outer apply (
-					    select	IT.SubjectID
-					    from	IntersectType IT 
-							    inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
-					    ) IT
-			where  AT.Object = 'ArtifactType'
-order by    AT.Name").AsQueryable();
+            var models = Company.Query<AssetTypeTopLevelUiViewModel>(@"
+select	AT.ObjectID as ID,
+		IT.SubjectID as ParentID,
+		AT.Name,
+        AT.Description,
+		AT.AutoDisplayDescription,
+		AT.CanOwnFusion,
+		AT.DisplayFormat,
+		AT.CreatedBy,
+		AT.CreatedOn,
+		AT.UpdatedBy,
+		AT.UpdatedOn,
+        AT.ID as AssetTypeID,
+        AT.[Class],
+        K.[Count],
+        cast(1 as bit) as expanded
+from    AssetType AT
+		cross apply (
+                    SELECT  count(1) as [Count]
+					FROM    Asset
+                    where   AssetTypeID = AT.ID
+				    ) K
+		outer apply (
+					select  IT.SubjectID
+					from    IntersectType IT 
+							inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
+					) IT
+	    where  AT.[Class] = @assetTypeClass
+order by    AT.Name", new { assetTypeClass = (int)assetTypeClass }).AsQueryable();
 
             return new JsonNetResult
             {
-                Data = models.ToList().Select(i => new { i.ID, i.Name, i.Description, i.kount, i.ParentID, i.AssetTypeID, expanded = true }),
+                Data = models,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

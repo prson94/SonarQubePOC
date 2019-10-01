@@ -343,7 +343,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Model does not contain required fields."));
             AssetType assetType = Company.AssetTypes.FirstOrDefault(t => t.uid == model.AssetTypeUID);
             model.AssetTypeID = assetType?.ID ?? 0;
-            if(assetType.Class != core.enums.AssetTypeClass.Glossary)
+            if(assetType.Class != core.enums.AssetTypeClass.Business && assetType.Class != core.enums.AssetTypeClass.Technical)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "AssetType does not support Export Template."));
 
             //validate the model input

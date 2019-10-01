@@ -5,7 +5,7 @@
 <div class="row" *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing || formMode == FormMode.Deleting">
     <div class="col s12">
         <d3s-asset-type-editor *ngIf="formMode == FormMode.Adding" 
-            [assetTypeClass]="'FA'" 
+            [assetTypeClass]="assetTypeClass" 
             [showDisplayFormat]="false"
             [topTypeID]="fusionType.ID" 
             [showParentPredicates]="selectedRow!=null"
@@ -15,7 +15,7 @@
             (onComplete)="save($event)">
         </d3s-asset-type-editor>
         <d3s-asset-type-editor *ngIf="formMode == FormMode.Editing" 
-            [assetTypeClass]="'FA'" 
+            [assetTypeClass]="assetTypeClass" 
             [showDisplayFormat]="false"
             [topTypeID]="fusionType.ID" 
             [id]="selectedRow?.data.AssetTypeID" 
