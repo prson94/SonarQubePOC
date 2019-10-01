@@ -498,8 +498,13 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 			CASE 
 				when switchObject = 0 then ObjectId
 				else SubjectId
-			END AS Object 
-			from Relationships ",
+			END AS ObjectID 
+			from Relationships R
+            where not exists (select 1 from [Intersect] where IntersectTypeId = R.IntersectTypeId 
+                and [Subject] = CASE when R.switchObject = 0 then R.[Subject] else R.[Object] END
+			    and SubjectId = CASE when R.switchObject = 0 then R.SubjectId else R.ObjectID END
+                and [Object] = CASE when R.switchObject = 0 then R.[Object] else R.[Subject] END
+                and ObjectID = CASE when R.switchObject = 0 then R.ObjectId else R.SubjectId END)",
                 new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
             }
             else
@@ -552,7 +557,12 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 				when switchObject = 0 then ObjectId
 				else SubjectId
 			END AS Object 
-			from Relationships ",
+			from Relationships R
+            where not exists (select 1 from [Intersect] where IntersectTypeId = R.IntersectTypeId 
+                and [Subject] = CASE when R.switchObject = 0 then R.[Subject] else R.[Object] END
+			    and SubjectId = CASE when R.switchObject = 0 then R.SubjectId else R.ObjectID END
+                and [Object] = CASE when R.switchObject = 0 then R.[Object] else R.[Subject] END
+                and ObjectID = CASE when R.switchObject = 0 then R.ObjectId else R.SubjectId END)",
                 new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
             }
         }
