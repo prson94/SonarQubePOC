@@ -409,7 +409,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public JsonAttributeApiViewModel JsonAttribute { get; set; }
-        public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
+        public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
         [DataMember]
         public int ColumnOrder { get; set; }
         [DataMember]
