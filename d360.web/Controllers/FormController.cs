@@ -1165,6 +1165,9 @@ namespace d360.web.Controllers
                     model.AssetType.Description = sanitizer.Sanitize(model.AssetType.Description);
                 }
 
+                if (!string.IsNullOrEmpty(model?.AssetType?.Name ?? null))
+                    model.AssetType.Name = model.AssetType.Name.Trim();
+
                 switch (ot)
                 {
                     case SystemObjects.ArtifactType:
@@ -1387,6 +1390,9 @@ namespace d360.web.Controllers
                     sanitizer.AllowedSchemes.Add("data");
                     model.AssetType.Description = sanitizer.Sanitize(model.AssetType.Description);
                 }
+
+                if (!string.IsNullOrEmpty(model?.AssetType?.Name ?? null))
+                    model.AssetType.Name = model.AssetType.Name.Trim();
 
                 switch (ot)
                 {

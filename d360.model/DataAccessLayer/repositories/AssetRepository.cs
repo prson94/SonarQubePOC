@@ -359,6 +359,9 @@ namespace d360.model.DataAccessLayer
             nameFriendlyName = "Name";
             isNamePartOfKey = true;
 
+            if (!string.IsNullOrEmpty(model?.Name ?? null))
+                model.Name = model.Name.Trim();
+
             switch (model.Class)
             {
                 case AssetTypeClass.Business:
@@ -551,6 +554,9 @@ namespace d360.model.DataAccessLayer
 
             bool shouldRemoveOldRelationshipType = false;
             bool shouldRemoveExistingParentChildRelationshipType = false;
+
+            if (!string.IsNullOrEmpty(model?.Name ?? null))
+                model.Name = model.Name.Trim();
 
             switch (model.Class)
             {
