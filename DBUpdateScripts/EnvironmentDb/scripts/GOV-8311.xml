@@ -43,7 +43,7 @@ update SiteNav set Name = '#Glossary' where Name = '#Business'
     </rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="GOV-8311 - GetSiteNavigation">
+  <changeSet author="Pappas" id="GOV-8311 - GetSiteNavigation-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -284,7 +284,7 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 		n.Title as Title,
 		(
 		SELECT DISTINCT	R.name, 				
-				CONCAT('dashboard/', R.[ObjectType] ,'/' , R.ObjectID , '/' , R.Name) As url,
+				CONCAT('dashboard/',R.ID) As url,
 				0 as feature,
 				null AS items	
 		FROM	Report R
