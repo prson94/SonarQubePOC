@@ -24,9 +24,9 @@
 			<i class="fa fa-certificate"></i>
 			<span class="text">{{status}}</span>
 		</span>
-        <span class="grow"></span>
 		<button class="button" *ngIf="showCertify" (click)="requestCertification()"><i class="fa fa-certificate"></i><span>Request Certification</span></button>
-		<button class="primary button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span>Take Survey</span></button>
+        <span class="grow"></span>
+		<button class="button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span>Take Survey</span></button>
 		<button *ngFor="let button of buttons" (click)="button.dynamicCallback()" [ngClass]="{'loading': button.isLoading}" class="primary button" [disabled]="button.disabled">
 			<span class="content">{{button.text}}</span>
             <span *ngIf="button.isLoading" class="loader"><span class="spinner light"></span></span>
