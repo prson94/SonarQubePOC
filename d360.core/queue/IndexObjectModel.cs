@@ -17,8 +17,7 @@ namespace d360.core.queue
         public string Type { get; set; }
 
         /// <summary>
-        /// This value contains the high-level type of object this is: 
-        /// Artifact, Information Model, Reference, Fusion
+        /// This value contains the asset type class
         /// </summary>
         public string Group { get; set; }
 

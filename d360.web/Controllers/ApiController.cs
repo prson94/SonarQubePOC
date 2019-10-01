@@ -1421,6 +1421,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("CanOwnFusion", assetType.CanOwnFusion);
             model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
             model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
+            model.Add("Class", assetType.Class);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
             model.Add("HasDashboards", hasDashboards);
@@ -3647,7 +3648,7 @@ outer apply (
                             join.JoinStatement = (i == 0) ? $"from AssetDetail A{i}" : $"{joinType} join AssetDetail A{i} on A{i}.[Object] = 'Artifact' and A{i}.ObjectID in (select ChildID from dbo.GetChildObjectIds('Artifact',A{i - 1}.ID))";
                             if (i == 0)
                             {
-                                join.WhereStatement = $"A{i}.TypeID = {join.ObjectID} and A{i}.ObjectID in (select ChildID from dbo.GetChildObjectIds('Artifact',{id}))";
+                                join.WhereStatement = $"A{i}.Type = 'ArtifactType' and A{i}.TypeID = {join.ObjectID} and A{i}.ObjectID in (select ChildID from dbo.GetChildObjectIds('Artifact',{id}))";
                             }
                             break;
                         case "FusionAttributeType":
@@ -3663,7 +3664,7 @@ outer apply (
                     join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : (string.IsNullOrEmpty(permissionsWhere) ? "" : $" and {permissionsWhere}");
 
                     objColumn = $"'{currentObj}'";
-                    objIDColumn = $"A{i}.ID";
+                    objIDColumn = useAssetJoin ? $"A{i}.ObjectID" : $"A{i}.ID";
                     break;
                 #endregion
                 case ComplexLookupRelationType.ParentItem:
@@ -3674,7 +3675,7 @@ outer apply (
                             join.JoinStatement = (i == 0) ? $"from AssetDetail A{i}" : $"{joinType} join AssetDetail A{i} on A{i}.[Object] = 'Artifact' and A{i}.ObjectID = dbo.GetParentObjectId('Artifact', A{i - 1}.ID) and A{i}.TypeID = {join.ObjectID}";
                             if (i == 0)
                             {
-                                join.WhereStatement = $"A{i}.ArtifactTypeID = {join.ObjectID} and A{i}.ObjectID = dbo.GetParentObjectId('Artifact', {id})";
+                                join.WhereStatement = $"A{i}.Type = 'ArtifactType' and A{i}.TypeID = {join.ObjectID} and A{i}.ObjectID = dbo.GetParentObjectId('Artifact', {id})";
                             }
                             break;
                         case "FusionAttributeType":
@@ -3690,7 +3691,7 @@ outer apply (
                     join.WhereStatement += string.IsNullOrEmpty(join.WhereStatement) ? permissionsWhere : (string.IsNullOrEmpty(permissionsWhere) ? "" : $" and {permissionsWhere}");
 
                     objColumn = $"'{currentObj}'";
-                    objIDColumn = $"A{i}.ID";
+                    objIDColumn = useAssetJoin ? $"A{i}.ObjectID" : $"A{i}.ID";
                     break;
                 #endregion
                 default:
@@ -4454,7 +4455,6 @@ order by C.DisplayValue";
 
         #region Governance/Ownership/Responsibility
 
-
         [Route("resources/{resourceID:int}/ownership/{type}/{id:int}")]
         public IEnumerable<dynamic> GetResponsibilitiesByResourceByType(int resourceID, SystemObjects type, int id, int? responsibilityTypeId = null)
         {
@@ -4610,15 +4610,8 @@ order by C.DisplayValue";
             var list = Company.Query<ResponsibilityTypeRelationViewModel>(@"
 select  R.ResponsibilityTypeID,
         O.Name as ResponsibilityTypeName,
-        case D.Object
-		 	when 'ArtifactType' then 'Artifacts :: '
-			when 'TaxonomyType' then 'Models :: '
-			when 'PolicyType' then 'Policies :: '
-			when 'RuleType' then 'Rules :: '
-			when 'FusionAttributeType' then 'Fusion Attributes :: '
-			when 'FusionType' then 'Fusion Types :: '
-			when 'ReferenceItemType' then 'Reference Item Type :: '
-		end  + P.[Path]  as AssetTypeName, 
+        D.[Class],
+        P.[Path] as AssetTypeName, 
         D.ID as AssetTypeID,
         R.ObjectType,
         R.ObjectID,
@@ -4627,7 +4620,7 @@ from    ResponsibilityTypeRelation R
         inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID and O.ID = @id 
         left join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID
         cross apply dbo.GetAssetTypeTextPathById(D.ID, ' / ') P",
-            new { id }).ToList();
+            new { id }).ToList().OrderBy(i => i.ClassName).ThenBy(i => i.AssetTypeName).ToList();
 
             list.ForEach(i =>
             {
@@ -4643,6 +4636,7 @@ from    ResponsibilityTypeRelation R
             var list = Company.Query<ResponsibilityTypeRelationViewModel>(@"
 select  R.ResponsibilityTypeID,
         O.Name as ResponsibilityTypeName,
+        D.[Class],
         D.Name as AssetTypeName, 
         D.ID as AssetTypeID,
         R.ObjectType,
@@ -4650,8 +4644,9 @@ select  R.ResponsibilityTypeID,
         R.PermissionsBitMask
 from    ResponsibilityTypeRelation R 
         inner join ResponsibilityType O on O.ID = R.ResponsibilityTypeID 
-        inner join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID and D.ID = @id",
-            new { id }).ToList();
+        inner join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID and D.ID = @id 
+        cross apply dbo.GetAssetTypeTextPathById(D.ID, ' / ') P",
+            new { id }).ToList().OrderBy(i => i.ClassName).ThenBy(i => i.AssetTypeName).ToList();
 
             list.ForEach(i =>
             {
@@ -4714,8 +4709,8 @@ from    ResponsibilityTypeRelationRule R
                     i.ResponsibilityTypeID,
                     i.ObjectID,
                     i.ObjectType,
-                    Name = i.ResponsibilityType.Name,
-                    Description = i.ResponsibilityType.Description
+                    i.ResponsibilityType.Name,
+                    i.ResponsibilityType.Description
                 })
                 );
         }
@@ -5612,7 +5607,7 @@ where    A.RuleID = @id", new { id });
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField{ Name = "Include Glossary Url", FieldName = "IncludeUrl", Value = template.IncludeUrl ? "Yes" : "No"}
+                                new ReadOnlyField{ Name = "Include Asset Url", FieldName = "IncludeUrl", Value = template.IncludeUrl ? "Yes" : "No"}
                             }
                         });
 
@@ -7875,26 +7870,21 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
 
         #region Counts
 
-        [Route("CountItems/Activity/{artifactTypeId}/{days}")]
-        public IEnumerable<AssetDetail> GetAreaActivityItems(int artifactTypeId, int days)
+        [Route("CountItems/Activity/{assetTypeId}/{days}")]
+        public IEnumerable<AssetDetail> GetAreaActivityItems(int assetTypeId, int days)
         {
-            var sql = @"select 
-                            *
-                        from
-                            assetdetail a                            
-                        where
-                            a.[object] = 'Artifact' and a.[typeid] = @typeId";
+            var sql = @"select * from AssetDetail where AssetTypeID = @assetTypeId";
 
             if (days != 0)
             {
                 days = days * -1;
 
-                sql += " and (a.createdon > dateadd(day, @d, CURRENT_TIMESTAMP) or a.updatedon > dateadd(day, @d, CURRENT_TIMESTAMP))";
+                sql += " and (CreatedOn > dateadd(day, @d, CURRENT_TIMESTAMP) or UpdatedOn > dateadd(day, @d, CURRENT_TIMESTAMP))";
 
-                return Company.Query<AssetDetail>(sql, new { typeId = artifactTypeId, d = days });
+                return Company.Query<AssetDetail>(sql, new { assetTypeId, d = days });
             }
 
-            return Company.Query<AssetDetail>(sql, new { typeId = artifactTypeId });
+            return Company.Query<AssetDetail>(sql, new { assetTypeId });
         }
 
         [Route("Count/{area}/{days}")]
@@ -8276,12 +8266,15 @@ where	Type = 'ReferenceItemType'
         [Route("issuetype/{issueTypeID:int}/allocations")]
         public HttpResponseMessage GetIssueTypeRelations(int issueTypeID)
         {
-            var relations = Company.Query<IssueTypeRelation>(@"select R.IssueTypeID, R.AssetTypeID, T.[Object] as ObjectType, coalesce(FAT.TextPath, T.[Name]) as TypeName 
-                from IssueTypeRelation R
-                inner join AssetType T on T.ID = R.AssetTypeID
-                left join FusionAttributeType FAT on T.[Object] = 'FusionAttributeType' and FAT.ID = T.ObjectID
-                inner join IssueType I on I.ID = R.IssueTypeID
-                where R.IssueTypeID = @issueTypeID", new { issueTypeID }).ToList();
+            var relations = Company.Query<IssueTypeRelation>(@"
+select	R.IssueTypeID, 
+		R.AssetTypeID, 
+		T.[Class], 
+		P.Path as TypeName
+from	IssueTypeRelation R
+        inner join AssetType T on T.ID = R.AssetTypeID
+		cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
+where	R.IssueTypeID = @issueTypeID", new { issueTypeID }).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, new { Allocations = relations });
         }
@@ -8289,25 +8282,29 @@ where	Type = 'ReferenceItemType'
 
         #region Metrics
 
+        internal class MetricAssetTypeViewModel
+        {
+            public Guid Uid {get; set;}
+            public AssetTypeClass Class { get; set; }
+            public string ClassName { get { return Class.GetDisplayName(); } }
+            public string Name { get; set; }
+        }
+
         [Route("metrics/assettypes")]
         public HttpResponseMessage GetMetricAssetTypes()
         {
-            List<AssetTypeClass> classes = new List<AssetTypeClass>() {
-                AssetTypeClass.Glossary,
-                AssetTypeClass.Model,
-                AssetTypeClass.Policy
+            List<int> classes = new List<int>() {
+                (int)AssetTypeClass.Business,
+                (int)AssetTypeClass.Model,
+                (int)AssetTypeClass.Policy,
+                (int)AssetTypeClass.Technical
             };
-            var models = Company.Filter<AssetType>(i => classes.Contains(i.Class)).Select(i => new
-            {
-                Uid = i.uid,
-                i.Name,
-                i.Class
-            }).ToList().Select(i => new
-            {
-                i.Uid,
-                i.Name,
-                Class = i.Class.GetDisplayName()
-            }).OrderBy(i => i.Class).ThenBy(i => i.Name);
+            var models = Company.Query<MetricAssetTypeViewModel>(@"
+select	T.[Uid],
+        T.[Class], 
+		P.[Path] as Name
+from	AssetType T
+		cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P").OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }

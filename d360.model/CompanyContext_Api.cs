@@ -405,16 +405,16 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
             new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
-        private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600)
+        private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber,bool sendWorkflowEvents, int timeout = 3600)
         {
             return Connection.Query<AssetFieldTypeUpdate>($@"
-drop table if exists #updatedFieldTypes
-create table #updatedFieldTypes
-(
-  Id int,
-  ObjectId int,
-  [Object] nvarchar(255)
-)
+select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from api.ExecutionAsset EA 
+	inner join api.ExecutionField EF on EF.ExecutionID = EA.ExecutionID 
+                        and EF.ItemNumber = EA.ItemNumber 
+                        and EA.ObjectID is not null 
+                        and EF.FieldTypeID is not null
+	inner join Field F on F.FieldTypeId = EF.FieldTypeID and F.ObjectType = EA.Object and F.ObjectId = EA.ObjectID
+where EA.ExecutionID = @executionID and EA.IsNew <> 1 and F.Value <> EF.FieldValue and @sendWorkflowEvents = 1
 
 merge       Field as T
 using       (
@@ -443,11 +443,8 @@ update		set
                 T.FormattedValue = S.FormattedValue
 when		not matched by target then
 insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
-values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue)
-output S.FieldTypeID,S.ObjectId, S.[Object] into #updatedFieldTypes;
-
-select * from #updatedFieldTypes",
-            new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
+values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
+            new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
         }
 
         private void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
@@ -1534,7 +1531,7 @@ from	IntersectType I
                         S.[Uid]
 	            from	workflow.Item wi
 			            inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
-			            inner join api.ExecutionDeletedAsset S on S.ObjectID = i.ObjectID 
+			            inner join api.ExecutionDeletedAsset S on S.Object = i.Object and S.ObjectID = i.ObjectID 
                 where   {querySuffix} ;
             
 			update  S 
@@ -1660,7 +1657,7 @@ from	IntersectType I
 	    select	wi.id 
 	    from	workflow.Item wi
 			    inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
-			    inner join api.ExecutionDeletedAsset S on S.ObjectID = i.ObjectID and {querySuffix};
+			    inner join api.ExecutionDeletedAsset S on S.Object = i.Object and S.ObjectID = i.ObjectID and {querySuffix};
 
     delete	T
     from	[workflow].[ItemAssignment] T
@@ -2806,7 +2803,8 @@ from	api.ExecutionAsset T
                                                 break;
                                             #endregion
                                             case AssetTypeClass.Policy:
-                                            case AssetTypeClass.Glossary:
+                                            case AssetTypeClass.Business:
+                                            case AssetTypeClass.Technical:
                                                 #region
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)
@@ -3001,7 +2999,7 @@ from	api.ExecutionAsset T
 
                                         #endregion
                                         fieldTypeUpdates.Clear();
-                                        fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout);
+                                        fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
 
                                         if (jsonFieldTypes.Count > 0)
@@ -3475,7 +3473,7 @@ end",
 
                                     #endregion
                                     fieldTypeUpdates.Clear();
-                                    fieldTypeUpdates =  MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, timeout);
+                                    fieldTypeUpdates =  MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
 
                                     // Update success flag
                                     Connection.Execute(

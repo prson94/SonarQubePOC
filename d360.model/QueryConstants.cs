@@ -3,7 +3,8 @@
     public static class QueryConstants
     {
         public static string HighLevelTypeCaseStatement = @"case 
-				when T.Object = 'ArtifactType' then 'Glossary: ' 
+				when T.Object = 'ArtifactType' and T.[Class] = 1 then 'Business: ' 
+                when T.Object = 'ArtifactType' and T.[Class] = 8 then 'Technical: ' 
 				when T.Object = 'FusionAttributeType' then 'Fusion Attribute: ' 
 				when T.Object = 'FusionType' then 'Fusion: ' 
 				when T.Object = 'PolicyType' then 'Policy: ' 

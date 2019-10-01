@@ -1,4 +1,5 @@
 ﻿using d360.core.entities.Contracts;
+using d360.core.enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
@@ -18,7 +19,10 @@ namespace d360.core.entities
         public virtual IssueType IssueType { get; set; }
 
         [NotMapped, DataMember]
-        public string ObjectType { get; set; }
+        public AssetTypeClass Class { get; set; }
+
+        [NotMapped, DataMember]
+        public string ClassName { get { return Class.ToString(); } }
 
         [NotMapped, DataMember]
         public string TypeName { get; set; }

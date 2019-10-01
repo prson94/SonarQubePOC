@@ -93,11 +93,12 @@ export module SettingsHelper {
             { title: "Attribute", value: "Attribute", selected: false },
             { title: "Fusion", value: "FusionAttributes", selected: false },
             { title: "Fusion Type", value: "FusionType", selected: false },
-            { title: "Glossary", value: "Artifact", selected: false },
+            { title: "Business", value: "Artifact", selected: false },
             { title: "Group", value: "Group", selected: false },
             { title: "Model", value: "Taxonomy", selected: false },
             { title: "Policy", value: "Policy", selected: false },
             { title: "Reference", value: "Reference", selected: false },
+            { title: "Technical", value: "Artifact", selected: false },
             { title: "User", value: "Resource", selected: false },
             { title: "Grammatic Type", value: "Synonym", selected: false },
             { title: "Data Quality", value: "Rule", selected: false }

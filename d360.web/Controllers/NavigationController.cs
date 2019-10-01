@@ -67,16 +67,21 @@ namespace d360.web.Controllers
             var nav = Company.Query<dynamic>(@"
                 with s as
                 (
-	                select cast(
-	                case when object = 'ArtifactType' then
-		                'Glossary :: ' + name
-	                else
-		                name
-	                end	
-	                 as varchar(500)) as Title,* from sitenavavailable where parentid is null
+	                select  cast(
+	                            case 
+                                    when [Object] = 'ArtifactType' and [Class] = 1 then 'Business :: ' + Name
+	                                when [Object] = 'ArtifactType' and [Class] = 8 then 'Technical :: ' + Name
+	                                else Name
+	                            end	
+	                            as varchar(500)
+                                ) as Title, * 
+                    from    SiteNavAvailable 
+                    where   ParentID is null
 	                union all
-	                select cast((s.Title + ' :: ' + v.name) as varchar(500)) as Title, v.* from sitenavavailable v join s on s.objectid = v.parentid and 
-	                v.object = s.object
+	                select  cast((s.Title + ' :: ' + v.name) as varchar(500)) as Title, 
+                            v.* 
+                    from    SiteNavAvailable v 
+                            join s on s.objectid = v.parentid and v.object = s.object
                 )
                 select * from s where object not like '%Class' order by 1 asc").ToList();
 
@@ -117,7 +122,7 @@ namespace d360.web.Controllers
 	                select v.* from sitenavflat v join s on s.objectid = v.parentid and s.object = v.object
                 )
                 select n.* from s
-                join sitenav n on n.Object = s.Object and n.ObjectID = s.ObjectID", new { ObjectID = item.ObjectID, Object = item.Object }).ToList();
+                join sitenav n on n.Object = s.Object and n.ObjectID = s.ObjectID", new { item.ObjectID, item.Object }).ToList();
 
                 deleteExisting.ForEach(d =>
                 {
@@ -843,21 +848,17 @@ order by	f.SortOrder";
         public async Task<JsonNetResult> GetCounts()
         {
             string sql = @"
-SELECT count(ATT.[Object]) as count, 
+SELECT  count(ATT.[Object]) as [count], 
 		ATT.[Object], 
 		ATT.ObjectID,
 		ATT.Name
-		from    [Asset] A
-		inner join AssetType ATT on (a.AssetTypeID = Att.id)
-		WHERE A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
-		Group by 
-		ATT.[Object], 
-		ATT.ObjectID,
-		ATT.Name
-		Order By ATT.Name
-";
-          var ItemCounts = await Company.QueryAsync<dynamic>(sql, 
-              new { ResourceID = Company.CurrentResourceID });
+from    [Asset] A
+		inner join AssetType ATT on (a.AssetTypeID = Att.id) 
+where   A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
+group by ATT.[Object], ATT.ObjectID, ATT.Name 
+order by ATT.Name";
+          
+            var ItemCounts = await Company.QueryAsync<dynamic>(sql, new { ResourceID = Company.CurrentResourceID });
 
             return new JsonNetResult
             {

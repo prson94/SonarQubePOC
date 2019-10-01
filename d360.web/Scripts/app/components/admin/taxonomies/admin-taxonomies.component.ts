@@ -11,6 +11,7 @@ import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
 import { AssetTypeService } from "../../../services/asset-type.services";
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { AssetTypeClass } from '../../../models/asset.model';
 
 @Component({
     selector: 'd3s-admin-models-component',
@@ -111,7 +112,7 @@ export class AdminTaxonomiesComponent extends AdminBaseComponent implements OnIn
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
-
+    assetTypeClass: AssetTypeClass = AssetTypeClass.Model;
     protected assetTypeService: AssetTypeService = null;
 
     constructor(private stateService: StateService,

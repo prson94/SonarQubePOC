@@ -31,7 +31,7 @@ namespace d360.web.Models
                  {
                     Uid = Guid.Empty,
                     Name = String.Empty,
-                    Class = core.enums.AssetTypeClass.Glossary,
+                    Class = core.enums.AssetTypeClass.Business,
                     Description = String.Empty,
                     AutoDisplayDescription = true,
                     DisplayFormat = "{Name}",

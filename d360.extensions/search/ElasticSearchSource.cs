@@ -681,7 +681,7 @@ namespace d360.extensions.search
                 case "FUSIONATTRIBUTES":
                     return "Fusion";
                 case "ARTIFACT":
-                    return "Glossary";
+                    return "Business";
                 case "TAXONOMY":
                     return "Model";
                 case "DOMAIN":

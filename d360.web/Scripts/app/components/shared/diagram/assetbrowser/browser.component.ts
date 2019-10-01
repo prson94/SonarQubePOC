@@ -6,6 +6,7 @@ import {PermissionsService} from '../../../../services/permissions.service';
 import {DiagramService} from '../../../../services/diagram.service';
 import {DiagramBaseComponent} from '../diagram-base.component';
 import { AssetBrowserLayout } from './assetbrowserlayout.component';
+import { MenuItem } from 'primeng/api';
 
 declare var window: any;
 
@@ -25,7 +26,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private originalObject: string;
     private originalObjectId: number;
-
+    private menuItems: MenuItem[]=[];
+    
     //#region control properties
 
     private isWindowVisible = true;
@@ -45,6 +47,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         //this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
+        this.menuItems.push(
+            { icon: 'fa fa-search-minus' },
+            { icon: 'fa fa-search-plus' },
+            { icon: 'fa fa-refresh' }
+        );
         this.initializeDiagram();
     
     }
@@ -60,6 +67,24 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#endregion
 
     //#region helper methods
+
+    public menuAction(e: MenuItem) {
+        if (e.icon == 'fa fa-refresh') {
+            this.refreshDiagram();
+        } else if (e.icon == 'fa fa-search-plus') {
+            this.diagram.scale += .1;
+
+            if (this.diagram.scale > 2.5) {
+                this.diagram.scale = 2.5;
+            }
+        } else if (e.icon == 'fa fa-search-minus') {
+            this.diagram.scale -= .1;
+
+            if (this.diagram.scale < .1) {
+                this.diagram.scale = .1;
+            }
+        }
+    }
 
     private getMoreData(e: go.InputEvent, obj: go.Part) {
         if (obj.data) {
@@ -244,6 +269,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private reOrderLayout() {
         this.diagram.layout.invalidateLayout();
         this.diagram.requestUpdate();
+    }
+
+    private refreshDiagram() {
+        this.originalObject = this.object;
+        this.originalObjectId = this.objectId;
+
+        this.populateDiagram();
     }
 
     //#endregion

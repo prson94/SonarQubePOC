@@ -1,4 +1,5 @@
 ﻿import { BaseEditorModel } from '../models/form.model';
+import { AssetTypeClass } from './asset.model';
 
 
 export class ArtifactTypeEditorModel extends BaseEditorModel {
@@ -26,6 +27,7 @@ export class ArtifactType {
     HasV2Workflows: boolean;
     HasCustomExportTemplates: boolean;
     AssetTypeUID: string;
+    Class: AssetTypeClass;
 }
 
 export class AssetTypeExportTemplate {

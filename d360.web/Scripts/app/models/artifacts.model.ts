@@ -1,5 +1,6 @@
 ﻿import { BreadcrumbItem } from './breadcrumb.model';
 import { NymType } from './object-detail.model';
+import { AssetTypeClass } from './asset.model';
 
 export class Artifacts {
     results: any[];
@@ -22,6 +23,7 @@ export class Artifact {
     AssetTypeID: number;
     DisplayValue: string;
     TypeName: string;
+    Class: AssetTypeClass;
     Breadcrumbs: BreadcrumbItem[];
     NymTypes: NymType[];
 }

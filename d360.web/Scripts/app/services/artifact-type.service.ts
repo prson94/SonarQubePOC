@@ -1,6 +1,9 @@
 ﻿import {Injectable} from '@angular/core';
 import {TreeNode} from 'primeng/components/common/api';
 import {
+    AssetTypeClass
+} from '../models/asset.model';
+import {
     ArtifactTypeEditorModel,
     ArtifactType    
 } from '../models/artifact-type.model';
@@ -45,10 +48,10 @@ export class ArtifactTypeService extends BaseObservableService {
             )
             ;
     }
-    
-    getArtifactTypeTree(): Observable<TreeNode[]> {
+
+    getArtifactTypeTree(assetTypeClass: AssetTypeClass): Observable<TreeNode[]> {
         return this
-            .http.get('internal/artifacts/types')
+            .http.get(`internal/artifacts/types/${assetTypeClass}`)
             .pipe(
                 map(response => <TreeNode[]>response),
                 map(r => this.formTree(r)),
