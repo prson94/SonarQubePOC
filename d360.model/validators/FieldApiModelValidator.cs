@@ -102,9 +102,9 @@ namespace d360.model.validators
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Missing Json attribute definition!");
                         }
-                        if (!existingFieldTypes.Any(x => x.ID == jsonAttribute.FieldTypeID && x.Type == "JSON"))
+                        if (!existingFieldTypes.Any(x => x.Name == jsonAttribute.FieldName && x.Type == "JSON"))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"JSON attribute FieldTypeID invalid!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"JSON field {jsonAttribute.FieldName} does not exist or is not part of this asset type!");
                         }
                         var allowedTypes = new List<string>() { "bit", "date", "datetime", "float", "nvarchar", "int", "bigint" };
                         if (!allowedTypes.Contains(jsonAttribute.DataType))

@@ -205,22 +205,6 @@ namespace d360.core.entities
         public string Pattern { get; set; }
     }
 
-    public class FieldTypeLimitedApiViewModel
-    {
-        [DataMember]
-        public int ColumnOrder { get; set; }
-        [DataMember]
-        public int? ColumnWidth { get; set; }
-        [DataMember]
-        public int SortOrder { get; set; }
-        [DataMember]
-        public bool IsDisplayable { get; set; }
-        [DataMember]
-        public bool IsListable { get; set; }
-        [DataMember]
-        public bool ShowIfEmpty { get; set; }
-    }
-
     public class FieldTypeEditableApiViewModel
     {
         [DataMember]
@@ -421,17 +405,29 @@ namespace d360.core.entities
         public bool ShowIfEmpty { get; set; }
     }
 
-    public class FieldTypeDataTypeJsonElementApiViewModel : FieldTypeLimitedApiViewModel
+    public class FieldTypeDataTypeJsonElementApiViewModel
     {
         [DataMember]
         public JsonAttributeApiViewModel JsonAttribute { get; set; }
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
+        [DataMember]
+        public int ColumnOrder { get; set; }
+        [DataMember]
+        public int? ColumnWidth { get; set; }
+        [DataMember]
+        public int SortOrder { get; set; }
+        [DataMember]
+        public bool IsDisplayable { get; set; }
+        [DataMember]
+        public bool IsListable { get; set; }
+        [DataMember]
+        public bool ShowIfEmpty { get; set; }
     }
 
     public class JsonAttributeApiViewModel
     {
         [DataMember]
-        public int FieldTypeID { get; set; }
+        public string FieldName { get; set; }
         [DataMember]
         public string Path { get; set; }
         [DataMember]

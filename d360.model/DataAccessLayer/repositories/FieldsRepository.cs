@@ -349,7 +349,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'JsonElement' then FT.IsDisplayable else null end as 'Type.JsonElement.IsDisplayable',
 				case when FT.Type = 'JsonElement' then FT.ShowIfEmpty else null end as 'Type.JsonElement.ShowIfEmpty',
 				case when FT.Type = 'JsonElement' then FT.IsListable else null end as 'Type.JsonElement.IsListable',
-                case when FT.Type = 'JsonElement' then JSON_VALUE(FT.Definition,'$.FieldTypeID') else null end as 'Type.JsonElement.JsonAttribute.FieldTypeID',
+                case when FT.Type = 'JsonElement' then (select Name from FieldType where ID = JSON_VALUE(FT.Definition,'$.FieldTypeID')) else null end as 'Type.JsonElement.JsonAttribute.FieldName',
 				case when FT.Type = 'JsonElement' then JSON_VALUE(FT.Definition,'$.Path') else null end as 'Type.JsonElement.JsonAttribute.Path',
 				case when FT.Type = 'JsonElement' then JSON_VALUE(FT.Definition,'$.DataType') else null end as 'Type.JsonElement.JsonAttribute.DataType',
 
@@ -801,7 +801,8 @@ from	IntersectType I
                     newFieldType.IsListable = f.Type.JsonElement.IsListable;
                     if(f.Type.JsonElement.JsonAttribute != null)
                     {
-                        var obj = new { f.Type.JsonElement.JsonAttribute.FieldTypeID, f.Type.JsonElement.JsonAttribute.Path, f.Type.JsonElement.JsonAttribute.DataType };
+                        int FieldTypeID = Company.FieldTypes.FirstOrDefault(ft => ft.Object == newFieldType.Object && ft.ObjectID == newFieldType.ObjectID && ft.Name == f.Type.JsonElement.JsonAttribute.FieldName).ID;
+                        var obj = new { FieldTypeID, f.Type.JsonElement.JsonAttribute.Path, f.Type.JsonElement.JsonAttribute.DataType };
                         newFieldType.Definition = JsonConvert.SerializeObject(obj);
                     }
                 }
