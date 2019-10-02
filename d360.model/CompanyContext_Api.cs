@@ -452,65 +452,109 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
             if (!resolveRelationshipOnObjectId)
             {
                 Connection.Execute($@"
-;with Relationships
-    as (
-            select  distinct 
-                    A.Object,
-                    A.ObjectID,
-                    FT.LookupObjectId as IntersectTypeId,
-                    AD.Object as Subject,
-                    AD.ObjectId as SubjectId,
-                    case 
-                    when AD.Type = IT.Object AND AD.TypeID = IT.ObjectID then 0
-                    else 1
-                    end as switchObject
-            from    {tableName} A
-                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
-                        and F.ItemNumber = A.ItemNumber 
-                        and A.ObjectID is not null 
-                        and F.FieldTypeID is not null
-						and A.Success is null
-                    inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
-                    inner join IntersectType IT on IT.ID = FT.LookupObjectId
-                    inner join AssetDetail AD on AD.DisplayValue = F.FieldValue 
-                            and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
-                                or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
-            where   A.ExecutionID = @executionID
-                    and A.ItemNumber between @beginItemNumber and @endItemNumber 
-                    and (F.Ignore = 0 or F.Ignore is null)
-                    and FT.Type = 'Relationship'
-            )
-            insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object,ObjectID)
-            select 
-			IntersectTypeId, 
-			CASE 
-				when switchObject = 0 then Subject
-				else Object
-			END AS Subject, 
-			CASE 
-				when switchObject = 0 then SubjectId
-				else ObjectID
-			END AS SubjectId,
-			CASE 
-				when switchObject = 0 then Object
-				else Subject
-			END AS Object, 
-			CASE 
-				when switchObject = 0 then ObjectId
-				else SubjectId
-			END AS ObjectID 
-			from Relationships R
-            where not exists (select 1 from [Intersect] where IntersectTypeId = R.IntersectTypeId 
-                and [Subject] = CASE when R.switchObject = 0 then R.[Subject] else R.[Object] END
-			    and SubjectId = CASE when R.switchObject = 0 then R.SubjectId else R.ObjectID END
-                and [Object] = CASE when R.switchObject = 0 then R.[Object] else R.[Subject] END
-                and ObjectID = CASE when R.switchObject = 0 then R.ObjectId else R.SubjectId END)",
+                begin
+	                drop table if exists #Relationships;
+	                create table #Relationships
+	                (
+		                ID int,
+		                IntersectTypeID int,
+		                [Subject] varchar(50),
+		                SubjectID int,
+		                [Object] varchar(50),
+		                ObjectID int
+	                )
+                    ;with R
+                        as (
+                            select  distinct 
+                                    A.Object,
+                                    A.ObjectID,
+                                    FT.LookupObjectId as IntersectTypeId,
+                                    AD.Object as Subject,
+                                    AD.ObjectId as SubjectId,
+                                    case 
+                                    when AD.Type = IT.Object AND AD.TypeID = IT.ObjectID then 0
+                                    else 1
+                                    end as switchObject
+                            from    {tableName} A
+                                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                                        and F.ItemNumber = A.ItemNumber 
+                                        and A.ObjectID is not null 
+                                        and F.FieldTypeID is not null
+						                and A.Success is null
+                                    inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
+                                    inner join IntersectType IT on IT.ID = FT.LookupObjectId
+                                    inner join AssetDetail AD on AD.DisplayValue = F.FieldValue 
+                                            and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
+                                                or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
+                            where   A.ExecutionID = @executionID
+                                    and A.ItemNumber between @beginItemNumber and @endItemNumber 
+                                    and (F.Ignore = 0 or F.Ignore is null)
+                                    and FT.Type = 'Relationship'
+                            )
+                            insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+                            select
+                                null as ID,
+			                    IntersectTypeId, 
+			                    CASE 
+				                    when switchObject = 0 then Subject
+				                    else Object
+			                    END AS Subject, 
+			                    CASE 
+				                    when switchObject = 0 then SubjectId
+				                    else ObjectID
+			                    END AS SubjectId,
+			                    CASE 
+				                    when switchObject = 0 then Object
+				                    else Subject
+			                    END AS Object, 
+			                    CASE 
+				                    when switchObject = 0 then ObjectId
+				                    else SubjectId
+			                    END AS ObjectID 
+			                from R;
+
+                            update R
+                            set R.ID = I.ID
+                            from #Relationships R
+                            inner join [Intersect] I on 
+                                I.IntersectTypeID = R.IntersectTypeID 
+                                and I.[Subject] = R.[Subject] 
+                                and I.SubjectID = R.SubjectID 
+                                and I.[Object] = R.[Object] 
+                                and I.ObjectID = R.ObjectID;
+
+                            delete I
+			                from [Intersect] I
+			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
+			                where not exists (select 1 from #Relationships where [Subject] = I.[Subject] and SubjectID = I.SubjectID);
+
+                            insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+                            select  IntersectTypeID,
+                                    Subject,
+                                    SubjectID,
+                                    Object,
+                                    ObjectID    
+                            from    #Relationships
+                            where  ID is null;
+                end
+",
                 new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
             }
             else
             {
                 Connection.Execute($@"
-;with Relationships
+begin
+	                drop table if exists #Relationships;
+	                create table #Relationships
+	                (
+		                ID int,
+		                IntersectTypeID int,
+		                [Subject] varchar(50),
+		                SubjectID int,
+		                [Object] varchar(50),
+		                ObjectID int
+	                )
+;with R
     as (
             select  distinct 
                     A.Object,
@@ -538,31 +582,52 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                     and (F.Ignore = 0 or F.Ignore is null)
                     and FT.Type = 'Relationship'
             )
-            insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object,ObjectID)
-            select 
-			IntersectTypeId, 
-			CASE 
-				when switchObject = 0 then Subject
-				else Object
-			END AS Subject, 
-			CASE 
-				when switchObject = 0 then SubjectId
-				else ObjectID
-			END AS SubjectId,
-			CASE 
-				when switchObject = 0 then Object
-				else Subject
-			END AS Object, 
-			CASE 
-				when switchObject = 0 then ObjectId
-				else SubjectId
-			END AS Object 
-			from Relationships R
-            where not exists (select 1 from [Intersect] where IntersectTypeId = R.IntersectTypeId 
-                and [Subject] = CASE when R.switchObject = 0 then R.[Subject] else R.[Object] END
-			    and SubjectId = CASE when R.switchObject = 0 then R.SubjectId else R.ObjectID END
-                and [Object] = CASE when R.switchObject = 0 then R.[Object] else R.[Subject] END
-                and ObjectID = CASE when R.switchObject = 0 then R.ObjectId else R.SubjectId END)",
+           insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+                    select
+                        null as ID,
+			            IntersectTypeId, 
+			            CASE 
+				            when switchObject = 0 then Subject
+				            else Object
+			            END AS Subject, 
+			            CASE 
+				            when switchObject = 0 then SubjectId
+				            else ObjectID
+			            END AS SubjectId,
+			            CASE 
+				            when switchObject = 0 then Object
+				            else Subject
+			            END AS Object, 
+			            CASE 
+				            when switchObject = 0 then ObjectId
+				            else SubjectId
+			            END AS ObjectID 
+			        from R;
+
+                    update R
+                    set R.ID = I.ID
+                    from #Relationships R
+                    inner join [Intersect] I on 
+                        I.IntersectTypeID = R.IntersectTypeID 
+                        and I.[Subject] = R.[Subject] 
+                        and I.SubjectID = R.SubjectID 
+                        and I.[Object] = R.[Object] 
+                        and I.ObjectID = R.ObjectID;
+
+                    delete I
+			        from [Intersect] I
+			        inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
+			        where not exists (select 1 from #Relationships where [Subject] = I.[Subject] and SubjectID = I.SubjectID);
+
+                    insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+                    select  IntersectTypeID,
+                            Subject,
+                            SubjectID,
+                            Object,
+                            ObjectID    
+                    from    #Relationships
+                    where  ID is null;
+                end",
                 new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
             }
         }
