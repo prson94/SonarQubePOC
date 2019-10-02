@@ -316,6 +316,9 @@ namespace d360.web.Controllers
                 case "INTERSECTTYPE":
                     objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
                     return DynamicEditorEditFields(o, objectId);
+                case "PREDICATE":
+                    objectId = Company.Predicates.FirstOrDefault(x => x.UID == uid).ID;
+                    return DynamicEditorEditFields(o, objectId);
             }
             throw new Exception("Invalid or non implemented editor type");
         }
@@ -533,8 +536,6 @@ namespace d360.web.Controllers
                     return EditPolicy(form);
                 case "POLICYTYPELEVEL":
                     return EditPolicyTypeLevel(form);
-                case "PREDICATE":
-                    return EditPredicate(form);
                 case "REFERENCEITEM":
                     return EditReferenceItem(form);
                 case "REPORT":
@@ -616,8 +617,6 @@ namespace d360.web.Controllers
                     return DeleteOrganizationDomain(objectID);
                 case "ORGANIZATIONINVITATION":
                     return DeleteOrganizationInvitation(objectID);
-                case "PREDICATE":
-                    return DeletePredicate(form);                
                 case "REPORT":
                     return await DeleteReport(form);
                 case "REPORTTILE":
@@ -706,8 +705,6 @@ namespace d360.web.Controllers
                     return AddPolicy(form);
                 case "POLICYTYPELEVEL":
                     return AddPolicyTypeLevel(form);
-                case "PREDICATE":
-                    return AddPredicate(form);
                 case "REFERENCEITEM":
                     return AddReferenceItem(form);
                 case "REPORT":
@@ -8958,136 +8955,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             list.Add(new EditableField { ReadOnly=any, Row = 2, Column = 1, Required = true, FieldName = "Type", Name = "Functional Type", FieldType = DataType.Lookup.ToString(), Value = ((int)a.Type).ToString(), Items = functionalTypes });
             
             return Json(list, JsonRequestBehavior.AllowGet);
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddPredicate")]
-        public JsonResult AddPredicate(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("predicate");
-
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var a = new Predicate
-                {
-                    Name = parseTextField(form, "Name"),
-                    Inverse = parseTextField(form, "Inverse"),
-                    Type = (PredicateType)Enum.Parse(typeof(PredicateType), form["Type"]),
-                    IsSystem = false
-                };
-
-                if (a.Type.AsInfoModel().ReadOnly)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add a predicate of this type.");
-                }
-                if (!a.Type.AsInfoModel().AllowMultiplePredicates)
-                {
-                    var any = Company.Predicates.Any(i => i.Type == a.Type);
-                    if (any)
-                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add another predicate of this type. Only one may exist.");
-                }
-
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
-                if (!a.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {a.Type.AsInfoModel().Name}.");
-                }
-
-                Company.Add<Predicate>(a);
-
-                return jsonSuccess(a.Name + " successfully created.", string.Format("Predicate|{0}", a.ID), "add", HttpStatusCode.Created, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeletePredicate")]
-        public JsonResult DeletePredicate(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("predicate");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Predicate>(id);
-                if (model == null) throw new NotFoundException("predicate");
-
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<Predicate>(model);
-                return jsonSuccess("Item successfully removed.", null, "delete", HttpStatusCode.OK, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditPredicate")]
-        public JsonResult EditPredicate(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("predicate");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Predicate>(id);
-                if (model == null) throw new NotFoundException("predicate");
-
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Name = parseTextField(form, "Name");
-                model.Inverse = parseTextField(form, "Inverse");
-
-                var any = Company.Any<IntersectType>(i => i.PredicateID == id);
-
-                //only allow edit of type for unused predicates
-                if (!any)
-                {                    
-                    model.Type = (PredicateType)parseIntField(form, "Type");
-                }
-
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
-                if (!model.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {model.Type.AsInfoModel().Name}.");
-                }
-
-                Company.Update(model);
-
-                return jsonSuccess(model.Name + " successfully updated.", string.Format("IntersectRole|{0}", id), "edit", HttpStatusCode.OK, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
         }
 
         #endregion

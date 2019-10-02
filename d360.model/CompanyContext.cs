@@ -3285,6 +3285,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.IntersectType:
                     objectId = IntersectTypes.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
+                case SystemObjects.Predicate:
+                    objectId = Predicates.FirstOrDefault(x => x.UID == objectUid).ID;
+                    break;
                 default:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString()).ObjectID;
                     if (objectId <= 0)

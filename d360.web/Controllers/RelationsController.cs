@@ -28,40 +28,6 @@ namespace d360.web.Controllers
                 
         #region Json
 
-        [HttpGet, Route("Predicates")]
-        public JsonNetResult Predicates()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                Response.StatusCode = (int)HttpStatusCode.Forbidden;
-                return null;
-            }
-
-            var predicates = Company.Table<Predicate>().OrderBy(i => i.Name);
-            var usage = Company.Filter<IntersectType>(i => i.PredicateID.HasValue).Select(i => i.PredicateID.Value).Distinct().ToList();
-            var data = new List<dynamic>();
-
-            predicates.ToList().ForEach(p =>
-                {
-                    data.Add(new
-                    {
-                        p.ID,
-                        p.Name,
-                        p.Inverse,
-                        p.IsSystem,
-                        IsUsed = usage.Any(i => i == p.ID),
-                        Type = p.Type.GetDisplayName(),
-                        p.UID
-                    });
-            });
-
-            return new JsonNetResult
-            {
-                Data = data,
-                Formatting = Formatting.None
-            };
-        }
-
         [HttpGet, Route("GetPredicates")]
         public JsonNetResult GetPredicates()
         {
