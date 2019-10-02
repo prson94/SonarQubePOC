@@ -152,7 +152,7 @@ namespace d360.core.enums
         Transformation = 12,
         [
             Name("Business To Technical"),
-            Description("This type of predicate enforces relationships to or from an asset whose type is classified as a Technical Asset. When configuring relationship types, the subject must be a Glossary asset while the object must be a Technical asset."),
+            Description("This type of predicate enforces relationships to or from an asset whose type is classified as a Technical Asset. When configuring relationship types, the subject must be a Business asset while the object must be a Technical asset."),
             ReadOnly(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),

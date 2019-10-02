@@ -525,22 +525,15 @@ from	IntersectType I
         public List<AllocationPossibility> GetAllocationOptions()
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
-select	Object as ObjectType, 
-		ObjectID as ObjectTypeID, 
-		case Object
-			when 'ArtifactType' then 'Artifacts :: '
-			when 'TaxonomyType' then 'Models :: '
-			when 'PolicyType' then 'Policies :: '
-			when 'RuleType' then 'Rules :: '
-			when 'FusionType' then 'Fusion Types :: '
-			when 'ReferenceItemType' then 'Reference Item Type :: '
-		end + Name as Name
-from	AssetType
-where	Class in (1,2,3,6,7,9)
-union
-select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType").ToList();
+select	T.Object as ObjectType, 
+		T.ObjectID as ObjectTypeID, 
+        T.[Class],
+        P.[Path] as Name
+from	AssetType T
+        cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
+where	T.[Class] in (1,2,3,4,6,7,8,9)").ToList();
 
-            list = list.OrderBy(i => i.Name).ToList();
+            list = list.OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
             return list;
         }
@@ -549,24 +542,17 @@ select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attribut
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
 select A.* from (
-select	Object as ObjectType, 
-		ObjectID as ObjectTypeID, 
-		case Object
-			when 'ArtifactType' then 'Artifacts :: '
-			when 'TaxonomyType' then 'Models :: '
-			when 'PolicyType' then 'Policies :: '
-			when 'RuleType' then 'Rules :: '
-			when 'FusionType' then 'Fusion Types :: '
-			when 'ReferenceItemType' then 'Reference Item Type :: '
-		end + Name as Name
-from	AssetType
-where	Class in (1,2,3,6,7,9)
-union
-select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
+select	T.Object as ObjectType, 
+		T.ObjectID as ObjectTypeID, 
+        T.[Class],
+        P.[Path] as Name
+from	AssetType T
+        cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
+where	T.[Class] in (1,2,3,4,6,7,8,9)
 ) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
 where R.ObjectID is null", new { id = attributeTypeID }).ToList();
 
-            list = list.OrderBy(i => i.Name).ToList();
+            list = list.OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
             return list;
         }
@@ -1607,16 +1593,17 @@ where	R.SourceObject = 'FusionAttribute'
 				I.Type
 	FROM		(
                 select	T.ObjectID as ID,
-		                case T.Object
-			                when 'ArtifactType' then 'Glossary :: '
-			                when 'FusionAttributeType' then 'Fusion Attribute :: ' + FT.Name + ' / '
-			                when 'FusionQueryAttributeType' then 'Fusion Query :: '
-			                when 'GroupType' then 'Security :: '
-			                when 'PolicyType' then 'Policy :: '
-			                when 'ReferenceItemType' then 'Reference :: '
-			                when 'ResourceType' then 'Security :: '
-			                when 'RuleType' then 'Rule :: '
-			                when 'TaxonomyType' then 'Model :: '
+		                case 
+			                when T.Object = 'ArtifactType' and T.[Class] = 1 then 'Business :: '
+                            when T.Object = 'ArtifactType' and T.[Class] = 8 then 'Technical :: '
+			                when T.Object = 'FusionAttributeType' then 'Fusion Attribute :: ' + FT.Name + ' / '
+			                when T.Object = 'FusionQueryAttributeType' then 'Fusion Query :: '
+			                when T.Object = 'GroupType' then 'Security :: '
+			                when T.Object = 'PolicyType' then 'Policy :: '
+			                when T.Object = 'ReferenceItemType' then 'Reference :: '
+			                when T.Object = 'ResourceType' then 'Security :: '
+			                when T.Object = 'RuleType' then 'Rule :: '
+			                when T.Object = 'TaxonomyType' then 'Model :: '
 		                end + coalesce(P.[Path], T.Name) as Name,
 		                T.Object as Type
                 from	AssetType T
@@ -1677,7 +1664,7 @@ where	R.SourceObject = 'FusionAttribute'
                 }
 
                 removeSpecialPredicateTypes = (
-                    subjectAssetType.Class != AssetTypeClass.Glossary &&
+                    subjectAssetType.Class != AssetTypeClass.Business &&
                     subjectAssetType.Class != AssetTypeClass.Model &&
                     subjectAssetType.Class != AssetTypeClass.Policy &&
                     subjectAssetType.Class != AssetTypeClass.Rule
@@ -1745,11 +1732,11 @@ where	I.ID is null";
 
                 if (predicateModel.Type == PredicateType.BusinessToTechnical)
                 {
-                    if (subjectAssetType.Class != AssetTypeClass.Glossary && subjectAssetType.Class != AssetTypeClass.Model && subjectAssetType.Class != AssetTypeClass.Policy && subjectAssetType.Class != AssetTypeClass.Rule)
+                    if (subjectAssetType.Class != AssetTypeClass.Business && subjectAssetType.Class != AssetTypeClass.Model && subjectAssetType.Class != AssetTypeClass.Policy && subjectAssetType.Class != AssetTypeClass.Rule)
                     {
-                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : Glossary, Model Policy, or Rule.");
+                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : Business, Model, Policy, or Rule.");
                     }
-                    if (objectAssetType.Class != AssetTypeClass.FusionAttribute)
+                    if (objectAssetType.Class != AssetTypeClass.Technical)
                     {
                         throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your object must be a Technical Asset class.");
                     }

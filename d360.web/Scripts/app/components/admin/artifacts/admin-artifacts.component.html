@@ -1,12 +1,15 @@
 ﻿<div class="row">
     <div class="col s12 m5 l4" *ngIf="!isEditingFieldType">
         <div class="tile tile-detail">
-            <header>Artifact Types                
+            <header>
+                {{tabTitle}}
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add(0)"></d3s-tile-actions>
             </header>
-            <input type="text" pInputText [(ngModel)]="searchValue" placeholder="Search..." style="width: 100%;margin-bottom:10px;">    
             
-            <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'" selectionMode="single" [(selection)]="selectedRow"  metaKeySelection="true">
+            <p-treeTable [value]="ArtifactTypes" #assetTypeTree selectionMode="single" [(selection)]="selectedRow" [globalFilterFields]="filterFields" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage">
+                <ng-template pTemplate="caption">
+                    <input type="text" pInputText (input)="assetTypeTree.filterGlobal($event.target.value, 'contains')" placeholder="Search..." style="width: 100%;margin-bottom:10px;margin-right:0px;margin-left:0px">
+                </ng-template>
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 60%">Name</th>
@@ -19,7 +22,7 @@
                 <ng-template pTemplate="body" let-rowNode let-item="rowData">
                     <tr [ttSelectableRow]="rowNode" #treetableRows>
                         <td>
-                            <d3s-treeTableToggler [rowNode]="rowNode" ></d3s-treeTableToggler>
+                            <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                             {{item.Name}}
                         </td>
                         <td>
@@ -47,12 +50,12 @@
     </div>
     <div *ngIf="isEditing" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-asset-type-editor [assetTypeClass]="'G'" [id]="selectedRow?.data?.AssetTypeID" [title]="'Edit Artifact Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
+            <d3s-asset-type-editor [assetTypeClass]="assetTypeClass" [id]="selectedRow?.data?.AssetTypeID" [title]="formTitle" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
         </div>
     </div>
     <div *ngIf="isAdding" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-asset-type-editor [showParentPredicates]="selectedRow != null && selectedRow.data != null && selectedRow.data.ID > 0" [assetTypeClass]="'G'" [parentID]="selectedRow?.data?.ID" [title]="'Add Artifact Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
+            <d3s-asset-type-editor [showParentPredicates]="selectedRow != null && selectedRow.data != null && selectedRow.data.ID > 0" [assetTypeClass]="assetTypeClass" [parentID]="selectedRow?.data?.ID" [title]="'Add Artifact Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
         </div>
     </div>    
     <div *ngIf="isDeleting" class="col s12 m7 l8">

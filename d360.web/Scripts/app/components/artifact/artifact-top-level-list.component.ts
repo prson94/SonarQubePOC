@@ -9,6 +9,7 @@ import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { RightSidebarService } from '../../services/right-sidebar.service';
+import { AssetTypeClass } from '../../models/asset.model';
 
 @Component({
     selector: 'd3s-artifact-top-level-list',
@@ -22,11 +23,13 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
     adminType: string = "Artifacts";
     selectedRow: TreeNode;
     ArtifactTypes: TreeNode[];
-
+    private sub: any;
+    assetTypeClass: AssetTypeClass;
     public searchValue: string;
     
     constructor(        
         private router: Router,
+        private route: ActivatedRoute,
         private artifactsService: ArtifactTypeService,        
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
@@ -36,15 +39,53 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
     }
 
     ngOnInit() {
-        this.setBrowserTitle(this.titleService, 'Glossary');
-        this.load();
+        this.sub = this.route.params.subscribe(params => {
+            try {
+                let assetTypeClassString: keyof typeof AssetTypeClass = params['class'];
+                this.assetTypeClass = AssetTypeClass[assetTypeClassString];
+                if (!this.assetTypeClass) {
+                    this.assetTypeClass = AssetTypeClass.Business;
+                }
+            } catch (e) {
+                this.assetTypeClass = AssetTypeClass.Business;
+            }
+
+            switch (this.assetTypeClass) {
+                case AssetTypeClass.Business:
+
+                    this.headerBreadcrumbService.getFolderTitle('#Business').then(res => {
+                        this.folderTitle = res;
+                        this.setBrowserTitle(this.titleService, res);
+                        this.area = res;
+                    });
+                    
+                    break;
+                case AssetTypeClass.Technical:
+
+                    this.headerBreadcrumbService.getFolderTitle('#Technical').then(res => {
+                        this.folderTitle = res;
+                        this.setBrowserTitle(this.titleService, res);
+                        this.area = res;
+                    });
+
+                    break;
+                default:
+                    let className: string = AssetTypeClass[this.assetTypeClass];
+                    this.folderTitle = `${className} Assets`;
+                    this.setBrowserTitle(this.titleService, this.folderTitle);
+                    this.area = this.folderTitle;
+                    break;
+            }
+
+            this.load();
+        });
     }
 
     private load() {
         this.isLoading = true;
         this
             .artifactsService
-            .getArtifactTypeTree()
+            .getArtifactTypeTree(this.assetTypeClass)
             .subscribe(data => {
                 for (let i = 0; i < data.length; i++) {
                     if (data[i].data.Description != null)

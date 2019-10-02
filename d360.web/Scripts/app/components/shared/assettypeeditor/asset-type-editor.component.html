@@ -17,7 +17,7 @@
                     </div>
                     <div class="col l6 m6 s12" *ngIf="showParentPredicates && (model.Predicates.length > 1)">
                         <div [ngClass]="assetTypeClass == 'M' || assetTypeClass == 'P' ? 'FieldNameRequired' : 'FieldName'">Predicate To Parent</div>
-                        <p-dropdown [options]="model.Predicates" #predicate="ngModel" [ngModel]="model.SelectedPredicateID" (ngModelChange)="model.SelectedPredicateID=$event;updateParent(model.SelectedPredicateID);" [style]="{'width':'100%'}" name="predicate" [required]="assetTypeClass == 'M' || assetTypeClass == 'P'"></p-dropdown>
+                        <p-dropdown [options]="model.Predicates" #predicate="ngModel" [(ngModel)]="model.SelectedPredicateID" (ngModelChange)="model.SelectedPredicateID=$event;updateParent(model.SelectedPredicateID);" [style]="{'width':'100%'}" name="predicate" [required]="assetTypeClass == 'M' || assetTypeClass == 'P'"></p-dropdown>
                         <div [hidden]="predicate.valid || predicate.pristine" class="validation-text">Predicate is required</div>
                     </div>
                 </div>
@@ -33,7 +33,7 @@
                 <div class="row" [hidden]="!showDisplayFormat">
                     <div class="col l6 m6 s12">
                         <div class="FieldNameRequired">Display Format</div>
-                        <input maxlength="250" pInputText name="displayFormat" #displayformat="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.AssetType.DisplayFormat" required  />
+                        <input maxlength="250" pInputText name="displayFormat" #displayformat="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.AssetType.DisplayFormat" required />
                         <div [hidden]="displayformat.valid || displayformat.pristine" class="validation-text">Display format is required</div>
                     </div>
                     <div class="col l6 m6 s12">
@@ -67,8 +67,8 @@
                             <div class="FieldInstructions">If enabled, the content of the description property is auto-displayed to all users on the list page for this artifact type.</div>
                         </div>
                     </div>
-                    <div class="FieldName">Can Own Fusion?</div>
-                    <div class="row">
+                    <div class="FieldName" *ngIf="showFusionOwnerSettings">Can Own Fusion?</div>
+                    <div class="row" *ngIf="showFusionOwnerSettings">
                         <div class="col l1 m2 s12">
                             <input pCheckbox type="checkbox" name="CanOwnFusion" [(ngModel)]="model.CanOwnFusion" />
                         </div>

@@ -7,6 +7,7 @@ import { ReferenceItemType } from '../../models/reference.model';
 import { FormMode } from '../../models/form.model';
 import { AssetTypeService } from '../../services/asset-type.services';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { AssetTypeClass } from '../../models/asset.model';
 
 @Component({
     selector: 'd3s-reference-item-type-list',
@@ -23,6 +24,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     private referenceTypes: ReferenceItemType[];
     private _showEditor: boolean = false;
     private _showDelete: boolean = false;
+    assetTypeClass: AssetTypeClass = AssetTypeClass.ReferenceItemType;
 
     @Output() formModeChange = new EventEmitter<FormMode>();
 

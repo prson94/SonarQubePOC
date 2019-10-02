@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { TreeNode } from 'primeng/api';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -8,6 +8,8 @@ import { StateService } from '../../../services/state.service';
 import { ArtifactTypeService } from '../../../services/artifact-type.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { AssetTypeClass } from '../../../models/asset.model';
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -15,12 +17,12 @@ import { MessagesObservableService } from '../../../services/messages-observable
     templateUrl: './admin-artifacts.component.html'
 })
 
-export class AdminArtifactsComponent extends AdminBaseComponent implements OnDestroy {
+export class AdminArtifactsComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     searchFilter: string = "";
     objectType: string = "ArtifactType";
     adminType: string = "Artifacts";
     selectedRow: TreeNode;
-
+    private sub: any;
     isAdding = false;
     isEditing = false;
     isDeleting = false;
@@ -28,8 +30,12 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
     isAddingFieldType = false;
     ArtifactTypes: TreeNode[];
     theDeleteCallback: Function;
+    filterFields: string[] = ["Name"];
+    assetTypeClass: AssetTypeClass;
+    formTitle: string;
 
-    constructor(
+    constructor(private route: ActivatedRoute,
+        private router: Router,
         private stateService: StateService,
         rightSidebarService: RightSidebarService,
         headerBreadcrumbService: HeaderBreadcrumbService,
@@ -38,10 +44,9 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         protected messagesService: MessagesObservableService        
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = "Artifacts";
-        this.tabTitle = 'Artifact Types';
+        this.areaName = "Assets";
         this.setCommonItems();
-        this.load();
+
         this.setObjectInfo('ArtifactType', -1);
         this.setCommonRightSideBar(true);
         if (this.auditSidebar) {
@@ -53,13 +58,35 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnDes
         this.theDeleteCallback = this.deleteArtifactType.bind(this);
     }
 
+    ngOnInit() {
+        this.sub = this.route.params.subscribe(params => {
+            try {
+                let assetTypeClassString: keyof typeof AssetTypeClass = params['class'];
+                this.assetTypeClass = AssetTypeClass[assetTypeClassString];
+                if (!this.assetTypeClass) {
+                    this.assetTypeClass = AssetTypeClass.Business;
+                }
+            } catch (e) {
+                this.assetTypeClass = AssetTypeClass.Business;
+            }
+
+            let className: string = AssetTypeClass[this.assetTypeClass];
+            let singularLabel: string = `${className} Asset`;
+
+            this.tabTitle = `${singularLabel}s`;
+            this.formTitle = `Edit ${singularLabel}`;
+
+            this.load();
+        });
+    }
+
     ngOnDestroy() {
         this.clearSidebar();
     }
 
     load(selectionId:number = 0) {
         this.isLoading = true;
-        this.artifactsService.getArtifactTypeTree()
+        this.artifactsService.getArtifactTypeTree(this.assetTypeClass)
             .subscribe(data => {
                 this.ArtifactTypes = data;                
                 if (selectionId <= 0) {

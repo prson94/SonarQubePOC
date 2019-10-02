@@ -27,10 +27,21 @@ namespace d360.core.entities
         public string ObjectName { get; set; }
     }
 
+    public class ResponsibilityTypeRelationAllocationOption
+    {
+        public bool IsUsed { get; set; }
+        public int ID { get; set; }
+        public AssetTypeClass Class { get; set; }
+        public string ClassName { get { return Class.GetDisplayName(); } }
+        public string Path { get; set; }
+    }
+
     public class AllocationPossibility
     {
         public int ObjectTypeID { get; set; }
         public string ObjectType { get; set; }
+        public AssetTypeClass Class { get; set; }
+        public string ClassName { get { return Class.GetDisplayName(); } }
         public string Name { get; set; }
     }
 

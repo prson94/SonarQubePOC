@@ -17,7 +17,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     @Input() id: number;
     @Input() parentID: number;
     @Input() topTypeID: number; //For things like fusion type ID
-    @Input() assetTypeClass: string;
+    @Input() assetTypeClass: AssetTypeClass;
     @Input() showParentPredicates: boolean = true;
     @Input() showDisplayFormat: boolean = true;
     @Output() onComplete = new EventEmitter();
@@ -25,7 +25,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
-    theAssetTypeClass: AssetTypeClass;
     action: string = "Edit";    
     model: AssetTypeEditorModel;   
     spinNum: number = 1;
@@ -34,6 +33,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     showAssetStyles: boolean = true;
     showAssetDepthSettings: boolean = false;
     showAssetFusionSettings: boolean = false;
+    showFusionOwnerSettings: boolean = false;
     showAssetArtifactSettings: boolean = false;
     showNotesField: boolean = false;
 
@@ -60,32 +60,30 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     private load(): void {        
         this.isLoading = true;
 
-        switch (this.assetTypeClass) {
-            case 'FA':
-                this.theAssetTypeClass = AssetTypeClass.FusionAttribute;
+        switch (+this.assetTypeClass) {
+            case AssetTypeClass.FusionAttribute:
                 this.showParentPredicates = false;
                 break;
-            case 'G':
-                this.theAssetTypeClass = AssetTypeClass.Glossary;
+            case AssetTypeClass.Business:
+                this.showAssetArtifactSettings = true;
+                this.showFusionOwnerSettings = true;
+                break;
+            case AssetTypeClass.Technical:
                 this.showAssetArtifactSettings = true;
                 break;
-            case 'M':
-                this.theAssetTypeClass = AssetTypeClass.Model;
+            case AssetTypeClass.Model:
                 this.showAssetDepthSettings = true;
                 break;
-            case 'O':
-                this.theAssetTypeClass = AssetTypeClass.Organization;
+            case AssetTypeClass.Organization:
                 break;
-            case 'P':
-                this.theAssetTypeClass = AssetTypeClass.Policy;
+            case AssetTypeClass.Policy:
                 this.showAssetDepthSettings = true;
                 break;
-            case 'RT':
-                this.theAssetTypeClass = AssetTypeClass.ReferenceItemType;
+            case AssetTypeClass.ReferenceItemType:
                 this.showAssetStyles = false;
                 this.showNotesField = true;
                 break;
-            case 'F':
+            case AssetTypeClass.Fusion:
                 this.showAssetFusionSettings = true;                
                 break;
         }
@@ -93,7 +91,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         this
             .assetTypeService
             .getAssetTypeEditor(
-                this.theAssetTypeClass,
+                this.assetTypeClass,
                 this.id,
                 this.parentID
             )
@@ -130,6 +128,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     private save(): void {
         this.isSaving = true;
         this.model.AssetType.HierarchyMaximumDepth = this.spinNum;
+        this.model.AssetType.Class = this.assetTypeClass;
 
         if (this.model.AssetType.ID > 0)
         {

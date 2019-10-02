@@ -17,12 +17,12 @@ import { MessagesObservableService } from '../../../services/messages-observable
                         <div [ngSwitch]="formMode">
                             <div *ngSwitchCase="FormMode.Default" class="col s12">
                                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                                <p-table #dt [value]="allocations" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ObjectType','TypeName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selection">
+                                <p-table #dt [value]="allocations" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['ClassName','TypeName']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selection">
                                     <ng-template pTemplate="header">
                                         <tr>
-                                            <th [pSortableColumn]="'ObjectType'">
-                                                Object Type
-                                                <d3s-sortIcon [field]="'ObjectType'"></d3s-sortIcon>
+                                            <th style="width: 150px" [pSortableColumn]="'ClassName'">
+                                                Class
+                                                <d3s-sortIcon [field]="'ClassName'"></d3s-sortIcon>
                                             </th>
                                             <th [pSortableColumn]="'TypeName'">
                                                 Object Name
@@ -31,14 +31,14 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                             <th style="width: 40px"></th>
                                         </tr>
                                         <tr [hidden]="showSimpleFilter">
-                                            <th><d3s-column-filter [field]="'ObjectType'" [datatype]="'text'"></d3s-column-filter></th>
+                                            <th><d3s-column-filter [field]="'ClassName'" [datatype]="'text'"></d3s-column-filter></th>
                                             <th><d3s-column-filter [field]="'TypeName'" [datatype]="'text'"></d3s-column-filter></th>
                                             <th></th>
                                         </tr>
                                     </ng-template>
                                     <ng-template pTemplate="body" let-item>
                                         <tr [pSelectableRow]="item">
-                                            <td>{{item.ObjectType}}</td>
+                                            <td>{{item.ClassName}}</td>
                                             <td>{{item.TypeName}}</td>
                                             <td>
                                                 <div class="RowTools">

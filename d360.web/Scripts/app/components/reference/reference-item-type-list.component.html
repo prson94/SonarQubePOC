@@ -69,7 +69,7 @@
     <d3s-asset-type-editor (onCancel)="showEditor = false;"
                            (onComplete)="saveReferenceItemType($event)"
                            *ngIf="showEditor"
-                           [assetTypeClass]="'RT'"
+                           [assetTypeClass]="assetTypeClass"
                            [id]="selected?.AssetTypeID"
                            [title]="selected != null ? 'Edit Reference List' : 'Add Reference List'">
     </d3s-asset-type-editor>

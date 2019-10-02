@@ -75,7 +75,7 @@ namespace igx.IntegrationTests.TestData
                     {
                         JObject jObject = new JObject();
                         jObject.Add(new JProperty("Name", "FieldsTest_AssetTypeIntegrationTest-" + Guid.NewGuid().ToString()));
-                        jObject.Add(new JProperty("Class", "Glossary"));
+                        jObject.Add(new JProperty("Class", "Business"));
                         jObject.Add(new JProperty("DisplayFormat", "{Name}"));
                         jObject.Add(new JProperty("Description", "Integration test description!"));
 

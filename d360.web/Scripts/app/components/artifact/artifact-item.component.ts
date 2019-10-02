@@ -20,6 +20,7 @@ import { SiteUrlHelpers } from "../../static/site-url-helpers";
 import { Permission } from '../../models/responsibility-type.model';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { AssetTypeClass } from '../../models/asset.model';
 
 declare var CompanySettings;
 
@@ -98,7 +99,22 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             .subscribe(
                 artifact => {
                     this.artifact = artifact;
-                    this.buildBreadcrumb();
+
+                    let folderName: string = '#Business';
+
+                    if (artifact.Class == AssetTypeClass.Technical) {
+                        folderName = '#Technical';
+                    }
+
+                    this.headerBreadcrumbService.getFolderTitle(folderName).then(res => {
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+
+                        this.folderTitle = res;
+                        this.area = res;
+
+                        this.buildBreadcrumb();
+                    });
+
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
                     this
                         .setObjectInfo(

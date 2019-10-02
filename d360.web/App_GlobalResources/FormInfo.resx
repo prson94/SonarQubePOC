@@ -232,7 +232,7 @@
     <value>Allocate Workflow</value>
   </data>
   <data name="ArtifactType" xml:space="preserve">
-    <value>Glossary</value>
+    <value>Business</value>
   </data>
   <data name="AttributeTypeCategory_Directions" xml:space="preserve">
     <value>A category can group different types of attributes together into more meaningful sets of of similar information.</value>

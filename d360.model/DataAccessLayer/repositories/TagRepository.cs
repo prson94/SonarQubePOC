@@ -325,6 +325,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
 						AST.Object,
 						A.ObjectID as AssetId,
 						AST.ObjectID as AssetTypeId,
+                        AST.[Class],
 						AST.Name
                         from Tag T
 	                inner join AssetTag AT on AT.TagId = T.Id
@@ -346,7 +347,7 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                 switch (item.Object.ToString())
                 {
                     case "ArtifactType":
-                        atl.Breadcrumbs = "Glossary <i class=\"fa fa-chevron-right\"></i> " + item.Name;
+                        atl.Breadcrumbs = $"{(item.Class == 1 ? "Business" : "Technical")} <i class=\"fa fa-chevron-right\"></i> " + item.Name;
                         atl.Url = $"/artifact/{item.AssetTypeId}/{item.AssetId}";
                         break;
                     case "PolicyType":
@@ -722,7 +723,8 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         A.[Uid] as AssetUid,
 						CASE 
 							WHEN AST.Object = 'TaxonomyType' THEN 'Model ' + AST.Name
-							WHEN AST.Object = 'ArtifactType' THEN 'Glossary ' + AST.Name
+							WHEN AST.Object = 'ArtifactType' and AST.[Class] = 1 THEN 'Business ' + AST.Name
+                            WHEN AST.Object = 'ArtifactType' and AST.[Class] = 8 THEN 'Technical ' + AST.Name
 							WHEN AST.Object = 'PolicyType' THEN 'Policy ' + AST.Name
 							WHEN AST.Object = 'RuleType' THEN 'Rule ' + AST.Name
 							ELSE AST.Name
