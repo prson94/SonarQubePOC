@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.enums;
+using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace d360.core.entities
@@ -9,6 +10,7 @@ namespace d360.core.entities
         public long? AssetID { get; set; }
         public Guid? UID { get; set; }
         public int? AssetTypeID { get; set; }
+        public Guid? AssetTypeUid { get; set; }
         public string Name { get; set; }
         public string TextPath { get; set; }
         public string Description { get; set; }
@@ -19,6 +21,7 @@ namespace d360.core.entities
         public int TypeID { get; set; }
         public string Type { get; set; }
         public string TypeName { get; set; }
+        public AssetTypeClass Class { get; set; }
         public string IconBackColor { get; set; }
         public string IconForeColor { get; set; }
         public string IconText { get; set; }

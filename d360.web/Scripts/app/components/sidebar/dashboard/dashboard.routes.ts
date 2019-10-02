@@ -6,6 +6,7 @@ const routes: Routes = [
     { path: '', component: DashboardComponent },
     { path: ':objectType/:objectId', component: DashboardComponent },
     { path: ':objectType/:objectId/:name', component: DashboardComponent },
+    { path: ':reportID', component: DashboardComponent },
 ];
 
 @NgModule({

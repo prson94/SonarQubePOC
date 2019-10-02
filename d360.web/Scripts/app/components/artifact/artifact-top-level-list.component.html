@@ -24,7 +24,7 @@
                     let-rowNode
                     let-item="rowData">
                     <tr [ttSelectableRow]="rowNode"  (click)="navigate(item.ID)">
-                        <td>
+                        <td style="vertical-align: top">
                             <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                             {{item.Name}}
                         </td>
@@ -34,7 +34,7 @@
                             <td>&nbsp;</td>
                         </ng-template>
                         <td style="overflow: auto; padding-left: 15px; text-align: center">
-                            {{item.kount}}
+                            {{item.Count}}
                         </td>
                         <td>
                             <div class="RowTools">

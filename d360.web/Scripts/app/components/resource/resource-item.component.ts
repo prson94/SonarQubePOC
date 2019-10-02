@@ -114,7 +114,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                         false, false
                     );
                     this.rightSidebarService.showHeader(true);
-                    this.rightSidebarService.setCurrentArea(this.resource.FirstName + " " + this.resource.LastName, 'fa-cog', 'User');
+                    this.rightSidebarService.setCurrentArea(this.resource.FirstName + " " + this.resource.LastName, 'fa-cog', 'Profile');
                    
                     this.itemsOwn = new RightSidebarItem(
                         'Responsibilities', 'itemOwn', ['fa-tasks'],

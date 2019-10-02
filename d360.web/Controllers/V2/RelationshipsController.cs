@@ -862,9 +862,11 @@ namespace d360.web.Controllers.V2
             document.SetCellValue(1, index++, "Id");
             document.SetCellValue(1, index++, "Uid");
             document.SetCellValue(1, index++, "Subject");
+            document.SetCellValue(1, index++, "Subject Uid");
             document.SetCellValue(1, index++, "Subject Class");
             document.SetCellValue(1, index++, "Predicate");
             document.SetCellValue(1, index++, "Object");
+            document.SetCellValue(1, index++, "Object Uid");
             document.SetCellValue(1, index++, "Object Class");
 
             #endregion
@@ -877,9 +879,11 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, row.Id);
                 document.SetCellValue(rowNumber, index++, row.Uid.ToString());
                 document.SetCellValue(rowNumber, index++, row.Subject.Name);
+                document.SetCellValue(rowNumber, index++, row.Subject.Uid.ToString());
                 document.SetCellValue(rowNumber, index++, row.Subject.Class.ToString());
                 document.SetCellValue(rowNumber, index++, row.Predicate.Name);
                 document.SetCellValue(rowNumber, index++, row.Object.Name);
+                document.SetCellValue(rowNumber, index++, row.Object.Uid.ToString());
                 document.SetCellValue(rowNumber, index++, row.Object.Class.ToString());
             }
 

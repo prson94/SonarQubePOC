@@ -23,10 +23,10 @@ namespace d360.core.validators
         public WorkHttpStatus ValidateModelForPost(AssetTypeInsert model, AssetType parentAssetType, Predicate predicate)
         {
 
-            List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
-            List<AssetTypeClass> parentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Reference };
+            List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.Business, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
+            List<AssetTypeClass> parentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.Business, AssetTypeClass.Reference };
 
-            List<AssetTypeClass> supportedClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule };
+            List<AssetTypeClass> supportedClass = new List<AssetTypeClass>() { AssetTypeClass.Business, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule };
             if (!supportedClass.Contains(model.Class))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "Not supported class type");
 
@@ -62,7 +62,7 @@ namespace d360.core.validators
                 return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
             else if (parentAssetType == null && predicate != null && parentAssetTypeClass.Contains(model.Class))
                 return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Uid provided");
-            else if (parentAssetType != null && predicate != null && (model.Class == AssetTypeClass.Glossary || model.Class == AssetTypeClass.Reference) && predicate.Type != PredicateType.InterTypeHierarchy)
+            else if (parentAssetType != null && predicate != null && (model.Class == AssetTypeClass.Business || model.Class == AssetTypeClass.Reference) && predicate.Type != PredicateType.InterTypeHierarchy)
                 return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
             else if (predicate != null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy) && (predicate.Type != PredicateType.IntraTypeHierarchy))
                 return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
@@ -81,10 +81,10 @@ namespace d360.core.validators
 
         public WorkHttpStatus ValidateModelForPut(AssetTypeInsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType)
         {
-            List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
-            List<AssetTypeClass> parentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Reference };
+            List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.Business, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
+            List<AssetTypeClass> parentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.Business, AssetTypeClass.Reference };
 
-            List<AssetTypeClass> supportedClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule };
+            List<AssetTypeClass> supportedClass = new List<AssetTypeClass>() { AssetTypeClass.Business, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule };
             if (!supportedClass.Contains(model.Class))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid request", "Not supported class type");
 
@@ -130,7 +130,7 @@ namespace d360.core.validators
                 return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
             else if (parentAssetType == null && predicate != null && parentAssetTypeClass.Contains(model.Class))
                 return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "Asset Type not found based on Uid provided");
-            else if (parentAssetType != null && predicate != null && (model.Class == AssetTypeClass.Glossary || model.Class == AssetTypeClass.Reference) && predicate.Type != PredicateType.InterTypeHierarchy)
+            else if (parentAssetType != null && predicate != null && (model.Class == AssetTypeClass.Business || model.Class == AssetTypeClass.Reference) && predicate.Type != PredicateType.InterTypeHierarchy)
                 return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
             else if (predicate != null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy) && (predicate.Type != PredicateType.IntraTypeHierarchy))
                 return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid request", "You have not provided a proper predicate based on its asset type class");
@@ -184,6 +184,34 @@ namespace d360.core.validators
 
             return true;
         }
-      
+
+        public bool IsValidOrderByFieldForGetAssets(Guid uid,IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+          
+            if (!(queryParams.Any(p => p.Key.Trim().ToLower() == "_order")))
+                return true;
+            
+            var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
+            if (assetType == null)
+                return false;
+
+            var fieldName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value;
+
+            string[] validFields = { "name", "sourceid", "textpath", "code" };
+            if(assetType.Object == "FusionAttributeType")
+            {
+                var valid =   validFields.Contains(fieldName.Trim().ToLower());
+                if (valid) return true;
+            }
+           
+               
+            var field = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID && f.Name.ToLower()== fieldName.ToLower()).SingleOrDefault();
+
+            if (field == null) return false;
+            else return true;
+           
+
+        }
+
     }
 }

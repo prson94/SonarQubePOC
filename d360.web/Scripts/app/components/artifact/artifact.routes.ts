@@ -5,14 +5,12 @@ import { ArtifactItemComponent } from './artifact-item.component';
 import { ArtifactListComponent } from './artifact-list.component';
 import { ArtifactTopLevelListComponent } from './artifact-top-level-list.component';
 
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
-
 const routes: Routes = [
     {
         path: '',
         component: ArtifactComponent,
         children: [
-            { path: '', component: ArtifactTopLevelListComponent },
+            { path: 'assets/:class', component: ArtifactTopLevelListComponent },
             { path: ':artifactTypeId', component: ArtifactListComponent },
             { path: ':artifactTypeId/:artifactId', component: ArtifactItemComponent }            
         ]

@@ -14,6 +14,8 @@ namespace d360.core.entities
         [DataMember]
         public int AssetTypeID { get; set; }
         [DataMember]
+        public Guid? AssetTypeUid { get; set; }
+        [DataMember]
         public State State { get; set; }
         [DataMember]
         public string Object { get; set; }

@@ -24,7 +24,7 @@ namespace d360.core
 
     public class GraphAttribute : Attribute
     {
-        private string _graph = "Glossary";
+        private string _graph = "Business";
         public string Graph { get { return _graph; } }
         public GraphAttribute(string graph)
         {

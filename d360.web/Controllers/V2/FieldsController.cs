@@ -113,7 +113,8 @@ namespace d360.web.Controllers.V2
         /// Adds or updates field types contained within your environment based on a specified ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
         /// </summary>
         /// <remarks>
-        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.<br/>
+        /// If adding JSON Attribute field type, JSON field must be added before!
         /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [

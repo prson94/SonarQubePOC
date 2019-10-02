@@ -59,6 +59,26 @@ namespace d360.web.Models
     [Serializable]
     public class ArtifactModelRequest : Dictionary<string, object> { }
 
+    public class AssetTypeTopLevelUiViewModel
+    {
+        public int ID { get; set; }
+        public int? ParentID { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public bool AutoDisplayDescription { get; set; }
+        public bool CanOwnFusion { get; set; }
+        public string DisplayFormat { get; set; }
+        public int? CreatedBy { get; set; }
+        public DateTime? CreatedOn { get; set; }
+        public int? UpdatedBy { get; set; }
+        public DateTime? UpdatedOn { get; set; }
+        public int AssetTypeID { get; set; }
+        public AssetTypeClass Class { get; set; }
+        public string ClassName { get { return Class.GetName(); } }
+        public int Count { get; set; }
+        public bool expanded { get; set; }
+    }
+
     public class AttributeNode
     {
         public AttributeNode()
@@ -597,6 +617,10 @@ namespace d360.web.Models
         public string AssetTypeName { get; set; }
         [DataMember]
         public int AssetTypeID { get; set; }
+        [DataMember]
+        public AssetTypeClass Class { get; set; }
+        [DataMember]
+        public string ClassName { get { return Class.GetDisplayName(); } }
         [DataMember]
         public string ObjectType { get; set; }
         [DataMember]
