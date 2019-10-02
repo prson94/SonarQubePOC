@@ -1384,10 +1384,14 @@ tbody.ui-table-tbody > tr:nth-child(odd) {
         
 }
 
-    tbody.ui-table-tbody > tr.ui-state-highlight {
+tbody.ui-table-tbody > tr.ui-state-highlight {
         background-color: #FFEF99;
-        /*color: #fff;*/
-    }
+}
+
+/* workaround for issue in prime with row selection and checkbox selection*/
+.ui-table-tbody .ui-chkbox {
+    pointer-events: none;
+}
 
 .ui-table-summary {
     background-color: #fff;
