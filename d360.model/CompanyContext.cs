@@ -540,7 +540,13 @@ where	T.[Class] in (1,2,3,4,6,7,8,9)").ToList();
 
         public List<AllocationPossibility> GetAvailableAllocationOptions(int attributeTypeID)
         {
-            var list = Database.Connection.Query<AllocationPossibility>(@"
+            string ignoreFusionItems = string.Empty;
+            if (!Community.IsFusionEnabled())
+            {
+                ignoreFusionItems = $" and A.ObjectType not in ('{SystemObjects.FusionQueryAttributeType.ToString()}', '{SystemObjects.FusionType.ToString()}','{SystemObjects.FusionAttributeType.ToString()}')";
+            }
+
+            var list = Database.Connection.Query<AllocationPossibility>($@"
 select A.* from (
 select	T.Object as ObjectType, 
 		T.ObjectID as ObjectTypeID, 
@@ -550,7 +556,7 @@ from	AssetType T
         cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
 where	T.[Class] in (1,2,3,4,6,7,8,9)
 ) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
-where R.ObjectID is null", new { id = attributeTypeID }).ToList();
+where R.ObjectID is null {ignoreFusionItems}", new { id = attributeTypeID }).ToList();
 
             list = list.OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
@@ -1586,6 +1592,21 @@ where	R.SourceObject = 'FusionAttribute'
                 }
             }
 
+            List<string> excludedClasses = new List<string>()
+            {
+                SystemObjects.AttributeType.ToString(),
+                SystemObjects.FusionType.ToString(),
+                SystemObjects.OrganizationType.ToString()
+            };
+            if (!Community.IsFusionEnabled())
+            {
+                excludedClasses.Add(SystemObjects.FusionAttributeType.ToString());
+                excludedClasses.Add(SystemObjects.FusionQueryAttributeType.ToString());
+            }
+
+            string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
+
+
 
             var sql = $@"
     SELECT		I.ID,
@@ -1610,7 +1631,7 @@ where	R.SourceObject = 'FusionAttribute'
 		                cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
                         left join FusionAttributeType FAT on T.Object = 'FusionAttributeType' and FAT.ID = T.ObjectID 
                         left join FusionType FT on FT.ID = FAT.FusionTypeID 
-                where	T.Object not in ('AttributeType', 'FusionType', 'OrganizationType'){classLimitSql}
+                where	T.Object not in ({excludeClassInStatement}){classLimitSql}
 			 	{noClassLimitSql}
                 ) I";
 

@@ -36,6 +36,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     showFusionOwnerSettings: boolean = false;
     showAssetArtifactSettings: boolean = false;
     showNotesField: boolean = false;
+    isFusionEnabled: boolean = true;
 
     private lineageVersion: number = 1;
 
@@ -59,6 +60,10 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     private load(): void {        
         this.isLoading = true;
+        
+        if (CompanySettings != null && CompanySettings.FusionEnabled != null) {
+            this.isFusionEnabled = CompanySettings.FusionEnabled == "false" ? false : true;
+        }
 
         switch (+this.assetTypeClass) {
             case AssetTypeClass.FusionAttribute:

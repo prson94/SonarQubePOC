@@ -4864,7 +4864,7 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
         [Route("reports/targets")]
         public IEnumerable<dynamic> GetReportTargetAreas()
         {
-            var items = Company.Query<dynamic>(@"
+            var items = Company.Query<dynamic>($@"
 select      *
 from        (                 
             select      'ArtifactType|' + cast(ObjectId as varchar(15)) as value,
@@ -4900,7 +4900,7 @@ from        (
             union
             select      'FusionType|' + cast(ObjectId as varchar(15)) as value,
                         'Fusion Type : ' + Name as title
-            from         AssetType where [object]='FusionType' 
+            from         AssetType where [object]='FusionType'
 ) O
 order by    title
 
