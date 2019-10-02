@@ -513,7 +513,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 			                    CASE 
 				                    when switchObject = 0 then ObjectId
 				                    else SubjectId
-			                    END AS ObjectID 
+			                    END AS ObjectID
 			                from R;
 
                             update R
@@ -530,6 +530,11 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 			                from [Intersect] I
 			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
 			                where not exists (select 1 from #Relationships where [Subject] = I.[Subject] and SubjectID = I.SubjectID);
+
+                            delete I
+			                from [Intersect] I
+			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Subject] = I.[Subject] and R.SubjectID = I.SubjectID
+			                where not exists (select 1 from #Relationships where [Object] = I.[Object] and ObjectID = I.ObjectID);
 
                             insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
                             select  IntersectTypeID,
@@ -586,27 +591,27 @@ begin
                     and (F.Ignore = 0 or F.Ignore is null)
                     and FT.Type = 'Relationship'
             )
-           insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID)
-                    select
-                        null as ID,
-			            IntersectTypeId, 
-			            CASE 
-				            when switchObject = 0 then Subject
-				            else Object
-			            END AS Subject, 
-			            CASE 
-				            when switchObject = 0 then SubjectId
-				            else ObjectID
-			            END AS SubjectId,
-			            CASE 
-				            when switchObject = 0 then Object
-				            else Subject
-			            END AS Object, 
-			            CASE 
-				            when switchObject = 0 then ObjectId
-				            else SubjectId
-			            END AS ObjectID 
-			        from R;
+            insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+            select
+                null as ID,
+			    IntersectTypeId, 
+			    CASE 
+				    when switchObject = 0 then Subject
+				    else Object
+			    END AS Subject, 
+			    CASE 
+				    when switchObject = 0 then SubjectId
+				    else ObjectID
+			    END AS SubjectId,
+			    CASE 
+				    when switchObject = 0 then Object
+				    else Subject
+			    END AS Object, 
+			    CASE 
+				    when switchObject = 0 then ObjectId
+				    else SubjectId
+			    END AS ObjectID
+			from R;
 
                     update R
                     set R.ID = I.ID
@@ -622,6 +627,12 @@ begin
 			        from [Intersect] I
 			        inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
 			        where not exists (select 1 from #Relationships where [Subject] = I.[Subject] and SubjectID = I.SubjectID);
+
+                    delete I
+			        from [Intersect] I
+			        inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Subject] = I.[Subject] and R.SubjectID = I.SubjectID
+			        where not exists (select 1 from #Relationships where [Object] = I.[Object] and ObjectID = I.ObjectID);
+
 
                     insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
                     select  IntersectTypeID,
