@@ -4158,9 +4158,9 @@ from    [Intersect] T
 
             return results;
         }
-        public List<PredicateInsertResult> AddPredicates(ApiExecution execution, PredicateInserts import, int timeout = 3600)
+        public List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600)
         {
-            var results = new List<PredicateInsertResult>();
+            var results = new List<PredicateUpsertResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
 
@@ -4168,7 +4168,7 @@ from    [Intersect] T
             if (executionItemDupes.Any())
             {
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                results.AddRange(import.Select(i => new PredicateInsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+                results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
             {
@@ -4179,7 +4179,7 @@ from    [Intersect] T
                     if (currentLocation.HighestItemNumberProcessed > 0)
                     {
                         results.AddRange(
-                            Query<PredicateInsertResult>(
+                            Query<PredicateUpsertResult>(
                                 $"select * from api.ExecutionPredicate where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
                                 new { execution.ExecutionID }
                             )
@@ -4218,7 +4218,9 @@ from    [Intersect] T
                             else row["ExecutionItemUid"] = Guid.NewGuid();
                             row["Type"] = (int)model.Type; 
                             row["Name"] = model.Name; 
-                            row["Inverse"] = model.Inverse; 
+                            row["Inverse"] = model.Inverse;
+                            if(model.Uid.HasValue)
+                                row["uid"] = model.Uid;
 
                             table.Rows.Add(row);
                         }
@@ -4243,6 +4245,7 @@ from    [Intersect] T
                     bulkCopy.ColumnMappings.Add("Type", "Type");
                     bulkCopy.ColumnMappings.Add("Name", "Name");
                     bulkCopy.ColumnMappings.Add("Inverse", "Inverse");
+                    bulkCopy.ColumnMappings.Add("uid", "uid");
 
                     bulkCopy.WriteToServer(table);
 
@@ -4264,7 +4267,14 @@ from    [Intersect] T
 		    [Message] = coalesce([Message] + '; ', '') + 'Predicate with same Name and Type already exists'
     from api.ExecutionPredicate EP
     inner join [Predicate] P on P.Name = EP.Name and P.Type = EP.Type
-    where	ExecutionID = @ExecutionID
+    where	ExecutionID = @ExecutionID and EP.uid is null
+
+    update	api.ExecutionPredicate
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate with this uid does not exists'
+    from api.ExecutionPredicate EP
+    left join [Predicate] P on P.Uid = Ep.uid
+    where	ExecutionID = @ExecutionID and EP.uid is not null and P.uid is null;
 
     update	api.ExecutionPredicate
     set		Success = 0,
@@ -4295,8 +4305,8 @@ from    [Intersect] T
                     execution.Processed = 0;
                     execution.Error = import.Count();
 
-                    results = new List<PredicateInsertResult>();
-                    results.AddRange(import.Select(i => new PredicateInsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+                    results = new List<PredicateUpsertResult>();
+                    results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
                 }
 
                 if (generalChecksCompleted)
@@ -4332,11 +4342,16 @@ from    [Intersect] T
                                                           and PredicateID is null
                                                           and Success is null
 	                                              ) S
-                                            on (P.Id = S.PredicateId)
+                                            on (P.uid = S.uid)
+											when matched then
+											update  
+												set P.Name = S.Name,
+												P.Inverse = S.Inverse,
+												P.Type = S.Type
                                             when not matched then
 	                                            insert (Name, Inverse, Type, IsSystem)
 	                                            values (S.Name,S.Inverse, S.Type, 0)
-	                                            output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
+	                                        output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
 
                                             update EP
                                             set EP.PredicateID = Res.PredicateId,
@@ -4371,7 +4386,7 @@ from    [Intersect] T
                         }
 
                         results.AddRange(
-                            Query<PredicateInsertResult>(
+                            Query<PredicateUpsertResult>(
                                 $"select * from api.ExecutionPredicate where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
                                 new { execution.ExecutionID, beginItemNumber, endItemNumber }
                             )

@@ -131,7 +131,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     deletePredicate(uid: number) {
         this.predicatesService.deletePredicate(uid)
             .subscribe(result => {
-                this.showMessageForApiResults(this.messagesService, result, " Predicate deleted");
+                this.showMessageForApiResults(this.messagesService, result, "Predicate deleted", true);
                 this.showDelete = false;
                 if (!result.some(x => x.Success == false)) {
                     this.predicates = this.predicates.filter(x => x.Uid != uid);
@@ -151,15 +151,19 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     }
 
     savePredicate(event) {
-        console.log(event);
+        let predicate: Predicate = event.item;
+
+        if (this.selected)
+            predicate.Uid = this.selected.Uid;
+        
         this.predicatesService.savePredicate(event.item)
             .subscribe(result => {
 
                 if (event.action == 'new') {
-                    this.showMessageForApiResults(this.messagesService, result, ' Predicate succesfully added!');
+                    this.showMessageForApiResults(this.messagesService, result, 'Predicate succesfully added!', true);
                 }
                 else {
-                    this.showMessageForApiResults(this.messagesService, result, ' Predicate succesfully updated!');
+                    this.showMessageForApiResults(this.messagesService, result, 'Predicate succesfully updated!', true);
                 }
                 this.getPredicates();
                 this.showEditor = false;

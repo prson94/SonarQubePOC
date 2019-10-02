@@ -395,9 +395,9 @@ namespace d360.core.entities
 
     [JsonArray]
     [DataContract(Name = "predicates")]
-    public class PredicateInserts : List<PredicateInsert> { }
+    public class PredicateUpserts : List<PredicateUpsert> { }
 
-    public class PredicateInsert
+    public class PredicateUpsert
     {
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
@@ -410,10 +410,13 @@ namespace d360.core.entities
 
         [DataMember]
         public string Inverse { get; set; }
+
+        [DataMember]
+        public Guid? Uid { get; set; }
     }
 
     [DataContract]
-    public class PredicateInsertResult : PredicateApiResult { }
+    public class PredicateUpsertResult : PredicateApiResult { }
 
 
 

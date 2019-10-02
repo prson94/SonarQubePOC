@@ -527,14 +527,14 @@ from	IntersectType I
             return results;
         }
 
-        public List<PredicateInsertResult> InsertPredicates(PredicateInserts predicates, ApiExecution execution)
+        public List<PredicateUpsertResult> UpsertPredicates(PredicateUpserts predicates, ApiExecution execution)
         {
             companyContext.Add(execution);
 
-            List<PredicateInsertResult> results = null;
+            List<PredicateUpsertResult> results = null;
             try
             {
-                results = companyContext.AddPredicates(execution, predicates);
+                results = companyContext.UpdatePredicates(execution, predicates);
 
                 // Close execution record.
                 execution.Processed = results.Count;
