@@ -4258,8 +4258,20 @@ from    [Intersect] T
                     var allowedPredicates = Enum.GetValues(typeof(PredicateType)).Cast<PredicateType>().Where(x => x.CanUserInsert()).ToList();
                     var allowedTypes = allowedPredicates.Select(x => "''"+ x.ToString()+"''").ToList();
                     var allowedTypesInt = allowedPredicates.Select(x =>(int)x).ToList();
-
                     string checkTypeSQL = $"Type not in ({string.Join(",", allowedTypesInt)})";
+
+                    var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+                    List<int> notAllowedTypesForLineage = new List<int>() { -1 };
+
+                    foreach(var item in import)
+                    {
+                        if (!item.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
+                        {
+                            notAllowedTypesForLineage.Add((int)item.Type);
+                        }
+                    }
+
+                    string checkLineageTypes = $"Type in ({string.Join(",", notAllowedTypesForLineage)})";
 
                     var checkSQL = $@"
     update	api.ExecutionPredicate 
@@ -4289,7 +4301,13 @@ from    [Intersect] T
     update	api.ExecutionPredicate
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Predicate Type invalid. Allowed values are {string.Join(",", allowedTypes)}'
-    where	ExecutionID = @ExecutionID and {checkTypeSQL.Replace("''","'")};";
+    where	ExecutionID = @ExecutionID and {checkTypeSQL.Replace("''","'")}
+
+    update	api.ExecutionPredicate
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Your current version of lineage does not support using this predicates of this type.'
+    where	ExecutionID = @ExecutionID and {checkLineageTypes}
+;";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
 

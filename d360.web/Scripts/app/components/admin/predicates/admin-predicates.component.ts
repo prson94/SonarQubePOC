@@ -153,8 +153,12 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
     savePredicate(event) {
         let predicate: Predicate = event.item;
 
-        if (this.selected)
+        if (this.selected) {
             predicate.Uid = this.selected.Uid;
+            if (this.selected.IsInUse) {
+                predicate.Type = this.selected.Type;
+            }
+        }
         
         this.predicatesService.savePredicate(event.item)
             .subscribe(result => {
