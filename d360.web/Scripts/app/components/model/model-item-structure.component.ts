@@ -296,6 +296,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     private closeEditor() {
         this.showEditor = false;
+        this.filter(null);
     }
 
     private showAdd(level: number) {

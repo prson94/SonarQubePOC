@@ -557,8 +557,6 @@ namespace d360.web.Controllers
                     return EditService(form);
                 case "SURVEYTYPE":
                     return EditSurveyType(form);
-                case "TAXONOMY":
-                    return EditTaxonomy(form);
                 case "TAXONOMYTYPELEVEL":
                     return EditTaxonomyTypeLevel(form);
                 case "VERSION":
@@ -726,8 +724,6 @@ namespace d360.web.Controllers
                     return AddRule(form);                
                 case "SURVEYTYPE":
                     return AddSurveyType(form);
-                case "TAXONOMY":
-                    return AddTaxonomy(form);
                 case "TAXONOMYTYPELEVEL":
                     return AddTaxonomyTypeLevel(form);
                 case "VERSION":
@@ -13675,177 +13671,6 @@ order by	case
             return Json(list, JsonRequestBehavior.AllowGet);
         }
                 
-        #endregion
-
-        #region Form Get/Post
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddTaxonomy")]
-        public JsonResult AddTaxonomy(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("taxonomy");
-
-                int typeID = parseIntField(form, "TaxonomyTypeID");
-                var assettype = Company.AssetTypes.FirstOrDefault(x => x.ObjectID == typeID && x.Object == SystemObjects.TaxonomyType.ToString());
-
-                if (assettype == null) throw new NotFoundException("taxonomy type");
-
-                int? parentId = parseNullableIntField(form, "ParentID");
-
-                if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, typeID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-
-                var model = new Asset { AssetTypeID = assettype.ID, Object = "Taxonomy", State = State.Active, CreatedBy = Company.CurrentResourceID, CreatedOn = DateTime.UtcNow, UpdatedBy = Company.CurrentResourceID, UpdatedOn = DateTime.UtcNow };
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, typeID).ToList(), form, Server);
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, assettype.ObjectID).ToList();
-                Company.SaveOrUpdateAsset(model, fields, parentId.GetValueOrDefault());
-                processFormDynamicRelationshipFields(SystemObjects.TaxonomyType, assettype.ObjectID, SystemObjects.Taxonomy, model.ObjectID, fieldTypes, form);
-
-                if (!string.IsNullOrEmpty(form["ParentID"]) && form["ParentID"] != "0")
-                {                    
-                    var intersectType = Company.Filter<IntersectTypeDetail>(i =>
-                        i.Object == "TaxonomyType" &&
-                        i.ObjectID == assettype.ObjectID &&
-                        i.PredicateType.Value == PredicateType.IntraTypeHierarchy
-                    ).SingleOrDefault();
-
-                    if (intersectType != null)
-                    {
-                        var intersect = new Intersect
-                        {
-                            Subject = SystemObjects.Taxonomy.ToString(),
-                            SubjectID = parseIntField(form, "ParentID"),
-                            Object = SystemObjects.Taxonomy.ToString(),
-                            ObjectID = model.ObjectID,
-                            IntersectTypeID = intersectType.ID
-                        };
-
-                        var parentExists = Company.Any<Asset>(i =>
-                            i.ObjectID == intersect.SubjectID &&
-                            i.AssetType.Object == "TaxonomyType" &&
-                            i.AssetType.ObjectID == intersectType.SubjectID
-                            );
-
-                        if (!parentExists)
-                        {
-                            return jsonException($"Parent {intersectType.SubjectName} with ID {intersect.SubjectID} could not be found.", HttpStatusCode.NotFound);
-                        }
-
-                        Company.Add(intersect);
-                    }
-                }
-
-                dynamic custom = new
-                {
-                    TaxonomyTypeID = typeID,
-                    ID = model.ObjectID,
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Model successfully created.", model.ObjectID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-                
-        [HttpPut, ValidateInput(false), Route("EditTaxonomy")]
-        public JsonResult EditTaxonomy(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("taxonomy");
-
-                var id = parseIntField(form, "ID");
-
-                var model = Company.Assets.Where(x => (x.Object == "Taxonomy" && x.ObjectID == id)).Include(x => x.AssetType).FirstOrDefault();
-
-                if (model == null) throw new NotFoundException("taxonomy");
-
-                if (!Company.HasAssetPermission(SystemObjects.Taxonomy, id, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var parentID = parseIntField(form, "ParentID");
-
-                Company.SaveOrUpdateAsset(model, new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, model.AssetType.ObjectID).ToList(), form, Server, false));
-
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, model.AssetType.ObjectID).ToList();
-
-                processFormDynamicRelationshipFields(SystemObjects.TaxonomyType, model.AssetType.ObjectID, SystemObjects.Taxonomy, model.ObjectID, fieldTypes, form);
-
-                var sType = SystemObjects.Taxonomy.ToString();
-                
-
-                if (parentID > 0)
-                {
-                    var intersect = Company.Filter<Intersect>(i =>
-                        i.Subject == sType &&
-                        i.Object == sType &&
-                        i.ObjectID == model.ObjectID &&
-                        i.IntersectType.Predicate.Type == PredicateType.IntraTypeHierarchy
-                    ).SingleOrDefault();
-
-                    if (intersect != null)
-                    {
-                        if (intersect.SubjectID != parentID)
-                        {
-                            intersect.SubjectID = parentID;
-                            Company.Update(intersect);
-                        }
-                    }
-                    else
-                    {
-                        var intersectType = Company.Filter<IntersectTypeDetail>(i =>
-                            i.Object == "TaxonomyType" &&
-                            i.ObjectID == model.AssetType.ObjectID &&
-                            i.PredicateType.Value == PredicateType.IntraTypeHierarchy
-                        ).SingleOrDefault();
-
-                        if (intersectType != null)
-                        {
-                            intersect = new Intersect
-                            {
-                                Subject = SystemObjects.Taxonomy.ToString(),
-                                SubjectID = parseIntField(form, "ParentID"),
-                                Object = SystemObjects.Taxonomy.ToString(),
-                                ObjectID = model.ObjectID,
-                                IntersectTypeID = intersectType.ID
-                            };
-
-                            Company.Add(intersect);
-                        }
-                    }
-                }
-
-                dynamic custom = new
-                {
-                    model.AssetType.ObjectID,
-                    ParentID = parentID,
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Model successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         #endregion
 
         #endregion

@@ -88,7 +88,11 @@
                              (onCancel)="showDelete = false;filter(null);"
                              (onDeleted)="onDeleted();">
     </d3s-asset-delete-editor>    
-    <d3s-dynamic-editor rowID="ID"
+
+    <!--<d3s-asset-editor *ngIf="showEditor">
+
+    </d3s-asset-editor>-->
+    <!--<d3s-dynamic-editor rowID="ID"
                         *ngIf="showEditor"
                         [objectID]="selected ? selected?.data?.ID : model.ID"
                         [objectType]="'Taxonomy'"
@@ -96,5 +100,5 @@
                         [title]="modelTaxonomyTitle()"
                         [selection]="selected?.data"
                         (saveClick)="saveTaxonomy($event);"
-                        (closeClick)="closeEditor();filter(null);"></d3s-dynamic-editor>
+                        (closeClick)="closeEditor();"></d3s-dynamic-editor>-->
 </div>
