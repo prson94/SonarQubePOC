@@ -1715,7 +1715,7 @@ from	IntersectType I
     delete	T
     from	AssetCrossReference T
 		    inner join api.ExecutionDeletedAsset S on S.[Uid] = T.[Uid] and {querySuffix};",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             #endregion
 
