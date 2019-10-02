@@ -4298,3 +4298,91 @@ a.mid-blue {
 .ui-treetable-summary {
     padding: .25em 0 .25em 0 !important;
 }
+
+.hero-search-input {
+    display: flex;
+    background: rgba(37, 44, 65, 0.6);
+    padding: 50px;
+    border-radius: 4px;
+    white-space: nowrap;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+
+    .field {
+        height: 56px;
+        border-radius: 0px 4px 4px 0px;
+
+        input {
+            &:focus {
+                outline: none;
+                border: none;
+                box-shadow: none;
+            }
+        }
+    }
+
+    .ui-multiselect {
+        background: #f1f2f3;
+        border-left: none;
+        width: 200px;
+        height: 56px;
+        border-radius: 4px 0px 0px 4px;
+        border: solid 1px #b9c0c5;
+        background-color: #f1f2f3;
+
+        .ui-multiselect-label {
+            padding: 16px;
+            margin-right: 8px;
+        }
+
+        .ui-multiselect-trigger {
+            border-left: none;
+            padding: 20px;
+        }
+
+        .ui-state-highlight {
+            background: none;
+        }
+
+        .ui-chkbox.ui-chkbox-icon {
+            display: inline-block;
+        }
+        //header in all
+        .ui-multiselect-header {
+
+            .ui-chkbox-box::after {
+                content: 'Search All Catergories';
+                padding-left: 20px;
+
+            }
+            
+            .ui-chkbox-box.ui-state-active::after {
+                padding-left: 6px;
+
+            }
+            
+            .ui-chkbox .ui-chkbox-icon{
+                display:inline-block;
+            }
+        }
+
+        .ui-chkbox-box.ui-state-active {
+            border: 1px solid @igx-blue;
+            background: #fff;
+            color: @igx-blue;
+        }
+    }
+
+    .icon-holder {
+        color: white;
+        background-color: #006fc0;
+        padding: 2px 9px;
+        border-radius: 4px;
+        font-size: 24px;
+        height: 40px;
+        width: 40px;
+        margin-right: 4px;
+        cursor:pointer;
+    }
+}

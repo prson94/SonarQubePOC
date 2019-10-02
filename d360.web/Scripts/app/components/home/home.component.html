@@ -40,9 +40,9 @@
 
 <div style="padding-top:30px;"
      class="homeTileArea">
-    <d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails"
+    <d3s-hero-search-input *ngIf="!showActivityDetails && !showBoardDetails"
                      (resultsChange)="checkHasResults($event)"
-                     hasResults="{{ hasResults }}"></d3s-home-search>
+                     hasResults="{{ hasResults }}"></d3s-hero-search-input>
     <span style="padding-left:5px"><d3s-shortcut-display></d3s-shortcut-display></span>
 </div>
 
