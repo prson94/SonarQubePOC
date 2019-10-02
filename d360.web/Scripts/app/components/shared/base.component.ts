@@ -334,12 +334,13 @@ export class BaseComponent {
         }
     }
 
-    showMessageForApiResults(messagesService: MessagesObservableService, results: ApiResult[], defaultMessage : string) {
+    showMessageForApiResults(messagesService: MessagesObservableService, results: ApiResult[], defaultMessage: string, disableCountShow: boolean = false) {
         var succeeded = results.filter(x => x.Success == true);
         var failed = results.filter(x => x.Success != true);
 
         if (succeeded.length > 0) {
-            messagesService.showInfoMessage('Success', succeeded.length + defaultMessage);
+            let message = disableCountShow ? defaultMessage : succeeded.length + defaultMessage;
+            messagesService.showInfoMessage('Success', message);
         }
 
         if (failed.length > 0) {

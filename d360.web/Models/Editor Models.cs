@@ -149,6 +149,7 @@ namespace d360.web.Models
         public bool WriteActionDescription { get; set; }
 
         public int LineageVersion { get; set; } = 1;
+        public bool FusionEnabled { get; set; } = true;
 
     }
 
