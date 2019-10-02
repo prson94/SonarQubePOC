@@ -1,0 +1,53 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-6749">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+drop table if exists [api].[ExecutionRelationshipType]
+
+CREATE TABLE [api].[ExecutionRelationshipType](
+	[ExecutionID] [uniqueidentifier] NOT NULL,
+	[ExecutionItemUid] [uniqueidentifier] NULL,
+	[ItemNumber] [int] NOT NULL,
+	[SubjectUid] [uniqueidentifier] NOT NULL,
+	[Subject] [varchar](50) NULL,
+	[SubjectID] [int] NULL,
+	[SubjectCardinality] [int] NOT NULL,
+	[ObjectUid] [uniqueidentifier] NOT NULL,
+	[Object] [varchar](50) NULL,
+	[ObjectID] [int] NULL,
+	[ObjectCardinality] [int] NOT NULL,
+	[PredicateUid] [uniqueidentifier] NOT NULL,
+	[PredicateID] [int] NULL,
+	[Message] [nvarchar](2500) NULL,
+	[Success] [bit] NULL,
+	[IsNew] [bit] NULL,
+	[uid] [uniqueidentifier] NULL,
+	
+ CONSTRAINT [PK_ApiExecutionRelationshipType] PRIMARY KEY CLUSTERED 
+(
+	[ExecutionID] DESC,
+	[ItemNumber] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+
+
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+drop table if exists [api].[ExecutionRelationshipType]
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

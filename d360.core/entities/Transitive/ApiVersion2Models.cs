@@ -300,6 +300,40 @@ namespace d360.core.entities
 
     }
 
+
+    public class RelationshipTypeResult
+    {
+        [DataMember]
+        public Guid uid { get; set; }
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+    //[DataContract(Name = "relationshiptypes")]
+    //public class RelationshipTypeInserts : List<RelationshipTypeInsert>
+    //{
+
+    //}
+    public class RelationshipTypeInsert
+    {
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+        [DataMember]
+        public Guid PredicateUid { get; set; }
+        [DataMember]
+        public Guid SubjectUid { get; set; }
+        [DataMember]
+        public Cardinality SubjectCardinality { get; set; }
+        [DataMember]
+        public Guid ObjectUid { get; set; }
+        [DataMember]
+        public Cardinality ObjectCardinality { get; set; }
+    }
     public class RelationshipImportRequest
     {
         public int ItemNumber { get; set; }

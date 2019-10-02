@@ -70,6 +70,24 @@ namespace d360.web.Models
         }
     }
 
+    #region RelationshipType Example
+    public class RelationshipTypeInsertExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new RelationshipTypeInsert
+            {
+                ExecutionItemUid = Guid.Empty,
+                PredicateUid = Guid.Empty,
+                SubjectUid = Guid.Empty,
+                ObjectUid = Guid.Empty,
+                SubjectCardinality = core.enums.Cardinality.Many,
+                ObjectCardinality = core.enums.Cardinality.Many
+            };
+
+        }
+    }
+    #endregion
     #region Workflow Type Examples
 
 
