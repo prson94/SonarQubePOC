@@ -476,9 +476,9 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
             ]
-        public async Task<HttpResponseMessage> isRelationshipExistsForAssetTypeAsync(int assetTypeId)
+        public async Task<HttpResponseMessage> IsRelationshipExistsForAssetTypeAsync(int assetTypeId)
         {
-            var prefix = "Relationships.isRelationshipExistsForAssetTypeAsync => ";
+            var prefix = "Relationships.IsRelationshipExistsForAssetTypeAsync => ";
             var errorMessage = "";
 
             try
