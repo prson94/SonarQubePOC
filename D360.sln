@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29009.5
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.489
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.core", "d360.core\d360.core.csproj", "{9341CCA8-D3F2-467A-AE9C-0581054B8DE2}"
 EndProject
@@ -40,8 +40,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.bulkloadprocessor", "igx.jobs.bulkloadprocessor\igx.jobs.bulkloadprocessor.csproj", "{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.databasecleaner", "igx.jobs.databasecleaner\igx.jobs.databasecleaner.csproj", "{BB4B3F08-534C-45F8-808A-67E911A20311}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.eaglemessagestreamprocessor", "igx.jobs.eaglemessagestreamprocessor\igx.jobs.eaglemessagestreamprocessor.csproj", "{5A8D2F03-A784-4D7A-BE1A-3C82AD1DC17C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.fusionscheduleprocessor", "igx.jobs.fusionscheduleprocessor\igx.jobs.fusionscheduleprocessor.csproj", "{D47484B5-50F6-4EDA-A47B-51CA86D40164}"
 EndProject
@@ -164,10 +162,6 @@ Global
 		{BB4B3F08-534C-45F8-808A-67E911A20311}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BB4B3F08-534C-45F8-808A-67E911A20311}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BB4B3F08-534C-45F8-808A-67E911A20311}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5A8D2F03-A784-4D7A-BE1A-3C82AD1DC17C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5A8D2F03-A784-4D7A-BE1A-3C82AD1DC17C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5A8D2F03-A784-4D7A-BE1A-3C82AD1DC17C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5A8D2F03-A784-4D7A-BE1A-3C82AD1DC17C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D47484B5-50F6-4EDA-A47B-51CA86D40164}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D47484B5-50F6-4EDA-A47B-51CA86D40164}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D47484B5-50F6-4EDA-A47B-51CA86D40164}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -281,7 +275,6 @@ Global
 		{BE8136FF-C54D-4C40-B563-CB13C08C84CF} = {757CF48D-6728-4702-AC12-754629196548}
 		{26DBFDB9-B193-4AF7-9D89-B3719A29B8A1} = {757CF48D-6728-4702-AC12-754629196548}
 		{BB4B3F08-534C-45F8-808A-67E911A20311} = {757CF48D-6728-4702-AC12-754629196548}
-		{5A8D2F03-A784-4D7A-BE1A-3C82AD1DC17C} = {757CF48D-6728-4702-AC12-754629196548}
 		{D47484B5-50F6-4EDA-A47B-51CA86D40164} = {757CF48D-6728-4702-AC12-754629196548}
 		{F202BF6D-6727-4DEF-B2DC-CD63FED71F3F} = {757CF48D-6728-4702-AC12-754629196548}
 		{89FB621B-F772-488C-8F15-74094649C71F} = {757CF48D-6728-4702-AC12-754629196548}
@@ -308,7 +301,7 @@ Global
 		{AEE9929B-B6D4-4034-B7A2-7836277C7E08} = {757CF48D-6728-4702-AC12-754629196548}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
+		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 	EndGlobalSection
 EndGlobal
