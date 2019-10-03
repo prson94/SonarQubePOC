@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>false</UseIISExpress>
+    <UseIISExpress>true</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -406,6 +406,7 @@
     </Content>
     <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\images\aboutLogo.png" />
+    <Content Include="Content\images\home.background.new.png" />
     <Content Include="Content\images\home.background.png" />
     <Content Include="Content\images\logo.new.color.png" />
     <Content Include="Content\images\logo.new.png" />
