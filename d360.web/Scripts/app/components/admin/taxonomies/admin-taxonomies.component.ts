@@ -11,7 +11,7 @@ import { Title } from '@angular/platform-browser';
 import { RightSidebarItem } from '../../../models/rightsidebar.model';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetTypeClass } from '../../../models/asset-type.model';
+import { AssetTypeClass } from '../../../models/asset.model';
 
 @Component({
     selector: 'd3s-admin-models-component',

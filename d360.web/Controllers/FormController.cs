@@ -949,14 +949,14 @@ namespace d360.web.Controllers
         {
             try
             {
-                //var modelOld = new AssetTypeEditorModel();
                 var model = new AssetTypeEditorModel();
 
                 Guid? parentUid = null;
-                if (parentID.HasValue)
+                if (parentID.HasValue && parentID > 0)
                 {
                     var parentAssetType = Company.GetById<AssetType>(parentID.Value);
-                    parentUid = parentAssetType.uid;
+                    if (parentAssetType != null)
+                        parentUid = parentAssetType.uid;
                 }
                   
                 var loadPredicates = false;
@@ -1010,14 +1010,6 @@ namespace d360.web.Controllers
 
                     var style = Company.Filter<ObjectStyle>(i => i.ObjectType == assetType.Object && i.ObjectID == assetType.ObjectID).FirstOrDefault();
 
-                    //modelOld = new AssetTypeEditorModel
-                    //{
-                    //    AssetTypeOld = assetType,
-                    //    IconBackColor = ((style != null) ? style.IconBackColor : "#000"),
-                    //    IconForeColor = ((style != null) ? style.IconForeColor : "#FFF"),
-                    //    Tokens = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID && !this.limitedFieldTypes.Contains(i.Type)).OrderBy(i => i.FriendlyName).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = "{" + i.Name + "}" }).ToList()
-                    //};
-
                     model = new AssetTypeEditorModel()
                     {
                         AssetType = new AssetTypeInsert()
@@ -1033,6 +1025,11 @@ namespace d360.web.Controllers
                                 BackColor = ((style != null) ? style.IconBackColor : "#000")
                             },
                             Hierarchy = new HierarchyInsert()
+                            {
+                                MaximumDepth = 1,
+                                PredicateUid = null
+                            }
+
                         },
                        
                     };
@@ -1059,7 +1056,7 @@ namespace d360.web.Controllers
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
                         case AssetTypeClass.Organization:
-                            var o = Company.GetById<OrganizationType>(modelOld.AssetType.ObjectID);
+                            var o = Company.GetById<OrganizationType>(model.AssetType.ObjectID);
                             model.AssetType.Hierarchy.MaximumDepth = 1;
                             model.AssetType.Name = o.Name;
                             model.AssetType.Description = o.Description;
@@ -1106,15 +1103,6 @@ namespace d360.web.Controllers
                 else
                 {
                     loadPredicates = true;
-                    //modelOld = new AssetTypeEditorModel
-                    //{
-                    //    AssetTypeOld = new AssetType { DisplayFormat = "{Name}", Class = @class, Object = ot.ToString() },
-                    //    IconBackColor = "#000",
-                    //    IconForeColor = "#FFF",
-                    //    SelectedPredicateID = null,
-                    //    ParentID = parentID,
-                    //    Tokens = new List<PrimeSelectItem>() { new PrimeSelectItem { label = "Name", value = "{Name}" } }
-                    //};
 
                     model = new AssetTypeEditorModel()
                     {
@@ -1129,7 +1117,13 @@ namespace d360.web.Controllers
                             {
                                 BackColor = "#000",
                                 ForeColor = "#FFF"
+                            },
+                            Hierarchy = new HierarchyInsert()
+                            {
+                                PredicateUid = null,
+                                MaximumDepth = 1
                             }
+
                         },
                         Tokens = new List<PrimeSelectItem>() { new PrimeSelectItem { label = "Name", value = "{Name}" } }
                     };

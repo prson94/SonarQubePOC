@@ -4,8 +4,8 @@ import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
 import {JsonResult} from '../models/jsonresult.model';
-import {AssetTypeEditorModel, AssetTypeClass} from "../models/asset-type.model";
-import { AssetType } from "../models/asset-type.model";
+import {AssetTypeEditorModel, AssetTypeClass, AssetType} from "../models/asset.model";
+
 
 import {BaseObservableService} from "./baseObservable.service";
 import {MessagesObservableService} from './messages-observable.service';

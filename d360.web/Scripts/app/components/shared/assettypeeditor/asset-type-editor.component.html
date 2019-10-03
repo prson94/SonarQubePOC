@@ -17,15 +17,15 @@
                     </div>
                     <div class="col l6 m6 s12" *ngIf="showParentPredicates && (model.Predicates.length > 1)">
                         <div [ngClass]="assetTypeClass == 'M' || assetTypeClass == 'P' ? 'FieldNameRequired' : 'FieldName'">Predicate To Parent</div>
-                        <p-dropdown [options]="model.Predicates" #predicate="ngModel" [(ngModel)]="model.SelectedPredicateID" (ngModelChange)="model.SelectedPredicateID=$event;updateParent(model.SelectedPredicateID);" [style]="{'width':'100%'}" name="predicate" [required]="assetTypeClass == 'M' || assetTypeClass == 'P'"></p-dropdown>
+                        <p-dropdown [options]="model.Predicates" #predicate="ngModel" [(ngModel)]="model.SelectedPredicateUid" (ngModelChange)="model.SelectedPredicateUid=$event;updateParent(model.SelectedPredicateUid);" [style]="{'width':'100%'}" name="predicate" [required]="assetTypeClass == 'M' || assetTypeClass == 'P'"></p-dropdown>
                         <div [hidden]="predicate.valid || predicate.pristine" class="validation-text">Predicate is required</div>
                     </div>
                 </div>
 
-                <div class="row" *ngIf="model.Parents && model.Parents.length > 0 && model.SelectedPredicateID > 0">
+                <div class="row" *ngIf="model.Parents && model.Parents.length > 0 && model.SelectedPredicateUid > 0">
                     <div class="col s12">
                         <div class="FieldNameRequired">Parent</div>
-                        <p-dropdown filter="true" [options]="model.Parents" #parent="ngModel" [(ngModel)]="model.ParentID" [style]="{'width':'100%'}" name="parent" required></p-dropdown>
+                        <p-dropdown filter="true" [options]="model.Parents" #parent="ngModel" [(ngModel)]="model.AssetType.ParentUid" [style]="{'width':'100%'}" name="parent" required></p-dropdown>
                         <div [hidden]="parent.valid || parent.pristine" class="validation-text">Parent is required</div>
                     </div>
                 </div>
@@ -61,7 +61,7 @@
                     <div class="FieldName">Auto Display Description?</div>
                     <div class="row">
                         <div class="col l1 m2 s12">
-                            <input pCheckbox type="checkbox" name="AutoDisplayDescription" [(ngModel)]="model.AutoDisplayDescription" />
+                            <input pCheckbox type="checkbox" name="AutoDisplayDescription" [(ngModel)]="model.AssetType.AutoDisplayDescription" />
                         </div>
                         <div class="col l11 m10 s12">
                             <div class="FieldInstructions">If enabled, the content of the description property is auto-displayed to all users on the list page for this artifact type.</div>
@@ -108,8 +108,8 @@
                     <div class="FieldName">Background Color</div>
                     <div class="row">
                         <div class="col s12">
-                            <p-colorPicker [(ngModel)]="model.IconBackColor" name="iconbackcolor"></p-colorPicker>
-                            <input type="text" [(ngModel)]="model.IconBackColor" name="iconbackcolortext" style="padding:2px;width:65px" />
+                            <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.BackColor" name="iconbackcolor"></p-colorPicker>
+                            <input type="text" [(ngModel)]="model.AssetType.IconStyle.BackColor" name="iconbackcolortext" style="padding:2px;width:65px" />
                         </div>
                         <div class="col s12">
                             <div class="FieldInstructions">Sets the background color of icons representing items of this type within diagrams.</div>
@@ -119,15 +119,15 @@
                     <div class="FieldName">Text Color</div>
                     <div class="row">
                         <div class="col s12">
-                            <p-colorPicker [(ngModel)]="model.IconForeColor" name="iconforecolor"></p-colorPicker>
-                            <input type="text" [(ngModel)]="model.IconForeColor" name="iconforecolortext" style="padding:2px;width:65px" />
+                            <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolor"></p-colorPicker>
+                            <input type="text" [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolortext" style="padding:2px;width:65px" />
                         </div>
                         <div class="col s12">
                             <div class="FieldInstructions">Sets the text color of icons representing items of this type within diagrams.</div>
                         </div>
                     </div>
                     <div>
-                        <div *ngIf="model.IconForeColor == model.IconBackColor" class="errorMessage">Foreground and background color cannot be the same</div>
+                        <div *ngIf="model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor" class="errorMessage">Foreground and background color cannot be the same</div>
                     </div>
                 </simple-accordion>
             </div>
@@ -135,7 +135,7 @@
         <div class="row">
             <div class="col s12">
                 <div style="padding-top:10px;">
-                    <button pButton label="Save" type="submit" (click)="save()" [disabled]="!form.form.valid || isSaving || (model.IconForeColor == model.IconBackColor)"></button>
+                    <button pButton label="Save" type="submit" (click)="save()" [disabled]="!form.form.valid || isSaving || (model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor)"></button>
                     <button pButton label="Cancel" (click)="cancel()"></button>
                 </div>
             </div>

@@ -7,7 +7,7 @@ import { ReferenceItemType } from '../../models/reference.model';
 import { FormMode } from '../../models/form.model';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
-import { AssetTypeClass } from '../../models/asset-type.model';
+import { AssetTypeClass } from '../../models/asset.model';
 
 @Component({
     selector: 'd3s-reference-item-type-list',

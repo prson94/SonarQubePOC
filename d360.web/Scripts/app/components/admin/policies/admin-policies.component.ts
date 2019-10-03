@@ -15,7 +15,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 
 import { AdminBaseComponent } from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetTypeClass } from '../../../models/asset-type.model';
+import { AssetTypeClass } from '../../../models/asset.model';
 
 @Component({
     selector: 'd3s-admin-policies-component',

@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { AssetTypeService } from '../../../services/asset-type.service';
-import { AssetTypeClass, AssetTypeEditorModel } from "../../../models/asset-type.model";
+import { AssetTypeClass, AssetTypeEditorModel } from "../../../models/asset.model";
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 declare var CompanySettings: any;
@@ -204,9 +204,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         return "col s12";
     }
 
-    public updateParent(predicateId: string) {
-        if (predicateId == null || predicateId.length == 0) {
-            this.model.ParentUid = null;
+    public updateParent(predicateUid: string) {
+        if (predicateUid == null || predicateUid.length == 0) {
+            this.model.AssetType.ParentUid = null;
         }
     }
 }
