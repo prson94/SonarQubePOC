@@ -1,9 +1,10 @@
 ﻿<d3s-dynamic-editor 
-                    [objectID]="'FC9C4AE5-6AFB-4290-8C53-A9624125BFAD'"
-                    [objectType]="'Taxonomy'"
-                    [parentID]="selectedParentID"
-                    [title]="modelTaxonomyTitle()"
-                    [selection]="selected?.data"
+                    [objectID]="editorObjectID"
+                    [objectType]="editorObjectType"
+                    [parentID]="parentUid"
+                    [objectTypeUid]="assetTypeUid"
+                    [title]="editorTitle"
+                    [selection]="editorSelection"
                     (saveClick)="saveAsset($event);"
-                    (closeClick)="theCloseCallback()">
-</d3s-dynamic-editor>
+                    (closeClick)="close()"
+                    [isV2API]="true"></d3s-dynamic-editor>

@@ -308,6 +308,7 @@ namespace d360.web.Controllers
         public JsonResult DynamicEditorEditFields(string o, Guid? uid)
         {
             int objectId = -1;
+
             switch ((o ?? "").ToUpper())
             {
                 case "TAG":
@@ -315,6 +316,13 @@ namespace d360.web.Controllers
                     return DynamicEditorEditFields(o, objectId);
                 case "INTERSECTTYPE":
                     objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
+                    return DynamicEditorEditFields(o, objectId);
+                default:
+                    foreach (SystemObjects sysobj in (SystemObjects[])Enum.GetValues(typeof(SystemObjects)))
+                    {
+                        if (sysobj.ToString().ToUpper() == o.ToUpper())
+                            objectId = Company.GetObjectId(uid.Value, sysobj);
+                    }
                     return DynamicEditorEditFields(o, objectId);
             }
             throw new Exception("Invalid or non implemented editor type");
@@ -389,6 +397,26 @@ namespace d360.web.Controllers
                     return CustomAPIVersionUri_EditFields(oid);                
             }
             throw new Exception("Invalid or non implemented editor type");
+        }
+        [HttpGet, Route("dynamiceditor/new/asset/{objectType}/{objectTypeUid}/{parentUid?}/{typeUid?}")]
+        public JsonResult DynamicEditorAddFields(string objectType, Guid objectTypeUid, Guid? parentUid, Guid? typeUid)
+        {
+            try
+            {
+                int objectTypeId = Company.AssetTypes.FirstOrDefault(x => x.uid == objectTypeUid).ObjectID;
+
+                int? parentId = null;
+                int? typeId = null;
+
+                if (parentUid.HasValue)
+                    parentId = (int)Company.Assets.FirstOrDefault(x => x.uid == parentUid)?.ID;
+
+                return DynamicEditorAddFields(objectType, objectTypeId, parentId, typeId);
+            }
+            catch
+            {
+                throw new Exception("Invalid or non implemented editor type");
+            }
         }
 
         [HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}/{parentID?}/{typeID?}")]
@@ -13593,9 +13621,9 @@ order by	case
 
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { FieldName = "TaxonomyTypeID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
-            list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
-            
+            var parentUid = p > 0 ? Company.GetAssetUid(p, SystemObjects.Taxonomy).ToString() : "";
+            list.Add(new EditableField { FieldName = "ParentUid", FieldType = DataType.Hidden.ToString(), Value = parentUid.ToString() });
+
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, t).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -13612,7 +13640,7 @@ order by	case
         
             var taxonomy = Company.Query<dynamic>(@"
                                                     select	A.ID as AssetID,
-                                                            A.UID as UID,
+                                                            A.UID as Uid,
 		                                                    A.ObjectID,
 		                                                    T.ID as TypeID,
                                                             T.ObjectID as TaxonomyTypeID,
@@ -13633,6 +13661,7 @@ order by	case
                 var parents = Company.Query<dynamic>(@"
                                 select	A.ObjectID as ID,
 		                                P.TextPath as Name,
+                                        A.uid as Uid,
 		                                coalesce(LV.[Level], 1) as [Level]
                                 from	Asset A
                                         inner join AssetType T on T.ID = A.AssetTypeID and T.Object = 'TaxonomyType' and T.ObjectID = @t
@@ -13640,9 +13669,9 @@ order by	case
                                         cross apply dbo.GetAssetLevelById(A.ID) LV
                                 where (coalesce(LV.[Level], 1) + @currentLevel) <= @maxLevel
                                 option (maxrecursion 100)",
-    new { t = taxonomy.TaxonomyTypeID, currentLevel = taxonomy.Level ?? 1, maxLevel = taxonomy.MaximumDepth ?? 1 }).Select(i => new { i.ID, i.Name }).ToList();
+    new { t = taxonomy.TaxonomyTypeID, currentLevel = taxonomy.Level ?? 1, maxLevel = taxonomy.MaximumDepth ?? 1 }).Select(i => new { i.Uid, i.Name }).ToList();
 
-                var thisEntry = parents.FirstOrDefault(i => i.ID == id);
+                var thisEntry = parents.FirstOrDefault(i => i.Uid == taxonomy.Uid);
 
                 if(thisEntry!=null)
                      parents.RemoveAll(i => i.Name.StartsWith(thisEntry.Name));
@@ -13650,13 +13679,13 @@ order by	case
                 var parentItems = parents.Select(i => new SelectListItem
                 {
                     Text = i.Name,
-                    Value = $"{i.ID}",
-                    Selected = (parent != null ? ((int)i.ID == parent.ObjectID) : false)
+                    Value = $"{i.Uid}",
+                    Selected = (parent != null ? (i.Uid == parent.uid) : false)
                 }).ToList();
-                parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = "0", Selected = (parent == null) });
+                parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = "", Selected = (parent == null) });
 
-                list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = taxonomy.ObjectID.ToString() });
-                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.ObjectID.ToString() : "0") });
+                list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = taxonomy.Uid.ToString() });
+                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentUid", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.uid.ToString() : "0") });
                 list = (
                      loadDynamicFields(
                          SystemObjects.Taxonomy.ToString(),

@@ -9,7 +9,8 @@ import {
     OnChanges,
     OnInit,
     Output,
-    SimpleChange,
+    SimpleChange,
+
     ViewChild,
     ElementRef
 } from '@angular/core';
@@ -42,6 +43,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() title: string;
     @Input() directions: string;
     @Input() objectID: number = 0;
+    @Input() objectTypeUid: number = 0;
     @Input() parentID: number;
     @Input() objectType: string;
     @Input() createUri: string;
@@ -149,6 +151,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             id = this.selection.Uid;
         }
 
+        if (this.isV2API) {
+            if (this.objectID <= 0) {
+                this.objectID = this.objectTypeUid;
+            } else {
+                id = this.objectID;
+            }
+        }
+
         this.isLoading = true;
 
         this.editorDefinitionService.getEditorDefinition(
@@ -160,7 +170,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             this.targetTypeID,
             this.createParams,
             this.editParams,
-            this.action
+            this.action,
+            this.isV2API
         ).subscribe(
             result => {
                 let previousCategory = null;
@@ -392,10 +403,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         return validators.length > 0 ? validators : null;
     }
 
-    public pad(s) :string { return (s < 10) ? '0' + s : s; }
+    public pad(s): string { return (s < 10) ? '0' + s : s; }
 
     onSubmit() {
-        
+
         this.savingInProgress = true;
 
         let action = (this.selection == null ? "new" : "edit");
@@ -412,14 +423,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                 if (this.form.value[p] instanceof Date) {
                     if (field != null && field.FieldType == 'Date' && this.isV2API) {
-                        
-                        let simpleDate = [this.pad(this.form.value[p].getMonth()+1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
+
+                        let simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
                         this.form.value[p] = simpleDate;
                         console.log(simpleDate);
                     }
                     else {
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
-                    }                    
+                    }
                 } else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
                     if (this.form.value[p] != null) {
                         this.form.value[p] = this.form.value[p].Value;
@@ -427,7 +438,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
             }
         }
-        
+
 
         //takes the form and convert any array values to , separated string values
         for (var p in this.form.value) {
@@ -440,14 +451,12 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             }
         }
 
-        console.log(this.isV2API);
-
         // if this is the v2 api we need to combine any link field types into the format stored in the db
         // tallyfy|https://tallyfy.com/what-is-compliance-management/
         if (this.isV2API) {
-            let links = this.fields.filter(x => x.FieldType == 'Link');            
+            let links = this.fields.filter(x => x.FieldType == 'Link');
             //need to get the link and url for each            
-            for (let link of links) {                
+            for (let link of links) {
                 let url = values[link.FieldName + '_Url'];
                 delete values[link.FieldName + '_Url'];
                 let name = values[link.FieldName + '_Name'];

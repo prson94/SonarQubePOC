@@ -35,6 +35,7 @@ import { TreeModule } from 'primeng/tree';
 import { TableModule } from 'primeng/table';
 
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
+import { AssetEditorModule } from '../shared/asseteditors/asset-editor.module';
 
 
 @NgModule({
@@ -72,6 +73,7 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
         SharedObjectGovernanceModule,
         SharedDynamicGridEditorModule,
         SharedAssetEditorsModule,
+        AssetEditorModule,
         TilesModule,
     ],
     declarations: [

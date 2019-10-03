@@ -35,7 +35,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     levels: any[] = [];
 
     modelId: number;
-    selectedParentID: number;
+    selectedParentUid: number;
     treeNodeArray: TreeNode[] = [];
     selected: TreeNode;
 
@@ -84,7 +84,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             this.filterTreeTable(this.unfilteredTreeNode, this.searchValue, this.treeTable);
         }, event ? 600 : 0);
     }
-    
+
     ngOnInit() {
 
         this.routeParamsSubscription = this.route.params.subscribe(params => {
@@ -284,14 +284,9 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     private saveTaxonomy(event) {
         this.isLoading = true;
-        this.modelsService.saveModelHierarchy(event.item).subscribe(
-            result => {
-                this.showMessageForResult(this.messagesService, result);
-                this.loadModelHierarchy(this.modelId);
-                this.headerActionsService.emitFavoritesChange();
-                this.showEditor = false;
-            }
-        );
+        this.loadModelHierarchy(this.modelId);
+        this.headerActionsService.emitFavoritesChange();
+        this.showEditor = false;
     }
 
     private closeEditor() {
@@ -301,7 +296,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     private showAdd(level: number) {
         this.showEditor = true;
-        this.selectedParentID = level == 0 ? undefined : this.selected ? this.selected.data.ID : undefined;
+        this.selectedParentUid = level == 0 ? undefined : this.selected ? this.selected.data.Uid : undefined;
         this.selectedLevel = level;
         this.selected = null;
     }

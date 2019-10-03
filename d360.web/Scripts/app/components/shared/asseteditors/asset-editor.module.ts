@@ -15,9 +15,6 @@ import { EditorModule } from 'primeng/editor';
 
 import { CoreModule } from '../core.module';
 import { TilesModule } from '../tiles/tiles.module';
-import { SharedDeleteFormModule } from '../delete.form';
-
-import { AssetDeleteEditorComponent } from './asset-delete-editor.component';
 import { AssetEditorComponent } from './asset-editor.component';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 
@@ -31,7 +28,7 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
         //d3s
         CoreModule,
         TilesModule,
-        SharedDeleteFormModule,
+        SharedDynamicGridEditorModule,
 
         //prime        
         ButtonModule,
@@ -43,10 +40,10 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
         SharedModule,
     ],
     declarations: [
-        AssetDeleteEditorComponent
+        AssetEditorComponent
     ],
     exports: [
-        AssetDeleteEditorComponent
+        AssetEditorComponent
     ],
     providers: [
         {
@@ -56,4 +53,4 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
         },
     ]
 })
-export class SharedAssetEditorsModule { }
+export class AssetEditorModule { }

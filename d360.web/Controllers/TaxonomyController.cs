@@ -78,6 +78,8 @@ cross apply (select count(1) as [Count] from ResponsibilityDetail where Resource
 select	A.ObjectID as ID, 
         A.[Uid],
         P.SubjectID as ParentID, 
+		P.uid as ParentUid,
+		A.AssetTypeUid as AssetTypeUid,
         A.TypeID as TaxonomyTypeID,
         {editRightsColumnStatement}
         A.ID as AssetID,  
@@ -90,10 +92,11 @@ from	AssetWithType A
         inner join dbo.AssetDisplayValue D on A.ID = D.AssetID
         {editRightsJoinStatement}
         outer apply (
-					select	I.SubjectID
+					select	I.SubjectID, A.uid
 					from	[Intersect] I
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+							inner join Asset A on A.ObjectId = I.SubjectID and A.Object = I.Subject
 					) P
 where   A.Type = 'TaxonomyType' 
         and A.TypeID = @id 

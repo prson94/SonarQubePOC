@@ -26,22 +26,28 @@ export class EditorDefinitionService extends BaseObservableService {
         targetTypeID?: number,
         createParams?: any[],
         editParams?: any[],
-        action?: string
+        action?: string,
+        isV2Api?: boolean
     ): Observable<EditorField[]> {
+        let newObjectPath = 'new';
+        if (isV2Api) {
+            newObjectPath = 'new/asset';
+        }
+
         let uri = "";
         if (ID == undefined) {
             if (parentID) {
-                uri = `form/dynamiceditor/new/${objectType}/${objectID}/${parentID}`;
+                uri = `form/dynamiceditor/${newObjectPath}/${objectType}/${objectID}/${parentID}`;
             }
             else if (targetType && targetTypeID) {
-                uri = `form/dynamiceditorrel/new/${objectType}/${objectID}/${targetType}/${targetTypeID}`;
+                uri = `form/dynamiceditorrel/${newObjectPath}/${objectType}/${objectID}/${targetType}/${targetTypeID}`;
             }
             else {
-                uri = `form/dynamiceditor/new/${objectType}/${objectID}`;
+                uri = `form/dynamiceditor/${newObjectPath}/${objectType}/${objectID}`;
 
-                if (objectID && objectID.toString().length == 36) {
-                    uri = `form/dynamiceditor/edit/${objectType}/${objectID}`;
-                }
+                //if (objectID && objectID.toString().length == 36) {
+                //    uri = `form/dynamiceditor/edit/${objectType}/${objectID}`;
+                //}
             }
         } else {
             if (action && action == "Copy") {
@@ -52,7 +58,7 @@ export class EditorDefinitionService extends BaseObservableService {
         }
 
         if (createParams && createParams.length > 0) {
-            return this.http.post(`form/dynamiceditor/new/${objectType}`, createParams).pipe(
+            return this.http.post(`form/dynamiceditor/${newObjectPath}/${objectType}`, createParams).pipe(
                 map(response => <EditorField[]>response),
                 catchError(err => this.handleError(err))
             );
