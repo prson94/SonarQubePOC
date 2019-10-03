@@ -14,7 +14,6 @@ import { IconPickerModule } from '../icon-picker.component';
 
 import { ShortcutListComponent } from './shortcut-list.component';
 import { ShortcutItemComponent } from './shortcut-item.component';
-import { ShortcutDisplayComponent } from './shortcut-display.component';
 
 import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/shared';
@@ -42,13 +41,11 @@ import { TableModule } from 'primeng/table';
     ],
     declarations: [
         ShortcutItemComponent,
-        ShortcutListComponent,
-        ShortcutDisplayComponent,
+        ShortcutListComponent,        
     ],
     exports: [
         ShortcutItemComponent,
-        ShortcutListComponent,
-        ShortcutDisplayComponent,
+        ShortcutListComponent,        
     ],
     providers: [
         {

@@ -21,11 +21,13 @@ namespace d360.model.DataAccessLayer
         ICompanyContext companyContext;
         IQueueSource QueueSource;
         IStorageProvider Storage;
-        public RelationshipRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
+        ICommunityContext communityContext;
+        public RelationshipRepository(ICommunityContext communityContext, ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
         {
             this.companyContext = companyContext;
             this.QueueSource = queueSource;
             this.Storage = storageProvider;
+            this.communityContext = communityContext;
         }
 
         public Intersect GetRelationshipByUID(Guid relationshipUid)
@@ -345,6 +347,18 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                 }
             }
 
+            if (!communityContext.IsFusionEnabled())
+            {
+                List<string> filteredObjects = new List<string>();
+                filteredObjects.Add(SystemObjects.FusionAttributeType.ToString());
+                filteredObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
+                string notInSql = $"not in ({string.Join(",", filteredObjects.Select(x => "'" + x + "'"))})";
+
+                whereClause += $" and (I.Object {notInSql} and I.Subject {notInSql})";
+            }
+
+
+
             var sql = $@"
 select	I.Id,
         I.Uid,
@@ -378,7 +392,7 @@ from	IntersectType I
         left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
         left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
         outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
-{whereClause} for json path";
+        {whereClause} for json path";
 
             var models = await companyContext.GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs);
 
@@ -527,14 +541,14 @@ from	IntersectType I
             return results;
         }
 
-        public List<PredicateInsertResult> InsertPredicates(PredicateInserts predicates, ApiExecution execution)
+        public List<PredicateUpsertResult> UpsertPredicates(PredicateUpserts predicates, ApiExecution execution)
         {
             companyContext.Add(execution);
 
-            List<PredicateInsertResult> results = null;
+            List<PredicateUpsertResult> results = null;
             try
             {
-                results = companyContext.AddPredicates(execution, predicates);
+                results = companyContext.UpdatePredicates(execution, predicates);
 
                 // Close execution record.
                 execution.Processed = results.Count;

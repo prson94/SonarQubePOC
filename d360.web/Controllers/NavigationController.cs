@@ -41,6 +41,11 @@ namespace d360.web.Controllers
             nodes = Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList();
 
             var features = Community.Filter<CompanyFeature>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
+            var isFusionEnabled = Community.IsFusionEnabled();
+            if (!isFusionEnabled)
+            {
+                nodes = nodes.Where(x => x.MenuID != "#Fusion").ToList();
+            }
 
             if (nodes != null)
                 nodes.ForEach(n => {
@@ -847,18 +852,35 @@ order by	f.SortOrder";
         [HttpGet, Route("GetCounts")]
         public async Task<JsonNetResult> GetCounts()
         {
-            string sql = @"
-SELECT  count(ATT.[Object]) as [count], 
+            List<string> ignoreObjects = new List<string>();
+            string ignoreObjectTypeSQL = string.Empty;
+            if (!Community.IsFusionEnabled())
+            {
+                ignoreObjects.Add(SystemObjects.FusionType.ToString());
+                ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());
+                ignoreObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
+            }
+
+            if(ignoreObjects.Count > 0)
+                ignoreObjectTypeSQL = $" AND ATT.[Object] not in ({string.Join(",", ignoreObjects.Select(o => "'"+o+"'"))})";
+
+            string sql = $@"
+SELECT count(ATT.[Object]) as count, 
 		ATT.[Object], 
 		ATT.ObjectID,
 		ATT.Name
-from    [Asset] A
-		inner join AssetType ATT on (a.AssetTypeID = Att.id) 
-where   A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
-group by ATT.[Object], ATT.ObjectID, ATT.Name 
-order by ATT.Name";
-          
-            var ItemCounts = await Company.QueryAsync<dynamic>(sql, new { ResourceID = Company.CurrentResourceID });
+		from    [Asset] A
+		inner join AssetType ATT on (a.AssetTypeID = Att.id)
+		WHERE A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
+        {ignoreObjectTypeSQL}
+		Group by 
+		ATT.[Object], 
+		ATT.ObjectID,
+		ATT.Name
+		Order By ATT.Name
+";
+          var ItemCounts = await Company.QueryAsync<dynamic>(sql, 
+              new { ResourceID = Company.CurrentResourceID });
 
             return new JsonNetResult
             {

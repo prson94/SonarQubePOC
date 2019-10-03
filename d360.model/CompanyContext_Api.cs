@@ -454,61 +454,115 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
             if (!resolveRelationshipOnObjectId)
             {
                 Connection.Execute($@"
-;with Relationships
-    as (
-            select  distinct 
-                    A.Object,
-                    A.ObjectID,
-                    FT.LookupObjectId as IntersectTypeId,
-                    AD.Object as Subject,
-                    AD.ObjectId as SubjectId,
-                    case 
-                    when AD.Type = IT.Object AND AD.TypeID = IT.ObjectID then 0
-                    else 1
-                    end as switchObject
-            from    {tableName} A
-                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
-                        and F.ItemNumber = A.ItemNumber 
-                        and A.ObjectID is not null 
-                        and F.FieldTypeID is not null
-						and A.Success is null
-                    cross apply string_split(F.FieldValue, ',') V
-                    inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
-                    inner join IntersectType IT on IT.ID = FT.LookupObjectId
-                    inner join AssetDetail AD on AD.DisplayValue = V.[value]
-                            and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
-                                or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
-            where   A.ExecutionID = @executionID
-                    and A.ItemNumber between @beginItemNumber and @endItemNumber 
-                    and (F.Ignore = 0 or F.Ignore is null)
-                    and FT.Type = 'Relationship'
-            )
-            insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object,ObjectID)
-            select 
-			IntersectTypeId, 
-			CASE 
-				when switchObject = 0 then Subject
-				else Object
-			END AS Subject, 
-			CASE 
-				when switchObject = 0 then SubjectId
-				else ObjectID
-			END AS SubjectId,
-			CASE 
-				when switchObject = 0 then Object
-				else Subject
-			END AS Object, 
-			CASE 
-				when switchObject = 0 then ObjectId
-				else SubjectId
-			END AS Object 
-			from Relationships ",
+                begin
+	                drop table if exists #Relationships;
+	                create table #Relationships
+	                (
+		                ID int,
+		                IntersectTypeID int,
+		                [Subject] varchar(50),
+		                SubjectID int,
+		                [Object] varchar(50),
+		                ObjectID int
+	                )
+                    ;with R
+                        as (
+                            select  distinct 
+                                    A.Object,
+                                    A.ObjectID,
+                                    FT.LookupObjectId as IntersectTypeId,
+                                    AD.Object as Subject,
+                                    AD.ObjectId as SubjectId,
+                                    case 
+                                    when AD.Type = IT.Object AND AD.TypeID = IT.ObjectID then 0
+                                    else 1
+                                    end as switchObject
+                            from    {tableName} A
+                                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                                        and F.ItemNumber = A.ItemNumber 
+                                        and A.ObjectID is not null 
+                                        and F.FieldTypeID is not null
+						                and A.Success is null
+                                    cross apply string_split(F.FieldValue, ',') V                                    
+                                    inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
+                                    inner join IntersectType IT on IT.ID = FT.LookupObjectId
+                                    inner join AssetDetail AD on AD.DisplayValue = V.[value]
+                                            and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
+                                                or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
+                            where   A.ExecutionID = @executionID
+                                    and A.ItemNumber between @beginItemNumber and @endItemNumber 
+                                    and (F.Ignore = 0 or F.Ignore is null)
+                                    and FT.Type = 'Relationship'
+                            )
+                            insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+                            select
+                                null as ID,
+			                    IntersectTypeId, 
+			                    CASE 
+				                    when switchObject = 0 then Subject
+				                    else Object
+			                    END AS Subject, 
+			                    CASE 
+				                    when switchObject = 0 then SubjectId
+				                    else ObjectID
+			                    END AS SubjectId,
+			                    CASE 
+				                    when switchObject = 0 then Object
+				                    else Subject
+			                    END AS Object, 
+			                    CASE 
+				                    when switchObject = 0 then ObjectId
+				                    else SubjectId
+			                    END AS ObjectID
+			                from R;
+
+                            update R
+                            set R.ID = I.ID
+                            from #Relationships R
+                            inner join [Intersect] I on 
+                                I.IntersectTypeID = R.IntersectTypeID 
+                                and I.[Subject] = R.[Subject] 
+                                and I.SubjectID = R.SubjectID 
+                                and I.[Object] = R.[Object] 
+                                and I.ObjectID = R.ObjectID;
+
+                            delete I
+			                from [Intersect] I
+			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
+			                where not exists (select 1 from #Relationships where [Subject] = I.[Subject] and SubjectID = I.SubjectID);
+
+                            delete I
+			                from [Intersect] I
+			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Subject] = I.[Subject] and R.SubjectID = I.SubjectID
+			                where not exists (select 1 from #Relationships where [Object] = I.[Object] and ObjectID = I.ObjectID);
+
+                            insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+                            select  IntersectTypeID,
+                                    Subject,
+                                    SubjectID,
+                                    Object,
+                                    ObjectID    
+                            from    #Relationships
+                            where  ID is null;
+                end
+",
                 new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
             }
             else
             {
                 Connection.Execute($@"
-;with Relationships
+begin
+	                drop table if exists #Relationships;
+	                create table #Relationships
+	                (
+		                ID int,
+		                IntersectTypeID int,
+		                [Subject] varchar(50),
+		                SubjectID int,
+		                [Object] varchar(50),
+		                ObjectID int
+	                )
+;with R
     as (
             select  distinct 
                     A.Object,
@@ -537,26 +591,58 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                     and (F.Ignore = 0 or F.Ignore is null)
                     and FT.Type = 'Relationship'
             )
-            insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object,ObjectID)
-            select 
-			IntersectTypeId, 
-			CASE 
-				when switchObject = 0 then Subject
-				else Object
-			END AS Subject, 
-			CASE 
-				when switchObject = 0 then SubjectId
-				else ObjectID
-			END AS SubjectId,
-			CASE 
-				when switchObject = 0 then Object
-				else Subject
-			END AS Object, 
-			CASE 
-				when switchObject = 0 then ObjectId
-				else SubjectId
-			END AS Object 
-			from Relationships ",
+            insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+            select
+                null as ID,
+			    IntersectTypeId, 
+			    CASE 
+				    when switchObject = 0 then Subject
+				    else Object
+			    END AS Subject, 
+			    CASE 
+				    when switchObject = 0 then SubjectId
+				    else ObjectID
+			    END AS SubjectId,
+			    CASE 
+				    when switchObject = 0 then Object
+				    else Subject
+			    END AS Object, 
+			    CASE 
+				    when switchObject = 0 then ObjectId
+				    else SubjectId
+			    END AS ObjectID
+			from R;
+
+                    update R
+                    set R.ID = I.ID
+                    from #Relationships R
+                    inner join [Intersect] I on 
+                        I.IntersectTypeID = R.IntersectTypeID 
+                        and I.[Subject] = R.[Subject] 
+                        and I.SubjectID = R.SubjectID 
+                        and I.[Object] = R.[Object] 
+                        and I.ObjectID = R.ObjectID;
+
+                    delete I
+			        from [Intersect] I
+			        inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
+			        where not exists (select 1 from #Relationships where [Subject] = I.[Subject] and SubjectID = I.SubjectID);
+
+                    delete I
+			        from [Intersect] I
+			        inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Subject] = I.[Subject] and R.SubjectID = I.SubjectID
+			        where not exists (select 1 from #Relationships where [Object] = I.[Object] and ObjectID = I.ObjectID);
+
+
+                    insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+                    select  IntersectTypeID,
+                            Subject,
+                            SubjectID,
+                            Object,
+                            ObjectID    
+                    from    #Relationships
+                    where  ID is null;
+                end",
                 new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
             }
         }
@@ -1715,7 +1801,7 @@ from	IntersectType I
     delete	T
     from	AssetCrossReference T
 		    inner join api.ExecutionDeletedAsset S on S.[Uid] = T.[Uid] and {querySuffix};",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             #endregion
 
@@ -4163,9 +4249,9 @@ from    [Intersect] T
 
             return results;
         }
-        public List<PredicateInsertResult> AddPredicates(ApiExecution execution, PredicateInserts import, int timeout = 3600)
+        public List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600)
         {
-            var results = new List<PredicateInsertResult>();
+            var results = new List<PredicateUpsertResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
 
@@ -4173,7 +4259,7 @@ from    [Intersect] T
             if (executionItemDupes.Any())
             {
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
-                results.AddRange(import.Select(i => new PredicateInsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+                results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
             {
@@ -4184,7 +4270,7 @@ from    [Intersect] T
                     if (currentLocation.HighestItemNumberProcessed > 0)
                     {
                         results.AddRange(
-                            Query<PredicateInsertResult>(
+                            Query<PredicateUpsertResult>(
                                 $"select * from api.ExecutionPredicate where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
                                 new { execution.ExecutionID }
                             )
@@ -4223,7 +4309,9 @@ from    [Intersect] T
                             else row["ExecutionItemUid"] = Guid.NewGuid();
                             row["Type"] = (int)model.Type; 
                             row["Name"] = model.Name; 
-                            row["Inverse"] = model.Inverse; 
+                            row["Inverse"] = model.Inverse;
+                            if(model.Uid.HasValue)
+                                row["uid"] = model.Uid;
 
                             table.Rows.Add(row);
                         }
@@ -4248,6 +4336,7 @@ from    [Intersect] T
                     bulkCopy.ColumnMappings.Add("Type", "Type");
                     bulkCopy.ColumnMappings.Add("Name", "Name");
                     bulkCopy.ColumnMappings.Add("Inverse", "Inverse");
+                    bulkCopy.ColumnMappings.Add("uid", "uid");
 
                     bulkCopy.WriteToServer(table);
 
@@ -4260,8 +4349,20 @@ from    [Intersect] T
                     var allowedPredicates = Enum.GetValues(typeof(PredicateType)).Cast<PredicateType>().Where(x => x.CanUserInsert()).ToList();
                     var allowedTypes = allowedPredicates.Select(x => "''"+ x.ToString()+"''").ToList();
                     var allowedTypesInt = allowedPredicates.Select(x =>(int)x).ToList();
-
                     string checkTypeSQL = $"Type not in ({string.Join(",", allowedTypesInt)})";
+
+                    var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
+                    List<int> notAllowedTypesForLineage = new List<int>() { -1 };
+
+                    foreach(var item in import)
+                    {
+                        if (!item.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
+                        {
+                            notAllowedTypesForLineage.Add((int)item.Type);
+                        }
+                    }
+
+                    string checkLineageTypes = $"Type in ({string.Join(",", notAllowedTypesForLineage)})";
 
                     var checkSQL = $@"
     update	api.ExecutionPredicate 
@@ -4269,7 +4370,21 @@ from    [Intersect] T
 		    [Message] = coalesce([Message] + '; ', '') + 'Predicate with same Name and Type already exists'
     from api.ExecutionPredicate EP
     inner join [Predicate] P on P.Name = EP.Name and P.Type = EP.Type
-    where	ExecutionID = @ExecutionID
+    where	ExecutionID = @ExecutionID and EP.uid is null
+
+    update	api.ExecutionPredicate
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate with this uid does not exists'
+    from api.ExecutionPredicate EP
+    left join [Predicate] P on P.Uid = Ep.uid
+    where	ExecutionID = @ExecutionID and EP.uid is not null and P.uid is null;
+
+    update api.ExecutionPredicate 
+    set     Success = 0, 
+            [Message] = coalesce([Message] + '; ', '') + 'You may not change the type for this predicate as it is already in use.' 
+    from api.ExecutionPredicate EP 
+    inner join [Predicate] P on P.[Uid] = Ep.[Uid] 
+    where ExecutionID = @ExecutionID and P.Type <> EP.Type and exists (select 1 from IntersectType T inner join [Intersect] I on I.IntersectTypeID = T.ID and T.PredicateID = P.ID)
 
     update	api.ExecutionPredicate
     set		Success = 0,
@@ -4284,7 +4399,13 @@ from    [Intersect] T
     update	api.ExecutionPredicate
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Predicate Type invalid. Allowed values are {string.Join(",", allowedTypes)}'
-    where	ExecutionID = @ExecutionID and {checkTypeSQL.Replace("''","'")};";
+    where	ExecutionID = @ExecutionID and {checkTypeSQL.Replace("''","'")}
+
+    update	api.ExecutionPredicate
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Your current version of lineage does not support using this predicates of this type.'
+    where	ExecutionID = @ExecutionID and {checkLineageTypes}
+;";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
 
@@ -4300,8 +4421,8 @@ from    [Intersect] T
                     execution.Processed = 0;
                     execution.Error = import.Count();
 
-                    results = new List<PredicateInsertResult>();
-                    results.AddRange(import.Select(i => new PredicateInsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+                    results = new List<PredicateUpsertResult>();
+                    results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
                 }
 
                 if (generalChecksCompleted)
@@ -4337,11 +4458,16 @@ from    [Intersect] T
                                                           and PredicateID is null
                                                           and Success is null
 	                                              ) S
-                                            on (P.Id = S.PredicateId)
+                                            on (P.uid = S.uid)
+											when matched then
+											update  
+												set P.Name = S.Name,
+												P.Inverse = S.Inverse,
+												P.Type = S.Type
                                             when not matched then
 	                                            insert (Name, Inverse, Type, IsSystem)
 	                                            values (S.Name,S.Inverse, S.Type, 0)
-	                                            output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
+	                                        output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
 
                                             update EP
                                             set EP.PredicateID = Res.PredicateId,
@@ -4376,7 +4502,7 @@ from    [Intersect] T
                         }
 
                         results.AddRange(
-                            Query<PredicateInsertResult>(
+                            Query<PredicateUpsertResult>(
                                 $"select * from api.ExecutionPredicate where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
                                 new { execution.ExecutionID, beginItemNumber, endItemNumber }
                             )

@@ -1851,21 +1851,25 @@ chart {
     padding-bottom: 20px !important;
 }
 
+ul.shortcutlist{
+    text-align:center;
+}
+
 li.shortcut {
     display: inline-block;
     cursor: pointer;
-    width: 150px;
+    width: 216px;
     vertical-align: top;
-    margin: 5px;
+    margin: 12px;
     box-sizing: border-box;
     border: none;
     box-shadow: rgba(0, 0, 0, 0.5) 0 1px 2px;
     color: #FFF;
     background: @igx-dark-blue;
     padding-top: 10px;
-    min-height: 140px;
-    max-height: 140px;
-    border-radius: 5px;
+    min-height: 205px;
+    max-height: 205px;
+    border-radius: 4px;
 
     &:hover {
         background: @igx-blue-light !important;
@@ -1874,30 +1878,42 @@ li.shortcut {
     }
 }
 
-
-
-li.shortcut div.shortcut-name {
-    font-size: 16px;
-    font-weight: 600;
-    text-align: center;
-    padding-top: 5px;
+li.shortcut div.shortcut-name {    
     white-space: nowrap;
     text-overflow: ellipsis;
-    overflow: hidden;
-    width: 140px;
-    padding: 10px 10px 0 10px;
-    margin: auto;
+    overflow: hidden;    
+    font-size: 18px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 1.22;
+    letter-spacing: normal;
+    text-align: center;
+    padding:20px 5px;
+    color: #ffffff;
 }
 
-li.shortcut div.shortcut-desc {
-    font-size: .75em;
-    text-align: center;
-    white-space: nowrap;
+li.shortcut .shortcut-desc {
     text-overflow: ellipsis;
-    overflow: hidden;
-    width: 140px;
+    overflow: hidden;    
+    font-size: 14px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 1.14em;
+    max-height: 3.42em; /* people on IE need to deal without ...*/
+    letter-spacing: normal;
+    text-align: center;
+    padding-left: 25px;
+    padding-right: 25px;
+    color: #ffffff;
     margin: auto;
+    display: block;
+    display: -webkit-box;    
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;    
 }
+
 
 li.shortcut div.icon {
     width: 72px;
