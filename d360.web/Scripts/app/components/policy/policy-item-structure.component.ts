@@ -50,7 +50,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     policyTypeId: number;
     treeNodeArray: TreeNode[] = [];
     selected: TreeNode;
-    selectedParentID: number;
+    selectedParentId: number;
     selectedLevel: number;
     columns: GridColumn[] = [];
     fields: GridField[] = [];
@@ -59,7 +59,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     showDelete = false;
     showEditor = false;
-        
+
     @ViewChild("treeTable") treeTable: any;
     unfilteredTreeNode: TreeNode[] = [];
 
@@ -78,7 +78,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         private gridDefinitionService: GridDefinitionService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;        
+        this.rightSidebarService = rightSidebarService;
         router.events.subscribe(
             (value) => {
                 this.showEditor = false;
@@ -165,7 +165,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     private loadPolicyHierarchy(policyTypeId: number) {
         this.policiesService.getPolicies(policyTypeId, true).subscribe(
-            result => {                
+            result => {
                 this.policies = result;
                 this.treeNodeArray = this.buildTreeNodeArray(this.policies, 1);
                 this.unfilteredTreeNode = JSON.parse(JSON.stringify(this.treeNodeArray));
@@ -237,7 +237,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     }
 
     private add() {
-        this.selectedParentID = this.selected ? this.selected.data.ID : null;
+        this.selectedParentId = this.selected ? this.selected.data.ID : null;
         this.selectedLevel = this.selected ? this.selected.data.Level : 0;
         this.selected = null;
         this.showEditor = true;
@@ -315,15 +315,13 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     private savePolicy(event) {
         this.isLoading = true;
+        this.headerActionsService.emitFavoritesChange();
+        this.loadPolicyHierarchy(this.policyTypeId);
+        this.showEditor = false;
+    }
 
-        this.policiesService.savePolicy(event.item).subscribe(
-            result => {
-                this.showMessageForResult(this.messagesService, result);
-                this.headerActionsService.emitFavoritesChange();
-                this.loadPolicyHierarchy(this.policyTypeId);
-                this.showEditor = false;
-
-            }
-        );
+    private closeEditor() {
+        this.showEditor = false;
+        this.filter(null);
     }
 }

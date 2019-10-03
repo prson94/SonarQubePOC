@@ -16,8 +16,9 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges {
     @Input() selectedItem: any;
     @Input() editorObjectType: string = '';
     @Input() assetTypeUid: number;
-    @Input() parentUid: number;
+    @Input() parentId: number;
     @Input() editorTitle: string = '';
+    @Input() assetTypeID: number;
 
     private editorObjectID: number = -1;
     private editorSelection: any = {};
@@ -39,7 +40,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges {
 
     loadRecord() {
         if (this.selectedItem && this.selectedItem.data) {
-            this.editorObjectID = this.selectedItem.data.Uid;
+            this.editorObjectID = this.selectedItem.data.ID;
             this.editorSelection = this.selectedItem;
         }
 

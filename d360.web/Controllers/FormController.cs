@@ -398,26 +398,6 @@ namespace d360.web.Controllers
             }
             throw new Exception("Invalid or non implemented editor type");
         }
-        [HttpGet, Route("dynamiceditor/new/asset/{objectType}/{objectTypeUid}/{parentUid?}/{typeUid?}")]
-        public JsonResult DynamicEditorAddFields(string objectType, Guid objectTypeUid, Guid? parentUid, Guid? typeUid)
-        {
-            try
-            {
-                int objectTypeId = Company.AssetTypes.FirstOrDefault(x => x.uid == objectTypeUid).ObjectID;
-
-                int? parentId = null;
-                int? typeId = null;
-
-                if (parentUid.HasValue)
-                    parentId = (int)Company.Assets.FirstOrDefault(x => x.uid == parentUid)?.ID;
-
-                return DynamicEditorAddFields(objectType, objectTypeId, parentId, typeId);
-            }
-            catch
-            {
-                throw new Exception("Invalid or non implemented editor type");
-            }
-        }
 
         [HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}/{parentID?}/{typeID?}")]
         public JsonResult DynamicEditorAddFields(string objectType, int? objectID, int? parentID, int? typeID)
@@ -8599,8 +8579,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "PolicyTypeID", FieldType = DataType.Hidden.ToString(), Value = typeID.ToString() });
-            if (parentID.HasValue) list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = parentID.Value.ToString() });
+            if (parentID.HasValue) {
+                var parentUid = Company.GetAssetUid(parentID.Value, SystemObjects.Policy).ToString();
+                list.Add(new EditableField { FieldName = "ParentUid", FieldType = DataType.Hidden.ToString(), Value = parentUid });
+            }
             
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.PolicyType, typeID).ToList(), 1);
 
@@ -8617,7 +8599,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var model = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Policy.ToString()).Include(x => x.AssetType).FirstOrDefault();
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ObjectID.ToString() });
+            list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = model.uid.ToString() });
 
             list = (
                 loadDynamicFields(

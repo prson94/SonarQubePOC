@@ -3273,11 +3273,11 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return objectId;
         }
 
-        public Guid GetAssetUid(int assetId, SystemObjects assetType)
+        public Guid GetAssetUid(int objectId, SystemObjects assetType)
         {
             try
             {
-                return Assets.FirstOrDefault(x => x.Object == assetType.ToString() && x.ID == assetId).uid;
+                return Assets.FirstOrDefault(x => x.Object == assetType.ToString() && x.ObjectID == objectId).uid;
             }
             catch
             {

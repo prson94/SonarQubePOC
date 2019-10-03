@@ -35,7 +35,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     levels: any[] = [];
 
     modelId: number;
-    selectedParentUid: number;
+    selectedParentId: number;
     treeNodeArray: TreeNode[] = [];
     selected: TreeNode;
 
@@ -296,7 +296,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     private showAdd(level: number) {
         this.showEditor = true;
-        this.selectedParentUid = level == 0 ? undefined : this.selected ? this.selected.data.Uid : undefined;
+        this.selectedParentId = level == 0 ? undefined : this.selected ? this.selected.data.ID : undefined;
         this.selectedLevel = level;
         this.selected = null;
     }

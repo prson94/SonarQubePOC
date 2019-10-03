@@ -174,8 +174,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             this.targetTypeID,
             this.createParams,
             this.editParams,
-            this.action,
-            this.isV2API
+            this.action
         ).subscribe(
             result => {
                 let previousCategory = null;
