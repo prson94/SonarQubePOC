@@ -463,6 +463,38 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Verify the asset type has releationship exists or not
+        /// </summary>
+        /// <param name="assetTypeId"></param>
+        /// <returns>true if relationship exists otherwise false</returns>
+        [
+            HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
+            MapToApiVersion("2.0"),
+            Route("isRelationshipExistsForAssetType/{assetTypeId}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            ]
+        public async Task<HttpResponseMessage> isRelationshipExistsForAssetTypeAsync(int assetTypeId)
+        {
+            var prefix = "Relationships.isRelationshipExistsForAssetTypeAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var result = await this.RelationshipRepository.IsRelationshipExistsForAssetType(assetTypeId);
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+        /// <summary>
         /// GET a list of relationship types using an ID and a Type.
         /// </summary>
         /// <param name="id">The legacy type ID of the asset type.</param>
