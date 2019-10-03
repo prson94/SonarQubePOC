@@ -1,12 +1,11 @@
-﻿import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChange, ElementRef, ViewChild } from '@angular/core';
+﻿import { Component, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
-import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
+import { SearchResult } from '../../models/search-result.model';
 import { DropdownOption } from '../../models/dropdown.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 
 @Component({
@@ -25,6 +24,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                             (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);">
                         </p-multiSelect>                        
                         <div class="field mr10">
+                 <d3s-search-autocomplete-list [searchText]="searchText" [setwidth]="autocompleteWidth" [autocompletions]="autocompletions" [setTop]="25"></d3s-search-autocomplete-list> 
                             <input #searchip (keydown.enter)="triggerSearch()" 
                                 [ngModel]="searchText" 
                                 (keyup)="checkSearchKey($event);" 
@@ -35,7 +35,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
                                 <span *ngIf="!autocompleteLoading" class="icon-holder"><i (click)="triggerSearch()" class="fa fa-search"></i></span>
                                 <span *ngIf="autocompleteLoading" class="icon-holder"><i class="fa fa-spinner fa-spin"></i></span>
                         </div>
-                 </div>                     
+                 </div>  
                 `,
     providers: [SearchService, TypeaheadSearchService],
 })
@@ -48,7 +48,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnDestroy
     @Output() searchTypesChange = new EventEmitter();
 
     @Output() resultsChange = new EventEmitter();
-     @Input() hasResults: boolean;
+    @Input() hasResults: boolean;
 
     @Input() searchText: string;
     @Output() searchTextChange = new EventEmitter();
@@ -57,6 +57,10 @@ export class HeroSearchInputComponent extends BaseComponent implements OnDestroy
 
     private searchSub: ISubscription;
     private autocompleteLoading: boolean = false;
+
+    constructor(private router: Router, private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
+        super();
+    }
 
     private fields: DropdownOption[] = [
         { title: "Category", value: "Type" },
@@ -100,9 +104,6 @@ export class HeroSearchInputComponent extends BaseComponent implements OnDestroy
     private autocompletions: SearchResult[] = [];
     private autocompleteWidth: number = 0;
 
-    constructor(private router: Router, private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
-        super();
-    }
 
     ngOnDestroy(): void {
         if (this.searchSub) this.searchSub.unsubscribe();
@@ -117,6 +118,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnDestroy
             types: this.searchTypes
         });
     }
+
 
     private cancelAutocomplete() {
         if (this.simpleSearchID > 0) {
@@ -145,6 +147,5 @@ export class HeroSearchInputComponent extends BaseComponent implements OnDestroy
                 this.autocompletions = res;
                 this.autocompleteLoading = false;
             });
-    } 
-
+    }
 };

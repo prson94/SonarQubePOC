@@ -16,7 +16,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                 }                                     
             `],
     template: ` 
-                <div *ngIf="showResults && autocompletions.length > 0" class="search-typeahead-menu" style="position:absolute;top:-3px;left:0;min-width:400px;max-height:400px;overflow:auto;" [ngStyle]="{'width':width}">                         
+                <div *ngIf="showResults && autocompletions.length > 0" class="search-typeahead-menu" style="position:absolute;left:0;min-width:400px;max-height:400px;overflow:auto;" [ngStyle]="{'width':width, 'top':top}">                         
                     <div class="header">Select an item from the dropdown to go directly to it, or to see more search results type in the text you want to search by.</div>
                     <div *ngFor="let autocomplete of autocompletions" class="search-typeahead-suggestion" (click)="goTo(autocomplete)">
                         <i *ngIf="autocomplete.Icon" class="folder-icon fa {{autocomplete.Icon}}"></i>
@@ -40,7 +40,7 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
     @Input() autocompletions: SearchResult[] = [];    
     @Input() searchText: string;
     @Input() setwidth: any;
-    
+    @Input() setTop: number = 4;
     private showResults = true;
     private width: string = '400px';
     
