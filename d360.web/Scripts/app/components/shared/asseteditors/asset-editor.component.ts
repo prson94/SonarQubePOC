@@ -40,7 +40,12 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges {
 
     loadRecord() {
         if (this.selectedItem && this.selectedItem.data) {
+            //For node view
             this.editorObjectID = this.selectedItem.data.ID;
+            this.editorSelection = this.selectedItem;
+        }
+        else if (this.selectedItem) {
+            this.editorObjectID = this.selectedItem.ID;
             this.editorSelection = this.selectedItem;
         }
 
@@ -53,7 +58,7 @@ export class AssetEditorComponent extends BaseComponent implements OnChanges {
 
         let fields: any = {};
         var props = Object.keys($event.item);
-        props.filter(x => x != 'Uid' && x != 'ParentUid' && x != 'ParentID' && x != 'TaxonomyTypeID').forEach(p => {
+        props.filter(x => x != 'Uid' && x != 'ParentUid' && x != 'ParentID').forEach(p => {
             var value = $event.item[p];
             if (!value) {
                 value = '';
