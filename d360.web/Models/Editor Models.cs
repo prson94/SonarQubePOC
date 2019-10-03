@@ -34,15 +34,18 @@ namespace d360.web.Models
 
     public class AssetTypeEditorModel : BaseEditorModel
     {
-        public AssetType AssetType { get; set; }
+        public AssetTypeInsert AssetType { get; set; }
+        public AssetType AssetTypeOld { get; set; }
 
         public int? ParentID { get; set; } = null;
+        public Guid? ParentUid { get; set; } = null;
 
         public List<PrimeSelectItem> Predicates { get; set; } = new List<PrimeSelectItem>();
 
         public List<PrimeSelectItem> Tokens { get; set; } = new List<PrimeSelectItem>();
 
         public int? SelectedPredicateID { get; set; } = null;
+        public Guid? SelectedPredicateUid { get; set; } = null;
 
         public string IconBackColor { get; set; }
 

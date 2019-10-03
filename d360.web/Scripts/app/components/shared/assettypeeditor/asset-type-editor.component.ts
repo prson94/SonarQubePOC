@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { AssetTypeService } from "../../../services/asset-type.services";
-import { AssetTypeClass, AssetTypeEditorModel } from "../../../models/asset.model";
+import { AssetTypeService } from '../../../services/asset-type.service';
+import { AssetTypeClass, AssetTypeEditorModel } from "../../../models/asset-type.model";
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 declare var CompanySettings: any;
@@ -95,7 +95,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
         this
             .assetTypeService
-            .getAssetTypeEditor(
+            .getAssetTypeEditorOld(
                 this.assetTypeClass,
                 this.id,
                 this.parentID
@@ -103,7 +103,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             .subscribe(data => {
                 this.model = data;
 
-                this.spinNum = this.model.AssetType.HierarchyMaximumDepth;
+                this.spinNum = this.model.AssetType.Hierarchy.MaximumDepth;
                 if (this.spinNum == 0) {
                     this.spinNum = 1;
                 }
@@ -130,16 +130,29 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         this.onCancel.emit(null);
     }
 
-    private save(): void {
+
+    private saveNew(): void {
         this.isSaving = true;
-        this.model.AssetType.HierarchyMaximumDepth = this.spinNum;
+        this.model.AssetType.Hierarchy.MaximumDepth = this.spinNum;
         this.model.AssetType.Class = this.assetTypeClass;
 
-        if (this.model.AssetType.ID > 0)
+        if (this.model.AssetType.Uid != null) {
+
+        } else {
+
+        }
+    }
+
+    private save(): void {
+        this.isSaving = true;
+        this.model.AssetType.Hierarchy.MaximumDepth = this.spinNum;
+        this.model.AssetType.Class = this.assetTypeClass;
+
+        if (this.model.AssetType.Uid != null)
         {
             this
                 .assetTypeService
-                .putAssetType(this.model)
+                .putAssetTypeOld(this.model)
                 .subscribe(data => {
                     this.showMessageForResult(this.messagesService, data);
 
@@ -156,7 +169,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         {
             this
                 .assetTypeService
-                .postAssetType(this.model)
+                .postAssetTypeOld(this.model)
                 .subscribe(data => {
                     this.showMessageForResult(this.messagesService, data);
 
@@ -193,7 +206,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     public updateParent(predicateId: string) {
         if (predicateId == null || predicateId.length == 0) {
-            this.model.ParentID = null;
+            this.model.ParentUid = null;
         }
     }
 }

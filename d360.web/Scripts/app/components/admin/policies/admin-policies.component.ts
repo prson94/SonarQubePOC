@@ -11,11 +11,11 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { PoliciesService } from '../../../services/policies.service';
 import { StateService } from '../../../services/state.service';
-import { AssetTypeService } from "../../../services/asset-type.services";
+import { AssetTypeService } from '../../../services/asset-type.service';
 
 import { AdminBaseComponent } from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AssetTypeClass } from '../../../models/asset.model';
+import { AssetTypeClass } from '../../../models/asset-type.model';
 
 @Component({
     selector: 'd3s-admin-policies-component',
@@ -234,7 +234,7 @@ export class AdminPoliciesComponent extends AdminBaseComponent implements OnInit
     deletePolicyType(id: number) {
         this
             .assetTypeService
-            .deleteAssetType(id)
+            .deleteAssetTypeOld(id)
             .subscribe(
                 result => {
                     this.showMessageForResult(this.messagesService, result);
