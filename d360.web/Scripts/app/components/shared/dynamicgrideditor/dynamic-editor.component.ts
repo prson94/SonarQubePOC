@@ -147,8 +147,12 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     getDefinition() {
         let id = (this.selection ? this.selection[this.rowID] : null);
-        if (this.objectType == 'IntersectType' && this.selection) {
-            id = this.selection.Uid;
+        if (this.selection) {
+            if (this.objectType == 'IntersectType')
+                id = this.selection.Uid;
+
+            if (this.selection.uid)
+                id = this.selection.uid;
         }
 
         if (this.isV2API) {
