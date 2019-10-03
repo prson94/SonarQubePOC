@@ -110,8 +110,10 @@ export class HeroSearchInputComponent extends BaseComponent implements OnDestroy
     }
 
     private triggerSearch() {
+        
         this.cancelAutocomplete();
         this.autocompletions = [];
+        
         this.search.emit({
             text: this.searchText,
             exactMatch: this.isExactMatch,
@@ -121,8 +123,10 @@ export class HeroSearchInputComponent extends BaseComponent implements OnDestroy
 
 
     private cancelAutocomplete() {
+        
         if (this.simpleSearchID > 0) {
             this.autocompleteLoading = false;
+            
             window.clearTimeout(this.simpleSearchID);
             this.simpleSearchID = 0;
         }

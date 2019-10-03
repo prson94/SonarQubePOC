@@ -43,6 +43,7 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
     @Input() setTop: number = 4;
     private showResults = true;
     private width: string = '400px';
+    private top: string = '4px';
     
     constructor(private elementRef: ElementRef, private router: Router) {
         super();
@@ -54,7 +55,7 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let propName in changes) {
-            if (propName == 'setwidth') {
+            if (propName == 'setwidth' || propName == 'setTop') {
                 this.setWidth();
             }
         }
@@ -62,7 +63,8 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
     }
 
     private setWidth() {
-        if (this.setwidth && this.setwidth > 400) this.width = this.setwidth + 'px';        
+        if (this.setwidth && this.setwidth > 400) this.width = this.setwidth + 'px';   
+        if (this.setTop && this.setTop > 4) this.top = this.setTop + 'px';
     }
 
     private goTo(item: SearchResult) {
