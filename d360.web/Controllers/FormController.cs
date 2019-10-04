@@ -954,7 +954,7 @@ namespace d360.web.Controllers
                 Guid? parentUid = null;
                 if (parentID.HasValue && parentID > 0)
                 {
-                    var parentAssetType = Company.GetById<AssetType>(parentID.Value);
+                    var parentAssetType = Company.Query<AssetType>("select * from AssetType where class = @class and ObjectID = @parentID", new { @class, parentID }).FirstOrDefault();
                     if (parentAssetType != null)
                         parentUid = parentAssetType.uid;
                 }

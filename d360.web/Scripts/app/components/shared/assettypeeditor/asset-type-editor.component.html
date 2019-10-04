@@ -17,12 +17,20 @@
                     </div>
                     <div class="col l6 m6 s12" *ngIf="showParentPredicates && (model.Predicates.length > 1)">
                         <div [ngClass]="assetTypeClass == 'M' || assetTypeClass == 'P' ? 'FieldNameRequired' : 'FieldName'">Predicate To Parent</div>
-                        <p-dropdown [options]="model.Predicates" #predicate="ngModel" [(ngModel)]="model.SelectedPredicateUid" (ngModelChange)="model.SelectedPredicateUid=$event;updateParent(model.SelectedPredicateUid);" [style]="{'width':'100%'}" name="predicate" [required]="assetTypeClass == 'M' || assetTypeClass == 'P'"></p-dropdown>
+                        <p-dropdown 
+                                    [options]="model.Predicates" 
+                                    #predicate="ngModel" 
+                                    [(ngModel)]="model.AssetType.Hierarchy.PredicateUid" 
+                                    (ngModelChange)="model.AssetType.Hierarchy.PredicateUid=$event;updateParent(model.AssetType.Hierarchy.PredicateUid);" 
+                                    [style]="{'width':'100%'}" 
+                                    name="predicate" 
+                                    [required]="assetTypeClass == 'M' || assetTypeClass == 'P'">
+                        </p-dropdown>
                         <div [hidden]="predicate.valid || predicate.pristine" class="validation-text">Predicate is required</div>
                     </div>
                 </div>
 
-                <div class="row" *ngIf="model.Parents && model.Parents.length > 0 && model.SelectedPredicateUid > 0">
+                <div class="row" *ngIf="model.Parents && model.Parents.length > 0 && model.AssetType.Hierarchy.PredicateUid != null && model.AssetType.Hierarchy.PredicateUid.length > 0">
                     <div class="col s12">
                         <div class="FieldNameRequired">Parent</div>
                         <p-dropdown filter="true" [options]="model.Parents" #parent="ngModel" [(ngModel)]="model.AssetType.ParentUid" [style]="{'width':'100%'}" name="parent" required></p-dropdown>
@@ -95,7 +103,7 @@
                     <div class="FieldName">Maximum Depth</div>
                     <div class="row">
                         <div class="col l6 m12 s12">
-                            <p-spinner name="MaximumDepth" required [(ngModel)]="spinNum" [min]="1" [max]="10" style="height:25px;width:100%;display:block;"></p-spinner>
+                            <p-spinner name="MaximumDepth" required [(ngModel)]="model.AssetType.Hierarchy.MaximumDepth" [min]="1" [max]="10" style="height:25px;width:100%;display:block;"></p-spinner>
                         </div>
                         <div class="col l6 m12 s12">
                             <div class="FieldInstructions">The maximum depth to which a tree can contain nodes at.</div>

@@ -46,7 +46,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     
     ngOnChanges(changes: SimpleChanges): void {
-
         if (CompanySettings != null && CompanySettings.LineageVersion != null) {
             this.lineageVersion = CompanySettings.LineageVersion;
         }
@@ -95,14 +94,13 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
         this
             .assetTypeService
-            .getAssetTypeEditorOld(
+            .getAssetTypeEditor(
                 this.assetTypeClass,
                 this.id,
                 this.parentID
             )
             .subscribe(data => {
                 this.model = data;
-
                 this.spinNum = this.model.AssetType.Hierarchy.MaximumDepth;
                 if (this.spinNum == 0) {
                     this.spinNum = 1;
@@ -130,29 +128,16 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         this.onCancel.emit(null);
     }
 
-
-    private saveNew(): void {
-        this.isSaving = true;
-        this.model.AssetType.Hierarchy.MaximumDepth = this.spinNum;
-        this.model.AssetType.Class = this.assetTypeClass;
-
-        if (this.model.AssetType.Uid != null) {
-
-        } else {
-
-        }
-    }
-
     private save(): void {
         this.isSaving = true;
         this.model.AssetType.Hierarchy.MaximumDepth = this.spinNum;
         this.model.AssetType.Class = this.assetTypeClass;
 
-        if (this.model.AssetType.Uid != null)
+        if (this.model.AssetType.Uid != null && this.model.AssetType.Uid != '00000000-0000-0000-0000-000000000000')
         {
             this
                 .assetTypeService
-                .putAssetTypeOld(this.model)
+                .putAssetType(this.model.AssetType)
                 .subscribe(data => {
                     this.showMessageForResult(this.messagesService, data);
 
@@ -167,9 +152,11 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         }
         else
         {
-            this
-                .assetTypeService
-                .postAssetTypeOld(this.model)
+
+            delete this.model.AssetType.Uid;
+
+            this.assetTypeService
+                .postAssetType(this.model.AssetType)
                 .subscribe(data => {
                     this.showMessageForResult(this.messagesService, data);
 

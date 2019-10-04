@@ -20,7 +20,7 @@ export class AssetTypeService extends BaseObservableService {
         super(messagesService);
     }
 
-    getAssetTypeEditorOld(
+    getAssetTypeEditor(
         cls: AssetTypeClass,
         id: number,
         parentID: number

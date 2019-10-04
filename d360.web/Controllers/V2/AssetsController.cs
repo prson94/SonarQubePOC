@@ -376,7 +376,7 @@ namespace d360.web.Controllers.V2
                     parentAssetType = AssetRepository.GetAssetTypeByUID((Guid)model.ParentUid);
 
                 Predicate predicate = null;
-                if (model.Hierarchy != null && model.Hierarchy.PredicateUid != Guid.Empty)
+                if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)
                     predicate = AssetRepository.GetPredicateByUID((Guid)model.Hierarchy.PredicateUid);
 
                 var validationStatus = validator.ValidateModelForPut(model, parentAssetType, predicate, assetType);

@@ -97,8 +97,8 @@ export class AssetType {
     ParentUid: string;
     Notes: string;
     UseAsTransformation: boolean;
-    IconStyle: IconStyle;
-    Hierarchy: Hierarchy;
+    IconStyle: IconStyle = new IconStyle();
+    Hierarchy: Hierarchy = new Hierarchy();
 
 }
 
