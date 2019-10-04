@@ -29,9 +29,9 @@ namespace d360.model.validators
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
-                if (field.Name.Trim().ToLower() == "id")
+                if (field.Name.Trim().ToLower() == "id" || field.Name.Trim().ToLower() == "uid")
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot be ID.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot be ID or UID.");
                 }
                 if (!field.Type.IsOnlyOneTypeModelDefined())
                 {
