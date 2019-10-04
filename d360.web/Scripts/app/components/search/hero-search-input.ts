@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
+﻿import { Component, OnDestroy, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SelectItem } from 'primeng/api';
@@ -8,6 +8,7 @@ import { SearchResult } from '../../models/search-result.model';
 import { DropdownOption } from '../../models/dropdown.model';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 
+declare var CompanySettings;
 @Component({
     selector: 'd3s-hero-search-input',
     template: ` <div class="hero-search-input">           
@@ -40,7 +41,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
     providers: [SearchService, TypeaheadSearchService],
 })
 
-export class HeroSearchInputComponent extends BaseComponent implements OnDestroy {
+export class HeroSearchInputComponent extends BaseComponent implements OnDestroy,, OnInit {
     @Input() isExactMatch: boolean = true;
     @Output() isExactMatchChange = new EventEmitter();
 
@@ -107,6 +108,13 @@ export class HeroSearchInputComponent extends BaseComponent implements OnDestroy
 
     ngOnDestroy(): void {
         if (this.searchSub) this.searchSub.unsubscribe();
+    }
+
+    ngOnInit() {
+        if (CompanySettings && CompanySettings.FusionEnabled == 'false') {
+            this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
+            this.types = this.types.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
+        }
     }
 
     private triggerSearch() {
