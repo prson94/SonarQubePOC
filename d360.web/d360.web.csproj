@@ -406,6 +406,7 @@
     </Content>
     <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\images\aboutLogo.png" />
+    <Content Include="Content\images\home.background.new.png" />
     <Content Include="Content\images\home.background.png" />
     <Content Include="Content\images\logo.new.color.png" />
     <Content Include="Content\images\logo.new.png" />
@@ -1117,6 +1118,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
     <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
+    <TypeScriptCompile Include="Scripts\app\components\search\hero-search-input.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\shared-asset-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor-use-as-transformation.component.ts" />

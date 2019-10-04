@@ -22,17 +22,11 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col s6">
-                    <div class="FieldName">Title Size</div>
-                    <input type="text" [ngModel]="companySettings.HomePageTitleSize" (ngModelChange)="companySettings.HomePageTitleSize = $event; companySettingsChange.emit(companySettings)" style="width: 95%" [disabled]="!companySettings.ShowHomePageTitle" />
-                </div>
-                <div class="col s6">
-                    <div class="FieldName">&nbsp;&nbsp;Title color</div>
-                    <div class="row">
-                        <div class="col s12">
-                            <p-colorPicker [ngModel]="companySettings.HomePageTitleColor" (ngModelChange)="companySettings.HomePageTitleColor = $event; companySettingsChange.emit(companySettings)" [disabled]="!companySettings.ShowHomePageTitle"></p-colorPicker>
-                            <input type="text" style="padding:2px;width:65px" [(ngModel)]="companySettings.HomePageTitleColor" name="titlebackcolortext" [disabled]="!companySettings.ShowHomePageTitle" />
-                        </div>
+                <div class="FieldName">&nbsp;&nbsp;Title color</div>
+                <div class="row">
+                    <div class="col s12">
+                        <p-colorPicker [ngModel]="companySettings.HomePageTitleColor" (ngModelChange)="companySettings.HomePageTitleColor = $event; companySettingsChange.emit(companySettings)" [disabled]="!companySettings.ShowHomePageTitle"></p-colorPicker>
+                        <input type="text" style="padding:2px;width:65px" [(ngModel)]="companySettings.HomePageTitleColor" name="titlebackcolortext" [disabled]="!companySettings.ShowHomePageTitle" />
                     </div>
                 </div>
             </div>
