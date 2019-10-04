@@ -15,6 +15,7 @@ import { TilesModule  } from '../../shared/tiles/tiles.module';
 
 import { VisualizationRoutingModule } from './visualization.routes';
 
+import { BrowserComponent } from './browser.component';
 import { LineageComponent } from './lineage.component';
 import { ImpactComponent } from './impact.component';
 import { DiagramComponent } from './diagram.component';
@@ -38,6 +39,7 @@ import { DiagramComponent } from './diagram.component';
         SharedModule,
     ],
     declarations: [
+        BrowserComponent,
         LineageComponent,
         ImpactComponent,
         DiagramComponent

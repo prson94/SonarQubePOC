@@ -1,0 +1,223 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-7906">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">	
+<![CDATA[
+create or alter procedure graph.GetLineageByAsset
+	@assetUid uniqueidentifier,
+	@startFromAssets varchar(2500) = null,
+	@direction int = 1,		--1 = Forward, 2 = Backward, 3 = Both
+	@hops int = 5
+as
+begin
+	set nocount on;
+
+	-- Validation
+	if @hops > 25
+	begin
+		set @hops = 25
+	end
+	if @hops <= 0
+	begin
+		set @hops = 3
+	end
+	if @direction not between 1 and 3
+	begin
+		set @direction = 3
+	end
+
+	drop table if exists #tbl
+	drop table if exists #clean
+	create table #tbl ([Hop] int, Uid uniqueidentifier, FromHop decimal, FromID bigint, subjectUid uniqueidentifier, FromPath nvarchar(2500), FromSegment xml, ToHop decimal, ToID bigint, objectUid uniqueidentifier, ToPath nvarchar(2500), ToSegment xml, predicateUid uniqueidentifier, [predicate] nvarchar(250), predicateType int)
+	create table #clean ([Hop] int, ID bigint, [Path] nvarchar(2500), Segment xml)
+	create index ix_TempTbl on #tbl ([Hop] desc, ToID asc)
+
+	declare	@assetId bigint,
+			@level int=0,
+			@current int=1,
+			@max int = @hops*2 -- (* 2) because we have to include the hop through the transformation asset
+
+	select @assetId = ID from Asset where Uid = @assetUid
+
+	if @assetId is null
+	begin
+		set @assetId = 0;
+	end
+
+	insert into #tbl ([Hop], ToID) values (@level, @assetId)
+
+	--Backward lineage
+	set @level = 0
+	set @current = 1
+	if @direction = 2 or @direction = 3
+	begin
+		while @current <= @max
+		begin
+			set @level = @level + 1
+
+			insert into #tbl
+				select	@level as [Hop],
+						E.Uid,
+						case when @level = 1 then cast(@level as decimal) else cast(@level-.5 as decimal) end as [FromHop],
+						S.ID as FromID,
+						S.Uid,
+						S.[Path] as FromPath,
+						S.[Segments] as FromSegments,
+						cast(@level+.5 as decimal) as ToHop,
+						T.ID as ToID,
+						T.Uid,
+						T.[Path] as ToPath,
+						T.[Segments] as ToSegments,
+
+						E.PredicateUid,
+						P.Name,
+						E.PredicateType
+
+				from	graph.AssetNode S,
+						graph.AssetEdge E,
+						graph.AssetNode T,
+						#tbl J,
+						[Predicate] P
+				where	MATCH(S<-(E)-T)
+						and J.[Hop] = @level-1 
+						and J.ToID = S.ID
+						and E.PredicateID = P.ID
+
+
+			set @current = @current+1
+		end
+	end
+
+	--Forward lineage
+	set @level = 0
+	set @current = 1
+	if @direction = 1 or @direction = 3
+	begin
+		while @current <= @max
+		begin
+			set @level = @level + 1
+
+			insert into #tbl
+				select	@level as [Hop],
+						E.Uid,
+						case when @level = 1 then cast(@level as decimal) else cast(@level-.5 as decimal) end as [FromHop],
+						S.ID as FromID,
+						S.Uid,
+						S.[Path] as FromPath,
+						S.[Segments] as FromSegments,
+						cast(@level+.5 as decimal) as ToHop,
+						T.ID as ToID,
+						T.Uid,
+						T.[Path] as ToPath,
+						T.[Segments] as ToSegments,
+
+						E.PredicateUid,
+						P.Name,
+						E.PredicateType
+
+				from	graph.AssetNode S,
+						graph.AssetEdge E,
+						graph.AssetNode T,
+						#tbl J,
+						[Predicate] P
+				where	MATCH(S-(E)->T)
+						and J.[Hop] = @level-1 
+						and J.ToID = S.ID
+						and E.PredicateID = P.ID
+
+			set @current = @current+1
+		end
+	end
+
+	delete #tbl where Hop = 0
+
+	insert into #clean
+		select	FromHop,
+				FromID,
+				FromPath,
+				FromSegment
+		from	#tbl
+
+	insert into #clean
+		select	N.ToHop,
+				N.ToID,
+				N.ToPath,
+				N.ToSegment
+		from	#tbl N
+				left join #clean E on E.Hop = N.ToHop and E.ID = N.ToID
+		where	E.ID is null
+
+	drop table if exists #hierarchies
+	create table #hierarchies ([Hop] int, ID bigint, Back varchar(25), Fore varchar(25), HierarchyLevel int, AssetTypeID int, AssetID bigint, AssetUid uniqueidentifier, DisplayValue nvarchar(500), Class int, AssetTypeName nvarchar(250), Reveal bit, RelationCounts varchar(max))
+	create index ix_TempHierarchies on #hierarchies ([Hop] asc, HierarchyLevel asc)
+
+	-- Hierarchies
+	insert into #hierarchies
+		select	T.[Hop],
+				--'F',
+				T.ID,
+				coalesce(S.[IconBackColor], '#000000'),
+				coalesce(S.[IconForeColor], '#FFFFFF'),
+				doc.c.value('@level', 'int') as [HierarchyLevel],
+				doc.c.value('@assetTypeId', 'int') as [assetTypeId],
+				doc.c.value('@assetId', 'bigint') as [assetId],
+				A.Uid,
+				d.DisplayValue,
+				[AT].Class,
+				[AT].Name as AssetTypeName,
+				cast(0 as bit),
+				'[]'
+		from	#clean T
+				cross apply T.Segment.nodes('/path/segment') doc(c)
+				inner join AssetDisplayValue d on d.AssetID = doc.c.value('@assetId', 'bigint')
+				inner join AssetType [AT] on [AT].ID = doc.c.value('@assetTypeId', 'int')
+				left join ObjectStyle S on S.ObjectType = [AT].Object and S.ObjectID = [AT].ObjectID
+				inner join Asset A on A.ID = d.AssetID;
+	update	T
+	set		T.Reveal = iif(S.[Count] > 0, 1, 0)
+	from	#hierarchies T
+			inner join (
+						select	J.AssetID,
+								count(1) as [Count]
+						from	graph.AssetNode S,
+								graph.AssetEdge E,
+								graph.AssetNode T,
+								(
+								select	h.* 
+								from	#hierarchies h
+										inner join (
+											select max(Hop) as Hop, Max(HierarchyLevel) as HierarchyLevel from #hierarchies
+										) mh on mh.Hop = h.Hop and mh.HierarchyLevel = h.HierarchyLevel		
+								) J
+						where	MATCH(S-(E)->T)
+								and J.AssetID = S.ID
+						group by J.AssetID
+			) S on S.AssetID = T.AssetID
+
+	-- Direct lineage
+	select * from #clean order by Hop;
+
+	-- Hierarchies
+	select * from #hierarchies order by Hop, ID, HierarchyLevel;
+
+	-- Links
+	select [Hop], Uid, subjectUid, FromID as subjectId, objectUid, ToID as objectId, predicateUid, [predicate], predicateType from #tbl order by Hop;
+end
+ ]]>
+    </sql>
+	<rollback>
+<![CDATA[	
+drop procedure if exists graph.GetLineageByAsset
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

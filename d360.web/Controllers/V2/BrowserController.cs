@@ -10,6 +10,12 @@ using d360.core.enums;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
+using System.Runtime.Serialization;
+using d360.web.Filters;
+using Swashbuckle.Swagger.Annotations;
+using d360.web.Models;
 
 namespace d360.web.Controllers.V2
 {
@@ -27,167 +33,122 @@ namespace d360.web.Controllers.V2
         {
         }
 
-        internal class DirectLineageRow
+        #region Internal Classes For Endpoint Below
+
+        internal class RawResultList1
         {
             public int Hop { get; set; }
-            public long FromID { get; set; }
-            public long ToID { get; set; }
+            public long ID { get; set; }
         }
 
-        internal class HierarchyLineageRow
+        internal class RawResultList2
         {
             public int Hop { get; set; }
-            public string FromTo { get; set; }
             public long ID { get; set; }
+            public string Back { get; set; }
+            public string Fore { get; set; }
             public int HierarchyLevel { get; set; }
             public int AssetTypeID { get; set; }
             public long AssetID { get; set; }
+            public Guid AssetUid { get; set; }
             public string DisplayValue { get; set; }
             public AssetTypeClass Class { get; set; }
             public string AssetTypeName { get; set; }
+            public bool Reveal { get; set; }
+            public string RelationCounts { get; set; }
         }
 
-        public class AssetBrowserLineageApiRelationshipModel
+        internal class RawResultList3
         {
-            public Guid intersectUid { get; set; }
+            public int Hop { get; set; }
+            public Guid Uid { get; set; }
             public Guid subjectUid { get; set; }
+            public long subjectId { get; set; }
             public Guid objectUid { get; set; }
-            public string predicate { get; set; }
+            public long objectId { get; set; }
             public Guid predicateUid { get; set; }
-            public string backColor { get; set; }
-            public string foreColor { get; set; }
+            public string predicate { get; set; }
+            public PredicateType predicateType { get; set; }
         }
 
-        public class AssetBrowserLineageApiItemModel
-        {
-            public Guid assetUid { get; set; }
-            public string displayValue { get; set; }
-            public List<AssetBrowserLineageApiItemModel> items { get; set; }
-        }
+        #endregion
 
-        public class AssetBrowserLineageApiTopItemModel: AssetBrowserLineageApiItemModel
-        {
-            public string backColor { get; set; }
-            public string foreColor { get; set; }
-        }
-
-        public class AssetBrowserLineageApiModel
-        {
-            public Guid focalAssetUid { get; set; }
-            public List<AssetBrowserLineageApiTopItemModel> assets { get; set; } = new List<AssetBrowserLineageApiTopItemModel>();
-            public List<AssetBrowserLineageApiRelationshipModel> intersects { get; set; } = new List<AssetBrowserLineageApiRelationshipModel>();
-        }
-
-        [Route("{assetUid: Guid}"), HttpGet]
-        public HttpResponseMessage GetAssetLineage(Guid assetUid)
+        /// <summary>
+        /// Gets lineage for the specified asset.
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        /// <param name="assetUid">The uid of the asset that we are getting lineage for.</param>
+        /// <param name="postModel"></param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            Route("{assetUid:Guid}"), 
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerRequestExample(typeof(GetAssetLineagePostModel), typeof(GetAssetLineagePostModelExample)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserLineageApiResponseModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetAssetLineage(Guid assetUid, GetAssetLineagePostModel postModel)
         {
             try
             {
-                var asset = Company.Filter<Asset>(i => i.uid == assetUid).FirstOrDefault();
+                var reader = await Company.QueryMultipleAsync(@"exec graph.GetLineageByAsset @assetUid, @startFromAssets, @direction, @hops", new { 
+                    assetUid, 
+                    startFromAssets = postModel.StartFromAssetsJson, 
+                    direction = (int)GetAssetLineagePostModelDirection.Forward, //(int)postModel.Direction,
+                    hops = (postModel.Hops > 0) ? postModel.Hops : 1 
+                }, timeout: 10);
 
-                if (asset == null)
-                {
-                    return ReturnApiError(HttpStatusCode.NotFound, $"Asset with uid of {assetUid.ToString()} could not be found.");
-                }
+                var hops = reader.Read<RawResultList1>().ToList();
+                var hierarchies = reader.Read<RawResultList2>().OrderBy(i => i.Hop).ThenBy(i => i.ID).ThenBy(i => i.HierarchyLevel).ToList();
+                var relationships = reader.Read<RawResultList3>().OrderBy(i => i.Hop).ToList();
 
-                var reader = Company.QueryMultipleAsync(@"
-drop table if exists #tbl
-create table #tbl ([Hop] int, Uid uniqueidentifier, FromID bigint, FromPath nvarchar(2500), FromSegment xml, ToID bigint, ToPath nvarchar(2500), ToSegment xml)
-create index ix_TempTbl on #tbl ([Hop] desc, ToID asc)
-
-declare	@level int = 0,
-		@current int = 1,
-		@max int = @hops*2 -- (* 2) because we have to include the hop through the transformation asset
-
-insert into #tbl ([Hop], ToID) values (@level, @assetId)
-
-while @current <= @max
-begin
-	set @level = @level + 1
-
-	insert into #tbl
-		select	@level as [Hop],
-				E.Uid,
-				
-                S.ID as FromID,
-				S.[Path] as FromPath,
-				S.[Segments] as FromSegments,
-				
-                T.ID as ToID,
-				T.[Path] as ToPath,
-				T.[Segments] as ToSegments
-		from	graph.AssetNode S,
-				graph.AssetEdge E,
-				graph.AssetNode T,
-				#tbl J
-		where	MATCH(S-(E)->T)
-				and J.[Hop] = @level-1 
-				and J.ToID = S.ID
-
-	set @current = @current+1
-end
-
-drop table if exists #hierarchies
-create table #hierarchies ([Hop] int, FromTo varchar(1), ID bigint, HierarchyLevel int, AssetTypeID int, AssetID bigint, DisplayValue nvarchar(500), Class int, AssetTypeName nvarchar(250))
-create index ix_TempHierarchies on #hierarchies ([Hop] asc, HierarchyLevel asc)
-
--- From hierarchies
-insert into #hierarchies
-	select	T.[Hop],
-			'F',
-			T.FromID,
-			doc.c.value('@level', 'int') as [HierarchyLevel],
-			doc.c.value('@assetTypeId', 'int') as [assetTypeId],
-			doc.c.value('@assetId', 'bigint') as [assetId],
-			d.DisplayValue,
-			[AT].Class,
-			[AT].Name as AssetTypeName,
-			null
-	from	#tbl T
-			cross apply T.FromSegment.nodes('/path/segment') doc(c)
-			inner join AssetDisplayValue d on d.AssetID = doc.c.value('@assetId', 'bigint')
-			inner join AssetType [AT] on [AT].ID = doc.c.value('@assetTypeId', 'int');
-
--- To hierarchies
-insert into #hierarchies
-	select	T.[Hop],
-			'T',
-			T.ToID,
-			doc.c.value('@level', 'int') as [HierarchyLevel],
-			doc.c.value('@assetTypeId', 'int') as [assetTypeId],
-			doc.c.value('@assetId', 'bigint') as [assetId],
-			d.DisplayValue,
-			[AT].Class,
-			[AT].Name as AssetTypeName,
-			null
-	from	#tbl T
-			cross apply T.ToSegment.nodes('/path/segment') doc(c)
-			inner join AssetDisplayValue d on d.AssetID = doc.c.value('@assetId', 'bigint')
-			inner join AssetType [AT] on [AT].ID = doc.c.value('@assetTypeId', 'int');
-
-delete #tbl where Hop = 0;
-
--- Direct lineage
-select * from #tbl;
-
--- Select hierarchies
-select * from #hierarchies;
-", new { assetId = asset.ID, hops = 3 }).Result;
-
-                var hops = reader.Read<DirectLineageRow>().ToList();
-                var hierarchies = reader.Read<HierarchyLineageRow>().OrderBy(i => i.Hop).ThenBy(i => i.HierarchyLevel).ToList();
-
-                var model = new AssetBrowserLineageApiModel {
+                var model = new AssetBrowserLineageApiResponseModel {
                     focalAssetUid = assetUid
                 };
 
+                int currentHop = 1;
+                IAssetBrowserLineageApiItemModel current = null;
                 hierarchies.ForEach(h =>
                 {
-                    if (h.Hop == 1)
+                    if (h.Hop != currentHop || (h.Hop == currentHop && current?.ID != h.ID))
                     {
+                        currentHop = h.Hop;
+                        current = null;
+                    }
 
+                    if (current == null)
+                    {
+                        current = new AssetBrowserLineageApiTopItemModel { ID = h.ID, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", displayValue = h.DisplayValue };
+                        model.assets.Add((AssetBrowserLineageApiTopItemModel)current);
+                    }
+                    else
+                    {
+                        if (current.assetUid != h.AssetUid)
+                        {
+                            current.items = new List<AssetBrowserLineageApiItemModel>();
+                            var newCurrent = new AssetBrowserLineageApiItemModel { ID = h.ID, assetUid = h.AssetUid, displayValue = h.DisplayValue };
+                            current.items.Add(newCurrent);
+
+                            current = newCurrent;
+                        }
                     }
                 });
+
+                model.intersects = relationships.Select(r => new AssetBrowserLineageApiRelationshipModel { 
+                    backColor = "", 
+                    foreColor = "", 
+                    intersectUid = r.Uid, 
+                    objectUid = r.objectUid, 
+                    predicate = r.predicate, 
+                    predicateUid = r.predicateUid, 
+                    predicateType = r.predicateType,
+                    subjectUid = r.subjectUid 
+                }).ToList();
 
                 return Request.CreateResponse(HttpStatusCode.OK, model);
             }
@@ -197,6 +158,9 @@ select * from #hierarchies;
             }
         }
 
-        //private 
+        private void update(AssetBrowserLineageApiResponseModel root, AssetBrowserLineageApiItemModel current)
+        { 
+        
+        }
     }
 }

@@ -1403,6 +1403,7 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\survey\survey.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\impact.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\browser.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\lineage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\visualization.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\visualization.routes.ts" />
@@ -1667,6 +1668,7 @@
     <TypeScriptCompile Include="Scripts\app\services\export-template.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fieldsObservable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\browser.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\messages-observable.service.ts" />

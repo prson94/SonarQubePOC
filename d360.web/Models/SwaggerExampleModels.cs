@@ -70,6 +70,23 @@ namespace d360.web.Models
         }
     }
 
+    #region Asset Browser
+
+    public class GetAssetLineagePostModelExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new GetAssetLineagePostModel
+            {
+                Direction = GetAssetLineagePostModelDirection.Both,
+                Hops = 3,
+                StartFromAssets = new List<Guid>() { Guid.Empty }
+            };
+        }
+    }
+
+    #endregion
+
     #region Workflow Type Examples
 
 
