@@ -72,6 +72,8 @@ namespace d360.core.entities
 
         [DataMember]
         public bool UseAsTransformation { get; set; }
+        [DataMember]
+        public bool? CanOwnFusion { get; set; }
 
 
 

@@ -35,32 +35,11 @@ namespace d360.web.Models
     public class AssetTypeEditorModel : BaseEditorModel
     {
         public AssetTypeInsert AssetType { get; set; }
-        public AssetType AssetTypeOld { get; set; }
-
         public int? ParentID { get; set; } = null;
         public Guid? ParentUid { get; set; } = null;
-
         public List<PrimeSelectItem> Predicates { get; set; } = new List<PrimeSelectItem>();
-
         public List<PrimeSelectItem> Tokens { get; set; } = new List<PrimeSelectItem>();
-
-        public int? SelectedPredicateID { get; set; } = null;
         public Guid? SelectedPredicateUid { get; set; } = null;
-
-        public string IconBackColor { get; set; }
-
-        public string IconForeColor { get; set; }
-
-
-        // TODO: Extra fields to remove to appropriate classes when fully converted over to Asset.
-        public bool? CanOwnFusion { get; set; }
-        public bool? AutoDisplayDescription { get; set; }
-        public bool? ShowNameInTree { get; set; }
-        public int? TypeClassID { get; set; }
-        public bool? ScanEnabled { get; set; }
-        public string Query { get; set; }
-        public int? TopLevelTypeID { get; set; }
-        public string Notes { get; set; }
         public List<PrimeSelectItem> Parents { get; set; } = new List<PrimeSelectItem>();
     }
 

@@ -35,41 +35,13 @@ export class AssetTypeMetricModel {
     Class: string
 }
 
-export class AssetTypeOld {
-    Uid: string;
-    ID: number;
-    Name: string;
-    Description: string;
-    Class: AssetTypeClass;
-    DisplayFormat: string;
-    //    State: State;
-    Hierarchical: boolean;
-    HierarchyMaximumDepth: number;
-    UseAsTransformation: boolean;
-    Object: string;
-    ObjectID: number;
-    CreatedBy: number;
-    CreatedOn: string;
-    UpdatedBy: number;
-    UpdatedOn: string;
-}
-
 export class AssetTypeEditorModel {
+    AssetType: AssetType;
     SelectedPredicateUid: string;
     ParentUid: string;
     Predicates: any[];
     Tokens: any[];
-    AssetType: AssetType;
     Parents: any[];
-
-    // TODO: Extra fields to remove to appropriate classes when fully converted over to Asset.
-    CanOwnFusion: boolean;              //ArtifactType
-    ShowNameInTree: boolean;            //AttributeType
-    TypeClassID: number;                //AttributeType.AttributeTypeCategoryID, TaxonomyType.TaxonomyTypeClassID
-    Assignable: boolean;                //FusionAttributeType
-    ScanEnabled: boolean;               //FusionAttributeType
-    Query: string;                      //FusionQueryAttributeType
-    TopLevelTypeID: number;             //FusionTypeID,etc.
 }
 
 export enum AssetTypeClass {
@@ -97,6 +69,7 @@ export class AssetType {
     ParentUid: string;
     Notes: string;
     UseAsTransformation: boolean;
+    CanOwnFusion: boolean;
     IconStyle: IconStyle = new IconStyle();
     Hierarchy: Hierarchy = new Hierarchy();
 

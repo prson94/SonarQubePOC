@@ -79,7 +79,7 @@
                         <div class="FieldName">Can Own Fusion?</div>
                         <div class="row">
                             <div class="col l1 m2 s12">
-                                <input pCheckbox type="checkbox" name="CanOwnFusion" [(ngModel)]="model.CanOwnFusion" />
+                                <input pCheckbox type="checkbox" name="CanOwnFusion" [(ngModel)]="model.AssetType.CanOwnFusion" />
                             </div>
                             <div class="col l11 m10 s12">
                                 <div class="FieldInstructions">If enabled, items of this type can own fusion configurations.</div>
@@ -87,17 +87,6 @@
                         </div>
                     </ng-container>
                     <d3s-asset-type-editor-use-as-transformation *ngIf="lineageVersion == 3" [(UseAsTransformation)]="model.AssetType.UseAsTransformation"></d3s-asset-type-editor-use-as-transformation>
-                </simple-accordion>
-                <simple-accordion header="Settings" active="true" *ngIf="showAssetFusionSettings">
-                    <div class="FieldName">Scan Enabled?</div>
-                    <div class="row">
-                        <div class="col l1 m2 s12">
-                            <input pCheckbox type="checkbox" name="ScanEnabled" [(ngModel)]="model.ScanEnabled" />
-                        </div>
-                        <div class="col l11 m10 s12">
-                            <div class="FieldInstructions">If enabled, the Fusion Agent will pull attributes of this type.</div>
-                        </div>
-                    </div>
                 </simple-accordion>
                 <simple-accordion header="Settings" active="true" *ngIf="showAssetDepthSettings">
                     <div class="FieldName">Maximum Depth</div>
@@ -110,8 +99,6 @@
                         </div>
                     </div>
                 </simple-accordion>
-
-
                 <simple-accordion header="Styles" active="true" *ngIf="showAssetStyles">
                     <div class="FieldName">Background Color</div>
                     <div class="row">

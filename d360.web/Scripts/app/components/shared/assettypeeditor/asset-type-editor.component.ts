@@ -16,7 +16,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     @Input() title: string = "Add Asset Type";
     @Input() id: number;
     @Input() parentID: number;
-    @Input() topTypeID: number; //For things like fusion type ID
     @Input() assetTypeClass: AssetTypeClass;
     @Input() showParentPredicates: boolean = true;
     @Input() showDisplayFormat: boolean = true;
@@ -32,7 +31,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     showAssetStyles: boolean = true;
     showAssetDepthSettings: boolean = false;
-    showAssetFusionSettings: boolean = false;
     showFusionOwnerSettings: boolean = false;
     showAssetArtifactSettings: boolean = false;
     showNotesField: boolean = false;
@@ -87,9 +85,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 this.showAssetStyles = false;
                 this.showNotesField = true;
                 break;
-            case AssetTypeClass.Fusion:
-                this.showAssetFusionSettings = true;                
-                break;
         }
 
         this
@@ -104,11 +99,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 this.spinNum = this.model.AssetType.Hierarchy.MaximumDepth;
                 if (this.spinNum == 0) {
                     this.spinNum = 1;
-                }
-
-                if (this.topTypeID)
-                {
-                    this.model.TopLevelTypeID = this.topTypeID;
                 }
 
                 if (this.model.Predicates) {
@@ -186,7 +176,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     }
 
     get FirstColumnStyle(): string {
-        if (this.showAssetArtifactSettings || this.showAssetDepthSettings || this.showAssetFusionSettings || this.showAssetStyles )
+        if (this.showAssetArtifactSettings || this.showAssetDepthSettings || this.showAssetStyles )
             return "col l8 m12 s12";
         return "col s12";
     }
