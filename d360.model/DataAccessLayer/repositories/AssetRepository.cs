@@ -380,7 +380,8 @@ namespace d360.model.DataAccessLayer
                         Hierarchical = true,
                         Class = AssetTypeClass.Business,
                         AutoDisplayDescription = model.AutoDisplayDescription,
-                        UseAsTransformation = model.UseAsTransformation
+                        UseAsTransformation = model.UseAsTransformation,
+                        CanOwnFusion = model.CanOwnFusion ?? false
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;

@@ -277,6 +277,9 @@ namespace d360.web.Controllers.V2
                 if (model.UseAsTransformation && (model.Class != AssetTypeClass.Business && model.Class != AssetTypeClass.Technical))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", "Use As Transformation can be set only asset types that are a Business or Technical class"));
 
+                if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.Business)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Can Own Fusion", "Can Own Fusion can be set only asset types that are of class Business"));
+
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", "The total number of asset types exceeds the Transformation limit "));
 
@@ -385,6 +388,9 @@ namespace d360.web.Controllers.V2
 
                 if (model.UseAsTransformation && (model.Class != AssetTypeClass.Business && model.Class != AssetTypeClass.Technical))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", "Use As Transformation can be set only asset types that are a Business or Technical class"));
+
+                if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.Business)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Can Own Fusion", "Can Own Fusion can be set only asset types of class Business"));
 
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", "The total number of asset types exceeds the Transformation limit "));
