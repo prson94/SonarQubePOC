@@ -1211,6 +1211,21 @@ from	api.ExecutionField T
                 }
             }
 
+            if (!Community.IsFusionEnabled())
+            {
+                List<SystemObjects> filteredObjects = new List<SystemObjects>()
+                {
+                    SystemObjects.FusionAttributeType,
+                    SystemObjects.FusionQueryAttributeType,
+                    SystemObjects.FusionType
+                };
+
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") 
+                    + $" I.Object not in ({string.Join(",", filteredObjects.Select(x=> "'" +x+"'"))})";
+
+                whereClause += $" AND I.Subject not in ({string.Join(",", filteredObjects.Select(x => "'" + x + "'"))})";
+            }
+
             var sql = $@"
 select	I.Id,
         I.Uid,

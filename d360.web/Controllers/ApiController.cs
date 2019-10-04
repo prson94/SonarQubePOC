@@ -7166,7 +7166,15 @@ where v.id = {0}", id)).FirstOrDefault();
             else
                 sql = string.Format(QueryConstants.ObjectRelationshipAllCountsWithZero, disallowEditFilter);
 
-            return Company.Query<dynamic>(sql, new { obj = new DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid });
+            var data = Company.Query<dynamic>(sql, new { obj = new DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid });
+
+            if (!Community.IsFusionEnabled())
+            {
+                data = data.Where(x => x.Object != SystemObjects.FusionType.ToString()
+                && x.Object != SystemObjects.FusionAttributeType.ToString()
+                && x.Object != SystemObjects.FusionQueryAttributeType.ToString());
+            }
+            return data;
 
         }
 
