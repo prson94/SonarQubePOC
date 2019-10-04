@@ -247,7 +247,6 @@ export class FusionAttributeSummaryComponent extends BaseComponent implements On
 
     private getData() {
         if ((this.fusionId === undefined) || !this.fusionObjectID) {
-            //console.error("ERROR: ", "NO FUSION ATTRIBUTE TYPE ID SPECIFIED OR FUSION ID");
             return;
         }
 
