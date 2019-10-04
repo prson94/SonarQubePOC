@@ -633,6 +633,9 @@
     <Content Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.html" />
     <Content Include="Scripts\app\components\admin\tags\admin-tags-action.component.html" />
     <Content Include="Scripts\app\components\admin\tags\admin-tags.component.html" />
+    <Content Include="Scripts\app\components\admin\hierarchies\admin-level-list.component.html" />
+    <Content Include="Scripts\app\components\admin\hierarchies\admin-hierarchies.component.html" />
+    <Content Include="Scripts\app\components\admin\hierarchies\admin-level-editor.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
@@ -1163,7 +1166,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\issuetypes\admin-issue-types.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-classifications.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-analytics.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.module.ts" />
@@ -1217,10 +1219,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\taxonomies\admin-taxonomies.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\taxonomies\admin-taxonomies.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\policies\admin-policies.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\policies\admin-policies.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\hierarchies\admin-hierarchies.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\hierarchies\admin-hierarchies.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\resources\admin-resources.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\resources\admin-resources.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\admin-responsibilities.module.ts" />
@@ -1332,17 +1332,15 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookup-type-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\policies\admin-policies.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\resources\admin-resources.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\rules\admin-rules.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-question-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-surveys.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\taxonomies\admin-taxonomies.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\hierarchies\admin-hierarchies.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\settings\admin-settings.component.ts" />
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\taxonomies\admin-taxonomy-detail.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-editor.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\hierarchies\admin-level-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.routes.ts" />
@@ -1448,6 +1446,7 @@
     <TypeScriptCompile Include="Scripts\app\models\custom-api.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\export-template.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\header.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\hierarchy.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\metrics.model.ts" />
@@ -1599,7 +1598,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\admin-level-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\hierarchies\admin-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\object-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.ts" />
@@ -1641,7 +1640,6 @@
     <TypeScriptCompile Include="Scripts\app\models\statistic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifact-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\breadcrumb.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\claims.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\company-settings.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\editor-field.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fields.model.ts" />
@@ -1657,7 +1655,7 @@
     <TypeScriptCompile Include="Scripts\app\models\rule.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\survey.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\tag.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\taxonomy.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\hierarchy-type-level.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-detail.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\responsibility.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\settings.model.ts" />
