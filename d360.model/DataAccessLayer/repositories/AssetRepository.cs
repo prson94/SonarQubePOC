@@ -15,6 +15,7 @@ using d360.extensions;
 using System.Net;
 using System.Text.RegularExpressions;
 using d360.core.helpers;
+using d360.core.resources;
 
 namespace d360.model.DataAccessLayer
 {
@@ -365,6 +366,7 @@ namespace d360.model.DataAccessLayer
             switch (model.Class)
             {
                 case AssetTypeClass.Business:
+                case AssetTypeClass.Technical:
                     #region
                     var a = new AssetType
                     {
@@ -378,7 +380,7 @@ namespace d360.model.DataAccessLayer
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
-                        Class = AssetTypeClass.Business,
+                        Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
                         UseAsTransformation = model.UseAsTransformation
                     };
@@ -399,7 +401,7 @@ namespace d360.model.DataAccessLayer
                     };
                     var existing = CompanyContext.Filter<OrganizationType>(o => o.Name == org.Name && o.State == State.Active).FirstOrDefault();
                     if (existing != null)
-                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Wrong Name", "There is already an organization type with that name.");
+                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Wrong Name", AssetTypeErrors.ExistingOrganizationType);
                     CompanyContext.Add(org);
                     parentType = SystemObjects.OrganizationType;
                     model.ObjectID = org.ID;
@@ -450,7 +452,7 @@ namespace d360.model.DataAccessLayer
                     };
 
                     if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
-                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", "Invalid Maximum Depth,Model level specified must be a value between 1 and 10.");
+                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", AssetTypeErrors.InvalidModelDepth);
 
 
                     CompanyContext.Add(t);
@@ -564,12 +566,12 @@ namespace d360.model.DataAccessLayer
                 case AssetTypeClass.Policy:
                 case AssetTypeClass.Reference:
                 case AssetTypeClass.Technical:
-                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {model.Class.ToString()}", $"Not valid {model.Class.ToString()} provided.Please check your request and try again.");
+                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {model.Class.ToString()}", $"Invalid {model.Class.ToString()} provided. {AssetTypeErrors.CheckRequest}");
 
                     assetType.Name = model.Name;
                     assetType.DisplayFormat = model.DisplayFormat;
                     assetType.Description = model.Description;
-                    assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
+                    assetType.HierarchyMaximumDepth = (model.Hierarchy != null) ? model.Hierarchy.MaximumDepth : 1;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
                     if (model.Class == AssetTypeClass.Business || model.Class == AssetTypeClass.Technical)
                     {
@@ -585,7 +587,7 @@ namespace d360.model.DataAccessLayer
                     if (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy)
                     {
                         if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
-                            return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", "Invalid Maximum Depth,Model level specified must be a value between 1 and 10.");
+                            return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", AssetTypeErrors.InvalidModelDepth);
 
                         for (int i = 1; i <= assetType.HierarchyMaximumDepth; i++)
                         {
@@ -609,7 +611,7 @@ namespace d360.model.DataAccessLayer
                     break;
                 case AssetTypeClass.Organization:
                     var org = CompanyContext.GetById<OrganizationType>(model.ObjectID);
-                    if (org == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Organization.ToString()}", $"Not valid {AssetTypeClass.Organization.ToString()} provided.Please check your request and try again.");
+                    if (org == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Organization.ToString()}", $"Invalid {AssetTypeClass.Organization.ToString()} provided. {AssetTypeErrors.CheckRequest}");
                     org.Name = model.Name;
                     org.Description = model.Description;
                     org.DisplayFormat = model.DisplayFormat;
@@ -619,7 +621,7 @@ namespace d360.model.DataAccessLayer
                 case AssetTypeClass.Rule:
                     #region
                     var r = CompanyContext.GetById<RuleType>(model.ObjectID);
-                    if (r == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Rule.ToString()}", $"Not valid {AssetTypeClass.Rule.ToString()} provided.Please check your request and try again.");
+                    if (r == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Rule.ToString()}", $"Not valid {AssetTypeClass.Rule.ToString()} provided. {AssetTypeErrors.CheckRequest}");
                     r.Name = model.Name;
                     r.DisplayFormat = model.DisplayFormat;
                     r.Description = model.Description;

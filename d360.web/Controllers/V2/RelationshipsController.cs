@@ -10,6 +10,7 @@ using d360.web.Models;
 using d360.web.Models.Attributes;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using Resources;
 using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -116,7 +117,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
                 if (predicates == null)
                     predicates = readRequestJsonContent<PredicateDeletes>(Request, true).Result;
@@ -172,7 +173,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
                 if (predicates == null)
                     predicates = readRequestJsonContent<PredicateUpserts>(Request, true).Result;
