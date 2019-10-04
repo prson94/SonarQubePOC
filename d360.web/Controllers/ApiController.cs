@@ -3464,6 +3464,7 @@ outer apply (
             var objIDColumn = "";
             var joinType = "inner"; //the SQL join.
             var useAssetJoin = false;
+            var useAssetTypeJoin = false;
 
             var permissionJoin = $@"
                 inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ID ";
@@ -3475,6 +3476,9 @@ outer apply (
                 case "taxonomy":
                     permissionJoin = $@"  inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ObjectID ";
                     useAssetJoin = true;
+                    break;
+                case "referenceitemtype":
+                    useAssetTypeJoin = true;
                     break;
                 default:
                     permissionJoin = "";
@@ -3524,6 +3528,10 @@ outer apply (
                                 {
                                     join.JoinStatement += $" inner join asset A{i} on A{i}.ObjectID = I{i}.SubjectID and A{i}.[Object] = '{currentObj}'";
                                 }
+                                else if (useAssetTypeJoin)
+                                {
+                                    join.JoinStatement += $" inner join AssetType A{i} on A{i}.ObjectID = I{i}.SubjectID and A{i}.[Object] = '{currentObj}'";
+                                }
                                 else
                                 {
                                     join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.SubjectID";
@@ -3537,6 +3545,10 @@ outer apply (
                                 {
                                     join.JoinStatement += $" inner join asset A{i} on A{i}.ObjectID = I{i}.ObjectID and A{i}.[Object] = '{currentObj}'";
                                 }
+                                else if (useAssetTypeJoin)
+                                {
+                                    join.JoinStatement += $" inner join AssetType A{i} on A{i}.ObjectID = I{i}.ObjectID and A{i}.[Object] = '{currentObj}'";
+                                }
                                 else
                                 {
                                     join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.ObjectID";
@@ -3549,6 +3561,10 @@ outer apply (
                                 if (useAssetJoin)
                                 {
                                     join.JoinStatement += $" inner join asset A{i} on A{i}.[Object] = '{currentObj}' and A{i}.ObjectID = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                }
+                                else if (useAssetTypeJoin)
+                                {
+                                    join.JoinStatement += $" inner join AssetType A{i} on A{i}.[Object] = '{currentObj}' and A{i}.ObjectID = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 }
                                 else
                                 {
@@ -3572,6 +3588,10 @@ outer apply (
                                 {
                                     join.JoinStatement += $" {joinType} join asset A{i} on A{i}.ObjectID = I{i}.SubjectID and A{i}.[Object] = '{currentObj}'";
                                 }
+                                else if (useAssetTypeJoin)
+                                {
+                                    join.JoinStatement += $" {joinType} AssetType A{i} on A{i}.ObjectID = I{i}.SubjectID and A{i}.[Object] = '{currentObj}'";
+                                }
                                 else
                                 {
                                     join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.SubjectID";
@@ -3585,6 +3605,10 @@ outer apply (
                                 {
                                     join.JoinStatement += $" {joinType} join asset A{i} on A{i}.ObjectID = I{i}.ObjectID and A{i}.[Object] = '{currentObj}'";
                                 }
+                                else if (useAssetTypeJoin)
+                                {
+                                    join.JoinStatement += $" {joinType} AssetType A{i} on A{i}.ObjectID = I{i}.ObjectID and A{i}.[Object] = '{currentObj}'";
+                                }
                                 else
                                 {
                                     join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.ObjectID";
@@ -3597,6 +3621,10 @@ outer apply (
                                 if (useAssetJoin)
                                 {
                                     join.JoinStatement += $" {joinType} join Asset A{i} on A{i}.Object = '{currentObj}' and A{i}.ObjectID = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                }
+                                else if (useAssetTypeJoin)
+                                {
+                                    join.JoinStatement += $" {joinType} AssetType A{i} on A{i}.[Object] = '{currentObj}' and A{i}.ObjectID = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 }
                                 else
                                 {
