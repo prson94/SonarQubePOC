@@ -96,7 +96,7 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         if (CompanySettings.HomePageBackgroundImage != null && CompanySettings.HomePageBackgroundImage != '')
             this.backgroundImage = CompanySettings.HomePageBackgroundImage;
         else
-            this.backgroundImage = '/content/images/home.background.png';
+            this.backgroundImage = '/content/images/home.background.new.png';
 
         this.numTiles = (this.showAssignmentTile ? 1 : 0)
             + (this.showBoardTile ? 1 : 0)

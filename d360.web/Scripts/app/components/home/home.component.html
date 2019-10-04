@@ -1,22 +1,14 @@
-﻿<div *ngIf="showTitle && backgroundImage != '';else otherHeaders"
-     [style.background-image]="'url('+ backgroundImage + ')'"
-     class="home-page-canvas"
-     style="width:100%; min-height:200px;padding:10px;background-position:center;">
-    <div [style.color]="titleColor"
-         [style.font-size]="titleSize"
-         style="letter-spacing: 3px">{{title}}</div>
-</div>
-<ng-template #otherHeaders>
+﻿<div>
     <div *ngIf="showTitle">
         <div [style.color]="titleColor"
              [style.font-size]="titleSize"
-             style="letter-spacing: 3px">{{title}}</div>
+             class="title-setting">{{title}}</div>
     </div>
     <div *ngIf="backgroundImage != ''">
         <img [src]="backgroundImage"
              style="width:100%; position:absolute; left:0; top:0; z-index: -10000"/>
     </div>
-</ng-template>
+</div>
 
 <div class="row" *ngIf="showActivityDetails">
     <div class="col s12">
@@ -43,7 +35,7 @@
     <d3s-home-search *ngIf="!showActivityDetails && !showBoardDetails"
                      (resultsChange)="checkHasResults($event)"
                      hasResults="{{ hasResults }}"></d3s-home-search>
-    <span style="padding-left:5px"><d3s-shortcut-display></d3s-shortcut-display></span>
+    <span><d3s-shortcut-display></d3s-shortcut-display></span>
 </div>
 
 <div *ngIf="!showActivityDetails && !showBoardDetails && !showAssignmentDetails && numTiles > 0"

@@ -44,9 +44,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
         this.menuItems.push(
-            { icon: 'fa fa-search-minus' },
-            { icon: 'fa fa-search-plus' },
-            { icon: 'fa fa-refresh' }
+            { icon: 'fa fa-search-minus', title: 'Zoom out' },
+            { icon: 'fa fa-search-plus', title: 'Zoom in' },
+            { icon: 'fa fa-refresh', title: 'Refresh' }
         );
         this.initializeDiagram();
     
