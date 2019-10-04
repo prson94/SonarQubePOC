@@ -59,7 +59,7 @@
     [(filters)]="stateService.artifactTypeFilters.filters"
     [artifactType]="artifactType"
     [fields]="filtercolumns"
-    (filterChanged)="filterGridData()"
+    (filterChanged)="filterGridData(dt)"
   ></d3s-artifact-column-filter>
   <d3s-artifact-custom-export
     *ngIf="showCustomExport"
