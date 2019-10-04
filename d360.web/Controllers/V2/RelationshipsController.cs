@@ -463,7 +463,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Verify the asset type has releationship exists or not
+        /// Verify if the asset type has existing relationships or not
         /// </summary>
         /// <param name="assetTypeId"></param>
         /// <returns>true if relationship exists otherwise false</returns>
