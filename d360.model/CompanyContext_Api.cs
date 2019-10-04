@@ -2311,7 +2311,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                         // Get field types.
                         fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { at.Object, at.ObjectID }).ToList();
                         jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
-                        requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
+                        requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
                         hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
 
                         #region Generate data sets
@@ -3215,7 +3215,7 @@ from	api.ExecutionAsset T
 
                     // Get field types.
                     var fieldTypes = Query<FieldType>("select * from FieldType where Object = 'IntersectType' and ObjectID = @ID", new { rt.ID }).ToList();
-                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
+                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
 
                     #region Generate data sets
 
