@@ -47,10 +47,19 @@ namespace d360.model
 
             if (dupes)
             {
+                Add(execution);
+
+                var message = "The request contains duplicate combinations of AssetUid, MetricAssetUid, and EffectiveDate. You must send in unique combinations for those three fields.";
+                execution.Error = 1;
+                execution.Processed = 0;
+                execution.CompletedOn = DateTime.UtcNow;
+                execution.ErrorMessage = message;
+
+                Update(execution);
                 throw new GenericException(
                     System.Net.HttpStatusCode.BadRequest,
                     "Duplicate items found in request", 
-                    "The request contains duplicate combinations of AssetUid, MetricAssetUid, and EffectiveDate. You must send in unique combinations for those three fields.");
+                    message);
             }
             else
             {
