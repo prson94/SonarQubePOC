@@ -1462,3 +1462,9 @@ button.ui-button:disabled {
     min-width: 1.5em;
     width: auto;
 }
+
+
+p-multiselect .ui-multiselect {
+    z-index: 1;
+}
+
