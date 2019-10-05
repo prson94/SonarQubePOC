@@ -41,7 +41,7 @@ declare var CompanySettings;
     providers: [SearchService, TypeaheadSearchService],
 })
 
-export class HeroSearchInputComponent extends BaseComponent implements OnDestroy,, OnInit {
+export class HeroSearchInputComponent extends BaseComponent implements OnDestroy, OnInit {
     @Input() isExactMatch: boolean = true;
     @Output() isExactMatchChange = new EventEmitter();
 
