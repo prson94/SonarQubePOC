@@ -16,7 +16,7 @@
                         <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>
                     </div>
                     <div class="col l6 m6 s12" *ngIf="showParentPredicates && (model.Predicates.length > 1)">
-                        <div [ngClass]="assetTypeClass == 'M' || assetTypeClass == 'P' ? 'FieldNameRequired' : 'FieldName'">Predicate To Parent</div>
+                        <div [ngClass]="isPredicateRequired ? 'FieldNameRequired' : 'FieldName'">Predicate To Parent</div>
                         <p-dropdown 
                                     [options]="model.Predicates" 
                                     #predicate="ngModel" 
@@ -24,7 +24,7 @@
                                     (ngModelChange)="model.AssetType.Hierarchy.PredicateUid=$event;updateParent(model.AssetType.Hierarchy.PredicateUid);" 
                                     [style]="{'width':'100%'}" 
                                     name="predicate" 
-                                    [required]="assetTypeClass == 'M' || assetTypeClass == 'P'">
+                                    [required]="isPredicateRequired">
                         </p-dropdown>
                         <div [hidden]="predicate.valid || predicate.pristine" class="validation-text">Predicate is required</div>
                     </div>

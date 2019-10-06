@@ -9,6 +9,7 @@ import {AssetTypeEditorModel, AssetTypeClass, AssetType} from "../models/asset.m
 
 import {BaseObservableService} from "./baseObservable.service";
 import {MessagesObservableService} from './messages-observable.service';
+import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 
 @Injectable()
 export class AssetTypeService extends BaseObservableService {
@@ -34,30 +35,6 @@ export class AssetTypeService extends BaseObservableService {
             );
     }
 
-    putAssetTypeOld(
-        model: AssetTypeEditorModel
-    ): Observable<JsonResult> {
-        return this
-            .http
-            .put('form/AssetType', model)
-            .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    postAssetTypeOld(
-        model: AssetTypeEditorModel
-    ): Observable<JsonResult> {
-        return this
-            .http
-            .post('form/AssetType', model)
-            .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     public deleteAssetTypeOld(
         id: number
     ): Observable<JsonResult> {
@@ -73,23 +50,23 @@ export class AssetTypeService extends BaseObservableService {
     //#region v2 endpoints
 
     public postAssetType(model: AssetType)
-        : Observable<JsonResult> {
+        : Observable<ApiResult & ErrorResponse> {
         return this
             .http
             .post('api/v2/assets', model)
             .pipe(
-                map(response => <JsonResult>response),
+                map(response => <ApiResult & ErrorResponse>response),
                 catchError(err => this.handleError(err))
             );
     }
 
     public putAssetType(model: AssetType)
-        : Observable<JsonResult> {
+        : Observable<ApiResult & ErrorResponse> {
         return this
             .http
             .put('api/v2/assets', model)
             .pipe(
-                map(response => <JsonResult>response),
+                map(response => <ApiResult & ErrorResponse>response),
                 catchError(err => this.handleError(err))
             );
     }

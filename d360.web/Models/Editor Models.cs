@@ -39,7 +39,6 @@ namespace d360.web.Models
         public Guid? ParentUid { get; set; } = null;
         public List<PrimeSelectItem> Predicates { get; set; } = new List<PrimeSelectItem>();
         public List<PrimeSelectItem> Tokens { get; set; } = new List<PrimeSelectItem>();
-        public Guid? SelectedPredicateUid { get; set; } = null;
         public List<PrimeSelectItem> Parents { get; set; } = new List<PrimeSelectItem>();
     }
 

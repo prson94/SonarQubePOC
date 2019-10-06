@@ -1031,7 +1031,7 @@ namespace d360.web.Controllers
                             }
 
                         },
-                       
+                        Tokens = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID && !this.limitedFieldTypes.Contains(i.Type)).OrderBy(i => i.FriendlyName).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = "{" + i.Name + "}" }).ToList()
                     };
                     
                     switch (@class)
@@ -1094,7 +1094,7 @@ namespace d360.web.Controllers
                             loadPredicates = true;
 
                             model.AssetType.ParentUid = intersectType.SubjectUid;
-                            model.SelectedPredicateUid = intersectType.Predicate.UID;
+                            model.AssetType.Hierarchy.PredicateUid = intersectType.Predicate.UID;
                         }
                     }
                 }

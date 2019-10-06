@@ -7,7 +7,7 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { Subscription } from 'rxjs';
 import { FormHelpers } from '../../static/form-helpers';
 import { JsonResult } from '../../models/jsonresult.model';
-import { ApiResult } from '../../models/apiresult.model';
+import { ApiResult, ErrorResponse } from '../../models/apiresult.model';
 import { ResponsibilityTypeRelationPermission, Permission } from '../../models/responsibility-type.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessagesObservableService } from '../../services/messages-observable.service';
@@ -319,13 +319,13 @@ export class BaseComponent {
         }
     }
 
-    showMessageForApiResult(messagesService: MessagesObservableService, result: ApiResult, defaultMessage?: string) {
+    showMessageForApiResult(messagesService: MessagesObservableService, result: ApiResult & ErrorResponse, defaultMessage?: string) {
         if (defaultMessage == undefined) {
             defaultMessage = 'Success';
         }
 
         if (!result.Success) {
-            messagesService.showError('Error', result.Message);
+            messagesService.showError(result.Title == null ? 'Error' : result.Title, result.Message);
         } else {
             messagesService.showInfoMessage(
                 'Success',

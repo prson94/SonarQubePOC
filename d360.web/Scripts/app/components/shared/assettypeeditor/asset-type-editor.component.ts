@@ -1,7 +1,8 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { AssetTypeService } from '../../../services/asset-type.service';
-import { AssetTypeClass, AssetTypeEditorModel } from "../../../models/asset.model";
+import { AssetTypeClass, AssetTypeEditorModel } from '../../../models/asset.model';
+import { ApiResult } from '../../../models/apiresult.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 declare var CompanySettings: any;
@@ -26,8 +27,8 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     action: string = "Edit";    
     model: AssetTypeEditorModel;   
-    spinNum: number = 1;
     private isSaving = false;
+    AssetTypeClass = AssetTypeClass;
 
     showAssetStyles: boolean = true;
     showAssetDepthSettings: boolean = false;
@@ -96,9 +97,8 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             )
             .subscribe(data => {
                 this.model = data;
-                this.spinNum = this.model.AssetType.Hierarchy.MaximumDepth;
-                if (this.spinNum == 0) {
-                    this.spinNum = 1;
+                if (this.model.AssetType.Hierarchy.MaximumDepth == 0) {
+                    this.model.AssetType.Hierarchy.MaximumDepth = 1;
                 }
 
                 if (this.model.Predicates) {
@@ -120,7 +120,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     private save(): void {
         this.isSaving = true;
-        this.model.AssetType.Hierarchy.MaximumDepth = this.spinNum;
         this.model.AssetType.Class = this.assetTypeClass;
 
         if (this.model.AssetType.Uid != null && this.model.AssetType.Uid != '00000000-0000-0000-0000-000000000000')
@@ -129,9 +128,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 .assetTypeService
                 .putAssetType(this.model.AssetType)
                 .subscribe(data => {
-                    this.showMessageForResult(this.messagesService, data);
+                    this.showMessageForApiResult(this.messagesService, data);
 
-                    if (data.type != "error") {
+                    if (data.Success === true) {
                         this.isSaving = false;
                         this.onSuccess.emit(data);
                         this.onComplete.emit(data);
@@ -148,9 +147,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             this.assetTypeService
                 .postAssetType(this.model.AssetType)
                 .subscribe(data => {
-                    this.showMessageForResult(this.messagesService, data);
+                    this.showMessageForApiResult(this.messagesService, data);
 
-                    if (data.type != "error") {
+                    if (data.Success === true) {
                         this.isSaving = false;
                         this.onSuccess.emit(data);
                         this.onComplete.emit(data);
@@ -185,5 +184,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         if (predicateUid == null || predicateUid.length == 0) {
             this.model.AssetType.ParentUid = null;
         }
+    }
+
+    get isPredicateRequired(): boolean {
+        return this.assetTypeClass == AssetTypeClass.Model || this.assetTypeClass == AssetTypeClass.Policy;
     }
 }

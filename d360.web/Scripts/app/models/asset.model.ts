@@ -37,7 +37,6 @@ export class AssetTypeMetricModel {
 
 export class AssetTypeEditorModel {
     AssetType: AssetType;
-    SelectedPredicateUid: string;
     ParentUid: string;
     Predicates: any[];
     Tokens: any[];

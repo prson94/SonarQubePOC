@@ -565,6 +565,7 @@ namespace d360.model.DataAccessLayer
                 case AssetTypeClass.Policy:
                 case AssetTypeClass.Reference:
                 case AssetTypeClass.Technical:
+                case AssetTypeClass.Model:
                     if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {model.Class.ToString()}", $"Not valid {model.Class.ToString()} provided.Please check your request and try again.");
 
                     assetType.Name = model.Name;
@@ -575,10 +576,12 @@ namespace d360.model.DataAccessLayer
                     if (model.Class == AssetTypeClass.Business || model.Class == AssetTypeClass.Technical)
                     {
                         assetType.UseAsTransformation = model.UseAsTransformation;
+                        assetType.CanOwnFusion = model.CanOwnFusion ?? false;
                     }
                     else
                     {
                         assetType.UseAsTransformation = false;
+                        assetType.CanOwnFusion = false;
                     }
                     assetType.Class = model.Class;
                     assetType.Notes = model.Notes;
