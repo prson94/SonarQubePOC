@@ -135,10 +135,10 @@ namespace d360.web.Controllers
                     case "FusionType":
                         siteNavName = "#Fusion";
                         break;
-                    case "Business":
+                    case "Business Asset":
                         siteNavName = "#Business";
                         break;
-                    case "Technical":
+                    case "Technical Asset":
                         siteNavName = "#Technical";
                         break;
                     case "Model":

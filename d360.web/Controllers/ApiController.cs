@@ -8339,10 +8339,10 @@ where	R.IssueTypeID = @issueTypeID", new { issueTypeID }).ToList();
         public HttpResponseMessage GetMetricAssetTypes()
         {
             List<int> classes = new List<int>() {
-                (int)AssetTypeClass.Business,
+                (int)AssetTypeClass.BusinessAsset,
                 (int)AssetTypeClass.Model,
                 (int)AssetTypeClass.Policy,
-                (int)AssetTypeClass.Technical
+                (int)AssetTypeClass.TechnicalAsset
             };
             var models = Company.Query<MetricAssetTypeViewModel>(@"
 select	T.[Uid],

@@ -1,5 +1,6 @@
 ﻿import { SiteNav } from './site-menu.model';
 import { Observable } from 'rxjs';
+import { StringConstants } from '../static/string-constants';
 
 export interface ICompanySettingsService {
     getSettings(): Observable<CompanySettings>;
@@ -94,12 +95,12 @@ export module SettingsHelper {
             { title: "Attribute", value: "Attribute", selected: false },
             { title: "Fusion", value: "FusionAttributes", selected: false },
             { title: "Fusion Type", value: "FusionType", selected: false },
-            { title: "Business", value: "Artifact", selected: false },
+            { title: StringConstants.AssetTypeClass_Business, value: "Artifact", selected: false },
             { title: "Group", value: "Group", selected: false },
             { title: "Model", value: "Taxonomy", selected: false },
             { title: "Policy", value: "Policy", selected: false },
             { title: "Reference", value: "Reference", selected: false },
-            { title: "Technical", value: "Artifact", selected: false },
+            { title: StringConstants.AssetTypeClass_Technical, value: "Artifact", selected: false },
             { title: "User", value: "Resource", selected: false },
             { title: "Grammatic Type", value: "Synonym", selected: false },
             { title: "Data Quality", value: "Rule", selected: false }

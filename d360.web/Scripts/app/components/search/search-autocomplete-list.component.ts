@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SearchResult} from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 
 @Component({
     selector: 'd3s-search-autocomplete-list',
@@ -73,7 +74,7 @@ export class SearchAutocompleteListComponent extends BaseComponent implements On
 
     GetDisplayType(item: SearchResult) {
         var displayType = '';
-        if (item.Group == 'Business' || item.Group == 'Technical')
+        if (item.Group == StringConstants.AssetTypeClass_Business || item.Group == StringConstants.AssetTypeClass_Technical)
             displayType += item.Group + ' - ';
         displayType += item.Type;
         return displayType;

@@ -17,6 +17,7 @@ using Resources;
 using System.Net;
 using System.IO;
 using System.Threading.Tasks;
+using d360.core.resources;
 
 namespace d360.web.Controllers
 {
@@ -69,13 +70,13 @@ namespace d360.web.Controllers
         [Route("GetAvailableSiteNavigation")]
         public JsonNetResult GetAvailableSiteNavigation()
         {
-            var nav = Company.Query<dynamic>(@"
+            var nav = Company.Query<dynamic>($@"
                 with s as
                 (
 	                select  cast(
 	                            case 
-                                    when [Object] = 'ArtifactType' and [Class] = 1 then 'Business :: ' + Name
-	                                when [Object] = 'ArtifactType' and [Class] = 8 then 'Technical :: ' + Name
+                                    when [Object] = 'ArtifactType' and [Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: ' + Name
+	                                when [Object] = 'ArtifactType' and [Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: ' + Name
 	                                else Name
 	                            end	
 	                            as varchar(500)

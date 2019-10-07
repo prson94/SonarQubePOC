@@ -54,7 +54,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
 
                     let folderName: string = '#Business';
 
-                    if (artifactType.Class == AssetTypeClass.Technical) {
+                    if (artifactType.Class == AssetTypeClass.TechnicalAsset) {
                         folderName = '#Technical';
                     }
 
