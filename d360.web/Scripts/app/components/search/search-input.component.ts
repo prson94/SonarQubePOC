@@ -14,7 +14,14 @@ declare var CompanySettings;
     selector: 'd3s-search-input',
     template: ` <div *ngIf="newSearch && !isAdvancedMode"
                 class="titlebar-search">           
-                        <div class="field grow mr10"><input #searchip (keydown.enter)="triggerSearch()" [ngModel]="searchText" (keyup)="checkSearchKey($event);" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);autocompleteWidth=searchip.offsetWidth;" autofocus autocomplete="off" type="text" placeholder="Please enter search terms"><i *ngIf="!autocompleteLoading" (click)="triggerSearch()" class="fa fa-search"></i><i *ngIf="autocompleteLoading" class="fa fa-spinner fa-spin"></i></div>
+                        <div class="field grow mr10">
+        <d3s-header-typeahead-search 
+                  [additionalCssClasses]="'gov-search'" 
+                  [autocompletePlaceholder]="'Please enter search terms?'"
+                  [searchOptions]="searchTypes"
+                  [defaultValue]="searchText">
+        </d3s-header-typeahead-search>
+</div>
                         <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match Whole Words</span></label>
                         <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>                        
                         <button class="button" (click)="handleAdvancedClick()">Advanced Search</button>
