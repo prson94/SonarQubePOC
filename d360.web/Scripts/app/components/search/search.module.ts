@@ -27,6 +27,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { SharedModule } from 'primeng/shared';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
+import { TypeaheadSearchModule } from '../shared/search/typeahead-search.component';
 
 
 @NgModule({
@@ -54,6 +55,7 @@ import { TooltipModule } from 'primeng/tooltip';
         DynamicPercentageModule,
         SharedDynamicGridEditorModule,
         PaginatorModule,
+        TypeaheadSearchModule
     ],
     declarations: [
         HomeSearchComponent,
@@ -62,7 +64,7 @@ import { TooltipModule } from 'primeng/tooltip';
         SearchComponent,
         SearchAutocompleteListComponent,    
         SearchInputComponent,  
-        HeroSearchInputComponent,
+        HeroSearchInputComponent
     ],
     exports: [
         HomeSearchComponent,    

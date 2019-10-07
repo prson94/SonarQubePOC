@@ -16,7 +16,6 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { HeaderActionsComponent } from './header-actions.component';
 import { HeaderBreadcrumbItemComponent } from './header-breadcrumb-item.component';
 import { HeaderBreadcrumbComponent } from './header-breadcrumb.component';
-import { HeaderTypeaheadSearchComponent } from './header-typeahead-search.component';
 import { HeaderFavoritesComponent } from './header-favorites.component';
 import { HeaderFollowComponent } from './header-follow.component';
 import { HeaderHelpComponent } from './header-help.component';
@@ -26,6 +25,7 @@ import { HeaderShoppingCartComponent } from './header-shopping-cart.component';
 import { HeaderHomePageComponent } from './header-homepage.component';
 import { HeaderProfileComponent } from './header-profile.component';
 import { HeaderMiniMenuComponent } from './header-mini-menu-component';
+import { TypeaheadSearchModule } from '../search/typeahead-search.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -36,6 +36,7 @@ import { HeaderMiniMenuComponent } from './header-mini-menu-component';
 
         //d3s
         PipesModule,
+        TypeaheadSearchModule,
 
         //primeng        
         AutoCompleteModule,        
@@ -48,7 +49,6 @@ import { HeaderMiniMenuComponent } from './header-mini-menu-component';
         HeaderActionsComponent,
         HeaderBreadcrumbItemComponent,
         HeaderBreadcrumbComponent,
-        HeaderTypeaheadSearchComponent,
         HeaderHelpComponent,
         HeaderFavoritesComponent,
         HeaderFollowComponent,

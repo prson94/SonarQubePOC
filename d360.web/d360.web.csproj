@@ -658,6 +658,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
+    <Content Include="Scripts\app\components\search\hero-search-input.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
@@ -684,6 +685,7 @@
     <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\search\typeahead-search.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tags-usage-info.component.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
@@ -1529,7 +1531,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-breadcrumb.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-favorites.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-follow.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\header\header-typeahead-search.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\typeahead-search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.routes.ts" />
