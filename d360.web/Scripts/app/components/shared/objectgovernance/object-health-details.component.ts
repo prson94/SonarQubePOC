@@ -149,7 +149,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                     point: {
                                         events: {
                                             click: e => {
-                                                this.scoreDate = Highcharts.dateFormat('%e %b %y', e.point.x);
+                                                this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
                                                 this.loadPoints();
                                             }
                                         }
