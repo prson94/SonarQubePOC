@@ -1,5 +1,5 @@
 import {debounceTime} from 'rxjs/operators';
-import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Input } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { Router, NavigationEnd } from '@angular/router';
@@ -15,11 +15,12 @@ declare var CompanySettings;
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class TypeaheadSearchComponent implements OnDestroy {
+export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     @Input() searchOptions: string[];
     @Input() autocompletePlaceholder: string = 'Search Govern...';
     @Input() additionalCssClasses: string = '';
     @Input() showBigButton: boolean = false;
+    @Input() defaultValue: string;
 
     public result: SearchResult;
     public searchText: string;
@@ -39,6 +40,13 @@ export class TypeaheadSearchComponent implements OnDestroy {
         this.defaultSearchOptions = CompanySettings.DefaultSearchTypes ? CompanySettings.DefaultSearchTypes.split(',') : [];
         this.endSearchAllOption = new SearchResult();
         this.endSearchAllOption.Type = this.endSearchAllTypeToken;
+    }
+
+    ngOnInit() {
+        if (this.defaultValue) {
+            this.result = new SearchResult();
+            this.result.Name = this.defaultValue;
+        }
     }
     
     ngOnDestroy(): void {

@@ -18,7 +18,8 @@ declare var CompanySettings;
         <d3s-header-typeahead-search 
                   [additionalCssClasses]="'gov-search'" 
                   [autocompletePlaceholder]="'Please enter search terms?'"
-                  [searchOptions]="searchTypes">
+                  [searchOptions]="searchTypes"
+                  [defaultValue]="searchText">
         </d3s-header-typeahead-search>
 </div>
                         <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match Whole Words</span></label>
