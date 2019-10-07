@@ -7,6 +7,7 @@ import { TypeaheadSearchService } from '../../services/typeahead-search.service'
 import { SearchResult } from '../../models/search-result.model';
 import { DropdownOption } from '../../models/dropdown.model';
 import { SubscriptionLike as ISubscription } from 'rxjs';
+import { StringConstants } from '../../static/string-constants';
 
 declare var CompanySettings;
 @Component({
@@ -74,8 +75,8 @@ export class HeroSearchInputComponent extends BaseComponent implements OnDestroy
         { title: "Attribute", value: "Attribute" },
         { title: "Fusion", value: "FusionAttributes" },
         { title: "Fusion Type", value: "FusionType" },
-        { title: "Business", value: "Artifact" },
-        { title: "Technical", value: "Artifact" },
+        { title: StringConstants.AssetTypeClass_Business, value: "Artifact" },
+        { title: StringConstants.AssetTypeClass_Technical, value: "Artifact" },
         { title: "Group", value: "Group" },
         { title: "Model", value: "Taxonomy" },
         { title: "Reference", value: "Reference" },
@@ -88,8 +89,8 @@ export class HeroSearchInputComponent extends BaseComponent implements OnDestroy
         { value: "Attribute", label: "Attribute" },
         { value: "FusionAttributes", label: "Fusion" },
         { value: "FusionType", label: "Fusion Type" },
-        { value: "Artifact", label: "Business" },
-        { value: "Artifact", label: "Technical" },
+        { value: "Artifact", label: StringConstants.AssetTypeClass_Business },
+        { value: "Artifact", label: StringConstants.AssetTypeClass_Technical },
         { value: "Group", label: "Group" },
         { value: "Taxonomy", label: "Model" },
         { value: "Policy", label: "Policy" },

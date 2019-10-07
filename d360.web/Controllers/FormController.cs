@@ -28,6 +28,7 @@ using System.Configuration;
 using d360.core.helpers;
 using Ganss.XSS;
 using System.Text;
+using d360.core.resources;
 
 namespace d360.web.Controllers
 {    
@@ -962,8 +963,8 @@ namespace d360.web.Controllers
                         ot = SystemObjects.FusionAttributeType;
                         appendTitle = FormInfo.FusionAttributeType;
                         break;
-                    case AssetTypeClass.Business:
-                    case AssetTypeClass.Technical:
+                    case AssetTypeClass.BusinessAsset:
+                    case AssetTypeClass.TechnicalAsset:
                         ot = SystemObjects.ArtifactType;
                         appendTitle = FormInfo.ArtifactType;
                         break;
@@ -1016,9 +1017,9 @@ namespace d360.web.Controllers
                             model.AssetType.Name = f.Name;
                             model.ScanEnabled = f.ScanEnabled;
                             break;
-                        case AssetTypeClass.Business:
-                        case AssetTypeClass.Technical:
-                            model.CanOwnFusion = (@class == AssetTypeClass.Business) ? assetType.CanOwnFusion : false;
+                        case AssetTypeClass.BusinessAsset:
+                        case AssetTypeClass.TechnicalAsset:
+                            model.CanOwnFusion = (@class == AssetTypeClass.BusinessAsset) ? assetType.CanOwnFusion : false;
                             model.AutoDisplayDescription = assetType.AutoDisplayDescription;
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;
@@ -1053,7 +1054,7 @@ namespace d360.web.Controllers
                     model.FormName = string.Format(FormInfo.Add_Asset_Type_Title, appendTitle);
                     model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
 
-                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.Business || @class == AssetTypeClass.Technical || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType)
+                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.BusinessAsset || @class == AssetTypeClass.TechnicalAsset || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType)
                     {
                         var intersectType = Company.Filter<IntersectType>(i =>
                             i.Object == assetType.Object &&
@@ -6853,13 +6854,13 @@ offset 0 rows fetch next 25 rows only
             });
 
 
-            var contexts = Company.Query<dynamic>(@"		
+            var contexts = Company.Query<dynamic>($@"		
                 select 
 			        D.DisplayValue as [Name],
 			        A.[Object] + '|' + cast(A.ObjectID as varchar) as ID,
 			        case 
-                        when A.[Object] = 'Artifact' and A.AssetTypeClass = 1 then 'Business'
-                        when A.[Object] = 'Artifact' and A.AssetTypeClass = 8 then 'Technical'
+                        when A.[Object] = 'Artifact' and A.AssetTypeClass = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()}'
+                        when A.[Object] = 'Artifact' and A.AssetTypeClass = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()}'
 			            when A.[Object] = 'Taxonomy' then 'Model'
 			            else ''
 			        end as Category,
@@ -6983,17 +6984,17 @@ offset 0 rows fetch next 25 rows only
             switch (act) {
                 case "O":   // Responsibility/Ownership
                     #region
-                    sql = @"
+                    sql = $@"
 select * from (
 select 'FusionType|0' as value, 'Fusion' as title
 union
-select 'ArtifactType|0' as value, 'Business' as title
+select 'ArtifactType|0' as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}' as title
 union
-select 'ArtifactType|0' as value, 'Technical' as title
+select 'ArtifactType|0' as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}' as title
 union
-select 'TaxonomyType|0' as value, 'Model' as title
+select 'TaxonomyType|0' as value, '{CommonNames.AssetTypeClass_Model.CleanForSql()}' as title
 union
-select 'PolicyType|0' as value, 'Policy' as title
+select 'PolicyType|0' as value, '{CommonNames.AssetTypeClass_Policy.CleanForSql()}' as title
 union
 select 'ReferenceItemType|0' as value, 'Reference' as title
 ) O order by title";
@@ -7001,15 +7002,15 @@ select 'ReferenceItemType|0' as value, 'Reference' as title
                 #endregion
                 case "P":   // Promotion
                     #region
-                    sql = @"
+                    sql = $@"
 select * from (
 select 'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title from AttributeType where ParentID is null
 union
-select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 'Business: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 1
+select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 1
 union
-select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 'Technical: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 8
+select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, '{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 8
 union
-select 'TaxonomyType|' + cast(ObjectID  as varchar(10)) as value, 'Model: ' + Name as title from AssetType where object='TaxonomyType'
+select 'TaxonomyType|' + cast(ObjectID  as varchar(10)) as value, '{CommonNames.AssetTypeClass_Model.CleanForSql()}: ' + Name as title from AssetType where object='TaxonomyType'
 union
 select 'ReferenceItemType|' + cast(ObjectID  as varchar(10)) as value, 'Reference Item: ' + Name as title from AssetType where object='ReferenceItemType'
 ) O order by title";
@@ -7021,7 +7022,7 @@ select 'ReferenceItemType|' + cast(ObjectID  as varchar(10)) as value, 'Referenc
                     sql = @"select 'IntersectType|' + cast(itd.ID as varchar(10)) as value, IName.Name as title from intersecttypedetail itd cross apply dbo.GetIntersectTypeNames(itd.ID) IName	 where itd.IsSystem = 0 or (itd.Subject = 'ReferenceItemType' and itd.Object = 'ReferenceItemType') order by IName.Name";
                     break;
                 #endregion
-                case "M":   // USers/Groups
+                case "M":   // Users/Groups
                     models = new List<OptionModel> {
                         new OptionModel { title = "Group Membership", value = "Membership|0" },
                         new OptionModel { title = "Users", value = "Membership|1" }
@@ -14909,7 +14910,7 @@ order by	case
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
 
-            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Business || f.Class == AssetTypeClass.Technical).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
             
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
@@ -14931,7 +14932,7 @@ order by	case
             
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names});
 
-            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Business || f.Class == AssetTypeClass.Technical).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Asset Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() });
