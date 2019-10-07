@@ -25,6 +25,8 @@ using System.Web.Http;
 using d360.model.DataAccessLayer;
 using d360.core.validators;
 using System.Web.Http.Description;
+using d360.core.resources;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -245,15 +247,12 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeInsert model)
         {
-
-
             var prefix = "Assets.PostAssetTypeAsync => ";
-            var errorMessage = "";
+            
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
-
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
                 var validator = new AssetTypeValidator(this.Company);
 
@@ -269,19 +268,18 @@ namespace d360.web.Controllers.V2
                     predicate = AssetRepository.GetPredicateByUID((Guid)model.Hierarchy.PredicateUid);
                 }
 
-
-                var validationStatus = validator.ValidateModelForPost(model, parentAssetType, predicate);
+                var validationStatus = validator.ValidateModel(true, model, parentAssetType, predicate);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
 
                 if (model.UseAsTransformation && (model.Class != AssetTypeClass.Business && model.Class != AssetTypeClass.Technical))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", "Use As Transformation can be set only asset types that are a Business or Technical class"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", AssetTypeErrors.TransformationClassRestriction));
 
                 if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.Business)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Can Own Fusion", "Can Own Fusion can be set only asset types that are of class Business"));
 
                 if (AssetRepository.IsReachedTransformationLimit(model))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", "The total number of asset types exceeds the Transformation limit "));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", AssetTypeErrors.TransformationLimitExceeded));
 
                 AssetType assetType = null;
                 var nameFriendlyName = "Name";
@@ -292,7 +290,6 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(insertStatus.Item1, insertStatus.Item2, insertStatus.Item3));
 
                 AssetRepository.UpsertObjectStyle(model.Object, model.ObjectID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.Name);
-
 
                 if (model.ObjectID > 0)
                 {
@@ -319,7 +316,7 @@ namespace d360.web.Controllers.V2
 
                 assetType = AssetRepository.GetAssetTypeByModel(model);
 
-                if (assetType == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type", "Asset Not Found."));
+                if (assetType == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type", AssetTypeErrors.NotFoundGeneric));
 
                 var result = new AssetTypeSuccess { Uid = assetType.uid, Message = "Asset Type is created", Success = true };
 
@@ -331,7 +328,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
@@ -364,11 +361,11 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> PutAssetTypeAsync(AssetTypeInsert model)
         {
             var prefix = "Assets.PutAssetTypeAsync => ";
-            var errorMessage = "";
+            
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+                    await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
                 var validator = new AssetTypeValidator(this.Company);
 
@@ -382,18 +379,18 @@ namespace d360.web.Controllers.V2
                 if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)
                     predicate = AssetRepository.GetPredicateByUID((Guid)model.Hierarchy.PredicateUid);
 
-                var validationStatus = validator.ValidateModelForPut(model, parentAssetType, predicate, assetType);
+                var validationStatus = validator.ValidateModel(false, model, parentAssetType, predicate, assetType);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
 
                 if (model.UseAsTransformation && (model.Class != AssetTypeClass.Business && model.Class != AssetTypeClass.Technical))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", "Use As Transformation can be set only asset types that are a Business or Technical class"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", AssetTypeErrors.TransformationClassRestriction));
 
                 if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.Business)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Can Own Fusion", "Can Own Fusion can be set only asset types of class Business"));
 
                 if (AssetRepository.IsReachedTransformationLimit(model))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", "The total number of asset types exceeds the Transformation limit "));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", AssetTypeErrors.TransformationLimitExceeded));
 
                 var updateStatus = AssetRepository.UpdateAssetType(model, assetType, parentAssetType, predicate);
                 if (updateStatus.Item1 != HttpStatusCode.OK)
@@ -416,7 +413,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
@@ -461,7 +458,7 @@ namespace d360.web.Controllers.V2
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ModifyAsset))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
 
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
@@ -913,7 +910,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> DeleteBulkAssetTypesAsync(AssetTypeDeletes assetTypes)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove asset types."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to remove asset types."));
 
             var prefix = "Assets.DeleteBulkAssetTypesAsync => ";
             var errorMessage = "";

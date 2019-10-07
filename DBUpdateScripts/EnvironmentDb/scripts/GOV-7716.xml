@@ -1,0 +1,42 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-7733">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+drop table if exists [dbo].[TaxonomyTypeLevel-retired]
+
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+
+]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="Sebastian Abraham" id="GOV-7716">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+drop table if exists [dbo].[Taxonomy-retired]
+drop table if exists [dbo].[TaxonomyType-retired]
+
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

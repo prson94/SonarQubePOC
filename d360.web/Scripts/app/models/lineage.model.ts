@@ -428,6 +428,78 @@ export class SourceRuleSource {
 //#endregion
 
 
+//#region Asset Browser
+
+// Translation
+export class AssetBrowserTranslationLink {
+    from: string;
+    fromPort: string;
+    to: string;
+    toPort: string;
+    text: string;
+    back: string;
+    impacts: string[];
+}
+
+export class AssetBrowserTranslationNode {
+    key: string;
+    group: string;
+    isGroup: boolean;
+    text: string;
+    template: string;
+    back: string;
+    icon: string;
+    impacts: string[];
+}
+
+export class AssetBrowserTranslation {
+    links: AssetBrowserTranslationLink[];
+    nodes: AssetBrowserTranslationNode[];
+}
+
+
+// Request
+export enum AssetBrowserDirection {
+    Forward = 1,
+    Backward = 2,
+    Both = 3
+}
+
+export class AssetBrowserLineageApiRequestModel {
+    Direction: AssetBrowserDirection;
+    Hops: number;
+    StartFromAssets: string[];
+}
+
+
+// Response
+export class AssetBrowserLineageApiItemModel {
+    assetUid: string;
+    displayValue: string;
+    backColor: string;
+    foreColor: string;
+    items: AssetBrowserLineageApiItemModel[];
+}
+
+export class AssetBrowserLineageApiRelationshipModel {
+    intersectUid: string;
+    subjectUid: string;
+    objectUid: string;
+    predicate: string;
+    predicateUid: string;
+    predicateType: number;
+    backColor: string;
+    foreColor: string;
+}
+
+export class AssetBrowserLineageApiResponseModel {
+    focalAssetUid: string;
+    assets: AssetBrowserLineageApiItemModel[];
+    intersects: AssetBrowserLineageApiRelationshipModel[];
+}
+
+//#endregion
+
 
 
 

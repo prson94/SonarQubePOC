@@ -40,4 +40,5 @@
   <include file="scripts/GOV-8130.xml"/> <!--rename search type in system settings--> 
   <include file="scripts/GOV-8159.xml"/> <!--change default types for search to none (all)--> 
   <include file="scripts/GOV-8308.xml"/> <!--added setting for FusionEnabled--> 
+  <include file="scripts/GOV-8104.xml"/>  <!--change default homepage title size -->
 </databaseChangeLog>

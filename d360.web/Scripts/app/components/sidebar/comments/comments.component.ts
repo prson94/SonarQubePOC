@@ -23,7 +23,7 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
     @Input() objectType: string="";
 
     private sub: any;
-    daysToLookBack: number = 365;
+    daysToLookBack: number = -1;
     hasCloseButton: boolean = false;
     showBoard: boolean = false;
 

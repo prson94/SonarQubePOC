@@ -1211,6 +1211,21 @@ from	api.ExecutionField T
                 }
             }
 
+            if (!Community.IsFusionEnabled())
+            {
+                List<SystemObjects> filteredObjects = new List<SystemObjects>()
+                {
+                    SystemObjects.FusionAttributeType,
+                    SystemObjects.FusionQueryAttributeType,
+                    SystemObjects.FusionType
+                };
+
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") 
+                    + $" I.Object not in ({string.Join(",", filteredObjects.Select(x=> "'" +x+"'"))})";
+
+                whereClause += $" AND I.Subject not in ({string.Join(",", filteredObjects.Select(x => "'" + x + "'"))})";
+            }
+
             var sql = $@"
 select	I.Id,
         I.Uid,
@@ -2311,7 +2326,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                         // Get field types.
                         fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { at.Object, at.ObjectID }).ToList();
                         jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
-                        requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
+                        requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
                         hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
 
                         #region Generate data sets
@@ -3215,7 +3230,7 @@ from	api.ExecutionAsset T
 
                     // Get field types.
                     var fieldTypes = Query<FieldType>("select * from FieldType where Object = 'IntersectType' and ObjectID = @ID", new { rt.ID }).ToList();
-                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
+                    var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
 
                     #region Generate data sets
 

@@ -545,18 +545,24 @@ where	T.[Class] in (1,2,3,4,6,7,8,9)").ToList();
             {
                 ignoreFusionItems = $" and A.ObjectType not in ('{SystemObjects.FusionQueryAttributeType.ToString()}', '{SystemObjects.FusionType.ToString()}','{SystemObjects.FusionAttributeType.ToString()}')";
             }
-
             var list = Database.Connection.Query<AllocationPossibility>($@"
-select A.* from (
-select	T.Object as ObjectType, 
-		T.ObjectID as ObjectTypeID, 
-        T.[Class],
-        P.[Path] as Name
-from	AssetType T
-        cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
-where	T.[Class] in (1,2,3,4,6,7,8,9)
-) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
-where R.ObjectID is null {ignoreFusionItems}", new { id = attributeTypeID }).ToList();
+            select A.* from (
+            select	Object as ObjectType, 
+		            ObjectID as ObjectTypeID, 
+		            case Object
+			            when 'ArtifactType' then 'Artifacts :: '
+			            when 'TaxonomyType' then 'Models :: '
+			            when 'PolicyType' then 'Policies :: '
+			            when 'RuleType' then 'Rules :: '
+			            when 'FusionType' then 'Fusion Types :: '
+			            when 'ReferenceItemType' then 'Reference Item Type :: '
+		            end + Name as Name
+            from	AssetType
+            where	Class in (1,2,3,6,7,9)
+            union
+            select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
+            ) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
+            where R.ObjectID is null {ignoreFusionItems}", new { id = attributeTypeID }).ToList();
 
             list = list.OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 

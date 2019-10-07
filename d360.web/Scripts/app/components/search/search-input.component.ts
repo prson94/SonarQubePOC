@@ -9,6 +9,7 @@ import { DropdownOption } from '../../models/dropdown.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 
+declare var CompanySettings;
 @Component({
     selector: 'd3s-search-input',
     template: ` <div *ngIf="newSearch && !isAdvancedMode"
@@ -82,7 +83,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
     providers: [SearchService, TypeaheadSearchService],
 })
 
-export class SearchInputComponent extends BaseComponent implements OnChanges, OnDestroy {
+export class SearchInputComponent extends BaseComponent implements OnChanges, OnDestroy, OnInit {
     @Input() isExactMatch: boolean = true;
     @Output() isExactMatchChange = new EventEmitter();
 
@@ -150,6 +151,13 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
 
     constructor(private router: Router, private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
         super();
+    }
+
+    ngOnInit() {
+        if (CompanySettings && CompanySettings.FusionEnabled == 'false') {
+            this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
+            this.types = this.types.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
+        }
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {

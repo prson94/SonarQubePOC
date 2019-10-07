@@ -86,7 +86,7 @@
                             </div>
                         </div>
                     </ng-container>
-                    <d3s-asset-type-editor-use-as-transformation *ngIf="lineageVersion == 3" [(UseAsTransformation)]="model.AssetType.UseAsTransformation"></d3s-asset-type-editor-use-as-transformation>
+                    <d3s-asset-type-editor-use-as-transformation [assetTypeId]="id" *ngIf="lineageVersion == 3" [(UseAsTransformation)]="model.AssetType.UseAsTransformation"></d3s-asset-type-editor-use-as-transformation>
                 </simple-accordion>
                 <simple-accordion header="Settings" active="true" *ngIf="showAssetDepthSettings">
                     <div class="FieldName">Maximum Depth</div>
