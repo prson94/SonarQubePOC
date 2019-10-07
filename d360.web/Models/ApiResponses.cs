@@ -83,5 +83,56 @@ namespace d360.web.Models
         public string Info { get; set; }
     }
 
+    #region Asset Browser
 
+    public class AssetBrowserLineageApiRelationshipModel
+    {
+        public Guid intersectUid { get; set; }
+        public Guid subjectUid { get; set; }
+        public Guid objectUid { get; set; }
+        public string predicate { get; set; }
+        public Guid predicateUid { get; set; }
+        public PredicateType predicateType { get; set; }
+        public string backColor { get; set; }
+        public string foreColor { get; set; }
+    }
+
+    public interface IAssetBrowserLineageApiItemModel
+    {
+        long ID { get; set; }
+        Guid assetUid { get; set; }
+        string displayValue { get; set; }
+        List<AssetBrowserLineageApiItemModel> items { get; set; }
+    }
+
+    [DataContract]
+    public class AssetBrowserLineageApiItemModel : IAssetBrowserLineageApiItemModel
+    {
+        [IgnoreDataMember]
+        public long ID { get; set; }
+        [DataMember]
+        public Guid assetUid { get; set; }
+        [DataMember]
+        public string displayValue { get; set; }
+        [DataMember]
+        public List<AssetBrowserLineageApiItemModel> items { get; set; }
+    }
+
+    [DataContract]
+    public class AssetBrowserLineageApiTopItemModel : AssetBrowserLineageApiItemModel, IAssetBrowserLineageApiItemModel
+    {
+        [DataMember]
+        public string backColor { get; set; }
+        [DataMember]
+        public string foreColor { get; set; }
+    }
+
+    public class AssetBrowserLineageApiResponseModel
+    {
+        public Guid focalAssetUid { get; set; }
+        public List<AssetBrowserLineageApiTopItemModel> assets { get; set; } = new List<AssetBrowserLineageApiTopItemModel>();
+        public List<AssetBrowserLineageApiRelationshipModel> intersects { get; set; } = new List<AssetBrowserLineageApiRelationshipModel>();
+    }
+
+    #endregion
 }
