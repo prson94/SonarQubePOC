@@ -362,6 +362,11 @@
     <Compile Include="queue\AddToIndexModel.cs" />
     <Compile Include="queue\QueueAction.cs" />
     <Compile Include="queue\QueueObject.cs" />
+    <Compile Include="resources\AssetTypeErrors.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AssetTypeErrors.resx</DependentUpon>
+    </Compile>
     <Compile Include="resources\Fields.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -384,6 +389,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="resources\AssetTypeErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>AssetTypeErrors.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="resources\Fields.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Fields.Designer.cs</LastGenOutput>

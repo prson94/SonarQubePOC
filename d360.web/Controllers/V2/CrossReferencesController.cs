@@ -17,6 +17,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -456,7 +457,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> PostBulkCrossReferenceAsync(List<AssetCrossReference> crossReferences)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add asset cross reference"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add asset cross reference"));
 
             var prefix = "CrossReferences.PostBulkCrossReference => ";
             var errorMessage = "";
