@@ -128,7 +128,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 .assetTypeService
                 .putAssetType(this.model.AssetType)
                 .subscribe(data => {
-                    this.showMessageForApiResult(this.messagesService, data);
+                    this.showMessageForApiResponse(this.messagesService, data);
 
                     if (data.Success === true) {
                         this.isSaving = false;
@@ -147,7 +147,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             this.assetTypeService
                 .postAssetType(this.model.AssetType)
                 .subscribe(data => {
-                    this.showMessageForApiResult(this.messagesService, data);
+                    this.showMessageForApiResponse(this.messagesService, data);
 
                     if (data.Success === true) {
                         this.isSaving = false;

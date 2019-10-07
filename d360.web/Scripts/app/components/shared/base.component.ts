@@ -346,13 +346,28 @@ export class BaseComponent {
         }
     }
 
-    showMessageForApiResult(messagesService: MessagesObservableService, result: ApiResult & ErrorResponse, defaultMessage?: string) {
+    showMessageForApiResponse(messagesService: MessagesObservableService, result: ApiResult & ErrorResponse, defaultMessage?: string) {
         if (defaultMessage == undefined) {
             defaultMessage = 'Success';
         }
 
         if (!result.Success) {
             messagesService.showError(result.Title == null ? 'Error' : result.Title, result.Message);
+        } else {
+            messagesService.showInfoMessage(
+                'Success',
+                result.Message != null ? result.Message : defaultMessage
+            );
+        }
+    }
+
+    showMessageForApiResult(messagesService: MessagesObservableService, result: ApiResult, defaultMessage?: string) {
+        if (defaultMessage == undefined) {
+            defaultMessage = 'Success';
+        }
+
+        if (!result.Success) {
+            messagesService.showError('Error', result.Message);
         } else {
             messagesService.showInfoMessage(
                 'Success',
