@@ -130,6 +130,7 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
         score: number,
         title?: string
     ) {
+        console.log(Highcharts.theme && Highcharts.theme.background2);
         return {
             chart: {
                 type: 'solidgauge',
