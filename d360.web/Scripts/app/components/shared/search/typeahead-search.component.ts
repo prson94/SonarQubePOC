@@ -1,4 +1,4 @@
-import {debounceTime} from 'rxjs/operators';
+import { debounceTime } from 'rxjs/operators';
 import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { SearchResult } from '../../../models/search-result.model';
@@ -9,7 +9,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
 declare var CompanySettings;
 
 @Component({
-    selector: 'd3s-header-typeahead-search',    
+    selector: 'd3s-header-typeahead-search',
     templateUrl: 'typeahead-search.component.html',
     providers: [TypeaheadSearchService],
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -48,7 +48,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
             this.result.Name = this.defaultValue;
         }
     }
-    
+
     ngOnDestroy(): void {
         if (this.searchSub) this.searchSub.unsubscribe();
     }
@@ -66,13 +66,13 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
                 }
                 this.isSearchInProgress = false;
                 this.ref.markForCheck();
-            });        
+            });
     }
 
     openSearch() {
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&advanced=0&types=${this.defaultSearchOptions ? this.defaultSearchOptions.join(',') : ''}`);
-   }
-    
+    }
+
     selectItem(ac) {
         if (this.result.Type == this.endSearchAllTypeToken) {
             this.openSearch()
@@ -95,7 +95,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         }
     }
 
-    checkKey(event,ac) {        
+    checkKey(event, ac) {
         if (event.keyCode == 13) {
             let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
 
@@ -106,7 +106,8 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     clearValue() {
         if (this.result) {
-            this.result = undefined;
+            if (!this.defaultValue)
+                this.result = undefined;
             this.ref.markForCheck();
         }
     }
