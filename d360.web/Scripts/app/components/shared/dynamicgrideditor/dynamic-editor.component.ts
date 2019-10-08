@@ -35,7 +35,7 @@ import { AssetService } from '../../../services/asset.service';
 @Component({
     selector: 'd3s-dynamic-editor',
     templateUrl: './dynamic-editor.component.html',
-    providers: [EditorDefinitionService, UriBasedService, FieldsService, CascadeService, AssetService],
+    providers: [EditorDefinitionService, UriBasedService, CascadeService, AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
@@ -93,7 +93,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         private messagesService: MessagesObservableService,
         private editorDefinitionService: EditorDefinitionService,
         private uriBasedService: UriBasedService,
-        private fieldsService: FieldsService,
         private cascadeService: CascadeService,
         private assetService: AssetService
     ) {

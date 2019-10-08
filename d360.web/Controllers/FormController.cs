@@ -321,7 +321,6 @@ namespace d360.web.Controllers
                 case "PREDICATE":
                     objectId = Company.Predicates.FirstOrDefault(x => x.UID == uid).ID;
                     return DynamicEditorEditFields(o, objectId);
-            }
                 default:
                     foreach (SystemObjects sysobj in (SystemObjects[])Enum.GetValues(typeof(SystemObjects)))
                     {
