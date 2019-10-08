@@ -8342,6 +8342,7 @@ where	R.IssueTypeID = @issueTypeID", new { issueTypeID }).ToList();
                 (int)AssetTypeClass.BusinessAsset,
                 (int)AssetTypeClass.Model,
                 (int)AssetTypeClass.Policy,
+                (int)AssetTypeClass.Rule,
                 (int)AssetTypeClass.TechnicalAsset
             };
             var models = Company.Query<MetricAssetTypeViewModel>(@"
@@ -8349,7 +8350,8 @@ select	T.[Uid],
         T.[Class], 
 		P.[Path] as Name
 from	AssetType T
-		cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P").OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
+		cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
+where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }
