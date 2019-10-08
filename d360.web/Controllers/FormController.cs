@@ -541,8 +541,6 @@ namespace d360.web.Controllers
                     return EditPolicyTypeLevel(form);
                 case "PREDICATE":
                     return EditPredicate(form);
-                case "REFERENCEITEM":
-                    return EditReferenceItem(form);
                 case "REPORT":
                     return await EditReport(form);
                 case "REPORTTILE":
@@ -708,8 +706,6 @@ namespace d360.web.Controllers
                     return AddPolicyTypeLevel(form);
                 case "PREDICATE":
                     return AddPredicate(form);
-                case "REFERENCEITEM":
-                    return AddReferenceItem(form);
                 case "REPORT":
                     return await AddReport(form);
                 case "REPORTTILE":
@@ -8571,7 +8567,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-            if (parentID.HasValue) {
+            if (parentID.HasValue && parentID.Value > 0) {
                 var parentUid = Company.GetAssetUid(parentID.Value, SystemObjects.Policy).ToString();
                 list.Add(new EditableField { FieldName = "ParentUid", FieldType = DataType.Hidden.ToString(), Value = parentUid });
             }
@@ -8947,8 +8943,8 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             if(parentType != null)
             {
-                var sql = "select DisplayValue, ObjectID from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
-                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID) }).ToList() });
+                var sql = "select DisplayValue, uid from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
+                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentUid", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid) }).ToList() });
             }
                         
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row);
@@ -8968,7 +8964,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             var row = 1;
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ObjectID.ToString() });
+            list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString() });
 
             //if the reference type has a parent we need to add parent field with the values from the parent
@@ -8978,122 +8974,15 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             if (parentType != null)
             {
                 var parent = Company.GetParentObject(id, SystemObjects.ReferenceItem);
-                var sql = "select DisplayValue, ObjectID from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
-                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID), Selected = i.ObjectID == (parent != null ? parent.ObjectID : 0)  }).ToList() });
+                var sql = "select DisplayValue, uid from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
+                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentUid", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid), Selected = i.uid == (parent != null ? parent.uid : Guid.Empty)  }).ToList() });
             }
 
             list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.AssetType.ObjectID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-        
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddReferenceItem")]
-        public JsonResult AddReferenceItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("lookup");
-
-                int typeID = parseIntField(form, "ReferenceItemTypeID");
-                var type = Company.AssetTypes.FirstOrDefault(x => x.Object == "ReferenceItemType" && x.ObjectID == typeID);
-                
-                if (type == null) throw new NotFoundException("referenceitemtype");
-
-                if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, typeID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var code = form["Code"].ToString();
-
-                if (Company.Any<Asset>(r => r.AssetTypeID == type.ID && r.Code == code))
-                    return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
-
-                int? parentId = parseNullableIntField(form, "ParentID");
-
-
-                var model = new Asset {
-                    AssetTypeID = type.ID,
-                    Object = SystemObjects.ReferenceItem.ToString(),
-                    State = State.Active,
-                    CreatedBy = Company.CurrentResourceID,
-                    Code = code,
-                    CreatedOn = DateTime.UtcNow,
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
-                Company.SaveOrUpdateAsset(model, fields, parentId.GetValueOrDefault());
-
-
-
-                if (parentId.HasValue)
-                {
-                    if (!Company.AddObjectParentRelationship(SystemObjects.ReferenceItemType, typeID, SystemObjects.ReferenceItem, parentId.Value, model.ObjectID))
-                    {
-                        return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
-                    }
-                }
-
-                return jsonSuccess(type.Name + " successfully created.", model.ObjectID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditReferenceItem")]
-        public JsonResult EditReferenceItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("referenceitem");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.Assets.Include(x => x.AssetType).FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
-
-                if (model == null) throw new NotFoundException("referenceitem");
-
-                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, model.ObjectID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var code = form["Code"].ToString();
-
-                if (Company.Any<Asset>(r => r.AssetTypeID == model.AssetTypeID && r.Code == code && r.ID != model.ID))
-                    return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
-
-                model.Code = code;
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, model.AssetType.ObjectID).ToList(), form, Server, false);
-                Company.SaveOrUpdateAsset(model, fields);
-                Company.SaveChanges();
-
-                if (!string.IsNullOrEmpty(form["ParentID"]))
-                {
-                    if (!Company.UpdateObjectParentRelationship(SystemObjects.ReferenceItemType, model.AssetType.ObjectID, SystemObjects.ReferenceItem, parseIntField(form, "ParentID"), model.ObjectID))
-                    {
-                        return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
-                    }
-                }
-
-                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-        
+         
         #endregion
 
         #region Relationship

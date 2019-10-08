@@ -45,7 +45,6 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
-import { AssetEditorModule } from '../shared/asseteditors/asset-editor.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -82,8 +81,7 @@ import { AssetEditorModule } from '../shared/asseteditors/asset-editor.module';
         SharedDynamicGridEditorModule,
         SharedObjectDetailsModule,
         SharedObjectGovernanceModule,
-        SharedAssetEditorsModule,
-        AssetEditorModule
+        SharedAssetEditorsModule
     ],
     declarations: [
         RuleComponent,

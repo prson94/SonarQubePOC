@@ -159,14 +159,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 id = this.selection.uid;
         }
 
-        if (this.isV2API) {
-            if (this.objectID <= 0) {
-                this.objectID = this.objectTypeUid;
-            } else {
-                id = this.objectID;
-            }
-        }
-
         this.isLoading = true;
 
         this.editorDefinitionService.getEditorDefinition(
@@ -531,7 +523,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
 
             });
-        console.log("Saving to api v2");
     }
 
     getUTCDate(date: Date): Date {

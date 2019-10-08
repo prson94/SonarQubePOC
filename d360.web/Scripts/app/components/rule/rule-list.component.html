@@ -63,14 +63,16 @@
 
                 </div>
             </div>
-            <d3s-asset-editor *ngIf="showEditor"
-                              (onClose)="showEditor = false;"
-                              (onSave)="saveRule()"
-                              [assetTypeUid]="ruleType.AssetTypeUID"
-                              [assetTypeID]="ruleType.ID"
-                              [selectedItem]="selected"
-                              [editorObjectType]="'Rule'"
-                              [editorTitle]="'Rule'"></d3s-asset-editor>
+
+            <d3s-dynamic-editor *ngIf="showEditor"
+                                [objectID]="selected ? selected.ID : ruleType.ID"
+                                objectType="Rule"
+                                [objectTypeUid]="ruleType.AssetTypeUID"
+                                [title]="'Rule'"
+                                [selection]="selected"
+                                (saveClick)="saveRule()"
+                                (closeClick)="showEditor = false;"
+                                [isV2API]="true"></d3s-dynamic-editor>
 
             <d3s-asset-delete-editor *ngIf="showDelete"
                                      [uid]="selected?.Uid"

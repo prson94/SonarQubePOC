@@ -37,7 +37,6 @@ import { GrowlModule } from 'primeng/growl';
 import { TreeModule } from 'primeng/tree';
 
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
-import { AssetEditorModule } from '../shared/asseteditors/asset-editor.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -74,8 +73,7 @@ import { AssetEditorModule } from '../shared/asseteditors/asset-editor.module';
         SharedAssetTypeEditorModule,     
         SharedAssetEditorsModule,
         TilesModule,
-        SharedObjectGovernanceModule,
-        AssetEditorModule
+        SharedObjectGovernanceModule
     ],
     declarations: [
         PolicyComponent,

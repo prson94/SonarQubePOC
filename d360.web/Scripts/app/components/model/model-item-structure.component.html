@@ -87,16 +87,16 @@
                              [displayValue]="(selected?.data?.DisplayValue ? selected?.data?.DisplayValue : 'Model')"
                              (onCancel)="showDelete = false;filter(null);"
                              (onDeleted)="onDeleted();">
-    </d3s-asset-delete-editor>    
+    </d3s-asset-delete-editor>
 
-    <d3s-asset-editor *ngIf="showEditor" 
-                      (onClose)="closeEditor()"
-                      (onSave)="saveTaxonomy()"
-                      [assetTypeUid]="model?.AssetTypeUID"
-                      [assetTypeID]="model?.ID"
-                      [parentId]="selectedParentId"
-                      [selectedItem]="selected"
-                      [editorObjectType]="'Taxonomy'"
-                      [editorTitle]="modelTaxonomyTitle()"
-                      ></d3s-asset-editor>
+    <d3s-dynamic-editor *ngIf="showEditor"
+                        [objectID]="selected ? selected?.data?.ID : model.ID"
+                        objectType="Taxonomy"
+                        [objectTypeUid]="model?.AssetTypeUID"
+                        [parentID]="selectedParentId"
+                        [title]="modelTaxonomyTitle()"
+                        [selection]="selected?.data"
+                        (saveClick)="saveTaxonomy()"
+                        (closeClick)="closeEditor();"
+                        [isV2API]="true"></d3s-dynamic-editor>
 </div>
