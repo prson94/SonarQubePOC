@@ -1612,8 +1612,6 @@ where	R.SourceObject = 'FusionAttribute'
 
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
 
-
-
             var sql = $@"
     SELECT		I.ID,
 				I.Name,
@@ -1621,16 +1619,16 @@ where	R.SourceObject = 'FusionAttribute'
 	FROM		(
                 select	T.ObjectID as ID,
 		                case 
-			                when T.Object = 'ArtifactType' and T.[Class] = 1 then 'Business :: '
-                            when T.Object = 'ArtifactType' and T.[Class] = 8 then 'Technical :: '
+			                when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: '
+                            when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: '
 			                when T.Object = 'FusionAttributeType' then 'Fusion Attribute :: ' + FT.Name + ' / '
 			                when T.Object = 'FusionQueryAttributeType' then 'Fusion Query :: '
 			                when T.Object = 'GroupType' then 'Security :: '
-			                when T.Object = 'PolicyType' then 'Policy :: '
+			                when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} :: '
 			                when T.Object = 'ReferenceItemType' then 'Reference :: '
 			                when T.Object = 'ResourceType' then 'Security :: '
-			                when T.Object = 'RuleType' then 'Rule :: '
-			                when T.Object = 'TaxonomyType' then 'Model :: '
+			                when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} :: '
+			                when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} :: '
 		                end + coalesce(P.[Path], T.Name) as Name,
 		                T.Object as Type
                 from	AssetType T
@@ -1691,7 +1689,7 @@ where	R.SourceObject = 'FusionAttribute'
                 }
 
                 removeSpecialPredicateTypes = (
-                    subjectAssetType.Class != AssetTypeClass.Business &&
+                    subjectAssetType.Class != AssetTypeClass.BusinessAsset &&
                     subjectAssetType.Class != AssetTypeClass.Model &&
                     subjectAssetType.Class != AssetTypeClass.Policy &&
                     subjectAssetType.Class != AssetTypeClass.Rule
@@ -1759,11 +1757,11 @@ where	I.ID is null";
 
                 if (predicateModel.Type == PredicateType.BusinessToTechnical)
                 {
-                    if (subjectAssetType.Class != AssetTypeClass.Business && subjectAssetType.Class != AssetTypeClass.Model && subjectAssetType.Class != AssetTypeClass.Policy && subjectAssetType.Class != AssetTypeClass.Rule)
+                    if (subjectAssetType.Class != AssetTypeClass.BusinessAsset && subjectAssetType.Class != AssetTypeClass.Model && subjectAssetType.Class != AssetTypeClass.Policy && subjectAssetType.Class != AssetTypeClass.Rule)
                     {
                         throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : Business, Model, Policy, or Rule.");
                     }
-                    if (objectAssetType.Class != AssetTypeClass.Technical)
+                    if (objectAssetType.Class != AssetTypeClass.TechnicalAsset)
                     {
                         throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your object must be a Technical Asset class.");
                     }

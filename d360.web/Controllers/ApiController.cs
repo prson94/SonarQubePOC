@@ -3137,7 +3137,7 @@ outer apply (
                     {
                         if (isReferenceType)
                         {
-                            overrideDisplayColumn = $@"(select Name from AssetType where Object = '{@object}' and ObjectID = A{pos}.{idColumn})";
+                            overrideDisplayColumn = $@"(select Name from AssetType where Object = '{@object}' and ObjectID = A{pos}.ObjectID)";
                         }
                         else if (i.FieldTypeName.ToLower() == "textpath")
                         {
@@ -3478,6 +3478,7 @@ outer apply (
                     useAssetJoin = true;
                     break;
                 case "referenceitemtype":
+                    permissionJoin = $@"  inner join AssetType O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ObjectID ";
                     useAssetTypeJoin = true;
                     break;
                 default:
@@ -3485,6 +3486,7 @@ outer apply (
                     permissionsWhere = "";
                     break;
             }
+
 
             switch (previousObj.ToLower())
             {
@@ -8337,17 +8339,19 @@ where	R.IssueTypeID = @issueTypeID", new { issueTypeID }).ToList();
         public HttpResponseMessage GetMetricAssetTypes()
         {
             List<int> classes = new List<int>() {
-                (int)AssetTypeClass.Business,
+                (int)AssetTypeClass.BusinessAsset,
                 (int)AssetTypeClass.Model,
                 (int)AssetTypeClass.Policy,
-                (int)AssetTypeClass.Technical
+                (int)AssetTypeClass.Rule,
+                (int)AssetTypeClass.TechnicalAsset
             };
             var models = Company.Query<MetricAssetTypeViewModel>(@"
 select	T.[Uid],
         T.[Class], 
 		P.[Path] as Name
 from	AssetType T
-		cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P").OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
+		cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
+where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }

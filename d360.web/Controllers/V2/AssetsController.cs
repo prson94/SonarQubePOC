@@ -272,7 +272,7 @@ namespace d360.web.Controllers.V2
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
 
-                if (model.UseAsTransformation && (model.Class != AssetTypeClass.Business && model.Class != AssetTypeClass.Technical))
+                if (model.UseAsTransformation && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", AssetTypeErrors.TransformationClassRestriction));
 
                 if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.Business)
@@ -383,7 +383,7 @@ namespace d360.web.Controllers.V2
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
 
-                if (model.UseAsTransformation && (model.Class != AssetTypeClass.Business && model.Class != AssetTypeClass.Technical))
+                if (model.UseAsTransformation && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", AssetTypeErrors.TransformationClassRestriction));
 
                 if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.Business)
@@ -1083,7 +1083,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists ; it is not valid to add a 2nd association",
+                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists , it is not valid to add a second association",
                         Success = false
                     };
                     resultList.Add(result);
@@ -1093,7 +1093,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"A regular user can only create a tag association to assets {assetTagApi.AssetUID} they have access to",
+                        Message = $"A non-admin user can only create a tag association to assets they have access to",
                         Success = false
                     };
                     resultList.Add(result);
@@ -1115,7 +1115,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists ; it is not valid to add a 2nd association",
+                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists , it is not valid to add a second association",
                         Success = false
                     };
                     resultList.Add(result);
@@ -1185,7 +1185,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"A regular user can only remove a tag {assetTagApi.TagUID} association to an asset {assetTagApi.AssetUID} they initially created the association for / they have edit rights to asset",
+                        Message = $"A non-admin user can only remove the tag(Uid:  {assetTagApi.TagUID}) association to an asset (Uid: {assetTagApi.AssetUID}) if they initially created the association for or they have edit rights to asset",
                         Success = false
                     };
                     resultList.Add(result);

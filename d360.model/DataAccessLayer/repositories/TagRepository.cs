@@ -1,5 +1,7 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.core.enums;
+using d360.core.resources;
 using Dapper;
 using Newtonsoft.Json;
 using System;
@@ -347,19 +349,19 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                 switch (item.Object.ToString())
                 {
                     case "ArtifactType":
-                        atl.Breadcrumbs = $"{(item.Class == 1 ? "Business" : "Technical")} <i class=\"fa fa-chevron-right\"></i> " + item.Name;
+                        atl.Breadcrumbs = $"{(item.Class == 1 ? CommonNames.AssetTypeClass_Business : CommonNames.AssetTypeClass_Technical)} <i class=\"fa fa-chevron-right\"></i> " + item.Name;
                         atl.Url = $"/artifact/{item.AssetTypeId}/{item.AssetId}";
                         break;
                     case "PolicyType":
-                        atl.Breadcrumbs = "Policy <i class=\"fa fa-chevron-right\"></i> " + item.Name;
+                        atl.Breadcrumbs = $"{CommonNames.AssetTypeClass_Policy} <i class=\"fa fa-chevron-right\"></i> " + item.Name;
                         atl.Url = $"/policy/{item.AssetTypeId};hierarchyId={item.AssetId}";
                         break;
                     case "TaxonomyType":
-                        atl.Breadcrumbs = "Model <i class=\"fa fa-chevron-right\"></i> " + item.Name;
+                        atl.Breadcrumbs = $"{CommonNames.AssetTypeClass_Model} <i class=\"fa fa-chevron-right\"></i> " + item.Name;
                         atl.Url = $"/model/{item.AssetTypeId};hierarchyId={item.AssetId}";
                         break;
                     case "RuleType":
-                        atl.Breadcrumbs = "Rule <i class=\"fa fa-chevron-right\"></i> " + item.Name;
+                        atl.Breadcrumbs = $"{CommonNames.AssetTypeClass_Rule} <i class=\"fa fa-chevron-right\"></i> " + item.Name;
                         atl.Url = $"/quality/rule/{item.AssetTypeId}/{item.AssetId}";
                         break;
                 }
@@ -722,13 +724,13 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
                         A.Id as AssetID,
                         A.[Uid] as AssetUid,
 						CASE 
-							WHEN AST.Object = 'TaxonomyType' THEN 'Model ' + AST.Name
-							WHEN AST.Object = 'ArtifactType' and AST.[Class] = 1 THEN 'Business ' + AST.Name
-                            WHEN AST.Object = 'ArtifactType' and AST.[Class] = 8 THEN 'Technical ' + AST.Name
-							WHEN AST.Object = 'PolicyType' THEN 'Policy ' + AST.Name
-							WHEN AST.Object = 'RuleType' THEN 'Rule ' + AST.Name
-							ELSE AST.Name
-						END AS AssetType, 
+							WHEN AST.Object = 'TaxonomyType' THEN '{CommonNames.AssetTypeClass_Model.CleanForSql()} : '
+							WHEN AST.Object = 'ArtifactType' and AST.[Class] = 1 THEN '{CommonNames.AssetTypeClass_Business.CleanForSql()} : '
+                            WHEN AST.Object = 'ArtifactType' and AST.[Class] = 8 THEN '{CommonNames.AssetTypeClass_Technical.CleanForSql()} : '
+							WHEN AST.Object = 'PolicyType' THEN '{CommonNames.AssetTypeClass_Policy.CleanForSql()} : '
+							WHEN AST.Object = 'RuleType' THEN '{CommonNames.AssetTypeClass_Rule.CleanForSql()} : '
+							ELSE ''
+						END + AST.Name AS AssetType, 
                         A.Object,
                         A.ObjectID,
                         AssetTags.Tags as Tags

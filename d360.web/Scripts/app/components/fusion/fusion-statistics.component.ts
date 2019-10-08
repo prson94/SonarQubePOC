@@ -1,15 +1,10 @@
-﻿import {Component, OnInit} from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
+import { FusionSummaryStats } from '../../models/fusion.model';
+import { FusionService } from '../../services/fusion.service';
+import { BaseComponent } from '../shared/base.component';
+import { takeUntil } from "rxjs/operators";
+import { Subject } from "rxjs";
 
-import {FusionSummaryStats} from '../../models/fusion.model';
-
-import {FusionService} from '../../services/fusion.service';
-
-import {BaseComponent} from '../shared/base.component';
-import {takeUntil} from "rxjs/operators";
-import {Subject} from "rxjs";
-
-declare var require: any;
-const Highcharts = require('highcharts/highstock.src');
 
 @Component({
     selector: 'd3s-fusion-statistics',
@@ -130,6 +125,7 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
         score: number,
         title?: string
     ) {
+        
         return {
             chart: {
                 type: 'solidgauge',
@@ -144,7 +140,7 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
                 startAngle: -90,
                 endAngle: 90,
                 background: {
-                    backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || '#EEE',
+                    backgroundColor: '#EEE',
                     innerRadius: '80%',
                     outerRadius: '100%',
                     shape: 'arc',

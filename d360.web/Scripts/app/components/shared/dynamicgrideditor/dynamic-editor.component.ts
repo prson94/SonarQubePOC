@@ -19,7 +19,6 @@ import { EditorCategory, EditorField, EditorRow } from '../../../models/editor-f
 
 import { EditorDefinitionService } from '../../../services/editor-definition.service';
 import { UriBasedService } from '../../../services/uri-based.service';
-import { FieldsService } from '../../../services/fields.service';
 import { CascadeService } from '../../../services/cascade.service';
 
 import { BaseComponent } from '../base.component';
@@ -32,7 +31,7 @@ import { forEach } from '@angular/router/src/utils/collection';
 @Component({
     selector: 'd3s-dynamic-editor',
     templateUrl: './dynamic-editor.component.html',
-    providers: [EditorDefinitionService, UriBasedService, FieldsService, CascadeService],
+    providers: [EditorDefinitionService, UriBasedService, CascadeService],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
@@ -88,8 +87,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         private formBuilder: FormBuilder,
         private messagesService: MessagesObservableService,
         private editorDefinitionService: EditorDefinitionService,
-        private uriBasedService: UriBasedService,
-        private fieldsService: FieldsService,
+        private uriBasedService: UriBasedService,        
         private cascadeService: CascadeService
     ) {
         super();

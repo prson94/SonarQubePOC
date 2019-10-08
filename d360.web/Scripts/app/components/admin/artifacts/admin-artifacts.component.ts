@@ -64,10 +64,10 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 let assetTypeClassString: keyof typeof AssetTypeClass = params['class'];
                 this.assetTypeClass = AssetTypeClass[assetTypeClassString];
                 if (!this.assetTypeClass) {
-                    this.assetTypeClass = AssetTypeClass.Business;
+                    this.assetTypeClass = AssetTypeClass.BusinessAsset;
                 }
             } catch (e) {
-                this.assetTypeClass = AssetTypeClass.Business;
+                this.assetTypeClass = AssetTypeClass.BusinessAsset;
             }
 
             let className: string = AssetTypeClass[this.assetTypeClass];
