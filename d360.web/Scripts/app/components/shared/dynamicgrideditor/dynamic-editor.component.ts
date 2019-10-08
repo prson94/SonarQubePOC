@@ -29,11 +29,14 @@ import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { concat } from 'rxjs';
 import { forEach } from '@angular/router/src/utils/collection';
+import { Console } from '@angular/core/src/console';
+import { AssetEditorModel } from '../../../models/asset.model';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'd3s-dynamic-editor',
     templateUrl: './dynamic-editor.component.html',
-    providers: [EditorDefinitionService, UriBasedService, FieldsService, CascadeService],
+    providers: [EditorDefinitionService, UriBasedService, FieldsService, CascadeService, AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
@@ -92,7 +95,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         private editorDefinitionService: EditorDefinitionService,
         private uriBasedService: UriBasedService,
         private fieldsService: FieldsService,
-        private cascadeService: CascadeService
+        private cascadeService: CascadeService,
+        private assetService: AssetService
     ) {
         super();
     }
@@ -483,10 +487,51 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 this.saveClick.emit({ item: values, action: action, additionalOption: this.consolidateToTag });
 
             }
+            else if (this.isV2API) {
+                this.postToApiV2({ item: values, action: action });
+            }
             else {
                 this.saveClick.emit({ item: values, action: action });
             }
         }
+    }
+
+    postToApiV2(event) {
+        this.isLoading = true;
+        let uid = event.item.Uid;
+        let parentUid = event.item.ParentUid;
+
+        let fields: any = {};
+        var props = Object.keys(event.item);
+        props.filter(x => x != 'Uid' && x != 'ParentUid' && x != 'ParentID').forEach(p => {
+            var value = event.item[p];
+            if (!value) {
+                value = '';
+            }
+            fields[p] = value;
+        });
+
+        let model = new AssetEditorModel();
+        model.Fields = fields;
+        if (uid)
+            model.Uid = uid;
+
+        if (parentUid && parentUid.length == 36)
+            model.ParentUid = parentUid;
+
+        this.assetService.saveAsset(this.objectTypeUid.toString(), model)
+            .subscribe(res => {
+                if (res.Success) {
+                    let msg = model.Uid ? 'Successfully updated' : 'Successfully added';
+                    this.showMessageForApiResult(this.messagesService, res, msg);
+                    this.saveClick.emit(event);
+                }
+                else {
+                    this.showMessageForApiResult(this.messagesService, res);
+                }
+
+            });
+        console.log("Saving to api v2");
     }
 
     getUTCDate(date: Date): Date {
