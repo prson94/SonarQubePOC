@@ -28,6 +28,7 @@ using System.Configuration;
 using d360.core.helpers;
 using Ganss.XSS;
 using System.Text;
+using d360.core.resources;
 
 namespace d360.web.Controllers
 {    
@@ -317,6 +318,10 @@ namespace d360.web.Controllers
                 case "INTERSECTTYPE":
                     objectId = Company.Intersects.FirstOrDefault(x => x.uid == uid).ID;
                     return DynamicEditorEditFields(o, objectId);
+                case "PREDICATE":
+                    objectId = Company.Predicates.FirstOrDefault(x => x.UID == uid).ID;
+                    return DynamicEditorEditFields(o, objectId);
+            }
                 default:
                     foreach (SystemObjects sysobj in (SystemObjects[])Enum.GetValues(typeof(SystemObjects)))
                     {
@@ -539,8 +544,7 @@ namespace d360.web.Controllers
                     return PutOrganizationInvitation(form);
                 case "POLICYTYPELEVEL":
                     return EditPolicyTypeLevel(form);
-                case "PREDICATE":
-                    return EditPredicate(form);
+
                 case "REPORT":
                     return await EditReport(form);
                 case "REPORTTILE":
@@ -616,8 +620,6 @@ namespace d360.web.Controllers
                     return DeleteOrganizationDomain(objectID);
                 case "ORGANIZATIONINVITATION":
                     return DeleteOrganizationInvitation(objectID);
-                case "PREDICATE":
-                    return DeletePredicate(form);                
                 case "REPORT":
                     return await DeleteReport(form);
                 case "REPORTTILE":
@@ -704,8 +706,7 @@ namespace d360.web.Controllers
                     return PostOrganizationInvitation(form);
                 case "POLICYTYPELEVEL":
                     return AddPolicyTypeLevel(form);
-                case "PREDICATE":
-                    return AddPredicate(form);
+
                 case "REPORT":
                     return await AddReport(form);
                 case "REPORTTILE":
@@ -957,8 +958,8 @@ namespace d360.web.Controllers
                         ot = SystemObjects.FusionAttributeType;
                         appendTitle = FormInfo.FusionAttributeType;
                         break;
-                    case AssetTypeClass.Business:
-                    case AssetTypeClass.Technical:
+                    case AssetTypeClass.BusinessAsset:
+                    case AssetTypeClass.TechnicalAsset:
                         ot = SystemObjects.ArtifactType;
                         appendTitle = FormInfo.ArtifactType;
                         break;
@@ -1011,9 +1012,9 @@ namespace d360.web.Controllers
                             model.AssetType.Name = f.Name;
                             model.ScanEnabled = f.ScanEnabled;
                             break;
-                        case AssetTypeClass.Business:
-                        case AssetTypeClass.Technical:
-                            model.CanOwnFusion = (@class == AssetTypeClass.Business) ? assetType.CanOwnFusion : false;
+                        case AssetTypeClass.BusinessAsset:
+                        case AssetTypeClass.TechnicalAsset:
+                            model.CanOwnFusion = (@class == AssetTypeClass.BusinessAsset) ? assetType.CanOwnFusion : false;
                             model.AutoDisplayDescription = assetType.AutoDisplayDescription;
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;
@@ -1048,7 +1049,7 @@ namespace d360.web.Controllers
                     model.FormName = string.Format(FormInfo.Add_Asset_Type_Title, appendTitle);
                     model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
 
-                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.Business || @class == AssetTypeClass.Technical || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType)
+                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.BusinessAsset || @class == AssetTypeClass.TechnicalAsset || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType)
                     {
                         var intersectType = Company.Filter<IntersectType>(i =>
                             i.Object == assetType.Object &&
@@ -2297,7 +2298,15 @@ namespace d360.web.Controllers
             model.ArtifactType_TaxonomyTypeIDNodes = (settings.Any(i => i.SettingID == 8) ? settings.Single(i => i.SettingID == 8).Value : "");
 
             model.DefaultSearchTypes = (settings.Any(i => i.SettingID == 13) ? settings.Single(i => i.SettingID == 13).Value : "");
-            model.SiteNav = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder).ToList();
+
+            model.FusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
+
+            IQueryable<SiteNav> siteNavs = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder);
+            if (!model.FusionEnabled)
+            {
+                siteNavs = siteNavs.Where(x => x.Name != "#Fusion");
+            }
+            model.SiteNav = siteNavs.ToList();
 
             model.HeaderBackgroundColor = (settings.Any(i => i.SettingID == 10) ? settings.Single(i => i.SettingID == 10).Value : "");
 
@@ -3464,6 +3473,11 @@ namespace d360.web.Controllers
                     })
                     .OrderBy(i => i.title).ToList();
 
+            if (!Community.IsFusionEnabled())
+            {
+                dataTypeOptions = dataTypeOptions.Where(x => x.value != "FusionLookup").ToList();
+            }
+
             var jsonFieldType = new Dictionary<string, string>()
             {
                 { "Boolean", "bit" },
@@ -3750,9 +3764,9 @@ offset 0 rows fetch next 25 rows only
                     throw new ConflictException("Error Occurred!", $"{FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
 
-                if (!string.IsNullOrEmpty(model.FieldType.Name) && (model.FieldType.Name).ToUpper().Equals("ID"))
+                if (!string.IsNullOrEmpty(model.FieldType.Name) && (model.FieldType.Name.ToUpper().Equals("ID") || model.FieldType.Name.ToUpper().Equals("UID")))
                 {
-                    throw new ConflictException("Error Occurred!", "You can not add field with API Name [ID].");
+                    throw new ConflictException("Error Occurred!", "You can not add field with API Name [ID] or [UID].");
                 }
 
                 if (model.FieldType.MinimumLength.HasValue && model.FieldType.MaximumLength.HasValue)
@@ -4177,8 +4191,12 @@ offset 0 rows fetch next 25 rows only
                 {
                     throw new ConflictException("Error Occurred!", $"{FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
+                if (new string[2]{"id", "uid" }.Contains(model.FieldType.Name.Trim().ToLower()))
+                {
+                    throw new ConflictException("Error Occurred!", $"{FieldInfo.ApiName_Name} cannot be ID or UID!");
+                }
 
-           
+
                 if (ft.Type == "Lookup" && ft.AllowMultipleValues && !model.FieldType.AllowMultipleValues &&
                             Company.Fields.Where(x => x.FieldTypeID == ft.ID).Where(x => x.Value.Contains(",")).ToList().Count() > 0)
                 {
@@ -5996,12 +6014,25 @@ offset 0 rows fetch next 25 rows only
 
             var list = new List<EditableField>();
             list.Add(new EditableField { FieldName = "IssueTypeID", FieldType = DataType.Hidden.ToString(), Value = issueTypeId.ToString() });
-            
-            var availableTypes = Company.Query<SelectListItem>(string.Format(@"select T.ID as [Value], {0} + coalesce(FAT.TextPath, T.[Name]) as [Text]
+
+            List<string> ignoreObjects = new List<string>();
+            string ignoreObjectTypeSQL = string.Empty;
+            if (!Community.IsFusionEnabled())
+            {
+                ignoreObjects.Add(SystemObjects.FusionType.ToString());
+                ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());
+                ignoreObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
+            }
+
+            if (ignoreObjects.Count > 0)
+                ignoreObjectTypeSQL = $" AND T.Object not in ({string.Join(",", ignoreObjects.Select(o => "'" + o + "'"))})";
+
+            var availableTypes = Company.Query<SelectListItem>($@"select T.ID as [Value], {QueryConstants.HighLevelTypeCaseStatement} + coalesce(FAT.TextPath, T.[Name]) as [Text]
                 from AssetType T
                 left join FusionAttributeType FAT on T.[Object] = 'FusionAttributeType' and FAT.ID = T.ObjectID
                 where not exists (select 1 from IssueTypeRelation where AssetTypeID = T.ID and IssueTypeID = @issueTypeId)
-                order by 2", QueryConstants.HighLevelTypeCaseStatement), new { issueTypeId }).ToList();
+                {ignoreObjectTypeSQL}
+                order by 2", new { issueTypeId }).ToList();
 
             list.Add(new EditableField { Row = 1, Column = 1, FieldName = "AssetTypeID", Name = "Asset Type", FieldType = DataType.Lookup.ToString(), Items = availableTypes, Required = true });
 
@@ -6818,13 +6849,13 @@ offset 0 rows fetch next 25 rows only
             });
 
 
-            var contexts = Company.Query<dynamic>(@"		
+            var contexts = Company.Query<dynamic>($@"		
                 select 
 			        D.DisplayValue as [Name],
 			        A.[Object] + '|' + cast(A.ObjectID as varchar) as ID,
 			        case 
-                        when A.[Object] = 'Artifact' and A.AssetTypeClass = 1 then 'Business'
-                        when A.[Object] = 'Artifact' and A.AssetTypeClass = 8 then 'Technical'
+                        when A.[Object] = 'Artifact' and A.AssetTypeClass = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()}'
+                        when A.[Object] = 'Artifact' and A.AssetTypeClass = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()}'
 			            when A.[Object] = 'Taxonomy' then 'Model'
 			            else ''
 			        end as Category,
@@ -6948,17 +6979,17 @@ offset 0 rows fetch next 25 rows only
             switch (act) {
                 case "O":   // Responsibility/Ownership
                     #region
-                    sql = @"
+                    sql = $@"
 select * from (
 select 'FusionType|0' as value, 'Fusion' as title
 union
-select 'ArtifactType|0' as value, 'Business' as title
+select 'ArtifactType|0' as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}' as title
 union
-select 'ArtifactType|0' as value, 'Technical' as title
+select 'ArtifactType|0' as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}' as title
 union
-select 'TaxonomyType|0' as value, 'Model' as title
+select 'TaxonomyType|0' as value, '{CommonNames.AssetTypeClass_Model.CleanForSql()}' as title
 union
-select 'PolicyType|0' as value, 'Policy' as title
+select 'PolicyType|0' as value, '{CommonNames.AssetTypeClass_Policy.CleanForSql()}' as title
 union
 select 'ReferenceItemType|0' as value, 'Reference' as title
 ) O order by title";
@@ -6966,15 +6997,15 @@ select 'ReferenceItemType|0' as value, 'Reference' as title
                 #endregion
                 case "P":   // Promotion
                     #region
-                    sql = @"
+                    sql = $@"
 select * from (
 select 'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title from AttributeType where ParentID is null
 union
-select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 'Business: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 1
+select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 1
 union
-select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 'Technical: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 8
+select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, '{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 8
 union
-select 'TaxonomyType|' + cast(ObjectID  as varchar(10)) as value, 'Model: ' + Name as title from AssetType where object='TaxonomyType'
+select 'TaxonomyType|' + cast(ObjectID  as varchar(10)) as value, '{CommonNames.AssetTypeClass_Model.CleanForSql()}: ' + Name as title from AssetType where object='TaxonomyType'
 union
 select 'ReferenceItemType|' + cast(ObjectID  as varchar(10)) as value, 'Reference Item: ' + Name as title from AssetType where object='ReferenceItemType'
 ) O order by title";
@@ -6986,7 +7017,7 @@ select 'ReferenceItemType|' + cast(ObjectID  as varchar(10)) as value, 'Referenc
                     sql = @"select 'IntersectType|' + cast(itd.ID as varchar(10)) as value, IName.Name as title from intersecttypedetail itd cross apply dbo.GetIntersectTypeNames(itd.ID) IName	 where itd.IsSystem = 0 or (itd.Subject = 'ReferenceItemType' and itd.Object = 'ReferenceItemType') order by IName.Name";
                     break;
                 #endregion
-                case "M":   // USers/Groups
+                case "M":   // Users/Groups
                     models = new List<OptionModel> {
                         new OptionModel { title = "Group Membership", value = "Membership|0" },
                         new OptionModel { title = "Users", value = "Membership|1" }
@@ -8790,136 +8821,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
         #endregion
 
-        #region Form Get/Post
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddPredicate")]
-        public JsonResult AddPredicate(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("predicate");
-
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var a = new Predicate
-                {
-                    Name = parseTextField(form, "Name"),
-                    Inverse = parseTextField(form, "Inverse"),
-                    Type = (PredicateType)Enum.Parse(typeof(PredicateType), form["Type"]),
-                    IsSystem = false
-                };
-
-                if (a.Type.AsInfoModel().ReadOnly)
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add a predicate of this type.");
-                }
-                if (!a.Type.AsInfoModel().AllowMultiplePredicates)
-                {
-                    var any = Company.Predicates.Any(i => i.Type == a.Type);
-                    if (any)
-                        throw new GenericException(HttpStatusCode.Conflict, "Predicate", "Not allowed to add another predicate of this type. Only one may exist.");
-                }
-
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
-                if (!a.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {a.Type.AsInfoModel().Name}.");
-                }
-
-                Company.Add<Predicate>(a);
-
-                return jsonSuccess(a.Name + " successfully created.", string.Format("Predicate|{0}", a.ID), "add", HttpStatusCode.Created, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeletePredicate")]
-        public JsonResult DeletePredicate(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("predicate");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Predicate>(id);
-                if (model == null) throw new NotFoundException("predicate");
-
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                Company.Delete<Predicate>(model);
-                return jsonSuccess("Item successfully removed.", null, "delete", HttpStatusCode.OK, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditPredicate")]
-        public JsonResult EditPredicate(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("predicate");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Predicate>(id);
-                if (model == null) throw new NotFoundException("predicate");
-
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                model.Name = parseTextField(form, "Name");
-                model.Inverse = parseTextField(form, "Inverse");
-
-                var any = Company.Any<IntersectType>(i => i.PredicateID == id);
-
-                //only allow edit of type for unused predicates
-                if (!any)
-                {                    
-                    model.Type = (PredicateType)parseIntField(form, "Type");
-                }
-
-                var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
-
-                if (!model.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
-                {
-                    throw new GenericException(HttpStatusCode.Conflict, "Predicate", $"Your current version of lineage does not support using this predicates of type {model.Type.AsInfoModel().Name}.");
-                }
-
-                Company.Update(model);
-
-                return jsonSuccess(model.Name + " successfully updated.", string.Format("IntersectRole|{0}", id), "edit", HttpStatusCode.OK, new { });
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
         #endregion
 
         #region Reference Item
@@ -10569,7 +10470,19 @@ order by r.Name";
         [HttpGet, ActionName("ResponsibilityTypeRelation_FormData"), Route("ResponsibilityTypeRelation_FormData"), NonNullableParameters]
         public JsonNetResult GetResponsibilityTypeRelation_FormData()
         {
-            var AllocationOptions = Company.Query<ResponsibilityTypeRelationAllocationOption>(@"
+            List<string> ignoreObjects = new List<string>();
+            string ignoreObjectTypeSQL = string.Empty;
+            if (!Community.IsFusionEnabled())
+            {
+                ignoreObjects.Add(SystemObjects.FusionType.ToString());
+                ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());
+                ignoreObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
+            }
+
+            if (ignoreObjects.Count > 0)
+                ignoreObjectTypeSQL = $" AND A.Object not in ({string.Join(",", ignoreObjects.Select(o => "'" + o + "'"))})";
+
+            var AllocationOptions = Company.Query<dynamic>($@"
 select	cast(0 as bit) as IsUsed,
         A.ID, 
 		A.[Class],
@@ -10578,16 +10491,17 @@ from	AssetType A
 		cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
 		left join FusionAttributeType FA on A.Object = 'FusionAttributeType' and FA.ID = A.ObjectID
 		left join FusionType FT on FT.ID = FA.FusionTypeID
-where	Class in (1,2,3,4,6,7,8,9)")
-                .ToList()
-                .OrderBy(i => i.ClassName)
-                .ThenBy(i => i.Path)
-                .Select(i => new {
-                    i.ID,
-                    i.IsUsed,
-                    Path = $"{i.ClassName} :: {i.Path}"
-                })
-                .ToList();
+where	Class in (1,2,3,4,6,7,9) {ignoreObjectTypeSQL}
+order by case Object
+			when 'ArtifactType' then 'Artifacts :: '
+			when 'TaxonomyType' then 'Models :: '
+			when 'PolicyType' then 'Policies :: '
+			when 'RuleType' then 'Rules :: '
+			when 'FusionAttributeType' then 'Fusion Attributes :: '
+			when 'FusionType' then 'Fusion Types :: '
+			when 'ReferenceItemType' then 'Reference Item Type :: '
+		end + coalesce(FT.Name+ ' / ','') + P.[Path]
+").ToList();
             var PermissionOptions = Permission.DeleteAsset.GetList();
 
             return new JsonNetResult
@@ -14482,7 +14396,7 @@ order by	case
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
 
-            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Business || f.Class == AssetTypeClass.Technical).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
             
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
@@ -14504,7 +14418,7 @@ order by	case
             
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names});
 
-            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.Business || f.Class == AssetTypeClass.Technical).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Asset Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() });

@@ -11,7 +11,7 @@ export class ScoreService extends BaseObservableService  {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getPointBreakdown(assetUid: string, date: Date = null): Observable<PointBreakdown[]> {
+    getPointBreakdown(assetUid: string, date: string = null): Observable<PointBreakdown[]> {
         let uri = `/api/v2/metrics/${assetUid}/pointbreakdown` + (date == null ? '' : `?effectiveDate=${date}`);
         return this.http.get(uri)
             .pipe(

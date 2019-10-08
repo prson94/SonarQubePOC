@@ -4,6 +4,7 @@ import {OrganizationsService} from '../../../services/organizations.service';
 import {BaseComponent} from '../../shared/base.component';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { AssetTypeClass } from '../../../models/asset.model';
 
 @Component({
     selector: 'd3s-admin-organization-types',
@@ -89,7 +90,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                 </span>
         <d3s-asset-type-editor *ngIf="showEditor"
                                [showParentPredicates]="false"
-                               [assetTypeClass]="'O'"
+                               [assetTypeClass]="assetTypeClass"
                                [id]="type?.AssetTypeID"
                                [title]="(type?'Edit':'Add') + ' Organization Type'"
                                (onCancel)="cancel()"
@@ -110,6 +111,7 @@ export class AdminOrganizationTypesComponent extends BaseComponent implements On
     showEditor = false;
     showDelete = false;
     isLoading = false;
+    assetTypeClass: AssetTypeClass = AssetTypeClass.Organization;
 
     @Input() type: OrganizationType = null;
     @Output() typeChange = new EventEmitter();

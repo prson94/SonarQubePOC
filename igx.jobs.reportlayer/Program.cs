@@ -136,8 +136,8 @@ namespace igx.jobs.reportlayer
                             var prefix = "Glossary";
                             string objectID;
 
-                            var assetTypes = companyConnection.Query<AssetType>($"select * from AssetType where [Class] in ({(int)AssetTypeClass.Business}, {(int)AssetTypeClass.Technical}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy})").ToList();
-                            var fieldTypes = companyConnection.Query<FieldType>($"select * from FieldType where AssetTypeID in (select ID from AssetType where [Class] in ({(int)AssetTypeClass.Business}, {(int)AssetTypeClass.Technical}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy}))").ToList();
+                            var assetTypes = companyConnection.Query<AssetType>($"select * from AssetType where [Class] in ({(int)AssetTypeClass.BusinessAsset}, {(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy})").ToList();
+                            var fieldTypes = companyConnection.Query<FieldType>($"select * from FieldType where AssetTypeID in (select ID from AssetType where [Class] in ({(int)AssetTypeClass.BusinessAsset}, {(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy}))").ToList();
 
                             assetTypes.ForEach(o =>
                             {
@@ -168,7 +168,7 @@ namespace igx.jobs.reportlayer
                                     "A.ID");
 
 
-                                if (o.Class == AssetTypeClass.Business || o.Class == AssetTypeClass.Technical)
+                                if (o.Class == AssetTypeClass.BusinessAsset || o.Class == AssetTypeClass.TechnicalAsset)
                                 {
                                     #region Business
 

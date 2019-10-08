@@ -12,7 +12,7 @@ namespace d360.model.validators
 {
     public static class FieldApiModelValidator
     {
-        public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, List<FieldType> existingFieldTypes = null)
+        public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, bool areFusionFieldsAllowed = true, List<FieldType> existingFieldTypes = null)
         {
             var baseValidation = BaseModelValidation(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
             if (baseValidation.StatusCode != HttpStatusCode.OK)
@@ -29,9 +29,9 @@ namespace d360.model.validators
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
-                if (field.Name.Trim().ToLower() == "id")
+                if (field.Name.Trim().ToLower() == "id" || field.Name.Trim().ToLower() == "uid")
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot be ID.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot be ID or UID.");
                 }
                 if (!field.Type.IsOnlyOneTypeModelDefined())
                 {
@@ -114,6 +114,11 @@ namespace d360.model.validators
 
 
                     }
+                }
+
+                if(!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Fusion field types are not allowed!");
                 }
 
             }

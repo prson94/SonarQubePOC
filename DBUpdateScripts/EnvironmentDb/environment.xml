@@ -323,4 +323,6 @@
   <include file="scripts/GOV-6768.xml"/> <!-- Added api.ExecutionPredicate and api.ExecutionDeletedPredicate tables-->
   <include file="scripts/GOV-8332.xml"/> <!-- changing the url returned for the dashboard sitenav-->
   <include file="scripts/GOV-8321.xml"/> <!-- Updated dbo.GetWorkflowConditionLabels function -->
+  <include file="scripts/GOV-7716.xml"/>  <!--Drop Taxonomy Type table -->
+  <include file="scripts/GOV-7906.xml"/> <!-- graph.GetLineageByAsset -->
 </databaseChangeLog>

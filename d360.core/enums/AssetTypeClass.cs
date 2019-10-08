@@ -14,10 +14,10 @@ namespace d360.core.enums
         ]
         Generic = 0,
         [
-            Name("Business"), 
+            Name("Business Asset"), 
             Description("Business assets.")
         ]
-        Business = 1,
+        BusinessAsset = 1,
         [
             Name("Model"),
             Description("Model assets.")
@@ -49,10 +49,10 @@ namespace d360.core.enums
         ]
         Rule = 7,
         [
-            Name("Technical"),
+            Name("Technical Asset"),
             Description("Technical asset that replaces fusion attribute types.")
         ]
-        Technical = 8,
+        TechnicalAsset = 8,
         [
             Name("Reference"),
             Description("Reference asset.")

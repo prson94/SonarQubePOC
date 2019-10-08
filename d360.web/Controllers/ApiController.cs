@@ -3137,7 +3137,7 @@ outer apply (
                     {
                         if (isReferenceType)
                         {
-                            overrideDisplayColumn = $@"(select Name from AssetType where Object = '{@object}' and ObjectID = A{pos}.{idColumn})";
+                            overrideDisplayColumn = $@"(select Name from AssetType where Object = '{@object}' and ObjectID = A{pos}.ObjectID)";
                         }
                         else if (i.FieldTypeName.ToLower() == "textpath")
                         {
@@ -3464,6 +3464,7 @@ outer apply (
             var objIDColumn = "";
             var joinType = "inner"; //the SQL join.
             var useAssetJoin = false;
+            var useAssetTypeJoin = false;
 
             var permissionJoin = $@"
                 inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ID ";
@@ -3476,11 +3477,16 @@ outer apply (
                     permissionJoin = $@"  inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ObjectID ";
                     useAssetJoin = true;
                     break;
+                case "referenceitemtype":
+                    permissionJoin = $@"  inner join AssetType O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ObjectID ";
+                    useAssetTypeJoin = true;
+                    break;
                 default:
                     permissionJoin = "";
                     permissionsWhere = "";
                     break;
             }
+
 
             switch (previousObj.ToLower())
             {
@@ -3524,6 +3530,10 @@ outer apply (
                                 {
                                     join.JoinStatement += $" inner join asset A{i} on A{i}.ObjectID = I{i}.SubjectID and A{i}.[Object] = '{currentObj}'";
                                 }
+                                else if (useAssetTypeJoin)
+                                {
+                                    join.JoinStatement += $" inner join AssetType A{i} on A{i}.ObjectID = I{i}.SubjectID and A{i}.[Object] = '{currentObj}'";
+                                }
                                 else
                                 {
                                     join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.SubjectID";
@@ -3537,6 +3547,10 @@ outer apply (
                                 {
                                     join.JoinStatement += $" inner join asset A{i} on A{i}.ObjectID = I{i}.ObjectID and A{i}.[Object] = '{currentObj}'";
                                 }
+                                else if (useAssetTypeJoin)
+                                {
+                                    join.JoinStatement += $" inner join AssetType A{i} on A{i}.ObjectID = I{i}.ObjectID and A{i}.[Object] = '{currentObj}'";
+                                }
                                 else
                                 {
                                     join.JoinStatement += $" inner join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.ObjectID";
@@ -3549,6 +3563,10 @@ outer apply (
                                 if (useAssetJoin)
                                 {
                                     join.JoinStatement += $" inner join asset A{i} on A{i}.[Object] = '{currentObj}' and A{i}.ObjectID = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                }
+                                else if (useAssetTypeJoin)
+                                {
+                                    join.JoinStatement += $" inner join AssetType A{i} on A{i}.[Object] = '{currentObj}' and A{i}.ObjectID = case when (I{i}.Subject = '{type}' and I{i}.SubjectID = {id}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 }
                                 else
                                 {
@@ -3572,6 +3590,10 @@ outer apply (
                                 {
                                     join.JoinStatement += $" {joinType} join asset A{i} on A{i}.ObjectID = I{i}.SubjectID and A{i}.[Object] = '{currentObj}'";
                                 }
+                                else if (useAssetTypeJoin)
+                                {
+                                    join.JoinStatement += $" {joinType} AssetType A{i} on A{i}.ObjectID = I{i}.SubjectID and A{i}.[Object] = '{currentObj}'";
+                                }
                                 else
                                 {
                                     join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.SubjectID";
@@ -3585,6 +3607,10 @@ outer apply (
                                 {
                                     join.JoinStatement += $" {joinType} join asset A{i} on A{i}.ObjectID = I{i}.ObjectID and A{i}.[Object] = '{currentObj}'";
                                 }
+                                else if (useAssetTypeJoin)
+                                {
+                                    join.JoinStatement += $" {joinType} AssetType A{i} on A{i}.ObjectID = I{i}.ObjectID and A{i}.[Object] = '{currentObj}'";
+                                }
                                 else
                                 {
                                     join.JoinStatement += $" {joinType} join {currentObjTable} A{i} on A{i}.{currentObjIdColumn} = I{i}.ObjectID";
@@ -3597,6 +3623,10 @@ outer apply (
                                 if (useAssetJoin)
                                 {
                                     join.JoinStatement += $" {joinType} join Asset A{i} on A{i}.Object = '{currentObj}' and A{i}.ObjectID = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
+                                }
+                                else if (useAssetTypeJoin)
+                                {
+                                    join.JoinStatement += $" {joinType} AssetType A{i} on A{i}.[Object] = '{currentObj}' and A{i}.ObjectID = case when (I{i}.Subject = '{previousObj}' and I{i}.SubjectID = A{i - 1}.{previousObjIdColumn}) then I{i}.ObjectID else I{i}.SubjectID end";
                                 }
                                 else
                                 {
@@ -4864,7 +4894,17 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
         [Route("reports/targets")]
         public IEnumerable<dynamic> GetReportTargetAreas()
         {
-            var items = Company.Query<dynamic>(@"
+            string fusionQuery = string.Empty;
+
+            if (Community.IsFusionEnabled())
+            {
+                fusionQuery = @"            union
+            select      'FusionType|' + cast(ObjectId as varchar(15)) as value,
+                        'Fusion Type : ' + Name as title
+            from         AssetType where [object]='FusionType'";
+            }
+
+            var items = Company.Query<dynamic>($@"
 select      *
 from        (                 
             select      'ArtifactType|' + cast(ObjectId as varchar(15)) as value,
@@ -4897,14 +4937,11 @@ from        (
             select      'RuleType|' + cast(ObjectId as varchar(15)) as value,
                         'Rule Type : ' + Name as title
             from         AssetType where [object]='RuleType' 
-            union
-            select      'FusionType|' + cast(ObjectId as varchar(15)) as value,
-                        'Fusion Type : ' + Name as title
-            from         AssetType where [object]='FusionType' 
-) O
-order by    title
-
-").ToList();
+            {fusionQuery}
+ 
+            ) O
+            order by    title
+            ").ToList();
 
             return items;
         }
@@ -7166,7 +7203,15 @@ where v.id = {0}", id)).FirstOrDefault();
             else
                 sql = string.Format(QueryConstants.ObjectRelationshipAllCountsWithZero, disallowEditFilter);
 
-            return Company.Query<dynamic>(sql, new { obj = new DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid });
+            var data = Company.Query<dynamic>(sql, new { obj = new DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid });
+
+            if (!Community.IsFusionEnabled())
+            {
+                data = data.Where(x => x.Object != SystemObjects.FusionType.ToString()
+                && x.Object != SystemObjects.FusionAttributeType.ToString()
+                && x.Object != SystemObjects.FusionQueryAttributeType.ToString());
+            }
+            return data;
 
         }
 
@@ -8294,17 +8339,19 @@ where	R.IssueTypeID = @issueTypeID", new { issueTypeID }).ToList();
         public HttpResponseMessage GetMetricAssetTypes()
         {
             List<int> classes = new List<int>() {
-                (int)AssetTypeClass.Business,
+                (int)AssetTypeClass.BusinessAsset,
                 (int)AssetTypeClass.Model,
                 (int)AssetTypeClass.Policy,
-                (int)AssetTypeClass.Technical
+                (int)AssetTypeClass.Rule,
+                (int)AssetTypeClass.TechnicalAsset
             };
             var models = Company.Query<MetricAssetTypeViewModel>(@"
 select	T.[Uid],
         T.[Class], 
 		P.[Path] as Name
 from	AssetType T
-		cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P").OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
+		cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
+where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }

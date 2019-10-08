@@ -20,7 +20,6 @@ import { EditorCategory, EditorField, EditorRow } from '../../../models/editor-f
 
 import { EditorDefinitionService } from '../../../services/editor-definition.service';
 import { UriBasedService } from '../../../services/uri-based.service';
-import { FieldsService } from '../../../services/fields.service';
 import { CascadeService } from '../../../services/cascade.service';
 
 import { BaseComponent } from '../base.component';
