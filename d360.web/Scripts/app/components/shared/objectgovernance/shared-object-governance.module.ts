@@ -19,17 +19,14 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { ArtifactStatusComponent } from './artifact-status.component';
 import { ObjectBoardComponent } from './object-board.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
-import { ObjectHealthComponent } from './object-health.component';
 import { ObjectIssuesComponent } from './object-issues.component';
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 
 declare var require: any;
 export function highchartsFactory() {
     const hc = require('highcharts');
-    const hcm = require('highcharts/highcharts-more'); // used for more category of charts    
-    const solidGauge = require('highcharts/modules/solid-gauge');
-    hcm(hc);    
-    solidGauge(hc);
+    const hcm = require('highcharts/highcharts-more'); // used for more category of charts        
+    hcm(hc);        
     return hc;
 }
 
@@ -55,13 +52,11 @@ export function highchartsFactory() {
     declarations: [    
         ArtifactStatusComponent,
         ObjectBoardComponent,
-        ObjectHealthDetailsComponent,
-        ObjectHealthComponent,
+        ObjectHealthDetailsComponent,        
         ObjectIssuesComponent,
     ],
     exports: [
-        ObjectBoardComponent,        
-        ObjectHealthComponent,
+        ObjectBoardComponent,                
         ObjectHealthDetailsComponent,     
     ],
     providers: [

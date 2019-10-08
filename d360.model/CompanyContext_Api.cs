@@ -2908,8 +2908,8 @@ from	api.ExecutionAsset T
                                                 break;
                                             #endregion
                                             case AssetTypeClass.Policy:
-                                            case AssetTypeClass.Business:
-                                            case AssetTypeClass.Technical:
+                                            case AssetTypeClass.BusinessAsset:
+                                            case AssetTypeClass.TechnicalAsset:
                                                 #region
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)

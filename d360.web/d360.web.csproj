@@ -303,6 +303,7 @@
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\FusionController.cs" />
     <Compile Include="Controllers\V2\ActionsController.cs" />
+    <Compile Include="Controllers\V2\BrowserController.cs" />
     <Compile Include="Controllers\V2\LineageController.cs" />
     <Compile Include="Controllers\V2\MembershipController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
@@ -662,6 +663,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
+    <Content Include="Scripts\app\components\search\hero-search-input.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
@@ -688,6 +690,7 @@
     <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\search\typeahead-search.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tags-usage-info.component.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
@@ -1131,7 +1134,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-board.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-issues.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\modal\gov-modal.component.ts" />
@@ -1398,6 +1400,7 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\survey\survey.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\impact.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\browser.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\lineage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\visualization.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\visualization.routes.ts" />
@@ -1525,7 +1528,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-breadcrumb.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-favorites.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-follow.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\header\header-typeahead-search.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\typeahead-search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.routes.ts" />
@@ -1662,6 +1665,7 @@
     <TypeScriptCompile Include="Scripts\app\services\export-template.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\fieldsObservable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\browser.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\messages-observable.service.ts" />

@@ -272,7 +272,7 @@ namespace d360.web.Controllers.V2
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
 
-                if (model.UseAsTransformation && (model.Class != AssetTypeClass.Business && model.Class != AssetTypeClass.Technical))
+                if (model.UseAsTransformation && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", AssetTypeErrors.TransformationClassRestriction));
 
                 if (AssetRepository.IsReachedTransformationLimit(model))
@@ -380,7 +380,7 @@ namespace d360.web.Controllers.V2
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message));
 
-                if (model.UseAsTransformation && (model.Class != AssetTypeClass.Business && model.Class != AssetTypeClass.Technical))
+                if (model.UseAsTransformation && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", AssetTypeErrors.TransformationClassRestriction));
 
                 if (AssetRepository.IsReachedTransformationLimit(model))

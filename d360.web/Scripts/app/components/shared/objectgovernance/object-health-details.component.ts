@@ -3,8 +3,7 @@ import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, AverageScore } from '../../../models/score.model';
 import { TreeNode } from 'primeng/api';
-declare var require: any;
-const Highcharts = require('highcharts/highstock.src');
+import * as Highcharts from 'highcharts';
 
 @Component({
     selector: 'd3s-object-health-details',    
@@ -61,7 +60,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     scoreHistory: Object;
     averageScore: number;
-    scoreDate: Date = null;
+    scoreDate: string = null;
     
     private pointBreakdown: PointBreakdown[] = [];
     private pointBreakdownTree: TreeNode[] = [];
