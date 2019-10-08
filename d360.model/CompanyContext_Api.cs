@@ -439,7 +439,7 @@ using       (
                     and FT.Type != 'Relationship'
             ) as S 
 on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
-when		matched and T.Value <> S.Value OR T.FormattedValue <> S.FormattedValue then
+when		matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then
 update		set
 				T.Value = S.Value,
                 T.FormattedValue = S.FormattedValue
