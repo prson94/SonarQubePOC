@@ -206,6 +206,7 @@
   [title]="artifactType?.Name + ' Item'"
   [selection]="selected"
   [rowID]="rowID"
+  [objectTypeUid]="artifactType?.AssetTypeUID"
   (saveClick)="saveItem($event)"
   [isV2API]="true"
   (closeClick)="closeEditor()"

@@ -488,31 +488,41 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     postToApiV2(event) {
         this.isLoading = true;
-        let uid = event.item.Uid;
-        let parentUid = event.item.ParentUid;
+        let values: any = {};
+        let asset: AssetEditorModel = new AssetEditorModel();
+        asset.Fields = {};
 
-        let fields: any = {};
-        var props = Object.keys(event.item);
-        props.filter(x => x != 'Uid' && x != 'ParentUid' && x != 'ParentID').forEach(p => {
-            var value = event.item[p];
-            if (!value) {
-                value = '';
+        //takes the form and convert any array values to , separated string values
+        for (var p in event.item) {
+            if (event.item.hasOwnProperty(p)) {
+                if (Array.isArray(event.item[p])) {
+                    values[p] = event.item[p].join();
+                } else {
+                    values[p] = event.item[p];
+                }
             }
-            fields[p] = value;
-        });
+        }
 
-        let model = new AssetEditorModel();
-        model.Fields = fields;
-        if (uid)
-            model.Uid = uid;
+        //convert artifact to an asset
+        for (var p in values) {
+            if (p.toUpperCase() == "PARENTUID") {
+                asset.ParentUid = values[p];
+            }
+            else if (p.toUpperCase() == "UID") {
+                asset.Uid = values[p];
+            }
+            else if (p.toUpperCase() == "ASSETTYPEUID") {
+                //ignore
+            }
+            else {
+                asset.Fields[p] = values[p];
+            }
+        }
 
-        if (parentUid && parentUid.length == 36)
-            model.ParentUid = parentUid;
-
-        this.assetService.saveAsset(this.objectTypeUid.toString(), model)
+        this.assetService.saveAsset(this.objectTypeUid.toString(), asset)
             .subscribe(res => {
                 if (res.Success) {
-                    let msg = model.Uid ? 'Successfully updated' : 'Successfully added';
+                    let msg = asset.Uid ? 'Successfully updated' : 'Successfully added';
                     this.showMessageForApiResult(this.messagesService, res, msg);
                     this.saveClick.emit(event);
                 }
