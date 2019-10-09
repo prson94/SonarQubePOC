@@ -325,5 +325,5 @@
   <include file="scripts/GOV-8321.xml"/> <!-- Updated dbo.GetWorkflowConditionLabels function -->
   <include file="scripts/GOV-7716.xml"/>  <!--Drop Taxonomy Type table -->
   <include file="scripts/GOV-7906.xml"/> <!-- graph.GetLineageByAsset -->
-  <include file="scripts/GOV-5831.xml"/> <!-- Added api.ExecutionResponsibiliy -->
+  <include file="scripts/GOV-5831.xml"/> <!-- Added api.ExecutionResponsibility -->
 </databaseChangeLog>
