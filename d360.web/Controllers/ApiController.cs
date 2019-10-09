@@ -3473,6 +3473,7 @@ outer apply (
             {
                 case "policy":
                 case "artifact":
+                case "referenceitem":
                 case "taxonomy":
                     permissionJoin = $@"  inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ObjectID ";
                     useAssetJoin = true;
@@ -3493,6 +3494,7 @@ outer apply (
                 case "policy":
                 case "artifact":
                 case "taxonomy":
+                case "referenceitem":
                     previousObjIdColumn = "ObjectID";
                     break;
             }
