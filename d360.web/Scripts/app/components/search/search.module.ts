@@ -18,6 +18,7 @@ import { SearchInputComponent } from './search-input.component';
 import { DynamicPercentageModule } from '../shared/small-widgets/dynamic-percentage/dynamic-percentage-module';
 import { PaginatorModule } from '../shared/small-widgets/paginator/paginator-bar-module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { ChipsFilterModule } from '../shared/small-widgets/chips-filter/chips-filter-module';
 import { SearchRoutingModule} from './search.routes';
 
 import { CheckboxModule } from 'primeng/checkbox';
@@ -54,6 +55,7 @@ import { TooltipModule } from 'primeng/tooltip';
         DynamicPercentageModule,
         SharedDynamicGridEditorModule,
         PaginatorModule,
+        ChipsFilterModule,
     ],
     declarations: [
         HomeSearchComponent,

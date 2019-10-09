@@ -30,7 +30,9 @@ declare var CompanySettings;
                     [results]="searchResults" 
                     [categories]="categories" 
                     (paginateClick)="paginate($event);" 
-                    (selectedCategoryChange)="filterByCategory($event);"></d3s-search-results>
+                    (selectedCategoryChange)="filterByCategory($event);"
+                    (advFilterChanged)="searchFilterChanged($event);">
+                </d3s-search-results>
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 `,
@@ -91,6 +93,10 @@ export class SearchComponent extends BaseComponent implements OnInit {
         }
     }
 
+    private searchFilterChanged(options) {
+        this.advancedFilters = options;
+        this.doSearch();
+    }
     handleAdvancedChange(event) {
         this.showAdvanced = event;
         this.searchResults = null;
@@ -115,10 +121,11 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
     public doSearch(filterCategory?: SearchCategories) {
         this.isLoading = true;
-        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.fromNumber, (this.showAdvanced ? undefined : this.searchTypes), filterCategory, this.isExactMatch, this.showAdvanced ? this.advancedFilters : undefined)
+        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.fromNumber, (this.showAdvanced ? undefined : this.searchTypes), filterCategory, this.isExactMatch, this.advancedFilters.length > 0 ? this.advancedFilters : undefined)
             .subscribe(res => {
                 this.isLoading = false;
                 this.searchResults = res;
+                if (this.searchResults.Result.Results.length <= 0) this.advancedFilters = [];
                 if (filterCategory == undefined) this.categories = res.Categories;
             });
     }

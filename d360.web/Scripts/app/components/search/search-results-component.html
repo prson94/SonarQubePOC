@@ -30,6 +30,7 @@
                 </div>
             </div>
             <div class="cardlist">
+                <d3s-chips-filter [filterOption]="newFilterOptions" (applyFlter)="filterChanged($event)"></d3s-chips-filter>
                 <div *ngIf="!loading" class="scrollpane">
                     <div *ngFor="let result of results?.Result?.Results">
                         <d3s-search-result-item [result]="result"></d3s-search-result-item>
