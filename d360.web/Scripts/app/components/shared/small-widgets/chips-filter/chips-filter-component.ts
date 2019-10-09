@@ -19,7 +19,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                                     <span class="col3"></span>
                                 </li>
                             </ul>
-                            <ul *ngIf="isInputOpen" class="chips-input-list">
+                            <ul *ngIf="isInputOpen" class="chips-input-list" (click)="doNothing($event)">
                                 <li>
                                     <span>
                                         <div class="field mr10"><input [(ngModel)]="filterText" type="text" placeholder="Please enter a value"></div>
@@ -63,9 +63,10 @@ export class ChipsFilterComponent implements OnInit {
     private toggleMenu() {
         this.openMenu = !this.openMenu;
         this.isInputOpen = false;
-        console.log(this.openMenu);
     }
-
+    doNothing(event) {
+        event.stopPropagation();
+    }
     update(filterValue: string, exact: any) {
         this.currentFilter.value = filterValue;
         this.currentFilter.exact = exact;
@@ -89,7 +90,6 @@ export class ChipsFilterComponent implements OnInit {
     }
 
     close() {
-        console.log("close");
         this.openMenu = true;
         this.isInputOpen = false;
         this.filterText = '';
