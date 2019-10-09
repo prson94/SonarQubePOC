@@ -407,7 +407,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
             new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
-        private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber,bool sendWorkflowEvents, int timeout = 3600)
+        private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600)
         {
             return Connection.Query<AssetFieldTypeUpdate>($@"
 select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from api.ExecutionAsset EA 
@@ -870,9 +870,9 @@ from	api.ExecutionField T
                     if (result.Success)
                     {
                         List<int> changedFieldsIDS = new List<int>();
-                        if(fieldUpdates != null)
+                        if (fieldUpdates != null)
                         {
-                            foreach(var ftUpdate in fieldUpdates.Where(x=> x.Object == result.Object && x.ObjectId == result.ObjectID))
+                            foreach (var ftUpdate in fieldUpdates.Where(x => x.Object == result.Object && x.ObjectId == result.ObjectID))
                             {
                                 changedFieldsIDS.Add(ftUpdate.Id);
                             }
@@ -1220,8 +1220,8 @@ from	api.ExecutionField T
                     SystemObjects.FusionType
                 };
 
-                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") 
-                    + $" I.Object not in ({string.Join(",", filteredObjects.Select(x=> "'" +x+"'"))})";
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and")
+                    + $" I.Object not in ({string.Join(",", filteredObjects.Select(x => "'" + x + "'"))})";
 
                 whereClause += $" AND I.Subject not in ({string.Join(",", filteredObjects.Select(x => "'" + x + "'"))})";
             }
@@ -3172,7 +3172,7 @@ from	api.ExecutionAsset T
 
                         if (sendWorkflowEvents)
                         {
-                            SendWorkflowEvents(at.Object, at.ObjectID, results,null, fieldTypeUpdates);
+                            SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
                         }
                     }
                 }
@@ -3578,7 +3578,7 @@ end",
 
                                     #endregion
                                     fieldTypeUpdates.Clear();
-                                    fieldTypeUpdates =  MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+                                    fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
 
                                     // Update success flag
                                     Connection.Execute(
@@ -4322,10 +4322,10 @@ from    [Intersect] T
                             row["ItemNumber"] = i;
                             if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
                             else row["ExecutionItemUid"] = Guid.NewGuid();
-                            row["Type"] = (int)model.Type; 
-                            row["Name"] = model.Name; 
+                            row["Type"] = (int)model.Type;
+                            row["Name"] = model.Name;
                             row["Inverse"] = model.Inverse;
-                            if(model.Uid.HasValue)
+                            if (model.Uid.HasValue)
                                 row["uid"] = model.Uid;
 
                             table.Rows.Add(row);
@@ -4362,14 +4362,14 @@ from    [Intersect] T
 
                     #region Log data errors
                     var allowedPredicates = Enum.GetValues(typeof(PredicateType)).Cast<PredicateType>().Where(x => x.CanUserInsert()).ToList();
-                    var allowedTypes = allowedPredicates.Select(x => "''"+ x.ToString()+"''").ToList();
-                    var allowedTypesInt = allowedPredicates.Select(x =>(int)x).ToList();
+                    var allowedTypes = allowedPredicates.Select(x => "''" + x.ToString() + "''").ToList();
+                    var allowedTypesInt = allowedPredicates.Select(x => (int)x).ToList();
                     string checkTypeSQL = $"Type not in ({string.Join(",", allowedTypesInt)})";
 
                     var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
                     List<int> notAllowedTypesForLineage = new List<int>() { -1 };
 
-                    foreach(var item in import)
+                    foreach (var item in import)
                     {
                         if (!item.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
                         {
@@ -4414,7 +4414,7 @@ from    [Intersect] T
     update	api.ExecutionPredicate
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Predicate Type invalid. Allowed values are {string.Join(",", allowedTypes)}'
-    where	ExecutionID = @ExecutionID and {checkTypeSQL.Replace("''","'")}
+    where	ExecutionID = @ExecutionID and {checkTypeSQL.Replace("''", "'")}
 
     update	api.ExecutionPredicate
     set		Success = 0,
@@ -4535,5 +4535,245 @@ from    [Intersect] T
 
             return results;
         }
+
+        public List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600)
+        {
+            var results = new List<ResponsibilityTypeUpsertResult>();
+            bool generalChecksCompleted = false;
+            CurrentExecutionLocationModel currentLocation = null;
+
+            var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
+            if (uidDupes.Any() && execution.Method == "PUT")
+            {
+                execution.ErrorMessage = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new ResponsibilityTypeUpsertResult { Uid = i.Uid.Value, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+
+                try
+                {
+                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionResponsibilityType");
+
+                    if (currentLocation.HighestItemNumberProcessed > 0)
+                    {
+                        results.AddRange(
+                            Query<ResponsibilityTypeUpsertResult>(
+                                $"select * from api.ExecutionResponsibilityType where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                new { execution.ExecutionID }
+                            )
+                        );
+                    }
+
+                    #region Build data tables.
+
+                    var table = new DataTable();
+                    table.Columns.Add("ExecutionID", typeof(Guid));
+                    table.Columns.Add("ItemNumber", typeof(int));
+                    table.Columns.Add("ResponsibilityTypeId", typeof(long));
+                    table.Columns.Add("Uid", typeof(Guid));
+                    table.Columns.Add("Name", typeof(string));
+                    table.Columns.Add("Description", typeof(string));
+                    table.Columns.Add("IsNew", typeof(bool));
+                    table.Columns.Add("Message", typeof(string));
+                    table.Columns.Add("Success", typeof(bool));
+                    table.Columns.Add("ExecutionItemUid", typeof(Guid));
+
+                    #endregion
+
+                    #region Generate data sets
+
+                    for (int i = 1; i <= import.Count; i++)
+                    {
+                        if (i > currentLocation.HighestItemNumber)
+                        {
+                            var model = import[i - 1];
+
+                            var row = table.NewRow();
+
+                            row["ExecutionID"] = execution.ExecutionID;
+                            row["ExecutionItemUid"] = Guid.NewGuid();
+                            row["ItemNumber"] = i;
+                            row["Name"] = model.Name;
+                            row["Description"] = model.Description;
+                            if (model.Uid.HasValue)
+                                row["Uid"] = model.Uid;
+                            else
+                            {
+                                row["IsNew"] = true;
+                            }
+
+                            table.Rows.Add(row);
+                        }
+                    }
+
+                    #endregion
+
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                    #region Bulk Copy
+
+                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+
+                    bulkCopy.BatchSize = table.Rows.Count;
+                    bulkCopy.DestinationTableName = "api.ExecutionResponsibilityType";
+                    bulkCopy.BulkCopyTimeout = timeout;
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("Name", "Name");
+                    bulkCopy.ColumnMappings.Add("Description", "Description");
+                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                    bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
+
+                    bulkCopy.WriteToServer(table);
+
+                    bulkCopy = null;
+
+                    #endregion
+
+
+                    #region Log data errors
+                    var checkSQL = $@"
+    update api.ExecutionResponsibilityType
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Invalid UID value'
+    from api.ExecutionResponsibilityType ERT
+        inner join api.Execution AE on AE.ExecutionID = ERT.ExecutionID
+    where   AE.Method = 'PUT' and ERT.ExecutionID = @ExecutionID and (ERT.Uid is null or ERT.Uid = '00000000-0000-0000-0000-000000000000')
+
+    update	api.ExecutionResponsibilityType 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Responsibility type with same Name already exists'
+    from api.ExecutionResponsibilityType ERT
+    inner join [ResponsibilityType] RT on RT.Name = ERT.Name
+    where	ExecutionID = @ExecutionID  and (RT.Uid <> ERT.Uid or ERT.Uid is null);
+
+    update	api.ExecutionResponsibilityType 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Responsibility type with this Uid does not exists'
+    from api.ExecutionResponsibilityType ERT
+    left join [ResponsibilityType] RT on RT.Uid = ERT.Uid
+    where	ExecutionID = @ExecutionID and ERT.Uid is not null and RT.Uid is null;
+;";
+
+                    Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
+
+                    #endregion
+
+                    generalChecksCompleted = true;
+                }
+                catch (Exception generalEx)
+                {
+                    generalChecksCompleted = false;
+                    var msg = generalEx.GetFullExceptionData(false);
+                    execution.ErrorMessage = msg;
+                    execution.Processed = 0;
+                    execution.Error = import.Count();
+
+                    results = new List<ResponsibilityTypeUpsertResult>();
+                    results.AddRange(import.Select(i => new ResponsibilityTypeUpsertResult { Message = msg, Success = false }));
+                }
+
+                if (generalChecksCompleted)
+                {
+                    int loopSize = 250;
+                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+                    var predicateTypes = Enum.GetValues(typeof(PredicateType)).Cast<PredicateType>().ToList();
+
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {
+                            var querySuffix = $"ERT.Success is null and ERT.ExecutionID = @ExecutionID and ERT.ItemNumber between @beginItemNumber and @endItemNumber";
+                            using (var trans = Connection.BeginTransaction())
+                            {
+                                try
+                                {
+
+                                    var insertSQL = $@"
+                                            drop table if exists #mergeResultTable
+                                            create table #mergeResultTable (ResponsibilityTypeId int, ResponsibilityTypeUid uniqueidentifier, ExecutionItemUid uniqueidentifier) 
+
+                                            merge into [ResponsibilityType] RT
+                                            using ( select * 
+	                                                from api.ExecutionResponsibilityType
+		                                            where ExecutionID = @ExecutionID
+                                                          and ItemNumber between @beginItemNumber and @endItemNumber
+                                                          and ResponsibilityTypeId is null
+                                                          and Success is null
+	                                              ) S
+                                            on (RT.uid = S.uid)
+											when matched then
+											update  
+												set RT.Name = S.Name,
+												RT.Description = S.Description
+                                            when not matched then
+	                                            insert (Name, Description)
+	                                            values (S.Name,S.Description)
+	                                        output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
+
+                                            update RT
+                                            set RT.ResponsibilityTypeId = Res.ResponsibilityTypeId,
+	                                            RT.Uid = Res.ResponsibilityTypeUid,
+                                                RT.Success = 1
+                                            from api.ExecutionResponsibilityType RT
+                                                 inner join #mergeResultTable Res on Res.ExecutionItemUid = RT.ExecutionItemUid
+                                            where RT.ExecutionID = @ExecutionID and RT.Success is null";
+
+                                    Connection.Execute(insertSQL,
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                    Connection.Execute(
+                                        $"update ERT set ERT.Success = 1 from api.ExecutionResponsibilityType ERT where	{querySuffix} and ERT.ResponsibilityTypeId is not null;",
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                    trans.Commit();
+                                    runCompleted = true;
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    trans.Rollback();
+
+                                    retryCount++;
+
+                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    {
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityType", ex.GetFullExceptionData(false), timeout);
+                                    }
+                                }
+                            }
+                        }
+
+                        results.AddRange(
+                            Query<ResponsibilityTypeUpsertResult>(
+                                $"select * from api.ExecutionResponsibilityType where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                            )
+                        );
+
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
+                    }
+
+                    Connection.Close();
+
+                }
+
+            }
+
+
+            return results;
+        }
+
     }
 }

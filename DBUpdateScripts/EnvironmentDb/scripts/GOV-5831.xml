@@ -1,0 +1,44 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-5831">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='ExecutionResponsibilityType')
+		CREATE TABLE [api].[ExecutionResponsibilityType](
+			[ExecutionID] [uniqueidentifier] NOT NULL,
+			[ItemNumber] [int] NOT NULL,
+			[ResponsibilityTypeId] [int] NULL,
+			[Uid] [uniqueidentifier] NULL,
+			[Name] [nvarchar](250) NOT NULL,
+			[Description] [nvarchar](4000) NOT NULL,
+			[Message] [nvarchar](2500) NULL,
+			[Success] [bit] NULL,
+			[IsNew] [bit] NULL,
+			[ExecutionItemUid] [uniqueidentifier] NULL,
+		 CONSTRAINT [PK_ApiExecutionResponsibilityType] PRIMARY KEY CLUSTERED 
+		(
+			[ExecutionID] DESC,
+			[ItemNumber] ASC
+		)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+		) ON [PRIMARY]
+		
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+      IF EXISTS (SELECT * FROM sysobjects WHERE name='ExecutionResponsibilityType')
+	    DROP TABLE [api].[ExecutionResponsibilityType]
+		
+		]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
