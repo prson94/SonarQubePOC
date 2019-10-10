@@ -2303,6 +2303,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                     IntersectType it = null;
                     string parentObject = null;
                     int? parentObjectID = null;
+                    List<Guid> parentIntersectGuids = new List<Guid>();
                     Guid? intersectTypeUid = null;
                     int? intersectTypeID = null;
                     CurrentExecutionLocationModel currentLocation = null;
@@ -3075,7 +3076,10 @@ from	api.ExecutionAsset T
 
                                         if (intersectTypeID.HasValue)
                                         {
-                                            Connection.Execute($@"
+                                            parentIntersectGuids = Connection.Query<Guid>($@"
+drop table if exists #ParentChildRelationships;
+create table #ParentChildRelationships([operation] varchar(10),[uid] uniqueidentifier);
+
     merge       [Intersect] as T
     using		(
 			    select  * 
@@ -3097,9 +3101,12 @@ from	api.ExecutionAsset T
                 T.UpdatedBy = @R
     when not matched by target then
 	    insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
-	    values  (S.IntersectTypeID, S.ParentObject, S.ParentObjectID, S.Object, S.ObjectID, @R, @R);",
-                                            new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+	    values  (S.IntersectTypeID, S.ParentObject, S.ParentObjectID, S.Object, S.ObjectID, @R, @R)
+    output $action, inserted.[uid] into #ParentChildRelationships;
 
+select [uid] from #ParentChildRelationships",
+                                            new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
+                                            .ToList();
                                         }
 
                                         #endregion
@@ -3162,10 +3169,21 @@ from	api.ExecutionAsset T
 
                         Connection.Close();
 
+                        IEnumerable<IGraphAsset> graphResults = results.AsEnumerable();
+
+                        if (parentIntersectGuids.Any())
+                        {
+                            graphResults = graphResults.Concat(parentIntersectGuids.Select(i => new DatabaseBulkRelationshipResult()
+                            {
+                                uid = i,
+                                Success = true
+                            }));
+                        }
+
                         try
                         {
                             var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
-                            SendAssetGraphEvents(results, changedFields);
+                            SendAssetGraphEvents(graphResults, changedFields);
                         }
                         catch { }
 
