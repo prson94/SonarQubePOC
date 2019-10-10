@@ -1,14 +1,14 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChange, ElementRef, ViewChild} from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
-import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
+import { SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
 import { DropdownOption } from '../../models/dropdown.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SubscriptionLike as ISubscription } from 'rxjs';
-import { StringConstants } from '../../static/string-constants';
+import { SettingsHelper } from '../../models/settings.model';
 
 declare var CompanySettings;
 @Component({
@@ -70,7 +70,7 @@ declare var CompanySettings;
                             <div class="col s3" *ngIf="filter.field == '_type'">
                                 <select [(ngModel)]="filter.value" [name]="'inp'+idx"style="width:100%;" placeholder="Choose a type" required>
                                         <option value="" disabled selected>Please Choose...</option>
-                                        <option *ngFor="let p of types" [value]="p.value">{{p.title}}</option>
+                                        <option *ngFor="let p of searchObjectTypes" [value]="p.value">{{p.label}}</option>
                                 </select>
                             </div>                            
                             <div class="col s1" *ngIf="filter.field == '_type'">&nbsp;</div>
@@ -95,7 +95,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
     @Input() isExactMatch: boolean = true;
     @Output() isExactMatchChange = new EventEmitter();
 
-    @Input() searchTypes: string[] = ["Artifact", "Synonym"];
+    @Input() searchTypes: string[] = ["BusinessAsset", "Synonym"];
     @Output() searchTypesChange = new EventEmitter();
 
     @Input() searchText: string;
@@ -122,34 +122,12 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
         { title: "Type", value: "_type" },
     ];
 
-    private types: DropdownOption[] = [
-        { title: "Attribute", value: "Attribute" },
-        { title: "Fusion", value: "FusionAttributes" },
-        { title: "Fusion Type", value: "FusionType" },
-        { title: StringConstants.AssetTypeClass_Business, value: "Artifact" },
-        { title: StringConstants.AssetTypeClass_Technical, value: "Artifact" },
-        { title: "Group", value: "Group" },
-        { title: "Model", value: "Taxonomy" },
-        { title: "Reference", value: "Reference" },
-        { title: "User", value: "Resource" },
-        { title: "Grammatic Type", value: "Synonym" },
-        { title: "Data Quality", value: "Rule" },
-    ];
-
-    private searchObjectTypes: SelectItem[] = [
-        { value: "Attribute", label: "Attribute" },
-        { value: "FusionAttributes", label: "Fusion" },
-        { value: "FusionType", label: "Fusion Type" },
-        { value: "Artifact", label: StringConstants.AssetTypeClass_Business },
-        { value: "Artifact", label: StringConstants.AssetTypeClass_Technical },
-        { value: "Group", label: "Group" },
-        { value: "Taxonomy", label: "Model" },
-        { value: "Policy", label: "Policy" },
-        { value: "Reference", label: "Reference" },
-        { value: "Resource", label: "User" },
-        { value: "Synonym", label: "Grammatic Type" },
-        { value: "Rule", label: "Data Quality" },
-    ];
+    private searchObjectTypes: SelectItem[] = SettingsHelper.getSearchTypesList().map((set) => {
+        return {
+            label: set.title,
+            value: set.value
+        }
+    });
         
     private simpleSearchID: number = 0;
     private autocompleteResultSize: number = 20;
@@ -164,7 +142,6 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
     ngOnInit() {
         if (CompanySettings && CompanySettings.FusionEnabled == 'false') {
             this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
-            this.types = this.types.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
         }
     }
 
