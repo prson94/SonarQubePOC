@@ -2767,6 +2767,18 @@ from	api.ExecutionAsset T
     set     T.AssetID = S.ID, T.Uid = S.Uid
     from    api.ExecutionAsset T
             inner join Asset S on T.Executionid = @ExecutionID and S.AssetTypeID = @AssetTypeID and S.Object = T.Object and S.ObjectID = T.ObjectID and T.ItemNumber between @beginItemNumber and @endItemNumber;";
+                                var insertGraphAssetNode = $@"		
+insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn)
+        select  EA.AssetID,
+				EA.Uid,
+				@AssetTypeID,
+				T.[Uid] as AssetTypeUid,
+				1,
+				@D
+        from    api.ExecutionAsset EA
+                inner join #ObjectMergeTableResult R on R.ExecutionID = EA.ExecutionID and R.ItemNumber = EA.ItemNumber and R.[Operation] = 'INSERT'
+                inner join AssetType T on T.ID = @AssetTypeID
+        where not exists (select 1 from graph.AssetNode where [uid] = EA.Uid)";
 
                                 #endregion
 
@@ -2782,7 +2794,7 @@ from	api.ExecutionAsset T
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
-                                                        create table #ObjectMergeTableResult (ID int, ItemNumber int);
+                                                        create table #ObjectMergeTableResult (ID int, ItemNumber int, [Operation] varchar(10));
                                                         CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
                                                         merge   [Asset] as T
@@ -2797,7 +2809,7 @@ from	api.ExecutionAsset T
                                                         when    not matched then
                                                         insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
                                                         values  (@AssetTypeID,1,'Taxonomy', @R, @D, @R, @D)
-                                                        output  inserted.ObjectID, S.ItemNumber into #ObjectMergeTableResult;
+                                                        output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
                                                         update  T
                                                         set     T.Object = 'Taxonomy',
@@ -2805,8 +2817,10 @@ from	api.ExecutionAsset T
                                                                 T.IsNew = 1
                                                         from    api.ExecutionAsset T
                                                                 inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
+                                                            
+                                                        {updateAssetInfoOnExecutionRecordsSql}
 
-                                                        {updateAssetInfoOnExecutionRecordsSql}",
+                                                        {insertGraphAssetNode}",
                                                         new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 else
@@ -2830,7 +2844,7 @@ from	api.ExecutionAsset T
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
-    create table #ObjectMergeTableResult (ID int, ItemNumber int);
+    create table #ObjectMergeTableResult (ID int, ItemNumber int, [Operation] varchar(10));
     CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
     merge   FusionAttribute as T
@@ -2852,7 +2866,7 @@ from	api.ExecutionAsset T
     when    not matched then
     insert  (FusionAttributeTypeID, ParentID, Name, FusionID, SourceID)
     values  (@ObjectID, S.ParentObjectID, S.Name, S.FusionID, S.SourceID)
-    output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
+    output  inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
     update  T
     set     T.Object = 'FusionAttribute',
@@ -2861,8 +2875,10 @@ from	api.ExecutionAsset T
     from    api.ExecutionAsset T
             inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
-    {updateAssetInfoOnExecutionRecordsSql}",
-                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
+    {updateAssetInfoOnExecutionRecordsSql}
+
+    {insertGraphAssetNode}",
+                                                    new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 else
                                                 {
@@ -2919,7 +2935,7 @@ from	api.ExecutionAsset T
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
-    create table #ObjectMergeTableResult (ID int, ItemNumber int);
+    create table #ObjectMergeTableResult (ID int, ItemNumber int, [Operation] varchar(10));
     CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
     merge   [Asset] as T
@@ -2934,7 +2950,7 @@ from	api.ExecutionAsset T
     when    not matched then
     insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
     values  (@AssetTypeID,1,@Object, @R, @D, @R, @D)
-    output  inserted.ObjectID, S.ItemNumber into #ObjectMergeTableResult;
+    output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
     update  T
     set     T.Object = @Object,
@@ -2943,7 +2959,9 @@ from	api.ExecutionAsset T
     from    api.ExecutionAsset T
             inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
-    {updateAssetInfoOnExecutionRecordsSql}",
+    {updateAssetInfoOnExecutionRecordsSql}
+
+    {insertGraphAssetNode}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
                                                 }
                                                 else
@@ -2993,7 +3011,9 @@ from	api.ExecutionAsset T
     from    api.ExecutionAsset T
             inner join #ObjectMergeTableResult S on T.Executionid = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
-    {updateAssetInfoOnExecutionRecordsSql}",
+    {updateAssetInfoOnExecutionRecordsSql}
+
+    {insertGraphAssetNode}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow },
                                                     transaction: trans,
                                                     commandTimeout: timeout);
@@ -3022,7 +3042,7 @@ from	api.ExecutionAsset T
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
-                                                        create table #ObjectMergeTableResult (ID int, ItemNumber int);
+                                                        create table #ObjectMergeTableResult (ID int, ItemNumber int, [Operation] varchar(10));
                                                         CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
                                                         merge   [Asset] as T
@@ -3039,7 +3059,7 @@ from	api.ExecutionAsset T
                                                         when    not matched then
                                                         insert  (AssetTypeID,State,[Object], [Code], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
                                                         values  (@AssetTypeID,1,'ReferenceItem', S.[Code], @R, @D, @R, @D)
-                                                        output  inserted.ObjectID, S.ItemNumber into #ObjectMergeTableResult;
+                                                        output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
                                                         update  T
                                                         set     T.Object = 'ReferenceItem',
@@ -3103,6 +3123,29 @@ create table #ParentChildRelationships([operation] varchar(10),[uid] uniqueident
 	    insert  (IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedBy, UpdatedBy)
 	    values  (S.IntersectTypeID, S.ParentObject, S.ParentObjectID, S.Object, S.ObjectID, @R, @R)
     output $action, inserted.[uid] into #ParentChildRelationships;
+
+	insert into graph.AssetEdge ($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn)
+    select  SG.$node_id,
+            OG.$node_id,
+            I.ID,
+            I.[Uid],
+            T.ID as IntersectTypeID,
+            T.[Uid] as IntersectTypeUid,
+            P.ID as PredicateID,
+            P.Uid as PredicateUid,
+            P.Type as PredicateType,
+		    '<props/>' as Properties,
+		    I.[State],
+		    coalesce(I.UpdatedOn, I.CreatedOn, getutcdate()) as UpdatedOn
+    from    [Intersect] I
+            inner join #ParentChildRelationships R on R.[Uid] = I.[Uid] and R.[Operation] = 'INSERT'
+            inner join Asset SA on SA.[Object] = I.[Subject] and SA.ObjectID = I.SubjectID
+		    inner join graph.AssetNode SG on SG.ID = SA.ID
+		    inner join Asset OA on OA.[Object] = I.[Object] and OA.ObjectID = I.ObjectID
+		    inner join graph.AssetNode OG on OG.ID = OA.ID
+		    inner join IntersectType T on T.ID = I.IntersectTypeID
+		    inner join [Predicate] P on P.ID = T.PredicateID
+    where   not exists (select 1 from graph.AssetEdge where [uid] = I.[Uid]);
 
 select [uid] from #ParentChildRelationships",
                                             new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
