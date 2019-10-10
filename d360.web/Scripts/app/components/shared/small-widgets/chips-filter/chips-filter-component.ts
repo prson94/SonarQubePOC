@@ -79,7 +79,6 @@ export class ChipsFilterComponent implements OnInit {
         let index = this.selectedFilters.indexOf(item);
         if (index > -1)
             this.selectedFilters.splice(index, 1);
-        console.log(this.selectedFilters);
         this.applyFlter.emit(this.selectedFilters);
     }
 
