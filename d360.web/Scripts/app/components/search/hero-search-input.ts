@@ -61,9 +61,15 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit {
         { value: "Rule", label: "Data Quality" },
     ];
     ngOnInit() {
-        if (CompanySettings && CompanySettings.FusionEnabled == 'false') {
-            this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
-            this.types = this.types.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
+        if (CompanySettings) {
+            if (CompanySettings.FusionEnabled == 'false') {
+                this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
+                this.types = this.types.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
+            }
+            if (+CompanySettings.LineageVersion != 3) {
+                this.searchObjectTypes = this.searchObjectTypes.filter(x => x.label != StringConstants.AssetTypeClass_Technical);
+                this.types = this.types.filter(x => x.title != StringConstants.AssetTypeClass_Technical);
+            }
         }
     }
 };

@@ -2305,12 +2305,18 @@ namespace d360.web.Controllers
             model.DefaultSearchTypes = (settings.Any(i => i.SettingID == 13) ? settings.Single(i => i.SettingID == 13).Value : "");
 
             model.FusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
+            model.LineageVersion = (settings.Any(i => i.SettingID == 68) ? int.Parse(settings.Single(i => i.SettingID == 68).Value) : 1);
 
             IQueryable<SiteNav> siteNavs = Company.SiteNav.Where(s => s.ParentID == null && s.Name != "#Home").OrderBy(s => s.SortOrder);
             if (!model.FusionEnabled)
             {
                 siteNavs = siteNavs.Where(x => x.Name != "#Fusion");
             }
+            if(model.LineageVersion != 3)
+            {
+                siteNavs = siteNavs.Where(x => x.Name != "#Technical");
+            }
+
             model.SiteNav = siteNavs.ToList();
 
             model.HeaderBackgroundColor = (settings.Any(i => i.SettingID == 10) ? settings.Single(i => i.SettingID == 10).Value : "");
@@ -2324,7 +2330,6 @@ namespace d360.web.Controllers
             model.HomePageBackgroundImage = (settings.Any(i => i.SettingID == 45) ? settings.Single(i => i.SettingID == 45).Value : "");
             model.BrowserTitlePrefix = (settings.Any(i => i.SettingID == 33) ? settings.Single(i => i.SettingID == 33).Value : "D3S");
 
-            model.LineageVersion = (settings.Any(i => i.SettingID == 68) ? int.Parse(settings.Single(i => i.SettingID == 68).Value) : 1);
 
             return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
         }
