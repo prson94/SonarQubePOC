@@ -9581,25 +9581,39 @@ order by D.Name";
                 case "ResourceType":
                     #region
                     sql = $@"
-select	'Resource' as [Object], 
-        D.ResourceID as ObjectID, 
-        A.uid,
-        D.LastName + ', ' + D.FirstName as Name
-from	reporting.Global_Resource D with(nolock)
-inner join Asset A on A.Object = 'Resource' and A.ObjectID = D.ResourceID
-where   D.ResourceID not in (
-					select	case 
-                                when SubjectType = 'ResourceType' then SubjectID
-                                else ObjectID
-                            end
-					from	[IntersectDetail]
-					where	IntersectTypeID = @it and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'Resource') ) OR
-							 ( (SubjectType = 'Resource') AND (Object = @source and ObjectID = @id) )
-							)
-					)
-        and D.ResourceID != @id
-order by D.LastName, D.FirstName";
+                SELECT
+  'Resource' AS [Object],
+D.ResourceID AS ObjectID,
+  D.LastName + ', ' + D.FirstName AS Name,
+  A.uid
+FROM reporting.Global_Resource D WITH (NOLOCK)
+INNER JOIN Asset A
+  ON A.Object = 'Resource'
+  AND A.ObjectID = D.ResourceID
+WHERE D.ResourceID NOT IN (SELECT
+  CASE
+    WHEN SubjectType = 'ResourceType' THEN SubjectID
+    ELSE ObjectID
+  END
+FROM [IntersectDetail]
+WHERE IntersectTypeID = @it
+AND ((Subject = @source
+AND SubjectID = @id)
+AND (ObjectType = 'Resource'))
+union all
+SELECT
+  CASE
+    WHEN SubjectType = 'ResourceType' THEN SubjectID
+    ELSE ObjectID
+  END
+FROM [IntersectDetail]
+WHERE IntersectTypeID = @it
+and ((SubjectType = 'Resource')
+AND (Object = @source
+AND ObjectID = @id))
+)
+AND D.ResourceID != @id
+ORDER BY D.LastName, D.FirstName";
                     break;
                 #endregion
                 case "ReferenceItemType":
