@@ -147,7 +147,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     deleteType(id: number) {
         this
             .assetTypeService
-            .deleteAssetTypeOld(id)
+            .deleteAssetType(id)
             .subscribe(res => {
                 this.showMessageForResult(this.messagesService, res);
 

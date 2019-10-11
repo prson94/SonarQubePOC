@@ -35,7 +35,7 @@ export class AssetTypeService extends BaseObservableService {
             );
     }
 
-    public deleteAssetTypeOld(
+    public deleteAssetType(
         id: number
     ): Observable<JsonResult> {
         return this

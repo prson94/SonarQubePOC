@@ -108,7 +108,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         this.isLoading = true;
         this
             .assetTypeService
-            .deleteAssetTypeOld(id)
+            .deleteAssetType(id)
             .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
 
