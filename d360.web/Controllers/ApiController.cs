@@ -7809,6 +7809,14 @@ SELECT (
         [ValidateHttpAntiForgeryTokenAttribute]
         public CreateResponse PostSurveyResponse(int surveyId, int objectId, string type, SurveyResponseModel data)
         {
+            foreach(var question in data.Questions)
+            {
+                if(!question.Values.Any(x=> x.IsChecked == true))
+                {
+                    throw new Exception("Invalid model");
+                }
+            }
+
             var survey = new Survey
             {
                 SurveyTypeID = surveyId,
