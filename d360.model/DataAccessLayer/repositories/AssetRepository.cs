@@ -382,7 +382,8 @@ namespace d360.model.DataAccessLayer
                         Hierarchical = true,
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
-                        UseAsTransformation = model.UseAsTransformation
+                        UseAsTransformation = model.UseAsTransformation,
+                        CanOwnFusion = model.CanOwnFusion ?? false
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
@@ -565,6 +566,7 @@ namespace d360.model.DataAccessLayer
                 case AssetTypeClass.BusinessAsset:
                 case AssetTypeClass.Policy:
                 case AssetTypeClass.Reference:
+                case AssetTypeClass.Model:
                 case AssetTypeClass.TechnicalAsset:
                     if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {model.Class.ToString()}", $"Invalid {model.Class.ToString()} provided. {AssetTypeErrors.CheckRequest}");
 
@@ -576,10 +578,12 @@ namespace d360.model.DataAccessLayer
                     if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
                     {
                         assetType.UseAsTransformation = model.UseAsTransformation;
+                        assetType.CanOwnFusion = model.CanOwnFusion ?? false;
                     }
                     else
                     {
                         assetType.UseAsTransformation = false;
+                        assetType.CanOwnFusion = false;
                     }
                     assetType.Class = model.Class;
                     assetType.Notes = model.Notes;

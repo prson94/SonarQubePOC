@@ -951,6 +951,15 @@ namespace d360.web.Controllers
             try
             {
                 var model = new AssetTypeEditorModel();
+
+                Guid? parentUid = null;
+                if (parentID.HasValue && parentID > 0)
+                {
+                    var parentAssetType = Company.Query<AssetType>("select * from AssetType where class = @class and ObjectID = @parentID", new { @class, parentID }).FirstOrDefault();
+                    if (parentAssetType != null)
+                        parentUid = parentAssetType.uid;
+                }
+                  
                 var loadPredicates = false;
                 var parentPredicateType = PredicateType.InterTypeHierarchy;
                 var loadParentReferenceItemOptions = false;
@@ -1002,11 +1011,27 @@ namespace d360.web.Controllers
 
                     var style = Company.Filter<ObjectStyle>(i => i.ObjectType == assetType.Object && i.ObjectID == assetType.ObjectID).FirstOrDefault();
 
-                    model = new AssetTypeEditorModel
+                    model = new AssetTypeEditorModel()
                     {
-                        AssetType = assetType,
-                        IconBackColor = ((style != null) ? style.IconBackColor : "#000"),
-                        IconForeColor = ((style != null) ? style.IconForeColor : "#FFF"),
+                        AssetType = new AssetTypeInsert()
+                        {
+                            Uid = assetType.uid,
+                            AutoDisplayDescription = assetType.AutoDisplayDescription,
+                            Class = @class,
+                            UseAsTransformation = assetType.UseAsTransformation,
+                            Notes = assetType.Notes,
+                            IconStyle = new IconStyleInsert()
+                            {
+                                ForeColor = ((style != null) ? style.IconForeColor : "#FFF"),
+                                BackColor = ((style != null) ? style.IconBackColor : "#000")
+                            },
+                            Hierarchy = new HierarchyInsert()
+                            {
+                                MaximumDepth = 1,
+                                PredicateUid = null
+                            }
+
+                        },
                         Tokens = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID && !this.limitedFieldTypes.Contains(i.Type)).OrderBy(i => i.FriendlyName).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = "{" + i.Name + "}" }).ToList()
                     };
                     
@@ -1015,31 +1040,30 @@ namespace d360.web.Controllers
                         case AssetTypeClass.FusionAttribute:
                             var f = Company.GetById<FusionAttributeType>(model.AssetType.ObjectID);
                             model.AssetType.Name = f.Name;
-                            model.ScanEnabled = f.ScanEnabled;
                             break;
                         case AssetTypeClass.BusinessAsset:
                         case AssetTypeClass.TechnicalAsset:
-                            model.CanOwnFusion = (@class == AssetTypeClass.BusinessAsset) ? assetType.CanOwnFusion : false;
-                            model.AutoDisplayDescription = assetType.AutoDisplayDescription;
+                            model.AssetType.CanOwnFusion = (@class == AssetTypeClass.BusinessAsset) ? assetType.CanOwnFusion : false;
+                            model.AssetType.AutoDisplayDescription = assetType.AutoDisplayDescription;
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
                         case AssetTypeClass.Model:                            
-                            model.AssetType.HierarchyMaximumDepth = assetType.HierarchyMaximumDepth;
+                            model.AssetType.Hierarchy.MaximumDepth = assetType.HierarchyMaximumDepth;
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
                         case AssetTypeClass.Organization:
                             var o = Company.GetById<OrganizationType>(model.AssetType.ObjectID);
-                            model.AssetType.HierarchyMaximumDepth = 1;
+                            model.AssetType.Hierarchy.MaximumDepth = 1;
                             model.AssetType.Name = o.Name;
                             model.AssetType.Description = o.Description;
                             model.AssetType.DisplayFormat = o.DisplayFormat;
                             break;
                         case AssetTypeClass.Policy:
-                            model.AssetType.HierarchyMaximumDepth = assetType.HierarchyMaximumDepth;
+                            model.AssetType.Hierarchy.MaximumDepth = assetType.HierarchyMaximumDepth;
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
@@ -1069,23 +1093,41 @@ namespace d360.web.Controllers
                         if (intersectType != null)
                         {
                             loadPredicates = true;
-                            model.ParentID = intersectType.SubjectID;
-                            model.SelectedPredicateID = intersectType.PredicateID;
+
+                            model.AssetType.ParentUid = intersectType.SubjectUid;
+                            model.AssetType.Hierarchy.PredicateUid = intersectType.Predicate.UID;
                         }
                     }
                 }
                 else
                 {
                     loadPredicates = true;
-                    model = new AssetTypeEditorModel
+
+                    model = new AssetTypeEditorModel()
                     {
-                        AssetType = new AssetType { DisplayFormat = "{Name}", Class = @class, Object = ot.ToString() },
-                        IconBackColor = "#000",
-                        IconForeColor = "#FFF",
-                        SelectedPredicateID = null,
-                        ParentID = parentID,
+
+                        AssetType = new AssetTypeInsert()
+                        {
+                            DisplayFormat = "{Name}",
+                            Class = @class,
+                            Object = ot.ToString(),
+                            ParentUid = parentUid,
+                            IconStyle = new IconStyleInsert()
+                            {
+                                BackColor = "#000",
+                                ForeColor = "#FFF"
+                            },
+                            Hierarchy = new HierarchyInsert()
+                            {
+                                PredicateUid = null,
+                                MaximumDepth = 1
+                            }
+
+                        },
                         Tokens = new List<PrimeSelectItem>() { new PrimeSelectItem { label = "Name", value = "{Name}" } }
                     };
+
+
 
                     if (@class == AssetTypeClass.ReferenceItemType)
                     {
@@ -1099,14 +1141,14 @@ namespace d360.web.Controllers
 
                 if (loadPredicates)
                 {
-                    model.Predicates = Company.Filter<Predicate>(i => i.Type == parentPredicateType).Select(i => new PrimeSelectItem { label = i.Inverse, value = i.ID.ToString() }).ToList();
+                    model.Predicates = Company.Filter<Predicate>(i => i.Type == parentPredicateType).Select(i => new PrimeSelectItem { label = i.Inverse, value = i.UID.ToString() }).ToList();
                 }
 
                 if (loadParentReferenceItemOptions)
                 {
                     if (model.AssetType != null && model.AssetType.ObjectID > 0)
                     {
-                        var parents = Company.Query<PrimeSelectItem>(@"select a.ObjectID as value, a.Name as label from  assettype a where a.[object] = 'ReferenceItemType'  and a.objectid != @id
+                        var parents = Company.Query<PrimeSelectItem>(@"select a.ObjectUid as value, a.Name as label from  assettype a where a.[object] = 'ReferenceItemType'  and a.objectid != @id
                                                                     and  not exists(
                                                                     select  1 from IntersectType i where i.object = 'ReferenceItemType' and i.SubjectId = @id and i.objectid = a.objectid)
                                                                     order by Name", new { id = model.AssetType.ObjectID }).ToList();
@@ -1114,7 +1156,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        var parents = Company.Query<PrimeSelectItem>("select ObjectID as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
+                        var parents = Company.Query<PrimeSelectItem>("select uid as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
                         model.Parents = parents;
                     }
                     model.Parents?.Insert(0, new PrimeSelectItem() { label = "", value = "" });
@@ -1129,468 +1171,6 @@ namespace d360.web.Controllers
             catch (Exception ex)
             {
                 return jsonNetException(ex);
-            }
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("AssetType"), Route("AssetType")]
-        public JsonResult PostAssetType(AssetTypeEditorModel model)
-        {
-            try
-            {
-                var isNamePartOfKey = true;
-                var nameFriendlyName = "Name";
-                SystemObjects ot;
-                var parentType = SystemObjects.ArtifactType;
-
-                if (!Enum.TryParse<SystemObjects>(model.AssetType.Object, out ot))
-                    throw new GenericException(HttpStatusCode.BadRequest, "Missing Object Type", "No valid type provided. Please check your request and try again.");
-
-                if (!Company.CurrentResourceIsAdmin)
-                    throw new UnauthorizedException(FormInfo.Permisions_Error_Add, FormInfo.Permisions_Error_Add);
-
-                if (model.AssetType.UseAsTransformation == true)
-                {
-                    var useAsTransformationLimit = Community.GetCompanySettingByKey<int>("UseAsTransformationLimit");
-                    var totalUseAsTransform = Company.Filter<AssetType>(i => i.UseAsTransformation == true).Count();
-                    if (totalUseAsTransform > useAsTransformationLimit)
-                        throw new GenericException(HttpStatusCode.BadRequest, "Transformation limit", "The total number of asset types exceeds the Transformation limit ");
-                }
-                //sanitize HTML input
-                if (!string.IsNullOrEmpty(model?.AssetType?.Description ?? null))
-                {
-                    var sanitizer = new HtmlSanitizer();
-                    sanitizer.AllowedSchemes.Add("data");
-                    model.AssetType.Description = sanitizer.Sanitize(model.AssetType.Description);
-                }
-
-                if (!string.IsNullOrEmpty(model?.AssetType?.Name ?? null))
-                    model.AssetType.Name = model.AssetType.Name.Trim();
-
-                switch (ot)
-                {
-                    case SystemObjects.ArtifactType:
-                        #region
-                        var a = new AssetType
-                        {
-                            Name = model.AssetType.Name,
-                            DisplayFormat = model.AssetType.DisplayFormat,
-                            Description = model.AssetType.Description,
-                            AutoDisplayDescription = model.AutoDisplayDescription ?? false,
-                            CanOwnFusion = model.CanOwnFusion ?? false,
-                            Object = SystemObjects.ArtifactType.ToString(),
-                            State = State.Active,
-                            UpdatedBy = Company.CurrentResourceID,
-                            UpdatedOn = DateTime.UtcNow,
-                            UseAsTransformation = model.AssetType.UseAsTransformation,
-                            Class = model.AssetType.Class
-                        };
-                        Company.Add(a);
-                        parentType = SystemObjects.ArtifactType;
-                        model.AssetType.ObjectID = a.ObjectID;
-
-                        #endregion
-                        break;
-                    case SystemObjects.FusionAttributeType:
-                        #region
-                        if (!model.TopLevelTypeID.HasValue)
-                        {
-                            throw new GenericException(HttpStatusCode.BadRequest, "Missing Fusion Type", "No valid fusion type provided. Please check your request and try again.");
-                        }
-                        var f = new FusionAttributeType
-                        {
-                            Name = model.AssetType.Name,
-                            ScanEnabled = model.ScanEnabled ?? true,
-                            ParentID = model.ParentID,
-                            FusionTypeID = model.TopLevelTypeID.Value
-                        };
-                        Company.Add(f);
-                        parentType = SystemObjects.FusionAttributeType;
-                        model.AssetType.ObjectID = f.ID;
-                        #endregion
-                        break;
-                    case SystemObjects.OrganizationType:
-                        #region
-                        var org = new OrganizationType
-                        {
-                            Name = model.AssetType.Name,
-                            Description = model.AssetType.Description,
-                            DisplayFormat = model.AssetType.DisplayFormat
-                        };
-                        var existing = Company.Filter<OrganizationType>(o => o.Name == org.Name && o.State == State.Active).FirstOrDefault();
-                        if (existing != null)
-                            return jsonException("There is already an organization type with that name.", HttpStatusCode.BadRequest);
-                        Company.Add(org);
-                        parentType = SystemObjects.OrganizationType;
-                        model.AssetType.ObjectID = org.ID;
-                        #endregion
-                        break;
-                    case SystemObjects.PolicyType:
-                        #region
-                        var p = new AssetType
-                        {
-                            Name = model.AssetType.Name,
-                            DisplayFormat = model.AssetType.DisplayFormat,
-                            Description = model.AssetType.Description,
-                            HierarchyMaximumDepth = model.AssetType.HierarchyMaximumDepth,
-                            Object = SystemObjects.PolicyType.ToString(),
-                            State = State.Active,
-                            UpdatedBy = Company.CurrentResourceID,
-                            UpdatedOn = DateTime.UtcNow,
-                            Hierarchical = true,
-                            Class = AssetTypeClass.Policy
-                        };
-                        Company.Add(p);
-                        parentType = SystemObjects.PolicyType;
-                        model.AssetType.ObjectID = p.ObjectID;
-                        #endregion
-                        break;
-                    case SystemObjects.TaxonomyType:
-                        #region
-
-                        var t = new AssetType
-                        {
-                            Name = model.AssetType.Name,
-                            DisplayFormat = model.AssetType.DisplayFormat,
-                            Description = model.AssetType.Description,
-                            HierarchyMaximumDepth = model.AssetType.HierarchyMaximumDepth,
-                            Object = SystemObjects.TaxonomyType.ToString(),
-                            State = State.Active,
-                            UpdatedBy = Company.CurrentResourceID,
-                            UpdatedOn = DateTime.UtcNow,
-                            Hierarchical = true,
-                            Class = AssetTypeClass.Model
-                        };
-
-                        if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
-                            throw new GenericException(HttpStatusCode.BadRequest, "Invalid Maximum Level", "Invalid Maximum Model level specified must be a value between 1 and 10");
-
-                        Company.Add(t);
-
-                        for (int i = 1; i <= t.HierarchyMaximumDepth; i++)
-                        {
-                            Company.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = t.ID });
-                        }
-                        Company.SaveChanges();
-                        
-                        parentType = SystemObjects.TaxonomyType;
-                        model.AssetType.ObjectID = t.ObjectID;
-                        #endregion
-                        break;
-                    case SystemObjects.ReferenceItemType:
-                        #region
-                        var rt = new AssetType
-                        {
-                            Name = model.AssetType.Name,
-                            DisplayFormat = model.AssetType.DisplayFormat,
-                            Description = model.AssetType.Description,     
-                            Notes = model.AssetType.Notes,
-                            Object = SystemObjects.ReferenceItemType.ToString(),
-                            State = State.Active,
-                            UpdatedBy = Company.CurrentResourceID,
-                            UpdatedOn = DateTime.UtcNow,
-                            Class = AssetTypeClass.Reference
-                        };                                            
-                        Company.Add(rt);
-                        parentType = SystemObjects.ReferenceItemType;
-                        model.AssetType.ObjectID = rt.ObjectID;
-                        #endregion
-                        break;                        
-                }
-
-                if (model.SelectedPredicateID.HasValue)
-                {
-                    var intersectType = new IntersectType
-                    {
-                        Subject = parentType.ToString(),
-                        SubjectID = (model.ParentID.HasValue && model.ParentID.Value > 0) ? model.ParentID.Value : model.AssetType.ObjectID,
-                        SubjectCardinality = Cardinality.One,
-                        Object = model.AssetType.Object,
-                        ObjectID = model.AssetType.ObjectID,
-                        ObjectCardinality = Cardinality.Many,
-                        PredicateID = model.SelectedPredicateID
-                    };
-                    Company.Add(intersectType);
-                }
-
-                upsertObjectStyle(model.AssetType.Object, model.AssetType.ObjectID, model.IconForeColor, model.IconBackColor, model.AssetType.Name);
-
-                dynamic custom = new
-                {
-                    model.ParentID,
-                    model.AssetType.Name,
-                    action = "add"
-                };
-
-                if (model.AssetType.ObjectID > 0)
-                {
-                    if (model.AssetType.Class != AssetTypeClass.FusionAttribute && model.AssetType.Class != AssetTypeClass.Organization && model.AssetType.Class != AssetTypeClass.ReferenceItemType)
-                    {
-                        Company.Add(new FieldType
-                        {
-                            ObjectID = model.AssetType.ObjectID,
-                            Object = model.AssetType.Object,
-                            IsListable = true,
-                            IsRequired = true,
-                            IsEditable = true,
-                            FriendlyName = nameFriendlyName,
-                            Name = "Name",
-                            MaximumLength = 500,
-                            MinimumLength = 1,
-                            SortOrder = 1,
-                            Type = DataType.Text.ToString(),
-                            IsDisplayable = true,
-                            IsPartOfKey = isNamePartOfKey
-                        });
-                    }
-                }
-
-                return jsonSuccess(model.AssetType.Name + " successfully created.", model.AssetType.ObjectID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ActionName("AssetType"), Route("AssetType")]
-        public JsonResult PutAssetType(AssetTypeEditorModel model)
-        {
-            try
-            {
-                SystemObjects ot;
-                var parentType = SystemObjects.ArtifactType;
-                bool shouldRemoveOldRelationshipType = false;
-                bool shouldRemoveExistingParentChildRelationshipType = false;
-
-                if (!Enum.TryParse<SystemObjects>(model.AssetType.Object, out ot))
-                    throw new GenericException(HttpStatusCode.BadRequest, "Missing Object Type", "No valid type provided. Please check your request and try again.");
-
-                if (!Company.HasAssetTypePermission(ot, model.AssetType.ObjectID, Permission.ModifyAsset))
-                    throw new UnauthorizedException(FormInfo.Permisions_Error_Edit, FormInfo.Permisions_Error_Edit);
-
-                if (model.AssetType.UseAsTransformation == true)
-                {
-                    var useAsTransformationLimit = Community.GetCompanySettingByKey<int>("UseAsTransformationLimit");
-                    var totalUseAsTransform = Company.Filter<AssetType>(i => i.UseAsTransformation == true).Count();
-                    if (totalUseAsTransform > useAsTransformationLimit)
-                        throw new GenericException(HttpStatusCode.BadRequest, "Transformation limit", "The total number of asset types exceeds the Transformation limit ");
-                }
-
-                //sanitize HTML input
-                if (!string.IsNullOrEmpty(model?.AssetType?.Description ?? null))
-                {
-                    var sanitizer = new HtmlSanitizer();
-                    sanitizer.AllowedSchemes.Add("data");
-                    model.AssetType.Description = sanitizer.Sanitize(model.AssetType.Description);
-                }
-
-                if (!string.IsNullOrEmpty(model?.AssetType?.Name ?? null))
-                    model.AssetType.Name = model.AssetType.Name.Trim();
-
-                switch (ot)
-                {
-                    case SystemObjects.ArtifactType:
-                        var a = Company.GetById<AssetType>(model.AssetType.ID);
-                        if (a == null) throw new NotFoundException("artifact type");
-
-                        a.Name = model.AssetType.Name;
-                        a.DisplayFormat = model.AssetType.DisplayFormat;
-                        a.Description = model.AssetType.Description;
-                        a.CanOwnFusion = model.CanOwnFusion ?? false;
-                        a.Class = model.AssetType.Class;
-                        a.AutoDisplayDescription = model.AutoDisplayDescription ?? false;
-                        a.UseAsTransformation = model.AssetType.UseAsTransformation;
-                        Company.Update(a);
-
-                        parentType = SystemObjects.ArtifactType;
-                        break;
-                    case SystemObjects.FusionAttributeType:
-                        var f = Company.GetById<FusionAttributeType>(model.AssetType.ObjectID);
-                        if (f == null) throw new NotFoundException("fusion attribute type");
-
-                        f.Name = model.AssetType.Name;
-                        f.ScanEnabled = !(model.ScanEnabled == null);
-
-                        Company.Update(f);
-
-                        parentType = SystemObjects.FusionAttributeType;
-                        break;
-                    case SystemObjects.OrganizationType:
-                        var org = Company.GetById<OrganizationType>(model.AssetType.ObjectID);
-                        if (org == null) throw new NotFoundException("organization type");
-
-                        org.Name = model.AssetType.Name;
-                        org.Description = model.AssetType.Description;
-                        org.DisplayFormat = model.AssetType.DisplayFormat;
-                        Company.Update(org);
-
-                        parentType = SystemObjects.OrganizationType;
-                        break;
-                    case SystemObjects.PolicyType:
-                        var p = Company.GetById<AssetType>(model.AssetType.ID);
-                        if (p == null) throw new NotFoundException("policy type");
-
-                        p.Name = model.AssetType.Name;
-                        p.DisplayFormat = model.AssetType.DisplayFormat;
-                        p.Description = model.AssetType.Description;
-                        p.HierarchyMaximumDepth = model.AssetType.HierarchyMaximumDepth;
-                        Company.Update(p);
-
-                        parentType = SystemObjects.PolicyType;
-                        break;
-                    case SystemObjects.ReferenceItemType:
-                        var rt = Company.GetById<AssetType>(model.AssetType.ID);
-                        if (rt == null) throw new NotFoundException("reference item type");
-
-                        rt.Name = model.AssetType.Name;
-                        rt.DisplayFormat = model.AssetType.DisplayFormat;
-                        rt.Description = model.AssetType.Description;
-                        rt.Notes = model.AssetType.Notes;
-                        rt.UpdatedBy = Company.CurrentResourceID;
-                        rt.UpdatedOn = DateTime.UtcNow;
-
-                        Company.Update(rt);
-
-                        shouldRemoveOldRelationshipType = true;
-                        shouldRemoveExistingParentChildRelationshipType = true;
-                        parentType = SystemObjects.ReferenceItemType;
-                        break;
-                    case SystemObjects.TaxonomyType:
-
-                        var assetType = Company.GetById<AssetType>(model.AssetType.ID, x => x.AssetTypeLevels);
-
-                        if (assetType == null) throw new NotFoundException("asset type");
-                        assetType.Name = model.AssetType.Name;
-                        assetType.DisplayFormat = model.AssetType.DisplayFormat;
-                        assetType.Description = model.AssetType.Description;
-                        assetType.HierarchyMaximumDepth = model.AssetType.HierarchyMaximumDepth;
-
-                        if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
-                            throw new GenericException(HttpStatusCode.BadRequest, "Invalid Maximum Level", "Invalid Maximum Model level specified must be a value between 1 and 10");
-                        
-                        Company.Update(assetType);
-
-                        for (int i = 1; i <= assetType.HierarchyMaximumDepth; i++)
-                        {
-                            var level = assetType.AssetTypeLevels.SingleOrDefault(l => l.Level == i);
-                            if (level == null)
-                            {
-                                Company.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID =assetType.ID });
-                            }
-                        }
-                        Company.Delete<AssetTypeLevel>(l => l.Level > assetType.HierarchyMaximumDepth);
-                        Company.SaveChanges();
-
-                        parentType = SystemObjects.TaxonomyType;
-                        break;
-                }
-
-                upsertObjectStyle(model.AssetType.Object, model.AssetType.ObjectID, model.IconForeColor, model.IconBackColor, model.AssetType.Name);
-
-                if (model.ParentID.HasValue || model.SelectedPredicateID.HasValue)
-                {
-                    var parentPredicateType = PredicateType.InterTypeHierarchy;
-
-                    if (model.AssetType.Class == AssetTypeClass.Model || model.AssetType.Class == AssetTypeClass.Policy)
-                    {
-                        parentPredicateType = PredicateType.IntraTypeHierarchy;
-                    }
-
-                    IntersectType intersectType = null;
-
-                    if (shouldRemoveExistingParentChildRelationshipType)
-                    {
-                        intersectType = Company.Filter<IntersectType>(i =>
-                            i.Subject == parentType.ToString() &&                            
-                            i.Object == model.AssetType.Object &&
-                            i.ObjectID == model.AssetType.ObjectID &&
-                            i.Predicate.Type == parentPredicateType
-                        ).SingleOrDefault();
-                    }
-                    else
-                    {
-                        intersectType = Company.Filter<IntersectType>(i =>
-                            i.Subject == parentType.ToString() &&
-                            i.SubjectID == (model.ParentID.HasValue ? model.ParentID : model.AssetType.ObjectID) &&
-                            i.Object == model.AssetType.Object &&
-                            i.ObjectID == model.AssetType.ObjectID &&
-                            i.Predicate.Type == parentPredicateType
-                        ).SingleOrDefault();
-                    }
-
-                    if (model.SelectedPredicateID.HasValue)
-                    {
-                        if (intersectType != null)
-                        {
-                            if (intersectType.PredicateID != model.SelectedPredicateID)
-                            {
-                                intersectType.PredicateID = model.SelectedPredicateID.Value;                                
-                                Company.Update(intersectType);
-                            }
-
-                            var parentID = (model.ParentID.HasValue ? model.ParentID.Value : model.AssetType.ObjectID);
-
-                            if (intersectType.SubjectID != parentID)
-                            {
-                                intersectType.SubjectID = parentID;
-                                Company.Update(intersectType);
-                            }
-                        }
-                        else
-                        {
-                            intersectType = new IntersectType {
-                                IsSystem = true,
-                                Subject = parentType.ToString(),
-                                SubjectID = model.ParentID.HasValue ? model.ParentID.Value : model.AssetType.ObjectID,
-                                Object = model.AssetType.Object,
-                                ObjectID = model.AssetType.ObjectID,
-                                PredicateID = model.SelectedPredicateID.Value
-                            };
-                            Company.Add(intersectType);
-                        }
-                    }
-                }
-                else if(shouldRemoveOldRelationshipType)
-                {
-                    var parentPredicateType = PredicateType.InterTypeHierarchy;
-
-                    var intersectType = Company.Filter<IntersectType>(i =>                        
-                        i.Object == model.AssetType.Object &&
-                        i.ObjectID == model.AssetType.ObjectID &&
-                        i.Predicate.Type == parentPredicateType
-                    ).FirstOrDefault();
-
-                    if(intersectType != null)
-                    {
-                        Company.Delete(SystemObjects.IntersectType, intersectType.ID);
-                    }
-                }
-
-                dynamic custom = new
-                {
-                    model.ParentID,
-                    model.AssetType.Name,
-                    action = "edit"
-                };
-
-                //update affected display values
-                Company.CreateOrUpdateTypeDisplayValuesAsync(model.AssetType.ObjectID, model.AssetType.Object.ToString());
-
-                return jsonSuccess(model.AssetType.Name + " successfully updated.", model.AssetType.ObjectID.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
 

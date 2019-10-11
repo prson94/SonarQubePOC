@@ -1463,7 +1463,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\simple-search-pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\utc-date.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\asset-type.services.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\asset-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\baseObservable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\cascade.service.ts" />
