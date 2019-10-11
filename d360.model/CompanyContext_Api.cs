@@ -2776,9 +2776,9 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 				1,
 				@D
         from    api.ExecutionAsset EA
-                inner join #ObjectMergeTableResult R on R.ExecutionID = EA.ExecutionID and R.ItemNumber = EA.ItemNumber and R.[Operation] = 'INSERT'
+                inner join #ObjectMergeTableResult R on R.ItemNumber = EA.ItemNumber and R.[Operation] = 'INSERT'
                 inner join AssetType T on T.ID = @AssetTypeID
-        where not exists (select 1 from graph.AssetNode where [uid] = EA.Uid)";
+        where EA.ExecutionID = @ExecutionID and not exists (select 1 from graph.AssetNode where [uid] = EA.Uid)";
 
                                 #endregion
 
