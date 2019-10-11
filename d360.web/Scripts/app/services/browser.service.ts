@@ -108,17 +108,6 @@ export class BrowserService extends BaseObservableService {
         });
 
         translationModel.links = this.determineLinkRoots(translationModel, model.intersects);
-        //model.intersects.forEach(r => {
-        //    let l: AssetBrowserTranslationLink = new AssetBrowserTranslationLink();
-        //    l.back = "#B9F1AF";
-        //    l.from = r.subjectKey;
-        //    l.fromPort = "R";
-        //    l.impacts = [];
-        //    l.text = r.predicate;
-        //    l.to = r.objectKey;
-        //    l.toPort = "L";
-        //    translationModel.links.push(l);
-        //});
 
         return translationModel;
     }
