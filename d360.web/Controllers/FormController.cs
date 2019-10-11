@@ -5843,9 +5843,14 @@ offset 0 rows fetch next 25 rows only
                     var predicate = Company.GetById<Predicate>(predicateID.Value);
                     if (predicate != null)
                     {
-                        if (predicate.Type == PredicateType.BusinessToTechnical || predicate.Type == PredicateType.FusionMapping)
+                        switch (predicate.Type)
                         {
-                            classLimits = new List<AssetTypeClass>() { AssetTypeClass.FusionAttribute };
+                            case PredicateType.BusinessToTechnical:
+                                classLimits = new List<AssetTypeClass>() { AssetTypeClass.TechnicalAsset };
+                                break;
+                            case PredicateType.FusionMapping:
+                                classLimits = new List<AssetTypeClass>() { AssetTypeClass.FusionAttribute };
+                                break;
                         }
                     }
                 }
