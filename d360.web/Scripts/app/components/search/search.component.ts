@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ViewChild, ElementRef, ViewChildren } from '@angular/core';
+﻿import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -6,10 +6,9 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
-import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
+import { SearchResultsObject, SearchCategories, AdvancedSearchFilter } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
 import { RightSidebarService } from '../../services/right-sidebar.service';
-import { DynamicButton } from '../../models/rightsidebar.model';
 
 
 declare var CompanySettings;
@@ -79,8 +78,8 @@ export class SearchComponent extends BaseComponent implements OnInit {
             this.showAdvanced = params['advanced'] == '1';
             this.searchText = params['query'] ? params['query'] : '';
             this.isExactMatch = params['exactMatch'] ? params['exactMatch'] != '0' : (CompanySettings.SearchExactMatch && CompanySettings.SearchExactMatch == 'true');
-            if (params['types']) {
-                this.searchTypes = params['types'].split(',');
+            if (params['types'] != undefined) {
+                this.searchTypes = params['types'].split(',').filter((x): x is string =>  x.length > 0);
             }
             if (this.searchText.length > 0) this.doSearch();
 

@@ -48,6 +48,11 @@ namespace d360.web.Controllers
                 nodes = nodes.Where(x => x.MenuID != "#Fusion").ToList();
             }
 
+            if(Community.GetCompanySettingByKey<int>("LineageVersion") != 3)
+            {
+                nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
+            }
+
             if (nodes != null)
                 nodes.ForEach(n => {
                     n.ShouldDisplay = features.Any(f => f.Feature == n.Feature);

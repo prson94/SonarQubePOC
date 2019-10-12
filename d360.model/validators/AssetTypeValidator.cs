@@ -21,9 +21,15 @@ namespace d360.core.validators
         string ColorRegex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 
         ICompanyContext CompanyContext;
-        public AssetTypeValidator(ICompanyContext companyContext)
+        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion)
         {
             this.CompanyContext = companyContext;
+            if (lineageVersion != 3)
+            {
+                PredicateSupportingClasses = PredicateSupportingClasses.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();
+                ParentAssetTypeClass = ParentAssetTypeClass.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();
+                SupportedClasses = SupportedClasses.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();
+            }
         }
 
         public WorkHttpStatus ValidateModel(bool isInsert, AssetTypeInsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType = null)
@@ -82,7 +88,7 @@ namespace d360.core.validators
             else if (predicate != null && model.Class.In(AssetTypeClass.Model, AssetTypeClass.Policy) && (predicate.Type != PredicateType.IntraTypeHierarchy))
                 return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
 
-            if (!isInsert) 
+            if (!isInsert)
             {
                 int assetCount = CompanyContext.Filter<Asset>(x => x.AssetTypeID == assetType.ID).Count();
                 AssetType currentParentType = CompanyContext.GetParentType(assetType.ID, SystemObjectHelper.GetSystemObjects(model.Class));
@@ -102,7 +108,7 @@ namespace d360.core.validators
         private bool IsValidDisplayFormat(int assetTypeId, string displayFormat, AssetTypeClass assetClass)
         {
             // reference item types with {code} display format are valid
-            if((assetClass == AssetTypeClass.Reference) && !string.IsNullOrEmpty(displayFormat) && string.Compare(displayFormat,"{CODE}", true) == 0 )
+            if ((assetClass == AssetTypeClass.Reference) && !string.IsNullOrEmpty(displayFormat) && string.Compare(displayFormat, "{CODE}", true) == 0)
             {
                 return true;
             }
@@ -120,7 +126,7 @@ namespace d360.core.validators
 
             var regex = new Regex(@"\{.*?\}");
             var tokens = regex.Matches(displayFormat);
-            foreach(var token in tokens)
+            foreach (var token in tokens)
             {
                 var tokenString = token.ToString().ToLower();
                 tokenString = tokenString.Substring(1, tokenString.Length - 2);
@@ -133,11 +139,11 @@ namespace d360.core.validators
             return true;
         }
 
-        public bool IsValidOrderByFieldForGetAssets(Guid uid,IEnumerable<KeyValuePair<string, string>> queryParams)
+        public bool IsValidOrderByFieldForGetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             if (!(queryParams.Any(p => p.Key.Trim().ToLower() == "_order")))
                 return true;
-            
+
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
                 return false;
@@ -145,14 +151,14 @@ namespace d360.core.validators
             var fieldName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value;
 
             string[] validFields = { "name", "sourceid", "textpath", "code" };
-            
-            if(assetType.Object == "FusionAttributeType")
+
+            if (assetType.Object == "FusionAttributeType")
             {
                 var valid = validFields.Contains(fieldName.Trim().ToLower());
                 if (valid) return true;
             }
-               
-            var field = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID && f.Name.ToLower()== fieldName.ToLower()).SingleOrDefault();
+
+            var field = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == fieldName.ToLower()).SingleOrDefault();
 
             return (field != null);
         }

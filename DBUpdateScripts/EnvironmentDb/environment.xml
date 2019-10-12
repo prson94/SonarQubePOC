@@ -318,11 +318,12 @@
   <include file="scripts/GOV-7958.xml"/> <!-- Dropped ReferenceItem and ReferenceItemType tables -->
   <include file="scripts/GOV-7816.xml"/> <!-- Dropped Artifact and ArtifactType tables -->
   <include file="scripts/GOV-8290.xml"/> <!-- Missing index on workflow itemstep table -->
-   <include file="scripts/GOV-7623.xml"/> <!-- Remove Fusion Rule database objects -->
+  <include file="scripts/GOV-7623.xml"/> <!-- Remove Fusion Rule database objects -->
   <include file="scripts/GOV-8332.xml"/> <!-- changing the url returned for the dashboard sitenav !!! MUST BE BEFORE 8311 !!!! -->
   <include file="scripts/GOV-8311.xml"/> <!-- Navigation changes -->
   <include file="scripts/GOV-6768.xml"/> <!-- Added api.ExecutionPredicate and api.ExecutionDeletedPredicate tables-->
   <include file="scripts/GOV-8321.xml"/> <!-- Updated dbo.GetWorkflowConditionLabels function -->
   <include file="scripts/GOV-7716.xml"/>  <!--Drop Taxonomy Type table -->
   <include file="scripts/GOV-7906.xml"/> <!-- graph.GetLineageByAsset -->
+  <include file="scripts/GOV-5831.xml"/> <!-- Added api.ExecutionResponsibility -->
 </databaseChangeLog>
