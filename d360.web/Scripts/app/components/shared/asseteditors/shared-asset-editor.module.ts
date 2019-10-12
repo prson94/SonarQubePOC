@@ -18,6 +18,7 @@ import { TilesModule } from '../tiles/tiles.module';
 import { SharedDeleteFormModule } from '../delete.form';
 
 import { AssetDeleteEditorComponent } from './asset-delete-editor.component';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 @NgModule({
     imports: [CommonModule,

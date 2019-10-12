@@ -309,6 +309,7 @@ namespace d360.web.Controllers
         public JsonResult DynamicEditorEditFields(string o, Guid? uid)
         {
             int objectId = -1;
+
             switch ((o ?? "").ToUpper())
             {
                 case "TAG":
@@ -319,6 +320,13 @@ namespace d360.web.Controllers
                     return DynamicEditorEditFields(o, objectId);
                 case "PREDICATE":
                     objectId = Company.Predicates.FirstOrDefault(x => x.UID == uid).ID;
+                    return DynamicEditorEditFields(o, objectId);
+                default:
+                    foreach (SystemObjects sysobj in (SystemObjects[])Enum.GetValues(typeof(SystemObjects)))
+                    {
+                        if (sysobj.ToString().ToUpper() == o.ToUpper())
+                            objectId = Company.GetObjectId(uid.Value, sysobj);
+                    }
                     return DynamicEditorEditFields(o, objectId);
             }
             throw new Exception("Invalid or non implemented editor type");
@@ -533,12 +541,9 @@ namespace d360.web.Controllers
                     return PutOrganizationDomain(form);
                 case "ORGANIZATIONINVITATION":
                     return PutOrganizationInvitation(form);
-                case "POLICY":
-                    return EditPolicy(form);
                 case "POLICYTYPELEVEL":
                     return EditPolicyTypeLevel(form);
-                case "REFERENCEITEM":
-                    return EditReferenceItem(form);
+
                 case "REPORT":
                     return await EditReport(form);
                 case "REPORTTILE":
@@ -549,8 +554,6 @@ namespace d360.web.Controllers
                     return EditMyInfo(form);
                 case "RESOURCESELFPASSWORD":
                     return ChangeMyPassword(form);
-                case "RULE":
-                    return EditRule(form);
                 case "RULEIMPLEMENTATION":
                     return EditRuleImplementation(form);
                 case "RULETYPE":
@@ -559,8 +562,6 @@ namespace d360.web.Controllers
                     return EditService(form);
                 case "SURVEYTYPE":
                     return EditSurveyType(form);
-                case "TAXONOMY":
-                    return EditTaxonomy(form);
                 case "TAXONOMYTYPELEVEL":
                     return EditTaxonomyTypeLevel(form);
                 case "VERSION":
@@ -702,12 +703,9 @@ namespace d360.web.Controllers
                     return PostOrganizationDomain(form);
                 case "ORGANIZATIONINVITATION":
                     return PostOrganizationInvitation(form);
-                case "POLICY":
-                    return AddPolicy(form);
                 case "POLICYTYPELEVEL":
                     return AddPolicyTypeLevel(form);
-                case "REFERENCEITEM":
-                    return AddReferenceItem(form);
+
                 case "REPORT":
                     return await AddReport(form);
                 case "REPORTTILE":
@@ -719,13 +717,9 @@ namespace d360.web.Controllers
                 case "RULETYPE":
                     return AddRuleType(form);
                 case "SERVICE":
-                    return AddService(form);
-                case "RULE":
-                    return AddRule(form);                
+                    return AddService(form);                
                 case "SURVEYTYPE":
                     return AddSurveyType(form);
-                case "TAXONOMY":
-                    return AddTaxonomy(form);
                 case "TAXONOMYTYPELEVEL":
                     return AddTaxonomyTypeLevel(form);
                 case "VERSION":
@@ -8188,8 +8182,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
             var list = new List<EditableField>();
-            list.Add(new EditableField { FieldName = "PolicyTypeID", FieldType = DataType.Hidden.ToString(), Value = typeID.ToString() });
-            if (parentID.HasValue) list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = parentID.Value.ToString() });
+            if (parentID.HasValue && parentID.Value > 0) {
+                var parentUid = Company.GetAssetUid(parentID.Value, SystemObjects.Policy).ToString();
+                list.Add(new EditableField { FieldName = "ParentUid", FieldType = DataType.Hidden.ToString(), Value = parentUid });
+            }
             
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.PolicyType, typeID).ToList(), 1);
 
@@ -8206,7 +8202,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var model = Company.Assets.Where(x => x.ObjectID == id && x.Object == SystemObjects.Policy.ToString()).Include(x => x.AssetType).FirstOrDefault();
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ObjectID.ToString() });
+            list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = model.uid.ToString() });
 
             list = (
                 loadDynamicFields(
@@ -8223,146 +8219,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             return Json(list, JsonRequestBehavior.AllowGet);
         }
         
-        #endregion
-
-        #region Form Get/Post
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddPolicy")]
-        public JsonResult AddPolicy(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("Policy");
-                
-                int typeID = parseIntField(form, "PolicyTypeID");
-                var assettype = Company.AssetTypes.FirstOrDefault(x => x.ObjectID == typeID && x.Object == SystemObjects.PolicyType.ToString());
-                int? parentId = parseNullableIntField(form, "ParentID");
-
-                if (assettype == null) throw new NotFoundException("policy type");
-
-                if (!Company.HasAssetTypePermission(SystemObjects.PolicyType, typeID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var model = new Asset { AssetTypeID = assettype.ID, Object = "Policy", State = State.Active, CreatedBy = Company.CurrentResourceID, CreatedOn = DateTime.UtcNow, UpdatedBy = Company.CurrentResourceID, UpdatedOn = DateTime.UtcNow };
-                                
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, assettype.ObjectID).ToList(), form, Server);
-                Company.SaveOrUpdateAsset(model,fields, parentId.GetValueOrDefault());
-
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, assettype.ObjectID).ToList();
-                processFormDynamicRelationshipFields(SystemObjects.PolicyType, assettype.ObjectID, SystemObjects.Policy, model.ObjectID, fieldTypes, form);
-                                
-                if (!string.IsNullOrEmpty(form["ParentID"]) && form["ParentID"] != "0")
-                {
-                    var intersectType = Company.Filter<IntersectTypeDetail>(i =>
-                        i.Object == "PolicyType" &&
-                        i.ObjectID == assettype.ObjectID &&
-                        i.PredicateType.Value == PredicateType.IntraTypeHierarchy
-                    ).SingleOrDefault();
-
-                    if (intersectType != null)
-                    {
-                        var intersect = new Intersect
-                        {
-                            Subject = SystemObjects.Policy.ToString(),
-                            SubjectID = parseIntField(form, "ParentID"),
-                            Object = SystemObjects.Policy.ToString(),
-                            ObjectID = model.ObjectID,
-                            IntersectTypeID = intersectType.ID
-                        };
-
-                        var parentExists = Company.Any<Asset>(i =>
-                            i.ObjectID == intersect.SubjectID &&
-                            i.AssetType.Object == "PolicyType" &&
-                            i.AssetType.ObjectID == intersectType.SubjectID
-                            );
-
-                        if (!parentExists)
-                        {
-                            return jsonException($"Parent {intersectType.SubjectName} with ID {intersect.SubjectID} could not be found.", HttpStatusCode.NotFound);
-                        }
-
-                        Company.Add(intersect);
-                    }
-                }
-
-                dynamic custom = new
-                {                    
-                    action = "add",
-                    Context = form["_context"]
-                };                
-
-                return jsonSuccess("Policy successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditPolicy"), NonNullableParameters]
-        public JsonResult EditPolicy(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("Policy");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.Assets.Where(x => (x.Object == "Policy" && x.ObjectID == id)).Include(x => x.AssetType).FirstOrDefault();
-
-                if (model == null) throw new NotFoundException("Policy");
-
-                if (!Company.HasAssetPermission(SystemObjects.Policy, id, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-                                
-                Company.SaveOrUpdateAsset(model, new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Policy, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.AssetType.ObjectID).ToList(), form, Server, false));
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.PolicyType, model.AssetType.ObjectID).ToList();
-                processFormDynamicRelationshipFields(SystemObjects.PolicyType, model.AssetType.ObjectID, SystemObjects.Policy, model.ObjectID, fieldTypes, form);
-                var sType = SystemObjects.Policy.ToString();
-                var parentID = parseIntField(form, "ParentID");
-
-                if (parentID > 0)
-                {
-                    var intersect = Company.Filter<Intersect>(i =>
-                        i.Subject == sType &&
-                        i.Object == sType &&
-                        i.ObjectID == model.ObjectID &&
-                        i.IntersectType.Predicate.Type == PredicateType.IntraTypeHierarchy
-                    ).SingleOrDefault();
-
-                    if (intersect != null)
-                    {
-                        if (intersect.SubjectID != parentID)
-                        {
-                            intersect.SubjectID = parentID;
-                            Company.Update(intersect);
-                        }
-                    }
-                }
-
-                dynamic custom = new
-                {                    
-                    action = "edit",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Policy successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         #endregion
 
         #endregion
@@ -8572,8 +8428,8 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             if(parentType != null)
             {
-                var sql = "select DisplayValue, ObjectID from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
-                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID) }).ToList() });
+                var sql = "select DisplayValue, uid from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
+                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentUid", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid) }).ToList() });
             }
                         
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row);
@@ -8593,7 +8449,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             var row = 1;
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ObjectID.ToString() });
+            list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString() });
 
             //if the reference type has a parent we need to add parent field with the values from the parent
@@ -8603,122 +8459,15 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             if (parentType != null)
             {
                 var parent = Company.GetParentObject(id, SystemObjects.ReferenceItem);
-                var sql = "select DisplayValue, ObjectID from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
-                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentID", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.ObjectID), Selected = i.ObjectID == (parent != null ? parent.ObjectID : 0)  }).ToList() });
+                var sql = "select DisplayValue, uid from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
+                list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentUid", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid), Selected = i.uid == (parent != null ? parent.uid : Guid.Empty)  }).ToList() });
             }
 
             list = loadDynamicFields(SystemObjects.ReferenceItem.ToString(), id, list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, a.AssetType.ObjectID).ToList(), Company.GetFieldRelationsByObject(SystemObjects.ReferenceItem, id).ToList(), row);
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
-        
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddReferenceItem")]
-        public JsonResult AddReferenceItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("lookup");
-
-                int typeID = parseIntField(form, "ReferenceItemTypeID");
-                var type = Company.AssetTypes.FirstOrDefault(x => x.Object == "ReferenceItemType" && x.ObjectID == typeID);
-                
-                if (type == null) throw new NotFoundException("referenceitemtype");
-
-                if (!Company.HasAssetTypePermission(SystemObjects.ReferenceItemType, typeID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var code = form["Code"].ToString();
-
-                if (Company.Any<Asset>(r => r.AssetTypeID == type.ID && r.Code == code))
-                    return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
-
-                int? parentId = parseNullableIntField(form, "ParentID");
-
-
-                var model = new Asset {
-                    AssetTypeID = type.ID,
-                    Object = SystemObjects.ReferenceItem.ToString(),
-                    State = State.Active,
-                    CreatedBy = Company.CurrentResourceID,
-                    Code = code,
-                    CreatedOn = DateTime.UtcNow,
-                    UpdatedBy = Company.CurrentResourceID,
-                    UpdatedOn = DateTime.UtcNow
-                };
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, typeID).ToList(), form, Server);
-                Company.SaveOrUpdateAsset(model, fields, parentId.GetValueOrDefault());
-
-
-
-                if (parentId.HasValue)
-                {
-                    if (!Company.AddObjectParentRelationship(SystemObjects.ReferenceItemType, typeID, SystemObjects.ReferenceItem, parentId.Value, model.ObjectID))
-                    {
-                        return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
-                    }
-                }
-
-                return jsonSuccess(type.Name + " successfully created.", model.ObjectID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditReferenceItem")]
-        public JsonResult EditReferenceItem(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("referenceitem");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.Assets.Include(x => x.AssetType).FirstOrDefault(x => x.ObjectID == id && x.Object == "ReferenceItem");
-
-                if (model == null) throw new NotFoundException("referenceitem");
-
-                if (!Company.HasAssetPermission(SystemObjects.ReferenceItem, model.ObjectID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var code = form["Code"].ToString();
-
-                if (Company.Any<Asset>(r => r.AssetTypeID == model.AssetTypeID && r.Code == code && r.ID != model.ID))
-                    return jsonException(new Exception($"A reference item with the code value {code} already exists."), HttpStatusCode.Forbidden);
-
-                model.Code = code;
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.ReferenceItem, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, model.AssetType.ObjectID).ToList(), form, Server, false);
-                Company.SaveOrUpdateAsset(model, fields);
-                Company.SaveChanges();
-
-                if (!string.IsNullOrEmpty(form["ParentID"]))
-                {
-                    if (!Company.UpdateObjectParentRelationship(SystemObjects.ReferenceItemType, model.AssetType.ObjectID, SystemObjects.ReferenceItem, parseIntField(form, "ParentID"), model.ObjectID))
-                    {
-                        return jsonException($"Parent intersect with could not be found.", HttpStatusCode.NotFound);
-                    }
-                }
-
-                return jsonSuccess("Item successfully updated.", id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-        
+         
         #endregion
 
         #region Relationship
@@ -11541,7 +11290,6 @@ order by	case
 
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { FieldType = DataType.Hidden.ToString(), FieldName = "RuleTypeID", Value = typeID.ToString() });   
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Threshold", Name = FieldInfo.RuleThreshold_Name, FieldDescription = FieldInfo.RuleThreshold_Description, FieldType = DataType.Percentage.ToString()});
             
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.RuleType, typeID).ToList(), 3);
@@ -11560,8 +11308,9 @@ order by	case
             var model = Company.GetById<Rule>(id);
 
             var list = new List<EditableField>();
+            var uid = Company.Assets.FirstOrDefault(x => x.Object == SystemObjects.Rule.ToString() && x.ObjectID == id).uid;
 
-            list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = model.ID.ToString() });
+            list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = uid.ToString() });
             
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Threshold", Name = FieldInfo.RuleThreshold_Name, FieldDescription = FieldInfo.RuleThreshold_Description, FieldType = DataType.Percentage.ToString(), Value = model.Threshold.ToString() });
 
@@ -11588,100 +11337,6 @@ order by	case
                 Formatting = Newtonsoft.Json.Formatting.None
             };
 
-        }
-
-        #endregion
-
-        #region Form Get/Post
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddRule")]
-        public JsonResult AddRule(FormCollection form)
-        {
-            try
-            {                
-                if (!form.HasKeys()) throw new NoFormDataException("Rule");
-
-                var threshold = decimal.Parse(form["Threshold"]);
-
-                if (threshold < 0 || threshold > 1)
-                    throw new InvalidDataException("Threshold value must be between 0 and 1");
-
-                var model = new Rule
-                {
-                    RuleTypeID = parseIntField(form, "RuleTypeID"),
-                    Threshold = threshold
-                };
-
-                if (!Company.HasAssetTypePermission(SystemObjects.RuleType, model.RuleTypeID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server);
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList();
-                Company.SaveOrUpdate<Rule>(model, fields);
-                processFormDynamicRelationshipFields(SystemObjects.RuleType, model.RuleTypeID, SystemObjects.Rule, model.ID, fieldTypes, form);
-
-                dynamic custom = new
-                {
-                    action = "add",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Rule successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-                
-        [HttpPut, ValidateInput(false), Route("EditRule")]
-        public JsonResult EditRule(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("Rule");
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<Rule>(id);
-                if (model == null) throw new NotFoundException("Rule");
-
-                if (!Company.HasAssetPermission(SystemObjects.Rule, id, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-
-                var threshold = decimal.Parse(form["Threshold"]);
-                if (threshold < 0 || threshold > 1)
-                    throw new InvalidDataException("Threshold value must be between 0 and 1");
-
-                model.Threshold = threshold;
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Rule, model.ID, Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList(), form, Server, false);
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.RuleType, model.RuleTypeID).ToList();
-                Company.SaveOrUpdate<Rule>(model, fields);
-                processFormDynamicRelationshipFields(SystemObjects.RuleType, model.RuleTypeID, SystemObjects.Rule, model.ID, fieldTypes, form);
-
-                dynamic custom = new
-                {
-                    action = "edit",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Rule successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
         }
 
         #endregion
@@ -13107,9 +12762,9 @@ order by	case
 
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { FieldName = "TaxonomyTypeID", FieldType = DataType.Hidden.ToString(), Value = t.ToString() });
-            list.Add(new EditableField { FieldName = "ParentID", FieldType = DataType.Hidden.ToString(), Value = p.ToString() });
-            
+            var parentUid = p > 0 ? Company.GetAssetUid(p, SystemObjects.Taxonomy).ToString() : "";
+            list.Add(new EditableField { FieldName = "ParentUid", FieldType = DataType.Hidden.ToString(), Value = parentUid.ToString() });
+
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, t).ToList(), 1);
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -13126,7 +12781,7 @@ order by	case
         
             var taxonomy = Company.Query<dynamic>(@"
                                                     select	A.ID as AssetID,
-                                                            A.UID as UID,
+                                                            A.UID as Uid,
 		                                                    A.ObjectID,
 		                                                    T.ID as TypeID,
                                                             T.ObjectID as TaxonomyTypeID,
@@ -13147,6 +12802,7 @@ order by	case
                 var parents = Company.Query<dynamic>(@"
                                 select	A.ObjectID as ID,
 		                                P.TextPath as Name,
+                                        A.uid as Uid,
 		                                coalesce(LV.[Level], 1) as [Level]
                                 from	Asset A
                                         inner join AssetType T on T.ID = A.AssetTypeID and T.Object = 'TaxonomyType' and T.ObjectID = @t
@@ -13154,9 +12810,9 @@ order by	case
                                         cross apply dbo.GetAssetLevelById(A.ID) LV
                                 where (coalesce(LV.[Level], 1) + @currentLevel) <= @maxLevel
                                 option (maxrecursion 100)",
-    new { t = taxonomy.TaxonomyTypeID, currentLevel = taxonomy.Level ?? 1, maxLevel = taxonomy.MaximumDepth ?? 1 }).Select(i => new { i.ID, i.Name }).ToList();
+    new { t = taxonomy.TaxonomyTypeID, currentLevel = taxonomy.Level ?? 1, maxLevel = taxonomy.MaximumDepth ?? 1 }).Select(i => new { i.Uid, i.Name }).ToList();
 
-                var thisEntry = parents.FirstOrDefault(i => i.ID == id);
+                var thisEntry = parents.FirstOrDefault(i => i.Uid == taxonomy.Uid);
 
                 if(thisEntry!=null)
                      parents.RemoveAll(i => i.Name.StartsWith(thisEntry.Name));
@@ -13164,13 +12820,13 @@ order by	case
                 var parentItems = parents.Select(i => new SelectListItem
                 {
                     Text = i.Name,
-                    Value = $"{i.ID}",
-                    Selected = (parent != null ? ((int)i.ID == parent.ObjectID) : false)
+                    Value = $"{i.Uid}",
+                    Selected = (parent != null ? (i.Uid == parent.uid) : false)
                 }).ToList();
-                parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = "0", Selected = (parent == null) });
+                parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = "", Selected = (parent == null) });
 
-                list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = taxonomy.ObjectID.ToString() });
-                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentID", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.ObjectID.ToString() : "0") });
+                list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = taxonomy.Uid.ToString() });
+                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentUid", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.uid.ToString() : "0") });
                 list = (
                      loadDynamicFields(
                          SystemObjects.Taxonomy.ToString(),
@@ -13185,177 +12841,6 @@ order by	case
             return Json(list, JsonRequestBehavior.AllowGet);
         }
                 
-        #endregion
-
-        #region Form Get/Post
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddTaxonomy")]
-        public JsonResult AddTaxonomy(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("taxonomy");
-
-                int typeID = parseIntField(form, "TaxonomyTypeID");
-                var assettype = Company.AssetTypes.FirstOrDefault(x => x.ObjectID == typeID && x.Object == SystemObjects.TaxonomyType.ToString());
-
-                if (assettype == null) throw new NotFoundException("taxonomy type");
-
-                int? parentId = parseNullableIntField(form, "ParentID");
-
-                if (!Company.HasAssetTypePermission(SystemObjects.TaxonomyType, typeID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-
-                var model = new Asset { AssetTypeID = assettype.ID, Object = "Taxonomy", State = State.Active, CreatedBy = Company.CurrentResourceID, CreatedOn = DateTime.UtcNow, UpdatedBy = Company.CurrentResourceID, UpdatedOn = DateTime.UtcNow };
-
-                var fields = new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, typeID).ToList(), form, Server);
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, assettype.ObjectID).ToList();
-                Company.SaveOrUpdateAsset(model, fields, parentId.GetValueOrDefault());
-                processFormDynamicRelationshipFields(SystemObjects.TaxonomyType, assettype.ObjectID, SystemObjects.Taxonomy, model.ObjectID, fieldTypes, form);
-
-                if (!string.IsNullOrEmpty(form["ParentID"]) && form["ParentID"] != "0")
-                {                    
-                    var intersectType = Company.Filter<IntersectTypeDetail>(i =>
-                        i.Object == "TaxonomyType" &&
-                        i.ObjectID == assettype.ObjectID &&
-                        i.PredicateType.Value == PredicateType.IntraTypeHierarchy
-                    ).SingleOrDefault();
-
-                    if (intersectType != null)
-                    {
-                        var intersect = new Intersect
-                        {
-                            Subject = SystemObjects.Taxonomy.ToString(),
-                            SubjectID = parseIntField(form, "ParentID"),
-                            Object = SystemObjects.Taxonomy.ToString(),
-                            ObjectID = model.ObjectID,
-                            IntersectTypeID = intersectType.ID
-                        };
-
-                        var parentExists = Company.Any<Asset>(i =>
-                            i.ObjectID == intersect.SubjectID &&
-                            i.AssetType.Object == "TaxonomyType" &&
-                            i.AssetType.ObjectID == intersectType.SubjectID
-                            );
-
-                        if (!parentExists)
-                        {
-                            return jsonException($"Parent {intersectType.SubjectName} with ID {intersect.SubjectID} could not be found.", HttpStatusCode.NotFound);
-                        }
-
-                        Company.Add(intersect);
-                    }
-                }
-
-                dynamic custom = new
-                {
-                    TaxonomyTypeID = typeID,
-                    ID = model.ObjectID,
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Model successfully created.", model.ObjectID.ToString(), "add", HttpStatusCode.Created, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-                
-        [HttpPut, ValidateInput(false), Route("EditTaxonomy")]
-        public JsonResult EditTaxonomy(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("taxonomy");
-
-                var id = parseIntField(form, "ID");
-
-                var model = Company.Assets.Where(x => (x.Object == "Taxonomy" && x.ObjectID == id)).Include(x => x.AssetType).FirstOrDefault();
-
-                if (model == null) throw new NotFoundException("taxonomy");
-
-                if (!Company.HasAssetPermission(SystemObjects.Taxonomy, id, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                var parentID = parseIntField(form, "ParentID");
-
-                Company.SaveOrUpdateAsset(model, new FieldLoader().GetFormDynamicFieldValues(SystemObjects.Taxonomy, model.ObjectID, Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, model.AssetType.ObjectID).ToList(), form, Server, false));
-
-                var fieldTypes = Company.GetFieldTypesByObject(SystemObjects.TaxonomyType, model.AssetType.ObjectID).ToList();
-
-                processFormDynamicRelationshipFields(SystemObjects.TaxonomyType, model.AssetType.ObjectID, SystemObjects.Taxonomy, model.ObjectID, fieldTypes, form);
-
-                var sType = SystemObjects.Taxonomy.ToString();
-                
-
-                if (parentID > 0)
-                {
-                    var intersect = Company.Filter<Intersect>(i =>
-                        i.Subject == sType &&
-                        i.Object == sType &&
-                        i.ObjectID == model.ObjectID &&
-                        i.IntersectType.Predicate.Type == PredicateType.IntraTypeHierarchy
-                    ).SingleOrDefault();
-
-                    if (intersect != null)
-                    {
-                        if (intersect.SubjectID != parentID)
-                        {
-                            intersect.SubjectID = parentID;
-                            Company.Update(intersect);
-                        }
-                    }
-                    else
-                    {
-                        var intersectType = Company.Filter<IntersectTypeDetail>(i =>
-                            i.Object == "TaxonomyType" &&
-                            i.ObjectID == model.AssetType.ObjectID &&
-                            i.PredicateType.Value == PredicateType.IntraTypeHierarchy
-                        ).SingleOrDefault();
-
-                        if (intersectType != null)
-                        {
-                            intersect = new Intersect
-                            {
-                                Subject = SystemObjects.Taxonomy.ToString(),
-                                SubjectID = parseIntField(form, "ParentID"),
-                                Object = SystemObjects.Taxonomy.ToString(),
-                                ObjectID = model.ObjectID,
-                                IntersectTypeID = intersectType.ID
-                            };
-
-                            Company.Add(intersect);
-                        }
-                    }
-                }
-
-                dynamic custom = new
-                {
-                    model.AssetType.ObjectID,
-                    ParentID = parentID,
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Model successfully updated.", id.ToString(), "edit", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
         #endregion
 
         #endregion
