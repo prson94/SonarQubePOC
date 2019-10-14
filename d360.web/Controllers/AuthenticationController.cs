@@ -9,6 +9,7 @@ using d360.core.enums;
 using d360.extensions.azuregraph;
 using d360.extensions.mail;
 using d360.model;
+using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
 using Microsoft.ApplicationInsights;
@@ -545,12 +546,12 @@ namespace d360.web.Controllers
             }
         }
 
-        [AllowAnonymous, Route("sso"), HttpPost]
+        [AllowAnonymous, Route("sso"), HttpPost, ValidateAntiForgeryToken]
         public ActionResult Login(LoginModel model, string ReturnUrl)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("Settings", Community.GetCompanySettings());
-
+          
             if (!string.IsNullOrEmpty(ReturnUrl) && ReturnUrl.ToUpper() == "/RESET")
             {
                 ReturnUrl = "";
