@@ -47,8 +47,7 @@ namespace d360.web.Controllers
             {
                 nodes = nodes.Where(x => x.MenuID != "#Fusion").ToList();
             }
-
-            if(Community.GetCompanySettingByKey<int>("LineageVersion") != 3 || isFusionEnabled)
+            else
             {
                 nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
             }
