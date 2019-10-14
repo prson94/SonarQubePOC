@@ -551,7 +551,7 @@ namespace d360.web.Controllers
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("Settings", Community.GetCompanySettings());
-            var test = Request.Headers;
+          
             if (!string.IsNullOrEmpty(ReturnUrl) && ReturnUrl.ToUpper() == "/RESET")
             {
                 ReturnUrl = "";
