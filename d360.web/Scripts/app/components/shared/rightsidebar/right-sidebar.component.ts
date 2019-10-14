@@ -45,7 +45,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     items: RightSidebarItem[];
     buttons: DynamicButton[];
     homeUrl: string;
-    area: any = {icon:'fa-folder',title: ''};
+    area: any = { icon: 'fa-folder', title: '' };
     @Input() menuOpen: boolean;
     @Output() changed = new EventEmitter();
     private currentObject: any;
@@ -53,7 +53,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     @ViewChild('badge') badge: ElementRef;
     @ViewChild('noScore') noScore: ElementRef;
     @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
-    private statistics: ObjectStatistics;    
+    private statistics: ObjectStatistics;
     private actionsAssigned: boolean = false;
     private currentResouceID: number;
 
@@ -207,10 +207,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     if (!draftValues) {
                         draftValues = "DRAFT";
                     }
-                    if (objectName === 'Artifact')
-                        this.showCertify = this.status && (draftValues.toUpperCase().split(',').indexOf(this.status.toUpperCase()) > -1) && hasWorkFlow;
-                    else
-                        this.showCertify = this.status && (draftValues.toUpperCase().split(',').indexOf(this.status.toUpperCase()) > -1);
+                    this.showCertify = this.status && (draftValues.toUpperCase().split(',').indexOf(this.status.toUpperCase()) > -1) && hasWorkFlow;
+
                     this.showStatus = true;
                     this.ref.markForCheck();
                 }
@@ -219,18 +217,18 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
         this.objectStatisticsService.getObjectStatistics(objectID, objectName).subscribe(
             result => {
-                this.statistics = result;  
+                this.statistics = result;
                 this.ref.markForCheck();
             }
         );
         this.workflowService.getIssues(objectID, objectName)
             .subscribe(result => {
-                let issues = result;                
-                if (issues.length && issues.length > 0) {                    
+                let issues = result;
+                if (issues.length && issues.length > 0) {
                     this.actionsAssigned = true;
                 }
                 this.ref.markForCheck();
-            });  
+            });
 
         this.surveysService.getObjectSurvey(objectTypeID, objectType, objectID, objectName)
             .subscribe(result => {
@@ -258,7 +256,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     trackById(index, item) {
         return item.tag;
     }
-    
+
     itemClicked(item: RightSidebarItem) {
         if (this.AllClosed()) this.homeUrl = this.router.url;
         this.closeAll();
@@ -269,7 +267,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         item.active = true;
         if (item.hasDynamicUrl) this.router.navigateByUrl(item.dynamicUrlCallback());
         else if (item.url) this.router.navigateByUrl(item.url);
-        this.rightSidebarService.itemClicked(item);        
+        this.rightSidebarService.itemClicked(item);
         this.AllClosed();
     }
 
@@ -327,9 +325,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 .subscribe(result => {
                     window.setTimeout(
                         x => {
-                                this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
-                    },5000);
-            });
+                            this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
+                        }, 5000);
+                });
     }
 
     navigateToSurvey() {
