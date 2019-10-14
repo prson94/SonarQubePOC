@@ -1,0 +1,16 @@
+﻿<div [ngClass]="{'ui-tree-loading': loading}" [ngStyle]="style" [class]="styleClass">
+    <div class="ui-tree-loading-mask ui-widget-overlay" *ngIf="loading"></div>
+    <div class="ui-tree-loading-content" *ngIf="loading">
+        <i [class]="'ui-tree-loading-icon pi-spin ' + loadingIcon"></i>
+    </div>
+    <div *ngIf="filter" class="ui-tree-filter-container">
+        <input #filter type="text" autocomplete="off" class="ui-tree-filter ui-inputtext ui-widget ui-state-default ui-corner-all" [attr.placeholder]="filterPlaceholder"
+               (keydown.enter)="$event.preventDefault()" (input)="onFilter($event)">
+        <span class="ui-tree-filter-icon pi pi-search"></span>
+    </div>
+    <ul *ngIf="getRootNode()" role="tree" [attr.aria-label]="ariaLabel" [attr.aria-labelledby]="ariaLabelledBy">
+        <d3s-check-treeNode *ngFor="let node of getRootNode(); let firstChild=first;let lastChild=last; let index=index; trackBy: nodeTrackBy" [node]="node"
+                            [firstChild]="firstChild" [lastChild]="lastChild" [index]="index"></d3s-check-treeNode>
+    </ul>
+    <div class="ui-tree-empty-message" *ngIf="!loading && (value == null || value.length === 0)">{{emptyMessage}}</div>
+</div>
