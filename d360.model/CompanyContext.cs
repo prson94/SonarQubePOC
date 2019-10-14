@@ -550,7 +550,7 @@ where	T.[Class] in (1,2,3,4,6,7,8,9)").ToList();
             select	Object as ObjectType, 
 		            ObjectID as ObjectTypeID, 
 		            case Object
-			            when 'ArtifactType' then 'Artifacts :: '
+			            when 'ArtifactType' then 'Business Asset :: '
 			            when 'TaxonomyType' then 'Models :: '
 			            when 'PolicyType' then 'Policies :: '
 			            when 'RuleType' then 'Rules :: '

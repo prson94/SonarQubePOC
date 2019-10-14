@@ -1253,7 +1253,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 		            objectId as id,
 		            [object] as [type],		
 		            case when T.[object] = 'ArtifactType' then
-			            'Artifact Type'
+			            'Business Asset'
 		            when T.[object] = 'RuleType' then
 			            'Rule Type'
 		            when T.[object] = 'PolicyType' then
@@ -1319,7 +1319,7 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 						'Unpublished'
 					end as Published,
 					case when e.[Object] = 'ArtifactType' then
-						'Artifact'
+						'Business Asset'
 					when e.[Object] = 'RuleType' then
 						'Rule'
 					when e.[Object] = 'PolicyType' then

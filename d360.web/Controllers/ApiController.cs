@@ -4908,7 +4908,7 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
 select      *
 from        (                 
             select      'ArtifactType|' + cast(ObjectId as varchar(15)) as value,
-                        'Artifact Type : ' + Name as title
+                        'Business Asset : ' + Name as title
             from        AssetType where [object]='ArtifactType'                        
             union       
             select      'Artifact|' + cast(ObjectId as varchar(15)) as value,
