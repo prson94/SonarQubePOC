@@ -254,6 +254,11 @@ namespace d360.web.Controllers.V2
                 if (!Company.CurrentResourceIsAdmin)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
+                if (model.Class == AssetTypeClass.Glossary)
+                {
+                    model.Class = AssetTypeClass.BusinessAsset;
+                }
+
                 var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"));
 
                 AssetType parentAssetType = null;
