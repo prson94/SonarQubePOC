@@ -5,7 +5,7 @@ import { ReferenceService } from '../../services/reference.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ReferenceItemType } from '../../models/reference.model';
 import { FormMode } from '../../models/form.model';
-import { AssetTypeService } from '../../services/asset-type.services';
+import { AssetTypeService } from '../../services/asset-type.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AssetTypeClass } from '../../models/asset.model';
 

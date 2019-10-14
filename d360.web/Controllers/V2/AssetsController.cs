@@ -171,7 +171,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
-                var validator = new AssetTypeValidator(this.Company);
+                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"));
                 if(!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request"));
 
@@ -254,7 +254,7 @@ namespace d360.web.Controllers.V2
                 if (!Company.CurrentResourceIsAdmin)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
-                var validator = new AssetTypeValidator(this.Company);
+                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"));
 
                 AssetType parentAssetType = null;
                 if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
@@ -274,6 +274,9 @@ namespace d360.web.Controllers.V2
 
                 if (model.UseAsTransformation && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", AssetTypeErrors.TransformationClassRestriction));
+
+                if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.BusinessAsset)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Can Own Fusion", "Can Own Fusion can be set only asset types that are of class Business"));
 
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", AssetTypeErrors.TransformationLimitExceeded));
@@ -364,7 +367,7 @@ namespace d360.web.Controllers.V2
                 if (!Company.CurrentResourceIsAdmin)
                     await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
-                var validator = new AssetTypeValidator(this.Company);
+                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"));
 
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(model.Uid);
 
@@ -373,7 +376,7 @@ namespace d360.web.Controllers.V2
                     parentAssetType = AssetRepository.GetAssetTypeByUID((Guid)model.ParentUid);
 
                 Predicate predicate = null;
-                if (model.Hierarchy != null && (model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty))
+                if (model.Hierarchy != null && model.Hierarchy.PredicateUid.HasValue && model.Hierarchy.PredicateUid != Guid.Empty)
                     predicate = AssetRepository.GetPredicateByUID((Guid)model.Hierarchy.PredicateUid);
 
                 var validationStatus = validator.ValidateModel(false, model, parentAssetType, predicate, assetType);
@@ -382,6 +385,9 @@ namespace d360.web.Controllers.V2
 
                 if (model.UseAsTransformation && (model.Class != AssetTypeClass.BusinessAsset && model.Class != AssetTypeClass.TechnicalAsset))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Use As Transformation", AssetTypeErrors.TransformationClassRestriction));
+
+                if (model.CanOwnFusion.HasValue && model.CanOwnFusion.Value && model.Class != AssetTypeClass.BusinessAsset)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Can Own Fusion", "Can Own Fusion can be set only asset types of class Business"));
 
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", AssetTypeErrors.TransformationLimitExceeded));

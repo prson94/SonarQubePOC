@@ -72,6 +72,8 @@ namespace d360.core.entities
 
         [DataMember]
         public bool UseAsTransformation { get; set; }
+        [DataMember]
+        public bool? CanOwnFusion { get; set; }
 
 
 
@@ -425,5 +427,70 @@ namespace d360.core.entities
         public string Object { get; set; }
         public int ObjectId { get; set; }
         public int Id { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeUpsertResult
+    {
+        [DataMember]
+        public int ItemNumber { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeInsertModel
+    {
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeUpsertModel
+    {
+        [DataMember]
+        public Guid? Uid { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeDeleteResult
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeDeleteModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public bool Cascade { get; set; }
+
     }
 }

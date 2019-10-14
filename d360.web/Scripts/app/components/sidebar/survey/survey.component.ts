@@ -74,6 +74,8 @@ export class SurveyComponent extends BaseComponent implements OnInit, OnDestroy 
 
     handleComplete(res) {
         this.showMessageForResult(this.msgService, res);
+        this.showBoard = true;
+        this.goBack();
     }
 
     goBack() {

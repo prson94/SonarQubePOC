@@ -140,8 +140,13 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
     }
 
     ngOnInit() {
-        if (CompanySettings && CompanySettings.FusionEnabled == 'false') {
-            this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
+        if (CompanySettings) {
+            if (CompanySettings.FusionEnabled == 'false') {
+                this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
+            }
+            if (+CompanySettings.LineageVersion != 3) {
+                this.searchObjectTypes = this.searchObjectTypes.filter(x => x.label != StringConstants.AssetTypeClass_Technical);
+            }
         }
     }
 

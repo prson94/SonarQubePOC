@@ -1,7 +1,8 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { AssetTypeService } from "../../../services/asset-type.services";
-import { AssetTypeClass, AssetTypeEditorModel } from "../../../models/asset.model";
+import { AssetTypeService } from '../../../services/asset-type.service';
+import { AssetTypeClass, AssetTypeEditorModel } from '../../../models/asset.model';
+import { ApiResult } from '../../../models/apiresult.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 declare var CompanySettings: any;
@@ -16,7 +17,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     @Input() title: string = "Add Asset Type";
     @Input() id: number;
     @Input() parentID: number;
-    @Input() topTypeID: number; //For things like fusion type ID
     @Input() assetTypeClass: AssetTypeClass;
     @Input() showParentPredicates: boolean = true;
     @Input() showDisplayFormat: boolean = true;
@@ -27,12 +27,11 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     action: string = "Edit";    
     model: AssetTypeEditorModel;   
-    spinNum: number = 1;
     private isSaving = false;
+    AssetTypeClass = AssetTypeClass;
 
     showAssetStyles: boolean = true;
     showAssetDepthSettings: boolean = false;
-    showAssetFusionSettings: boolean = false;
     showFusionOwnerSettings: boolean = false;
     showAssetArtifactSettings: boolean = false;
     showNotesField: boolean = false;
@@ -46,7 +45,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     
     ngOnChanges(changes: SimpleChanges): void {
-
         if (CompanySettings != null && CompanySettings.LineageVersion != null) {
             this.lineageVersion = CompanySettings.LineageVersion;
         }
@@ -88,9 +86,6 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 this.showAssetStyles = false;
                 this.showNotesField = true;
                 break;
-            case AssetTypeClass.Fusion:
-                this.showAssetFusionSettings = true;                
-                break;
         }
 
         this
@@ -102,15 +97,8 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             )
             .subscribe(data => {
                 this.model = data;
-
-                this.spinNum = this.model.AssetType.HierarchyMaximumDepth;
-                if (this.spinNum == 0) {
-                    this.spinNum = 1;
-                }
-
-                if (this.topTypeID)
-                {
-                    this.model.TopLevelTypeID = this.topTypeID;
+                if (this.model.AssetType.Hierarchy.MaximumDepth == 0) {
+                    this.model.AssetType.Hierarchy.MaximumDepth = 1;
                 }
 
                 if (this.model.Predicates) {
@@ -132,18 +120,17 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     private save(): void {
         this.isSaving = true;
-        this.model.AssetType.HierarchyMaximumDepth = this.spinNum;
         this.model.AssetType.Class = this.assetTypeClass;
 
-        if (this.model.AssetType.ID > 0)
+        if (this.model.AssetType.Uid != null && this.model.AssetType.Uid != '00000000-0000-0000-0000-000000000000')
         {
             this
                 .assetTypeService
-                .putAssetType(this.model)
+                .putAssetType(this.model.AssetType)
                 .subscribe(data => {
-                    this.showMessageForResult(this.messagesService, data);
+                    this.showMessageForApiResponse(this.messagesService, data);
 
-                    if (data.type != "error") {
+                    if (data.Success === true) {
                         this.isSaving = false;
                         this.onSuccess.emit(data);
                         this.onComplete.emit(data);
@@ -154,13 +141,15 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         }
         else
         {
-            this
-                .assetTypeService
-                .postAssetType(this.model)
-                .subscribe(data => {
-                    this.showMessageForResult(this.messagesService, data);
 
-                    if (data.type != "error") {
+            delete this.model.AssetType.Uid;
+
+            this.assetTypeService
+                .postAssetType(this.model.AssetType)
+                .subscribe(data => {
+                    this.showMessageForApiResponse(this.messagesService, data);
+
+                    if (data.Success === true) {
                         this.isSaving = false;
                         this.onSuccess.emit(data);
                         this.onComplete.emit(data);
@@ -186,14 +175,18 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     }
 
     get FirstColumnStyle(): string {
-        if (this.showAssetArtifactSettings || this.showAssetDepthSettings || this.showAssetFusionSettings || this.showAssetStyles )
+        if (this.showAssetArtifactSettings || this.showAssetDepthSettings || this.showAssetStyles )
             return "col l8 m12 s12";
         return "col s12";
     }
 
-    public updateParent(predicateId: string) {
-        if (predicateId == null || predicateId.length == 0) {
-            this.model.ParentID = null;
+    public updateParent(predicateUid: string) {
+        if (predicateUid == null || predicateUid.length == 0) {
+            this.model.AssetType.ParentUid = null;
         }
+    }
+
+    get isPredicateRequired(): boolean {
+        return this.assetTypeClass == AssetTypeClass.Model || this.assetTypeClass == AssetTypeClass.Policy;
     }
 }

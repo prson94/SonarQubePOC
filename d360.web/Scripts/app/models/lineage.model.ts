@@ -475,6 +475,7 @@ export class AssetBrowserLineageApiRequestModel {
 // Response
 export class AssetBrowserLineageApiItemModel {
     assetUid: string;
+    key: string;
     displayValue: string;
     backColor: string;
     foreColor: string;
@@ -484,7 +485,9 @@ export class AssetBrowserLineageApiItemModel {
 export class AssetBrowserLineageApiRelationshipModel {
     intersectUid: string;
     subjectUid: string;
+    subjectKey: string;
     objectUid: string;
+    objectKey: string;
     predicate: string;
     predicateUid: string;
     predicateType: number;
