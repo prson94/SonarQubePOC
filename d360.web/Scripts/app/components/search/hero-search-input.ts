@@ -4,6 +4,7 @@ import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SettingsHelper } from '../../models/settings.model';
+import { StringConstants } from '../../static/string-constants';
 
 declare var CompanySettings;
 @Component({

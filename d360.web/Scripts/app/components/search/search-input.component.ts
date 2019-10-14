@@ -9,6 +9,7 @@ import { DropdownOption } from '../../models/dropdown.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 import { SettingsHelper } from '../../models/settings.model';
+import { StringConstants } from '../../static/string-constants';
 
 declare var CompanySettings;
 @Component({
