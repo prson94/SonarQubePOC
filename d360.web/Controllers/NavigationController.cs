@@ -17,6 +17,7 @@ using Resources;
 using System.Net;
 using System.IO;
 using System.Threading.Tasks;
+using d360.core.resources;
 
 namespace d360.web.Controllers
 {
@@ -41,6 +42,16 @@ namespace d360.web.Controllers
             nodes = Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList();
 
             var features = Community.Filter<CompanyFeature>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
+            var isFusionEnabled = Community.IsFusionEnabled();
+            if (!isFusionEnabled)
+            {
+                nodes = nodes.Where(x => x.MenuID != "#Fusion").ToList();
+            }
+
+            if(Community.GetCompanySettingByKey<int>("LineageVersion") != 3)
+            {
+                nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
+            }
 
             if (nodes != null)
                 nodes.ForEach(n => {
@@ -64,13 +75,13 @@ namespace d360.web.Controllers
         [Route("GetAvailableSiteNavigation")]
         public JsonNetResult GetAvailableSiteNavigation()
         {
-            var nav = Company.Query<dynamic>(@"
+            var nav = Company.Query<dynamic>($@"
                 with s as
                 (
 	                select  cast(
 	                            case 
-                                    when [Object] = 'ArtifactType' and [Class] = 1 then 'Business :: ' + Name
-	                                when [Object] = 'ArtifactType' and [Class] = 8 then 'Technical :: ' + Name
+                                    when [Object] = 'ArtifactType' and [Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: ' + Name
+	                                when [Object] = 'ArtifactType' and [Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: ' + Name
 	                                else Name
 	                            end	
 	                            as varchar(500)
@@ -847,18 +858,35 @@ order by	f.SortOrder";
         [HttpGet, Route("GetCounts")]
         public async Task<JsonNetResult> GetCounts()
         {
-            string sql = @"
-SELECT  count(ATT.[Object]) as [count], 
+            List<string> ignoreObjects = new List<string>();
+            string ignoreObjectTypeSQL = string.Empty;
+            if (!Community.IsFusionEnabled())
+            {
+                ignoreObjects.Add(SystemObjects.FusionType.ToString());
+                ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());
+                ignoreObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
+            }
+
+            if(ignoreObjects.Count > 0)
+                ignoreObjectTypeSQL = $" AND ATT.[Object] not in ({string.Join(",", ignoreObjects.Select(o => "'"+o+"'"))})";
+
+            string sql = $@"
+SELECT count(ATT.[Object]) as count, 
 		ATT.[Object], 
 		ATT.ObjectID,
 		ATT.Name
-from    [Asset] A
-		inner join AssetType ATT on (a.AssetTypeID = Att.id) 
-where   A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
-group by ATT.[Object], ATT.ObjectID, ATT.Name 
-order by ATT.Name";
-          
-            var ItemCounts = await Company.QueryAsync<dynamic>(sql, new { ResourceID = Company.CurrentResourceID });
+		from    [Asset] A
+		inner join AssetType ATT on (a.AssetTypeID = Att.id)
+		WHERE A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
+        {ignoreObjectTypeSQL}
+		Group by 
+		ATT.[Object], 
+		ATT.ObjectID,
+		ATT.Name
+		Order By ATT.Name
+";
+          var ItemCounts = await Company.QueryAsync<dynamic>(sql, 
+              new { ResourceID = Company.CurrentResourceID });
 
             return new JsonNetResult
             {

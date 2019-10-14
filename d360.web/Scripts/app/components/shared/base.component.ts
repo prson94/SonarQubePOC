@@ -7,7 +7,7 @@ import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { Subscription } from 'rxjs';
 import { FormHelpers } from '../../static/form-helpers';
 import { JsonResult } from '../../models/jsonresult.model';
-import { ApiResult } from '../../models/apiresult.model';
+import { ApiResult, ErrorResponse } from '../../models/apiresult.model';
 import { ResponsibilityTypeRelationPermission, Permission } from '../../models/responsibility-type.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessagesObservableService } from '../../services/messages-observable.service';
@@ -146,15 +146,32 @@ export class BaseComponent {
         if (this.rightSidebarService) {
             this.clearSidebar();
             if (hasLineage && CompanySettings.ShowLineageSidebar != 'false') {
-                const isLineageShowUsageOnly = this.lineageShowUsageOnly ? '/1' : '';
-                const urlLineage = this.objectContextUrl() + isLineageShowUsageOnly;
 
-                this.lineageSidebar = new RightSidebarItem(
-                    'Lineage',
-                    'lineage',
-                    ['fa-random'],
-                    `/sidebar/visualization/lineage${urlLineage}`, null, 15
-                );
+                let lineageVersion: number = 1;
+
+                if (CompanySettings != null && CompanySettings.LineageVersion != null) {
+                    lineageVersion = +CompanySettings.LineageVersion;
+                }
+
+                if (lineageVersion !== 3) {
+                    const isLineageShowUsageOnly = this.lineageShowUsageOnly ? '/1' : '';
+                    const urlLineage = this.objectContextUrl() + isLineageShowUsageOnly;
+
+                    this.lineageSidebar = new RightSidebarItem(
+                        'Lineage',
+                        'lineage',
+                        ['fa-random'],
+                        `/sidebar/visualization/lineage${urlLineage}`, null, 15
+                    );
+                }
+                else {
+                    this.lineageSidebar = new RightSidebarItem(
+                        'Browser',
+                        'lineage',
+                        ['fa-random'],
+                        `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
+                    );
+                }
                 this.rightSidebarService.showItem(this.lineageSidebar);
             }
 
@@ -287,6 +304,16 @@ export class BaseComponent {
         return `/${this.objectType}/${this.objectID}`;
     }
 
+    uidContextUrl(): string {
+        const url = '';
+
+        if (!this.uid) {
+            return url;
+        }
+
+        return `/${this.uid}`;
+    }
+
     // This is generally overloaded to show hide in your own class.
     protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
     }
@@ -319,6 +346,21 @@ export class BaseComponent {
         }
     }
 
+    showMessageForApiResponse(messagesService: MessagesObservableService, result: ApiResult & ErrorResponse, defaultMessage?: string) {
+        if (defaultMessage == undefined) {
+            defaultMessage = 'Success';
+        }
+
+        if (!result.Success) {
+            messagesService.showError(result.Title == null ? 'Error' : result.Title, result.Message);
+        } else {
+            messagesService.showInfoMessage(
+                'Success',
+                result.Message != null ? result.Message : defaultMessage
+            );
+        }
+    }
+
     showMessageForApiResult(messagesService: MessagesObservableService, result: ApiResult, defaultMessage?: string) {
         if (defaultMessage == undefined) {
             defaultMessage = 'Success';
@@ -334,12 +376,13 @@ export class BaseComponent {
         }
     }
 
-    showMessageForApiResults(messagesService: MessagesObservableService, results: ApiResult[], defaultMessage : string) {
+    showMessageForApiResults(messagesService: MessagesObservableService, results: ApiResult[], defaultMessage: string, disableCountShow: boolean = false) {
         var succeeded = results.filter(x => x.Success == true);
         var failed = results.filter(x => x.Success != true);
 
         if (succeeded.length > 0) {
-            messagesService.showInfoMessage('Success', succeeded.length + defaultMessage);
+            let message = disableCountShow ? defaultMessage : succeeded.length + defaultMessage;
+            messagesService.showInfoMessage('Success', message);
         }
 
         if (failed.length > 0) {

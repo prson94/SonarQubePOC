@@ -319,7 +319,10 @@ namespace d360.model
 
         int GetObjectId(Guid uid, SystemObjects objectType);
 
+        Guid GetAssetUid(int objectId, SystemObjects assetType);
+
         List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600);
-        List<PredicateInsertResult> AddPredicates(ApiExecution execution, PredicateInserts import, int timeout = 3600);
+        List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600);
+        List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);
     }
 }

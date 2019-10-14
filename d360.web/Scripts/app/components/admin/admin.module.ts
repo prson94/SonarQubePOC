@@ -25,10 +25,7 @@ import { EditorModule } from 'primeng/editor';
 import { TableModule } from 'primeng/table';
 
 import { AdminAllocationComponent } from './admin-allocation.component';
-import { AdminClassificationsComponent } from './admin-classifications.component';
 import { AdminComponent } from './admin.component';
-import { AdminLevelEditorComponent } from './admin-level-editor.component';
-import { AdminLevelListComponent } from './admin-level-list.component';
 import { AdminNymAllocationsComponent } from './admin-nym-allocations.component';
 import { SimpleAccordionModule } from "../shared/simple-accordion.part";
 import { DialogModule } from 'primeng/dialog';
@@ -36,17 +33,12 @@ import { DialogModule } from 'primeng/dialog';
 
 @NgModule({
     declarations: [        
-        AdminAllocationComponent,
-        AdminClassificationsComponent,
-        AdminComponent,                
-        AdminLevelListComponent,
-        AdminLevelEditorComponent,   
+        AdminAllocationComponent,        
+        AdminComponent,                                 
         AdminNymAllocationsComponent     
     ],
     exports: [
-        AdminAllocationComponent,
-        AdminClassificationsComponent,
-        AdminLevelListComponent,
+        AdminAllocationComponent,        
     ],
     imports: [CommonModule,
         DeprecatedI18NPipesModule,

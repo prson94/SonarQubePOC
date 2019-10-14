@@ -136,10 +136,10 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
                     switch (menu.MenuID) {
                         case '#Business':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/Business`;
+                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/BusinessAsset`;
                             break;
                         case '#Technical':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/Technical`;
+                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/TechnicalAsset`;
                             break;
                         case '#Models':
                             menu.ngUrl = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`;
@@ -256,7 +256,11 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.configMenu.NavigationItems = [];
 
         this.configMenu.NavigationItems.push({ Name: 'Business Assets', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
-        this.configMenu.NavigationItems.push({ Name: 'Technical Assets', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+
+        if (+CompanySettings.LineageVersion == 3) {
+            this.configMenu.NavigationItems.push({ Name: 'Technical Assets', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        }
+
         this.configMenu.NavigationItems.push({ Name: 'Models', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Policies', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Rules', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
@@ -280,7 +284,9 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         integrationMenu.Items.push({ Name: 'API', Url: '/swagger/ui/index', Items: null, IsLink: true, IsHomePage: false, count: null });
         integrationMenu.Items.push({ Name: 'Bulk Loader', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD}`, Items: null, IsLink: false, IsHomePage: false, count:null  });
         if (CompanySettings.ShowCustomAPIAdmin != 'false') integrationMenu.Items.push({ Name: 'Custom API', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API}`, Items: null, IsLink: false, IsHomePage: false, count:null });
-        integrationMenu.Items.push({ Name: 'Fusion', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_FUSION}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+
+        if (CompanySettings.FusionEnabled != 'false')
+            integrationMenu.Items.push({ Name: 'Fusion', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_FUSION}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 
         this.adminMenu.NavigationItems.push(integrationMenu);
 

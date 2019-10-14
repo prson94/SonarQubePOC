@@ -44,17 +44,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         protected messagesService: MessagesObservableService        
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = "Assets";
-        this.setCommonItems();
-
-        this.setObjectInfo('ArtifactType', -1);
-        this.setCommonRightSideBar(true);
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/ArtifactType/${this.selectedRow.data.ID}`
-            });
-        }
         this.theDeleteCallback = this.deleteArtifactType.bind(this);
     }
 
@@ -64,21 +53,34 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 let assetTypeClassString: keyof typeof AssetTypeClass = params['class'];
                 this.assetTypeClass = AssetTypeClass[assetTypeClassString];
                 if (!this.assetTypeClass) {
-                    this.assetTypeClass = AssetTypeClass.Business;
+                    this.assetTypeClass = AssetTypeClass.BusinessAsset;
                 }
             } catch (e) {
-                this.assetTypeClass = AssetTypeClass.Business;
+                this.assetTypeClass = AssetTypeClass.BusinessAsset;
             }
 
-            let className: string = AssetTypeClass[this.assetTypeClass];
-            let singularLabel: string = `${className} Asset`;
+            let className: string = this.assetTypeClass == AssetTypeClass.BusinessAsset ? 'Business Asset' : 'Technical Asset';
+            let singularLabel: string = `${className} Type`;
 
             this.tabTitle = `${singularLabel}s`;
             this.formTitle = `Edit ${singularLabel}`;
-
+            this.setHeaderAndSidebars();
             this.load();
         });
     }
+
+    setHeaderAndSidebars() {
+        this.areaName = this.assetTypeClass == AssetTypeClass.BusinessAsset ? "Business Assets" : "Technical Assets";
+        this.setCommonItems();
+
+        this.setObjectInfo('ArtifactType', -1);
+        this.setCommonRightSideBar(true);
+        if (this.auditSidebar) {
+            this.auditSidebar.hasDynamicUrl = true;
+            this.auditSidebar.dynamicUrlCallback = (() => {
+                return `/sidebar/audit/ArtifactType/${this.selectedRow.data.ID}`
+            });
+        }    }
 
     ngOnDestroy() {
         this.clearSidebar();

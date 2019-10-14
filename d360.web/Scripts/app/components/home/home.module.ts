@@ -11,7 +11,7 @@ import { SearchModule } from '../search/search.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module'
-import { ShortcutModule } from '../shared/shortcuts/shortcut.module';
+import { ShortcutDisplayModule } from '../shared/shortcutdisplay/shortcut-display.module';
 import { DashboardModule } from '../sidebar/dashboard/dashboard.module';
 
 import { HomeComponent} from './home.component';
@@ -24,8 +24,7 @@ import { ButtonModule } from 'primeng/button';
 import { SharedModule } from 'primeng/shared';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
-import { TooltipModule } from 'primeng/tooltip';
-import { GrowlModule } from 'primeng/growl';
+
 
 @NgModule({
     imports: [CommonModule,     
@@ -36,10 +35,8 @@ import { GrowlModule } from 'primeng/growl';
         HomeRoutingModule,
 
         //primeng  
-        InputTextModule,
-        GrowlModule,       
-        ButtonModule,
-        TooltipModule,                     
+        InputTextModule,              
+        ButtonModule,        
         SharedModule,
         TableModule,
 
@@ -50,7 +47,7 @@ import { GrowlModule } from 'primeng/growl';
         SharedAssignmentsModule,
         TilesModule,
         SharedGridPagingInfoModule, 
-        ShortcutModule,
+        ShortcutDisplayModule,
         DashboardModule,
 
     ],

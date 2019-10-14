@@ -440,7 +440,7 @@ namespace d360.model
                     throw ex;
                 }
             }
-            else return default(T);
+            else throw new Exception($"Invalid settings key '{key}'");
         }
         
         public Dictionary<string, string> GetCompanySettings()
@@ -458,6 +458,11 @@ where S.ID <> 4", new { c = CurrentCompanyID })
                 Caching.SetItem(SettingsCacheKey, settings, false, 10);
             }
             return settings;
+        }
+
+        public bool IsFusionEnabled()
+        {
+            return GetCompanySettingByKey<bool>("FusionEnabled");
         }
 
     }

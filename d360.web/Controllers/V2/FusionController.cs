@@ -13,6 +13,7 @@ using System.Web.Http;
 using Dapper;
 using d360.web.Models;
 using d360.model.DataAccessLayer;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -152,7 +153,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> DeleteBulkFusionAsync(string assetUid, bool cascade = false)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to remove assets of this type."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to remove assets of this type."));
 
             var prefix = "Assets.DeleteBulkAssetsAsync => ";
             var errorMessage = "";

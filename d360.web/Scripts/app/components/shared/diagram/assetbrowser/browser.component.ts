@@ -1,9 +1,9 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
 import {AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild} from '@angular/core';
-import {DiagramObjectType } from '../../../../models/lineage.model';
+import {DiagramObjectType, AssetBrowserLineageApiRequestModel, AssetBrowserTranslation, AssetBrowserDirection } from '../../../../models/lineage.model';
 import {PermissionsService} from '../../../../services/permissions.service';
-import {DiagramService} from '../../../../services/diagram.service';
+import {BrowserService} from '../../../../services/browser.service';
 import {DiagramBaseComponent} from '../diagram-base.component';
 import { AssetBrowserLayout } from './assetbrowserlayout.component';
 import { MenuItem } from 'primeng/api';
@@ -13,44 +13,40 @@ declare var window: any;
 @Component({
     selector: 'd3s-assetbrowser',
     templateUrl: './browser.component.html',
-    providers: [PermissionsService, DiagramService]
+    providers: [PermissionsService, BrowserService]
 })
 export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit {
-    @Input() objectId: number = 0;
-    @Input() object: string;
     @Input() readonly: boolean = true;
+    @Input() assetUid: string;
 
     @ViewChild('diagram') diagramRef;
 
     DiagramObjectType = DiagramObjectType;
 
-    private originalObject: string;
-    private originalObjectId: number;
+    private requestModel: AssetBrowserLineageApiRequestModel;
+    private originalAssetUid: string;
     private menuItems: MenuItem[]=[];
     
     //#region control properties
 
-    private isWindowVisible = true;
-
     constructor(
         private myElement: ElementRef,
         protected permissionsService: PermissionsService,
-        private diagramService: DiagramService
+        private browserService: BrowserService
     ) {
         super();
     }
 
     public ngOnInit() {
 
-        this.originalObject = this.object;
-        this.originalObjectId = this.objectId;
+        this.originalAssetUid = this.assetUid;
 
         //this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
         this.menuItems.push(
-            { icon: 'fa fa-search-minus' },
-            { icon: 'fa fa-search-plus' },
-            { icon: 'fa fa-refresh' }
+            { icon: 'fa fa-search-minus', title: 'Zoom out' },
+            { icon: 'fa fa-search-plus', title: 'Zoom in' },
+            { icon: 'fa fa-refresh', title: 'Refresh' }
         );
         this.initializeDiagram();
     
@@ -192,78 +188,37 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private populateDiagram() {
         this.isLoading = true;
-        let windowVisible = this.isWindowVisible;
 
-        this.isWindowVisible = false;
+        this.requestModel = new AssetBrowserLineageApiRequestModel();
+        this.requestModel.Direction = AssetBrowserDirection.Both;
+        this.requestModel.Hops = 3;
+        this.requestModel.StartFromAssets = [];
 
-        //this.diagramService.getLineageDiagram(
-        //    this.objectType,
-        //    this.objectID
-        //).subscribe(data => {
-        this.parseData(null);//data
+        //#region Testing with static data
+        //let translationModel: AssetBrowserTranslation = this.browserService.getStaticDataForTesting();
+        //this.parseData(translationModel);
+        //this.isLoading = false;
+        //#endregion
 
-        //this.reOrderLayout();
-        //this.diagram.zoomToFit();
+        this.browserService.getAssetLineage(this.assetUid, this.requestModel)
+            .subscribe(data => {
+                let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
+                this.parseData(translationModel);
+            });
+
         this.isLoading = false;
-        //this.isWindowVisible = windowVisible;
-        //});
     }
 
-    private parseData(data: any) {
+    private parseData(data: AssetBrowserTranslation) {
         this.diagram.startTransaction("load_all_data");
         let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
-        //dm.nodeDataArray = [];
-        //dm.linkDataArray = [];
-
-        let color: string = "#B9F1AF";
-        let transformColor: string = "#FAE7BC";
-        let sysColor: string = "#DAAADB";
-        let btColor: string = "#E0EAF7";
-
-        dm.nodeDataArray = [
-            { key: "btType1", isGroup: true, text: "Business Terms", template: "PortGroup", back: btColor, loc: "600 0", layer: -2, icon: "\uf02d", impacts: [] },
-            { key: "bt1", group: "btType1", text: "Member Name", back: this.shadeColor(btColor, 15), icon: "\uf02d", impacts: [] },
-
-            { key: "sys1", isGroup: true, text: "Enrollment System", template: "PortGroup", back: sysColor, loc: "300 200", layer: -1, icon: "\uf233", impacts: [] },
-            { key: "sysTerm1", group: "sys1", text: "Member Name", back: this.shadeColor(sysColor, 15), icon: "\uf02d", impacts: [] },
-
-            { key: "sys2", isGroup: true, text: "Claims Adjudication", template: "PortGroup", back: sysColor, loc: "900 200", layer: -1, icon: "\uf233", impacts: [] },
-            { key: "sysTerm2", group: "sys2", text: "Member Name", back: this.shadeColor(sysColor, 15), icon: "\uf02d", impacts: [] },
-
-            { key: "tran1", isGroup: true, text: "BosEtlServer", template: "PortGroup", back: transformColor, loc: "560 600", layer: 0, icon: "\uf085", impacts: ["."] },
-            { key: "job1", isGroup: true, group: "tran1", text: "ETL_MEMBER_TO_CLAIM", template: "Group", back: this.shadeColor(transformColor, 15), icon: "\uf542", impacts: ["."] },
-            { key: "jobStep1", group: "job1", text: "LOAD_MEMBER_NAME", back: this.shadeColor(transformColor, 30), icon: "\uf085", impacts: ["c1_1", "c1_2", "c2_1", "c2_2", "jobStep1"] },
-
-            { key: "h1", isGroup: true, text: "DWH", template: "PortGroup", back: color, loc: "300 400", layer: 0, icon: "\uf1c0", impacts: ["."] },
-            { key: "s1", isGroup: true, group: "h1", text: "fact", template: "Group", back: this.shadeColor(color, 15), icon: "\uf007", impacts: ["."] },
-            { key: "t1", isGroup: true, group: "s1", text: "MEMBERS", template: "Group", back: this.shadeColor(color, 30), icon: "\uf0ce", impacts: ["."] },
-            { key: "c1_1", group: "t1", text: "FIRST_NAME", back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_1", "c2_1", "jobStep1"] },
-            { key: "c1_2", group: "t1", text: "LAST_NAME", back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_2", "c2_2", "jobStep1"] },
-
-            { key: "h2", isGroup: true, text: "EGL", template: "PortGroup", back: color, loc: "900 400", layer: 0, icon: "\uf1c0", impacts: ["."] },
-            { key: "s2", isGroup: true, group: "h2", text: "dbo", template: "Group", back: this.shadeColor(color, 15), icon: "\uf007", impacts: ["."] },
-            { key: "t2", isGroup: true, group: "s2", text: "MEMBERS", template: "Group", back: this.shadeColor(color, 30), icon: "\uf0ce", impacts: ["."] },
-            { key: "c2_1", group: "t2", text: "FIRST_NAME", back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_1", "c2_1", "jobStep1"] },
-            { key: "c2_2", group: "t2", text: "LAST_NAME", back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_2", "c2_2", "jobStep1"] },
-
-            { key: "h1_moredata", template: "MoreData", back: this.shadeColor(color, 45), retrieveDataFor: "h1" },
-            { key: "h2_moredata", template: "MoreData", back: this.shadeColor(color, 45), retrieveDataFor: "h2" }
-        ];
-
-        dm.linkDataArray = [
-            { from: "sys1", fromPort: "T", to: "btType1", toPort: "B", text: "see also", back: sysColor, impacts: [] },
-            { from: "sys2", fromPort: "T", to: "btType1", toPort: "B", text: "see also", back: sysColor, impacts: [] },
-            { from: "h1", fromPort: "T", to: "sys1", toPort: "B", text: "maps to", back: color, impacts: [] },
-            { from: "h2", fromPort: "T", to: "sys2", toPort: "B", text: "maps to", back: color, impacts: [] },
-            { from: "h1", fromPort: "R", to: "tran1", toPort: "L", text: "transformed by", back: transformColor, impacts: ["c1_1", "c1_2", "c2_1", "c2_2", "jobStep1"] },
-            { from: "tran1", fromPort: "R", to: "h2", toPort: "L", text: "transforms into", back: transformColor, impacts: ["c1_1", "c1_2", "c2_1", "c2_2", "jobStep1"] },
-
-            { from: "h1", fromPort: "R", to: "h1_moredata", toPort: "L", text: "", back: color, impacts: [] },
-            { from: "h2", fromPort: "R", to: "h2_moredata", toPort: "L", text: "", back: color, impacts: [] },
-        ];
-
+        dm.nodeDataArray = data.nodes;
+        dm.linkDataArray = data.links;
         this.diagram.commitTransaction("load_all_data");
+
         this.reOrderLayout();
+        //this.diagram.autoScale = go.Diagram.UniformToFill;
+
     }
 
     private reOrderLayout() {
@@ -272,9 +227,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private refreshDiagram() {
-        this.originalObject = this.object;
-        this.originalObjectId = this.objectId;
-
+        this.assetUid = this.originalAssetUid;
         this.populateDiagram();
     }
 
@@ -298,7 +251,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
         }
 
-        this.diagramRef.nativeElement.style.height = (height - offset - 50) + 'px';
+        this.diagramRef.nativeElement.style.height = (height - offset - 200) + 'px';
     }
 
     private onMouseEnterNode(e: any, node: go.Node) {
@@ -649,7 +602,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             )  // end Horizontal Panel
         );
     }
-
 
     private createDefaultLink(): go.Link {
         return this.g(

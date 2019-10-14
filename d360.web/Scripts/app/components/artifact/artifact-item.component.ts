@@ -102,7 +102,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
                     let folderName: string = '#Business';
 
-                    if (artifact.Class == AssetTypeClass.Technical) {
+                    if (artifact.Class == AssetTypeClass.TechnicalAsset) {
                         folderName = '#Technical';
                     }
 

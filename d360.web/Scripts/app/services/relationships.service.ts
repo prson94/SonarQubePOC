@@ -203,5 +203,13 @@ export class RelationshipsService extends BaseObservableService {
                 catchError(err => this.handleError(err))
             );
     }
+
+    isRelationshipExistsForAssetType(id: number): Observable<boolean> {
+        return this.http.get(`api/v2/relationships/isRelationshipExistsForAssetType/${id}`)
+            .pipe(
+                map(response =><boolean> response),
+                catchError(err => this.handleError(err))
+            );
+    }
     
 }

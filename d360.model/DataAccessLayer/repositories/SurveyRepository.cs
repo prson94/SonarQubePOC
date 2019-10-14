@@ -93,13 +93,17 @@ namespace d360.model.DataAccessLayer
                         	U.uid as UserUid,
                         	S.CreatedOn,
                         	(select 
-                        			Q.Uid,
+                        			QT.Uid,
                         			Q.Comment, 
                         			(select QTO.Name, QTO.Value from QuestionTypeOption QTO 
                         				inner join QuestionOption QO ON Q.ID = QO.QuestionID
+										inner join QuestionType QT ON QTO.QuestionTypeID = QT.ID
                         				where QO.QuestionTypeOptionID = QTO.id 
                         				for json path) as Response		
                         		from Question Q
+									inner join QuestionOption QO on QO.QuestionID = Q.ID
+									inner join QuestionTypeOption QTO on QTO.ID = QO.QuestionTypeOptionID
+									inner join QuestionType QT on QT.ID = QTO.QuestionTypeID
                         	    where Q.SurveyID = S.Id for json path) as Questions
                         
                          from dbo.SurveyType ST

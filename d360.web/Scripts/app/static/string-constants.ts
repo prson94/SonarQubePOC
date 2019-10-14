@@ -22,4 +22,7 @@
     static ClaimDelete = "Delete";
     static ClaimCreate = "Create";
     static ClaimUpdate = "Update";
+
+    static AssetTypeClass_Business = "Business Asset";
+    static AssetTypeClass_Technical = "Technical Asset";
 }

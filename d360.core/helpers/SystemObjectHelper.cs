@@ -13,8 +13,8 @@ namespace d360.core.helpers
         {
             switch (assetTypeClass)
             {
-                case AssetTypeClass.Business:
-                case AssetTypeClass.Technical:
+                case AssetTypeClass.BusinessAsset:
+                case AssetTypeClass.TechnicalAsset:
                     return SystemObjects.ArtifactType;
                 case AssetTypeClass.Organization:
                     return SystemObjects.OrganizationType;

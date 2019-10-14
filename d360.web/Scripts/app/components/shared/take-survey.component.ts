@@ -1,6 +1,6 @@
 ﻿import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
-import { SurveysService  } from '../../services/surveys.service';
+import { SurveysService } from '../../services/surveys.service';
 import { BaseComponent } from '../shared/base.component';
 import { SurveyType, SurveyQuestionType, SurveyQuestionTypeDetails, SurveyQuestionOption, SurveyTypeDisplayStyle } from '../../models/survey.model';
 import { Router } from '@angular/router';
@@ -8,7 +8,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-take-survey',
-    providers: [SurveysService],    
+    providers: [SurveysService],
     template: `
                 <header>Survey - {{surveyType.Name}}</header>
                <form (ngSubmit)="onSubmit()" #surveyForm="ngForm">
@@ -35,7 +35,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
                             <button *ngIf="currentQuestionIndex+1 == questions.length" pButton type="submit" [disabled]="!surveyForm.form.valid" label="Save"></button> 
                             <button *ngIf="ShowCloseButton" pButton type="button" label="Close" (click)="surveyBack.emit()"></button>  
                             <em *ngIf="questions.length > 1">Question {{currentQuestionIndex+1}} of {{questions.length}}</em>
-                        </div>      
+                        </div>   
+                        <div *ngIf="errorMessage.length > 0" class="errorMessage ng-star-inserted">* {{errorMessage}}</div>
                     </div>              
                     </div>
                </form>               
@@ -44,7 +45,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 export class TakeSurveyComponent extends BaseComponent implements OnInit {
     @Input() surveyType: SurveyType;
-    
+
     @Output() surveyComplete = new EventEmitter();
     @Output() surveyCancel = new EventEmitter();
     @Output() surveyBack = new EventEmitter();
@@ -52,19 +53,20 @@ export class TakeSurveyComponent extends BaseComponent implements OnInit {
     @Input() objectType: string;
     @Input() objectID: number;
     @Input() ShowCloseButton: boolean = false;
-    
-    private questions: SurveyQuestionType[] = [];    
-    private currentQuestionIndex: number = 0;
 
-    SurveyTypeDisplayStyle= SurveyTypeDisplayStyle;
+    private questions: SurveyQuestionType[] = [];
+    private currentQuestionIndex: number = 0;
+    private errorMessage: string = '';
+
+    SurveyTypeDisplayStyle = SurveyTypeDisplayStyle;
 
     private questionDetails: SurveyQuestionTypeDetails[] = [];
     private currentQuestion: SurveyQuestionTypeDetails;
-    
+
 
     constructor(private surveysService: SurveysService) {
-        super();        
-    }    
+        super();
+    }
 
     ngOnInit() {
         this.load();
@@ -102,24 +104,38 @@ export class TakeSurveyComponent extends BaseComponent implements OnInit {
     }
 
     private onSubmit() {
+        if (!this.isValid()) return;
+
         this.surveysService.saveSurveyResponse(this.questionDetails, this.surveyType.ID, this.objectType, this.objectID).subscribe(res => {
             this.surveyComplete.emit(res);
         });
     }
 
+    private isValid(): boolean {
+        this.errorMessage = '';
+        var item = this.currentQuestion.Items.find(x => x.IsChecked == true);
+        if (!item) {
+            this.errorMessage = 'You must select at least one answer';
+        }
+
+        return this.errorMessage.length > 0 ? false : true;
+    }
+
     private nextQuestion(currentIndex: number) {
-        
+
+        if (!this.isValid()) return;
+
         if (currentIndex < 0 || currentIndex + 1 >= this.questions.length) {
             console.log("ERROR - CANNOT MOVE TO NEXT QUESTION INVALID ARRAY ARGUMENTS.");
 
             return;
         }
-                
+
         this.loadQuestionDetails(this.questions[++this.currentQuestionIndex]);
     }
 
     private previousQuestion(currentIndex: number) {
-        if (currentIndex- 1 < 0) {
+        if (currentIndex - 1 < 0) {
             console.log("ERROR - CANNOT MOVE TO PREVIOUS QUESTION INVALID ARRAY ARGUMENTS.");
 
             return;

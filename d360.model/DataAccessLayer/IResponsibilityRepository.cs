@@ -15,5 +15,7 @@ namespace d360.model.DataAccessLayer
         Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocations(Guid responsibilityTypeUid);
         Task<IEnumerable<ResponsibilityTypeViewModel>> GetResponsibilityTypesByAssetUid(Guid assetTypeUid);
         Task<IEnumerable<ResponsibilityTypeViewModel>> GetResponsibilityTypes();
+        List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(List<ResponsibilityTypeUpsertModel> responsibilityTypeUpserts, ApiExecution execution);
+        ResponsibilityTypeDeleteResult DeleteResponsibilityTypes(ResponsibilityTypeDeleteModel responsibilityTypeDelete);
     }
 }

@@ -1506,6 +1506,7 @@ a.breadcrumb {
     border-radius: 2px;
     width: 200px;
     padding: 5px;
+    border: 1px solid #ccc;
 
     input {
         display: inline-block;
@@ -1528,7 +1529,7 @@ a.breadcrumb {
 
     i.fa {
         display: inline-block;
-        color: white;
+        color: #202020;
         font-size: 16px;
         padding-left: 10px;
 
@@ -1554,8 +1555,9 @@ a.breadcrumb {
             padding-left: 6px;
         }
     }
-    .ui-autocomplete{
-        top:1px;
+
+    .ui-autocomplete {
+        top: 1px;
     }
 
     .ui-autocomplete-loader {
@@ -1567,6 +1569,45 @@ a.breadcrumb {
 
         &:not(.ui-state-highlight):nth-child(even) {
             background-color: #f7f7f7;
+        }
+    }
+
+    .ui-autocomplete-loader {
+        display: none;
+    }
+
+    .search-button {
+        background-color: #006fc0;
+        height: 24px;
+        width: 24px;
+        border-radius: 2px;
+        color: white;
+
+        .fa {
+            color: white;
+            line-height: 24px;
+            font-size: 14px;
+            display: block;
+            text-align: center;
+            padding: 0px;
+        }
+
+        &.big {
+            height: 40px;
+            width: 42px;
+            margin-right: 2px;
+            border-radius: 4px;
+
+            .fa {
+                line-height: 40px;
+                font-size: 24px;
+            }
+        }
+    }
+
+    .search-typeahead-suggestion {
+        .fa {
+            color: white !important;
         }
     }
 }
@@ -1592,6 +1633,10 @@ a.breadcrumb {
 
 .header-search {
     position: relative;
+
+    .header-search-input {
+        border: none !important;
+    }
 }
 
 .header-table {
@@ -1851,21 +1896,28 @@ chart {
     padding-bottom: 20px !important;
 }
 
+ul.shortcutlist {
+    text-align: center;
+    width: 80%;
+    margin-right: auto;
+    margin-left: auto;
+}
+
 li.shortcut {
     display: inline-block;
     cursor: pointer;
-    width: 150px;
+    width: 216px;
     vertical-align: top;
-    margin: 5px;
+    margin: 12px;
     box-sizing: border-box;
     border: none;
     box-shadow: rgba(0, 0, 0, 0.5) 0 1px 2px;
     color: #FFF;
     background: @igx-dark-blue;
     padding-top: 10px;
-    min-height: 140px;
-    max-height: 140px;
-    border-radius: 5px;
+    min-height: 205px;
+    max-height: 205px;
+    border-radius: 4px;
 
     &:hover {
         background: @igx-blue-light !important;
@@ -1874,30 +1926,42 @@ li.shortcut {
     }
 }
 
-
-
 li.shortcut div.shortcut-name {
-    font-size: 16px;
-    font-weight: 600;
-    text-align: center;
-    padding-top: 5px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
-    width: 140px;
-    padding: 10px 10px 0 10px;
-    margin: auto;
+    font-size: 18px;
+    font-weight: bold;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 1.22;
+    letter-spacing: normal;
+    text-align: center;
+    padding: 20px 5px;
+    color: #ffffff;
 }
 
-li.shortcut div.shortcut-desc {
-    font-size: .75em;
-    text-align: center;
-    white-space: nowrap;
+li.shortcut .shortcut-desc {
     text-overflow: ellipsis;
     overflow: hidden;
-    width: 140px;
+    font-size: 14px;
+    font-weight: normal;
+    font-style: normal;
+    font-stretch: normal;
+    line-height: 1.14em;
+    max-height: 3.42em; /* people on IE need to deal without ...*/
+    letter-spacing: normal;
+    text-align: center;
+    padding-left: 25px;
+    padding-right: 25px;
+    color: #ffffff;
     margin: auto;
+    display: block;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
 }
+
 
 li.shortcut div.icon {
     width: 72px;
@@ -1969,6 +2033,7 @@ div.home-image-title-text {
     min-width: 400px;
     max-width: 800px;
     overflow-y: auto;
+
     thead th {
         color: black !important;
     }
@@ -2570,7 +2635,8 @@ modal-overlay .modal-dialog .content {
         flex-direction: row;
         align-items: center;
         padding: 15px;
-        .checkbox{
+
+        .checkbox {
             white-space: nowrap;
         }
     }
@@ -3436,9 +3502,8 @@ button.tab-scroller {
 .popup-menu {
 
     &.popup {
-        display:none;
+        display: none;
     }
-
 
     display: inline-block;
     position: relative;
@@ -4200,8 +4265,8 @@ button.tab-scroller {
         }
     }
 }
-    ///
-    //paging bar
+///
+//paging bar
 .paging-bar {
     display: flex;
     flex-shrink: 0;
@@ -4260,9 +4325,10 @@ button.tab-scroller {
                 top: -220px;
                 display: table;
                 width: 170px;
-                color:black;
-                span{
-                    color:black;
+                color: black;
+
+                span {
+                    color: black;
                 }
             }
         }
@@ -4297,4 +4363,157 @@ a.mid-blue {
 .ui-treetable-caption,
 .ui-treetable-summary {
     padding: .25em 0 .25em 0 !important;
+}
+
+.hero-search-input {
+    d3s-header-typeahead-search {
+        width: 100%;
+    }
+
+    display: flex;
+    background: rgba(37, 44, 65, 0.6);
+    padding: 50px;
+    border-radius: 4px;
+    white-space: nowrap;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+
+    .field {
+        height: 56px;
+        border-radius: 0px 4px 4px 0px;
+
+        input {
+            &:focus {
+                outline: none;
+                border: none;
+                box-shadow: none;
+            }
+        }
+    }
+
+    .ui-multiselect {
+        background: #f1f2f3;
+        border-left: none;
+        width: 200px;
+        height: 56px;
+        border-radius: 4px 0px 0px 4px;
+        border: solid 1px #b9c0c5;
+        background-color: #f1f2f3;
+
+        .ui-multiselect-label {
+            padding: 16px;
+            margin-right: 8px;
+        }
+
+        .ui-multiselect-trigger {
+            border-left: none;
+            padding: 20px;
+        }
+
+        .ui-state-highlight {
+            background: none;
+        }
+
+        .ui-chkbox.ui-chkbox-icon {
+            display: inline-block;
+        }
+        //header in all
+        .ui-multiselect-header {
+
+            .ui-chkbox-box::after {
+                content: 'Search All Catergories';
+                padding-left: 20px;
+            }
+
+            .ui-chkbox-box.ui-state-active::after {
+                padding-left: 6px;
+            }
+
+            .ui-chkbox .ui-chkbox-icon {
+                display: inline-block;
+            }
+        }
+
+        .ui-chkbox-box.ui-state-active {
+            border: 1px solid @igx-blue;
+            background: #fff;
+            color: @igx-blue;
+        }
+    }
+
+    .icon-holder {
+        color: white;
+        background-color: #006fc0;
+        padding: 2px 9px;
+        border-radius: 4px;
+        font-size: 24px;
+        height: 40px;
+        width: 40px;
+        margin-right: 8px;
+        cursor: pointer;
+    }
+}
+
+.title-setting {
+    letter-spacing: 3px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 80%;
+}
+
+.gov-search {
+    width: 100%;
+
+    .header-search-input {
+        width: 100%;
+
+        .head-search-button.big {
+            font-size: 24px !important;
+            height: 40px;
+            width: 40px;
+            margin-right: 2px;
+            padding-top: 7px !important;
+            padding-left: 8px !important;
+        }
+    }
+
+    input {
+        width: 100%;
+    }
+
+    .global-search-typeahead {
+        width: 100%;
+    }
+
+    .ui-autocomplete-panel {
+        left: -5px !important;
+        top: 42px !important;
+        width: 100% !important;
+    }
+}
+
+.search-page-full {
+    .header-search-input {
+        height: 30px;
+    }
+
+    .gov-search {
+        .search-button {
+            font-size: 14px !important;
+            background-color: transparent !important;
+
+            .fa {
+                color: rgba(0,0,0,0.87) !important;
+            }
+        }
+    }
+
+    .ui-autocomplete-panel {
+        top: 30px !important;
+    }
+
+    i.fa {
+        padding: 0px !important;
+    }
 }

@@ -12,7 +12,7 @@ declare var CompanySettings;
 @Component({
     selector: 'd3s-home-search',
     template: `               
-                <d3s-search-input (keydown.enter)="navigateSearch()" (search)="navigateSearch()" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [(searchText)]="searchText"></d3s-search-input>                
+                <d3s-hero-search-input [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes"></d3s-hero-search-input>                
                 `,
     providers: [SearchService, TypeaheadSearchService],
 })
