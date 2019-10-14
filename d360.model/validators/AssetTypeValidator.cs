@@ -21,10 +21,10 @@ namespace d360.core.validators
         string ColorRegex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 
         ICompanyContext CompanyContext;
-        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion)
+        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion, bool isFusionEnabled)
         {
             this.CompanyContext = companyContext;
-            if (lineageVersion != 3)
+            if (lineageVersion != 3 && !isFusionEnabled)
             {
                 PredicateSupportingClasses = PredicateSupportingClasses.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();
                 ParentAssetTypeClass = ParentAssetTypeClass.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();

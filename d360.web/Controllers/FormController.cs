@@ -1886,7 +1886,7 @@ namespace d360.web.Controllers
             {
                 siteNavs = siteNavs.Where(x => x.Name != "#Fusion");
             }
-            if(model.LineageVersion != 3)
+            if(model.LineageVersion != 3 || model.FusionEnabled)
             {
                 siteNavs = siteNavs.Where(x => x.Name != "#Technical");
             }
