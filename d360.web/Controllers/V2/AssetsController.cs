@@ -46,14 +46,17 @@ namespace d360.web.Controllers.V2
         IStorageProvider Storage;
         IAssetRepository AssetRepository;
         ITagRepository tagRepository;
+        IRelationshipRepository relationshipRepository;
 
-        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository)
+        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository,
+            IRelationshipRepository relationshipRepository)
             : base(community, company)
         {
             QueueSource = queueSource;
             Storage = storage;
             this.AssetRepository = repository;
             this.tagRepository = tagRepository;
+            this.relationshipRepository = relationshipRepository;
         }
 
         #endregion
@@ -396,6 +399,10 @@ namespace d360.web.Controllers.V2
 
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", AssetTypeErrors.TransformationLimitExceeded));
+
+                var IsRelationshipExistsForAssetType = await this.relationshipRepository.IsRelationshipExistsForAssetType(assetType.ID);
+                if (IsRelationshipExistsForAssetType)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Relationship Exists For AssetType", AssetTypeErrors.RelationshipExistsForAssetType));
 
                 var updateStatus = AssetRepository.UpdateAssetType(model, assetType, parentAssetType, predicate);
                 if (updateStatus.Item1 != HttpStatusCode.OK)
