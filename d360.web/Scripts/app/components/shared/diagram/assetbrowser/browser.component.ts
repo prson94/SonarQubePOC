@@ -1,7 +1,7 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
 import {AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild} from '@angular/core';
-import {DiagramObjectType, AssetBrowserLineageApiRequestModel, AssetBrowserTranslation, AssetBrowserDirection } from '../../../../models/lineage.model';
+import {DiagramObjectType, AssetBrowserLineageApiRequestModel, AssetBrowserTranslation, AssetBrowserDirection, AssetBrowserTranslationNode } from '../../../../models/lineage.model';
 import {PermissionsService} from '../../../../services/permissions.service';
 import {BrowserService} from '../../../../services/browser.service';
 import {DiagramBaseComponent} from '../diagram-base.component';
@@ -169,6 +169,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.groupTemplateMap.add("Group", this.createGroupNode());
 
         this.diagram.nodeTemplateMap.add("MoreData", this.createMoreDataNode());
+        this.diagram.nodeTemplateMap.add("HiddenData", this.createHiddenDataNode());
 
         this.diagram.nodeTemplate = this.createListItemNode();
 
@@ -195,16 +196,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.requestModel.StartFromAssets = [];
 
         //#region Testing with static data
-        //let translationModel: AssetBrowserTranslation = this.browserService.getStaticDataForTesting();
-        //this.parseData(translationModel);
-        //this.isLoading = false;
+        let translationModel: AssetBrowserTranslation = this.browserService.getStaticDataForTesting();
+        this.parseData(translationModel);
+        this.isLoading = false;
         //#endregion
 
-        this.browserService.getAssetLineage(this.assetUid, this.requestModel)
-            .subscribe(data => {
-                let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
-                this.parseData(translationModel);
-            });
+        //this.browserService.getAssetLineage(this.assetUid, this.requestModel)
+        //    .subscribe(data => {
+        //        let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
+        //        this.parseData(translationModel);
+        //    });
 
         this.isLoading = false;
     }
@@ -215,6 +216,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         dm.nodeDataArray = data.nodes;
         dm.linkDataArray = data.links;
         this.diagram.commitTransaction("load_all_data");
+
+        console.log('parseData', data);;
 
         this.reOrderLayout();
         //this.diagram.autoScale = go.Diagram.UniformToFill;
@@ -284,6 +287,204 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#endregion
 
+    //#region context menu actions
+
+    private hide(e, obj, direction: AssetBrowserDirection = null) {
+        console.log('diagm', this.diagram.model.nodeDataArray, this.diagramModelAsGraph().linkDataArray);
+        if (obj != null && obj.part != null && obj.part.data != null) {
+            let node: AssetBrowserTranslationNode = obj.part.data;
+
+            if (node.group != null) {
+                let group: any = this.diagram.findNodeForKey(node.group);
+                group.isSubGraphExpanded = false;
+            } else if (node.isGroup) { //top level item
+
+                this.diagram.startTransaction('hide');
+                let group: any = this.diagram.findNodeForKey(node.key);
+
+                if (direction == null) {
+
+                    let hideNode = new AssetBrowserTranslationNode();
+
+                    hideNode.subgraph = new AssetBrowserTranslation();
+                    hideNode.template = "HiddenData";
+                    hideNode.back = node.back;
+                    hideNode.subgraph.nodes = [];
+                    hideNode.subgraph.links = [];
+                    hideNode.subgraph.nodes.push(node); //add this node to the subgraph so we can unhide it later
+
+                    let children = group.findSubGraphParts();
+
+                    children.each(c => {
+                        hideNode.subgraph.nodes.push(c.data);
+                    });
+
+                    this.diagram.model.addNodeData(hideNode);
+
+                    let upstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == group.key);
+                    let downstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == group.key);
+
+                    upstreamLinks.forEach(l => {
+                        hideNode.subgraph.links.push(l);
+                        this.diagramModelAsGraph().removeLinkData(l);
+                        this.diagramModelAsGraph().addLinkData({ from: l.from, to: hideNode.key });
+                    });
+
+                    downstreamLinks.forEach(l => {
+                        hideNode.subgraph.links.push(l);
+                        this.diagramModelAsGraph().removeLinkData(l);
+                        this.diagramModelAsGraph().addLinkData({ from: hideNode.key, to: l.to });
+                    });
+
+                    this.diagram.remove(group);
+                } else {
+                    let subgraph = this.findSubGraph(group.key, direction);
+                    //console.log('subgraph', subgraph);
+
+                    let hideNode = new AssetBrowserTranslationNode();
+
+                    hideNode.subgraph = subgraph;
+                    hideNode.template = "HiddenData";
+                    hideNode.back = node.back;
+
+                    this.diagramModelAsGraph().removeLinkDataCollection(subgraph.links);
+                    this.diagram.model.removeNodeDataCollection(subgraph.nodes);
+
+                    this.diagram.model.addNodeData(hideNode);
+                    this.diagramModelAsGraph().addLinkData({ from: group.key, to: hideNode.key });
+
+                }
+
+                this.diagram.commitTransaction('hide');
+            }
+        }
+    }
+
+    private findSubGraph(startKey: string, direction: AssetBrowserDirection): AssetBrowserTranslation {
+        let subgraph = new AssetBrowserTranslation();
+
+        subgraph.nodes = [];
+        subgraph.links = [];
+
+        let node = this.diagram.findNodeForKey(startKey);
+
+        if (node != null) {
+            let currentNodes = [];
+            let nextLinks = [];
+            let excludeStart = true;
+            let iteration = 1;
+            currentNodes.push(node.data);
+
+            if (direction == AssetBrowserDirection.Forward || direction == AssetBrowserDirection.Both) {
+
+                while (currentNodes.length > 0) {
+                    nextLinks = [];
+                    console.log('iteration: ', iteration, ', currentNodes: ', currentNodes.length);
+                    currentNodes.forEach(n => {
+                        if (subgraph.nodes.find(s => s.key == n.key)) {
+                            //already in the subgraph, skip
+                        } else {
+                            let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == n.key);
+                            nextLinks = nextLinks.concat(l);
+                            if (!(excludeStart && n.key == startKey)) {
+                                subgraph.nodes.push(n);
+
+                                if (n.isGroup) {
+                                    let parts = (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts();
+                                    parts.each(p => {
+                                        subgraph.nodes.push(p.data);
+                                    });
+                                }
+                            }
+                        }
+                    });
+
+                    currentNodes = [];
+                    console.log('iteration: ', iteration, ', nextLinks: ', nextLinks.length);
+                    nextLinks.forEach(l => {
+                        subgraph.links.push(l);
+                        let nodes = this.diagram.model.nodeDataArray.filter(n => n.key == l.to);
+                        nodes.forEach(n => {
+                            if (subgraph.nodes.find(s => s.key == n.key) || (excludeStart && n.key == startKey)) {
+
+                            } else {
+                                currentNodes.push(n);
+                            }
+                        });
+                    });
+                    iteration++;
+                }
+
+            }
+            if (direction == AssetBrowserDirection.Backward || direction == AssetBrowserDirection.Both) {
+
+                while (currentNodes.length > 0) {
+                    nextLinks = [];
+                    console.log('iteration: ', iteration, ', currentNodes: ', currentNodes.length);
+                    currentNodes.forEach(n => {
+                        if (subgraph.nodes.find(s => s.key == n.key)) {
+                            //already in the subgraph, skip
+                        } else {
+                            let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == n.key);
+                            nextLinks = nextLinks.concat(l);
+                            if (!(excludeStart && n.key == startKey)) {
+                                subgraph.nodes.push(n);
+
+                                if (n.isGroup) {
+                                    let parts = (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts();
+                                    parts.each(p => {
+                                        subgraph.nodes.push(p.data);
+                                    });
+                                }
+                            }
+                        }
+                    });
+
+                    currentNodes = [];
+                    console.log('iteration: ', iteration, ', nextLinks: ', nextLinks.length);
+                    nextLinks.forEach(l => {
+                        subgraph.links.push(l);
+                        let nodes = this.diagram.model.nodeDataArray.filter(n => n.key == l.from);
+                        nodes.forEach(n => {
+                            if (subgraph.nodes.find(s => s.key == n.key) || (excludeStart && n.key == startKey)) {
+
+                            } else {
+                                currentNodes.push(n);
+                            }
+                        });
+                    });
+                    iteration++;
+                }
+
+            }
+        }
+        console.log(subgraph);
+
+        return subgraph;
+    }
+
+
+
+    private reveal(e, obj) {
+        if (obj != null && obj.part != null && obj.part.data != null) {
+            let node: AssetBrowserTranslationNode = obj.part.data;
+            if (node.template == "HiddenData") {
+                let upstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == node.key);
+                let downstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == node.key);
+
+                this.diagram.model.addNodeDataCollection(node.subgraph.nodes);
+                this.diagramModelAsGraph().addLinkDataCollection(node.subgraph.links);
+
+                this.diagramModelAsGraph().removeLinkDataCollection(upstreamLinks);
+                this.diagramModelAsGraph().removeLinkDataCollection(downstreamLinks);
+
+                this.diagram.model.removeNodeData(node);
+            }
+        }
+    }
+
+    //#endregion
+
     //#region templates
 
     private createContextMenu(): go.Adornment {
@@ -298,17 +499,17 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
-                { click: function (e, obj) { alert("Not yet implemented") } }
+                { click: (e, obj) => this.hide(e, obj) }
             ),
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide Upstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
-                { click: function (e, obj) { alert("Not yet implemented") } }
+                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Forward) }
             ),
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
-                { click: function (e, obj) { alert("Not yet implemented") } }
+                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Backward) }
             ),
             this.g(
                 "ContextMenuButton",
@@ -602,6 +803,37 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             )  // end Horizontal Panel
         );
     }
+
+    private createHiddenDataNode(): go.Node {
+        return this.g(go.Node, "Auto",
+            {
+                click: (e, obj) => this.reveal(e, obj)
+            },
+            this.g(
+                go.Panel,
+                "Horizontal",
+                { stretch: go.GraphObject.Horizontal, padding: 10, type: go.Panel.Spot },
+                this.g(
+                    "Shape",
+                    { alignment: go.Spot.Center, width: 25, height: 25 },
+                    new go.Binding("fill", "back"),
+                    new go.Binding("stroke", "back", function (v) { return this.shadeColor(v, -15); }),
+                ),
+                this.g(
+                    go.TextBlock,
+                    {
+                        row: 0,
+                        alignment: go.Spot.Center,
+                        editable: false,
+                        font: "12px FontAwesome",
+                        stroke: "#404040",
+                        text: "\uf067"
+                    }
+                )
+            )  // end Horizontal Panel
+        );
+    }
+
 
     private createDefaultLink(): go.Link {
         return this.g(

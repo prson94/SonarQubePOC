@@ -450,6 +450,7 @@ export class AssetBrowserTranslationNode {
     back: string;
     icon: string;
     impacts: string[];
+    subgraph: any;
 }
 
 export class AssetBrowserTranslation {
