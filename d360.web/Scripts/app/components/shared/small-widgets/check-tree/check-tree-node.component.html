@@ -1,0 +1,26 @@
+﻿<ng-template [ngIf]="node">
+    <li role="treeitem" [ngClass]="[node.styleClass||'', isLeaf() ? 'ui-treenode-leaf': '']">
+        <div class="check-tree-node-row" (click)="onNodeClick($event)" (touchend)="onNodeTouchEnd()"
+             tabIndex="0"
+             (keydown)="onKeyDown($event)" [attr.aria-posinset]="this.index + 1" [attr.aria-expanded]="this.node.expanded" [attr.aria-selected]="isSelected()">
+            <span class="tree-toggler" [ngClass]="'lv'+level" (click)="toggle($event)">
+                <i *ngIf="!isLeaf()" class="tree-toggler fa" [ngClass]="{'fa-angle-right':!node.expanded,'fa-angle-down':node.expanded}"></i>
+            </span><div class="ui-chkbox">
+                <div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default" [ngClass]="{'ui-state-disabled': node.selectable === false}">
+                    <span class="ui-chkbox-icon ui-clickable pi"
+                          [ngClass]="{'pi-check':isSelected(),'pi-minus':node.partialSelected}"></span>
+                </div>
+            </div>
+                <span *ngIf="!tree.getTemplateForNode(node)" class="check-tree-label">{{node.label}}</span>
+                <span *ngIf="tree.getTemplateForNode(node)">
+                    <ng-container *ngTemplateOutlet="tree.getTemplateForNode(node); context: {$implicit: node}"></ng-container>
+                </span>
+                <span *ngIf="node.count"  class="d3s-badge">{{node.count}}</span>
+        </div>
+        <ul style="display: none;" *ngIf="node.children && node.expanded" [style.display]="node.expanded ? 'block' : 'none'" role="group">
+            <d3s-check-treeNode *ngFor="let childNode of node.children;let firstChild=first;let lastChild=last; let index=index; trackBy: tree.nodeTrackBy"
+                                [node]="childNode" [parentNode]="node"
+                                [firstChild]="firstChild" [lastChild]="lastChild" [index]="index" [level]="level+1"></d3s-check-treeNode>
+        </ul>
+    </li>
+</ng-template>
