@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using Dapper;
 using System;
 using System.Collections.Generic;
@@ -474,6 +475,19 @@ where 1=1
             result.Success = true;
 
             return result;
+        }
+
+        public Task<IEnumerable<ClaimsViewModel>> GetClaims()
+        {
+            var permissions =  Permission.ReadResponsibilities.GetList();
+            var claims = permissions.Select(x => new ClaimsViewModel()
+            {
+                ID = (int)x.ID,
+                Name = x.Name,
+                Category = x.Category,
+                Description = x.Description
+            }).ToList();
+            return Task.FromResult<IEnumerable<ClaimsViewModel>>(claims);
         }
 
     }
