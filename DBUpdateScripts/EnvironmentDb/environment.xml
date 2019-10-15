@@ -325,4 +325,5 @@
   <include file="scripts/GOV-8321.xml"/> <!-- Updated dbo.GetWorkflowConditionLabels function -->
   <include file="scripts/GOV-7716.xml"/>  <!--Drop Taxonomy Type table -->
   <include file="scripts/GOV-7906.xml"/> <!-- graph.GetLineageByAsset -->
+  <include file="scripts/GOV-8346.xml"/>  <!-- Change to GetFieldTypeLookupList procedure to change Artifact to Business Asset -->
 </databaseChangeLog>

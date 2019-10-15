@@ -1,0 +1,102 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="SDooley" id="GOV-8346">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+ALTER   procedure [utility].[GetFieldTypeLookupList]
+	@type varchar(50), 
+	@id int 
+as
+begin
+	SELECT	'L' as type,
+			'Business Asset|' + cast(ObjectID as varchar) as value,
+			'Business Asset : ' + Name as title
+	FROM	AssetType where [Object] = 'ArtifactType'
+	UNION
+	SELECT	'L' as type,
+			'ReferenceItemType|0'  as value,
+			'Reference List' as title
+	UNION
+	SELECT	'L' as type,
+			'ReferenceItem|' + cast(ObjectID as varchar) as value,
+			'Reference List Item: ' + Name as title
+	FROM	AssetType where [Object] = 'ReferenceItemType'
+	UNION
+	SELECT	'L' as type,
+			'Resource|1' as value,
+			'Resource : User' as title
+	UNION
+	SELECT	'L' as type,
+			'Taxonomy|' + cast(ObjectID as varchar) as value,
+			'Model : ' + Name as title
+	FROM	AssetType where [Object] = 'TaxonomyType'
+	UNION
+	SELECT	'L' as type,
+			'TaxonomyType|0'  as value,
+			'Model Type' as title
+	UNION
+	SELECT	'L' as type,
+			'Lookup|' + cast(ID as varchar) as value,
+			'Lookup : ' + Name as title
+	FROM	LookupType
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+/****** Object:  StoredProcedure [utility].[GetFieldTypeLookupList]    Script Date: 15/10/2019 11:22:34 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+ALTER   procedure [utility].[GetFieldTypeLookupList]
+	@type varchar(50), 
+	@id int 
+as
+begin
+	SELECT	'L' as type,
+			'Artifact|' + cast(ObjectID as varchar) as value,
+			'Artifact : ' + Name as title
+	FROM	AssetType where [Object] = 'ArtifactType'
+	UNION
+	SELECT	'L' as type,
+			'ReferenceItemType|0'  as value,
+			'Reference List' as title
+	UNION
+	SELECT	'L' as type,
+			'ReferenceItem|' + cast(ObjectID as varchar) as value,
+			'Reference List Item: ' + Name as title
+	FROM	AssetType where [Object] = 'ReferenceItemType'
+	UNION
+	SELECT	'L' as type,
+			'Resource|1' as value,
+			'Resource : User' as title
+	UNION
+	SELECT	'L' as type,
+			'Taxonomy|' + cast(ObjectID as varchar) as value,
+			'Model : ' + Name as title
+	FROM	AssetType where [Object] = 'TaxonomyType'
+	UNION
+	SELECT	'L' as type,
+			'TaxonomyType|0'  as value,
+			'Model Type' as title
+	UNION
+	SELECT	'L' as type,
+			'Lookup|' + cast(ID as varchar) as value,
+			'Lookup : ' + Name as title
+	FROM	LookupType
+end
+
+]]>
+	</rollback>
+  </changeSet>
+
+  </databaseChangeLog>
