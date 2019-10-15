@@ -72,4 +72,18 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit {
             }
         }
     }
+    setEventTypeLabel() {
+        let label = (document.getElementById('searchMultiSelect')
+            .getElementsByClassName('ui-multiselect-label-container')[0]
+            .getElementsByClassName('ui-multiselect-label')[0]);
+        if (this.searchTypes.length == 0) {
+            label.textContent = 'Search All Categories';
+        } else if (this.searchTypes.length == 1) {
+            label.textContent = 'Search ' + this.searchTypes[0];
+        } else if (this.searchTypes.length == this.searchObjectTypes.length) {
+            label.textContent = 'Search All Categories';
+        } else {
+            label.textContent = 'Search ' + this.searchTypes.length + ' Categories';
+        }
+    }
 };
