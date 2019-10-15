@@ -581,14 +581,39 @@ from	IntersectType I
             var result = await companyContext.QueryAsync<string>(sql, new { id = assetTypeId });
             return  string.IsNullOrEmpty(result.FirstOrDefault()) ? false : true;
         }
-        public List<RelationshipTypeResult> PostRelationshipTypes(List<RelationshipTypeInsert> relationTypes,  ApiExecution execution)
+        public List<RelationshipTypeResult> PostRelationshipTypes(List<RelationshipTypeInsert> relationshipTypes,  ApiExecution execution)
         {
             companyContext.Add(execution);
 
             List<RelationshipTypeResult> results = null;
             try
             {
-                results = companyContext.ImportRelationshipTypes(execution, relationTypes,true);
+                results = companyContext.ImportRelationshipTypes(execution, relationshipTypes);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                companyContext.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                companyContext.Update(execution);
+            }
+
+            return results;
+        }
+        
+        public List<RelationshipTypeResult> PutRelationshipTypes(List<RelationshipTypeUpdate> relationshipTypes, ApiExecution execution)
+        {
+            companyContext.Add(execution);
+
+            List<RelationshipTypeResult> results = null;
+            try
+            {
+                results = companyContext.ImportRelationshipTypes(execution, relationshipTypes);
 
                 // Close execution record.
                 execution.Processed = results.Count;

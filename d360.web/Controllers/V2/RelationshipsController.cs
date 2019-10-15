@@ -411,16 +411,20 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+
+        /// <summary>
+        /// Create  relationship types based on Subject Type, Object Type and Predicate
+        /// </summary>
+        /// <param name="relationshiptypes">List of relationship types</param>
+        /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
             Route("types"),
             SwaggerRequestExample(typeof(RelationshipTypeInsert), typeof(RelationshipTypeInsertExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            //SwaggerResponse(HttpStatusCode.OK, "Newly asset type Uid and success / failure message.", typeof(AssetTypeSuccess)),
-            //SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Conflict, "You already have an asset type with the specified name", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the relationship type", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostRelationshipTypesAsync(List<RelationshipTypeInsert> relationshiptypes)
         {
@@ -447,6 +451,52 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
              catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Update  relationship types based on Predicate 
+        /// </summary>
+        /// <param name="relationshiptypes"></param>
+        /// <returns></returns>
+        [
+           HttpPut,
+           Route("types"),
+           SwaggerRequestExample(typeof(RelationshipTypeUpdate), typeof(RelationshipTypeUpdateExample)),
+           SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the relationship type", typeof(ErrorResponse))
+       ]
+        public async Task<IHttpActionResult> PutRelationshipTypesAsync(List<RelationshipTypeUpdate> relationshiptypes)
+        {
+            var prefix = "Relationships.PutRelationshipTypesAsync => ";
+            var errorMessage = "";
+            try
+            {
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+
+                if (relationshiptypes == null)
+                    relationshiptypes = readRequestJsonContent<List<RelationshipTypeUpdate>>(Request).Result;
+
+                if (relationshiptypes == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationship types in this request."));
+
+                var execution = getApiExecution(relationshiptypes.Count);
+
+                var results = RelationshipRepository.PutRelationshipTypes(relationshiptypes, execution);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);

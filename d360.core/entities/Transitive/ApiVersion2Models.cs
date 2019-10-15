@@ -316,11 +316,7 @@ namespace d360.core.entities
         public bool Success { get; set; }
     }
 
-    //[DataContract(Name = "relationshiptypes")]
-    //public class RelationshipTypeInserts : List<RelationshipTypeInsert>
-    //{
 
-    //}
     public class RelationshipTypeInsert
     {
         [DataMember]
@@ -333,6 +329,23 @@ namespace d360.core.entities
         public Cardinality SubjectCardinality { get; set; }
         [DataMember]
         public Guid ObjectUid { get; set; }
+        [DataMember]
+        public Cardinality ObjectCardinality { get; set; }
+    }
+
+    public class RelationshipTypeUpdate
+    {
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public Guid PredicateUid { get; set; }
+        [DataMember]
+        public Cardinality SubjectCardinality { get; set; }
+
         [DataMember]
         public Cardinality ObjectCardinality { get; set; }
     }
