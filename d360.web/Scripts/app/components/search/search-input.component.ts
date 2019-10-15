@@ -167,7 +167,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
                 this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
                 this.types = this.types.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
             }
-            if (+CompanySettings.LineageVersion != 3) {
+            if (CompanySettings.FusionEnabled == 'true') {
                 this.searchObjectTypes = this.searchObjectTypes.filter(x => x.label != StringConstants.AssetTypeClass_Technical);
                 this.types = this.types.filter(x => x.title != StringConstants.AssetTypeClass_Technical);
             }
