@@ -371,7 +371,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region templates
 
     private createContextMenu(): go.Adornment {
-        let dgm = this;
         return this.g(
             "ContextMenu",
             { areaBackground: "#ffffff", background: "#ffffff" },
@@ -379,13 +378,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "bold 12px sans-serif" }),
                 {
-                    click: function (e, obj) {
-                        dgm.isWindowLoading = true;
-                        dgm.browserService.getAssetBrowserDiagramAsset(obj.part.data.assetUid).subscribe(response => {
-                            dgm.selectedDiagramAsset = response;
-                            dgm.isWindowVisible = true;
-                            dgm.isWindowLoading = false;
-                            dgm.showWindowTabs = true;
+                    click: (e, obj) => {
+                        this.isWindowLoading = true;
+                        this.browserService.getAssetBrowserDiagramAsset(obj.part.data.assetUid).subscribe(response => {
+                            this.selectedDiagramAsset = response;
+                            this.isWindowVisible = true;
+                            this.isWindowLoading = false;
+                            this.showWindowTabs = true;
                         });
                     }
                 }
