@@ -19,4 +19,5 @@ export class Policy {
     DisplayValue: string;    
     Description: string;
     Level: number;
+    HasWorkflow: boolean;
 }

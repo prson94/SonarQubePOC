@@ -25,6 +25,7 @@ export class ModelHierarchy {
     ParentID: number;
     Level: number;
     HasDashboards: boolean;
+    HasWorkflow: boolean;
 }
 
 export class HierarchyDiagramModel {
