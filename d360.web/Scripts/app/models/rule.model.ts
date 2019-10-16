@@ -5,6 +5,7 @@
     HasDashboards: boolean;
     AllowAttributes: boolean; 
     AssetTypeID: string;
+    HasWorkflow: boolean;
 }
 
 export class Rule {    

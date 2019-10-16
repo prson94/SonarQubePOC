@@ -106,11 +106,23 @@ namespace igx.jobs.indexer
 
                     source.ClearIndex(c.CompanyID);
 
-                    LogReindexStart("Artifacts", c.CompanyID);
+                    LogReindexStart("BusinessAssets", c.CompanyID);
 
                     try
                     {
-                        models = LoadArtifacts(company, c.CompanyID, source);
+                        models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.BusinessAsset);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                    }
+
+                    LogReindexStart("TechnicalAssets", c.CompanyID);
+
+                    try
+                    {
+                        models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.TechnicalAsset);
                         source.AddToIndex(models);
                     }
                     catch (Exception ex)
@@ -559,9 +571,10 @@ from
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source)
-        {            
-            var sql = @"
+        private static IEnumerable<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source, AssetTypeClass ArtifactClass)
+        {
+            int assettypeclass = (int)ArtifactClass;
+            var sql = $@"
 select
 	cast(A.ID as varchar) as ItemUniqueID,
 	A.ObjectID as ID,
@@ -575,11 +588,11 @@ from
 	inner join [dbo].assettype att on a.assettypeid = att.id
 	inner join [dbo].assetdisplayvalue adv on adv.assetid = a.id
 where
-	att.[Object] = 'ArtifactType' and a.[state] = 1";
+	att.[Object] = 'ArtifactType' and a.[state] = 1 and att.[Class] = {assettypeclass.ToString()}";
 
-            var sType = SystemObjects.Artifact.ToString();
+            var sType = ArtifactClass.ToString();
 
-            return getData(context, sql, companyID, source, sType, true, (dynamic o) =>
+            return getData(context, sql, companyID, source, SystemObjects.Artifact.ToString(), true, (dynamic o) =>
             {
                 return new AddToIndexModel
                 {

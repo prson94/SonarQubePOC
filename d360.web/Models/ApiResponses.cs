@@ -89,7 +89,9 @@ namespace d360.web.Models
     {
         public Guid intersectUid { get; set; }
         public Guid subjectUid { get; set; }
+        public string subjectKey { get; set; }
         public Guid objectUid { get; set; }
+        public string objectKey { get; set; }
         public string predicate { get; set; }
         public Guid predicateUid { get; set; }
         public PredicateType predicateType { get; set; }
@@ -102,6 +104,7 @@ namespace d360.web.Models
         long ID { get; set; }
         Guid assetUid { get; set; }
         string displayValue { get; set; }
+        string key { get; set; }
         List<AssetBrowserLineageApiItemModel> items { get; set; }
     }
 
@@ -112,6 +115,8 @@ namespace d360.web.Models
         public long ID { get; set; }
         [DataMember]
         public Guid assetUid { get; set; }
+        [DataMember]
+        public string key { get; set; }
         [DataMember]
         public string displayValue { get; set; }
         [DataMember]

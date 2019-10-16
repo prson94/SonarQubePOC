@@ -315,6 +315,10 @@ END
 		]]>
     </sql>
     <rollback>
+	    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
       <![CDATA[
 ALTER   PROCEDURE [dbo].[GetSiteNavigation]
 (
@@ -547,6 +551,7 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 	order by sortorder
 END
 		]]>
+		</sql>
     </rollback>
   </changeSet>
 
@@ -699,6 +704,10 @@ end
 		]]>
     </sql>
     <rollback>
+	    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
       <![CDATA[
 alter proc [dbo].[GetPageInformation]
 
@@ -841,6 +850,7 @@ begin
 	for json path, WITHOUT_ARRAY_WRAPPER
 end
 		]]>
+		</sql>
     </rollback>
   </changeSet>
 
@@ -890,6 +900,10 @@ as
 		]]>
     </sql>
     <rollback>
+	    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
       <![CDATA[
 ALTER view [dbo].[SiteNavAvailable] as
 	select
@@ -927,6 +941,7 @@ ALTER view [dbo].[SiteNavAvailable] as
 		WHERE IT.PredicateID in (SELECT ID from Predicate WHERE Type = 3)
 		)
 		]]>
+		</sql>
     </rollback>
   </changeSet>
 
