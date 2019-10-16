@@ -433,10 +433,12 @@ from	IntersectType I
                     ID,
                     [Subject], 
                     SubjectID, 
+                    SubjectUid,
                     SubjectName, 
                     SubjectTypeName, 
                     [Object], 
                     ObjectID, 
+                    ObjectUid,
                     ObjectName, 
                     ObjectTypeName, 
                     PredicateName 
