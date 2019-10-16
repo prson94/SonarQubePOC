@@ -196,16 +196,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.requestModel.StartFromAssets = [];
 
         //#region Testing with static data
-        let translationModel: AssetBrowserTranslation = this.browserService.getStaticDataForTesting();
-        this.parseData(translationModel);
-        this.isLoading = false;
+        //let translationModel: AssetBrowserTranslation = this.browserService.getStaticDataForTesting();
+        //this.parseData(translationModel);
+        //this.isLoading = false;
         //#endregion
 
-        //this.browserService.getAssetLineage(this.assetUid, this.requestModel)
-        //    .subscribe(data => {
-        //        let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
-        //        this.parseData(translationModel);
-        //    });
+        this.browserService.getAssetLineage(this.assetUid, this.requestModel)
+            .subscribe(data => {
+                let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
+                this.parseData(translationModel);
+            });        this.browserService.getAssetLineage(this.assetUid, this.requestModel)
+            .subscribe(data => {
+                let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
+                this.parseData(translationModel);
+            });
 
         this.isLoading = false;
     }
@@ -217,7 +221,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         dm.linkDataArray = data.links;
         this.diagram.commitTransaction("load_all_data");
 
-        console.log('parseData', data);;
 
         this.reOrderLayout();
         //this.diagram.autoScale = go.Diagram.UniformToFill;
@@ -233,6 +236,104 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.assetUid = this.originalAssetUid;
         this.populateDiagram();
     }
+    private findSubGraph(startKey: string, direction: AssetBrowserDirection): AssetBrowserTranslation {
+        let subgraph = new AssetBrowserTranslation();
+
+        subgraph.nodes = [];
+        subgraph.links = [];
+
+        let node = this.diagram.findNodeForKey(startKey);
+
+        if (node != null) {
+            let currentNodes = [];
+            let nextLinks = [];
+            let excludeStart = true;
+            let iteration = 1;
+            currentNodes.push(node.data);
+
+            if (direction == AssetBrowserDirection.Forward || direction == AssetBrowserDirection.Both) {
+
+                while (currentNodes.length > 0) {
+                    nextLinks = [];
+                    currentNodes.forEach(n => {
+                        if (subgraph.nodes.find(s => s.key == n.key)) {
+                            //already in the subgraph, skip
+                        } else {
+                            let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == n.key);
+                            nextLinks = nextLinks.concat(l);
+                            if (!(excludeStart && n.key == startKey)) {
+                                subgraph.nodes.push(n);
+
+                                if (n.isGroup) {
+                                    let parts = (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts();
+                                    parts.each(p => {
+                                        subgraph.nodes.push(p.data);
+                                    });
+                                }
+                            }
+                        }
+                    });
+
+                    currentNodes = [];
+                    nextLinks.forEach(l => {
+                        subgraph.links.push(l);
+                        let nodes = this.diagram.model.nodeDataArray.filter(n => n.key == l.to);
+                        nodes.forEach(n => {
+                            if (subgraph.nodes.find(s => s.key == n.key) || (excludeStart && n.key == startKey)) {
+
+                            } else {
+                                currentNodes.push(n);
+                            }
+                        });
+                    });
+                    iteration++;
+                }
+
+            }
+            if (direction == AssetBrowserDirection.Backward || direction == AssetBrowserDirection.Both) {
+
+                while (currentNodes.length > 0) {
+                    nextLinks = [];
+                    currentNodes.forEach(n => {
+                        if (subgraph.nodes.find(s => s.key == n.key)) {
+                            //already in the subgraph, skip
+                        } else {
+                            let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == n.key);
+                            nextLinks = nextLinks.concat(l);
+                            if (!(excludeStart && n.key == startKey)) {
+                                subgraph.nodes.push(n);
+
+                                if (n.isGroup) {
+                                    let parts = (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts();
+                                    parts.each(p => {
+                                        subgraph.nodes.push(p.data);
+                                    });
+                                }
+                            }
+                        }
+                    });
+
+                    currentNodes = [];
+                    nextLinks.forEach(l => {
+                        subgraph.links.push(l);
+                        let nodes = this.diagram.model.nodeDataArray.filter(n => n.key == l.from);
+                        nodes.forEach(n => {
+                            if (subgraph.nodes.find(s => s.key == n.key) || (excludeStart && n.key == startKey)) {
+
+                            } else {
+                                currentNodes.push(n);
+                            }
+                        });
+                    });
+                    iteration++;
+                }
+
+            }
+        }
+
+        return subgraph;
+    }
+
 
     //#endregion
 
@@ -290,7 +391,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region context menu actions
 
     private hide(e, obj, direction: AssetBrowserDirection = null) {
-        console.log('diagm', this.diagram.model.nodeDataArray, this.diagramModelAsGraph().linkDataArray);
         if (obj != null && obj.part != null && obj.part.data != null) {
             let node: AssetBrowserTranslationNode = obj.part.data;
 
@@ -302,7 +402,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.startTransaction('hide');
                 let group: any = this.diagram.findNodeForKey(node.key);
 
-                if (direction == null) {
+                if (direction == null) { //hide the current node
 
                     let hideNode = new AssetBrowserTranslationNode();
 
@@ -337,9 +437,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     });
 
                     this.diagram.remove(group);
-                } else {
+                } else { //hide upstream or downstream
                     let subgraph = this.findSubGraph(group.key, direction);
-                    //console.log('subgraph', subgraph);
+
+                    if (subgraph == null || subgraph.nodes.length < 1)
+                        return; //nothing to hide
 
                     let hideNode = new AssetBrowserTranslationNode();
 
@@ -351,7 +453,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.diagram.model.removeNodeDataCollection(subgraph.nodes);
 
                     this.diagram.model.addNodeData(hideNode);
-                    this.diagramModelAsGraph().addLinkData({ from: group.key, to: hideNode.key });
+                    if (direction == AssetBrowserDirection.Forward)
+                        this.diagramModelAsGraph().addLinkData({ from: group.key, to: hideNode.key });
+                    else
+                        this.diagramModelAsGraph().addLinkData({ from: hideNode.key, to: group.key });
 
                 }
 
@@ -360,112 +465,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    private findSubGraph(startKey: string, direction: AssetBrowserDirection): AssetBrowserTranslation {
-        let subgraph = new AssetBrowserTranslation();
-
-        subgraph.nodes = [];
-        subgraph.links = [];
-
-        let node = this.diagram.findNodeForKey(startKey);
-
-        if (node != null) {
-            let currentNodes = [];
-            let nextLinks = [];
-            let excludeStart = true;
-            let iteration = 1;
-            currentNodes.push(node.data);
-
-            if (direction == AssetBrowserDirection.Forward || direction == AssetBrowserDirection.Both) {
-
-                while (currentNodes.length > 0) {
-                    nextLinks = [];
-                    console.log('iteration: ', iteration, ', currentNodes: ', currentNodes.length);
-                    currentNodes.forEach(n => {
-                        if (subgraph.nodes.find(s => s.key == n.key)) {
-                            //already in the subgraph, skip
-                        } else {
-                            let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == n.key);
-                            nextLinks = nextLinks.concat(l);
-                            if (!(excludeStart && n.key == startKey)) {
-                                subgraph.nodes.push(n);
-
-                                if (n.isGroup) {
-                                    let parts = (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts();
-                                    parts.each(p => {
-                                        subgraph.nodes.push(p.data);
-                                    });
-                                }
-                            }
-                        }
-                    });
-
-                    currentNodes = [];
-                    console.log('iteration: ', iteration, ', nextLinks: ', nextLinks.length);
-                    nextLinks.forEach(l => {
-                        subgraph.links.push(l);
-                        let nodes = this.diagram.model.nodeDataArray.filter(n => n.key == l.to);
-                        nodes.forEach(n => {
-                            if (subgraph.nodes.find(s => s.key == n.key) || (excludeStart && n.key == startKey)) {
-
-                            } else {
-                                currentNodes.push(n);
-                            }
-                        });
-                    });
-                    iteration++;
-                }
-
-            }
-            if (direction == AssetBrowserDirection.Backward || direction == AssetBrowserDirection.Both) {
-
-                while (currentNodes.length > 0) {
-                    nextLinks = [];
-                    console.log('iteration: ', iteration, ', currentNodes: ', currentNodes.length);
-                    currentNodes.forEach(n => {
-                        if (subgraph.nodes.find(s => s.key == n.key)) {
-                            //already in the subgraph, skip
-                        } else {
-                            let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == n.key);
-                            nextLinks = nextLinks.concat(l);
-                            if (!(excludeStart && n.key == startKey)) {
-                                subgraph.nodes.push(n);
-
-                                if (n.isGroup) {
-                                    let parts = (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts();
-                                    parts.each(p => {
-                                        subgraph.nodes.push(p.data);
-                                    });
-                                }
-                            }
-                        }
-                    });
-
-                    currentNodes = [];
-                    console.log('iteration: ', iteration, ', nextLinks: ', nextLinks.length);
-                    nextLinks.forEach(l => {
-                        subgraph.links.push(l);
-                        let nodes = this.diagram.model.nodeDataArray.filter(n => n.key == l.from);
-                        nodes.forEach(n => {
-                            if (subgraph.nodes.find(s => s.key == n.key) || (excludeStart && n.key == startKey)) {
-
-                            } else {
-                                currentNodes.push(n);
-                            }
-                        });
-                    });
-                    iteration++;
-                }
-
-            }
-        }
-        console.log(subgraph);
-
-        return subgraph;
-    }
-
-
-
-    private reveal(e, obj) {
+    private unhide(e, obj) {
         if (obj != null && obj.part != null && obj.part.data != null) {
             let node: AssetBrowserTranslationNode = obj.part.data;
             if (node.template == "HiddenData") {
@@ -807,7 +807,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private createHiddenDataNode(): go.Node {
         return this.g(go.Node, "Auto",
             {
-                click: (e, obj) => this.reveal(e, obj)
+                click: (e, obj) => this.unhide(e, obj)
             },
             this.g(
                 go.Panel,
