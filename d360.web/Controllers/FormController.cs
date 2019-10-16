@@ -1076,7 +1076,7 @@ namespace d360.web.Controllers
                     model.FormName = string.Format(FormInfo.Add_Asset_Type_Title, appendTitle);
                     model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
 
-                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.BusinessAsset || @class == AssetTypeClass.TechnicalAsset || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType)
+                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.BusinessAsset || @class == AssetTypeClass.TechnicalAsset || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference)
                     {
                         var intersectType = Company.Filter<IntersectType>(i =>
                             i.Object == assetType.Object &&
@@ -1085,14 +1085,24 @@ namespace d360.web.Controllers
                         ).FirstOrDefault();
 
 
-                        if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType) //If model or policy you must always have a predicate to load.
+                        if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference) //If model or policy you must always have a predicate to load.
                             loadPredicates = true;
 
                         if (intersectType != null)
                         {
                             loadPredicates = true;
 
-                            model.AssetType.ParentUid = intersectType.SubjectUid;
+                            if (intersectType.SubjectUid.HasValue)
+                            {
+                                model.AssetType.ParentUid = intersectType.SubjectUid;
+                            }
+                            else
+                            {
+                                var parentAssetType = Company.AssetTypes.FirstOrDefault(x => x.Object == intersectType.Subject && x.ObjectID == intersectType.SubjectID);
+                                model.AssetType.ParentUid = parentAssetType.uid;
+                            }
+
+
                             model.AssetType.Hierarchy.PredicateUid = intersectType.Predicate.UID;
                         }
                     }
@@ -1127,7 +1137,7 @@ namespace d360.web.Controllers
 
 
 
-                    if (@class == AssetTypeClass.ReferenceItemType)
+                    if (@class == AssetTypeClass.Reference)
                     {
                         model.AssetType.DisplayFormat = "{Code}";
                         model.Tokens.Clear(); // remove the name token for reference item type it isnt created by default.
@@ -1154,7 +1164,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        var parents = Company.Query<PrimeSelectItem>("select CAST(uid AS char(36)) as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
+                        var parents = Company.Query<PrimeSelectItem>("select LOWER(CAST(uid AS char(36))) as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
                         model.Parents = parents;
                     }
                     model.Parents?.Insert(0, new PrimeSelectItem() { label = "", value = "" });
