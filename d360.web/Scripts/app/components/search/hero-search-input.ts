@@ -35,7 +35,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit {
                 this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
             }
             if (CompanySettings.FusionEnabled == 'true') {
-                this.searchObjectTypes = this.searchObjectTypes.filter(x => x.label != StringConstants.AssetTypeClass_Technical);
+                this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'TechnicalAsset');
             }
         }
     }
