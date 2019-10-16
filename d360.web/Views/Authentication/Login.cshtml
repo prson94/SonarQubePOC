@@ -13,16 +13,16 @@
     }
 }
 @section TopJs {
-<script type="text/javascript">
-            $(document).ready(function () {
-                $("#UserName").focus();
-                $('input').keypress(function (e) {
-                    if (e.which == 13) {
-                        $('#loginButton').submit();
-                    }
-                });
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("#UserName").focus();
+            $('input').keypress(function (e) {
+                if (e.which == 13) {
+                    $('#loginButton').submit();
+                }
             });
-</script>
+        });
+    </script>
 }
 @section TopCss {
 
@@ -35,6 +35,7 @@
 
         @using (Html.BeginForm())
         {
+            @Html.AntiForgeryToken()
             <input placeholder="Username" type="text" id="UserName" name="UserName" required pattern=".{10,}" title="Username must be at least 10 characters long." style="width:100%" />
             @Html.ValidationMessageFor(m => m.UserName)
             <div>&nbsp;</div>

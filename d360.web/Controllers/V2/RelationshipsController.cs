@@ -10,6 +10,7 @@ using d360.web.Models;
 using d360.web.Models.Attributes;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using Resources;
 using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
@@ -116,7 +117,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
                 if (predicates == null)
                     predicates = readRequestJsonContent<PredicateDeletes>(Request, true).Result;
@@ -150,6 +151,9 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Inserts a predicates of a given predicate list.
         /// </summary>
+        /// <remarks>
+        /// For updating existing predicate, add predicate Uid to a predicate list parameter
+        /// </remarks>
         /// <param name="predicates">The list of predicates for insertion.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
@@ -157,22 +161,22 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             Route("predicates"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<PredicateInsertResult>)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<PredicateUpsertResult>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add predicates.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> InsertPredicates(PredicateInserts predicates)
+        public async Task<IHttpActionResult> UpsertPredicates(PredicateUpserts predicates)
         {
             var prefix = "Relationships.InsertPredicate => ";
             var errorMessage = "";
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
                 if (predicates == null)
-                    predicates = readRequestJsonContent<PredicateInserts>(Request, true).Result;
+                    predicates = readRequestJsonContent<PredicateUpserts>(Request, true).Result;
 
                 if (predicates == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
@@ -186,7 +190,7 @@ namespace d360.web.Controllers.V2
                 var execution = getApiExecution(predicates.Count);
 
 
-                List<PredicateInsertResult> results = RelationshipRepository.InsertPredicates(predicates, execution);
+                List<PredicateUpsertResult> results = RelationshipRepository.UpsertPredicates(predicates, execution);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 
             }
@@ -463,6 +467,38 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Verify if the asset type has existing relationships or not
+        /// </summary>
+        /// <param name="assetTypeId"></param>
+        /// <returns>true if relationship exists otherwise false</returns>
+        [
+            HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
+            MapToApiVersion("2.0"),
+            Route("isRelationshipExistsForAssetType/{assetTypeId}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            ]
+        public async Task<HttpResponseMessage> IsRelationshipExistsForAssetTypeAsync(int assetTypeId)
+        {
+            var prefix = "Relationships.IsRelationshipExistsForAssetTypeAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var result = await this.RelationshipRepository.IsRelationshipExistsForAssetType(assetTypeId);
+                return Request.CreateResponse(HttpStatusCode.OK, result);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
         /// <summary>
         /// GET a list of relationship types using an ID and a Type.
         /// </summary>

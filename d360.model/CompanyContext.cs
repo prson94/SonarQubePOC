@@ -525,48 +525,46 @@ from	IntersectType I
         public List<AllocationPossibility> GetAllocationOptions()
         {
             var list = Database.Connection.Query<AllocationPossibility>(@"
-select	Object as ObjectType, 
-		ObjectID as ObjectTypeID, 
-		case Object
-			when 'ArtifactType' then 'Artifacts :: '
-			when 'TaxonomyType' then 'Models :: '
-			when 'PolicyType' then 'Policies :: '
-			when 'RuleType' then 'Rules :: '
-			when 'FusionType' then 'Fusion Types :: '
-			when 'ReferenceItemType' then 'Reference Item Type :: '
-		end + Name as Name
-from	AssetType
-where	Class in (1,2,3,6,7,9)
-union
-select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType").ToList();
+select	T.Object as ObjectType, 
+		T.ObjectID as ObjectTypeID, 
+        T.[Class],
+        P.[Path] as Name
+from	AssetType T
+        cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
+where	T.[Class] in (1,2,3,4,6,7,8,9)").ToList();
 
-            list = list.OrderBy(i => i.Name).ToList();
+            list = list.OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
             return list;
         }
 
         public List<AllocationPossibility> GetAvailableAllocationOptions(int attributeTypeID)
         {
-            var list = Database.Connection.Query<AllocationPossibility>(@"
-select A.* from (
-select	Object as ObjectType, 
-		ObjectID as ObjectTypeID, 
-		case Object
-			when 'ArtifactType' then 'Artifacts :: '
-			when 'TaxonomyType' then 'Models :: '
-			when 'PolicyType' then 'Policies :: '
-			when 'RuleType' then 'Rules :: '
-			when 'FusionType' then 'Fusion Types :: '
-			when 'ReferenceItemType' then 'Reference Item Type :: '
-		end + Name as Name
-from	AssetType
-where	Class in (1,2,3,6,7,9)
-union
-select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
-) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
-where R.ObjectID is null", new { id = attributeTypeID }).ToList();
+            string ignoreFusionItems = string.Empty;
+            if (!Community.IsFusionEnabled())
+            {
+                ignoreFusionItems = $" and A.ObjectType not in ('{SystemObjects.FusionQueryAttributeType.ToString()}', '{SystemObjects.FusionType.ToString()}','{SystemObjects.FusionAttributeType.ToString()}')";
+            }
+            var list = Database.Connection.Query<AllocationPossibility>($@"
+            select A.* from (
+            select	Object as ObjectType, 
+		            ObjectID as ObjectTypeID, 
+		            case Object
+			            when 'ArtifactType' then 'Artifacts :: '
+			            when 'TaxonomyType' then 'Models :: '
+			            when 'PolicyType' then 'Policies :: '
+			            when 'RuleType' then 'Rules :: '
+			            when 'FusionType' then 'Fusion Types :: '
+			            when 'ReferenceItemType' then 'Reference Item Type :: '
+		            end + Name as Name
+            from	AssetType
+            where	Class in (1,2,3,6,7,9)
+            union
+            select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
+            ) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
+            where R.ObjectID is null {ignoreFusionItems}", new { id = attributeTypeID }).ToList();
 
-            list = list.OrderBy(i => i.Name).ToList();
+            list = list.OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
             return list;
         }
@@ -1600,6 +1598,19 @@ where	R.SourceObject = 'FusionAttribute'
                 }
             }
 
+            List<string> excludedClasses = new List<string>()
+            {
+                SystemObjects.AttributeType.ToString(),
+                SystemObjects.FusionType.ToString(),
+                SystemObjects.OrganizationType.ToString()
+            };
+            if (!Community.IsFusionEnabled())
+            {
+                excludedClasses.Add(SystemObjects.FusionAttributeType.ToString());
+                excludedClasses.Add(SystemObjects.FusionQueryAttributeType.ToString());
+            }
+
+            string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
 
             var sql = $@"
     SELECT		I.ID,
@@ -1607,23 +1618,24 @@ where	R.SourceObject = 'FusionAttribute'
 				I.Type
 	FROM		(
                 select	T.ObjectID as ID,
-		                case T.Object
-			                when 'ArtifactType' then 'Glossary :: '
-			                when 'FusionAttributeType' then 'Fusion Attribute :: ' + FT.Name + ' / '
-			                when 'FusionQueryAttributeType' then 'Fusion Query :: '
-			                when 'GroupType' then 'Security :: '
-			                when 'PolicyType' then 'Policy :: '
-			                when 'ReferenceItemType' then 'Reference :: '
-			                when 'ResourceType' then 'Security :: '
-			                when 'RuleType' then 'Rule :: '
-			                when 'TaxonomyType' then 'Model :: '
+		                case 
+			                when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: '
+                            when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: '
+			                when T.Object = 'FusionAttributeType' then 'Fusion Attribute :: ' + FT.Name + ' / '
+			                when T.Object = 'FusionQueryAttributeType' then 'Fusion Query :: '
+			                when T.Object = 'GroupType' then 'Security :: '
+			                when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} :: '
+			                when T.Object = 'ReferenceItemType' then 'Reference :: '
+			                when T.Object = 'ResourceType' then 'Security :: '
+			                when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} :: '
+			                when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} :: '
 		                end + coalesce(P.[Path], T.Name) as Name,
 		                T.Object as Type
                 from	AssetType T
 		                cross apply dbo.GetAssetTypeTextPathById(T.ID, '/') P
                         left join FusionAttributeType FAT on T.Object = 'FusionAttributeType' and FAT.ID = T.ObjectID 
                         left join FusionType FT on FT.ID = FAT.FusionTypeID 
-                where	T.Object not in ('AttributeType', 'FusionType', 'OrganizationType'){classLimitSql}
+                where	T.Object not in ({excludeClassInStatement}){classLimitSql}
 			 	{noClassLimitSql}
                 ) I";
 
@@ -1677,7 +1689,7 @@ where	R.SourceObject = 'FusionAttribute'
                 }
 
                 removeSpecialPredicateTypes = (
-                    subjectAssetType.Class != AssetTypeClass.Glossary &&
+                    subjectAssetType.Class != AssetTypeClass.BusinessAsset &&
                     subjectAssetType.Class != AssetTypeClass.Model &&
                     subjectAssetType.Class != AssetTypeClass.Policy &&
                     subjectAssetType.Class != AssetTypeClass.Rule
@@ -1745,11 +1757,11 @@ where	I.ID is null";
 
                 if (predicateModel.Type == PredicateType.BusinessToTechnical)
                 {
-                    if (subjectAssetType.Class != AssetTypeClass.Glossary && subjectAssetType.Class != AssetTypeClass.Model && subjectAssetType.Class != AssetTypeClass.Policy && subjectAssetType.Class != AssetTypeClass.Rule)
+                    if (subjectAssetType.Class != AssetTypeClass.BusinessAsset && subjectAssetType.Class != AssetTypeClass.Model && subjectAssetType.Class != AssetTypeClass.Policy && subjectAssetType.Class != AssetTypeClass.Rule)
                     {
-                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : Glossary, Model Policy, or Rule.");
+                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : Business, Model, Policy, or Rule.");
                     }
-                    if (objectAssetType.Class != AssetTypeClass.FusionAttribute)
+                    if (objectAssetType.Class != AssetTypeClass.TechnicalAsset)
                     {
                         throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your object must be a Technical Asset class.");
                     }
@@ -3277,6 +3289,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.IntersectType:
                     objectId = IntersectTypes.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
+                case SystemObjects.Predicate:
+                    objectId = Predicates.FirstOrDefault(x => x.UID == objectUid).ID;
+                    break;
                 default:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString()).ObjectID;
                     if (objectId <= 0)
@@ -3284,6 +3299,18 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     break;
             }
             return objectId;
+        }
+
+        public Guid GetAssetUid(int objectId, SystemObjects assetType)
+        {
+            try
+            {
+                return Assets.FirstOrDefault(x => x.Object == assetType.ToString() && x.ObjectID == objectId).uid;
+            }
+            catch
+            {
+                throw new Exception($"Object not part of assets table!");
+            }
         }
 
         public dynamic GetAssetStatusAndScore(Guid uid)

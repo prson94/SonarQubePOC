@@ -26,7 +26,7 @@ import { BaseComponent } from '../../../shared/base.component';
         <d3s-tile-actions hideTooltip="true" [hasAdd]="!readonly" (addClick)="addClick.emit()"></d3s-tile-actions>
 <div *ngIf="!isAllAnyVisible()">&nbsp;</div>
 </header>
-    <p-table #dt [value]="filteredConditions" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="5" [rowsPerPageOptions]="defaultPagingOptions">
+    <p-table #dt [value]="filteredConditions" selectionMode="single" [metaKeySelection]="true" [pageLinks]="3" [paginator]="true" [rows]="10" [rowsPerPageOptions]="defaultPagingOptions">
         <ng-template pTemplate="header">
             <tr>
                 <th>Field Name</th>
@@ -70,7 +70,7 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
     @Output() connectorChange = new EventEmitter();
 
     private filteredConditions: any[] = [];
-    
+
     ngOnInit() {
         this.satisfyAll = this.conditions.every(c => c["@Connector"] == "AND");
     }

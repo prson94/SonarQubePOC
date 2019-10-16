@@ -20,6 +20,7 @@ import { SiteUrlHelpers } from "../../static/site-url-helpers";
 import { Permission } from '../../models/responsibility-type.model';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { AssetTypeClass } from '../../models/asset.model';
 
 declare var CompanySettings;
 
@@ -65,7 +66,10 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.currentAreaNameSubscription =
                 this.headerBreadcrumbService
                     .getAreaName('ArtifactType', this.artifactTypeId)
-                    .subscribe(result => { this.currentAreaName = result; if (this.artifact) this.buildBreadcrumb(); });
+                    .subscribe(result => {
+                        this.currentAreaName = result;
+                        if (this.artifact) this.buildBreadcrumb();
+                    });
 
             this
                 .loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
@@ -98,7 +102,22 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             .subscribe(
                 artifact => {
                     this.artifact = artifact;
-                    this.buildBreadcrumb();
+
+                    let folderName: string = '#Business';
+
+                    if (artifact.Class == AssetTypeClass.TechnicalAsset) {
+                        folderName = '#Technical';
+                    }
+
+                    this.headerBreadcrumbService.getFolderTitle(folderName).then(res => {
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+
+                        this.folderTitle = res;
+                        this.area = res;
+
+                        this.buildBreadcrumb();
+                    });
+
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
                     this
                         .setObjectInfo(
@@ -195,9 +214,17 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         this.headerBreadcrumbService.getFolderIcon(currentFolderName).then(res => {
             this.rightSidebarService.setCurrentArea(this.artifact.DisplayValue, res, 'Definition');
         });
+        let areaName: string = this.currentAreaName ? this.currentAreaName : this.folderTitle;
+        let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_ROOT}`;
+        if (areaName == "Technical Assets") {
+            areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
+        }
+        else {
+            areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
+        }
         let areaBreadcrumb = new Breadcrumb(
-            this.currentAreaName ? this.currentAreaName : this.folderTitle,
-            this.areaLink,
+            areaName,
+            areaLink,
             false
         );
         this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);

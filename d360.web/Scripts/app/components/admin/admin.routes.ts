@@ -3,7 +3,6 @@ import { Routes, RouterModule } from '@angular/router';
 import { AdminUserGuard } from '../../guards/admin-user.guard';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AdminComponent } from './admin.component';
-import { AdminClassificationsComponent } from './admin-classifications.component'
 
 const routes: Routes = [
     {
@@ -25,10 +24,10 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES, loadChildren: './resources/admin-resources.module#AdminResourcesModule?chunkName=adminResourcesChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_GROUPS, loadChildren: './groups/admin-groups.module#AdminGroupsModule?chunkName=adminGroupsChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_FUSION, loadChildren: './fusion/admin-fusion.module#AdminFusionModule?chunkName=adminFusionChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, loadChildren: './policies/admin-policies.module#AdminPoliciesModule?chunkName=adminPoliciesChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_MODELS, loadChildren: './taxonomies/admin-taxonomies.module#AdminTaxonomiesModule?chunkName=adminTaxonomiesChunk' },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, loadChildren: './hierarchies/admin-hierarchies.module#AdminHierarchiesModule?chunkName=adminHierarchiesChunk' },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_MODELS, loadChildren: './hierarchies/admin-hierarchies.module#AdminHierarchiesModule?chunkName=adminHierarchiesChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES, loadChildren: './attributes/admin-attributes.module#AdminAttributesModule?chunkName=adminAttributesChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_ARTIFACTS, loadChildren: './artifacts/admin-artifacts.module#AdminArtifactsModule?chunkName=adminArtifactsChunk' },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_ASSET, loadChildren: './artifacts/admin-artifacts.module#AdminArtifactsModule?chunkName=adminArtifactsChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES, loadChildren: './issuetypes/admin-issue-types.module#AdminIssueTypesModule?chunkName=adminIssueTypesChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES, loadChildren: './predicates/admin-predicates.module#AdminPredicatesModule?chunkName=adminPredicatesChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS, loadChildren: './organizations/admin-organizations.module#AdminOrganizationsModule?chunkName=adminOrganizationsChunk' },
@@ -37,9 +36,6 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES, loadChildren: './exporttemplates/admin-export-templates.module#AdminExportTemplatesModule?chunkName=adminExportTemplatesChunk' },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_TAGS, loadChildren: './tags/admin-tags.module#AdminTagsModule?chunkName=adminTagsChunk' },
 
-
-            //static load
-            { path: 'classification/:objectType', component: AdminClassificationsComponent }
         ]
     }
 ];

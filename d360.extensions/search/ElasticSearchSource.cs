@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.queue;
+using d360.core.resources;
 using Dapper;
 using Elasticsearch.Net;
 using MoreLinq;
@@ -681,9 +682,9 @@ namespace d360.extensions.search
                 case "FUSIONATTRIBUTES":
                     return "Fusion";
                 case "ARTIFACT":
-                    return "Glossary";
+                    return CommonNames.AssetTypeClass_Business;
                 case "TAXONOMY":
-                    return "Model";
+                    return CommonNames.AssetTypeClass_Model;
                 case "DOMAIN":
                     return "Reference";
                 case "SYNONYM":

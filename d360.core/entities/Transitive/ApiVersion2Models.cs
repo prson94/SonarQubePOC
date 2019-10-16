@@ -72,6 +72,8 @@ namespace d360.core.entities
 
         [DataMember]
         public bool UseAsTransformation { get; set; }
+        [DataMember]
+        public bool? CanOwnFusion { get; set; }
 
 
 
@@ -395,9 +397,9 @@ namespace d360.core.entities
 
     [JsonArray]
     [DataContract(Name = "predicates")]
-    public class PredicateInserts : List<PredicateInsert> { }
+    public class PredicateUpserts : List<PredicateUpsert> { }
 
-    public class PredicateInsert
+    public class PredicateUpsert
     {
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
@@ -410,9 +412,85 @@ namespace d360.core.entities
 
         [DataMember]
         public string Inverse { get; set; }
+
+        [DataMember]
+        public Guid? Uid { get; set; }
     }
 
     [DataContract]
-    public class PredicateInsertResult : PredicateApiResult { }
+    public class PredicateUpsertResult : PredicateApiResult { }
 
+
+
+    public class AssetFieldTypeUpdate
+    {
+        public string Object { get; set; }
+        public int ObjectId { get; set; }
+        public int Id { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeUpsertResult
+    {
+        [DataMember]
+        public int ItemNumber { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeInsertModel
+    {
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeUpsertModel
+    {
+        [DataMember]
+        public Guid? Uid { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeDeleteResult
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeDeleteModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public bool Cascade { get; set; }
+
+    }
 }

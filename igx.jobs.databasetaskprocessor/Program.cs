@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using d360.core.queue;
 using d360.extensions.queue;
 using d360.extensions.search;
@@ -109,6 +110,7 @@ namespace igx.jobs.databasetaskprocessor
                                 // check if this object requires to go into elastic search
                                 if (!ShouldItemBeIndexedForElasticSearch(o)) return string.Empty;
 
+                                var group = AssetTypeClass.Generic.ToString();
                                 ObjectDetail detail = null;
                                 Dictionary<string, string> fields = new Dictionary<string, string>();
                                 Dictionary<string, string> tags = new Dictionary<string, string>();
@@ -116,10 +118,11 @@ namespace igx.jobs.databasetaskprocessor
                                 #region Load Info for Object
 
                                 detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
+                                
                                 var fldInfo = companyConnection.Query<FieldWithRelation>(
                                     "SELECT * from FieldWithRelation where ObjectType = @t and ObjectID = @i order by SortOrder",
                                     new { t = new Dapper.DbString { Value = o.ToString(), IsAnsi = true }, i = oid }
-                                    );
+                                );
 
                                 if (fldInfo != null)
                                     fields = fldInfo.ToDictionary(k => k.Name, v => v.FormattedValue);
@@ -134,12 +137,13 @@ namespace igx.jobs.databasetaskprocessor
 
                                 if (detail != null)
                                 {
+                                    group = detail.Class.ToString();
+
                                     if (fields.ContainsKey("Name")) fields["Name"] = detail.Name;
                                     else fields.Add("Name", detail.Name);
 
-                                    if (detail.AssetTypeID != null) {
-                                        string assetTypeUid = companyConnection.Query<Guid>("SELECT uid FROM [dbo].[AssetType] WHERE ID = @i", new { i = detail.AssetTypeID }).SingleOrDefault().ToString();
-                                        fields.Add("AssetTypeUid", assetTypeUid);
+                                    if (detail.AssetTypeUid.HasValue) {
+                                        fields.Add("AssetTypeUid", detail.AssetTypeUid.Value.ToString());
                                     }
 
                                     if (o == "Synonym")
@@ -152,10 +156,8 @@ namespace igx.jobs.databasetaskprocessor
                                     {
                                         if (!string.IsNullOrEmpty(detail.Description))
                                         {
-                                            if (fields.ContainsKey("Description"))
-                                                fields["Description"] = detail.Description;
-                                            else
-                                                fields.Add("Description", detail.Description);
+                                            if (fields.ContainsKey("Description")) fields["Description"] = detail.Description;
+                                            else fields.Add("Description", detail.Description);
                                         }
 
                                         if (fields.ContainsKey("TextPath")) fields["TextPath"] = detail.TextPath;
@@ -214,7 +216,7 @@ namespace igx.jobs.databasetaskprocessor
                                 switch (a)
                                 {
                                     case "A":   //Add
-                                        var add = new AddToIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = itemUrl, To = QueueAction.AddToIndex, Type = itemTypeName, Tags = tags };
+                                        var add = new AddToIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = group, ID = oid, RelativeUrl = itemUrl, To = QueueAction.AddToIndex, Type = itemTypeName, Tags = tags };
                                         if (o == "Synonym")
                                         {
                                             add.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
@@ -226,7 +228,7 @@ namespace igx.jobs.databasetaskprocessor
                                         indexCollectionModel.Adds.Add(add);
                                         break;
                                     case "U":   //Update
-                                        var update = new UpdateInIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = itemUrl, To = QueueAction.UpdateInIndex, Type = itemTypeName, Tags = tags };
+                                        var update = new UpdateInIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = group, ID = oid, RelativeUrl = itemUrl, To = QueueAction.UpdateInIndex, Type = itemTypeName, Tags = tags };
                                         if (o == "Synonym")
                                         {
                                             update.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
@@ -238,7 +240,7 @@ namespace igx.jobs.databasetaskprocessor
                                         indexCollectionModel.Updates.Add(update);
                                         break;
                                     case "D":   //Delete
-                                        var delete = new RemoveFromIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = o, ID = oid, RelativeUrl = "#", To = QueueAction.RemoveFromIndex }; //, Type = detail.TypeName                                
+                                        var delete = new RemoveFromIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = group, ID = oid, RelativeUrl = "#", To = QueueAction.RemoveFromIndex }; //, Type = detail.TypeName                                
                                         if (o == "Artifact" && givenAssetId > 0) delete.ItemUniqueID = givenAssetId.ToString();
                                         if (o == "Artifact" && assetId > 0) delete.ItemUniqueID = assetId.ToString();
                                         indexCollectionModel.Deletes.Add(delete);

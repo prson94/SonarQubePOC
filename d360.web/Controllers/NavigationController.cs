@@ -17,6 +17,7 @@ using Resources;
 using System.Net;
 using System.IO;
 using System.Threading.Tasks;
+using d360.core.resources;
 
 namespace d360.web.Controllers
 {
@@ -41,6 +42,15 @@ namespace d360.web.Controllers
             nodes = Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList();
 
             var features = Community.Filter<CompanyFeature>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
+            var isFusionEnabled = Community.IsFusionEnabled();
+            if (!isFusionEnabled)
+            {
+                nodes = nodes.Where(x => x.MenuID != "#Fusion").ToList();
+            }
+            else
+            {
+                nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
+            }
 
             if (nodes != null)
                 nodes.ForEach(n => {
@@ -64,19 +74,24 @@ namespace d360.web.Controllers
         [Route("GetAvailableSiteNavigation")]
         public JsonNetResult GetAvailableSiteNavigation()
         {
-            var nav = Company.Query<dynamic>(@"
+            var nav = Company.Query<dynamic>($@"
                 with s as
                 (
-	                select cast(
-	                case when object = 'ArtifactType' then
-		                'Glossary :: ' + name
-	                else
-		                name
-	                end	
-	                 as varchar(500)) as Title,* from sitenavavailable where parentid is null
+	                select  cast(
+	                            case 
+                                    when [Object] = 'ArtifactType' and [Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()} :: ' + Name
+	                                when [Object] = 'ArtifactType' and [Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()} :: ' + Name
+	                                else Name
+	                            end	
+	                            as varchar(500)
+                                ) as Title, * 
+                    from    SiteNavAvailable 
+                    where   ParentID is null
 	                union all
-	                select cast((s.Title + ' :: ' + v.name) as varchar(500)) as Title, v.* from sitenavavailable v join s on s.objectid = v.parentid and 
-	                v.object = s.object
+	                select  cast((s.Title + ' :: ' + v.name) as varchar(500)) as Title, 
+                            v.* 
+                    from    SiteNavAvailable v 
+                            join s on s.objectid = v.parentid and v.object = s.object
                 )
                 select * from s where object not like '%Class' order by 1 asc").ToList();
 
@@ -117,7 +132,7 @@ namespace d360.web.Controllers
 	                select v.* from sitenavflat v join s on s.objectid = v.parentid and s.object = v.object
                 )
                 select n.* from s
-                join sitenav n on n.Object = s.Object and n.ObjectID = s.ObjectID", new { ObjectID = item.ObjectID, Object = item.Object }).ToList();
+                join sitenav n on n.Object = s.Object and n.ObjectID = s.ObjectID", new { item.ObjectID, item.Object }).ToList();
 
                 deleteExisting.ForEach(d =>
                 {
@@ -842,7 +857,19 @@ order by	f.SortOrder";
         [HttpGet, Route("GetCounts")]
         public async Task<JsonNetResult> GetCounts()
         {
-            string sql = @"
+            List<string> ignoreObjects = new List<string>();
+            string ignoreObjectTypeSQL = string.Empty;
+            if (!Community.IsFusionEnabled())
+            {
+                ignoreObjects.Add(SystemObjects.FusionType.ToString());
+                ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());
+                ignoreObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
+            }
+
+            if(ignoreObjects.Count > 0)
+                ignoreObjectTypeSQL = $" AND ATT.[Object] not in ({string.Join(",", ignoreObjects.Select(o => "'"+o+"'"))})";
+
+            string sql = $@"
 SELECT count(ATT.[Object]) as count, 
 		ATT.[Object], 
 		ATT.ObjectID,
@@ -850,6 +877,7 @@ SELECT count(ATT.[Object]) as count,
 		from    [Asset] A
 		inner join AssetType ATT on (a.AssetTypeID = Att.id)
 		WHERE A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
+        {ignoreObjectTypeSQL}
 		Group by 
 		ATT.[Object], 
 		ATT.ObjectID,

@@ -1528,7 +1528,7 @@ where	T.LoadID = @id;
 
             #endregion
 
-            if (assetType.Class == AssetTypeClass.Glossary)
+            if (assetType.Class == AssetTypeClass.BusinessAsset)
             {
                 if (parentAssetType != null)
                 {
@@ -1564,7 +1564,7 @@ where	T.LoadID = @id;
             }
 
             //find object/objectid for existing items
-            if (assetType.Class == AssetTypeClass.Glossary && parentAssetType != null)
+            if (assetType.Class == AssetTypeClass.BusinessAsset && parentAssetType != null)
             {
                 await QueryAsync<int>(@"
         update	T

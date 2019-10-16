@@ -6,3 +6,9 @@ export class ApiResult {
     Message: string;
     Success: boolean;
 }
+
+export class ErrorResponse {
+    Title: string;
+    Type: string;
+    Message: string;
+}

@@ -21,6 +21,9 @@
 # Ignore application config
 \.vs\config\*.config
 
+# Ignore xml documentation files
+/d360.web/App_Data/Documentation.XML
+
 # Ignore compiled css files
 \d360.web\Content\styles\*.min.css
 \d360.web\Content\styles\ang.css
@@ -51,6 +54,7 @@
 /d360.web/Scripts/app/*.map
 /d360.web/Scripts/app/*.js
 /d360.web/Content/quill/v1.3.4/*.min.css
+/d360.web/Content/primeng/v7.1.3/*.min.css
 /d360.web/Content/styles/typeahead.min.css
 /d360.web/Content/styles/typeahead.css
 /d360.web/Content/styles/selectlistinfoitem.css
@@ -89,3 +93,4 @@
 /d360.web/Content/styles/selectlistinfoitem.css
 /d360.web/Content/styles/materialize.css
 /d360.web/Scripts/dist
+/d360.web/App_Data

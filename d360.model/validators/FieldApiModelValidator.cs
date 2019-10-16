@@ -12,7 +12,7 @@ namespace d360.model.validators
 {
     public static class FieldApiModelValidator
     {
-        public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, List<FieldType> existingFieldTypes = null)
+        public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, bool areFusionFieldsAllowed = true, List<FieldType> existingFieldTypes = null)
         {
             var baseValidation = BaseModelValidation(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
             if (baseValidation.StatusCode != HttpStatusCode.OK)
@@ -29,9 +29,9 @@ namespace d360.model.validators
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
-                if (field.Name.Trim().ToLower() == "id")
+                if (field.Name.Trim().ToLower() == "id" || field.Name.Trim().ToLower() == "uid")
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot be ID.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot be ID or UID.");
                 }
                 if (!field.Type.IsOnlyOneTypeModelDefined())
                 {
@@ -83,15 +83,42 @@ namespace d360.model.validators
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Fields contain errors", $"Tag field type must have field property 'ShowIfEmpty' set to 'true'!");
                     }
-                    
-                    if(existingFieldTypes != null)
+
+                    if (existingFieldTypes != null)
                     {
-                        if(existingFieldTypes.Any(x=> x.Type == SystemObjects.Tag.ToString() && x.Name != field.Name))
+                        if (existingFieldTypes.Any(x => x.Type == SystemObjects.Tag.ToString() && x.Name != field.Name))
                         {
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Asset type error", $"Asset type can have only one Tag field type!");
                         }
                     }
 
+                }
+                if (field.Type.JsonElement != null)
+                {
+                    if (existingFieldTypes != null)
+                    {
+                        var jsonAttribute = field.Type.JsonElement.JsonAttribute;
+                        if (jsonAttribute == null)
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Missing Json attribute definition!");
+                        }
+                        if (!existingFieldTypes.Any(x => x.Name == jsonAttribute.FieldName && x.Type == "JSON"))
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"JSON field {jsonAttribute.FieldName} does not exist or is not part of this asset type!");
+                        }
+                        var allowedTypes = new List<string>() { "bit", "date", "datetime", "float", "nvarchar", "int", "bigint" };
+                        if (!allowedTypes.Contains(jsonAttribute.DataType))
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Invalid Json attribute field type. Allowed values are {string.Join(", ", allowedTypes)}!");
+                        }
+
+
+                    }
+                }
+
+                if(!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Fusion field types are not allowed!");
                 }
 
             }

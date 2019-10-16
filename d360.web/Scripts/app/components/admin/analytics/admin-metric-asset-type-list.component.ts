@@ -14,22 +14,26 @@ import { MessagesObservableService } from '../../../services/messages-observable
 <div *ngIf="!isLoading">
 
     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-    <p-table #dt [value]="models" selectionMode="single" [globalFilterFields]="['Class','Name']" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selection" (onRowSelect)="onRowSelect($event)" >
+    <p-table #dt [value]="models" selectionMode="single" [globalFilterFields]="['ClassName','Name']" [pageLinks]="3" [paginator]="true" [rows]="10" [(selection)]="selection" (onRowSelect)="onRowSelect($event)" >
         <ng-template pTemplate="header">
             <tr>
-                <th [pSortableColumn]="'Class'" style="width: 100px">Class
-<d3s-sortIcon [field]="'Class'"></d3s-sortIcon></th>
-                <th [pSortableColumn]="'Name'">Name
-<d3s-sortIcon [field]="'Name'"></d3s-sortIcon></th>
+                <th [pSortableColumn]="'ClassName'" style="width: 150px">
+                    Class
+                    <d3s-sortIcon [field]="'Class'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="'Name'">
+                    Name
+                    <d3s-sortIcon [field]="'Name'"></d3s-sortIcon>
+                </th>
             </tr>
             <tr [hidden]="showSimpleFilter">
-                <th><d3s-column-filter [field]="'Class'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'ClassName'" [datatype]="'text'"></d3s-column-filter></th>
                 <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
             <tr [pSelectableRow]="item">
-                <td>{{item.Class}}</td>
+                <td>{{item.ClassName}}</td>
                 <td>{{item.Name}}</td>
             </tr>
         </ng-template>
@@ -66,7 +70,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
             .subscribe(r => {
                 this.models = r;
                 this.isLoading = false;
-                if (this.models.length && this.models.length > 0) {
+                if (this.models != null && this.models.length > 0) {
                     this.selection = this.models[0];
                     this.selectionChange.emit(this.selection);
                 }

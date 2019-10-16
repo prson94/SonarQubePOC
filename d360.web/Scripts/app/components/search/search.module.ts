@@ -9,6 +9,7 @@ import { CoreModule } from '../shared/core.module';
 import { TilesModule  } from '../shared/tiles/tiles.module';
 
 import { HomeSearchComponent} from './home-search.component'
+import { HeroSearchInputComponent } from './hero-search-input';
 import { SearchResultsComponent } from './search-results.component'
 import { SearchResultItemComponent } from './search-result-item.component'
 import { SearchComponent } from './search.component'
@@ -26,6 +27,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { SharedModule } from 'primeng/shared';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
+import { TypeaheadSearchModule } from '../shared/search/typeahead-search.component';
 
 
 @NgModule({
@@ -53,6 +55,7 @@ import { TooltipModule } from 'primeng/tooltip';
         DynamicPercentageModule,
         SharedDynamicGridEditorModule,
         PaginatorModule,
+        TypeaheadSearchModule
     ],
     declarations: [
         HomeSearchComponent,
@@ -60,11 +63,13 @@ import { TooltipModule } from 'primeng/tooltip';
         SearchResultItemComponent,
         SearchComponent,
         SearchAutocompleteListComponent,    
-        SearchInputComponent,    
+        SearchInputComponent,  
+        HeroSearchInputComponent
     ],
     exports: [
         HomeSearchComponent,    
         SearchInputComponent,
+        HeroSearchInputComponent,
     ],
     providers: [        
         {

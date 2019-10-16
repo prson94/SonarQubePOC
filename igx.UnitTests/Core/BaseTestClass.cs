@@ -116,7 +116,7 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.GetAssetByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Asset() : null);
 
-            mockRepo.Setup(x => x.GetAssetTypeList()).Returns(AssetTypeClass.Glossary.GetAsList());
+            mockRepo.Setup(x => x.GetAssetTypeList()).Returns(AssetTypeClass.BusinessAsset.GetAsList());
 
             mockRepo.Setup(x => x.GetFieldTypes(It.IsAny<Guid>()))
                 .Returns(() => JsonConvert.DeserializeObject<dynamic>(DataConstants.FieldTypesJsonFormat));

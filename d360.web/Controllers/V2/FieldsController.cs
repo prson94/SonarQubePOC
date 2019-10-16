@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using d360.model.validators;
 using d360.model.DataAccessLayer;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -113,7 +114,8 @@ namespace d360.web.Controllers.V2
         /// Adds or updates field types contained within your environment based on a specified ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
         /// </summary>
         /// <remarks>
-        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
+        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.<br/>
+        /// If adding JSON Attribute field type, JSON field must be added before!
         /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [
@@ -181,13 +183,14 @@ namespace d360.web.Controllers.V2
 
                 if (!hasPermissions)
                 {
-                    throw new RestApiException(HttpStatusCode.Unauthorized, "Not authorized", "You do not have permissions to change fields on this type.");
+                    throw new RestApiException(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You do not have permissions to change fields on this type.");
                 }
                 #endregion
 
                 #region Validation
                 var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
-                var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, existingFields);
+                var isFusionEnabled = Community.IsFusionEnabled();
+                var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, isFusionEnabled, existingFields);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(validationStatus.StatusCode, validationStatus.Error, validationStatus.Message);
 
@@ -302,7 +305,7 @@ namespace d360.web.Controllers.V2
 
                 if (!hasPermissions)
                 {
-                    throw new RestApiException(HttpStatusCode.Unauthorized, "Not authorized", "You do not have permissions to remove fields on this type.");
+                    throw new RestApiException(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You do not have permissions to remove fields on this type.");
                 }
 
                 #endregion

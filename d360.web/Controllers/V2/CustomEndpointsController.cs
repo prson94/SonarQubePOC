@@ -12,6 +12,7 @@ using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using System.Threading.Tasks;
 using System.Web.Http.Description;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -48,7 +49,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> CustomAPIVersionFieldEditor_GetFieldTypes(int versionId)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
 
             var entity = Company.ApiEntities.First(x => x.EndpointVersionID == versionId);
 
@@ -78,7 +79,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> CustomAPIVersionFieldEditor_GetLookupFields(int fieldTypeId)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
 
             var fieldType = Company.GetById<FieldType>(fieldTypeId);
 
@@ -118,7 +119,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> CustomAPIVersionFieldEditor_EditModel(int id)
         {
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
 
             var model = Company.GetById<ApiEntityFieldType>(id);
 
@@ -173,7 +174,7 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "CustomEndPoints.AddCustomAPIVersionField => ";
             if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not allowed to add assets of this type."));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
 
             if (model == null)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", "model Not Found"));

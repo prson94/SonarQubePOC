@@ -20,8 +20,9 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     dashboard: Dashboard;
     selected: Dashboard;
     dashboardName: string;
+    reportID: number;
     showSingle: boolean = false;
-
+    showError: boolean;
     private folderTitle: string;
 
     constructor(
@@ -41,6 +42,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
             this.dashboardName = params['name'];
+            this.reportID = +params['reportID'];
             this.loadAvailableDashboards();      
             
         });
@@ -63,7 +65,7 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
             if (this.selected) {
                 let dashboardCrumb = new Breadcrumb(
                     this.selected.Name, 
-                    SiteUrlHelpers.getObjectUrl("Dashboard",this.selected.ObjectID,null,this.selected.Name),
+                    SiteUrlHelpers.getObjectUrl("Dashboard",this.selected.ID),
                     false
                 );
                 this.headerBreadcrumbService.showBreadcrumb(dashboardCrumb);
@@ -87,23 +89,45 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
 
     private loadAvailableDashboards() {
         this.isLoading = true;
-        this.dashboardService.getDashboards(this.objectID, this.objectType).subscribe(
-            result => {
-                this.dashboards = result;
-                if (this.objectType && this.objectID && this.dashboardName) {
-                    this.selected = this.dashboards[0];
-                    this.showSingle = true;
-                }
+        if (this.reportID > 0) {
+            this.dashboardService.getDashboardByID(this.reportID).subscribe(
+                result => {
+                    if (result) {
+                        this.selected = result;
+                        this.showSingle = true;
+                    }
+                    else {
+                        this.showError = true;
+                    }
 
-                if (this.showSingle || this.objectType == undefined) {
-                    this.buildBreadcrumb(true);
-                } else {
-                    this.buildBreadcrumb(false);
-                }
+                    if (this.showSingle || this.objectType == undefined) {
+                        this.buildBreadcrumb(true);
+                    } else {
+                        this.buildBreadcrumb(false);
+                    }
 
-                this.isLoading = false;
-            }
-        );
+                    this.isLoading = false;
+                }
+            );
+        } else {
+            this.dashboardService.getDashboards(this.objectID, this.objectType).subscribe(
+                result => {
+                    this.dashboards = result;
+                    if (this.objectType && this.objectID && this.dashboardName) {
+                        this.selected = this.dashboards[0];
+                        this.showSingle = true;
+                    }
+
+                    if (this.showSingle || this.objectType == undefined) {
+                        this.buildBreadcrumb(true);
+                    } else {
+                        this.buildBreadcrumb(false);
+                    }
+
+                    this.isLoading = false;
+                }
+            );
+        }
     }
 
     setSelected(dashboard) {

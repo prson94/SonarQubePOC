@@ -15,6 +15,7 @@ using d360.extensions;
 using System.Net;
 using System.Text.RegularExpressions;
 using d360.core.helpers;
+using d360.core.resources;
 
 namespace d360.model.DataAccessLayer
 {
@@ -37,7 +38,7 @@ namespace d360.model.DataAccessLayer
         }
         public List<AssetTypeClassInfo> GetAssetTypeList()
         {
-            return AssetTypeClass.Glossary.GetAsList();
+            return AssetTypeClass.BusinessAsset.GetAsList();
         }
         public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(AssetTypeClass? Class, Guid? fusionTypeUid)
         {
@@ -160,7 +161,7 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("@relatedAssetUid", relatedAssetUID);
                         relatedAssetSql = $"where {subjectAlias}.[UID] = @relatedAssetUid";
                     }
-                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
+                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and abs(I.SubjectID) = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
 
                 }
                 else if (queryParams.ToList().Any(q => q.Key.ToLower() == "_subjectuid"))
@@ -171,14 +172,14 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("@relatedAssetUid", relatedAssetUID);
                         relatedAssetSql = $"where {subjectAlias}.[UID] = @relatedAssetUid";
                     }
-                    intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
+                    intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and abs(I.SubjectID) = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
                 }
                 else
                 {
                     //subject and object not specified
                     includeBoth = true;
-                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
-                    reverseIntersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
+                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and abs(I.SubjectID) = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
+                    reverseIntersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and abs(I.SubjectID) = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
                 }
 
                 var innerSql = $@"
@@ -359,9 +360,13 @@ namespace d360.model.DataAccessLayer
             nameFriendlyName = "Name";
             isNamePartOfKey = true;
 
+            if (!string.IsNullOrEmpty(model?.Name ?? null))
+                model.Name = model.Name.Trim();
+
             switch (model.Class)
             {
-                case AssetTypeClass.Glossary:
+                case AssetTypeClass.BusinessAsset:
+                case AssetTypeClass.TechnicalAsset:
                     #region
                     var a = new AssetType
                     {
@@ -375,9 +380,10 @@ namespace d360.model.DataAccessLayer
                         CreatedBy = resourceId,
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
-                        Class = AssetTypeClass.Glossary,
+                        Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
-                        UseAsTransformation = model.UseAsTransformation
+                        UseAsTransformation = model.UseAsTransformation,
+                        CanOwnFusion = model.CanOwnFusion ?? false
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
@@ -396,7 +402,7 @@ namespace d360.model.DataAccessLayer
                     };
                     var existing = CompanyContext.Filter<OrganizationType>(o => o.Name == org.Name && o.State == State.Active).FirstOrDefault();
                     if (existing != null)
-                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Wrong Name", "There is already an organization type with that name.");
+                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Wrong Name", AssetTypeErrors.ExistingOrganizationType);
                     CompanyContext.Add(org);
                     parentType = SystemObjects.OrganizationType;
                     model.ObjectID = org.ID;
@@ -447,7 +453,7 @@ namespace d360.model.DataAccessLayer
                     };
 
                     if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
-                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", "Invalid Maximum Depth,Model level specified must be a value between 1 and 10.");
+                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", AssetTypeErrors.InvalidModelDepth);
 
 
                     CompanyContext.Add(t);
@@ -547,91 +553,79 @@ namespace d360.model.DataAccessLayer
         }
         public Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeInsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate)
         {
-            List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.Glossary, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
+            List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
 
             bool shouldRemoveOldRelationshipType = false;
             bool shouldRemoveExistingParentChildRelationshipType = false;
 
+            if (!string.IsNullOrEmpty(model?.Name ?? null))
+                model.Name = model.Name.Trim();
+
             switch (model.Class)
             {
-                case AssetTypeClass.Glossary:
-                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Glossary.ToString()}", $"Not valid {AssetTypeClass.Glossary.ToString()} provided.Please check your request and try again.");
+                case AssetTypeClass.BusinessAsset:
+                case AssetTypeClass.Policy:
+                case AssetTypeClass.Reference:
+                case AssetTypeClass.Model:
+                case AssetTypeClass.TechnicalAsset:
+                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {model.Class.ToString()}", $"Invalid {model.Class.ToString()} provided. {AssetTypeErrors.CheckRequest}");
 
                     assetType.Name = model.Name;
                     assetType.DisplayFormat = model.DisplayFormat;
                     assetType.Description = model.Description;
-                    assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
+                    assetType.HierarchyMaximumDepth = (model.Hierarchy != null) ? model.Hierarchy.MaximumDepth : 1;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
-                    assetType.UseAsTransformation = model.UseAsTransformation;
+                    if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
+                    {
+                        assetType.UseAsTransformation = model.UseAsTransformation;
+                        assetType.CanOwnFusion = model.CanOwnFusion ?? false;
+                    }
+                    else
+                    {
+                        assetType.UseAsTransformation = false;
+                        assetType.CanOwnFusion = false;
+                    }
+                    assetType.Class = model.Class;
+                    assetType.Notes = model.Notes;
+
+                    if (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy)
+                    {
+                        if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
+                            return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", AssetTypeErrors.InvalidModelDepth);
+
+                        for (int i = 1; i <= assetType.HierarchyMaximumDepth; i++)
+                        {
+                            var level = assetType.AssetTypeLevels.SingleOrDefault(l => l.Level == i);
+                            if (level == null)
+                            {
+                                CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = assetType.ID });
+                            }
+                        }
+                        CompanyContext.Delete<AssetTypeLevel>(l => l.Level > assetType.HierarchyMaximumDepth);
+                    }
+
                     CompanyContext.Update(assetType);
+
+                    if (model.Class == AssetTypeClass.Reference)
+                    {
+                        shouldRemoveOldRelationshipType = true;
+                        shouldRemoveExistingParentChildRelationshipType = true;
+                    }
 
                     break;
                 case AssetTypeClass.Organization:
                     var org = CompanyContext.GetById<OrganizationType>(model.ObjectID);
-                    if (org == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Organization.ToString()}", $"Not valid {AssetTypeClass.Organization.ToString()} provided.Please check your request and try again.");
+                    if (org == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Organization.ToString()}", $"Invalid {AssetTypeClass.Organization.ToString()} provided. {AssetTypeErrors.CheckRequest}");
                     org.Name = model.Name;
                     org.Description = model.Description;
                     org.DisplayFormat = model.DisplayFormat;
                     CompanyContext.Update(org);
 
-
-                    break;
-                case AssetTypeClass.Policy:
-                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Policy.ToString()}", $"Not valid {AssetTypeClass.Policy.ToString()} provided.Please check your request and try again.");
-
-                    assetType.Name = model.Name;
-                    assetType.DisplayFormat = model.DisplayFormat;
-                    assetType.Description = model.Description;
-                    assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
-                    assetType.UseAsTransformation = model.UseAsTransformation;
-                    CompanyContext.Update(assetType);
-
-                    break;
-                case AssetTypeClass.Reference:
-                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Reference.ToString()}", $"Not valid {AssetTypeClass.Reference.ToString()} provided.Please check your request and try again.");
-                    assetType.Name = model.Name;
-                    assetType.DisplayFormat = model.DisplayFormat;
-                    assetType.Description = model.Description;
-                    assetType.Notes = model.Notes;
-
-                    CompanyContext.Update(assetType);
-
-                    shouldRemoveOldRelationshipType = true;
-                    shouldRemoveExistingParentChildRelationshipType = true;
-
-                    break;
-                case AssetTypeClass.Model:
-                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Model.ToString()}", $"Not valid {AssetTypeClass.Model.ToString()} provided.Please check your request and try again.");
-
-                    assetType.Name = model.Name;
-                    assetType.DisplayFormat = model.DisplayFormat;
-                    assetType.Description = model.Description;
-                    assetType.HierarchyMaximumDepth = model.Hierarchy.MaximumDepth;
-                    assetType.UseAsTransformation = model.UseAsTransformation;
-
-                    if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
-                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", "Invalid Maximum Depth,Model level specified must be a value between 1 and 10.");
-
-
-                    CompanyContext.Update(assetType);
-
-                    for (int i = 1; i <= assetType.HierarchyMaximumDepth; i++)
-                    {
-                        var level = assetType.AssetTypeLevels.SingleOrDefault(l => l.Level == i);
-                        if (level == null)
-                        {
-                            CompanyContext.Set<AssetTypeLevel>().Add(new AssetTypeLevel { Description = string.Format("Level {0}", i), Level = i, Name = string.Format("Level {0}", i), AssetTypeID = assetType.ID });
-                        }
-                    }
-                    CompanyContext.Delete<AssetTypeLevel>(l => l.Level > assetType.HierarchyMaximumDepth);
-                    CompanyContext.SaveChanges();
-
-
                     break;
                 case AssetTypeClass.Rule:
                     #region
                     var r = CompanyContext.GetById<RuleType>(model.ObjectID);
-                    if (r == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Rule.ToString()}", $"Not valid {AssetTypeClass.Rule.ToString()} provided.Please check your request and try again.");
+                    if (r == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Rule.ToString()}", $"Not valid {AssetTypeClass.Rule.ToString()} provided. {AssetTypeErrors.CheckRequest}");
                     r.Name = model.Name;
                     r.DisplayFormat = model.DisplayFormat;
                     r.Description = model.Description;
@@ -725,6 +719,7 @@ namespace d360.model.DataAccessLayer
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
+
         public List<DatabaseBulkAssetResult> DeleteAsset(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             CompanyContext.Add(execution);
@@ -749,6 +744,7 @@ namespace d360.model.DataAccessLayer
 
             return results;
         }
+
         public async Task<ApiExecutionInfo> DeleteBulkAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution)
         {
             var executionInfo = new ApiExecutionInfo
@@ -771,6 +767,7 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
+
         public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
@@ -794,6 +791,7 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
+
         public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
@@ -819,6 +817,7 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
+
         public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
@@ -843,22 +842,27 @@ namespace d360.model.DataAccessLayer
             CompanyContext.Add(execution);
             return executionInfo;
         }
+
         public Predicate GetPredicateByUID(Guid predicateGuid)
         {
             return CompanyContext.Filter<Predicate>(x => x.UID == predicateGuid).SingleOrDefault();
         }
+
         public AssetType GetAssetTypeByUID(Guid assetTypeUid)
         {
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
         }
+
         public AssetType GetAssetTypeByModel(AssetTypeInsert model)
         {
             return CompanyContext.Filter<AssetType>(x => x.ObjectID == model.ObjectID && x.Object == model.Object).SingleOrDefault();
         }
+
         public ApiExecution GetExecutionItemByUid(Guid executionUid)
         {
             return CompanyContext.Filter<ApiExecution>(i => i.ExecutionID == executionUid).SingleOrDefault();
         }
+
         public void UpsertObjectStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx")
         {
             var style = CompanyContext.GetObjectStyle(type, id);
@@ -907,7 +911,7 @@ namespace d360.model.DataAccessLayer
         public bool IsReachedTransformationLimit(AssetTypeInsert model)
         {
             bool reached = false;
-            if (model.Class == AssetTypeClass.Glossary && model.UseAsTransformation == true)
+            if (model.Class == AssetTypeClass.BusinessAsset && model.UseAsTransformation == true)
             {
                 var useAsTransformationLimit = Community.GetCompanySettingByKey<int>("UseAsTransformationLimit");
                 var totalUseAsTransform = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Count();
@@ -916,6 +920,7 @@ namespace d360.model.DataAccessLayer
             }
             return reached;
         }
+        
         #region Private
         private void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns)
         {
@@ -955,9 +960,9 @@ namespace d360.model.DataAccessLayer
                     if (!string.IsNullOrEmpty(fieldDataType))
                     {
                         if (fieldDataType == "bit")
-                            fieldColumns.Add($"cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                            fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
                         else
-                            fieldColumns.Add($"cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
+                            fieldColumns.Add($"try_cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
                     }
                     else
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
@@ -969,9 +974,9 @@ namespace d360.model.DataAccessLayer
                         if (!string.IsNullOrEmpty(fieldDataType))
                         {
                             if (fieldDataType == "bit")
-                                fieldColumns.Add($"coalesce(cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                                fieldColumns.Add($"coalesce(try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
                             else
-                                fieldColumns.Add($"coalesce(cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                                fieldColumns.Add($"coalesce(try_cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
                         }
                         else
                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
@@ -983,9 +988,9 @@ namespace d360.model.DataAccessLayer
                         if (!string.IsNullOrEmpty(fieldDataType))
                         {
                             if (fieldDataType == "bit")
-                                fieldColumns.Add($"cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                                fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
                             else
-                                fieldColumns.Add($"cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
+                                fieldColumns.Add($"try_cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
                         }
                         else if (f.Type == "JsonElement")
                         {

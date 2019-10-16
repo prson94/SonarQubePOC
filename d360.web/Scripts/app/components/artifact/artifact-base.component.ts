@@ -7,9 +7,10 @@ import { BaseComponent } from '../shared/base.component';
 import { Subscription }   from 'rxjs';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 
 export class ArtifactBaseComponent extends BaseComponent {            
-    public area: string = "Glossary";
+    public area: string = StringConstants.AssetTypeClass_Business;
     public folderTitle: string; 
     public areaLink: string = SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;
     //sidebar
@@ -19,7 +20,7 @@ export class ArtifactBaseComponent extends BaseComponent {
         super();
         this.rightSidebarService = rightSidebarService;
         this.webAnalyticsService = webAnalyticsService;
-        headerBreadcrumbService.getFolderTitle('#Glossary').then(res => { this.folderTitle = res; });
+        //headerBreadcrumbService.getFolderTitle('#Business').then(res => { this.folderTitle = res; });
         this.rightSidebarService.showHeader(true);
     }        
     

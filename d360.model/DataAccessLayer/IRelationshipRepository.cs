@@ -30,6 +30,7 @@ namespace d360.model.DataAccessLayer
         bool AnyExists(Guid uid);
         bool AnyPredicateExists(Guid uid);
         List<PredicateDeleteResult> DeletePredicates(PredicateDeletes predicates, ApiExecution execution);
-        List<PredicateInsertResult> InsertPredicates(PredicateInserts predicates, ApiExecution execution);
+        List<PredicateUpsertResult> UpsertPredicates(PredicateUpserts predicates, ApiExecution execution);
+        Task<bool> IsRelationshipExistsForAssetType(int assetTypeId);
      }
 }

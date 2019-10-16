@@ -1,9 +1,30 @@
-﻿<div class="tile tile-detail">
-    <header>
-        <span>Lineage</span>
-        <span *ngIf="isLoading" id="LoadingProgress" style="color: #e2792a"><i class="fa fa-refresh fa-spin fa-lg fa-fw"></i>Loading...</span>
-    </header>
-    <div>
-        <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
+﻿<div class="row">
+    <div class="col s12">
+        <div class="tile tile-detail" style="padding: 0">
+            <div class="row" *ngIf="isLoading">
+                <div class="col s12">
+                    <d3s-loading isLoading="true"></d3s-loading>
+                </div>
+            </div>
+            <header [hidden]="isLoading">
+                <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuAction($event)"></d3s-tile-actions>
+            </header>
+            <div class="row" style="position: relative">
+                <div class="col s12" style="padding: 0">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td style="vertical-align: top;">
+                                    <div #diagram
+                                         id="LineageDiagram"
+                                         style="overflow: hidden;"
+                                         class="diagram"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

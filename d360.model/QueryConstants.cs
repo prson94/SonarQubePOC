@@ -1,15 +1,19 @@
-﻿namespace d360.model
+﻿using d360.core;
+using d360.core.resources;
+
+namespace d360.model
 {
     public static class QueryConstants
     {
-        public static string HighLevelTypeCaseStatement = @"case 
-				when T.Object = 'ArtifactType' then 'Glossary: ' 
+        public static string HighLevelTypeCaseStatement = $@"case 
+				when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' 
+                when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' 
 				when T.Object = 'FusionAttributeType' then 'Fusion Attribute: ' 
 				when T.Object = 'FusionType' then 'Fusion: ' 
-				when T.Object = 'PolicyType' then 'Policy: ' 
+				when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()}: ' 
 				when T.Object = 'ReferenceItemType' then 'Reference: ' 
-				when T.Object = 'RuleType' then 'Rule: ' 
-				when T.Object = 'TaxonomyType' then 'Model: '
+				when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()}: ' 
+				when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()}: '
 				when T.Object = 'AttributeType' then 'Attribute: '
 				when T.Object = 'FusionQueryAttributeType' then 'Fusion Query Attribute: '
 				when T.Object = 'GroupType' then 'Group: '
