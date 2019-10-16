@@ -114,7 +114,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.isDeleting = false;
     }
 
-    add(id: number) {
+    add(id: number) {      
         if (id == 0) {
             this.selectedRow = { data: { ID: 0 } };
         } else {

@@ -1010,6 +1010,7 @@ namespace d360.web.Controllers
                         AssetType = new AssetTypeInsert()
                         {
                             Uid = assetType.uid,
+                            ParentUid = parentUid,
                             AutoDisplayDescription = assetType.AutoDisplayDescription,
                             Class = @class,
                             UseAsTransformation = assetType.UseAsTransformation,
@@ -1088,7 +1089,7 @@ namespace d360.web.Controllers
                         {
                             loadPredicates = true;
 
-                            model.AssetType.ParentUid = intersectType.SubjectUid;
+                            model.AssetType.ParentUid = Company.Filter<AssetType>(a => a.Object == intersectType.Subject && a.ObjectID == intersectType.SubjectID).FirstOrDefault()?.uid;
                             model.AssetType.Hierarchy.PredicateUid = intersectType.Predicate.UID;
                         }
                     }
