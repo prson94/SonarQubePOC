@@ -400,9 +400,14 @@ namespace d360.web.Controllers.V2
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", AssetTypeErrors.TransformationLimitExceeded));
 
-                var IsRelationshipExistsForAssetType = await this.relationshipRepository.IsRelationshipExistsForAssetType(assetType.ID);
-                if (IsRelationshipExistsForAssetType)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Relationship Exists For AssetType", AssetTypeErrors.RelationshipExistsForAssetType));
+                if (!model.UseAsTransformation && assetType.UseAsTransformation && (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.TechnicalAsset))
+                {
+                    var IsTransformPredicateExists = await this.relationshipRepository.IsTransformPredicateExists(assetType.ID);
+                    if (IsTransformPredicateExists)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Transformation Relationship Exists For AssetType", AssetTypeErrors.RelationshipExistsForAssetType));
+
+                }
+                
 
                 var updateStatus = AssetRepository.UpdateAssetType(model, assetType, parentAssetType, predicate);
                 if (updateStatus.Item1 != HttpStatusCode.OK)
@@ -432,6 +437,8 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+       
         /// <summary>
         /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>
