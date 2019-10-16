@@ -49,4 +49,19 @@ namespace d360.core.entities
         [DataMember]
         public DateTime? UpdatedOn { get; set; }
     }
+
+    public class ClaimsViewModel
+    {
+       
+        [DataMember]
+        public int ID { get; set; }
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Category { get; set; }
+        [DataMember]
+        public string Description { get; set; }
+
+    }
 }

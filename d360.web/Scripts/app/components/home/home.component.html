@@ -4,7 +4,7 @@
              [style.font-size]="titleSize"
              class="title-setting">{{title}}</div>
     </div>
-    <div *ngIf="backgroundImage != ''">
+    <div class="background-image" *ngIf="backgroundImage != ''">
         <img [src]="backgroundImage"
              style="width:100%; position:absolute; left:0; top:0; z-index: -10000"/>
     </div>

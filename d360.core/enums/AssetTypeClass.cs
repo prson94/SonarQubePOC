@@ -82,8 +82,13 @@ namespace d360.core.enums
             Name("Reference List"),
             Description("Reference Item List.")
         ]
-        ReferenceItemType = 14
-
+        ReferenceItemType = 14,
+        [
+            Name("Glossary-Obsolete"),
+            Obsolete("Use BusinessAsset instead", false),
+            Description("Obsolete - do not use.")
+        ]
+        Glossary = 100,
     }
 
     public class AssetTypeClassInfo
@@ -116,12 +121,15 @@ namespace d360.core.enums
 
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
-                list.Add(new AssetTypeClassInfo
+                if (tm.GetCustomAttribute(typeof(ObsoleteAttribute)) == null)
                 {
-                    Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
-                    Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
-                    ID = (AssetTypeClass)Enum.Parse(typeof(AssetTypeClass), tm.Name)
-                });
+                    list.Add(new AssetTypeClassInfo
+                    {
+                        Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
+                        Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+                        ID = (AssetTypeClass)Enum.Parse(typeof(AssetTypeClass), tm.Name)
+                    });
+                }
             }
 
             return list.OrderBy(i => i.Name).ToList();

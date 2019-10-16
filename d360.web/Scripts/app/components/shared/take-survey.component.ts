@@ -9,38 +9,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 @Component({
     selector: 'd3s-take-survey',
     providers: [SurveysService],
-    template: `
-                <header>Survey - {{surveyType.Name}}</header>
-               <form (ngSubmit)="onSubmit()" #surveyForm="ngForm">
-                    <div style="padding:20px">
-                    <div class="row" *ngIf="currentQuestion">
-                        <h4 style="padding-bottom:10px"><span *ngIf="questions.length > 1">{{currentQuestionIndex+1}} - </span>{{currentQuestion.Name}}</h4>
-                        <span *ngIf="currentQuestion.Description" [innerHtml]="currentQuestion.Description"></span>
-                        <span [ngSwitch]="currentQuestion.DisplayStyle">
-                            <span *ngSwitchCase="SurveyTypeDisplayStyle.RadioList">
-                                <div *ngFor="let option of currentQuestion?.Items" style="padding:2px"><label><input type="radio" name="options" (click)="option.IsChecked=$event.target.checked" [value]="option.Value">{{option.Name}}</label></div>
-                            </span>
-                            <span *ngSwitchCase="SurveyTypeDisplayStyle.CheckList">
-                                <div *ngFor="let option of currentQuestion?.Items" style="padding:2px"><label><input type="checkbox" name="options" [(ngModel)]="option.IsChecked" [value]="option.Value">{{option.Name}}</label></div>
-                            </span>
-                        </span>
-                        <div class="col s12">
-                            <div class="FieldName">Comments</div>
-                            <textarea name="comments" [style]="{'height':'150px'}" [(ngModel)]="currentQuestion.Comments"></textarea>
-                        </div>                    
-                        <div class="col s12">&nbsp;</div>
-                        <div class="col s12">
-                            <button *ngIf="currentQuestionIndex > 0" pButton type="button" [disabled]="!surveyForm.form.valid" label="Previous" (click)="previousQuestion(currentQuestionIndex)"></button>
-                            <button *ngIf="currentQuestionIndex + 1 < questions.length" pButton type="button" [disabled]="!surveyForm.form.valid" label="Next" (click)="nextQuestion(currentQuestionIndex)"></button>                            
-                            <button *ngIf="currentQuestionIndex+1 == questions.length" pButton type="submit" [disabled]="!surveyForm.form.valid" label="Save"></button> 
-                            <button *ngIf="ShowCloseButton" pButton type="button" label="Close" (click)="surveyBack.emit()"></button>  
-                            <em *ngIf="questions.length > 1">Question {{currentQuestionIndex+1}} of {{questions.length}}</em>
-                        </div>   
-                        <div *ngIf="errorMessage.length > 0" class="errorMessage ng-star-inserted">* {{errorMessage}}</div>
-                    </div>              
-                    </div>
-               </form>               
-                `
+    templateUrl: 'take-survey.component.html'
 })
 
 export class TakeSurveyComponent extends BaseComponent implements OnInit {

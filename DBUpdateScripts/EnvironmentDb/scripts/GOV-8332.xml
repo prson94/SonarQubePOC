@@ -246,6 +246,10 @@ END
  ]]>
     </sql>
 	<rollback>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">	
 <![CDATA[	
 CREATE OR ALTER PROCEDURE [dbo].[GetSiteNavigation]
 (
@@ -511,6 +515,7 @@ WHERE n.Name = '#Community' AND dbo.HasSiteNavPermission(n.ID, @ResourceID) = 1
 	order by sortorder
 END
 ]]>
+     </sql>
 	</rollback>
   </changeSet>
   </databaseChangeLog>

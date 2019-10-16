@@ -15,16 +15,16 @@ namespace d360.core.validators
 {
     public class AssetTypeValidator
     {
-        List<AssetTypeClass> PredicateSupportingClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
-        List<AssetTypeClass> ParentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference };
-        List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule };
+        List<AssetTypeClass> PredicateSupportingClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Glossary };
+        List<AssetTypeClass> ParentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference, AssetTypeClass.Glossary };
+        List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule, AssetTypeClass.Glossary };
         string ColorRegex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 
         ICompanyContext CompanyContext;
-        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion)
+        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion, bool isFusionEnabled)
         {
             this.CompanyContext = companyContext;
-            if (lineageVersion != 3)
+            if (isFusionEnabled)
             {
                 PredicateSupportingClasses = PredicateSupportingClasses.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();
                 ParentAssetTypeClass = ParentAssetTypeClass.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();
@@ -119,7 +119,7 @@ namespace d360.core.validators
             if (assetTypeId == 0)
                 allowedFieldTokens = new List<string> { "name" };
             else
-                allowedFieldTokens = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.FriendlyName.ToLower()).ToList();
+                allowedFieldTokens = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.Name.ToLower()).ToList();
 
             if (assetClass == AssetTypeClass.Reference)
                 allowedFieldTokens.Add("code");

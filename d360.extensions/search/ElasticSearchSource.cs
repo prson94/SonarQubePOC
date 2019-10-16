@@ -610,10 +610,11 @@ namespace d360.extensions.search
             // if no group filter then we need to get list of categories
             if (string.IsNullOrEmpty(group)) { 
                 //size=0 intepreted as integer.MAX_VALUE deprecated in ES 2.4.0.
-                //Using 2000 for EX6 for now. @TODO: Consider using Composite aggreation
+                //Using 2000 for categories and 20 for Group/asset class
                 sReq.Aggregations = new TermsAggregation("all_types")
                 {
                     Field = fldGroup,
+                    Size = 20,
                     Aggregations = new TermsAggregation("category")
                     {
                         Field = fldType,
@@ -681,8 +682,10 @@ namespace d360.extensions.search
             {
                 case "FUSIONATTRIBUTES":
                     return "Fusion";
-                case "ARTIFACT":
+                case "BUSINESSASSET":
                     return CommonNames.AssetTypeClass_Business;
+                case "TECHNICALASSET":
+                    return CommonNames.AssetTypeClass_Technical;
                 case "TAXONOMY":
                     return CommonNames.AssetTypeClass_Model;
                 case "DOMAIN":
