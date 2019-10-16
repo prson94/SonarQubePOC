@@ -32,11 +32,6 @@ namespace igx.UnitTests.ValidatorTests
                 Type = new FieldTypeDataTypeApiViewModel()
                 {
                     Tag = new FieldTypeDataTypeTagApiViewModel()
-                    {
-                        ShowIfEmpty = true,
-                        IsEditable = false,
-                        IsPartOfKey = false
-                    }
                 },
                 Name = "test"
             });
@@ -60,11 +55,6 @@ namespace igx.UnitTests.ValidatorTests
                 Type = new FieldTypeDataTypeApiViewModel()
                 {
                     Tag = new FieldTypeDataTypeTagApiViewModel()
-                    {
-                        ShowIfEmpty = true,
-                        IsEditable = false,
-                        IsPartOfKey = false
-                    }
                 },
                 Name = "test"
             });
@@ -88,11 +78,8 @@ namespace igx.UnitTests.ValidatorTests
             {
                 Type = new FieldTypeDataTypeApiViewModel()
                 {
-                    Tag = new FieldTypeDataTypeTagApiViewModel() {
-                        ShowIfEmpty = true,
-                        IsEditable = false,
-                        IsPartOfKey = false
-                    }
+                    Tag = new FieldTypeDataTypeTagApiViewModel()
+
                 },
                 Name = "test"
             });
@@ -130,93 +117,7 @@ namespace igx.UnitTests.ValidatorTests
             }
         }
 
-        [Fact]
-        public void PostInValidModel_InvalidShowIsEmptyProp()
-        {
-            model = new FieldTypesApiEditModel();
-            model.AssetTypeUid = Guid.NewGuid();
-            model.Action = FieldTypesApiEditAction.Merge;
-            assetTypeModels = new TypeIdentifierInfoModel();
-            assetTypeModels.Object = "ArtifactType";
-
-            model.Fields = new List<FieldTypeApiEditModel>();
-            model.Fields.Add(new FieldTypeApiEditModel()
-            {
-                Type = new FieldTypeDataTypeApiViewModel()
-                {
-                    Tag = new FieldTypeDataTypeTagApiViewModel()
-                    {
-                        ShowIfEmpty = false,
-                        IsEditable = false,
-                        IsPartOfKey = false
-                    }
-                },
-                Name = "test"
-            });
-
-            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
-
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
-        }
-
-        [Fact]
-        public void PostInValidModel_InvalidIsEditableProp()
-        {
-            model = new FieldTypesApiEditModel();
-            model.AssetTypeUid = Guid.NewGuid();
-            model.Action = FieldTypesApiEditAction.Merge;
-            assetTypeModels = new TypeIdentifierInfoModel();
-            assetTypeModels.Object = "ArtifactType";
-
-            model.Fields = new List<FieldTypeApiEditModel>();
-            model.Fields.Add(new FieldTypeApiEditModel()
-            {
-                Type = new FieldTypeDataTypeApiViewModel()
-                {
-                    Tag = new FieldTypeDataTypeTagApiViewModel()
-                    {
-                        ShowIfEmpty = true,
-                        IsEditable = true,
-                        IsPartOfKey = false
-                    }
-                },
-                Name = "test"
-            });
-
-            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
-
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
-        }
-
-        [Fact]
-        public void PostInValidModel_InvalidIsPartOfKeyProp()
-        {
-            model = new FieldTypesApiEditModel();
-            model.AssetTypeUid = Guid.NewGuid();
-            model.Action = FieldTypesApiEditAction.Merge;
-            assetTypeModels = new TypeIdentifierInfoModel();
-            assetTypeModels.Object = "ArtifactType";
-
-            model.Fields = new List<FieldTypeApiEditModel>();
-            model.Fields.Add(new FieldTypeApiEditModel()
-            {
-                Type = new FieldTypeDataTypeApiViewModel()
-                {
-                    Tag = new FieldTypeDataTypeTagApiViewModel()
-                    {
-                        ShowIfEmpty = true,
-                        IsEditable = false,
-                        IsPartOfKey = true
-                    }
-                },
-                Name = "test"
-            });
-
-            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
-
-            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
-        }
-
+    
         [Fact]
         public void PostInValidModel_AddExisitingTagWithSameName()
         {
@@ -232,11 +133,7 @@ namespace igx.UnitTests.ValidatorTests
                 Type = new FieldTypeDataTypeApiViewModel()
                 {
                     Tag = new FieldTypeDataTypeTagApiViewModel()
-                    {
-                        ShowIfEmpty = true,
-                        IsEditable = false,
-                        IsPartOfKey = false
-                    }
+
                 },
                 Name = "test"
             });
@@ -262,11 +159,7 @@ namespace igx.UnitTests.ValidatorTests
                 Type = new FieldTypeDataTypeApiViewModel()
                 {
                     Tag = new FieldTypeDataTypeTagApiViewModel()
-                    {
-                        ShowIfEmpty = true,
-                        IsEditable = false,
-                        IsPartOfKey = false
-                    }
+
                 },
                 Name = "test1"
             });
@@ -292,11 +185,7 @@ namespace igx.UnitTests.ValidatorTests
                 Type = new FieldTypeDataTypeApiViewModel()
                 {
                     Tag = new FieldTypeDataTypeTagApiViewModel()
-                    {
-                        ShowIfEmpty = true,
-                        IsEditable = false,
-                        IsPartOfKey = false
-                    }
+
                 },
                 Name = "test"
             });
