@@ -4825,6 +4825,10 @@ select	top 100 percent
         TD.DisplayValue,
         {columns}
        -- 0 as Level,
+		case 
+				when Work.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasWorkflow,
         {permissionSql}
 from	
         Asset A
@@ -4837,6 +4841,13 @@ from
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ObjectID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
+		cross apply (
+					select	count(1) as [Count]
+					from	workflow.EventRegistration WER
+							inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
+					where	WER.Object = ATT.Object
+							and WER.ObjectID = ATT.ObjectID
+					) Work
 where   A.ID not in ({Company.GetNoReadSqlStatement()})
         and A.AssetTypeID not in ({Company.GetAssetTypeNoReadSqlStatement()})";
 
@@ -5195,6 +5206,7 @@ order by    Name
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
+                    { "HasWorkflow", (bool)row.HasWorkflow },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") },
                     { "AssetTypeUID", row.uid }

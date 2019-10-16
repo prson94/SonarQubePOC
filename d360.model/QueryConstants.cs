@@ -677,7 +677,11 @@ from	AssetType T
 where T.[object]='PolicyType' and	T.ObjectID = @id";
 
         public static string RuleSettingsItem = @"
-select	T.*, R.*
+select	T.*, R.*,
+			case 
+				when Work.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasWorkflow
 from	AssetType T 
 		cross apply ( 
 					select	case 
@@ -687,6 +691,13 @@ from	AssetType T
 					from	AttributeTypeRelation
 					where	ObjectType = 'RuleType' and ObjectID = T.ObjectID 
 					) R
+		cross apply (
+						select	count(1) as [Count]
+						from	workflow.EventRegistration WER
+								inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
+						where	WER.Object = T.Object
+								and WER.ObjectID = T.ObjectID
+						) Work
 where T.[object]='RuleType' and		T.ObjectID = @id";
 
 
