@@ -529,10 +529,12 @@ namespace d360.core.entities
         [DataMember]
         public FieldTypeDescriptionApiViewModel_ValidationText Validation { get; set; }
     }
-    public class FieldTypeDataTypeTagApiViewModel : FieldTypeEditableApiViewModel
+    public class FieldTypeDataTypeTagApiViewModel
     {
         [DataMember]
-        public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
+        public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
+        [DataMember]
+        public int ColumnOrder { get; set; }
     }
     public class FieldTypeDataTypeApiViewModel
     {
