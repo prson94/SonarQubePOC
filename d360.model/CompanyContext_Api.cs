@@ -12,6 +12,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace d360.model
@@ -36,6 +37,7 @@ namespace d360.model
     partial class CompanyContext : BaseContext
     {
         internal const int API_V2_RETRY_LIMIT = 10;
+        internal const int API_V2_RETRY_INTERVAL = 100; // interval set in ms
 
         #region DbSets
 
@@ -3403,10 +3405,11 @@ set		T.Subject = S.Object,
                     ELSE 0
                   END
 from	api.ExecutionRelationship T
-		left join AssetWithType S on T.ExecutionID = @ExecutionID and S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
-		left join AssetWithType O on T.ExecutionID = @ExecutionID and O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid
-        left join IntersectType IT on IT.uid = @uid
-        left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectId= S.ObjectId and I.ObjectId = O.ObjectId and I.Subject = S.Object and I.Object = O.Object;
+		    left join AssetWithType S on S.[Type] = @st and S.TypeID = @stid and S.[uid] = T.SubjectUid
+		    left join AssetWithType O on O.[Type] = @ot and O.TypeID = @otid and O.[uid] = T.ObjectUid
+            left join IntersectType IT on IT.uid = @uid
+            left join [Intersect] I on IT.Id = I.IntersectTypeId and I.SubjectId= S.ObjectId and I.ObjectId = O.ObjectId and I.Subject = S.Object and I.Object = O.Object
+        where T.ExecutionID = @ExecutionID;
 
 if @st = 'ReferenceItemType' and @stid = 0
 begin
@@ -3414,7 +3417,8 @@ begin
 	set		T.Subject = S.Object,
 			T.SubjectID = S.ObjectID
 	from	api.ExecutionRelationship T
-			inner join AssetType S on T.ExecutionID = @ExecutionID and S.[uid] = T.SubjectUid and T.Subject is null;
+			    inner join AssetType S on S.[uid] = T.SubjectUid and T.Subject is null
+            where T.ExecutionID = @ExecutionID;
 end
 
 if @ot = 'ReferenceItemType' and @otid = 0 
@@ -3423,7 +3427,8 @@ begin
 	set		T.Object = O.Object,
 			T.ObjectID = O.ObjectID
 	from	api.ExecutionRelationship T
-			inner join AssetType O on T.ExecutionID = @ExecutionID and O.[uid] = T.ObjectUid and T.Object is null;
+			inner join AssetType O on O.[uid] = T.ObjectUid and T.Object is null
+            where T.ExecutionID = @ExecutionID;
 end",
                     new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
 
@@ -3605,7 +3610,6 @@ end",
                                 try
                                 {
                                     #region Intersect table merge
-
                                     Connection.Execute($@"
         drop table if exists #ObjectMergeTableResult;
         create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));
@@ -3659,6 +3663,10 @@ end",
                                     if (retryCount > API_V2_RETRY_LIMIT)
                                     {
                                         LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionRelationship", ex.GetFullExceptionData(false), timeout);
+                                    }
+                                    else
+                                    {
+                                        Thread.Sleep(API_V2_RETRY_INTERVAL);
                                     }
                                 }
                             }
