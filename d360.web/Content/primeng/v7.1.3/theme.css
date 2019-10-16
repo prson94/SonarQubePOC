@@ -1468,3 +1468,7 @@ p-multiselect .ui-multiselect {
     z-index: 1;
 }
 
+/*Dropdown default z index for IE issue*/
+p-dropdown .ui-dropdown-panel {
+    z-index: 10;
+}
