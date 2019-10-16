@@ -6586,18 +6586,57 @@ select 'ReferenceItemType|0' as value, 'Reference' as title
                 #endregion
                 case "P":   // Promotion
                     #region
+
+                    var fusionEnabled = Community.GetCompanySettingByKey<bool>("FusionEnabled");
+                    string technicalAssetSql = "";
+                    if (!fusionEnabled) { 
+                        technicalAssetSql = $@"union
+select		4 as Sort,
+			'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 
+			'{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + P.[Path] as title 
+from		AssetType A
+			cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
+where		[Class] = 8";
+                    }
+
                     sql = $@"
-select * from (
-select 'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title from AttributeType where ParentID is null
-union
-select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 1
-union
-select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, '{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 8
-union
-select 'TaxonomyType|' + cast(ObjectID  as varchar(10)) as value, '{CommonNames.AssetTypeClass_Model.CleanForSql()}: ' + Name as title from AssetType where object='TaxonomyType'
-union
-select 'ReferenceItemType|' + cast(ObjectID  as varchar(10)) as value, 'Reference Item: ' + Name as title from AssetType where object='ReferenceItemType'
-) O order by title";
+select	value,
+		title
+from	(
+		select		1 as Sort,
+					'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 
+					'{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' + P.[Path] as title 
+		from		AssetType A
+					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
+		where		[Class] = 1 
+
+		union
+
+		select		2 as Sort,
+					'TaxonomyType|' + cast(ObjectID  as varchar(10)) as value, 
+					'{CommonNames.AssetTypeClass_Model.CleanForSql()}: ' + Name as title 
+		from		AssetType
+		where		[Class] = 2
+
+		union
+
+		select		3 as Sort,
+					'ReferenceItemType|' + cast(ObjectID  as varchar(10)) as value, 
+					'Reference Item: ' + P.[Path] as title 
+		from		AssetType  A
+					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
+		where		[Class] = 9
+
+		{technicalAssetSql}
+
+		union
+
+		select		5 as Sort,
+					'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title 
+		from		AttributeType 
+		where		ParentID is null
+		) O
+order by Sort, title";
                     break;
                 #endregion
                 case "R":   // Relation
@@ -6621,7 +6660,7 @@ select 'ReferenceItemType|' + cast(ObjectID  as varchar(10)) as value, 'Referenc
             }
 
             if (!string.IsNullOrEmpty(sql))
-                models = Company.Query<OptionModel>(sql).OrderBy(i => i.title);
+                models = Company.Query<OptionModel>(sql);
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
