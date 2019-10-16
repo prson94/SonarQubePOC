@@ -26,7 +26,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit {
         return {
             label: set.title,
             value: set.value
-        }
+        };
     });
 
     ngOnInit() {
@@ -46,7 +46,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit {
         if (this.searchTypes.length == 0) {
             label.textContent = 'Search All Categories';
         } else if (this.searchTypes.length == 1) {
-            label.textContent = 'Search ' + this.searchTypes[0];
+            label.textContent = 'Search ' + this.searchObjectTypes.filter((x) => this.searchTypes.indexOf(x.value) >= 0).map((x) => x.label).join(', ');
         } else if (this.searchTypes.length == this.searchObjectTypes.length) {
             label.textContent = 'Search All Categories';
         } else {
