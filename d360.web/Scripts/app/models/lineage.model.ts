@@ -1,4 +1,5 @@
-﻿
+﻿import { AssetTypeClass } from "./asset.model";
+
 export class LineageNode {
     key: any;
     assetId: any;
@@ -442,6 +443,7 @@ export class AssetBrowserTranslationLink {
 }
 
 export class AssetBrowserTranslationNode {
+    assetUid: string;
     key: string;
     group: string;
     isGroup: boolean;
@@ -499,6 +501,36 @@ export class AssetBrowserLineageApiResponseModel {
     focalAssetUid: string;
     assets: AssetBrowserLineageApiItemModel[];
     intersects: AssetBrowserLineageApiRelationshipModel[];
+}
+
+export class AssetBrowserDiagramAsset {
+    AssetTypeClass: AssetTypeClass;
+    TypeName: string;
+    Uid: string;
+    DisplayValue: string;
+    Path: string;
+    Url: string;
+    Fields: AssetBrowserDiagramAssetField[];
+    Owners: AssetBrowserDiagramAssetOwner[];
+    Scores: AssetBrowserDiagramAssetScore[];
+}
+
+export class AssetBrowserDiagramAssetField {
+    Name: string;
+    Value: string;
+    Type: string;
+}
+
+export class AssetBrowserDiagramAssetScore {
+    Name: string;
+    Value: number;
+}
+
+export class AssetBrowserDiagramAssetOwner {
+    ResponsibilityTypeName: string;
+    Icon: string;
+    SecurityAssetName: string;
+    Context: string;
 }
 
 //#endregion
