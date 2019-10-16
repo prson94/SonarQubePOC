@@ -532,9 +532,17 @@ namespace d360.core.entities
     public class FieldTypeDataTypeTagApiViewModel
     {
         [DataMember]
-        public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
-        [DataMember]
         public int ColumnOrder { get; set; }
+        [DataMember]
+        public int? ColumnWidth { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
+
+        [DataMember]
+        public bool IsListable { get; set; }
+        [DataMember]
+        public bool IsPrimaryFilter { get; set; }
+
     }
     public class FieldTypeDataTypeApiViewModel
     {

@@ -1027,15 +1027,17 @@ from	IntersectType I
                 {
                     newFieldType.Type = DataType.Tag.ToString();
                     newFieldType.ColumnOrder = f.Type.Tag.ColumnOrder;
+                    newFieldType.ColumnWidth = f.Type.Tag.ColumnWidth;
                     if (f.Type.Tag.Description != null)
                     {
                         newFieldType.DisplayDescription = f.Type.Tag.Description.Display;
                     }
                     newFieldType.IsDisplayable = true;
                     newFieldType.IsEditable = false;
-                    newFieldType.IsListable = false;
+                    newFieldType.IsListable = f.Type.Tag.IsListable;
                     newFieldType.IsPartOfKey = false;
                     newFieldType.ShowIfEmpty = true;
+                    newFieldType.IsPrimaryFilter = f.Type.Tag.IsPrimaryFilter;
                 }
                 else
                 {
