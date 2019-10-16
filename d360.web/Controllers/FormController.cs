@@ -986,6 +986,7 @@ namespace d360.web.Controllers
                         appendTitle = FormInfo.PolicyType;
                         parentPredicateType = PredicateType.IntraTypeHierarchy;
                         break;
+                    case AssetTypeClass.Reference:
                     case AssetTypeClass.ReferenceItemType:
                         ot = SystemObjects.ReferenceItemType;
                         appendTitle = "Reference List";                        
@@ -1062,9 +1063,12 @@ namespace d360.web.Controllers
                             model.AssetType.Description = assetType.Description;
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
+                        case AssetTypeClass.Reference:
                         case AssetTypeClass.ReferenceItemType:
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Notes = assetType.Notes;
+                            model.AssetType.Description = assetType.Description;
+                            model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             if (model.Tokens != null) model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                             break;
                     }
@@ -1150,7 +1154,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        var parents = Company.Query<PrimeSelectItem>("select uid as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
+                        var parents = Company.Query<PrimeSelectItem>("select CAST(uid AS char(36)) as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
                         model.Parents = parents;
                     }
                     model.Parents?.Insert(0, new PrimeSelectItem() { label = "", value = "" });
