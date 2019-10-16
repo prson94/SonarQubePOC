@@ -119,7 +119,7 @@ namespace d360.core.validators
             if (assetTypeId == 0)
                 allowedFieldTokens = new List<string> { "name" };
             else
-                allowedFieldTokens = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.FriendlyName.ToLower()).ToList();
+                allowedFieldTokens = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.Name.ToLower()).ToList();
 
             if (assetClass == AssetTypeClass.Reference)
                 allowedFieldTokens.Add("code");
