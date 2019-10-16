@@ -1,7 +1,7 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
 import {AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild} from '@angular/core';
-import {DiagramObjectType, AssetBrowserLineageApiRequestModel, AssetBrowserTranslation, AssetBrowserDirection } from '../../../../models/lineage.model';
+import {DiagramObjectType, AssetBrowserLineageApiRequestModel, AssetBrowserTranslation, AssetBrowserDirection, AssetBrowserDiagramAsset } from '../../../../models/lineage.model';
 import {PermissionsService} from '../../../../services/permissions.service';
 import {BrowserService} from '../../../../services/browser.service';
 import {DiagramBaseComponent} from '../diagram-base.component';
@@ -20,13 +20,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @Input() assetUid: string;
 
     @ViewChild('diagram') diagramRef;
+    @ViewChild('bottomCommandBar') bottomCommandBarRef;
 
     DiagramObjectType = DiagramObjectType;
 
     private requestModel: AssetBrowserLineageApiRequestModel;
     private originalAssetUid: string;
     private menuItems: MenuItem[]=[];
-    
+
+    isWindowVisible: boolean = true;
+    isWindowLoading = false;
+    showWindowTabs: boolean = false;
+    tab: string = "info";
+    selectedDiagramAsset: AssetBrowserDiagramAsset;
+
     //#region control properties
 
     constructor(
@@ -62,23 +69,99 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#endregion
 
+    //#region button commands
+
+    private savePngButtonClickCallback(image_data) {
+        var url = window.URL.createObjectURL(image_data);
+        var filename = "myBlobFile.png";
+        var a = document.createElement("a");
+        //a.style = "display: none";
+        a.href = url;
+        a.download = filename;
+        // IE 11
+        if (window.navigator.msSaveBlob !== undefined) {
+            window.navigator.msSaveBlob(image_data, filename);
+            return;
+        }
+        document.body.appendChild(a);
+        requestAnimationFrame(function () {
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        });
+    }
+    private savePngButtonClick(e) {
+        let image_data = this.diagram.makeImageData({
+            scale: 1,
+            returnType: "blob",
+            callback: this.savePngButtonClickCallback
+        });
+    }
+    private alertButtonClick(e) {
+        alert('Alerts coming soon');
+    }
+    private infoButtonClick(e) {
+        this.isWindowVisible = !this.isWindowVisible;
+    }
+    private refreshButtonClick(e) {
+        this.refreshDiagram();
+    }
+    private zoomInButtonClick(e) {
+        this.diagram.scale += .1;
+
+        if (this.diagram.scale > 2.5) {
+            this.diagram.scale = 2.5;
+        }
+    }
+    private zoomOutButtonClick(e) {
+        this.diagram.scale -= .1;
+
+        if (this.diagram.scale < .1) {
+            this.diagram.scale = .1;
+        }
+    }
+    private fullScreenButtonClick(e) {
+        alert('Full screen coming soon');
+    }
+
+    //#endregion
+
     //#region helper methods
 
-    public menuAction(e: MenuItem) {
-        if (e.icon == 'fa fa-refresh') {
-            this.refreshDiagram();
-        } else if (e.icon == 'fa fa-search-plus') {
-            this.diagram.scale += .1;
+    private OwnershipTabEnabled() {
+        let enabled: boolean = false;
 
-            if (this.diagram.scale > 2.5) {
-                this.diagram.scale = 2.5;
-            }
-        } else if (e.icon == 'fa fa-search-minus') {
-            this.diagram.scale -= .1;
+        if (this.selectedDiagramAsset) {
+            enabled = (this.selectedDiagramAsset.Owners.length > 0);
+        }
 
-            if (this.diagram.scale < .1) {
-                this.diagram.scale = .1;
-            }
+        return enabled;
+    }
+
+    private infoButtonSelectedClass() {
+        return this.isWindowVisible ? "selected" : "";
+    }
+    private ownerRowClass(icon: string) {
+        return "fa " + icon;
+    }
+    private scoreClass(value: number) {
+        let css: string = "asset-browser-window-tabs-content-score-";
+        if (value < 60) {
+            css += "low";
+        }
+        else if (value > 60 && value < 75) {
+            css += "medium";
+        }
+        else {
+            css += "high";
+        }
+    }
+
+    private GetJSON(value: string) {
+        try {
+            return JSON.parse(value);
+        } catch {
+            return "Error";
         }
     }
 
@@ -251,7 +334,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
         }
 
-        this.diagramRef.nativeElement.style.height = (height - offset - 200) + 'px';
+        this.diagramRef.nativeElement.style.height = (height - offset - 275) + 'px';
+
+        //alert(this.bottomCommandBarRef.nativeElement.offsetParent.offsetTop);
     }
 
     private onMouseEnterNode(e: any, node: go.Node) {
@@ -274,8 +359,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         if (obj != null) {
             if (obj.diagramObjectType == DiagramObjectType.Node) {
-                this.objectType = obj.obj;
-                this.objectID = obj.objid;
+                //this.assetUid = obj.;
 
                 this.populateDiagram();
             }
@@ -287,13 +371,24 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region templates
 
     private createContextMenu(): go.Adornment {
+        let dgm = this;
         return this.g(
             "ContextMenu",
             { areaBackground: "#ffffff", background: "#ffffff" },
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "bold 12px sans-serif" }),
-                { click: function (e, obj) { alert("Not yet implemented") } }
+                {
+                    click: function (e, obj) {
+                        dgm.isWindowLoading = true;
+                        dgm.browserService.getAssetBrowserDiagramAsset(obj.part.data.assetUid).subscribe(response => {
+                            dgm.selectedDiagramAsset = response;
+                            dgm.isWindowVisible = true;
+                            dgm.isWindowLoading = false;
+                            dgm.showWindowTabs = true;
+                        });
+                    }
+                }
             ),
             this.g(
                 "ContextMenuButton",
