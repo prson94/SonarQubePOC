@@ -1,12 +1,9 @@
-﻿import { Component, OnDestroy, Input, Output, EventEmitter, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+﻿import { Component, Input, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
-import { SearchResult } from '../../models/search-result.model';
-import { DropdownOption } from '../../models/dropdown.model';
-import { SubscriptionLike as ISubscription } from 'rxjs';
+import { SettingsHelper } from '../../models/settings.model';
 import { StringConstants } from '../../static/string-constants';
 
 declare var CompanySettings;
@@ -18,58 +15,42 @@ declare var CompanySettings;
 
 export class HeroSearchInputComponent extends BaseComponent implements OnInit {
     @Input() isExactMatch: boolean = true;
-    @Input() searchTypes: string[] = ["Artifact", "Synonym"];
+    @Input() searchTypes: string[] = ["BusinessAsset", "Synonym"];
 
 
     constructor() {
         super();
     }
 
-    private fields: DropdownOption[] = [
-        { title: "Category", value: "Type" },
-        { title: "Description", value: "Description" },
-        { title: "Name", value: "Name" },
-        { title: "Type", value: "_type" },
-    ];
+    private searchObjectTypes: SelectItem[] = SettingsHelper.getSearchTypesList().map((set) => {
+        return {
+            label: set.title,
+            value: set.value
+        }
+    });
 
-    private types: DropdownOption[] = [
-        { title: "Attribute", value: "Attribute" },
-        { title: "Fusion", value: "FusionAttributes" },
-        { title: "Fusion Type", value: "FusionType" },
-        { title: StringConstants.AssetTypeClass_Business, value: "Artifact" },
-        { title: StringConstants.AssetTypeClass_Technical, value: "Artifact" },
-        { title: "Group", value: "Group" },
-        { title: "Model", value: "Taxonomy" },
-        { title: "Reference", value: "Reference" },
-        { title: "User", value: "Resource" },
-        { title: "Grammatic Type", value: "Synonym" },
-        { title: "Data Quality", value: "Rule" },
-    ];
-
-    private searchObjectTypes: SelectItem[] = [
-        { value: "Attribute", label: "Attribute" },
-        { value: "FusionAttributes", label: "Fusion" },
-        { value: "FusionType", label: "Fusion Type" },
-        { value: "Artifact", label: StringConstants.AssetTypeClass_Business },
-        { value: "Artifact", label: StringConstants.AssetTypeClass_Technical },
-        { value: "Group", label: "Group" },
-        { value: "Taxonomy", label: "Model" },
-        { value: "Policy", label: "Policy" },
-        { value: "Reference", label: "Reference" },
-        { value: "Resource", label: "User" },
-        { value: "Synonym", label: "Grammatic Type" },
-        { value: "Rule", label: "Data Quality" },
-    ];
     ngOnInit() {
         if (CompanySettings) {
             if (CompanySettings.FusionEnabled == 'false') {
                 this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
-                this.types = this.types.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
             }
             if (CompanySettings.FusionEnabled == 'true') {
                 this.searchObjectTypes = this.searchObjectTypes.filter(x => x.label != StringConstants.AssetTypeClass_Technical);
-                this.types = this.types.filter(x => x.title != StringConstants.AssetTypeClass_Technical);
             }
+        }
+    }
+    setEventTypeLabel() {
+        let label = (document.getElementById('searchMultiSelect')
+            .getElementsByClassName('ui-multiselect-label-container')[0]
+            .getElementsByClassName('ui-multiselect-label')[0]);
+        if (this.searchTypes.length == 0) {
+            label.textContent = 'Search All Categories';
+        } else if (this.searchTypes.length == 1) {
+            label.textContent = 'Search ' + this.searchTypes[0];
+        } else if (this.searchTypes.length == this.searchObjectTypes.length) {
+            label.textContent = 'Search All Categories';
+        } else {
+            label.textContent = 'Search ' + this.searchTypes.length + ' Categories';
         }
     }
 };
