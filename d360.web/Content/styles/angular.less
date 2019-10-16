@@ -1505,7 +1505,7 @@ a.breadcrumb {
     height: 32px;
     border-radius: 2px;
     width: 200px;
-    padding: 5px;
+    padding: 4px;
     border: 1px solid #ccc;
 
     input {
@@ -4372,12 +4372,13 @@ a.mid-blue {
 
     display: flex;
     background: rgba(37, 44, 65, 0.6);
-    padding: 50px;
+    padding: 42px;
     border-radius: 4px;
     white-space: nowrap;
     margin-left: auto;
     margin-right: auto;
     width: 80%;
+    height:140px;
 
     .field {
         height: 56px;
@@ -4392,6 +4393,10 @@ a.mid-blue {
         }
     }
 
+    .ui-multiselect.ui-state-focus .ui-multiselect-label {
+        background: #f1f2f3;
+    }
+
     .ui-multiselect {
         background: #f1f2f3;
         border-left: none;
@@ -4401,8 +4406,32 @@ a.mid-blue {
         border: solid 1px #b9c0c5;
         background-color: #f1f2f3;
 
+        .ui-multiselect-panel .ui-multiselect-item {
+            padding: 4px;
+            height: 32px;
+            font-size: 14px;
+            font-weight: normal;
+            font-style: normal;
+            font-stretch: normal;
+            line-height: 1.14;
+            letter-spacing: normal;
+            color: #202020;
+
+            &:focus {
+                outline: none;
+            }
+
+            span {
+                height: 16px;
+            }
+        }
+
+        .ui-widget-header {
+            border-bottom: 1px solid #f1f2f3;
+        }
+
         .ui-multiselect-label {
-            padding: 16px;
+            padding: 20px;
             margin-right: 8px;
         }
 
@@ -4415,15 +4444,36 @@ a.mid-blue {
             background: none;
         }
 
+        .ui-chkbox-box {
+            border-radius: 2px !important;
+            width: 16px;
+            height: 16px;
+            border-radius: 2px;
+            box-shadow: 0 1px 0 0 rgba(22, 29, 37, 0.05);
+            border: solid 1px #b9c0c5;
+            background-image: linear-gradient(to bottom, #ffffff, #f9fafb);
+        }
+
         .ui-chkbox.ui-chkbox-icon {
             display: inline-block;
         }
         //header in all
         .ui-multiselect-header {
+            height: 40px;
+            line-height: 28px;
 
             .ui-chkbox-box::after {
                 content: 'Search All Catergories';
                 padding-left: 20px;
+            }
+
+
+            a.ui-multiselect-close {
+                display: none;
+            }
+
+            .ui-chkbox-box {
+                border-radius: 2px !important;
             }
 
             .ui-chkbox-box.ui-state-active::after {
