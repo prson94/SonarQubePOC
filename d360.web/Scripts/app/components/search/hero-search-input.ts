@@ -46,7 +46,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit {
         if (this.searchTypes.length == 0) {
             label.textContent = 'Search All Categories';
         } else if (this.searchTypes.length == 1) {
-            label.textContent = 'Search ' + this.searchTypes[0];
+            label.textContent = 'Search ' + (this.searchObjectTypes.filter(x => { return x.value == this.searchTypes[0] }).length > 0 ? this.searchObjectTypes.filter(x => { return x.value == this.searchTypes[0] })[0].label : '');
         } else if (this.searchTypes.length == this.searchObjectTypes.length) {
             label.textContent = 'Search All Categories';
         } else {
