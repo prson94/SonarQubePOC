@@ -34,5 +34,6 @@ namespace d360.model.DataAccessLayer
         Task<bool> IsRelationshipExistsForAssetType(int assetTypeId);
         List<RelationshipTypeResult> PostRelationshipTypes(List<RelationshipTypeInsert> relationshipTypes, ApiExecution execution);
         List<RelationshipTypeResult> PutRelationshipTypes(List<RelationshipTypeUpdate> relationshipTypes, ApiExecution execution);
-     }
+        List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution);
+    }
 }

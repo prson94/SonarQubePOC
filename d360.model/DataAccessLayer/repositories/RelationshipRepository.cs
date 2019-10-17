@@ -632,5 +632,29 @@ from	IntersectType I
 
             return results;
         }
+
+        public List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution) {
+            companyContext.Add(execution);
+
+            List<RelationshipTypeResult> results = null;
+            try
+            {
+                results = companyContext.DeleteRelationshipTypes(execution, relationshipTypes);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                companyContext.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                companyContext.Update(execution);
+            }
+
+            return results;
+        }
     }
 }

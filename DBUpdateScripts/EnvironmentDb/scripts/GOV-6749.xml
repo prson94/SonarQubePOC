@@ -42,12 +42,36 @@ CREATE TABLE [api].[ExecutionRelationshipType](
 
 
 
+drop table if exists [api].[ExecutionDeletedRelationshipType]
+
+CREATE TABLE [api].[ExecutionDeletedRelationshipType](
+	[ExecutionID] [uniqueidentifier] NOT NULL,
+	[ItemNumber] [int] NOT NULL,
+	[ExecutionItemUid] [uniqueidentifier] NULL,
+	[Uid] [uniqueidentifier] NOT NULL,
+	[Cascade] [bit] NOT NULL,
+	[Message] [nvarchar](2500) NULL,
+	[Success] [bit] NULL,
+ CONSTRAINT [PK_ExecutionDeletedRelationshipType] PRIMARY KEY CLUSTERED 
+(
+	[ExecutionID] DESC,
+	[ItemNumber] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+
+ALTER TABLE [api].[ExecutionDeletedRelationshipType] 
+ADD  CONSTRAINT [DF_ApiExecutionDeletedRelationshipType_Cascade]  DEFAULT ((0)) FOR [Cascade]
+
 ]]>
     </sql>
     <rollback>
 <![CDATA[
 drop table if exists [api].[ExecutionRelationshipType]
+
+drop table if exists [api].[ExecutionDeletedRelationshipType]
 ]]>
     </rollback>
   </changeSet>
+ 
 </databaseChangeLog>

@@ -349,6 +349,20 @@ namespace d360.core.entities
         [DataMember]
         public Cardinality ObjectCardinality { get; set; }
     }
+
+    public class RelationshipTypeDelete
+    {
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public bool Cascade { get; set; }
+    }
+
+
     public class RelationshipImportRequest
     {
         public int ItemNumber { get; set; }

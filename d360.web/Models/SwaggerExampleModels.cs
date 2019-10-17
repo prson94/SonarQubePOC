@@ -121,6 +121,20 @@ namespace d360.web.Models
         }
     }
 
+    public class RelationshipTypeDeleteExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new RelationshipTypeDelete
+            {
+                ExecutionItemUid = Guid.Empty,
+                Uid = Guid.Empty,
+                Cascade = false
+            };
+        }
+    }
+
+
     #endregion
     #region Workflow Type Examples
 
