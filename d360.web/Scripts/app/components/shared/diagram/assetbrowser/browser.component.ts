@@ -236,6 +236,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.assetUid = this.originalAssetUid;
         this.populateDiagram();
     }
+
     private findSubGraph(startKey: string, direction: AssetBrowserDirection): AssetBrowserTranslation {
         let subgraph = new AssetBrowserTranslation();
 
@@ -247,22 +248,28 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (node != null) {
             let currentNodes = [];
             let nextLinks = [];
+            let reverseLinks = [];
             let excludeStart = true;
-            let iteration = 1;
+
             currentNodes.push(node.data);
 
             if (direction == AssetBrowserDirection.Forward || direction == AssetBrowserDirection.Both) {
 
                 while (currentNodes.length > 0) {
                     nextLinks = [];
+                    reverseLinks = [];
+
                     currentNodes.forEach(n => {
                         if (subgraph.nodes.find(s => s.key == n.key)) {
                             //already in the subgraph, skip
                         } else {
                             let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == n.key);
+                            let r = this.diagramModelAsGraph().linkDataArray.filter(r => r.to == n.key);
                             nextLinks = nextLinks.concat(l);
+                            
                             if (!(excludeStart && n.key == startKey)) {
                                 subgraph.nodes.push(n);
+                                reverseLinks = reverseLinks.concat(r);
 
                                 if (n.isGroup) {
                                     let parts = (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts();
@@ -286,7 +293,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             }
                         });
                     });
-                    iteration++;
+
+                    reverseLinks.forEach(r => {
+                        subgraph.links.push(r);
+                        let nodes = this.diagram.model.nodeDataArray.filter(n => n.key == r.from);
+                        nodes.forEach(n => {
+                            if (subgraph.nodes.find(s => s.key == n.key) || (excludeStart && n.key == startKey)) {
+
+                            } else {
+                                currentNodes.push(n);
+                            }
+                        });
+                    });
                 }
 
             }
@@ -294,14 +312,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 while (currentNodes.length > 0) {
                     nextLinks = [];
+                    reverseLinks = [];
                     currentNodes.forEach(n => {
                         if (subgraph.nodes.find(s => s.key == n.key)) {
                             //already in the subgraph, skip
                         } else {
                             let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == n.key);
+                            let r = this.diagramModelAsGraph().linkDataArray.filter(r => r.from == n.key);
+
                             nextLinks = nextLinks.concat(l);
                             if (!(excludeStart && n.key == startKey)) {
                                 subgraph.nodes.push(n);
+                                reverseLinks = reverseLinks.concat(r);
 
                                 if (n.isGroup) {
                                     let parts = (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts();
@@ -325,9 +347,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             }
                         });
                     });
-                    iteration++;
-                }
 
+                    reverseLinks.forEach(r => {
+                        subgraph.links.push(r);
+                        let nodes = this.diagram.model.nodeDataArray.filter(n => n.key == r.to);
+                        nodes.forEach(n => {
+                            if (subgraph.nodes.find(s => s.key == n.key) || (excludeStart && n.key == startKey)) {
+
+                            } else {
+                                currentNodes.push(n);
+                            }
+                        });
+                    });
+                }
             }
         }
 
@@ -469,6 +501,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (obj != null && obj.part != null && obj.part.data != null) {
             let node: AssetBrowserTranslationNode = obj.part.data;
             if (node.template == "HiddenData") {
+                this.diagram.startTransaction('unhide');
+
                 let upstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == node.key);
                 let downstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == node.key);
 
@@ -479,6 +513,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagramModelAsGraph().removeLinkDataCollection(downstreamLinks);
 
                 this.diagram.model.removeNodeData(node);
+
+                this.diagram.commitTransaction('unhide');
+
             }
         }
     }
