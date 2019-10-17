@@ -46,14 +46,17 @@ namespace d360.web.Controllers.V2
         IStorageProvider Storage;
         IAssetRepository AssetRepository;
         ITagRepository tagRepository;
+        IRelationshipRepository relationshipRepository;
 
-        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository)
+        public AssetsController(ICommunityContext community, ICompanyContext company, IStorageProvider storage, IQueueSource queueSource, IAssetRepository repository, ITagRepository tagRepository,
+            IRelationshipRepository relationshipRepository)
             : base(community, company)
         {
             QueueSource = queueSource;
             Storage = storage;
             this.AssetRepository = repository;
             this.tagRepository = tagRepository;
+            this.relationshipRepository = relationshipRepository;
         }
 
         #endregion
@@ -397,6 +400,15 @@ namespace d360.web.Controllers.V2
                 if (AssetRepository.IsReachedTransformationLimit(model))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Reached Transformation limit", AssetTypeErrors.TransformationLimitExceeded));
 
+                if (!model.UseAsTransformation && assetType.UseAsTransformation && (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.TechnicalAsset))
+                {
+                    var IsTransformPredicateExists = await this.relationshipRepository.IsTransformPredicateExists(assetType.ID);
+                    if (IsTransformPredicateExists)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Transformation Relationship Exists For AssetType", AssetTypeErrors.RelationshipExistsForAssetType));
+
+                }
+                
+
                 var updateStatus = AssetRepository.UpdateAssetType(model, assetType, parentAssetType, predicate);
                 if (updateStatus.Item1 != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(updateStatus.Item1, updateStatus.Item2, updateStatus.Item3));
@@ -425,6 +437,8 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+       
         /// <summary>
         /// Adds a given set of assets based on the specific asset type unique identifier. Use this endpoint if you want to process under 250 items and need immediate results.
         /// </summary>

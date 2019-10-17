@@ -204,8 +204,8 @@ export class RelationshipsService extends BaseObservableService {
             );
     }
 
-    isRelationshipExistsForAssetType(id: number): Observable<boolean> {
-        return this.http.get(`api/v2/relationships/isRelationshipExistsForAssetType/${id}`)
+    IsTransformPredicateExists(id: number): Observable<boolean> {
+        return this.http.get(`api/v2/relationships/IsTransformPredicateExists/${id}`)
             .pipe(
                 map(response =><boolean> response),
                 catchError(err => this.handleError(err))
