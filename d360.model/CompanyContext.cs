@@ -552,10 +552,10 @@ where	T.[Class] in (1,2,3,4,6,7,8,9)").ToList();
 		            case
                         when Object like 'ArtifactType' AND (Class = 1) then 'Business Asset :: '
                         when Object like 'ArtifactType' and (Class = 8 ) then 'Technical Asset :: '
-			            when Object like 'TaxonomyType' then 'Models :: '
-			            when Object like 'PolicyType' then 'Policies :: '
-			            when Object like 'RuleType' then 'Rules :: '
-			            when Object like 'FusionType' then 'Fusion Types :: '
+			            when Object like 'TaxonomyType' then 'Model :: '
+			            when Object like 'PolicyType' then 'Policy :: '
+			            when Object like 'RuleType' then 'Rule :: '
+			            when Object like 'FusionType' then 'Fusion Type :: '
 			            when Object like 'ReferenceItemType' then 'Reference Item Type :: '
 		            end + Name as Name
             from	AssetType
