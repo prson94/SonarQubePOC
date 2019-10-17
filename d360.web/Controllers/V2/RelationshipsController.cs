@@ -96,7 +96,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes a predicates of a given predicate list.
+        /// Deletes a given set of predicates.
         /// </summary>
         /// <param name="predicates">The list of predicates for deletion.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -149,10 +149,10 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Inserts a predicates of a given predicate list.
+        /// Inserts or updates a given set of predicates.
         /// </summary>
         /// <remarks>
-        /// For updating existing predicate, add predicate Uid to a predicate list parameter
+        /// For updating existing predicate, add the predicate Uid to the request.
         /// </remarks>
         /// <param name="predicates">The list of predicates for insertion.</param>
         /// <returns>An HTTP status code and message.</returns>
