@@ -9,6 +9,7 @@ import { TypeaheadSearchService } from '../../services/typeahead-search.service'
 import { SearchResultsObject, SearchCategories, AdvancedSearchFilter } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
 import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SettingsHelper } from '../../models/settings.model';
 
 
 declare var CompanySettings;
@@ -49,6 +50,8 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public fromNumber: number = 0;
     public sub: any;
     public showAdvanced: boolean = false;
+
+    private displayNameLookup: string[];
 
     @ViewChild('title') title: ElementRef;
 
@@ -112,13 +115,35 @@ export class SearchComponent extends BaseComponent implements OnInit {
         }, 100);
     }
 
+    private getDisplayLookup(category:string) {
+        if (this.displayNameLookup == undefined) {
+            this.displayNameLookup = SettingsHelper.getSearchTypesList().reduce(function (map, obj) {
+                map[obj.value] = obj.title;
+                return map;
+            }, []);
+        }
+        if (this.displayNameLookup[category] != undefined)
+            return this.displayNameLookup[category];
+        else
+            return category;
+    }
+
     public doSearch(filterCategory?: SearchCategories) {
         this.isLoading = true;
         this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.fromNumber, (this.showAdvanced ? undefined : this.searchTypes), filterCategory, this.isExactMatch, this.showAdvanced ? this.advancedFilters : undefined)
             .subscribe(res => {
                 this.isLoading = false;
                 this.searchResults = res;
-                if (filterCategory == undefined) this.categories = res.Categories;
+                if (filterCategory == undefined) {
+                    this.categories = res.Categories.map((val) => {
+                        return {
+                            "Name": val.Name,
+                            "DisplayName": this.getDisplayLookup(val.Name),
+                            "ResultCount": val.ResultCount,
+                            "Categories": val.Categories
+                        }
+                    });
+                }
             });
     }
 

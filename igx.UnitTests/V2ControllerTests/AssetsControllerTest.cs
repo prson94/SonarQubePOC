@@ -25,7 +25,7 @@ namespace igx.UnitTests
         internal AssetsController assetsController;
         public AssetControllerTest()
         {
-            this.assetsController = new AssetsController(GetCommunity(), GetCompany(), GetStorage(), GetQueue(), GetAssetRepository(),GetTagRepository())
+            this.assetsController = new AssetsController(GetCommunity(), GetCompany(), GetStorage(), GetQueue(), GetAssetRepository(),GetTagRepository(),GetRelationshipRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()

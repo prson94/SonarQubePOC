@@ -148,6 +148,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             );
 
             if (this.selected && this.selected.ID > 0) {
+                this.setObjectInfo('Policy', this.selected.ID, this.selected.DisplayValue, this.selected.AssetID, undefined, this.selected.Uid);
                 this.checkParent(this.selected);
                 this.headerBreadcrumbService.showBreadcrumb(
                     new Breadcrumb(

@@ -15,7 +15,7 @@
                         <input maxlength="250" pInputText name="name" #name="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.AssetType.Name" required />
                         <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>
                     </div>
-                    <div class="col l6 m6 s12" *ngIf="showParentPredicates && (model.Predicates.length > 1)">
+                    <div class="col l6 m6 s12" *ngIf="showParentPredicates">
                         <div [ngClass]="isPredicateRequired ? 'FieldNameRequired' : 'FieldName'">Predicate To Parent</div>
                         <p-dropdown 
                                     [options]="model.Predicates" 

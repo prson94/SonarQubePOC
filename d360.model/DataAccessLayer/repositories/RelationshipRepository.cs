@@ -568,19 +568,23 @@ from	IntersectType I
             return results;
         }
 
-        public async Task<bool> IsRelationshipExistsForAssetType(int assetTypeId)
+        public async Task<bool> IsTransformPredicateExists(int assetTypeId)
         {
             string sql = @"
-                                Select A.Name from AssetType A
-                                where Id=@Id
-                                and 
-                                (
-                                exists (select 1 from IntersectType 
-                                where Subject = A.[Object] and SubjectID = A.ObjectID )
-                                or exists (select 1 from IntersectType 
-                                where [Object] = A.[Object] and ObjectID = A.ObjectID )
-                                )";
-            var result = await companyContext.QueryAsync<string>(sql, new { id = assetTypeId });
+                           Select A.Name from AssetType A
+                        where Id=@Id
+                        and 
+                        (
+                            exists (select 1 from IntersectType I
+	                        inner join [Predicate] P on
+	                        P.Id = I.PredicateID
+                            where P.[Type]  = @type and I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID )
+                            or exists (select 1 from IntersectType I
+	                        inner join [Predicate] P on
+	                        P.Id = I.PredicateID
+                            where P.[Type] = @type and I.[Object] = A.[Object] and I.ObjectID = A.ObjectID )
+                        )     ";
+            var result = await companyContext.QueryAsync<string>(sql, new { id = assetTypeId, type=(int) PredicateType.Transformation });
             return  string.IsNullOrEmpty(result.FirstOrDefault()) ? false : true;
         }
         public List<RelationshipTypeResult> PostRelationshipTypes(List<RelationshipTypeInsert> relationshipTypes,  ApiExecution execution)
