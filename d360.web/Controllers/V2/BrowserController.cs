@@ -25,7 +25,8 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/browser"),
-        Authorize
+        Authorize,
+        StringEnumController
     ]
     public class BrowserController : BaseV2ApiController
     {
@@ -33,7 +34,7 @@ namespace d360.web.Controllers.V2
         {
         }
 
-        #region Internal Classes For Endpoint Below
+        #region Internal Classes For GetAssetLineage Endpoint
 
         internal class RawResultList1
         {
@@ -76,7 +77,6 @@ namespace d360.web.Controllers.V2
         }
 
         #endregion
-
 
         private void recurse(List<RawResultList2> hierarchies, IAssetBrowserLineageApiItemModel current)
         {
@@ -142,42 +142,6 @@ namespace d360.web.Controllers.V2
                     model.assets.Add(current);
                 }
 
-                //int currentHop = 1;
-                //int currentHierarchyLevel = 0;
-                //IAssetBrowserLineageApiItemModel current = null;
-                //hierarchies.ForEach(h =>
-                //{
-                //    if (h.Hop != currentHop || (h.Hop == currentHop && current?.ID != h.ID))
-                //    {
-                //        currentHop = h.Hop;
-                //        current = null;
-                //    }
-
-                //    if (current == null)
-                //    {
-                //        current = new AssetBrowserLineageApiTopItemModel { ID = h.ID, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", displayValue = h.DisplayValue };
-                //        model.assets.Add((AssetBrowserLineageApiTopItemModel)current);
-                //    }
-                //    else
-                //    {
-                //        if (current.assetUid != h.AssetUid)
-                //        {
-                //            if (h.HierarchyLevel != currentHierarchyLevel)
-                //            {
-                //                current.items = new List<AssetBrowserLineageApiItemModel>();
-                //                var newCurrent = new AssetBrowserLineageApiItemModel { ID = h.ID, key = h.Key, assetUid = h.AssetUid, displayValue = h.DisplayValue };
-                //                current.items.Add(newCurrent);
-
-                //                current = newCurrent;
-                //            }
-                //            else
-                //            { 
-                            
-                //            }
-                //        }
-                //    }
-                //});
-
                 model.intersects = relationships.Select(r => new AssetBrowserLineageApiRelationshipModel { 
                     backColor = "", 
                     foreColor = "", 
@@ -199,9 +163,121 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        private void update(AssetBrowserLineageApiResponseModel root, AssetBrowserLineageApiItemModel current)
-        { 
-        
+
+        #region Internal Classes For GetDiagramAsset Endpoint
+
+        internal class AssetBrowserDiagramAsset
+        {
+            public string TypeName { get; set; }
+            public AssetTypeClass AssetTypeClass { get; set; }
+            public Guid Uid { get; set; }
+            public string DisplayValue { get; set; }
+            public string Path { get; set; }
+            public string Url { get; set; }
+            public List<AssetBrowserDiagramAssetField> Fields { get; set; } = new List<AssetBrowserDiagramAssetField>();
+            public List<AssetBrowserDiagramAssetScore> Scores { get; set; } = new List<AssetBrowserDiagramAssetScore>();
+            public List<AssetBrowserDiagramAssetOwner> Owners { get; set; } = new List<AssetBrowserDiagramAssetOwner>();
+        }
+
+        internal class AssetBrowserDiagramAssetField
+        {
+            public string Name { get; set; }
+            public string Value { get; set; }
+            public string Type { get; set; }
+        }
+
+        internal class AssetBrowserDiagramAssetScore
+        {
+            public string Name { get; set; }
+            public int Value { get; set; }
+        }
+
+        internal class AssetBrowserDiagramAssetOwner
+        {
+            public string ResponsibilityTypeName { get; set; }
+            public string Icon { get; set; }
+            public string SecurityAssetName { get; set; }
+            public string Context { get; set; }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Gets information regarding a specific diagram asset, beOwner it an asset or a relationship.
+        /// </summary>
+        /// <param name="uid">The uid of the asset that we are getting lineage for.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            Route("diagramasset/{uid:Guid}"),
+            HttpGet,
+            MapToApiVersion("2.0"),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the GET request.", typeof(AssetBrowserDiagramAsset)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetDiagramAsset(Guid uid)
+        {
+            try
+            {
+                var sql = @"
+select	A.TypeName,
+		A.Uid,
+        A.AssetTypeClass,
+		A.DisplayValue,
+		(
+			select	string_agg(doc.c.value('.', 'nvarchar(250)'), ' > ')
+			from	graph.AssetNode AN
+					cross apply AN.Segments.nodes('/path/segment') doc(c)
+			where	AN.ID = A.ID
+		) as [Path],
+		dbo.GenerateAssetUrl(A.ID) as Url,
+		(
+			select	F.FriendlyName as Name,
+					V.FormattedValue as Value,
+					F.Type
+			from	utility.FieldValue V
+					inner join FieldType F on F.ID = V.FieldTypeID and F.[Type] not in @CalculatedFieldTypes
+			where	AssetID = A.ID
+					and F.IsDisplayable = 1
+			order by F.ColumnOrder
+			for json path
+		) as Fields,
+		(
+			select	'Governance Score' as Name,
+					cast([Value]*100 as int) as Value
+			from	metrics.Score
+			where	AssetUid = A.Uid
+			for json path
+		) as Scores,
+		(
+			select	ResponsibilityTypeName,
+					case SecurityAsset
+						when 'G' then 'fa-users'
+						else 'fa-user'
+					end as Icon,
+					SecurityAssetName,
+					Context
+			from	ResponsibilityDetail
+			where	IsVisible = 1 
+					and AssetID = A.ID
+			for json path
+		) as Owners
+from	AssetDetail A
+where	A.Uid = @uid
+for json path, WITHOUT_ARRAY_WRAPPER";
+
+                var reader = await Company.QueryAsync<string>(sql, new { uid, this.CalculatedFieldTypes }, timeout: 10);
+                var json = string.Join("",reader);
+
+                var model = JsonConvert.DeserializeObject<AssetBrowserDiagramAsset>(json);
+
+                return Request.CreateResponse(HttpStatusCode.OK, model);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
         }
     }
 }
