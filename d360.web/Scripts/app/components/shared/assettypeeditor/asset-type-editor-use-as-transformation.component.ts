@@ -40,13 +40,13 @@ export class AssetTypeEditorUseAsTransformationComponent extends BaseComponent i
     ngOnChanges(changes: SimpleChanges): void {
         if (typeof changes['UseAsTransformation'] !== "undefined" && changes['UseAsTransformation'].firstChange) {
             this.initialValue = changes['UseAsTransformation'].currentValue;
-            this.isRelationshipExistsForAssetType();
+            if (this.initialValue) this.IsTransformPredicateExists();
         }
     }
 
-    isRelationshipExistsForAssetType() {
+    IsTransformPredicateExists() {
         if (this.initialValue && this.assetTypeId != 0) {
-            this.relationshipsService.isRelationshipExistsForAssetType(this.assetTypeId).subscribe(res => {
+            this.relationshipsService.IsTransformPredicateExists(this.assetTypeId).subscribe(res => {
                 if (res) {
                     setTimeout(() => {
                         this.isRelationsExist = true;

@@ -15,7 +15,7 @@ import { Observable } from 'rxjs';
                 <i [class]="'fa ' + s.Icon" style="display: block;"></i>
             </div>
             <div *ngIf="s.IconUrl != null" class="custom-icon">
-                <img [src]="s.FullURL" style="max-width: 72px; max-height: 72px; "/>
+                <img [src]="s.FullURL" style="max-width: 34px; max-height: 34px; "/>
             </div>
             <div class="shortcut-name" [title]="s.Name" [style.color]="s.TitleColor">
                 {{s.Name}}
