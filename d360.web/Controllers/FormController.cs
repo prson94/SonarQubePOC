@@ -1011,6 +1011,7 @@ namespace d360.web.Controllers
                         AssetType = new AssetTypeInsert()
                         {
                             Uid = assetType.uid,
+                            ParentUid = parentUid,
                             AutoDisplayDescription = assetType.AutoDisplayDescription,
                             Class = @class,
                             UseAsTransformation = assetType.UseAsTransformation,

@@ -15,9 +15,9 @@ namespace d360.core.validators
 {
     public class AssetTypeValidator
     {
-        List<AssetTypeClass> PredicateSupportingClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
-        List<AssetTypeClass> ParentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference };
-        List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule };
+        List<AssetTypeClass> PredicateSupportingClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Glossary };
+        List<AssetTypeClass> ParentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference, AssetTypeClass.Glossary };
+        List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule, AssetTypeClass.Glossary };
         string ColorRegex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 
         ICompanyContext CompanyContext;
@@ -81,7 +81,7 @@ namespace d360.core.validators
                 return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
             else if (predicate == null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy))
                 return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
-            else if (parentAssetType == null && predicate != null && ParentAssetTypeClass.Contains(model.Class))
+            else if (isInsert && parentAssetType == null && predicate != null && ParentAssetTypeClass.Contains(model.Class))
                 return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid);
             else if (parentAssetType != null && predicate != null && model.Class.In(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference) && predicate.Type != PredicateType.InterTypeHierarchy)
                 return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);

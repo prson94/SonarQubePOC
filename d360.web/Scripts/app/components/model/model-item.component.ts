@@ -124,6 +124,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
     private buildBreadcrumb() {
         if (this.selected) {
+            this.setObjectInfo('Taxonomy', this.selected.ID, this.selected.DisplayValue, this.selected.AssetID, undefined, this.selected.Uid);
+
             this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
                 this.crumbs = []; 
                 this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
