@@ -17,9 +17,14 @@ ALTER   procedure [utility].[GetFieldTypeLookupList]
 as
 begin
 	SELECT	'L' as type,
-			'Business Asset|' + cast(ObjectID as varchar) as value,
+			'Artifact|' + cast(ObjectID as varchar) as value,
 			'Business Asset : ' + Name as title
-	FROM	AssetType where [Object] = 'ArtifactType'
+	FROM	AssetType where [Class] = 1
+	UNION
+  SELECT	'L' as type,
+			'Artifact|' + cast(ObjectID as varchar) as value,
+			'Technical Asset : ' + Name as title
+	FROM	AssetType where [Class] = 8
 	UNION
 	SELECT	'L' as type,
 			'ReferenceItemType|0'  as value,

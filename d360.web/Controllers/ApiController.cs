@@ -4909,7 +4909,7 @@ select      *
 from        (                 
             select      'ArtifactType|' + cast(ObjectId as varchar(15)) as value,
                         'Business Asset : ' + Name as title
-            from        AssetType where [object]='ArtifactType'                        
+            from        AssetType where [object]='ArtifactType'  and [Class] = 1                       
             union       
             select      'Artifact|' + cast(ObjectId as varchar(15)) as value,
                         'Artifact Instance : ' + Name as title

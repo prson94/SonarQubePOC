@@ -549,13 +549,14 @@ where	T.[Class] in (1,2,3,4,6,7,8,9)").ToList();
             select A.* from (
             select	Object as ObjectType, 
 		            ObjectID as ObjectTypeID, 
-		            case Object
-			            when 'ArtifactType' then 'Business Asset :: '
-			            when 'TaxonomyType' then 'Models :: '
-			            when 'PolicyType' then 'Policies :: '
-			            when 'RuleType' then 'Rules :: '
-			            when 'FusionType' then 'Fusion Types :: '
-			            when 'ReferenceItemType' then 'Reference Item Type :: '
+		            case
+                        when Object like 'ArtifactType' AND (Class = 1) then 'Business Asset :: '
+                        when Object like 'ArtifactType' and (Class = 8 ) then 'Technical Asset :: '
+			            when Object like 'TaxonomyType' then 'Models :: '
+			            when Object like 'PolicyType' then 'Policies :: '
+			            when Object like 'RuleType' then 'Rules :: '
+			            when Object like 'FusionType' then 'Fusion Types :: '
+			            when Object like 'ReferenceItemType' then 'Reference Item Type :: '
 		            end + Name as Name
             from	AssetType
             where	Class in (1,2,3,6,7,9)
