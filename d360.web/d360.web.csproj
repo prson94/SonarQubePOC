@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>false</UseIISExpress>
+    <UseIISExpress>true</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -621,6 +621,7 @@
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
@@ -992,6 +993,10 @@
     <Content Include="fonts\nunitosans\NunitoSans-SemiBoldItalic.ttf" />
     <Content Include="fonts\nunitosans\nunito-sans-regular.woff" />
     <Content Include="fonts\nunitosans\nunito-sans-regular2.woff" />
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.eot" />
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.ttf" />
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.woff" />
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.woff2" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east-uat - Web Deploy.pubxml" />
