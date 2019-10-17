@@ -39,7 +39,8 @@ body {
     right: 0;
     bottom: 0;
     left: 0;
-    background: linear-gradient( to bottom, rgba(240, 240, 240,0) 80%, rgba(240, 240, 240,1) 100% );
+    background: linear-gradient( to bottom, rgba(240, 240, 240,0) 0%, rgba(240, 240, 240,1) 100% );
+    z-index: -9999;
 }
 
 select,
@@ -4448,6 +4449,10 @@ a.mid-blue {
         .ui-multiselect-trigger {
             border-left: none;
             padding: 20px;
+
+            .ui-multiselect-trigger-icon {
+                padding-top: 2px;
+            }
         }
 
         .ui-state-highlight {
