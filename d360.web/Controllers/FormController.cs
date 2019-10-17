@@ -12853,9 +12853,9 @@ order by	case
                                         inner join AssetType T on T.ID = A.AssetTypeID and T.Object = 'TaxonomyType' and T.ObjectID = @t
 		                                cross apply dbo.GetAssetTextPathById(A.ID, '/') P
                                         cross apply dbo.GetAssetLevelById(A.ID) LV
-                                where (coalesce(LV.[Level], 1) + @currentLevel) <= @maxLevel
+                                where coalesce(LV.[Level], 1) <= @currentLevel 
                                 option (maxrecursion 100)",
-    new { t = taxonomy.TaxonomyTypeID, currentLevel = taxonomy.Level ?? 1, maxLevel = taxonomy.MaximumDepth ?? 1 }).Select(i => new { i.Uid, i.Name }).ToList();
+    new { t = taxonomy.TaxonomyTypeID, currentLevel = taxonomy.Level ?? 1 }).Select(i => new { i.Uid, i.Name }).ToList();
 
                 var thisEntry = parents.FirstOrDefault(i => i.Uid == taxonomy.Uid);
 
