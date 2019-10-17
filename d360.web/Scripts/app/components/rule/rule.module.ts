@@ -81,7 +81,7 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
         SharedDynamicGridEditorModule,
         SharedObjectDetailsModule,
         SharedObjectGovernanceModule,
-        SharedAssetEditorsModule,
+        SharedAssetEditorsModule
     ],
     declarations: [
         RuleComponent,

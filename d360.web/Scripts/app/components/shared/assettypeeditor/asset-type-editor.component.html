@@ -15,17 +15,25 @@
                         <input maxlength="250" pInputText name="name" #name="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.AssetType.Name" required />
                         <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>
                     </div>
-                    <div class="col l6 m6 s12" *ngIf="showParentPredicates && (model.Predicates.length > 1)">
-                        <div [ngClass]="assetTypeClass == 'M' || assetTypeClass == 'P' ? 'FieldNameRequired' : 'FieldName'">Predicate To Parent</div>
-                        <p-dropdown [options]="model.Predicates" #predicate="ngModel" [(ngModel)]="model.SelectedPredicateID" (ngModelChange)="model.SelectedPredicateID=$event;updateParent(model.SelectedPredicateID);" [style]="{'width':'100%'}" name="predicate" [required]="assetTypeClass == 'M' || assetTypeClass == 'P'"></p-dropdown>
+                    <div class="col l6 m6 s12" *ngIf="showParentPredicates">
+                        <div [ngClass]="isPredicateRequired ? 'FieldNameRequired' : 'FieldName'">Predicate To Parent</div>
+                        <p-dropdown 
+                                    [options]="model.Predicates" 
+                                    #predicate="ngModel" 
+                                    [(ngModel)]="model.AssetType.Hierarchy.PredicateUid" 
+                                    (ngModelChange)="model.AssetType.Hierarchy.PredicateUid=$event;updateParent(model.AssetType.Hierarchy.PredicateUid);" 
+                                    [style]="{'width':'100%'}" 
+                                    name="predicate" 
+                                    [required]="isPredicateRequired">
+                        </p-dropdown>
                         <div [hidden]="predicate.valid || predicate.pristine" class="validation-text">Predicate is required</div>
                     </div>
                 </div>
 
-                <div class="row" *ngIf="model.Parents && model.Parents.length > 0 && model.SelectedPredicateID > 0">
+                <div class="row" *ngIf="model.Parents && model.Parents.length > 0 && model.AssetType.Hierarchy.PredicateUid != null && model.AssetType.Hierarchy.PredicateUid.length > 0">
                     <div class="col s12">
                         <div class="FieldNameRequired">Parent</div>
-                        <p-dropdown filter="true" [options]="model.Parents" #parent="ngModel" [(ngModel)]="model.ParentID" [style]="{'width':'100%'}" name="parent" required></p-dropdown>
+                        <p-dropdown filter="true" [options]="model.Parents" #parent="ngModel" [(ngModel)]="model.AssetType.ParentUid" [style]="{'width':'100%'}" name="parent" required></p-dropdown>
                         <div [hidden]="parent.valid || parent.pristine" class="validation-text">Parent is required</div>
                     </div>
                 </div>
@@ -61,17 +69,17 @@
                     <div class="FieldName">Auto Display Description?</div>
                     <div class="row">
                         <div class="col l1 m2 s12">
-                            <input pCheckbox type="checkbox" name="AutoDisplayDescription" [(ngModel)]="model.AutoDisplayDescription" />
+                            <input pCheckbox type="checkbox" name="AutoDisplayDescription" [(ngModel)]="model.AssetType.AutoDisplayDescription" />
                         </div>
                         <div class="col l11 m10 s12">
                             <div class="FieldInstructions">If enabled, the content of the description property is auto-displayed to all users on the list page for this artifact type.</div>
                         </div>
                     </div>
-                    <ng-container *ngIf="isFusionEnabled">
+                    <ng-container *ngIf="isFusionEnabled && showFusionOwnerSettings">
                         <div class="FieldName">Can Own Fusion?</div>
                         <div class="row">
                             <div class="col l1 m2 s12">
-                                <input pCheckbox type="checkbox" name="CanOwnFusion" [(ngModel)]="model.CanOwnFusion" />
+                                <input pCheckbox type="checkbox" name="CanOwnFusion" [(ngModel)]="model.AssetType.CanOwnFusion" />
                             </div>
                             <div class="col l11 m10 s12">
                                 <div class="FieldInstructions">If enabled, items of this type can own fusion configurations.</div>
@@ -80,36 +88,23 @@
                     </ng-container>
                     <d3s-asset-type-editor-use-as-transformation [assetTypeId]="id" *ngIf="lineageVersion == 3" [(UseAsTransformation)]="model.AssetType.UseAsTransformation"></d3s-asset-type-editor-use-as-transformation>
                 </simple-accordion>
-                <simple-accordion header="Settings" active="true" *ngIf="showAssetFusionSettings">
-                    <div class="FieldName">Scan Enabled?</div>
-                    <div class="row">
-                        <div class="col l1 m2 s12">
-                            <input pCheckbox type="checkbox" name="ScanEnabled" [(ngModel)]="model.ScanEnabled" />
-                        </div>
-                        <div class="col l11 m10 s12">
-                            <div class="FieldInstructions">If enabled, the Fusion Agent will pull attributes of this type.</div>
-                        </div>
-                    </div>
-                </simple-accordion>
                 <simple-accordion header="Settings" active="true" *ngIf="showAssetDepthSettings">
                     <div class="FieldName">Maximum Depth</div>
                     <div class="row">
                         <div class="col l6 m12 s12">
-                            <p-spinner name="MaximumDepth" required [(ngModel)]="spinNum" [min]="1" [max]="10" style="height:25px;width:100%;display:block;"></p-spinner>
+                            <p-spinner name="MaximumDepth" required [(ngModel)]="model.AssetType.Hierarchy.MaximumDepth" [min]="1" [max]="10" style="height:25px;width:100%;display:block;"></p-spinner>
                         </div>
                         <div class="col l6 m12 s12">
                             <div class="FieldInstructions">The maximum depth to which a tree can contain nodes at.</div>
                         </div>
                     </div>
                 </simple-accordion>
-
-
                 <simple-accordion header="Styles" active="true" *ngIf="showAssetStyles">
                     <div class="FieldName">Background Color</div>
                     <div class="row">
                         <div class="col s12">
-                            <p-colorPicker [(ngModel)]="model.IconBackColor" name="iconbackcolor"></p-colorPicker>
-                            <input type="text" [(ngModel)]="model.IconBackColor" name="iconbackcolortext" style="padding:2px;width:65px" />
+                            <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.BackColor" name="iconbackcolor"></p-colorPicker>
+                            <input type="text" [(ngModel)]="model.AssetType.IconStyle.BackColor" name="iconbackcolortext" style="padding:2px;width:65px" />
                         </div>
                         <div class="col s12">
                             <div class="FieldInstructions">Sets the background color of icons representing items of this type within diagrams.</div>
@@ -119,15 +114,15 @@
                     <div class="FieldName">Text Color</div>
                     <div class="row">
                         <div class="col s12">
-                            <p-colorPicker [(ngModel)]="model.IconForeColor" name="iconforecolor"></p-colorPicker>
-                            <input type="text" [(ngModel)]="model.IconForeColor" name="iconforecolortext" style="padding:2px;width:65px" />
+                            <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolor"></p-colorPicker>
+                            <input type="text" [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolortext" style="padding:2px;width:65px" />
                         </div>
                         <div class="col s12">
                             <div class="FieldInstructions">Sets the text color of icons representing items of this type within diagrams.</div>
                         </div>
                     </div>
                     <div>
-                        <div *ngIf="model.IconForeColor == model.IconBackColor" class="errorMessage">Foreground and background color cannot be the same</div>
+                        <div *ngIf="model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor" class="errorMessage">Foreground and background color cannot be the same</div>
                     </div>
                 </simple-accordion>
             </div>
@@ -135,7 +130,7 @@
         <div class="row">
             <div class="col s12">
                 <div style="padding-top:10px;">
-                    <button pButton label="Save" type="submit" (click)="save()" [disabled]="!form.form.valid || isSaving || (model.IconForeColor == model.IconBackColor)"></button>
+                    <button pButton label="Save" type="submit" (click)="save()" [disabled]="!form.form.valid || isSaving || (model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor)"></button>
                     <button pButton label="Cancel" (click)="cancel()"></button>
                 </div>
             </div>

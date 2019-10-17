@@ -70,7 +70,9 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     }
 
     openSearch() {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&advanced=0&types=${this.defaultSearchOptions ? this.defaultSearchOptions.join(',') : ''}`);
+        let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
+
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&advanced=0&types=${options ? options.join(',') : ''}`);
     }
 
     selectItem(ac) {

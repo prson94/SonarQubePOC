@@ -1,4 +1,5 @@
-﻿
+﻿import { AssetTypeClass } from "./asset.model";
+
 export class LineageNode {
     key: any;
     assetId: any;
@@ -442,6 +443,7 @@ export class AssetBrowserTranslationLink {
 }
 
 export class AssetBrowserTranslationNode {
+    assetUid: string;
     key: string;
     group: string;
     isGroup: boolean;
@@ -475,6 +477,7 @@ export class AssetBrowserLineageApiRequestModel {
 // Response
 export class AssetBrowserLineageApiItemModel {
     assetUid: string;
+    key: string;
     displayValue: string;
     backColor: string;
     foreColor: string;
@@ -484,7 +487,9 @@ export class AssetBrowserLineageApiItemModel {
 export class AssetBrowserLineageApiRelationshipModel {
     intersectUid: string;
     subjectUid: string;
+    subjectKey: string;
     objectUid: string;
+    objectKey: string;
     predicate: string;
     predicateUid: string;
     predicateType: number;
@@ -496,6 +501,36 @@ export class AssetBrowserLineageApiResponseModel {
     focalAssetUid: string;
     assets: AssetBrowserLineageApiItemModel[];
     intersects: AssetBrowserLineageApiRelationshipModel[];
+}
+
+export class AssetBrowserDiagramAsset {
+    AssetTypeClass: AssetTypeClass;
+    TypeName: string;
+    Uid: string;
+    DisplayValue: string;
+    Path: string;
+    Url: string;
+    Fields: AssetBrowserDiagramAssetField[];
+    Owners: AssetBrowserDiagramAssetOwner[];
+    Scores: AssetBrowserDiagramAssetScore[];
+}
+
+export class AssetBrowserDiagramAssetField {
+    Name: string;
+    Value: string;
+    Type: string;
+}
+
+export class AssetBrowserDiagramAssetScore {
+    Name: string;
+    Value: number;
+}
+
+export class AssetBrowserDiagramAssetOwner {
+    ResponsibilityTypeName: string;
+    Icon: string;
+    SecurityAssetName: string;
+    Context: string;
 }
 
 //#endregion

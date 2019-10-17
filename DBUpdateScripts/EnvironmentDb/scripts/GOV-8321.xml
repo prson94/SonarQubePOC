@@ -151,6 +151,10 @@ END
 		]]>
     </sql>
     <rollback>
+	    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
       <![CDATA[
 ALTER FUNCTION [dbo].[GetWorkflowConditionLabels]
 (
@@ -289,6 +293,7 @@ BEGIN
 		'<Conditions />');
 END
 		]]>
+		</sql>
     </rollback>
   </changeSet>
 </databaseChangeLog>

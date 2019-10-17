@@ -47,6 +47,10 @@ namespace d360.web.Controllers
             {
                 nodes = nodes.Where(x => x.MenuID != "#Fusion").ToList();
             }
+            else
+            {
+                nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
+            }
 
             if (nodes != null)
                 nodes.ForEach(n => {

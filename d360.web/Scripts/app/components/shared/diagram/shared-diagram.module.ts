@@ -17,6 +17,7 @@ import { EditorModule } from 'primeng/editor';
 import { ListboxModule } from 'primeng/listbox';
 import { DropdownModule } from 'primeng/dropdown';
 import { MenubarModule } from 'primeng/menubar';
+import { TabViewModule } from 'primeng/tabview';
 
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage/lineage.component';
@@ -75,6 +76,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
         DropdownModule,
         MenubarModule,
         TableModule,
+        TabViewModule,
         //JSON Viewer module
         NgxJsonViewModule,
 
