@@ -39,7 +39,8 @@ body {
     right: 0;
     bottom: 0;
     left: 0;
-    background: linear-gradient( to bottom, rgba(240, 240, 240,0) 80%, rgba(240, 240, 240,1) 100% );
+    background: linear-gradient( to bottom, rgba(240, 240, 240,0) 0%, rgba(240, 240, 240,1) 100% );
+    z-index: -9999;
 }
 
 select,
@@ -1513,7 +1514,7 @@ a.breadcrumb {
     background: white;
     height: 32px;
     border-radius: 2px;
-    width: 200px;
+    width: 198px;
     padding: 4px;
     border: 1px solid #ccc;
 
@@ -4386,7 +4387,7 @@ a.mid-blue {
     margin-left: auto;
     margin-right: auto;
     width: 80%;
-    height:140px;
+    height: 140px;
 
     .field {
         height: 56px;
@@ -4407,12 +4408,14 @@ a.mid-blue {
 
     .ui-multiselect {
         background: #f1f2f3;
-        border-left: none;
         width: 200px;
         height: 56px;
         border-radius: 4px 0px 0px 4px;
-        border: solid 1px #b9c0c5;
         background-color: #f1f2f3;
+
+        .ui-multiselect-panel {
+            margin-top: -1px;
+        }
 
         .ui-multiselect-panel .ui-multiselect-item {
             padding: 4px;
@@ -4446,6 +4449,10 @@ a.mid-blue {
         .ui-multiselect-trigger {
             border-left: none;
             padding: 20px;
+
+            .ui-multiselect-trigger-icon {
+                padding-top: 2px;
+            }
         }
 
         .ui-state-highlight {
@@ -4473,8 +4480,14 @@ a.mid-blue {
             .ui-chkbox-box::after {
                 content: 'Search All Catergories';
                 padding-left: 20px;
+                font-size: 14px;
+                font-weight: normal;
+                font-style: normal;
+                font-stretch: normal;
+                line-height: 1.14;
+                letter-spacing: normal;
+                color: #202020;
             }
-
 
             a.ui-multiselect-close {
                 display: none;
@@ -4490,6 +4503,7 @@ a.mid-blue {
 
             .ui-chkbox .ui-chkbox-icon {
                 display: inline-block;
+                line-height: 1px !important;
             }
         }
 
@@ -4533,6 +4547,11 @@ a.mid-blue {
             margin-right: 2px;
             padding-top: 7px !important;
             padding-left: 8px !important;
+
+            .fa {
+                height: 40px;
+                width: 40px;
+            }
         }
     }
 
