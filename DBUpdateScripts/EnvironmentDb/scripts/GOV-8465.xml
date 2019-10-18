@@ -1,0 +1,125 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="kmcnamee" id="GOV-8465">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		CREATE OR ALTER PROCEDURE [dbo].[GenerateAllAssetTypeDisplayValues]	
+AS
+BEGIN
+	SET NOCOUNT ON;
+  DECLARE @trancount int;
+  SET @trancount = @@trancount;
+  BEGIN TRY
+    IF @trancount = 0
+      BEGIN TRANSACTION
+      ELSE
+        SAVE TRANSACTION usp_my_procedure_name;
+
+			--delete by the asset type
+			delete from AssetDisplayValue;
+
+			insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
+				select
+					A.ID,
+					ADV.DisplayValue,
+					CONVERT(NVARCHAR(32),HashBytes('SHA1', ADV.DisplayValue),2) as DisplayValueHash,
+					SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix,
+					getutcdate()
+				from
+					Asset A
+					cross apply GetAssetDisplayValueByID(A.ID) ADV		
+				where ADV.DisplayValue is not null and A.[Object] not in( 'FusionAttribute')	
+
+		lbexit:
+      IF @trancount = 0
+      COMMIT;
+  END TRY
+  BEGIN CATCH
+    DECLARE @error int,
+            @message varchar(4000),
+            @xstate int;
+
+    SELECT
+      @error = ERROR_NUMBER(),
+      @message = ERROR_MESSAGE(),
+      @xstate = XACT_STATE();
+
+    IF @xstate = -1
+      ROLLBACK;
+    IF @xstate = 1 AND @trancount = 0
+      ROLLBACK
+    IF @xstate = 1 AND @trancount > 0
+      ROLLBACK TRANSACTION usp_my_procedure_name;
+
+    RAISERROR ('GenerateAllAssetTypeDisplayValues: %d: %s', 16, 1, @error, @message);
+  END CATCH
+END
+		]]>
+
+    </sql>
+	<rollback>
+	<![CDATA[	
+CREATE OR ALTER PROCEDURE [dbo].[GenerateAllAssetTypeDisplayValues]	
+AS
+BEGIN
+	SET NOCOUNT ON;
+  DECLARE @trancount int;
+  SET @trancount = @@trancount;
+  BEGIN TRY
+    IF @trancount = 0
+      BEGIN TRANSACTION
+      ELSE
+        SAVE TRANSACTION usp_my_procedure_name;
+
+			--delete by the asset type
+			delete from AssetDisplayValue;
+
+			insert into AssetDisplayValue (AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
+				select
+					A.ID,
+					ADV.DisplayValue,
+					CONVERT(NVARCHAR(32),HashBytes('SHA1', ADV.DisplayValue),2) as DisplayValueHash,
+					SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix,
+					getutcdate()
+				from
+					Asset A
+					cross apply GetAssetDisplayValueByID(A.ID) ADV		
+				where ADV.DisplayValue is not null and A.[Object] not in( 'FusionAttribute','FusionQueryAttribute')	
+
+		lbexit:
+      IF @trancount = 0
+      COMMIT;
+  END TRY
+  BEGIN CATCH
+    DECLARE @error int,
+            @message varchar(4000),
+            @xstate int;
+
+    SELECT
+      @error = ERROR_NUMBER(),
+      @message = ERROR_MESSAGE(),
+      @xstate = XACT_STATE();
+
+    IF @xstate = -1
+      ROLLBACK;
+    IF @xstate = 1 AND @trancount = 0
+      ROLLBACK
+    IF @xstate = 1 AND @trancount > 0
+      ROLLBACK TRANSACTION usp_my_procedure_name;
+
+    RAISERROR ('GenerateAllAssetTypeDisplayValues: %d: %s', 16, 1, @error, @message);
+  END CATCH
+END
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

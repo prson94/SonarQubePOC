@@ -24,7 +24,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     private referenceTypes: ReferenceItemType[];
     private _showEditor: boolean = false;
     private _showDelete: boolean = false;
-    assetTypeClass: AssetTypeClass = AssetTypeClass.ReferenceItemType;
+    assetTypeClass: AssetTypeClass = AssetTypeClass.Reference;
 
     @Output() formModeChange = new EventEmitter<FormMode>();
 
