@@ -1078,7 +1078,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"Invalid TagUid {assetTagApi.TagUID} ,no tag exists with the specified uid.",
+                        Message = $"Invalid TagUid provided ,no tag exists with the specified uid.",
                         Success = false
                     };
 
