@@ -2321,7 +2321,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                     #endregion
 
                     this.ValidateRelationshipsType(execution, timeout);
-                    //CurrentResourceID, D = DateTime.UtcNow
+                    
                     Connection.Execute(@"
                              Update api.ExecutionRelationshipType
                             Set uid =Newid()
@@ -2545,7 +2545,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                                         inner join [intersecttype] IST on
                                         I.intersecttypeid = IST.ID
                                         inner join api.ExecutionDeletedRelationshipType ER on ER.UID = IST.UID 
-                                        and ER.ExecutionID = @ExecutionID 
+                                        where ER.ExecutionID = @ExecutionID 
                                         and ER.Success is null) S on T.ObjectType = 'Intersect' 
                                         and S.ID = T.ObjectID ;
 
@@ -2553,7 +2553,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                                 from    [FieldType] FT
                                         inner join (Select I.ID from [intersecttype] I
                                         inner join api.ExecutionDeletedRelationshipType ER on ER.UID = I.UID 
-                                        and ER.ExecutionID = @ExecutionID 
+                                        where ER.ExecutionID = @ExecutionID 
                                         and ER.Success is null) S on FT.[Object] = 'IntersectType' 
                                         and S.ID = FT.ObjectID ;
 
