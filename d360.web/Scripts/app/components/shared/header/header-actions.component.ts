@@ -35,7 +35,7 @@ declare var CompanySettings;
 
 export class HeaderActionsComponent {
     @Output() controlWidthChange = new EventEmitter();
-    @ViewChild('actions') actionsUIElem : any;
+    @ViewChild('actions', { static: false }) actionsUIElem : any;
 
     public isAdminUrl = false;
     public isAdminSidebarUrl = false;

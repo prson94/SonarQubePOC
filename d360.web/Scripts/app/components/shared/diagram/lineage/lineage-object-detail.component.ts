@@ -51,7 +51,7 @@ export class LineageObjectDetailComponent implements OnInit, OnChanges {
         try {
             console.log(JSON.parse(value));
             return JSON.parse(value);
-        } catch {
+        } catch (err){
             return "Error";
         }
     }

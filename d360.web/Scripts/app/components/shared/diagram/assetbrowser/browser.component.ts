@@ -19,8 +19,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @Input() readonly: boolean = true;
     @Input() assetUid: string;
 
-    @ViewChild('diagram') diagramRef;
-    @ViewChild('bottomCommandBar') bottomCommandBarRef;
+    @ViewChild('diagram', { static: false }) diagramRef;
+    @ViewChild('bottomCommandBar', { static: false }) bottomCommandBarRef;
 
     DiagramObjectType = DiagramObjectType;
 
@@ -160,7 +160,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private GetJSON(value: string) {
         try {
             return JSON.parse(value);
-        } catch {
+        } catch  (err){
             return "Error";
         }
     }

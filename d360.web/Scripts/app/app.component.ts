@@ -37,8 +37,8 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     msgs: Message[];
     public menuOpen: boolean = true;
     public maxContentPaneHeight: number = 1000;
-    @ViewChild('header') header: ElementRef;
-    @ViewChild('sidebar', { read: ElementRef }) sidebar: ElementRef;
+    @ViewChild('header', { static: false }) header: ElementRef;
+    @ViewChild('sidebar', {static: false, read: ElementRef }) sidebar: ElementRef;
     private timer: any;
     constructor(                
         private messagesService: MessagesObservableService,

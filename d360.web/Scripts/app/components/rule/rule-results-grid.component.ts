@@ -134,7 +134,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
     columns: GridColumn[] = [];
     filtercolumns: GridFilterColumn[] = [];
 
-    @ViewChild(RuleColumnFilterComponent) private filtersComponent: RuleColumnFilterComponent;
+    @ViewChild(RuleColumnFilterComponent, {static:false}) private filtersComponent: RuleColumnFilterComponent;
 
     currentPageNumber: number = 0;
     sortField: string = "";

@@ -1,6 +1,5 @@
 ﻿import { Component, OnInit, EventEmitter, Output, Input } from "@angular/core";
 import { BaseComponent } from "../shared/base.component";
-import { EventListener } from "@angular/core/src/debug/debug_node";
 
 
 @Component({

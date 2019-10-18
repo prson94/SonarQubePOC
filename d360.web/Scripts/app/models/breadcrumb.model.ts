@@ -1,5 +1,4 @@
 ﻿import { TreeNode } from 'primeng/components/common/api';
-import { RENDERER } from '@angular/core/src/render3/interfaces/view';
 
 export class Breadcrumb {
     text: string = "-";

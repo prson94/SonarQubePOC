@@ -33,7 +33,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     @Input() model: WorkflowDiagramModel;
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
-    @ViewChild('ed2') ed: Editor;
+    @ViewChild('ed2', { static: false }) ed: Editor;
     @Input() isClone: boolean = false;
     @Output() onWorkflowNameChange = new EventEmitter();
     private workflowObjectTypes: WorkflowObjectType[] = [];

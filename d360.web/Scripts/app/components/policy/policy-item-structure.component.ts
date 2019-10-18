@@ -60,7 +60,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     showDelete = false;
     showEditor = false;
 
-    @ViewChild("treeTable") treeTable: any;
+    @ViewChild("treeTable", {static:false}) treeTable: any;
     unfilteredTreeNode: TreeNode[] = [];
 
 

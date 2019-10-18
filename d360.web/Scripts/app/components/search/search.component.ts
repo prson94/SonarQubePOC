@@ -53,7 +53,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
 
     private displayNameLookup: string[];
 
-    @ViewChild('title') title: ElementRef;
+    @ViewChild('title', { static: false }) title: ElementRef;
 
     constructor(private route: ActivatedRoute,
         protected titleService: Title,

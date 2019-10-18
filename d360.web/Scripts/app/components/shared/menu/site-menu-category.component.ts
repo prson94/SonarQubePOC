@@ -6,12 +6,8 @@ import { FavoritesService } from '../../../services/favorites.service';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
 import { SiteMenu, SiteMenuItem, SiteNav } from '../../../models/site-menu.model';
-import { Favorite } from '../../../models/favorite.model';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { forEach } from '@angular/router/src/utils/collection';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { isString, isArray } from 'util';
-import { stringify } from '@angular/core/src/util';
 import { createWriteStream } from 'fs';
 import * as _ from 'lodash';
 
@@ -77,7 +73,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
         super();
     }
 
-    @ViewChild('searchinput') searchInput: any;
+    @ViewChild('searchinput', { static: false }) searchInput: any;
 
 
     getMaxHeight() {

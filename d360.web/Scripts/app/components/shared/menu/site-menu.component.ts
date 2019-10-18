@@ -12,7 +12,6 @@ import * as _ from 'lodash';
 import { isString, isArray } from 'util';
 import { Element } from '@angular/compiler';
 import { SiteMenuCategoryComponent } from './site-menu-category.component';
-import { forEach } from '@angular/router/src/utils/collection';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 declare var CompanySettings;

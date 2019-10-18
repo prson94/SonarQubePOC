@@ -64,10 +64,10 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     @Input() showSeperator: boolean = true;
     @Input() index: number;
     @Input() maxLastCrumbWidth: number;
-    @ViewChild('hovertarget') hoverTarget: ElementRef;
+    @ViewChild('hovertarget', { static: false }) hoverTarget: ElementRef;
 
-    @ViewChild('standardInput') standardInput: ElementRef;
-    @ViewChild('treeInput') treeInput: ElementRef;
+    @ViewChild('standardInput', { static: false }) standardInput: ElementRef;
+    @ViewChild('treeInput', { static: false }) treeInput: ElementRef;
 
     private results: SearchResult[];
     private result: SearchResult;

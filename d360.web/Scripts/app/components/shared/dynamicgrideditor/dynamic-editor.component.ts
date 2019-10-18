@@ -26,9 +26,6 @@ import { BaseComponent } from '../base.component';
 
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { concat } from 'rxjs';
-import { forEach } from '@angular/router/src/utils/collection';
-import { Console } from '@angular/core/src/console';
 import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 
@@ -85,7 +82,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     fore: EditorField;
     back: EditorField;
     selectedTagID: number;
-    @ViewChild('assetForm') formElement: ElementRef;
+    @ViewChild('assetForm', { static: false }) formElement: ElementRef;
 
     constructor(
         private ref: ChangeDetectorRef,

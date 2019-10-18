@@ -36,7 +36,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     @Input() step: NodeModel;
     @Input() diagram: go.Diagram;
     @Output() stepChange = new EventEmitter();
-    @ViewChild('ed') ed: Editor;
+    @ViewChild('ed', { static: false }) ed: Editor;
 
     WorkflowActivityType = WorkflowActivityType;
     EmailTaskRecipientType = EmailTaskRecipientType;

@@ -24,7 +24,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
-    @ViewChild('weight') weightInput: ElementRef;
+    @ViewChild('weight', { static: false }) weightInput: ElementRef;
 
     verb = "Add";
     child = "";

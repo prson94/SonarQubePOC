@@ -59,7 +59,7 @@ export class HeaderHelpComponent implements AfterViewInit{
     buildDate: string = __BUILD_DATE;
     versionNumber: string = VersionNumber;
 
-    @ViewChild("popupBox") popupBox: ElementRef;
+    @ViewChild("popupBox", {static:false}) popupBox: ElementRef;
 
     constructor(
         private ref: ChangeDetectorRef

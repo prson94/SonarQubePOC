@@ -25,7 +25,7 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
     @Input() selectedCategory: SearchCategories;
     @Output() selectedCategoryChange = new EventEmitter();
 
-    @ViewChild('searchContainer') container: ElementRef;
+    @ViewChild('searchContainer', { static: false }) container: ElementRef;
 
     ngOnChanges(changes: any) {
         if (changes['results'] && !changes['results'].firstChange) {

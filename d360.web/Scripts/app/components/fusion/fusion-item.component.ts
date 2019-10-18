@@ -43,7 +43,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
 
     private isQueryConfigVisible: boolean = false;
 
-    @ViewChild(FusionStructureTreeComponent) private fusionTreeComponent: FusionStructureTreeComponent;
+    @ViewChild(FusionStructureTreeComponent, {static: false}) private fusionTreeComponent: FusionStructureTreeComponent;
     
     constructor(private headerBreadcrumbService: HeaderBreadcrumbService,
             private route: ActivatedRoute,

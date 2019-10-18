@@ -1,4 +1,4 @@
-﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges } from '@angular/core';
+﻿import { Input, Component, Output, EventEmitter, OnInit, forwardRef, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange  } from '@angular/core';
 
 
 import * as _ from 'lodash';
@@ -10,7 +10,6 @@ import { UriBasedService } from '../../services/uri-based.service';
 import { ResourcesService } from '../../services/resources.service';
 import { LazyLoadEvent } from 'primeng/api';
 import { GridFilterExpression } from '../../models/grid-definition.model';
-import { SimpleChanges } from '@angular/core/src/metadata/lifecycle_hooks';
 
 
 export const RESOURCE_MULTISELECT_GRID_VALUE_ACCESSOR: any = {
@@ -109,7 +108,7 @@ export class ResourceMultiSelectGridComponent extends BaseComponent implements O
         
     }
 
-    ngOnChanges(changes: SimpleChanges) {
+    ngOnChanges(changes: { [propName: string]: SimpleChange} ) {
         if ((changes["field"].previousValue != undefined) &&
             (changes["field"].currentValue.TypeaheadUri != changes["field"].previousValue.TypeaheadUri)) {
             this.load();

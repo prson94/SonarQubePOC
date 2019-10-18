@@ -156,7 +156,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
 
     theDeleteCallback: Function;
 
-    @ViewChild('dt') datatable;
+    @ViewChild('dt', { static: false }) datatable;
 
     constructor(private route: ActivatedRoute,
         private router: Router,

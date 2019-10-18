@@ -32,7 +32,7 @@ declare var CurrentResourceID;
 
 export class TagView extends AdminBaseComponent implements OnInit {
     public theDeleteCallback: Function;
-    @ViewChild('tagInput') tagInput: ElementRef;
+    @ViewChild('tagInput', { static: false }) tagInput: ElementRef;
     @Input() data: any;
     @Input() isEditable: boolean = false;
     @Input() allowAddTag: boolean = false;
@@ -53,7 +53,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     private deletePopupTitle: string = 'Delete Tag';
     private isShowAll: boolean = false;
     showDeleteOption: boolean = false;
-    @ViewChild("container") container: ElementRef;
+    @ViewChild("container", {static: false}) container: ElementRef;
     error: any;
     timeouthandle: any;
 
@@ -78,7 +78,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
                 this.tags = JSON.parse(this.data);
             else this.tags = this.data;
         }
-        catch
+        catch (err)
         {
             console.warn("d3s-tag-view::Error while parsing tags!");
         }

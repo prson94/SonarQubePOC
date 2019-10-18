@@ -26,7 +26,7 @@ export class LineageComponent extends DiagramBaseComponent implements OnInit, Af
     @Input() readonly: boolean = true;
     @Input() usageOnly: boolean = true;
     @Input() nameOnly: boolean = false;
-    @ViewChild('diagram') diagramRef;
+    @ViewChild('diagram', { static: false }) diagramRef;
 
     DiagramObjectType = DiagramObjectType;
 

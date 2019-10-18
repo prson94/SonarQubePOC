@@ -47,7 +47,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     showDelete: boolean;
     selectedLevel: number = 0;
 
-    @ViewChild("treeTable") treeTable: any;
+    @ViewChild("treeTable", {static:false}) treeTable: any;
     unfilteredTreeNode: TreeNode[] = [];
 
     constructor(
@@ -121,7 +121,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                             this.rightSidebarService.showItem(new RightSidebarItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
                             this.rightSidebarService.showHeader(true);
                         });
-
+                         
                     });
 
                     this.loadModelHierarchy(this.modelId);
