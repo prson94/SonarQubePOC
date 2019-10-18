@@ -29,6 +29,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     isEditingFieldType = false;
     isAddingFieldType = false;
     ArtifactTypes: TreeNode[];
+    editorModel: any;
     theDeleteCallback: Function;
     filterFields: string[] = ["Name"];
     assetTypeClass: AssetTypeClass;
@@ -86,14 +87,13 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.clearSidebar();
     }
 
-    load(selectionId:number = 0) {
+    load(selectionId: number = 0) {
         this.isLoading = true;
         this.artifactsService.getArtifactTypeTree(this.assetTypeClass)
             .subscribe(data => {
                 this.ArtifactTypes = data;                
                 if (selectionId <= 0) {
                     this.selectedRow = this.ArtifactTypes[0];
-                    this.selectedRow = { data: { ID: 0 } };
                 } else {                    
                     this.selectedRow = this.artifactsService.findArtifactType(this.ArtifactTypes, selectionId);
                 }
@@ -109,17 +109,18 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     edit(id: number) {
-        this.selectedRow = this.artifactsService.findArtifactType(this.ArtifactTypes, id);
+        this.editorModel = this.artifactsService.findArtifactType(this.ArtifactTypes, id);
         this.isAdding = false;
         this.isEditing = true;
         this.isDeleting = false;
     }
 
-    add(id: number) {      
+    add(id: number) {  
+        
         if (id == 0) {
-            this.selectedRow = { data: { ID: 0 } };
+            this.editorModel = { data: { ID: 0 } };
         } else {
-            this.selectedRow = this.artifactsService.findArtifactType(this.ArtifactTypes, id);
+            this.editorModel = this.artifactsService.findArtifactType(this.ArtifactTypes, id);
         }
 
         this.isEditing = false;
