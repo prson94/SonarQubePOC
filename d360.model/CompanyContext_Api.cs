@@ -2539,20 +2539,38 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                     
                     Connection.Execute(@"
                             
+                                delete  T
+                                from    [Field] T
+                                        inner join (Select I.ID from [Intersect] I
+                                        inner join [intersecttype] IST on
+                                        I.intersecttypeid = IST.ID
+                                        inner join api.ExecutionDeletedRelationshipType ER on ER.UID = IST.UID 
+                                        and ER.ExecutionID = @ExecutionID 
+                                        and ER.Success is null) S on T.ObjectType = 'Intersect' 
+                                        and S.ID = T.ObjectID ;
+
+                                delete FT
+                                from    [FieldType] FT
+                                        inner join (Select I.ID from [intersecttype] I
+                                        inner join api.ExecutionDeletedRelationshipType ER on ER.UID = I.UID 
+                                        and ER.ExecutionID = @ExecutionID 
+                                        and ER.Success is null) S on FT.[Object] = 'IntersectType' 
+                                        and S.ID = FT.ObjectID ;
+
 
                             delete  T
                             from    [Intersect] T
                                     inner join [intersecttype] I on
                                     T.intersecttypeid = I.ID
                                     inner join api.ExecutionDeletedRelationshipType ER on ER.UID = I.UID 
-                                    and S.ExecutionID = @ExecutionID 
-                                    and S.Success is null;
+                                    where ER.ExecutionID = @ExecutionID 
+                                    and ER.Success is null;
 
-                          delete  I
+                           delete  I
                             from    [intersecttype] I
                                     inner join api.ExecutionDeletedRelationshipType ER on ER.UID = I.UID 
-                                    and S.ExecutionID = @ExecutionID 
-                                    and S.Success is null;,
+                                    where ER.ExecutionID = @ExecutionID 
+                                    and ER.Success is null;
 
                              Update api.ExecutionDeletedRelationshipType
                             Set Success =1,
@@ -4367,7 +4385,7 @@ from    [Intersect] T
                                     Set Success=0,
                                     Message='Relationship type has existing relationships' 
                                     from [api].[ExecutionDeletedRelationshipType] ER
-                                    where  ER.ExecutionID=@executionID and ER.Cascade =0
+                                    where  ER.ExecutionID=@executionID and ER.[Cascade] =0 and
                                     ER.Success is null
                                     and  exists (select 1 from IntersectType I
                                                         inner join [Intersect] T  on I.ID = T.IntersectTypeID
@@ -4474,8 +4492,7 @@ from    [Intersect] T
                                                     where  ER.ExecutionID=@executionID and
                                                     ER.Success is null
                                                     and exists (select 1 from IntersectType where [Subject] = ER.[Subject] 
-                                                    and SubjectID = ER.SubjectID and [Object] = ER.[Object] and ObjectID =ER.ObjectID and PredicateID = ER.PredicateID
-                                                     and   SubjectCardinality = ER.SubjectCardinality and ObjectCardinality=ER.ObjectCardinality)
+                                                    and SubjectID = ER.SubjectID and [Object] = ER.[Object] and ObjectID =ER.ObjectID and PredicateID = ER.PredicateID)
                                          ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
         }
@@ -4574,8 +4591,10 @@ from    [Intersect] T
                             inner join [intersecttype] IT on IT.UID = ER.UID
                             where  ER.ExecutionID=@executionID and
                             ER.Success is null
-                            and  exists (select 1 from [intersecttype] where PredicateID=IT.PredicateID and Subject =IT.Subject and SubjectID=IT.SubjectID 
-                            and   SubjectCardinality = IT.SubjectCardinality and ObjectCardinality=IT.ObjectCardinality and Uid != IT.Uid  and [Object]=IT.[Object] and ObjectID=IT.ObjectID )
+                            and  exists (select 1 from [intersecttype] I 
+                                            inner join Predicate P on P.ID = I.PredicateID 
+                                            where P.Uid=ER.PredicateUid and I.Subject =IT.Subject and I.SubjectID=IT.SubjectID 
+                                            and  I.Uid != IT.Uid  and I.[Object]=IT.[Object] and I.ObjectID=IT.ObjectID )
                         ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
 
