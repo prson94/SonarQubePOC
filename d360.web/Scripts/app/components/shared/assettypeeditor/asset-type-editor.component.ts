@@ -115,9 +115,13 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                     this.model.Tokens.unshift({ label: '', value: '' });
                 }
 
+
                 if (this.model.AssetType.ParentUid == null || this.model.Predicates == null || this.model.Predicates.length < 2) {
                     this.showParentPredicates = false;
+                }
 
+                if (this.assetTypeClass == AssetTypeClass.Reference || this.assetTypeClass == AssetTypeClass.Model || this.assetTypeClass == AssetTypeClass.Policy) {
+                    this.showParentPredicates = true;
                 }
 
 
