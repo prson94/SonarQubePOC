@@ -1,30 +1,5 @@
 ﻿@import "_Variables";
 
-/* vietnamese */
-@font-face {
-    font-family: 'Nunito Sans';
-    font-style: normal;
-    font-weight: 400;
-    src: local('Nunito Sans Regular'), local('NunitoSans-Regular'), url(/fonts/nunitosans/nunito-sans-regular2.woff2) format('woff2'), url(/fonts/nunitosans/nunito-sans-regular2.woff) format('woff');
-    unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
-}
-/* latin-ext */
-@font-face {
-    font-family: 'Nunito Sans';
-    font-style: normal;
-    font-weight: 400;
-    src: local('Nunito Sans Regular'), local('NunitoSans-Regular'), url(/fonts/nunitosans/nunito-sans-regular2.woff2) format('woff2'), url(/fonts/nunitosans/nunito-sans-regular2.woff) format('woff');
-    unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-/* latin */
-@font-face {
-    font-family: 'Nunito Sans';
-    font-style: normal;
-    font-weight: 400;
-    src: local('Nunito Sans Regular'), local('NunitoSans-Regular'), url(/fonts/nunitosans/nunito-sans-regular.woff2) format('woff2'), url(/fonts/nunitosans/nunito-sans-regular.woff) format('woff');
-    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-
 /* source-sans-pro-regular - latin */
 @font-face {
     font-family: 'Source Sans Pro';
@@ -40,7 +15,7 @@
 body {
     background: linear-gradient(#e0e0e0, #f0f0f0);
     min-height: 100vh;
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: 'Source Sans Pro', sans-serif;
     font-size: 14px;
     overflow: hidden;
 }
@@ -113,7 +88,7 @@ nav.top, .left-side-nav {
     align-items: center;
     user-select: none;
     cursor: pointer;
-    font-family: 'Nunito Sans';
+    font-family: 'Source Sans Pro';
     font-size: 14px;
     text-align: center;
     white-space: nowrap;
@@ -319,7 +294,7 @@ nav.top, .left-side-nav {
         color: white;
         font-size: 14px;
         height: 40px;
-        line-height: 40px;
+        line-height: 36px;
         position: relative;
 
         .menu-category-box {
@@ -1538,7 +1513,7 @@ a.breadcrumb {
         flex-grow: 1;
         outline: none;
         width: 166px;
-        font-family: 'Nunito Sans', sans-serif !important;
+        font-family: 'Source Sans Pro', sans-serif !important;
         font-size: 14px !important;
 
         &::placeholder {
@@ -1927,7 +1902,6 @@ ul.shortcutlist {
 
 li.shortcut {
     display: inline-block;
-    font-family: 'Source Sans Pro';
     cursor: pointer;
     width: 216px;
     vertical-align: top;
@@ -2148,7 +2122,7 @@ div.home-image-title-text {
         user-select: none;
         cursor: pointer;
         height: 32px;
-        font-family: 'Nunito Sans' !important;
+        font-family: 'Source Sans Pro' !important;
         font-size: 14px;
         text-align: center;
         white-space: nowrap;
@@ -2503,7 +2477,6 @@ div.home-image-title-text {
 }
 
 .modal-overlay .modal-dialog .title-bar h1 {
-    font-family: "Nunito Sans";
     color: #202020;
     font-size: 18px;
     font-weight: 300;
@@ -2569,7 +2542,6 @@ div.home-image-title-text {
 }
 
 .about-info li {
-    font-family: "Nunito Sans";
     font-weight: normal;
     font-size: 14px;
     color: #202020;
@@ -2587,7 +2559,6 @@ div.home-image-title-text {
 }
 
 .about-info p {
-    font-family: "Nunito Sans";
     font-weight: normal;
     font-size: 14px;
     color: #202020;
@@ -2698,7 +2669,6 @@ button.button, a.link-button {
     user-select: none;
     cursor: pointer;
     height: 32px;
-    font-family: "Nunito Sans",sans-serif;
     font-size: 14px;
     text-align: center;
     white-space: nowrap;
@@ -2986,7 +2956,6 @@ button.tab-scroller {
     user-select: none;
     height: 32px;
     padding: 0 5px;
-    font-family: 'Nunito Sans';
     font-size: 12px;
     text-align: center;
     white-space: nowrap;
@@ -3154,7 +3123,6 @@ button.tab-scroller {
         max-width: 550px;
     }
 
-    font-family: "Nunito Sans";
     color: black;
 
     .content {
