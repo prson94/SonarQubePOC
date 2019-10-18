@@ -4340,9 +4340,16 @@ from    [Intersect] T
             CurrentExecutionLocationModel currentLocation = null;
 
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            var predDupes = import.GroupBy(x => x.Name + x.Type).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
+
             if (executionItemDupes.Any())
             {
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else if (predDupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate predicate items: {string.Join(", ", predDupes.Select(i => i.Items.First().Name + "|" + i.Items.First().Type.ToString()))}. Name and type must be unique within a batch.";
                 results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -4432,7 +4439,15 @@ from    [Intersect] T
                     #region Log data errors
                     var allowedPredicates = new List<PredicateType>() { PredicateType.DataLineage, PredicateType.Grammar, PredicateType.SeeAlso, PredicateType.Simple, PredicateType.Usage };
                     List<PredicateType> systemReserved = new List<PredicateType>() { PredicateType.InterTypeHierarchy, PredicateType.IntraTypeHierarchy, PredicateType.ObjectOwnerhip };
-                    
+
+                    foreach (PredicateType pred in (PredicateType[])Enum.GetValues(typeof(PredicateType)))
+                    {
+                        if(pred.IsSystemReserved() && !systemReserved.Contains(pred))
+                        {
+                            systemReserved.Add(pred);
+                        }
+                    }
+
                     var allowedTypesInt = allowedPredicates.Select(x => (int)x).ToList();
                     string checkTypeSQL = $"Type not in ({string.Join(",", allowedTypesInt)})";
 
@@ -4459,6 +4474,13 @@ from    [Intersect] T
     from api.ExecutionPredicate EP
     inner join [Predicate] P on P.Name = EP.Name and P.Type = EP.Type
     where	ExecutionID = @ExecutionID and EP.uid is null
+
+    update	api.ExecutionPredicate 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate with same Name and Type already exists'
+    from api.ExecutionPredicate EP
+    inner join [Predicate] P on P.Name = EP.Name and P.Type = EP.Type and P.uid != EP.uid
+    where	ExecutionID = @ExecutionID and EP.uid is not null
 
     update	api.ExecutionPredicate
     set		Success = 0,
