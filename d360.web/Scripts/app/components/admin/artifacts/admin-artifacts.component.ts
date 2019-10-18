@@ -93,6 +93,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 this.ArtifactTypes = data;                
                 if (selectionId <= 0) {
                     this.selectedRow = this.ArtifactTypes[0];
+                    this.selectedRow = { data: { ID: 0 } };
                 } else {                    
                     this.selectedRow = this.artifactsService.findArtifactType(this.ArtifactTypes, selectionId);
                 }
