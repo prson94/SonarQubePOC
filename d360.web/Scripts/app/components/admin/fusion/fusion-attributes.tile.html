@@ -7,7 +7,6 @@
         <d3s-asset-type-editor *ngIf="formMode == FormMode.Adding" 
             [assetTypeClass]="assetTypeClass" 
             [showDisplayFormat]="false"
-            [showParentPredicates]="selectedRow!=null"
             [parentID]="selectedRow?.data.ID" 
             [title]="selectedRow!=null ? 'Add Sub Type' : 'Add Type'" 
             (onCancel)="formMode = FormMode.Default;" 
