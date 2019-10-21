@@ -71,9 +71,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#region button commands
 
-    private savePngButtonClickCallback(image_data) {
+    private savePngButtonClickCallback(image_data, assetUid) {
         var url = window.URL.createObjectURL(image_data);
-        var filename = "myBlobFile.png";
+        var filename = `${assetUid}.png`;
         var a = document.createElement("a");
         //a.style = "display: none";
         a.href = url;
@@ -94,7 +94,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let image_data = this.diagram.makeImageData({
             scale: 1,
             returnType: "blob",
-            callback: this.savePngButtonClickCallback
+            callback: (image_data) => this.savePngButtonClickCallback(image_data,this.assetUid)
         });
     }
     private alertButtonClick(e) {
