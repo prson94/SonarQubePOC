@@ -506,10 +506,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (obj != null && obj.part != null && obj.part.data != null) {
             let node: AssetBrowserTranslationNode = obj.part.data;
 
-            if (node.group != null) {
-                let group: any = this.diagram.findNodeForKey(node.group);
-                group.isSubGraphExpanded = false;
-            } else if (node.isGroup) { //top level item
+            if (node.group != null) { //find top level node
+                let n: any = this.diagram.findNodeForKey(node.group).data;
+                while (n.group != null) {
+                    n = this.diagram.findNodeForKey(n.group).data;
+                }
+                node = n;
+            }
+
+            if (node.isGroup) { //top level item
 
                 this.diagram.startTransaction('hide');
                 let group: any = this.diagram.findNodeForKey(node.key);
@@ -631,12 +636,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide Upstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
-                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Forward) }
+                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Backward) }
             ),
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
-                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Backward) }
+                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Forward) }
             ),
             this.g(
                 "ContextMenuButton",
