@@ -80,7 +80,9 @@ namespace d360.web.Models
             {
                 Direction = GetAssetLineagePostModelDirection.Both,
                 Hops = 3,
-                StartFromAssets = new List<Guid>() { Guid.Empty }
+                IsReveal = false,
+                StartHop = 0,
+                AssetUids = new List<Guid>() { Guid.Empty }
             };
         }
     }

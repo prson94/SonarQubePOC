@@ -101,7 +101,7 @@ export class SidebarView {
 }
 
 
-//#region enumerations
+//#region Enumerations
 
 export enum DiagramObjectType {
     Link,
@@ -124,9 +124,7 @@ export enum LineageEditorMode {
 
 //#endregion
 
-
-
-//#region legacy
+//#region Legacy
 
 export class LinkModel {
     id: number = null;
@@ -428,10 +426,15 @@ export class SourceRuleSource {
 
 //#endregion
 
+// #region Asset Browser : Translation
 
-//#region Asset Browser
+export class AssetBrowserTranslationRelationCount {
+    predicate: string;
+    direction: AssetBrowserDirection;
+    count: number;
+    assets: string[] = new Array();
+}
 
-// Translation
 export class AssetBrowserTranslationLink {
     from: string;
     fromPort: string;
@@ -439,10 +442,11 @@ export class AssetBrowserTranslationLink {
     toPort: string;
     text: string;
     back: string;
-    impacts: string[];
+    impacts: string[] = new Array();
 }
 
 export class AssetBrowserTranslationNode {
+    hop: number;
     assetUid: string;
     key: string;
     group: string;
@@ -453,15 +457,19 @@ export class AssetBrowserTranslationNode {
     icon: string;
     impacts: string[];
     subgraph: any;
+    showReveal: boolean;
+    relations: AssetBrowserTranslationRelationCount[] = new Array();
 }
 
 export class AssetBrowserTranslation {
-    links: AssetBrowserTranslationLink[];
-    nodes: AssetBrowserTranslationNode[];
+    links: AssetBrowserTranslationLink[] = new Array();
+    nodes: AssetBrowserTranslationNode[] = new Array();
 }
 
+// #endregion Translation
 
-// Request
+// #region Asset Browser : Request
+
 export enum AssetBrowserDirection {
     Forward = 1,
     Backward = 2,
@@ -469,20 +477,38 @@ export enum AssetBrowserDirection {
 }
 
 export class AssetBrowserLineageApiRequestModel {
+    AssetUids: string[];
+    IsReveal: boolean;
+    StartHop: number;
     Direction: AssetBrowserDirection;
     Hops: number;
-    StartFromAssets: string[];
 }
 
+// #endregion Request
 
-// Response
+// #region Asset Browser : Response
+
+export class AssetBrowserLineageApiItemRelationCountAssetModel {
+    Uid: string;
+}
+
+export class AssetBrowserLineageApiItemRelationCountModel {
+    Predicate: string;
+    Direction: AssetBrowserDirection;
+    Count: number;
+    Assets: AssetBrowserLineageApiItemRelationCountAssetModel[];
+}
+
 export class AssetBrowserLineageApiItemModel {
+    hop: number;
     assetUid: string;
     key: string;
     displayValue: string;
     backColor: string;
     foreColor: string;
+    reveal: boolean;
     items: AssetBrowserLineageApiItemModel[];
+    relationCounts: AssetBrowserLineageApiItemRelationCountModel[];
 }
 
 export class AssetBrowserLineageApiRelationshipModel {
@@ -503,6 +529,10 @@ export class AssetBrowserLineageApiResponseModel {
     assets: AssetBrowserLineageApiItemModel[];
     intersects: AssetBrowserLineageApiRelationshipModel[];
 }
+
+// #endregion Response
+
+//#region Asset Browser : InfoPanel Data
 
 export class AssetBrowserDiagramAsset {
     AssetTypeClass: AssetTypeClass;
@@ -535,8 +565,3 @@ export class AssetBrowserDiagramAssetOwner {
 }
 
 //#endregion
-
-
-
-
-
