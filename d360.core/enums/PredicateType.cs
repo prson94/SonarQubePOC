@@ -227,9 +227,9 @@ namespace d360.core.enums
             return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DescriptionAttribute>().Description;
         }
 
-        public static bool CanUserInsert(this PredicateType type)
+        public static bool IsSystemReserved(this PredicateType type)
         {
-            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<AllowIntersectTypeAssignmentAttribute>().Allowed;
+            return !type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<AllowIntersectTypeAssignmentAttribute>().Allowed;
         }
 
         public static List<PredicateTypeInfo> GetAsList(this PredicateType type)
