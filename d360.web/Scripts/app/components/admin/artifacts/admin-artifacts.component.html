@@ -50,12 +50,12 @@
     </div>
     <div *ngIf="isEditing" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-asset-type-editor [assetTypeClass]="assetTypeClass" [id]="selectedRow?.data?.AssetTypeID" [parentID]="selectedRow?.data?.ParentID" [title]="formTitle" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
+            <d3s-asset-type-editor [assetTypeClass]="assetTypeClass" [id]="editorModel?.data?.AssetTypeID" [parentID]="editorModel?.data?.ParentID" [title]="formTitle" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
         </div>
     </div>
     <div *ngIf="isAdding" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-asset-type-editor [assetTypeClass]="assetTypeClass" [parentID]="selectedRow?.data?.ID" [title]="'Add Artifact Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
+            <d3s-asset-type-editor [assetTypeClass]="assetTypeClass" [parentID]="editorModel?.data?.ID" [title]="'Add Artifact Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
         </div>
     </div>    
     <div *ngIf="isDeleting" class="col s12 m7 l8">
