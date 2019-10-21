@@ -418,7 +418,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Create  relationship types based on Subject Type, Object Type and Predicate
+        /// Creates relationship types based on the provided subject, object and predicate properties.
         /// </summary>
         /// <param name="relationshiptypes">List of relationship types</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -464,7 +464,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Update  relationship types based on Predicate 
+        /// This endpoint is used to update an existing relationship types predicate or cardinality properties.
         /// </summary>
         /// <param name="relationshiptypes"></param>
         /// <returns>>An HTTP status code and message.</returns>
@@ -510,7 +510,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Delete relationship types
+        /// Removes the specified relationship types based on the provided relationship type Uid(s). When Cascade=true, the call deletes all relationships based on this type. When false, it triggers an error message stating that there are existing relationships.
         /// </summary>
         /// <param name="relationshiptypes"></param>
         /// <returns>>An HTTP status code and message.</returns>

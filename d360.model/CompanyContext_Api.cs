@@ -4462,11 +4462,17 @@ from    [Intersect] T
 
                             Connection.Execute(@"Update api.ExecutionRelationshipType
                                     Set Success=0,
-                                    Message='Asset type not found' 
+                                    Message='Subject asset type not found' 
                                     Where ExecutionID = @executionID and Success is null and
-                                    (SubjectId is null or [Subject] is null or ObjectId is null  or [Object] is null) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+                                    (SubjectId is null or [Subject] is null) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
                             Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='Object asset type not found' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (ObjectId is null  or [Object] is null) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
                                     Set Success=0,
                                     Message='Predicate not found' 
                                     Where ExecutionID = @executionID and Success is null and
