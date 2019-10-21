@@ -520,11 +520,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             if (node.isGroup) { //top level item
 
-                this.diagram.startTransaction('hide');
                 let group: any = this.diagram.findNodeForKey(node.key);
 
                 if (direction == null) { //hide the current node
-
+                    this.diagram.startTransaction('hide');
                     let hideNode = new AssetBrowserTranslationNode();
 
                     hideNode.subgraph = new AssetBrowserTranslation();
@@ -560,9 +559,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.diagram.remove(group);
                 } else { //hide upstream or downstream
                     let subgraph = this.findSubGraph(group.key, direction);
-
+                    
                     if (subgraph == null || subgraph.nodes.length < 1)
                         return; //nothing to hide
+                    if (subgraph.nodes.length == 1 && subgraph.nodes[0].template == "HiddenData")
+                        return; //subgraph already hidden
+
+                    this.diagram.startTransaction('hide');
 
                     let hideNode = new AssetBrowserTranslationNode();
 
