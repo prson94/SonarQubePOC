@@ -4444,7 +4444,7 @@ from    [Intersect] T
 
 
                     #region Log data errors
-                    var allowedPredicates = new List<PredicateType>() { PredicateType.DataLineage, PredicateType.Grammar, PredicateType.SeeAlso, PredicateType.Simple, PredicateType.Usage };
+                    var allowedPredicates = new List<PredicateType>() { PredicateType.DataLineage, PredicateType.Grammar, PredicateType.SeeAlso, PredicateType.Simple, PredicateType.Usage , PredicateType.BusinessToTechnical};
                     List<PredicateType> systemReserved = new List<PredicateType>() { PredicateType.InterTypeHierarchy, PredicateType.IntraTypeHierarchy, PredicateType.ObjectOwnerhip };
 
                     foreach (PredicateType pred in (PredicateType[])Enum.GetValues(typeof(PredicateType)))
