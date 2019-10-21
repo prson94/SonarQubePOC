@@ -55,7 +55,7 @@
     </div>
     <div *ngIf="isAdding" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-asset-type-editor [showParentPredicates]="selectedRow != null && selectedRow.data != null && selectedRow.data.ID > 0" [assetTypeClass]="assetTypeClass" [parentID]="selectedRow?.data?.ID" [title]="'Add Artifact Type'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
+            <d3s-asset-type-editor [showParentPredicates]="selectedRow != null && selectedRow.data != null && selectedRow.data.ID > 0" [assetTypeClass]="assetTypeClass" [parentID]="selectedRow?.data?.ID" [title]="'Add Business Asset'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
         </div>
     </div>    
     <div *ngIf="isDeleting" class="col s12 m7 l8">
