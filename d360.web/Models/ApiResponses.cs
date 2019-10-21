@@ -99,12 +99,28 @@ namespace d360.web.Models
         public string foreColor { get; set; }
     }
 
+    public class AssetBrowserLineageApiItemRelationCountAssetModel
+    {
+        public Guid Uid { get; set; }
+    }
+
+    public class AssetBrowserLineageApiItemRelationCountModel
+    {
+        public string Predicate { get; set; }
+        public GetAssetLineagePostModelDirection Direction { get; set; }
+        public int Count { get; set; }
+        public List<AssetBrowserLineageApiItemRelationCountAssetModel> Assets { get; set; }
+    }
+
     public interface IAssetBrowserLineageApiItemModel
     {
-        long ID { get; set; }
+        long id { get; set; }
+        int hop { get; set; }
         Guid assetUid { get; set; }
         string displayValue { get; set; }
+        bool reveal { get; set; }
         string key { get; set; }
+        List<AssetBrowserLineageApiItemRelationCountModel> relationCounts { get; set; }
         List<AssetBrowserLineageApiItemModel> items { get; set; }
     }
 
@@ -112,13 +128,19 @@ namespace d360.web.Models
     public class AssetBrowserLineageApiItemModel : IAssetBrowserLineageApiItemModel
     {
         [IgnoreDataMember]
-        public long ID { get; set; }
+        public long id { get; set; }
+        [DataMember]
+        public int hop { get; set; }
         [DataMember]
         public Guid assetUid { get; set; }
         [DataMember]
         public string key { get; set; }
         [DataMember]
         public string displayValue { get; set; }
+        [DataMember]
+        public bool reveal { get; set; }
+        [DataMember]
+        public List<AssetBrowserLineageApiItemRelationCountModel> relationCounts { get; set; }
         [DataMember]
         public List<AssetBrowserLineageApiItemModel> items { get; set; }
     }
@@ -134,7 +156,6 @@ namespace d360.web.Models
 
     public class AssetBrowserLineageApiResponseModel
     {
-        public Guid focalAssetUid { get; set; }
         public List<AssetBrowserLineageApiTopItemModel> assets { get; set; } = new List<AssetBrowserLineageApiTopItemModel>();
         public List<AssetBrowserLineageApiRelationshipModel> intersects { get; set; } = new List<AssetBrowserLineageApiRelationshipModel>();
     }
