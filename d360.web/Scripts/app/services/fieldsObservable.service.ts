@@ -191,11 +191,12 @@ export class FieldsObservableService extends BaseObservableService implements IF
                         l.Field_CardinalRelationships = this.ftItemToSelectItem(r.Field_CardinalRelationships);
                         l.Field_CardinalReferenceRelationships = this.ftItemToSelectItem(r.Field_CardinalReferenceRelationships);
                         l.Field_FieldFromRelRelationships = this.ftItemToSelectItem(r.Field_FieldFromRelRelationships);
+                        l.Field_JsonDataTypes = this.ftItemToSelectItem(r.Field_JsonDataTypes);
+                        l.Field_JsonFields = this.ftItemToSelectItem(r.Field_JsonFields);
                         l.Lookups = this.ftItemToSelectItem(r.Lookups);
                         l.Patterns = this.ftItemToSelectItem(r.Patterns);
                         l.ComplexLookupRelations = r.ComplexLookupRelations;
                         l.FilteredLookups = r.FilteredLookups;
-
                         return l;
                     }
                 ),
@@ -476,6 +477,13 @@ export class FieldsObservableService extends BaseObservableService implements IF
             }));
     }
 
+    getTypeaheadJsonPropertyOptionsForJsonField(fieldTypeId: number, phrase: string): Observable<string[]> {
+        return this.http.get(`form/FieldType_TypeaheadJsonPropertyOptionsForJsonField?fieldTypeId=${fieldTypeId}&phrase=${encodeURIComponent(phrase)}`)
+            .pipe(
+                map(response => <string[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
 }
 
 class FtItem {

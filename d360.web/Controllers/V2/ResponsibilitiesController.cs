@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Dapper;
 using d360.model.DataAccessLayer;
+using Resources;
+using System.Diagnostics;
 
 namespace d360.web.Controllers.V2
 {
@@ -70,6 +72,38 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Get a list of all claims that are available for assignment.
+        /// </summary>
+        /// <returns>Returns a list of claims for assignment</returns>
+        [
+            HttpGet,
+            Route("claims"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of claims for assignment.", typeof(List<ClaimsViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+       ]
+        public async Task<HttpResponseMessage> GetClaimsAsync()
+        {
+            var prefix = "Responsibilities.GetClaimsAsync => ";
+            var errorMessage = "";
+
+            
+            try
+            {
+                var claims = await ResponsibilityRepository.GetClaims();
+                return Request.CreateResponse(HttpStatusCode.OK, claims);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
         /// <summary>
         /// Retrieves a list of responsibility types that are applicable for the specified AssetTypeUid.
         /// </summary>
@@ -328,5 +362,154 @@ namespace d360.web.Controllers.V2
             }
         }
 
-      }
+        /// <summary>
+        /// Inserts responsibility types of a given responsibility types list.
+        /// </summary>
+        /// <param name="responsibilityTypes">The list of responsibility types for insertion.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPost,
+            MapToApiVersion("2.0"),
+            Route("types"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<ResponsibilityTypeUpsertResult>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add responsibility types.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> InsertResponsibilityTypes(List<ResponsibilityTypeInsertModel> responsibilityTypes)
+        {
+            var prefix = "Responsibilities.InsertResponsibilityTypes => ";
+            var errorMessage = "";
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+
+                if (responsibilityTypes == null)
+                    responsibilityTypes = readRequestJsonContent<List<ResponsibilityTypeInsertModel>>(Request, true).Result;
+
+                if (responsibilityTypes == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                if (responsibilityTypes.Count == 0)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided any predicates to process in this request."));
+
+                if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} predicates in this request."));
+
+                var execution = getApiExecution(responsibilityTypes.Count);
+
+                var upserts = new List<ResponsibilityTypeUpsertModel>();
+                upserts = responsibilityTypes.ConvertAll(x => new ResponsibilityTypeUpsertModel() {
+                    Name = x.Name, Description = x.Description, Uid = null
+                });
+
+                List<ResponsibilityTypeUpsertResult> results = ResponsibilityRepository.UpsertResponsibilityTypes(upserts, execution);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
+
+
+        /// <summary>
+        /// Updates responsibility types of a given responsibility types list.
+        /// </summary>
+        /// <param name="responsibilityTypes">The list of responsibility types for update.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPut,
+            MapToApiVersion("2.0"),
+            Route("types"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the PUT request.", typeof(List<ResponsibilityTypeUpsertResult>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility types.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> UpdateResponsibilityTypes(List<ResponsibilityTypeUpsertModel> responsibilityTypes)
+        {
+            var prefix = "Responsibilities.UpdateResponsibilityTypes => ";
+            var errorMessage = "";
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+
+                if (responsibilityTypes == null)
+                    responsibilityTypes = readRequestJsonContent<List<ResponsibilityTypeUpsertModel>>(Request, true).Result;
+
+                if (responsibilityTypes == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                if (responsibilityTypes.Count == 0)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided any predicates to process in this request."));
+
+                if (responsibilityTypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} predicates in this request."));
+
+                var execution = getApiExecution(responsibilityTypes.Count);
+
+                List<ResponsibilityTypeUpsertResult> results = ResponsibilityRepository.UpsertResponsibilityTypes(responsibilityTypes, execution);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
+
+        /// <summary>
+        /// Deletes responsibility type.
+        /// </summary>
+        /// <param name="responsibilityTypes">Responsibility type Uid for deletion.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            MapToApiVersion("2.0"),
+            Route("types"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ResponsibilityTypeDeleteResult)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update responsibility types.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteResponsibilityTypes(ResponsibilityTypeDeleteModel responsibilityTypes)
+        {
+            var prefix = "Responsibilities.DeleteResponsibilityTypes => ";
+            var errorMessage = "";
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+
+                if (responsibilityTypes == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                ResponsibilityTypeDeleteResult results = ResponsibilityRepository.DeleteResponsibilityTypes(responsibilityTypes);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
+
+    }
 }

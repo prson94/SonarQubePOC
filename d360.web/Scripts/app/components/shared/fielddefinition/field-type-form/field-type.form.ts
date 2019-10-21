@@ -16,7 +16,7 @@ import {
     FieldTypeItemDisplayFieldEditorModel,
 } from '../../../../models/fields.model';
 
-import { FieldsService } from '../../../../services/fields.service';
+import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
 import { ObjectDetailService } from '../../../../services/object-detail.service';
 
 import { BaseComponent } from '../../../shared/base.component';
@@ -50,7 +50,7 @@ import { MessagesObservableService } from '../../../../services/messages-observa
                 font-weight: bold;
             }`
     ],
-    providers: [FieldsService, ObjectDetailService],
+    providers: [FieldsObservableService, ObjectDetailService],
 })
 
 export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
@@ -114,7 +114,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     public defaultLinkName: any;
     public defaultLinkAdress: any;
 
-    constructor(private fieldsService: FieldsService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
+    constructor(private fieldsService: FieldsObservableService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
         super();
         this.model = new FieldTypeEditorModel();
         this.model.FieldType = new FieldType();
@@ -1523,14 +1523,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup','FieldFromRelationship', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement','Tag'].indexOf(this.model.FieldType.Type) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement', 'Tag'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsListable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.model.FieldType.Type) > -1
                     || (this.model.FieldType.Type == 'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JsonElement','Tag'].indexOf(this.model.FieldType.Type) > -1);
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JsonElement', 'Tag'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsPartOfKey':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement','Tag'].indexOf(this.model.FieldType.Type) > -1
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement', 'Tag'].indexOf(this.model.FieldType.Type) > -1
                     || this.model.FieldType.AllowMultipleValues || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
                 return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.model.FieldType.Type) > -1);

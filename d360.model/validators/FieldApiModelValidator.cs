@@ -71,19 +71,6 @@ namespace d360.model.validators
                         }
                     }
 
-                    if (field.Type.Tag.IsEditable == true)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Fields contain errors", $"Tag field type must have property 'IsEditable' set to 'false'!");
-                    }
-                    if (field.Type.Tag.IsPartOfKey == true)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Fields contain errors", $"Tag field type must have field property 'IsPartOfKey' set to 'false'!");
-                    }
-                    if (field.Type.Tag.ShowIfEmpty == false)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Fields contain errors", $"Tag field type must have field property 'ShowIfEmpty' set to 'true'!");
-                    }
-
                     if (existingFieldTypes != null)
                     {
                         if (existingFieldTypes.Any(x => x.Type == SystemObjects.Tag.ToString() && x.Name != field.Name))

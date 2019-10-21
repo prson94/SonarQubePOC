@@ -104,12 +104,14 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     }
 
-    private clearAllSelectedItems() {
+    private clearAllSelectedItems(element: any) {
         var nodeList = this.tableEl.el.nativeElement.querySelectorAll("tr.ui-state-highlight");
         Array.from(nodeList)
             .forEach(x => {
                 this.deselectElement(x);
             });
+        if (nodeList.length == 0)
+            this.selectElement(element);
 
     }
 
@@ -162,7 +164,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
         }
 
         if (element)
-            this.clearAllSelectedItems();
+            this.clearAllSelectedItems(element);
 
         this.selected = [];
         this.selected.push(item);

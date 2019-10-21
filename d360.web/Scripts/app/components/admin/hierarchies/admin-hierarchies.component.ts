@@ -8,7 +8,7 @@ import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
-import { AssetTypeService } from "../../../services/asset-type.services";
+import { AssetTypeService } from '../../../services/asset-type.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 

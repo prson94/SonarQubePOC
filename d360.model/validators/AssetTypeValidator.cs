@@ -15,15 +15,21 @@ namespace d360.core.validators
 {
     public class AssetTypeValidator
     {
-        List<AssetTypeClass> PredicateSupportingClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
-        List<AssetTypeClass> ParentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference };
-        List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule };
+        List<AssetTypeClass> PredicateSupportingClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Glossary };
+        List<AssetTypeClass> ParentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference, AssetTypeClass.Glossary };
+        List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule, AssetTypeClass.Glossary };
         string ColorRegex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 
         ICompanyContext CompanyContext;
-        public AssetTypeValidator(ICompanyContext companyContext)
+        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion, bool isFusionEnabled)
         {
             this.CompanyContext = companyContext;
+            if (isFusionEnabled)
+            {
+                PredicateSupportingClasses = PredicateSupportingClasses.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();
+                ParentAssetTypeClass = ParentAssetTypeClass.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();
+                SupportedClasses = SupportedClasses.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();
+            }
         }
 
         public WorkHttpStatus ValidateModel(bool isInsert, AssetTypeInsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType = null)
@@ -75,14 +81,14 @@ namespace d360.core.validators
                 return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
             else if (predicate == null && (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy))
                 return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
-            else if (parentAssetType == null && predicate != null && ParentAssetTypeClass.Contains(model.Class))
+            else if (isInsert && parentAssetType == null && predicate != null && ParentAssetTypeClass.Contains(model.Class))
                 return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid);
             else if (parentAssetType != null && predicate != null && model.Class.In(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference) && predicate.Type != PredicateType.InterTypeHierarchy)
                 return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
             else if (predicate != null && model.Class.In(AssetTypeClass.Model, AssetTypeClass.Policy) && (predicate.Type != PredicateType.IntraTypeHierarchy))
                 return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ImproperPredicate);
 
-            if (!isInsert) 
+            if (!isInsert)
             {
                 int assetCount = CompanyContext.Filter<Asset>(x => x.AssetTypeID == assetType.ID).Count();
                 AssetType currentParentType = CompanyContext.GetParentType(assetType.ID, SystemObjectHelper.GetSystemObjects(model.Class));
@@ -102,7 +108,7 @@ namespace d360.core.validators
         private bool IsValidDisplayFormat(int assetTypeId, string displayFormat, AssetTypeClass assetClass)
         {
             // reference item types with {code} display format are valid
-            if((assetClass == AssetTypeClass.Reference) && !string.IsNullOrEmpty(displayFormat) && string.Compare(displayFormat,"{CODE}", true) == 0 )
+            if ((assetClass == AssetTypeClass.Reference) && !string.IsNullOrEmpty(displayFormat) && string.Compare(displayFormat, "{CODE}", true) == 0)
             {
                 return true;
             }
@@ -113,14 +119,14 @@ namespace d360.core.validators
             if (assetTypeId == 0)
                 allowedFieldTokens = new List<string> { "name" };
             else
-                allowedFieldTokens = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.FriendlyName.ToLower()).ToList();
+                allowedFieldTokens = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.Name.ToLower()).ToList();
 
             if (assetClass == AssetTypeClass.Reference)
                 allowedFieldTokens.Add("code");
 
             var regex = new Regex(@"\{.*?\}");
             var tokens = regex.Matches(displayFormat);
-            foreach(var token in tokens)
+            foreach (var token in tokens)
             {
                 var tokenString = token.ToString().ToLower();
                 tokenString = tokenString.Substring(1, tokenString.Length - 2);
@@ -133,11 +139,11 @@ namespace d360.core.validators
             return true;
         }
 
-        public bool IsValidOrderByFieldForGetAssets(Guid uid,IEnumerable<KeyValuePair<string, string>> queryParams)
+        public bool IsValidOrderByFieldForGetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             if (!(queryParams.Any(p => p.Key.Trim().ToLower() == "_order")))
                 return true;
-            
+
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
                 return false;
@@ -145,14 +151,14 @@ namespace d360.core.validators
             var fieldName = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_order").Value;
 
             string[] validFields = { "name", "sourceid", "textpath", "code" };
-            
-            if(assetType.Object == "FusionAttributeType")
+
+            if (assetType.Object == "FusionAttributeType")
             {
                 var valid = validFields.Contains(fieldName.Trim().ToLower());
                 if (valid) return true;
             }
-               
-            var field = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID && f.Name.ToLower()== fieldName.ToLower()).SingleOrDefault();
+
+            var field = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == fieldName.ToLower()).SingleOrDefault();
 
             return (field != null);
         }

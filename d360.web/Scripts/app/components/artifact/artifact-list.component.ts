@@ -53,9 +53,11 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                 .subscribe(artifactType => {
 
                     let folderName: string = '#Business';
+                    this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 
                     if (artifactType.Class == AssetTypeClass.TechnicalAsset) {
                         folderName = '#Technical';
+                        this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
                     }
 
                     this.headerBreadcrumbService.getFolderTitle(folderName).then(res => {

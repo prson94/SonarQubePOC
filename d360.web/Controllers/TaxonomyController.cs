@@ -28,23 +28,35 @@ namespace d360.web.Controllers
         public JsonNetResult ModelHierarchy(int id)
         {
             var models = Company.Query<dynamic>($@"
-select	A.ObjectID as ID,
-        A.[Uid],
-        A.DisplayValue,
-        A.DisplayValue as TextPath,
-        P.SubjectID as ParentID,
-        A.ID as AssetID,        
-        CASE WHEN EXISTS (select 1 from report where [objecttype] = 'Taxonomy' and [objectid] = A.TypeID)    
-            THEN 1  
-            ELSE 0 
-        END AS 'HasDashboards'
-from	AssetDetail A
-		outer apply (
-					select	I.SubjectID
-					from	[Intersect] I
-                            inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
-							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
-					) P
+                    select	A.ObjectID as ID,
+                            A.[Uid],
+                            A.DisplayValue,
+                            A.DisplayValue as TextPath,
+                            P.SubjectID as ParentID,
+                            A.ID as AssetID,        
+                            CASE WHEN EXISTS (select 1 from report where [objecttype] = 'Taxonomy' and [objectid] = A.TypeID)    
+                                THEN 1  
+                                ELSE 0 
+                            END AS 'HasDashboards',
+		                    case 
+				                    when Work.[Count] > 0 then cast(1 as bit)
+				                    else cast(0 as bit)
+			                    end as HasWorkflow
+                    from	AssetDetail A
+		                    inner join AssetType AT on AT.ID = A.AssetTypeID
+		                    outer apply (
+					                    select	I.SubjectID
+					                    from	[Intersect] I
+                                                inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+							                    inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+					                    ) P
+		                    cross apply (
+					                    select	count(1) as [Count]
+					                    from	workflow.EventRegistration WER
+							                    inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
+					                    where	WER.Object = AT.Object
+							                    and WER.ObjectID = AT.ObjectID
+					                    ) Work
         
 where   A.Type = 'TaxonomyType' and A.TypeID = @id AND A.[State] = 1 order by A.DisplayValue", new { id });
 
@@ -78,6 +90,8 @@ cross apply (select count(1) as [Count] from ResponsibilityDetail where Resource
 select	A.ObjectID as ID, 
         A.[Uid],
         P.SubjectID as ParentID, 
+		P.uid as ParentUid,
+		A.AssetTypeUid as AssetTypeUid,
         A.TypeID as TaxonomyTypeID,
         {editRightsColumnStatement}
         A.ID as AssetID,  
@@ -90,10 +104,11 @@ from	AssetWithType A
         inner join dbo.AssetDisplayValue D on A.ID = D.AssetID
         {editRightsJoinStatement}
         outer apply (
-					select	I.SubjectID
+					select	I.SubjectID, A.uid
 					from	[Intersect] I
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
+							inner join Asset A on A.ObjectId = I.SubjectID and A.Object = I.Subject
 					) P
 where   A.Type = 'TaxonomyType' 
         and A.TypeID = @id 
