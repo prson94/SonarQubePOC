@@ -84,7 +84,14 @@ namespace d360.web.Controllers.V2
             {
                 foreach (var h in hierarchies.Where(h => h.ParentKey == current.key))
                 {
-                    var child = new AssetBrowserLineageApiItemModel { ID = h.ID, key = h.Key, assetUid = h.AssetUid, displayValue = h.DisplayValue };
+                    // For badging in browser.
+                    var relationCounts = new List<AssetBrowserLineageApiItemRelationCountModel>();
+                    if (!string.IsNullOrEmpty(h.RelationCounts))
+                    {
+                        relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
+                    }
+                    
+                    var child = new AssetBrowserLineageApiItemModel { hop = h.Hop, id = h.ID, key = h.Key, assetUid = h.AssetUid, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
 
                     recurse(hierarchies, child);
 
@@ -103,11 +110,10 @@ namespace d360.web.Controllers.V2
         /// <remarks>
         /// 
         /// </remarks>
-        /// <param name="assetUid">The uid of the asset that we are getting lineage for.</param>
         /// <param name="postModel"></param>
         /// <returns>An HTTP status code and message.</returns>
         [
-            Route("{assetUid:Guid}"),
+            Route(""),
             HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
@@ -116,13 +122,17 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetLineage(Guid assetUid, GetAssetLineagePostModel postModel)
+        public async Task<HttpResponseMessage> GetAssetLineage(GetAssetLineagePostModel postModel)
         {
             try
             {
-                var reader = await Company.QueryMultipleAsync(@"exec graph.GetLineageByAsset @assetUid, @startFromAssets, @direction, @hops", new { 
-                    assetUid, 
-                    startFromAssets = postModel.StartFromAssetsJson, 
+                var reader = await Company.QueryMultipleAsync(@"exec graph.GetLineageByAsset @assets, @IsReveal, @StartHop, @direction, @hops", new { 
+                    assets = postModel.AssetUids.AsTableValuedParameter<Guid>(
+                        "dbo.UidTable", 
+                        new List<string>() {"Uid"}
+                        ), 
+                    postModel.IsReveal,
+                    postModel.StartHop,
                     direction = (int)postModel.Direction, 
                     hops = (postModel.Hops > 0) ? postModel.Hops : 1 
                 }, timeout: 10);
@@ -131,13 +141,18 @@ namespace d360.web.Controllers.V2
                 var hierarchies = reader.Read<RawResultList2>().OrderBy(i => i.Hop).ThenBy(i => i.ID).ThenBy(i => i.HierarchyLevel).ToList();
                 var relationships = reader.Read<RawResultList3>().OrderBy(i => i.Hop).ToList();
 
-                var model = new AssetBrowserLineageApiResponseModel {
-                    focalAssetUid = assetUid
-                };
+                var model = new AssetBrowserLineageApiResponseModel();
 
                 foreach (var h in hierarchies.Where(i => string.IsNullOrEmpty(i.ParentKey)))
                 {
-                    var current = new AssetBrowserLineageApiTopItemModel { ID = h.ID, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", displayValue = h.DisplayValue };
+                    // For badging in browser.
+                    var relationCounts = new List<AssetBrowserLineageApiItemRelationCountModel>();
+                    if (!string.IsNullOrEmpty(h.RelationCounts))
+                    {
+                        relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
+                    }
+                    
+                    var current = new AssetBrowserLineageApiTopItemModel { hop = h.Hop, id = h.ID, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
                     recurse(hierarchies, current);
                     model.assets.Add(current);
                 }

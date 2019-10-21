@@ -274,9 +274,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.isLoading = true;
 
         this.requestModel = new AssetBrowserLineageApiRequestModel();
+        this.requestModel.AssetUids = new Array();
+        this.requestModel.AssetUids.push(this.assetUid);
+        this.requestModel.IsReveal = false;
+        this.requestModel.StartHop = 0;
         this.requestModel.Direction = AssetBrowserDirection.Both;
         this.requestModel.Hops = 3;
-        this.requestModel.StartFromAssets = [];
 
         //#region Testing with static data
         //let translationModel: AssetBrowserTranslation = this.browserService.getStaticDataForTesting();
@@ -284,7 +287,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //this.isLoading = false;
         //#endregion
 
-        this.browserService.getAssetLineage(this.assetUid, this.requestModel)
+        this.browserService.getAssetLineage(this.requestModel)
             .subscribe(data => {
                 let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
                 this.parseData(translationModel);
