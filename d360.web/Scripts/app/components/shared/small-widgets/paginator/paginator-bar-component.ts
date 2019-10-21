@@ -15,7 +15,7 @@ import { Paginator } from 'primeng/paginator'
                         <span [ngClass]="{'disabled' : isFirstPage()}" (click)="changePageToPrev($event)">Previous</span>
                         <span [ngClass]="{selected: page == (cpage - 1)}" *ngFor="let cpage of pageOptions" (click)="onPageLinkClick(cpage - 1)">{{cpage}}</span>
                         <span [ngClass]="{'disabled' : isLastPage()}" (click)="changePageToNext($event)">Next</span>
-                        <span [ngClass]="{'disabled' : isLastPage()}" (click)="changePageToLast($event)">Last</span>
+                        <span *ngIf="!hideLastButton" [ngClass]="{'disabled' : isLastPage()}" (click)="changePageToLast($event)">Last</span>
                         <span class="popup-container">
                             <i class="fa fa-cog"></i>
                             <div class="popup-menu popup">
@@ -42,6 +42,7 @@ export class PaginatorComponent implements OnChanges, OnInit {
     @Input() page: number;
     @Input() totalRecords: number;
     @Input() percentage: number;
+    @Input() hideLastButton: boolean = false;
     @Output() onPageChange = new EventEmitter();
     private itemsPerPageOptions = [10, 25, 50, 100];
     private itemsPerPage: number = 10;
