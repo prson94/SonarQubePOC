@@ -146,15 +146,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
     private scoreClass(value: number) {
         let css: string = "asset-browser-window-tabs-content-score-";
-        if (value < 60) {
+        if (+value < 60) {
             css += "low";
         }
-        else if (value > 60 && value < 75) {
+        else if (+value > 60 && +value < 75) {
             css += "medium";
         }
         else {
             css += "high";
         }
+        return css;
     }
 
     private GetJSON(value: string) {
