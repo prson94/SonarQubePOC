@@ -873,7 +873,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 "Horizontal",
                 { stretch: go.GraphObject.Horizontal, padding: 5 },
                 new go.Binding("background", "isHighlighted",
-                    function (h) { return h ? "#F5C2FF" : "transparent"; }
+                    function (h) { return h ? "#F5C2FF" : "#FFFFFF"; }
                 ).ofObject(),
                 this.g(
                     go.Shape,
