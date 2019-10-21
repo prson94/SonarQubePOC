@@ -329,4 +329,5 @@
   <include file="scripts/GOV-8346.xml"/>  <!-- Change to GetFieldTypeLookupList procedure to change Artifact to Business Asset -->
   <include file="scripts/GOV-5831.xml"/> <!-- Added api.ExecutionResponsibility -->
   <include file="scripts/GOV-8065.xml"/> <!-- GetDynamicAssets optimization, Added Utility.FieldValue view -->
+  <include file="scripts/GOV-8465.xml"/> <!-- [GenerateAllAssetTypeDisplayValues] display value proc changed to include fusionqueryattributes -->
 </databaseChangeLog>

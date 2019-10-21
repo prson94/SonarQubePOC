@@ -986,6 +986,7 @@ namespace d360.web.Controllers
                         appendTitle = FormInfo.PolicyType;
                         parentPredicateType = PredicateType.IntraTypeHierarchy;
                         break;
+                    case AssetTypeClass.Reference:
                     case AssetTypeClass.ReferenceItemType:
                         ot = SystemObjects.ReferenceItemType;
                         appendTitle = "Reference List";                        
@@ -1063,9 +1064,12 @@ namespace d360.web.Controllers
                             model.AssetType.Description = assetType.Description;
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
+                        case AssetTypeClass.Reference:
                         case AssetTypeClass.ReferenceItemType:
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Notes = assetType.Notes;
+                            model.AssetType.Description = assetType.Description;
+                            model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             if (model.Tokens != null) model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                             break;
                     }
@@ -1073,7 +1077,7 @@ namespace d360.web.Controllers
                     model.FormName = string.Format(FormInfo.Add_Asset_Type_Title, appendTitle);
                     model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
 
-                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.BusinessAsset || @class == AssetTypeClass.TechnicalAsset || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType)
+                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.BusinessAsset || @class == AssetTypeClass.TechnicalAsset || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference)
                     {
                         var intersectType = Company.Filter<IntersectType>(i =>
                             i.Object == assetType.Object &&
@@ -1082,14 +1086,24 @@ namespace d360.web.Controllers
                         ).FirstOrDefault();
 
 
-                        if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType) //If model or policy you must always have a predicate to load.
+                        if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference) //If model or policy you must always have a predicate to load.
                             loadPredicates = true;
 
                         if (intersectType != null)
                         {
                             loadPredicates = true;
 
-                            model.AssetType.ParentUid = Company.Filter<AssetType>(a => a.Object == intersectType.Subject && a.ObjectID == intersectType.SubjectID).FirstOrDefault()?.uid;
+                            if (intersectType.SubjectUid.HasValue)
+                            {
+                                model.AssetType.ParentUid = intersectType.SubjectUid;
+                            }
+                            else
+                            {
+                                var parentAssetType = Company.AssetTypes.FirstOrDefault(x => x.Object == intersectType.Subject && x.ObjectID == intersectType.SubjectID);
+                                model.AssetType.ParentUid = parentAssetType.uid;
+                            }
+
+
                             model.AssetType.Hierarchy.PredicateUid = intersectType.Predicate.UID;
                         }
                     }
@@ -1124,7 +1138,7 @@ namespace d360.web.Controllers
 
 
 
-                    if (@class == AssetTypeClass.ReferenceItemType)
+                    if (@class == AssetTypeClass.Reference)
                     {
                         model.AssetType.DisplayFormat = "{Code}";
                         model.Tokens.Clear(); // remove the name token for reference item type it isnt created by default.
@@ -1151,7 +1165,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        var parents = Company.Query<PrimeSelectItem>("select uid as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
+                        var parents = Company.Query<PrimeSelectItem>("select LOWER(CAST(uid AS char(36))) as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
                         model.Parents = parents;
                     }
                     model.Parents?.Insert(0, new PrimeSelectItem() { label = "", value = "" });
@@ -6587,18 +6601,57 @@ select 'ReferenceItemType|0' as value, 'Reference' as title
                 #endregion
                 case "P":   // Promotion
                     #region
+
+                    var fusionEnabled = Community.GetCompanySettingByKey<bool>("FusionEnabled");
+                    string technicalAssetSql = "";
+                    if (!fusionEnabled) { 
+                        technicalAssetSql = $@"union
+select		4 as Sort,
+			'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 
+			'{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + P.[Path] as title 
+from		AssetType A
+			cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
+where		[Class] = 8";
+                    }
+
                     sql = $@"
-select * from (
-select 'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title from AttributeType where ParentID is null
-union
-select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, '{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 1
-union
-select 'ArtifactType|' + cast(ObjectID as varchar(10)) as value, '{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + Name as title from AssetType where Object = 'ArtifactType' and [Class] = 8
-union
-select 'TaxonomyType|' + cast(ObjectID  as varchar(10)) as value, '{CommonNames.AssetTypeClass_Model.CleanForSql()}: ' + Name as title from AssetType where object='TaxonomyType'
-union
-select 'ReferenceItemType|' + cast(ObjectID  as varchar(10)) as value, 'Reference Item: ' + Name as title from AssetType where object='ReferenceItemType'
-) O order by title";
+select	value,
+		title
+from	(
+		select		1 as Sort,
+					'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 
+					'{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' + P.[Path] as title 
+		from		AssetType A
+					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
+		where		[Class] = 1 
+
+		union
+
+		select		2 as Sort,
+					'TaxonomyType|' + cast(ObjectID  as varchar(10)) as value, 
+					'{CommonNames.AssetTypeClass_Model.CleanForSql()}: ' + Name as title 
+		from		AssetType
+		where		[Class] = 2
+
+		union
+
+		select		3 as Sort,
+					'ReferenceItemType|' + cast(ObjectID  as varchar(10)) as value, 
+					'Reference Item: ' + P.[Path] as title 
+		from		AssetType  A
+					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
+		where		[Class] = 9
+
+		{technicalAssetSql}
+
+		union
+
+		select		5 as Sort,
+					'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title 
+		from		AttributeType 
+		where		ParentID is null
+		) O
+order by Sort, title";
                     break;
                 #endregion
                 case "R":   // Relation
@@ -6622,7 +6675,7 @@ select 'ReferenceItemType|' + cast(ObjectID  as varchar(10)) as value, 'Referenc
             }
 
             if (!string.IsNullOrEmpty(sql))
-                models = Company.Query<OptionModel>(sql).OrderBy(i => i.title);
+                models = Company.Query<OptionModel>(sql);
 
             return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
         }
@@ -12814,9 +12867,9 @@ order by	case
                                         inner join AssetType T on T.ID = A.AssetTypeID and T.Object = 'TaxonomyType' and T.ObjectID = @t
 		                                cross apply dbo.GetAssetTextPathById(A.ID, '/') P
                                         cross apply dbo.GetAssetLevelById(A.ID) LV
-                                where (coalesce(LV.[Level], 1) + @currentLevel) <= @maxLevel
+                                where coalesce(LV.[Level], 1) <= @currentLevel 
                                 option (maxrecursion 100)",
-    new { t = taxonomy.TaxonomyTypeID, currentLevel = taxonomy.Level ?? 1, maxLevel = taxonomy.MaximumDepth ?? 1 }).Select(i => new { i.Uid, i.Name }).ToList();
+    new { t = taxonomy.TaxonomyTypeID, currentLevel = taxonomy.Level ?? 1 }).Select(i => new { i.Uid, i.Name }).ToList();
 
                 var thisEntry = parents.FirstOrDefault(i => i.Uid == taxonomy.Uid);
 
@@ -12829,10 +12882,10 @@ order by	case
                     Value = $"{i.Uid}",
                     Selected = (parent != null ? (i.Uid == parent.uid) : false)
                 }).ToList();
-                parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = "", Selected = (parent == null) });
+                parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = Guid.Empty.ToString(), Selected = (parent == null) });
 
                 list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = taxonomy.Uid.ToString() });
-                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentUid", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.uid.ToString() : "0") });
+                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentUid", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.uid.ToString() : Guid.Empty.ToString()) });
                 list = (
                      loadDynamicFields(
                          SystemObjects.Taxonomy.ToString(),

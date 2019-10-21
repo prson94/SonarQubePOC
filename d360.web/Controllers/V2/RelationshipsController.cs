@@ -96,7 +96,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes a predicates of a given predicate list.
+        /// Deletes a given set of predicates.
         /// </summary>
         /// <param name="predicates">The list of predicates for deletion.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -149,10 +149,10 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Inserts a predicates of a given predicate list.
+        /// Inserts or updates a given set of predicates.
         /// </summary>
         /// <remarks>
-        /// For updating existing predicate, add predicate Uid to a predicate list parameter
+        /// For updating existing predicate, add the predicate Uid to the request.
         /// </remarks>
         /// <param name="predicates">The list of predicates for insertion.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -476,19 +476,19 @@ namespace d360.web.Controllers.V2
             HttpGet,
             ApiExplorerSettings(IgnoreApi = true),
             MapToApiVersion("2.0"),
-            Route("isRelationshipExistsForAssetType/{assetTypeId}"),
+            Route("isTransformPredicateExists/{assetTypeId}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
             ]
-        public async Task<HttpResponseMessage> IsRelationshipExistsForAssetTypeAsync(int assetTypeId)
+        public async Task<HttpResponseMessage> IsTransformPredicateExists(int assetTypeId)
         {
-            var prefix = "Relationships.IsRelationshipExistsForAssetTypeAsync => ";
+            var prefix = "Relationships.IsTransformPredicateExists => ";
             var errorMessage = "";
 
             try
             {
-                var result = await this.RelationshipRepository.IsRelationshipExistsForAssetType(assetTypeId);
+                var result = await this.RelationshipRepository.IsTransformPredicateExists(assetTypeId);
                 return Request.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
