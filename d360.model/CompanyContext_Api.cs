@@ -4942,9 +4942,23 @@ from    [Intersect] T
             CurrentExecutionLocationModel currentLocation = null;
 
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            var predDupes = import.GroupBy(x => x.Name + x.Type).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
+
+            var predInverseDupes = import.GroupBy(x => x.Inverse + x.Type).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
+
             if (executionItemDupes.Any())
             {
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else if (predDupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate predicate items: {string.Join(", ", predDupes.Select(i => i.Items.First().Name + "|" + i.Items.First().Type.ToString()))}. Name and type must be unique within a batch.";
+                results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else if (predInverseDupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate predicate items: {string.Join(", ", predInverseDupes.Select(i => i.Items.First().Inverse + "|" + i.Items.First().Type.ToString()))}. Inverse and type must be unique within a batch.";
                 results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -5032,17 +5046,29 @@ from    [Intersect] T
 
 
                     #region Log data errors
-                    var allowedPredicates = Enum.GetValues(typeof(PredicateType)).Cast<PredicateType>().Where(x => x.CanUserInsert()).ToList();
-                    var allowedTypes = allowedPredicates.Select(x => "''" + x.ToString() + "''").ToList();
+                    var allowedPredicates = new List<PredicateType>() { PredicateType.DataLineage, PredicateType.Grammar, PredicateType.SeeAlso, PredicateType.Simple, PredicateType.Usage , PredicateType.BusinessToTechnical};
+                    List<PredicateType> systemReserved = new List<PredicateType>() { PredicateType.InterTypeHierarchy, PredicateType.IntraTypeHierarchy, PredicateType.ObjectOwnerhip };
+
+                    foreach (PredicateType pred in (PredicateType[])Enum.GetValues(typeof(PredicateType)))
+                    {
+                        if(pred.IsSystemReserved() && !systemReserved.Contains(pred))
+                        {
+                            systemReserved.Add(pred);
+                        }
+                    }
+
                     var allowedTypesInt = allowedPredicates.Select(x => (int)x).ToList();
                     string checkTypeSQL = $"Type not in ({string.Join(",", allowedTypesInt)})";
+
+                    var systemReservedInt = systemReserved.Select(x=> (int)x).ToList();
+                    string systemReservedSQL = $"Type in ({string.Join(",", systemReservedInt)})";
 
                     var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
                     List<int> notAllowedTypesForLineage = new List<int>() { -1 };
 
                     foreach (var item in import)
                     {
-                        if (!item.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
+                        if ((int)item.Type != 0 && !item.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
                         {
                             notAllowedTypesForLineage.Add((int)item.Type);
                         }
@@ -5057,6 +5083,27 @@ from    [Intersect] T
     from api.ExecutionPredicate EP
     inner join [Predicate] P on P.Name = EP.Name and P.Type = EP.Type
     where	ExecutionID = @ExecutionID and EP.uid is null
+
+    update	api.ExecutionPredicate 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate with same Inverse and Type already exists'
+    from api.ExecutionPredicate EP
+    inner join [Predicate] P on P.Inverse = EP.Inverse and P.Type = EP.Type
+    where	ExecutionID = @ExecutionID and EP.uid is null
+
+    update	api.ExecutionPredicate 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate with same Inverse and Type already exists'
+    from api.ExecutionPredicate EP
+    inner join [Predicate] P on P.Inverse = EP.Inverse and P.Type = EP.Type and P.uid != EP.uid
+    where	ExecutionID = @ExecutionID and EP.uid is not null
+
+    update	api.ExecutionPredicate
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate with same Name and Type already exists'
+    from api.ExecutionPredicate EP
+    inner join [Predicate] P on P.Name = EP.Name and P.Type = EP.Type and P.uid != EP.uid
+    where	ExecutionID = @ExecutionID and EP.uid is not null
 
     update	api.ExecutionPredicate
     set		Success = 0,
@@ -5084,13 +5131,18 @@ from    [Intersect] T
 
     update	api.ExecutionPredicate
     set		Success = 0,
-		    [Message] = coalesce([Message] + '; ', '') + 'Predicate Type invalid. Allowed values are {string.Join(",", allowedTypes)}'
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate Type invalid. Allowed values are {string.Join(", ", allowedPredicates)}'
     where	ExecutionID = @ExecutionID and {checkTypeSQL.Replace("''", "'")}
 
     update	api.ExecutionPredicate
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Your current version of lineage does not support using this predicates of this type.'
     where	ExecutionID = @ExecutionID and {checkLineageTypes}
+
+        update	api.ExecutionPredicate
+    set		Success = 0,
+		    [Message] = 'Predicate is system reserved and may not be created.'
+    where	ExecutionID = @ExecutionID and {systemReservedSQL}
 ;";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);

@@ -97,10 +97,10 @@
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
-                <tr (dblclick)="isEditing=showEditButton;" [pSelectableRow]="item">
+                <tr (dblclick)="isEditing=showEditButton;" style="word-wrap: break-word" [pSelectableRow]="item">
                     <td>{{item.FriendlyName}}</td>
                     <td>{{item.Type}}</td>
-                    <td>{{item.Category}}</td>
+                    <td >{{item.Category}}</td>
                     <td *ngIf="showIsListable">
                         <span><i *ngIf="item.IsListable" class="fa fa-check enabled" title="True"></i></span>
                         <span><i *ngIf="!item.IsListable" class="fa fa-times disabled" title="False"></i></span>
