@@ -1529,6 +1529,16 @@ from	IntersectType I
                                         {
                                             #region Cascade Behaviour
 
+                                            //AssetDataProfile
+                                            Connection.Execute($@"             
+			update  S 
+            set     S.Success = 0 ,
+			        [Message] ='You have not enabled Cascade, yet there are profiling data for this asset.'
+			from    api.ExecutionDeletedAsset S 
+			        inner join AssetDataProfile ADP on ADP.AssetID = S.AssetID
+			where	S.[ExecutionId] = @ExecutionID and S.[AssetId] is not null and S.[Cascade] = 0", 
+            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
                                             // Parent/Child Relationships
                                             if (predicateType.HasValue)
                                             {

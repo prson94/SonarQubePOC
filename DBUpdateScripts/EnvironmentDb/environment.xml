@@ -331,4 +331,5 @@
   <include file="scripts/GOV-8465.xml"/> <!-- [GenerateAllAssetTypeDisplayValues] display value proc changed to include fusionqueryattributes -->
   <include file="scripts/GOV-8378.xml"/> <!-- graph.GetLineageByAsset and other graph schema changes -->
   <include file="scripts/GOV-6749.xml"/> <!-- Add [api].[ExecutionRelationshipType] -->
+  <include file="scripts/GOV-8303.xml"/> <!-- Alter constraint for AssetDataProfile table-->
 </databaseChangeLog>
