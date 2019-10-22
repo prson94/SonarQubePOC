@@ -119,7 +119,6 @@ export class TagView extends AdminBaseComponent implements OnInit {
             this.tagService.searchTagsTypeAhead(searchValue, 10)
                 .subscribe(res => {
                     if (res && res.length > 0) {
-                        console.log(res);
                         this.searchResults = res.sort((a, b) => a.name.localeCompare(b.name));
                         this.tagsLoading = false;
                         this.ref.markForCheck();

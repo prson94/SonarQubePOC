@@ -22,6 +22,7 @@
     <ng-container *ngIf="allowAddTag">
         <p-autoComplete [(ngModel)]="inputValue"
                         (onBlur)="resetValue()"
+                        class="autoInputBox"
                         inputStyleClass="inputBox"
                         placeholder="Click to add..."
                         [suggestions]="searchResults"
