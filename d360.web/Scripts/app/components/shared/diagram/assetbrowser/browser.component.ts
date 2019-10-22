@@ -247,7 +247,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.requestModel.IsReveal = false;
         this.requestModel.StartHop = 0;
         this.requestModel.Direction = AssetBrowserDirection.Both;
-        this.requestModel.Hops = 3;
+        this.requestModel.Hops = 1;
 
         //#region Testing with static data
         //let translationModel: AssetBrowserTranslation = this.browserService.getStaticDataForTesting();
@@ -269,32 +269,51 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
 
         if (append === true) {
-            dm.addNodeDataCollection(data.nodes);
-            dm.addLinkDataCollection(data.links);
+            data.nodes.forEach(n => {
+                if (dm.findNodeDataForKey(n.key) == null)
+                    dm.addNodeData(n);
+            });
+
+            data.links.forEach(l => {
+                if (dm.linkDataArray.find(i => i.to == l.to && i.from == l.from) == null)
+                    dm.addLinkData(l);
+            });
         } else {
             dm.nodeDataArray = data.nodes;
             dm.linkDataArray = data.links;
         }
 
         //add reveal nodes
-        data.nodes.forEach(n => {
-            if (n.showReveal === true) {
-                let revealKey = n.key + '_reveal';
+        this.diagram.findTopLevelGroups().each(g => {
+            if (g.data.showReveal == true) {
+                let revealKey = g.data.key + '_reveal';
+                let children = g.findSubGraphParts();
+                let childAssets = [];
+
+                g.data.showReveal = false;
+
+                childAssets.push(g.data.assetUid);
+                children.each(c => {
+                    let data = c.data;
+                    childAssets.push(data.assetUid);
+                });
+
                 if (dm.findNodeDataForKey(revealKey) == null) {
                     dm.addNodeData({
                         template: 'MoreData',
-                        key: revealKey, back: n.back,
+                        key: revealKey, back: g.data.back,
                         showReveal: true,
-                        relations: n.relations,
-                        assetUid: n.assetUid,
-                        hop: n.hop
+                        relations: g.data.relations,
+                        assetUid: g.data.assetUid,
+                        hop: g.data.hop,
+                        assetUids: childAssets
                     });
 
                     dm.addLinkData({
-                        from: n.key,
+                        from: g.data.key,
                         to: revealKey
                     });
-                }
+                }         
             }
         });
 
@@ -310,12 +329,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.startTransaction('reveal');
 
                 let model = new AssetBrowserLineageApiRequestModel();
-                model.AssetUids = new Array();
-                model.AssetUids.push(data.assetUid);
+                model.AssetUids = data.assetUids;
                 model.IsReveal = true;
                 model.StartHop = data.hop;
                 model.Direction = AssetBrowserDirection.Both;
-                model.Hops = 3;
+                model.Hops = 1;
 
                 this.browserService.getAssetLineage(model)
                     .subscribe(response => {
