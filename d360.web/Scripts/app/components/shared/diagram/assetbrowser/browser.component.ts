@@ -1,7 +1,7 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
 import {AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild} from '@angular/core';
-import {DiagramObjectType, AssetBrowserLineageApiRequestModel, AssetBrowserTranslation, AssetBrowserDirection, AssetBrowserDiagramAsset, AssetBrowserTranslationNode } from '../../../../models/lineage.model';
+import {DiagramObjectType, AssetBrowserLineageApiRequestModel, AssetBrowserTranslation, AssetBrowserDirection, AssetBrowserDiagramAsset, AssetBrowserTranslationNode, AssetBrowserTranslationLink } from '../../../../models/lineage.model';
 import {PermissionsService} from '../../../../services/permissions.service';
 import {BrowserService} from '../../../../services/browser.service';
 import {DiagramBaseComponent} from '../diagram-base.component';
@@ -28,7 +28,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private originalAssetUid: string;
     private menuItems: MenuItem[]=[];
 
-    isWindowVisible: boolean = true;
+    isWindowVisible: boolean = false;
     isWindowLoading = false;
     showWindowTabs: boolean = false;
     tab: string = "info";
@@ -166,39 +166,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    private getMoreData(e: go.InputEvent, obj: go.Part) {
-        if (obj.data) {
-            if (obj.data.retrieveDataFor) {
-                let diagramModel: go.GraphLinksModel = <go.GraphLinksModel>obj.diagram.model;
-
-                let prefix = obj.data.retrieveDataFor + "_";
-                let color: string = "#B9F1AF";
-                let transformColor: string = "#FAE7BC";
-
-                obj.diagram.startTransaction("get_data");
-
-                diagramModel.addNodeData({ key: prefix + "pg", isGroup: true, text: "PG1", template: "PortGroup", back: color, loc: "300 400", layer: 0, icon: "\uf1c0", impacts: ["."] });
-                diagramModel.addNodeData({ key: prefix + "s", isGroup: true, group: prefix + "pg", text: "fact", template: "Group", back: color, icon: "\uf007", impacts: ["."] });
-                diagramModel.addNodeData({ key: prefix + "t", isGroup: true, group: prefix + "s", text: "MEMBERS", template: "Group", back: color, icon: "\uf0ce", impacts: ["."] });
-                diagramModel.addNodeData({ key: prefix + "c", group: prefix + "t", text: "SOME_COLUMN", back: color, icon: "\uf0db", impacts: ["c1_1", "c2_1", "jobStep1"] });
-
-                diagramModel.addLinkData({ from: obj.data.retrieveDataFor, fromPort: "R", to: prefix + "pg", toPort: "L", text: "sample link", back: transformColor, impacts: [] });
-
-                var linksToRemove = diagramModel.linkDataArray.filter(l => l.to === obj.key);
-                linksToRemove.forEach(i => {
-                    diagramModel.removeLinkData(i);
-                });
-                diagramModel.removeNodeData(obj); 
-                obj.visible = false;
-                //obj.diagram.remove(obj);
-
-                obj.diagram.commitTransaction("get_data");
-            }
-        }
-
-        //this.reOrderLayout();
-    }
-
     private highlightPath(e: go.InputEvent, obj: go.Part) {
         //Set all to not highlighted.
         obj.diagram.nodes.each(n => {
@@ -297,17 +264,116 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.isLoading = false;
     }
 
-    private parseData(data: AssetBrowserTranslation) {
+    private parseData(data: AssetBrowserTranslation, append: boolean = false) {
         this.diagram.startTransaction("load_all_data");
         let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
-        dm.nodeDataArray = data.nodes;
-        dm.linkDataArray = data.links;
+
+        if (append === true) {
+            data.nodes.forEach(n => {
+                if (dm.findNodeDataForKey(n.key) == null)
+                    dm.addNodeData(n);
+            });
+
+            data.links.forEach(l => {
+                if (dm.linkDataArray.find(i => i.to == l.to && i.from == l.from) == null)
+                    dm.addLinkData(l);
+            });
+        } else {
+            dm.nodeDataArray = data.nodes;
+            dm.linkDataArray = data.links;
+        }
+
+        //add reveal nodes
+        this.diagram.findTopLevelGroups().each(g => {
+            if (g.data.showReveal != AssetBrowserDirection.None) {
+                let dir = g.data.showReveal;
+                let revealKey = g.data.key + '_reveal'
+                let children = g.findSubGraphParts();
+                let childAssets = [];
+
+                childAssets.push(g.data.assetUid);
+                children.each(c => {
+                    let data = c.data;
+                    childAssets.push(data.assetUid);
+                });
+
+                if (dir == AssetBrowserDirection.Forward || dir == AssetBrowserDirection.Both) {
+                    if (dm.findNodeDataForKey(revealKey + '_Forward') == null) {
+                        dm.addNodeData({
+                            template: 'MoreData',
+                            key: revealKey + '_Forward',
+                            back: g.data.back,
+                            showReveal: AssetBrowserDirection.Forward,
+                            relations: g.data.relations,
+                            assetUid: g.data.assetUid,
+                            hop: g.data.hop,
+                            assetUids: childAssets
+                        });
+
+                        dm.addLinkData({
+                            from: g.data.key,
+                            to: revealKey + '_Forward'
+                        });
+                    }
+                }
+
+                if (dir == AssetBrowserDirection.Backward || dir == AssetBrowserDirection.Both) {
+                    if (dm.findNodeDataForKey(revealKey + '_Backward') == null) {
+                        dm.addNodeData({
+                            template: 'MoreData',
+                            key: revealKey + '_Backward',
+                            back: g.data.back,
+                            showReveal: AssetBrowserDirection.Backward,
+                            relations: g.data.relations,
+                            assetUid: g.data.assetUid,
+                            hop: g.data.hop,
+                            assetUids: childAssets
+                        });
+
+                        dm.addLinkData({
+                            from: revealKey + '_Backward',
+                            to: g.data.key
+                        });
+                    }
+                }
+
+                g.data.showReveal = AssetBrowserDirection.None;
+            }
+        });
+
         this.diagram.commitTransaction("load_all_data");
-
-
         this.reOrderLayout();
-        //this.diagram.autoScale = go.Diagram.UniformToFill;
+    }
 
+    private getMoreData(e: go.InputEvent, obj: go.GraphObject) {
+        if (obj != null && obj.part != null && obj.part.data != null) {
+            let data = obj.part.data;
+
+            if (data.showReveal != AssetBrowserDirection.None) {
+                this.diagram.startTransaction('reveal');
+
+                let model = new AssetBrowserLineageApiRequestModel();
+                model.AssetUids = data.assetUids;
+                model.IsReveal = true;
+                model.StartHop = data.hop;
+                model.Direction = data.showReveal;
+                model.Hops = 1;
+
+                this.browserService.getAssetLineage(model)
+                    .subscribe(response => {
+                        let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(response);
+
+                        this.diagramModelAsGraph().removeNodeData(data);
+                        let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == data.key || l.from == data.key);
+                        this.diagramModelAsGraph().removeLinkDataCollection(l);
+
+                        this.parseData(translationModel, true);
+
+                        this.diagram.commitTransaction('reveal');
+
+                    });
+            }
+        }
     }
 
     private reOrderLayout() {
@@ -448,7 +514,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         return subgraph;
     }
-
 
     //#endregion
 
@@ -607,7 +672,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.model.removeNodeData(node);
 
                 this.diagram.commitTransaction('unhide');
-
             }
         }
     }
@@ -916,7 +980,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private createMoreDataNode(): go.Node {
         return this.g(go.Node, "Auto",
             {
-                click: this.getMoreData
+                click: (e, obj) => this.getMoreData(e, obj)
             },
             this.g(
                 go.Panel,
