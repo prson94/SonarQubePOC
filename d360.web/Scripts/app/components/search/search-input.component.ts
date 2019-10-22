@@ -1,20 +1,29 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChange, ElementRef, ViewChild} from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
-import { SearchResultsObject, SearchCategories, SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
+import { SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
 import { DropdownOption } from '../../models/dropdown.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SubscriptionLike as ISubscription } from 'rxjs';
+import { SettingsHelper } from '../../models/settings.model';
+import { StringConstants } from '../../static/string-constants';
 
 declare var CompanySettings;
 @Component({
     selector: 'd3s-search-input',
     template: ` <div *ngIf="newSearch && !isAdvancedMode"
                 class="titlebar-search">           
-                        <div class="field grow mr10"><input #searchip (keydown.enter)="triggerSearch()" [ngModel]="searchText" (keyup)="checkSearchKey($event);" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);autocompleteWidth=searchip.offsetWidth;" autofocus autocomplete="off" type="text" placeholder="Please enter search terms"><i *ngIf="!autocompleteLoading" (click)="triggerSearch()" class="fa fa-search"></i><i *ngIf="autocompleteLoading" class="fa fa-spinner fa-spin"></i></div>
+                        <div class="field grow mr10">
+        <d3s-header-typeahead-search 
+                  [additionalCssClasses]="'gov-search'" 
+                  [autocompletePlaceholder]="'Please enter search terms?'"
+                  [searchOptions]="searchTypes"
+                  [defaultValue]="searchText">
+        </d3s-header-typeahead-search>
+</div>
                         <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match Whole Words</span></label>
                         <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>
                 </div>      
@@ -49,7 +58,7 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
     @Input() isExactMatch: boolean = true;
     @Output() isExactMatchChange = new EventEmitter();
 
-    @Input() searchTypes: string[] = ["Artifact", "Synonym"];
+    @Input() searchTypes: string[] = ["BusinessAsset", "Synonym"];
     @Output() searchTypesChange = new EventEmitter();
 
     @Input() searchText: string;
@@ -76,34 +85,12 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
         { title: "Type", value: "_type" },
     ];
 
-    private types: DropdownOption[] = [
-        { title: "Attribute", value: "Attribute" },
-        { title: "Fusion", value: "FusionAttributes" },
-        { title: "Fusion Type", value: "FusionType" },
-        { title: "Business", value: "Artifact" },
-        { title: "Technical", value: "Artifact" },
-        { title: "Group", value: "Group" },
-        { title: "Model", value: "Taxonomy" },
-        { title: "Reference", value: "Reference" },
-        { title: "User", value: "Resource" },
-        { title: "Grammatic Type", value: "Synonym" },
-        { title: "Data Quality", value: "Rule" },
-    ];
-
-    private searchObjectTypes: SelectItem[] = [
-        { value: "Attribute", label: "Attribute" },
-        { value: "FusionAttributes", label: "Fusion" },
-        { value: "FusionType", label: "Fusion Type" },
-        { value: "Artifact", label: "Business" },
-        { value: "Artifact", label: "Technical" },
-        { value: "Group", label: "Group" },
-        { value: "Taxonomy", label: "Model" },
-        { value: "Policy", label: "Policy" },
-        { value: "Reference", label: "Reference" },
-        { value: "Resource", label: "User" },
-        { value: "Synonym", label: "Grammatic Type" },
-        { value: "Rule", label: "Data Quality" },
-    ];
+    private searchObjectTypes: SelectItem[] = SettingsHelper.getSearchTypesList().map((set) => {
+        return {
+            label: set.title,
+            value: set.value
+        }
+    });
         
     private simpleSearchID: number = 0;
     private autocompleteResultSize: number = 20;
@@ -116,9 +103,13 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
     }
 
     ngOnInit() {
-        if (CompanySettings && CompanySettings.FusionEnabled == 'false') {
-            this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
-            this.types = this.types.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
+        if (CompanySettings) {
+            if (CompanySettings.FusionEnabled == 'false') {
+                this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
+            }
+            if (CompanySettings.FusionEnabled == 'true') {
+                this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'TechnicalAsset');
+            }
         }
     }
 

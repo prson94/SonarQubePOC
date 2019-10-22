@@ -1,5 +1,6 @@
 ﻿import { SiteNav } from './site-menu.model';
 import { Observable } from 'rxjs';
+import { StringConstants } from '../static/string-constants';
 
 export interface ICompanySettingsService {
     getSettings(): Observable<CompanySettings>;
@@ -91,18 +92,18 @@ export class SearchType {
 export module SettingsHelper {
     export function getSearchTypesList(): SearchType[] {
         return [
-            { title: "Attribute", value: "Attribute", selected: false },
+            { title: "Attributes", value: "Attribute", selected: false },
             { title: "Fusion", value: "FusionAttributes", selected: false },
-            { title: "Fusion Type", value: "FusionType", selected: false },
-            { title: "Business", value: "Artifact", selected: false },
-            { title: "Group", value: "Group", selected: false },
-            { title: "Model", value: "Taxonomy", selected: false },
-            { title: "Policy", value: "Policy", selected: false },
-            { title: "Reference", value: "Reference", selected: false },
-            { title: "Technical", value: "Artifact", selected: false },
-            { title: "User", value: "Resource", selected: false },
-            { title: "Grammatic Type", value: "Synonym", selected: false },
-            { title: "Data Quality", value: "Rule", selected: false }
+            { title: "Fusion Types", value: "FusionType", selected: false },
+            { title: StringConstants.AssetTypeClass_Business+"s", value: "BusinessAsset", selected: false },
+            { title: StringConstants.AssetTypeClass_Technical + "s", value: "TechnicalAsset", selected: false },
+            { title: "Groups", value: "Group", selected: false },
+            { title: "Models", value: "Taxonomy", selected: false },
+            { title: "Policies", value: "Policy", selected: false },
+            { title: "Reference Lists", value: "Reference", selected: false },
+            { title: "Users", value: "Resource", selected: false },
+            { title: "Grammatic Types", value: "Synonym", selected: false },
+            { title: "Rules", value: "Rule", selected: false }
         ];
     }
 

@@ -29,6 +29,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     isEditingFieldType = false;
     isAddingFieldType = false;
     ArtifactTypes: TreeNode[];
+    editorModel: any;
     theDeleteCallback: Function;
     filterFields: string[] = ["Name"];
     assetTypeClass: AssetTypeClass;
@@ -44,17 +45,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         protected messagesService: MessagesObservableService        
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
-        this.areaName = "Assets";
-        this.setCommonItems();
-
-        this.setObjectInfo('ArtifactType', -1);
-        this.setCommonRightSideBar(true);
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/ArtifactType/${this.selectedRow.data.ID}`
-            });
-        }
         this.theDeleteCallback = this.deleteArtifactType.bind(this);
     }
 
@@ -64,27 +54,40 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 let assetTypeClassString: keyof typeof AssetTypeClass = params['class'];
                 this.assetTypeClass = AssetTypeClass[assetTypeClassString];
                 if (!this.assetTypeClass) {
-                    this.assetTypeClass = AssetTypeClass.Business;
+                    this.assetTypeClass = AssetTypeClass.BusinessAsset;
                 }
             } catch (e) {
-                this.assetTypeClass = AssetTypeClass.Business;
+                this.assetTypeClass = AssetTypeClass.BusinessAsset;
             }
 
-            let className: string = AssetTypeClass[this.assetTypeClass];
-            let singularLabel: string = `${className} Asset`;
+            let className: string = this.assetTypeClass == AssetTypeClass.BusinessAsset ? 'Business Asset' : 'Technical Asset';
+            let singularLabel: string = `${className} Type`;
 
             this.tabTitle = `${singularLabel}s`;
             this.formTitle = `Edit ${singularLabel}`;
-
+            this.setHeaderAndSidebars();
             this.load();
         });
     }
+
+    setHeaderAndSidebars() {
+        this.areaName = this.assetTypeClass == AssetTypeClass.BusinessAsset ? "Business Assets" : "Technical Assets";
+        this.setCommonItems();
+
+        this.setObjectInfo('ArtifactType', -1);
+        this.setCommonRightSideBar(true);
+        if (this.auditSidebar) {
+            this.auditSidebar.hasDynamicUrl = true;
+            this.auditSidebar.dynamicUrlCallback = (() => {
+                return `/sidebar/audit/ArtifactType/${this.selectedRow.data.ID}`
+            });
+        }    }
 
     ngOnDestroy() {
         this.clearSidebar();
     }
 
-    load(selectionId:number = 0) {
+    load(selectionId: number = 0) {
         this.isLoading = true;
         this.artifactsService.getArtifactTypeTree(this.assetTypeClass)
             .subscribe(data => {
@@ -106,17 +109,18 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     edit(id: number) {
-        this.selectedRow = this.artifactsService.findArtifactType(this.ArtifactTypes, id);
+        this.editorModel = this.artifactsService.findArtifactType(this.ArtifactTypes, id);
         this.isAdding = false;
         this.isEditing = true;
         this.isDeleting = false;
     }
 
-    add(id: number) {
+    add(id: number) {  
+        
         if (id == 0) {
-            this.selectedRow = { data: { ID: 0 } };
+            this.editorModel = { data: { ID: 0 } };
         } else {
-            this.selectedRow = this.artifactsService.findArtifactType(this.ArtifactTypes, id);
+            this.editorModel = this.artifactsService.findArtifactType(this.ArtifactTypes, id);
         }
 
         this.isEditing = false;

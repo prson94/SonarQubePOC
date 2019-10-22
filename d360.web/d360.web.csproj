@@ -566,7 +566,9 @@
     <Content Include="Content\primeng\v7.1.3\primeng.css" />
     <Content Include="Content\primeng\v7.1.3\primeng.min.css" />
     <Content Include="Content\primeng\v7.1.3\theme.css" />
-    <Content Include="Content\primeng\v7.1.3\theme.min.css" />
+    <Content Include="Content\primeng\v7.1.3\theme.min.css">
+      <DependentUpon>theme.css</DependentUpon>
+    </Content>
     <Content Include="Content\quill\v1.3.4\quill.min.js" />
     <Content Include="Content\quill\v1.3.4\quill.snow.css" />
     <Content Include="Content\quill\v1.3.4\quill.snow.min.css">
@@ -621,6 +623,7 @@
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
@@ -663,6 +666,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
+    <Content Include="Scripts\app\components\search\hero-search-input.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
@@ -689,8 +693,11 @@
     <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\search\typeahead-search.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tags-usage-info.component.html" />
+    <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.html" />
+    <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
@@ -970,24 +977,10 @@
     <Content Include="Views\Authentication\Register.cshtml" />
     <Content Include="Views\Shared\GenericError.cshtml" />
     <Content Include="Views\Shared\Terms.cshtml" />
-    <Content Include="fonts\nunitosans\nunito-sans-regular.woff2" />
-    <Content Include="fonts\nunitosans\nunito-sans-regular2.woff2" />
-    <Content Include="fonts\nunitosans\NunitoSans-Black.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-BlackItalic.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-Bold.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-BoldItalic.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-ExtraBold.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-ExtraBoldItalic.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-ExtraLight.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-ExtraLightItalic.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-Italic.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-Light.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-LightItalic.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-Regular.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-SemiBold.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-SemiBoldItalic.ttf" />
-    <Content Include="fonts\nunitosans\nunito-sans-regular.woff" />
-    <Content Include="fonts\nunitosans\nunito-sans-regular2.woff" />
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.eot" />
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.ttf" />
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.woff" />
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.woff2" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east-uat - Web Deploy.pubxml" />
@@ -1132,7 +1125,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-board.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-issues.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\modal\gov-modal.component.ts" />
@@ -1248,6 +1240,10 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\checktreenode.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\chips-filter\chips-filter-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\chips-filter\chips-filter-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dynamic-percentage\dynamic-percentage-component.ts" />
@@ -1257,6 +1253,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.ts" />
+    <Content Include="Scripts\app\components\shared\take-survey.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\treetable-toggler.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-sorticon.component.ts" />
@@ -1465,7 +1462,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\simple-search-pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\utc-date.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\asset-type.services.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\asset-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\baseObservable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\cascade.service.ts" />
@@ -1530,7 +1527,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-breadcrumb.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-favorites.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-follow.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\header\header-typeahead-search.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\typeahead-search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.routes.ts" />
@@ -1718,7 +1715,6 @@
     <TypeScriptCompile Include="Scripts\app\services\artifact-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\artifacts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\editor-definition.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\grid-definition.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\group.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\policies.service.ts" />

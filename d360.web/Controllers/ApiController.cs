@@ -3137,7 +3137,7 @@ outer apply (
                     {
                         if (isReferenceType)
                         {
-                            overrideDisplayColumn = $@"(select Name from AssetType where Object = '{@object}' and ObjectID = A{pos}.{idColumn})";
+                            overrideDisplayColumn = $@"(select Name from AssetType where Object = '{@object}' and ObjectID = A{pos}.ObjectID)";
                         }
                         else if (i.FieldTypeName.ToLower() == "textpath")
                         {
@@ -3374,7 +3374,14 @@ outer apply (
                                 // Add the fields that you need to create link in Angular component.
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Taxonomy'", datafield = $"{dataField}_Object" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                if (i.FieldTypeName.ToLower() == "textpath" || i.FieldTypeName.ToLower() == "displayvalue")
+                                {
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ObjectId as varchar)", datafield = $"{dataField}_ObjectID" });
+                                }
+                                else
+                                {
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                }
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'Taxonomy' and ObjectID = A{pos}.{idColumn}))", datafield = $"{dataField}_Url" });
                                 break;
 
@@ -3473,11 +3480,13 @@ outer apply (
             {
                 case "policy":
                 case "artifact":
+                case "referenceitem":
                 case "taxonomy":
                     permissionJoin = $@"  inner join Asset O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ObjectID ";
                     useAssetJoin = true;
                     break;
                 case "referenceitemtype":
+                    permissionJoin = $@"  inner join AssetType O{i} on O{i}.Object = '{currentObj}' and O{i}.ObjectID = A{i}.ObjectID ";
                     useAssetTypeJoin = true;
                     break;
                 default:
@@ -3486,11 +3495,13 @@ outer apply (
                     break;
             }
 
+
             switch (previousObj.ToLower())
             {
                 case "policy":
                 case "artifact":
                 case "taxonomy":
+                case "referenceitem":
                     previousObjIdColumn = "ObjectID";
                     break;
             }
@@ -4821,6 +4832,10 @@ select	top 100 percent
         TD.DisplayValue,
         {columns}
        -- 0 as Level,
+		case 
+				when Work.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasWorkflow,
         {permissionSql}
 from	
         Asset A
@@ -4833,6 +4848,13 @@ from
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = 'Policy' and I.ObjectID = A.ObjectID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4
 					) P
+		cross apply (
+					select	count(1) as [Count]
+					from	workflow.EventRegistration WER
+							inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
+					where	WER.Object = ATT.Object
+							and WER.ObjectID = ATT.ObjectID
+					) Work
 where   A.ID not in ({Company.GetNoReadSqlStatement()})
         and A.AssetTypeID not in ({Company.GetAssetTypeNoReadSqlStatement()})";
 
@@ -5191,6 +5213,7 @@ order by    Name
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
+                    { "HasWorkflow", (bool)row.HasWorkflow },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") },
                     { "AssetTypeUID", row.uid }
@@ -7805,6 +7828,14 @@ SELECT (
         [ValidateHttpAntiForgeryTokenAttribute]
         public CreateResponse PostSurveyResponse(int surveyId, int objectId, string type, SurveyResponseModel data)
         {
+            foreach(var question in data.Questions)
+            {
+                if(!question.Values.Any(x=> x.IsChecked == true))
+                {
+                    throw new Exception("Invalid model");
+                }
+            }
+
             var survey = new Survey
             {
                 SurveyTypeID = surveyId,
@@ -8337,17 +8368,19 @@ where	R.IssueTypeID = @issueTypeID", new { issueTypeID }).ToList();
         public HttpResponseMessage GetMetricAssetTypes()
         {
             List<int> classes = new List<int>() {
-                (int)AssetTypeClass.Business,
+                (int)AssetTypeClass.BusinessAsset,
                 (int)AssetTypeClass.Model,
                 (int)AssetTypeClass.Policy,
-                (int)AssetTypeClass.Technical
+                (int)AssetTypeClass.Rule,
+                (int)AssetTypeClass.TechnicalAsset
             };
             var models = Company.Query<MetricAssetTypeViewModel>(@"
 select	T.[Uid],
         T.[Class], 
 		P.[Path] as Name
 from	AssetType T
-		cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P").OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
+		cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
+where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 
             return Request.CreateResponse(HttpStatusCode.OK, models);
         }

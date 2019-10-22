@@ -1,4 +1,6 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
 using Dapper;
 using System;
 using System.Collections.Generic;
@@ -42,7 +44,7 @@ namespace d360.model.DataAccessLayer
 
             return res;
         }
-         
+
         public async Task<ResponsibilityTypeRuleStatsViewModel> GetResponsibilityRuleStats(Guid responsibilityTypeRuleUid)
         {
             var responsibilityTypeRuleStats = new ResponsibilityTypeRuleStatsViewModel();
@@ -95,7 +97,7 @@ namespace d360.model.DataAccessLayer
                             ", new { uid = responsibilityTypeRuleUid.ToString() });
             return responsibilityTypeRuleStats;
         }
-        
+
         public async Task<IEnumerable<ResponsibilityTypeRuleViewModel>> GetResponsibilityRules(Guid responsibilityTypeUid)
         {
             return await Company.QueryAsync<ResponsibilityTypeRuleViewModel>(@"
@@ -117,7 +119,7 @@ namespace d360.model.DataAccessLayer
 	                            r.[uid] = @uid 
                             ", new { uid = responsibilityTypeUid.ToString() });
         }
-        
+
         public async Task<IEnumerable<ResponsibilityTypeAllocationViewModel>> GetResponsibilityTypeAllocations(Guid responsibilityTypeUid)
         {
             return await Company.QueryAsync<ResponsibilityTypeAllocationViewModel>(@"
@@ -134,7 +136,7 @@ namespace d360.model.DataAccessLayer
 	                            rt.[uid] = @uid
                             ", new { uid = responsibilityTypeUid.ToString() });
         }
-        
+
         public async Task<IEnumerable<ResponsibilityTypeViewModel>> GetResponsibilityTypesByAssetUid(Guid assetTypeUid)
         {
             return await Company.QueryAsync<ResponsibilityTypeViewModel>(@"
@@ -151,7 +153,7 @@ namespace d360.model.DataAccessLayer
                             order by [Name] asc
                             ", new { uid = assetTypeUid });
         }
-        
+
         public async Task<IEnumerable<ResponsibilityTypeViewModel>> GetResponsibilityTypes()
         {
             return await Company.QueryAsync<ResponsibilityTypeViewModel>(@"
@@ -390,6 +392,102 @@ where 1=1
 
             }
             return res;
+        }
+
+
+        public List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(List<ResponsibilityTypeUpsertModel> responsibilityTypeUpserts, ApiExecution execution)
+        {
+            Company.Add(execution);
+
+            List<ResponsibilityTypeUpsertResult> results = null;
+            try
+            {
+                results = Company.UpsertResponsibilityTypes(execution, responsibilityTypeUpserts);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+
+            return results;
+        }
+
+        public ResponsibilityTypeDeleteResult DeleteResponsibilityTypes(ResponsibilityTypeDeleteModel model)
+        {
+            var result = new ResponsibilityTypeDeleteResult();
+            result.Uid = model.Uid;
+            result.Success = false;
+
+            if (result.Uid == null || result.Uid == Guid.Empty)
+            {
+                result.Message = "Invalid Uid";
+                return result;
+
+            }
+
+            var resType = Company.ResponsibilityTypes.FirstOrDefault(x => x.UID == result.Uid);
+            if (resType == null)
+            {
+                result.Message = $"Responsibility type with uid {result.Uid} not found";
+                return result;
+
+            }
+
+            IQueryable<ResponsibilityTypeRelation> relations = Company.ResponsibilityTypeRelations.Where(x => x.ResponsibilityTypeID == resType.ID);
+
+            if (relations.Count() > 0 && model.Cascade != true)
+            {
+                result.Message = $"Responsibility type has asset assignments and cannot be deleted. Use cascade=true to delete all assignments and rules";
+                return result;
+
+            }
+
+            var deleteSQL = @"  delete RRRSA from ResponsibilityRuleResultSecurityAsset RRRSA
+	                                    inner join ResponsibilityTypeRelationRule RTRR ON RRRSA.RuleID = RTRR.ID
+	                                    inner join ResponsibilityType RT on RT.ID = RTRR.ResponsibilityTypeID
+                                    where RT.uid = @ResponsibilityTypeUid
+
+                                    delete RRRA from ResponsibilityRuleResultAsset RRRA
+	                                    inner join ResponsibilityTypeRelationRule RTRR ON RRRA.RuleID = RTRR.ID
+	                                    inner join ResponsibilityType RT on RT.ID = RTRR.ResponsibilityTypeID
+                                    where RT.uid = @ResponsibilityTypeUid
+
+                                    delete RTRR from ResponsibilityTypeRelationRule RTRR
+	                                    inner join ResponsibilityType RT on RT.ID = RTRR.ResponsibilityTypeID
+                                    where RT.uid = @ResponsibilityTypeUid
+
+                                    delete RTR from ResponsibilityTypeRelation RTR
+	                                    inner join ResponsibilityType RT on RT.ID = RTR.ResponsibilityTypeID
+                                    where RT.uid = @ResponsibilityTypeUid
+
+                                    delete ResponsibilityType 
+                                    where uid = @ResponsibilityTypeUid";
+
+            Company.Query<int>(deleteSQL, new { ResponsibilityTypeUid = model.Uid }).ToList();
+            result.Success = true;
+
+            return result;
+        }
+
+        public Task<IEnumerable<ClaimsViewModel>> GetClaims()
+        {
+            var permissions =  Permission.ReadResponsibilities.GetList();
+            var claims = permissions.Select(x => new ClaimsViewModel()
+            {
+                ID = (int)x.ID,
+                Name = x.Name,
+                Category = x.Category,
+                Description = x.Description
+            }).ToList();
+            return Task.FromResult<IEnumerable<ClaimsViewModel>>(claims);
         }
 
     }

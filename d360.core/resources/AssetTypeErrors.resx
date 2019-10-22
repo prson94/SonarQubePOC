@@ -159,6 +159,9 @@
   <data name="NotFoundGeneric" xml:space="preserve">
     <value>Asset Type not found.</value>
   </data>
+  <data name="RelationshipExistsForAssetType" xml:space="preserve">
+    <value>Relationship OR Relationship type exists with this the asset type or any asset under this type participates in the relationship.</value>
+  </data>
   <data name="TransformationClassRestriction" xml:space="preserve">
     <value>Use As Transformation can be set only asset types that are a Business or Technical class.</value>
   </data>

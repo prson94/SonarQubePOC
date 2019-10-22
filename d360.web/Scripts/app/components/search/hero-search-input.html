@@ -1,0 +1,24 @@
+﻿<div class="hero-search-input">
+    <p-multiSelect id="searchMultiSelect"
+                   [options]="searchObjectTypes"
+                   [ngModel]="searchTypes"
+                   [filter]="false"
+                   [showTransitionOptions]="'0ms ease-out'"
+                   [hideTransitionOptions]="'0ms ease-in'"
+                   [scrollHeight]="'400px'"
+                   [baseZIndex]="2"
+                   [defaultLabel]="'Search All Categories'"
+                   [maxSelectedLabels]="1"
+                   (ngModelChange)="searchTypes=$event;"
+                   (onChange)="setEventTypeLabel()"
+                   [optionLabel]="title">
+    </p-multiSelect>
+    <div class="field mr10">
+        <d3s-header-typeahead-search 
+                  [additionalCssClasses]="'gov-search'" 
+                  [showBigButton]="true"
+                  [autocompletePlaceholder]="'What are you looking for?'"
+                  [searchOptions]="searchTypes">
+        </d3s-header-typeahead-search>
+    </div>
+</div>  

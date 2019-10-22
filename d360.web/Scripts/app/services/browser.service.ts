@@ -8,7 +8,7 @@ import {
 } from 'rxjs/operators';
 import {Observable} from 'rxjs';
 
-import { AssetBrowserLineageApiRequestModel, AssetBrowserLineageApiResponseModel, AssetBrowserTranslation, AssetBrowserTranslationNode, AssetBrowserLineageApiItemModel, AssetBrowserTranslationLink, AssetBrowserLineageApiRelationshipModel } from '../models/lineage.model';
+import { AssetBrowserLineageApiRequestModel, AssetBrowserLineageApiResponseModel, AssetBrowserTranslation, AssetBrowserTranslationNode, AssetBrowserLineageApiItemModel, AssetBrowserTranslationLink, AssetBrowserLineageApiRelationshipModel, AssetBrowserDiagramAsset, AssetBrowserTranslationRelationCount } from '../models/lineage.model';
 
 import {MessagesObservableService} from './messages-observable.service';
 
@@ -28,7 +28,7 @@ export class BrowserService extends BaseObservableService {
     * @returns A diagram-specific representation for the nodes and links.
     */
     public getStaticDataForTesting(): AssetBrowserTranslation {
-        let translationModel: AssetBrowserTranslation = new AssetBrowserTranslation();
+        let translationModel: any = new AssetBrowserTranslation();
         translationModel.nodes = new Array();
         translationModel.links = new Array();
 
@@ -37,33 +37,30 @@ export class BrowserService extends BaseObservableService {
         let sysColor: string = "#DAAADB";
         let btColor: string = "#E0EAF7";
 
-        translationModel.nodes.push({ key: "btType1", isGroup: true, group: undefined, text: "Business Terms", template: "PortGroup", back: btColor, icon: "\uf02d", impacts: [] });
-        translationModel.nodes.push({ key: "bt1", isGroup: false, group: "btType1", text: "Member Name", template: undefined, back: this.shadeColor(btColor, 15), icon: "\uf02d", impacts: [] });
+        translationModel.nodes.push({ assetUid: "", key: "btType1", isGroup: true, group: undefined, text: "Business Terms", template: "PortGroup", back: btColor, icon: "\uf02d", impacts: [], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "bt1", isGroup: false, group: "btType1", text: "Member Name", template: undefined, back: this.shadeColor(btColor, 15), icon: "\uf02d", impacts: [], subgraph: null, showReveal: false });
 
-        translationModel.nodes.push({ key: "sys1", isGroup: true, group: undefined, text: "Enrollment System", template: "PortGroup", back: sysColor, icon: "\uf233", impacts: [] });
-        translationModel.nodes.push({ key: "sysTerm1", isGroup: false, group: "sys1", text: "Member Name", template: undefined, back: this.shadeColor(sysColor, 15), icon: "\uf02d", impacts: [] });
+        translationModel.nodes.push({ assetUid: "", key: "sys1", isGroup: true, group: undefined, text: "Enrollment System", template: "PortGroup", back: sysColor, icon: "\uf233", impacts: [], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "sysTerm1", isGroup: false, group: "sys1", text: "Member Name", template: undefined, back: this.shadeColor(sysColor, 15), icon: "\uf02d", impacts: [], subgraph: null, showReveal: false });
 
-        translationModel.nodes.push({ key: "sys2", isGroup: true, group: undefined, text: "Claims Adjudication", template: "PortGroup", back: sysColor, icon: "\uf233", impacts: [] });
-        translationModel.nodes.push({ key: "sysTerm2", isGroup: false, group: "sys2", text: "Member Name", template: undefined, back: this.shadeColor(sysColor, 15), icon: "\uf02d", impacts: [] });
+        translationModel.nodes.push({ assetUid: "", key: "sys2", isGroup: true, group: undefined, text: "Claims Adjudication", template: "PortGroup", back: sysColor, icon: "\uf233", impacts: [], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "sysTerm2", isGroup: false, group: "sys2", text: "Member Name", template: undefined, back: this.shadeColor(sysColor, 15), icon: "\uf02d", impacts: [], subgraph: null, showReveal: false });
 
-        translationModel.nodes.push({ key: "tran1", isGroup: true, group: undefined, text: "BosEtlServer", template: "PortGroup", back: transformColor, icon: "\uf085", impacts: ["."] });
-        translationModel.nodes.push({ key: "job1", isGroup: true, group: "tran1", text: "ETL_MEMBER_TO_CLAIM", template: "Group", back: this.shadeColor(transformColor, 15), icon: "\uf542", impacts: ["."] });
-        translationModel.nodes.push({ key: "jobStep1", isGroup: false, group: "job1", text: "LOAD_MEMBER_NAME", template: undefined, back: this.shadeColor(transformColor, 30), icon: "\uf085", impacts: ["c1_1", "c1_2", "c2_1", "c2_2", "jobStep1"] });
+        translationModel.nodes.push({ assetUid: "", key: "tran1", isGroup: true, group: undefined, text: "BosEtlServer", template: "PortGroup", back: transformColor, icon: "\uf085", impacts: ["."], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "job1", isGroup: true, group: "tran1", text: "ETL_MEMBER_TO_CLAIM", template: "Group", back: this.shadeColor(transformColor, 15), icon: "\uf542", impacts: ["."], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "jobStep1", isGroup: false, group: "job1", text: "LOAD_MEMBER_NAME", template: undefined, back: this.shadeColor(transformColor, 30), icon: "\uf085", impacts: ["c1_1", "c1_2", "c2_1", "c2_2", "jobStep1"], subgraph: null, showReveal: false });
 
-        translationModel.nodes.push({ key: "h1", isGroup: true, group: undefined, text: "DWH", template: "PortGroup", back: color, icon: "\uf1c0", impacts: ["."] });
-        translationModel.nodes.push({ key: "s1", isGroup: true, group: "h1", text: "fact", template: "Group", back: this.shadeColor(color, 15), icon: "\uf007", impacts: ["."] });
-        translationModel.nodes.push({ key: "t1", isGroup: true, group: "s1", text: "MEMBERS", template: "Group", back: this.shadeColor(color, 30), icon: "\uf0ce", impacts: ["."] });
-        translationModel.nodes.push({ key: "c1_1", isGroup: false, group: "t1", text: "FIRST_NAME", template: undefined, back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_1", "c2_1", "jobStep1"] });
-        translationModel.nodes.push({ key: "c1_2", isGroup: false, group: "t1", text: "LAST_NAME", template: undefined, back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_2", "c2_2", "jobStep1"] });
+        translationModel.nodes.push({ assetUid: "", key: "h1", isGroup: true, group: undefined, text: "DWH", template: "PortGroup", back: color, icon: "\uf1c0", impacts: ["."], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "s1", isGroup: true, group: "h1", text: "fact", template: "Group", back: this.shadeColor(color, 15), icon: "\uf007", impacts: ["."], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "t1", isGroup: true, group: "s1", text: "MEMBERS", template: "Group", back: this.shadeColor(color, 30), icon: "\uf0ce", impacts: ["."], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "c1_1", isGroup: false, group: "t1", text: "FIRST_NAME", template: undefined, back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_1", "c2_1", "jobStep1"], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "c1_2", isGroup: false, group: "t1", text: "LAST_NAME", template: undefined, back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_2", "c2_2", "jobStep1"], subgraph: null, showReveal: false });
 
-        translationModel.nodes.push({ key: "h2", isGroup: true, group: undefined, text: "EGL", template: "PortGroup", back: color, icon: "\uf1c0", impacts: ["."] });
-        translationModel.nodes.push({ key: "s2", isGroup: true, group: "h2", text: "dbo", template: "Group", back: this.shadeColor(color, 15), icon: "\uf007", impacts: ["."] });
-        translationModel.nodes.push({ key: "t2", isGroup: true, group: "s2", text: "MEMBERS", template: "Group", back: this.shadeColor(color, 30), icon: "\uf0ce", impacts: ["."] });
-        translationModel.nodes.push({ key: "c2_1", isGroup: false, group: "t2", text: "FIRST_NAME", template: undefined, back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_1", "c2_1", "jobStep1"] });
-        translationModel.nodes.push({ key: "c2_2", isGroup: false, group: "t2", text: "LAST_NAME", template: undefined, back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_2", "c2_2", "jobStep1"] });
-
-        //translationModel.nodes.push({ key: "h1_moredata", template: "MoreData", back: this.shadeColor(color, 45), retrieveDataFor: "h1" });
-        //translationModel.nodes.push({ key: "h2_moredata", template: "MoreData", back: this.shadeColor(color, 45), retrieveDataFor: "h2" });
+        translationModel.nodes.push({ assetUid: "", key: "h2", isGroup: true, group: undefined, text: "EGL", template: "PortGroup", back: color, icon: "\uf1c0", impacts: ["."], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "s2", isGroup: true, group: "h2", text: "dbo", template: "Group", back: this.shadeColor(color, 15), icon: "\uf007", impacts: ["."], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "t2", isGroup: true, group: "s2", text: "MEMBERS", template: "Group", back: this.shadeColor(color, 30), icon: "\uf0ce", impacts: ["."], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "c2_1", isGroup: false, group: "t2", text: "FIRST_NAME", template: undefined, back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_1", "c2_1", "jobStep1"], subgraph: null, showReveal: false });
+        translationModel.nodes.push({ assetUid: "", key: "c2_2", isGroup: false, group: "t2", text: "LAST_NAME", template: undefined, back: this.shadeColor(color, 45), icon: "\uf0db", impacts: ["c1_2", "c2_2", "jobStep1"], subgraph: null, showReveal: false });
 
         translationModel.links.push({ from: "sys1", fromPort: "T", to: "btType1", toPort: "B", text: "see also", back: sysColor, impacts: [] });
         translationModel.links.push({ from: "sys2", fromPort: "T", to: "btType1", toPort: "B", text: "see also", back: sysColor, impacts: [] });
@@ -82,11 +79,26 @@ export class BrowserService extends BaseObservableService {
     * Retrieve results from the Govern API for lineage regarding a specific asset.
     * @returns A deep models with hierarchical assets and relationships between them.
     */
+    public getAssetBrowserDiagramAsset(
+        uid: string
+        
+    ): Observable<AssetBrowserDiagramAsset> {
+        const url = `api/v2/browser/diagramasset/${uid}`;
+
+        return this.http.get(url).pipe(
+            map(response => response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    /**
+    * Retrieve results from the Govern API for lineage regarding a specific asset.
+    * @returns A deep models with hierarchical assets and relationships between them.
+    */
     public getAssetLineage(
-        assetUid: string,
         model: AssetBrowserLineageApiRequestModel
     ): Observable<AssetBrowserLineageApiResponseModel> {
-        const url = `api/v2/browser/${assetUid}`;
+        const url = `api/v2/browser`;
 
         return this.http.post(url, model).pipe(
             map(response => response),
@@ -100,25 +112,12 @@ export class BrowserService extends BaseObservableService {
     */
     public translateAssetLineageResponseModel(model: AssetBrowserLineageApiResponseModel): AssetBrowserTranslation {
         let translationModel: AssetBrowserTranslation = new AssetBrowserTranslation();
-        translationModel.nodes = new Array();
-        translationModel.links = new Array();
 
         model.assets.forEach(a => {
             this.loadTranslationChildNodes(translationModel, model.intersects, a, null, a.backColor, 1);
         });
 
         translationModel.links = this.determineLinkRoots(translationModel, model.intersects);
-        //model.intersects.forEach(r => {
-        //    let l: AssetBrowserTranslationLink = new AssetBrowserTranslationLink();
-        //    l.back = "#B9F1AF";
-        //    l.from = r.subjectUid;
-        //    l.fromPort = "R";
-        //    l.impacts = [];
-        //    l.text = r.predicate;
-        //    l.to = r.objectUid;
-        //    l.toPort = "L";
-        //    translationModel.links.push(l);
-        //});
 
         return translationModel;
     }
@@ -128,22 +127,22 @@ export class BrowserService extends BaseObservableService {
      * @returns An array of asset Uids
      */ 
     private analyzeSingleNodeImpact(
-        currentUid: string,
+        currentKey: string,
         intersects: AssetBrowserLineageApiRelationshipModel[],
         allowBackward: boolean,
         allowForward: boolean
     ): string[] {
 
-        let relevantUids: string[] = new Array();
+        let relevantKeys: string[] = new Array();
 
         //#region Get forward-facing relationships and work our way forward.
         if (allowForward) {
-            let forward = intersects.filter(i => { return i.subjectUid == currentUid; });
+            let forward = intersects.filter(i => { return i.subjectKey == currentKey; });
             forward.forEach(f => {
-                relevantUids.push(f.objectUid);
-                relevantUids = relevantUids.concat(
-                    relevantUids,
-                    this.analyzeSingleNodeImpact(f.objectUid, intersects, false, true)
+                relevantKeys.push(f.objectKey);
+                relevantKeys = relevantKeys.concat(
+                    relevantKeys,
+                    this.analyzeSingleNodeImpact(f.objectKey, intersects, false, true)
                 );
             });
         }
@@ -151,43 +150,45 @@ export class BrowserService extends BaseObservableService {
 
         //#region Get backward-facing relationships and work our way back.
         if (allowBackward) {
-            let backward = intersects.filter(i => { return i.objectUid == currentUid; });
+            let backward = intersects.filter(i => { return i.objectKey == currentKey; });
             backward.forEach(b => {
-                relevantUids.push(b.subjectUid);
-                relevantUids = relevantUids.concat(
-                    relevantUids,
-                    this.analyzeSingleNodeImpact(b.subjectUid, intersects, true, false)
+                relevantKeys.push(b.subjectKey);
+                relevantKeys = relevantKeys.concat(
+                    relevantKeys,
+                    this.analyzeSingleNodeImpact(b.subjectKey, intersects, true, false)
                 );
             });
         }
         //#endregion
 
-        relevantUids = this.removeArrayDuplicates(relevantUids);
+        relevantKeys = this.removeArrayDuplicates(relevantKeys);
 
         // Remove self.
-        relevantUids = relevantUids.filter(i => { return i !== currentUid });
+        relevantKeys = relevantKeys.filter(i => { return i !== currentKey });
 
-        return relevantUids;
+        return relevantKeys;
     }
 
     /**
     * Walks the nodes to find the hierarchy of the specified parent key, building a list of keys along the way.
     * @returns An array of nodes keys in a hierarchy.
     */
-    private compileDescendantUidList(
-        parentUid: string,
+    private compileDescendantUidList( 
+        parentKey: string,
         nodes: AssetBrowserTranslationNode[],
-        ): string[] {
+        keys: string[]
+    )//: string[]
+    {
 
-        let uids: string[] = new Array();
+        //let keys: string[] = new Array();
 
-        let childNodes = nodes.filter(n => { return n.group == parentUid; });
+        let childNodes = nodes.filter(n => { return n.group == parentKey; });
         childNodes.forEach(n => {
-            uids = this.compileDescendantUidList(n.key, nodes);
-            uids.push(n.key);
+            this.compileDescendantUidList(n.key, nodes, keys);
+            keys.push(n.key);
         });
 
-        return uids;
+        //return keys;
     }
 
     /**
@@ -208,14 +209,14 @@ export class BrowserService extends BaseObservableService {
 
         let relevantIntersects = intersects.filter(x => {
             return (forward) ?
-                (rootNodeUids.indexOf(x.subjectUid) >= 0) :
-                (rootNodeUids.indexOf(x.objectUid) >= 0);
+                (rootNodeUids.indexOf(x.subjectKey) >= 0) :
+                (rootNodeUids.indexOf(x.objectKey) >= 0);
         });
 
         relevantIntersects = relevantIntersects.filter(x => {
             return (forward) ?
-                (currentNodeUids.indexOf(x.objectUid) >= 0) :
-                (currentNodeUids.indexOf(x.subjectUid) >= 0);
+                (currentNodeUids.indexOf(x.objectKey) >= 0) :
+                (currentNodeUids.indexOf(x.subjectKey) >= 0);
         });
 
         if (relevantIntersects.length > 0) {
@@ -232,7 +233,9 @@ export class BrowserService extends BaseObservableService {
 
             let linkText: string = "";
             relevantIntersects.forEach(intersect => {
-                linkText += ((linkText === "") ? "" : ", ") + intersect.predicate;
+                if (linkText.indexOf(intersect.predicate) == -1) {
+                    linkText += ((linkText === "") ? "" : ", ") + intersect.predicate;
+                }
             });
             fl.text = linkText;
 
@@ -257,35 +260,35 @@ export class BrowserService extends BaseObservableService {
 
         rootNodes.forEach(rootNode => {
 
-            let uids: string[];
+            let keys: string[] = new Array();
 
-            // 1. Cycle through all descendants and compile list of uids.
-            uids = this.compileDescendantUidList(rootNode.key, translationModel.nodes);
-            uids.push(rootNode.key);
+            // 1. Cycle through all descendants and compile list of keys.
+            this.compileDescendantUidList(rootNode.key, translationModel.nodes, keys);
+            keys.push(rootNode.key);
 
             // 2. Loop through all intersects to see if any apply.
-            let forwardIntersections = intersects.filter(x => { return uids.indexOf(x.subjectUid) >= 0; });
-            let backwardIntersections = intersects.filter(x => { return uids.indexOf(x.objectUid) >= 0; });
+            let forwardIntersections = intersects.filter(x => { return keys.indexOf(x.subjectKey) >= 0; });
+            let backwardIntersections = intersects.filter(x => { return keys.indexOf(x.objectKey) >= 0; });
 
             // You can ignore this node in loop below.
             ignoredRootKeys.push(rootNode.key);
 
             rootNodes
                 .filter(nextRootNode => { return ignoredRootKeys.indexOf(nextRootNode.key) == -1; })
-                //.filter(nextRootNode => { return rootNode.key !== nextRootNode.key; })
                 .forEach(nextRootNode => {
 
-                    let theseNodeUids: string[] = this.compileDescendantUidList(nextRootNode.key, translationModel.nodes);
-                    theseNodeUids.push(nextRootNode.key);
+                    let theseNodeKeys: string[] = new Array();
+                    this.compileDescendantUidList(nextRootNode.key, translationModel.nodes, theseNodeKeys);
+                    theseNodeKeys.push(nextRootNode.key);
 
-                    let fl = this.buildLinkRoot(forwardIntersections, rootNode.key, uids, nextRootNode.key, theseNodeUids, true);
+                    let fl = this.buildLinkRoot(forwardIntersections, rootNode.key, keys, nextRootNode.key, theseNodeKeys, true);
                     if (fl) {
                         if (links.findIndex(l => { return l.from == fl.from && l.to == fl.to; }) == -1) {
                             links.push(fl);
                         }
                     }
 
-                    let bl = this.buildLinkRoot(backwardIntersections, rootNode.key, uids, nextRootNode.key, theseNodeUids, false);
+                    let bl = this.buildLinkRoot(backwardIntersections, rootNode.key, keys, nextRootNode.key, theseNodeKeys, false);
                     if (bl) {
                         if (links.findIndex(l => { return l.from == bl.from && l.to == bl.to; }) == -1) {
                             links.push(bl);
@@ -306,17 +309,17 @@ export class BrowserService extends BaseObservableService {
         translationModel: AssetBrowserTranslation,
         intersects: AssetBrowserLineageApiRelationshipModel[],
         current: AssetBrowserLineageApiItemModel,
-        parentUid: string,
+        parentKey: string,
         color: string,
         multiplier: number): string[] {
 
         // Create the current node.
-        let currentNode: AssetBrowserTranslationNode = this.createTranslationNode(current, parentUid, color, multiplier);
+        let currentNode: AssetBrowserTranslationNode = this.createTranslationNode(current, parentKey, color, multiplier);
 
         let impacts: string[] = new Array();
 
         // Get the impacts for current node specifically.
-        impacts = this.analyzeSingleNodeImpact(current.assetUid, intersects, true, true);
+        impacts = this.analyzeSingleNodeImpact(current.key, intersects, true, true);
 
         //Instantiate new multiplier as we do not want to impact the parent's multiplier.
         let newMultiplier: number = multiplier + 1;
@@ -326,7 +329,8 @@ export class BrowserService extends BaseObservableService {
                 // Recurse
                 impacts = impacts.concat(
                     impacts,
-                    this.loadTranslationChildNodes(translationModel, intersects, a, current.assetUid, color, newMultiplier)
+                    this.loadTranslationChildNodes(translationModel, intersects, a, current.key,//.assetUid,
+                        color, newMultiplier)
                 );
             });
         }
@@ -354,11 +358,25 @@ export class BrowserService extends BaseObservableService {
         multiplier: number): AssetBrowserTranslationNode {
         let n: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
 
+        a.relationCounts.forEach(rC => {
+            let assetBrowserTranslationRelationCount: AssetBrowserTranslationRelationCount = new AssetBrowserTranslationRelationCount();
+            assetBrowserTranslationRelationCount.count = rC.Count;
+            assetBrowserTranslationRelationCount.direction = rC.Direction;
+            assetBrowserTranslationRelationCount.predicate = rC.Predicate;
+            rC.Assets.forEach(rcA => {
+                assetBrowserTranslationRelationCount.assets.push(rcA.Uid);
+            });
+            n.relations.push(assetBrowserTranslationRelationCount);
+        });
+
+        n.showReveal = a.reveal;
+        n.hop = a.hop;
+        n.assetUid = a.assetUid;
         n.back = this.shadeColor(color, multiplier*15);
         n.icon = "\uf02d";
         n.impacts = [];
         n.isGroup = (a.items && a.items.length > 0);
-        n.key = a.assetUid;
+        n.key = a.key;//a.assetUid;
         n.text = a.displayValue;
         if (parentKey && parentKey !== "") {
             n.group = parentKey;

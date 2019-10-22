@@ -41,11 +41,13 @@ namespace igx.UnitTests.Core
             data.ID = 1;
             data.Subject = "";
             data.SubjectID = 1;
+            data.SubjectUid = Guid.Empty;
             data.SubjectName = "";
             data.SubjectTypeName = "";
             data.PredicateName = "";
             data.Object = "";
             data.ObjectID = 1;
+            data.ObjectUid = Guid.Empty;
             data.ObjectName = "";
             data.ObjectTypeName ="";
 

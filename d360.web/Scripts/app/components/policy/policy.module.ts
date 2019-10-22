@@ -73,7 +73,7 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
         SharedAssetTypeEditorModule,     
         SharedAssetEditorsModule,
         TilesModule,
-        SharedObjectGovernanceModule,
+        SharedObjectGovernanceModule
     ],
     declarations: [
         PolicyComponent,

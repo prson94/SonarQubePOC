@@ -9,7 +9,8 @@ import {
     OnChanges,
     OnInit,
     Output,
-    SimpleChange,
+    SimpleChange,
+
     ViewChild,
     ElementRef
 } from '@angular/core';
@@ -19,7 +20,6 @@ import { EditorCategory, EditorField, EditorRow } from '../../../models/editor-f
 
 import { EditorDefinitionService } from '../../../services/editor-definition.service';
 import { UriBasedService } from '../../../services/uri-based.service';
-import { FieldsService } from '../../../services/fields.service';
 import { CascadeService } from '../../../services/cascade.service';
 
 import { BaseComponent } from '../base.component';
@@ -28,11 +28,14 @@ import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { concat } from 'rxjs';
 import { forEach } from '@angular/router/src/utils/collection';
+import { Console } from '@angular/core/src/console';
+import { AssetEditorModel } from '../../../models/asset.model';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'd3s-dynamic-editor',
     templateUrl: './dynamic-editor.component.html',
-    providers: [EditorDefinitionService, UriBasedService, FieldsService, CascadeService],
+    providers: [EditorDefinitionService, UriBasedService, CascadeService, AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
@@ -42,6 +45,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() title: string;
     @Input() directions: string;
     @Input() objectID: number = 0;
+    @Input() objectTypeUid: number = 0;
     @Input() parentID: number;
     @Input() objectType: string;
     @Input() createUri: string;
@@ -89,8 +93,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         private messagesService: MessagesObservableService,
         private editorDefinitionService: EditorDefinitionService,
         private uriBasedService: UriBasedService,
-        private fieldsService: FieldsService,
-        private cascadeService: CascadeService
+        private cascadeService: CascadeService,
+        private assetService: AssetService
     ) {
         super();
     }
@@ -145,8 +149,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     getDefinition() {
         let id = (this.selection ? this.selection[this.rowID] : null);
-        if (this.objectType == 'IntersectType' && this.selection) {
-            id = this.selection.Uid;
+
+        if (this.selection) {
+            if (this.objectType == 'IntersectType' || this.objectType == 'Predicate')
+                id = this.selection.Uid;
+
+            if (this.selection.uid)
+                id = this.selection.uid;
         }
 
         this.isLoading = true;
@@ -392,10 +401,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         return validators.length > 0 ? validators : null;
     }
 
-    public pad(s) :string { return (s < 10) ? '0' + s : s; }
+    public pad(s): string { return (s < 10) ? '0' + s : s; }
 
     onSubmit() {
-        
+
         this.savingInProgress = true;
 
         let action = (this.selection == null ? "new" : "edit");
@@ -412,14 +421,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                 if (this.form.value[p] instanceof Date) {
                     if (field != null && field.FieldType == 'Date' && this.isV2API) {
-                        
-                        let simpleDate = [this.pad(this.form.value[p].getMonth()+1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
+
+                        let simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
                         this.form.value[p] = simpleDate;
                         console.log(simpleDate);
                     }
                     else {
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
-                    }                    
+                    }
                 } else if (field != null && field.FieldType == 'Lookup' && field.UseTypeahead) {
                     if (this.form.value[p] != null) {
                         this.form.value[p] = this.form.value[p].Value;
@@ -427,7 +436,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
             }
         }
-        
+
 
         //takes the form and convert any array values to , separated string values
         for (var p in this.form.value) {
@@ -440,14 +449,12 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             }
         }
 
-        console.log(this.isV2API);
-
         // if this is the v2 api we need to combine any link field types into the format stored in the db
         // tallyfy|https://tallyfy.com/what-is-compliance-management/
         if (this.isV2API) {
-            let links = this.fields.filter(x => x.FieldType == 'Link');            
+            let links = this.fields.filter(x => x.FieldType == 'Link');
             //need to get the link and url for each            
-            for (let link of links) {                
+            for (let link of links) {
                 let url = values[link.FieldName + '_Url'];
                 delete values[link.FieldName + '_Url'];
                 let name = values[link.FieldName + '_Name'];
@@ -471,10 +478,61 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 this.saveClick.emit({ item: values, action: action, additionalOption: this.consolidateToTag });
 
             }
+            else if (this.isV2API) {
+                this.postToApiV2({ item: values, action: action });
+            }
             else {
                 this.saveClick.emit({ item: values, action: action });
             }
         }
+    }
+
+    postToApiV2(event) {
+        this.isLoading = true;
+        let values: any = {};
+        let asset: AssetEditorModel = new AssetEditorModel();
+        asset.Fields = {};
+
+        //takes the form and convert any array values to , separated string values
+        for (var p in event.item) {
+            if (event.item.hasOwnProperty(p)) {
+                if (Array.isArray(event.item[p])) {
+                    values[p] = event.item[p].join();
+                } else {
+                    values[p] = event.item[p];
+                }
+            }
+        }
+
+        //convert artifact to an asset
+        for (var p in values) {
+            if (p.toUpperCase() == "PARENTUID") {
+                if (values[p] != "00000000-0000-0000-0000-000000000000")
+                    asset.ParentUid = values[p];
+            }
+            else if (p.toUpperCase() == "UID") {
+                asset.Uid = values[p];
+            }
+            else if (p.toUpperCase() == "ASSETTYPEUID") {
+                //ignore
+            }
+            else {
+                asset.Fields[p] = values[p];
+            }
+        }
+
+        this.assetService.saveAsset(this.objectTypeUid.toString(), asset)
+            .subscribe(res => {
+                if (res.Success) {
+                    let msg = asset.Uid ? 'Successfully updated' : 'Successfully added';
+                    this.showMessageForApiResult(this.messagesService, res, msg);
+                    this.saveClick.emit(event);
+                }
+                else {
+                    this.showMessageForApiResult(this.messagesService, res);
+                }
+
+            });
     }
 
     getUTCDate(date: Date): Date {

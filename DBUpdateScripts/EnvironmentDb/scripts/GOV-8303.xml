@@ -1,0 +1,36 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-8303">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+	IF EXISTS (select * from sys.objects where name = 'FK_AssetDataprofile_AssetID' and type = 'F')
+BEGIN
+	ALTER TABLE [dbo].[AssetDataProfile] DROP CONSTRAINT [FK_AssetDataprofile_AssetID];
+	ALTER TABLE [dbo].[AssetDataProfile]  WITH CHECK ADD  CONSTRAINT [FK_AssetDataprofile_AssetID] FOREIGN KEY([AssetID])
+	REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AssetDataProfile] CHECK CONSTRAINT [FK_AssetDataprofile_AssetID]
+END
+		]]>
+    </sql>
+	<rollback>
+	<![CDATA[	
+IF EXISTS (select * from sys.objects where name = 'FK_AssetDataprofile_AssetID' and type = 'F')
+BEGIN
+	ALTER TABLE [dbo].[AssetDataProfile] DROP CONSTRAINT [FK_AssetDataprofile_AssetID];
+	ALTER TABLE [dbo].[AssetDataProfile]  WITH CHECK ADD  CONSTRAINT [FK_AssetDataprofile_AssetID] FOREIGN KEY([AssetID])
+		REFERENCES [dbo].[Asset] ([ID])
+	ALTER TABLE [dbo].[AssetDataProfile] CHECK CONSTRAINT [FK_AssetDataprofile_AssetID]
+END
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

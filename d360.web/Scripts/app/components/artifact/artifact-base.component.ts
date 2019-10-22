@@ -7,9 +7,10 @@ import { BaseComponent } from '../shared/base.component';
 import { Subscription }   from 'rxjs';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
 
 export class ArtifactBaseComponent extends BaseComponent {            
-    public area: string = "Business";
+    public area: string = StringConstants.AssetTypeClass_Business;
     public folderTitle: string; 
     public areaLink: string = SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;
     //sidebar

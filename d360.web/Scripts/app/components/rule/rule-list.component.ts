@@ -1,7 +1,7 @@
-﻿import {Input, Component, EventEmitter, Output, OnInit, OnDestroy} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {BaseComponent} from '../shared/base.component';
-import {Title} from '@angular/platform-browser';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { BaseComponent } from '../shared/base.component';
+import { Title } from '@angular/platform-browser';
 import {
     GridDefinition,
     GridColumn,
@@ -11,16 +11,16 @@ import {
     GridRelationshipFilterExpression,
     GridAttributeFilterExpression
 } from '../../models/grid-definition.model';
-import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
-import {RulesService} from '../../services/rules.service';
-import {GridDefinitionService} from '../../services/grid-definition.service';
-import {HeaderActionsService} from '../../services/header-actions.service';
-import {PermissionsService} from '../../services/permissions.service';
-import {Breadcrumb} from '../../models/breadcrumb.model';
-import {Rule, RuleType } from '../../models/rule.model';
-import {SiteUrlHelpers} from '../../static/site-url-helpers';
-import {StringConstants} from '../../static/string-constants';
-import {RightSidebarService} from '../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { RulesService } from '../../services/rules.service';
+import { GridDefinitionService } from '../../services/grid-definition.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
+import { PermissionsService } from '../../services/permissions.service';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { Rule, RuleType } from '../../models/rule.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
+import { RightSidebarService } from '../../services/right-sidebar.service';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 
@@ -46,15 +46,15 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     filtercolumns: GridFilterColumn[] = [];
 
     constructor(private route: ActivatedRoute,
-                private router: Router,
-                protected rulesService: RulesService,
-                protected titleService: Title,
-                protected messagesService: MessagesObservableService,
-                private gridDefinitionService: GridDefinitionService,
-                private headerActionsService: HeaderActionsService,
-                protected headerBreadcrumbService: HeaderBreadcrumbService,
-                protected permissionsService: PermissionsService,
-                rightSidebarService: RightSidebarService
+        private router: Router,
+        protected rulesService: RulesService,
+        protected titleService: Title,
+        protected messagesService: MessagesObservableService,
+        private gridDefinitionService: GridDefinitionService,
+        private headerActionsService: HeaderActionsService,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected permissionsService: PermissionsService,
+        rightSidebarService: RightSidebarService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -159,7 +159,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         this.isLoading = true;
         this.rulesService.getRules(this.ruleTypeId)
             .subscribe(result => {
-                this.isLoading = false;                
+                this.isLoading = false;
                 this.rules = result;
 
                 if (this.rules.length && this.rules.length > 0) this.selected = this.rules[0];
@@ -172,15 +172,9 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     private saveRule(event) {
-        this.rulesService.saveRule(event.item)
-            .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                if (result.type != 'error') {
-                    this.loadRules();
-                    this.headerActionsService.emitFavoritesChange();
-                }
-                this.showEditor = false;
-            });
+        this.loadRules();
+        this.headerActionsService.emitFavoritesChange();
+        this.showEditor = false;
     }
 
     private showRule(rule) {
@@ -190,7 +184,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     public onDeleted() {
         this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
         this.rules = this.rules.filter(x => x.ID != this.selected.ID);
-        this.selected = this.rules.length > 0 ? this.rules[0] : null;                
+        this.selected = this.rules.length > 0 ? this.rules[0] : null;
         this.showDelete = false;
     }
 };

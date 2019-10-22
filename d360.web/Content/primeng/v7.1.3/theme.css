@@ -19,7 +19,7 @@
 .ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Arial,Helvetica,sans-serif; font-size: 1em; }
 .ui-widget-content { border: none; background: #ffffff; color: #646464; }
 .ui-widget-content a { color: #646464; text-decoration: none; /*font-weight:bold;*/ cursor:pointer; }
-.ui-widget-header { border: 1px solid #D5D5D5; background-color: #999; color: #222222; font-weight: bold; }
+.ui-widget-header { background-color: #999; color: #222222; font-weight: bold; }
 .ui-widget-header a { color: #222222; }
 
 /* Interaction states
@@ -336,8 +336,8 @@ th.ui-state-default { background-color: #999; }
 }
 
 .ui-tabview:not(.ui-ribbon) .ui-tabview-nav {
-    background: transparent;
-    border-bottom: 1px solid #606060;
+    background: #F0F0F0;
+    border-bottom: 1px solid #ccc;
 }
 
 .ui-tabview .ui-tabview-nav > li.ui-state-default {
@@ -353,15 +353,15 @@ th.ui-state-default { background-color: #999; }
     border: none;
 }
 
-.ui-tabview .ui-tabview-nav > li.ui-state-default.ui-state-active {
-    background: none;
-    font-weight: bold;
-    color: #606060;
-    border-top: none;
-    border-left: none;
-    border-right: none;
-    border-bottom: 4px solid #606060;
-}
+    .ui-tabview .ui-tabview-nav > li.ui-state-default.ui-state-active {
+        background: none;
+        font-weight: bold;
+        color: #606060;
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        border-bottom: 4px solid #0971b9;
+    }
 
 /*
  * jQuery UI Button 1.8.16
@@ -1019,7 +1019,7 @@ button.ui-button:disabled {
 }
 
 .ui-multiselect-item .ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus { 
-    background: #eeeeee; font-weight: normal; color: #212121;background:#A8D6F4;;
+    background: #eeeeee; font-weight: normal; color: #212121;background:#A8D6F4;
 }
 
 .ui-multiselect-item .ui-state-highlight, .ui-widget-content .ui-state-highlight, .ui-widget-header .ui-state-highlight  {
@@ -1218,9 +1218,9 @@ p-togglebutton.ng-dirty.ng-invalid .ui-button {
    background-color: #54a4da;
 }
 
-.pillTabs .ui-tabview-nav > li.ui-state-default .ui-tabview-title {
-   color: gray;
-}
+    .pillTabs .ui-tabview-nav > li.ui-state-default .ui-tabview-title {
+        color: #0971b9;
+    }
 
 .pillTabs .ui-tabview-nav > li.ui-state-default.ui-state-active .ui-tabview-title {
     color: white;
@@ -1408,7 +1408,7 @@ tbody.ui-table-tbody > tr.ui-state-highlight {
     Stewarts overrides
 */
 .ui-widget, .ql-container {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: 'Source Sans Pro', sans-serif;
     font-size: 14px;
 }
 
@@ -1450,7 +1450,6 @@ th.ui-state-default, .ui-treetable th.ui-state-default {
 }
 /* paging controls on search tables*/
 .ui-widget-header {
-    border: 1px solid #fff;
     background-color: #fff;
 }
 
@@ -1468,3 +1467,7 @@ p-multiselect .ui-multiselect {
     z-index: 1;
 }
 
+/*Dropdown default z index for IE issue*/
+p-dropdown .ui-dropdown-panel {
+    z-index: 10;
+}

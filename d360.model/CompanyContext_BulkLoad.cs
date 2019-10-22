@@ -569,20 +569,22 @@ order by	ColumnIndex", new { id });
         {
             message = string.Empty;
             bool found = false;
+            IQueryable<Intersect> intersects = Intersects.Where(x => x.IntersectTypeID == intersectType.ID);
 
-
-            if (intersectType.ObjectCardinality == Cardinality.One && intersectType.SubjectCardinality == Cardinality.One)
+            if (intersectType.SubjectCardinality == Cardinality.One)
             {
-                found = Intersects.Any((x => x.Object == objectType && x.IntersectTypeID == intersectType.ID && x.ObjectID == objectId));
+                found = intersects.Any(x => x.Object == objectType && x.ObjectID == objectId);
                 message = found ? $"{objectType}  does not satisfy relationship cardinality " : string.Empty;
 
                 if (found) return false;
+            }
 
-                found = Intersects.Any(x => x.Subject == subjectType && x.IntersectTypeID == intersectType.ID && x.SubjectID == subjectId);
+            if(intersectType.ObjectCardinality == Cardinality.One)
+            {
+                found = intersects.Any(x => x.Subject == subjectType && x.SubjectID == subjectId);
                 message = found ? $" {subjectType}  does not satisfy relationship cardinality " : string.Empty;
 
                 if (found) return false;
-
             }
 
             return true;
@@ -1528,7 +1530,7 @@ where	T.LoadID = @id;
 
             #endregion
 
-            if (assetType.Class == AssetTypeClass.Business)
+            if (assetType.Class == AssetTypeClass.BusinessAsset)
             {
                 if (parentAssetType != null)
                 {
@@ -1564,7 +1566,7 @@ where	T.LoadID = @id;
             }
 
             //find object/objectid for existing items
-            if (assetType.Class == AssetTypeClass.Business && parentAssetType != null)
+            if (assetType.Class == AssetTypeClass.BusinessAsset && parentAssetType != null)
             {
                 await QueryAsync<int>(@"
         update	T

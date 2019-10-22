@@ -12,6 +12,7 @@ import { SelectItem } from 'primeng/api';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { DynamicButton } from '../../../models/rightsidebar.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'admin-settings',
@@ -88,7 +89,11 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes);
 
                 if (this.companySettings["FusionEnabled"] == false) {
-                    this.searchTypes = this.searchTypes.filter(x => x.title != 'Fusion' && x.title != 'Fusion Type');
+                    this.searchTypes = this.searchTypes.filter(x => x.title != 'Fusion' && x.title != 'Fusion Types');
+                }
+
+                if (+this.companySettings["LineageVersion"] != 3) {
+                    this.searchTypes = this.searchTypes.filter(x => x.title != StringConstants.AssetTypeClass_Technical);
                 }
 
                 this.companySettings.SiteNav.forEach(s => {

@@ -264,53 +264,13 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.showCustomExport = !this.showCustomExport;
     }
 
-    saveItem(event) {
-        this.isEditing = true;
-        this.isLoading = true;
+    saveItem($event) {
+        this.isEditing = false;
+        if ($event.item.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
+        this.getData();
+        this.isLoading = false;
         this.showEditor = false;
-
-        let values: any = {};
-        let asset: AssetEditorModel = new AssetEditorModel();
-        asset.Fields = {};
-
-        //takes the form and convert any array values to , separated string values
-        for (var p in event.item) {
-            if (event.item.hasOwnProperty(p)) {
-                if (Array.isArray(event.item[p])) {
-                    values[p] = event.item[p].join();
-                } else {
-                    values[p] = event.item[p];
-                }
-            }            
-        }
-
-        //convert artifact to an asset
-        for (var p in values) {
-            if (p.toUpperCase() == "PARENTUID") {
-                asset.ParentUid = values[p];
-            }
-            else if (p.toUpperCase() == "UID") {
-                asset.Uid = values[p];
-            }
-            else if (p.toUpperCase() == "ASSETTYPEUID") {
-                //ignore
-            }
-            else {
-                asset.Fields[p] = values[p];                
-            }
-        }
-
-        this
-            .assetService
-            .saveAsset(this.artifactType.AssetTypeUID, asset)
-            .subscribe(result => {
-                this.isEditing = false;
-                this.showMessageForApiResult(this.messagesService, result, 'Artifact successfully added/updated.');
-                if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                
-                this.getData();
-                this.isLoading = false;
-                this.changeDetectorRef.markForCheck();
-            });
+        this.changeDetectorRef.markForCheck();
     }
 
     selectArtifact(artifact) {

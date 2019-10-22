@@ -35,7 +35,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     levels: any[] = [];
 
     modelId: number;
-    selectedParentID: number;
+    selectedParentId: number;
     treeNodeArray: TreeNode[] = [];
     selected: TreeNode;
 
@@ -84,7 +84,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             this.filterTreeTable(this.unfilteredTreeNode, this.searchValue, this.treeTable);
         }, event ? 600 : 0);
     }
-    
+
     ngOnInit() {
 
         this.routeParamsSubscription = this.route.params.subscribe(params => {
@@ -184,7 +184,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         let thisLevel = this.levels.filter(x => x.Level == this.selected.data.Level);
 
         if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
-        return `(Level ${this.selected.data.Level + 1}) Item`;
+        return `(Level ${this.selected.data.Level}) Item`;
     }
 
     private buildTreeNodeArray(models: ModelHierarchy[], levelNumber: number, Parent?: number): TreeNode[] {
@@ -284,23 +284,19 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     private saveTaxonomy(event) {
         this.isLoading = true;
-        this.modelsService.saveModelHierarchy(event.item).subscribe(
-            result => {
-                this.showMessageForResult(this.messagesService, result);
-                this.loadModelHierarchy(this.modelId);
-                this.headerActionsService.emitFavoritesChange();
-                this.showEditor = false;
-            }
-        );
+        this.loadModelHierarchy(this.modelId);
+        this.headerActionsService.emitFavoritesChange();
+        this.showEditor = false;
     }
 
     private closeEditor() {
         this.showEditor = false;
+        this.filter(null);
     }
 
     private showAdd(level: number) {
         this.showEditor = true;
-        this.selectedParentID = level == 0 ? undefined : this.selected ? this.selected.data.ID : undefined;
+        this.selectedParentId = level == 0 ? undefined : this.selected ? this.selected.data.ID : undefined;
         this.selectedLevel = level;
         this.selected = null;
     }

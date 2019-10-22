@@ -1,16 +1,19 @@
-﻿namespace d360.model
+﻿using d360.core;
+using d360.core.resources;
+
+namespace d360.model
 {
     public static class QueryConstants
     {
-        public static string HighLevelTypeCaseStatement = @"case 
-				when T.Object = 'ArtifactType' and T.[Class] = 1 then 'Business: ' 
-                when T.Object = 'ArtifactType' and T.[Class] = 8 then 'Technical: ' 
+        public static string HighLevelTypeCaseStatement = $@"case 
+				when T.Object = 'ArtifactType' and T.[Class] = 1 then '{CommonNames.AssetTypeClass_Business.CleanForSql()}: ' 
+                when T.Object = 'ArtifactType' and T.[Class] = 8 then '{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' 
 				when T.Object = 'FusionAttributeType' then 'Fusion Attribute: ' 
 				when T.Object = 'FusionType' then 'Fusion: ' 
-				when T.Object = 'PolicyType' then 'Policy: ' 
+				when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()}: ' 
 				when T.Object = 'ReferenceItemType' then 'Reference: ' 
-				when T.Object = 'RuleType' then 'Rule: ' 
-				when T.Object = 'TaxonomyType' then 'Model: '
+				when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()}: ' 
+				when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()}: '
 				when T.Object = 'AttributeType' then 'Attribute: '
 				when T.Object = 'FusionQueryAttributeType' then 'Fusion Query Attribute: '
 				when T.Object = 'GroupType' then 'Group: '
@@ -674,7 +677,11 @@ from	AssetType T
 where T.[object]='PolicyType' and	T.ObjectID = @id";
 
         public static string RuleSettingsItem = @"
-select	T.*, R.*
+select	T.*, R.*,
+			case 
+				when Work.[Count] > 0 then cast(1 as bit)
+				else cast(0 as bit)
+			end as HasWorkflow
 from	AssetType T 
 		cross apply ( 
 					select	case 
@@ -684,6 +691,13 @@ from	AssetType T
 					from	AttributeTypeRelation
 					where	ObjectType = 'RuleType' and ObjectID = T.ObjectID 
 					) R
+		cross apply (
+						select	count(1) as [Count]
+						from	workflow.EventRegistration WER
+								inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
+						where	WER.Object = T.Object
+								and WER.ObjectID = T.ObjectID
+						) Work
 where T.[object]='RuleType' and		T.ObjectID = @id";
 
 
@@ -1478,7 +1492,7 @@ order by IST.StartedOn desc, IST.CompletedOn desc
             join workflow.version v on v.typeid = t.id
 			left join AssetType ta on ta.object = e.object and ta.objectId = e.objectid
             left join reporting.Global_resource r on r.ResourceID = v.UpdatedBy
-            left join (select distinct object, objectid, versionid from workflow.item) i on i.versionid = v.id
+            left join (select distinct object, objectid, versionid from workflow.item where Object='Issue') i on i.versionid = v.id
 			left join Issue iss on i.Object ='Issue' and iss.ID = i.ObjectID
 			left join Asset issa on issa.Object = iss.Object and issa.ObjectID = iss.ObjectID
 			left join AssetType isst on isst.ID = issa.AssetTypeID

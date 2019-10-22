@@ -63,15 +63,10 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.logAction('open', 'Artifact', artifactId);
             this.isLoading = true;
             this.messages = [];
-            this.currentAreaNameSubscription =
-                this.headerBreadcrumbService
-                    .getAreaName('ArtifactType', this.artifactTypeId)
-                    .subscribe(result => { this.currentAreaName = result; if (this.artifact) this.buildBreadcrumb(); });
-
             this
                 .loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
                 .then(p => {
-                    this.load(artifactId, this.artifactTypeId)
+                    this.load(artifactId, this.artifactTypeId);
                     }
                 )
             ;
@@ -102,7 +97,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
                     let folderName: string = '#Business';
 
-                    if (artifact.Class == AssetTypeClass.Technical) {
+                    if (artifact.Class == AssetTypeClass.TechnicalAsset) {
                         folderName = '#Technical';
                     }
 
@@ -175,6 +170,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                         )
                     );
                     this.loadItemSurvey(id);
+                    this.buildBreadcrumb();
                 },
                 err => {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
@@ -206,66 +202,81 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
     private buildBreadcrumb() {
         let index = 0;
-        let currentFolderName = this.currentAreaName ? this.currentAreaName : this.folderTitle;
-        this.headerBreadcrumbService.clearBreadcrumbs();
-        this.headerBreadcrumbService.getFolderIcon(currentFolderName).then(res => {
-            this.rightSidebarService.setCurrentArea(this.artifact.DisplayValue, res, 'Definition');
+        this.currentAreaNameSubscription =
+            this.headerBreadcrumbService
+                .getAreaName('ArtifactType', this.artifact.Breadcrumbs[0] ? this.GetIDFromUrl(this.artifact.Breadcrumbs[0].Url) : this.artifactTypeId)
+                .subscribe(result => {
+                    this.currentAreaName = result;
+                    let currentFolderName = this.currentAreaName ? this.currentAreaName : this.folderTitle;
+
+                    this.headerBreadcrumbService.clearBreadcrumbs();
+                    this.headerBreadcrumbService.getFolderIcon(currentFolderName).then(res => {
+                        this.rightSidebarService.setCurrentArea(this.artifact.DisplayValue, res, 'Definition');
+                    });
+                    let areaName: string = this.currentAreaName ? this.currentAreaName : this.folderTitle;
+                    let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_ROOT}`;
+                    if (areaName == "Technical Assets") {
+                        areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
+                    }
+                    else {
+                        areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
+                    }
+                    let areaBreadcrumb = new Breadcrumb(
+                        areaName,
+                        areaLink,
+                        false
+                    );
+                    this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
+
+                    for (let breadcrumb of this.artifact.Breadcrumbs) {
+                        index++;
+
+                        if (index == this.artifact.Breadcrumbs.length) {
+                            //last item in the breadcrumb
+                            this
+                                .headerBreadcrumbService
+                                .showBreadcrumb(
+                                    new Breadcrumb(
+                                        breadcrumb.Name,
+                                        breadcrumb.Url,
+                                        false,
+                                        'Artifact',
+                                        this.artifactTypeId,
+                                        null,
+                                        null,
+                                        false,
+                                        breadcrumb.TypeName !== undefined,
+                                        breadcrumb.TypeName,
+                                        'ArtifactType',
+                                        this.GetIDFromUrl(breadcrumb.TypeUrl),
+                                        breadcrumb.TypeUrl
+                                    )
+                                )
+                                ;
+                        } else {
+                            this
+                                .headerBreadcrumbService
+                                .showBreadcrumb(
+                                    new Breadcrumb(
+                                        breadcrumb.Name,
+                                        breadcrumb.Url,
+                                        false,
+                                        'Artifact',
+                                        this.GetIDFromUrl(breadcrumb.Url),
+                                        null,
+                                        null,
+                                        false,
+                                        breadcrumb.TypeName !== undefined,
+                                        breadcrumb.TypeName,
+                                        'ArtifactType',
+                                        this.GetIDFromUrl(breadcrumb.TypeUrl),
+                                        breadcrumb.TypeUrl
+                                    )
+                                )
+                                ;
+                        }
+                    }
         });
-        let areaBreadcrumb = new Breadcrumb(
-            this.currentAreaName ? this.currentAreaName : this.folderTitle,
-            this.areaLink,
-            false
-        );
-        this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
-
-        for (let breadcrumb of this.artifact.Breadcrumbs) {
-            index++;
-
-            if (index == this.artifact.Breadcrumbs.length) {
-                //last item in the breadcrumb
-                this
-                    .headerBreadcrumbService
-                    .showBreadcrumb(
-                        new Breadcrumb(
-                            breadcrumb.Name,
-                            breadcrumb.Url,
-                            false,
-                            'Artifact',
-                            this.artifactTypeId,
-                            null,
-                            null,
-                            false,
-                            breadcrumb.TypeName !== undefined,
-                            breadcrumb.TypeName,
-                            'ArtifactType',
-                            this.GetIDFromUrl(breadcrumb.TypeUrl),
-                            breadcrumb.TypeUrl
-                        )
-                    )
-                    ;
-            } else {
-                this
-                    .headerBreadcrumbService
-                    .showBreadcrumb(
-                        new Breadcrumb(
-                            breadcrumb.Name,
-                            breadcrumb.Url,
-                            false,
-                            'Artifact',
-                            this.GetIDFromUrl(breadcrumb.Url),
-                            null,
-                            null,
-                            false,
-                            breadcrumb.TypeName !== undefined,
-                            breadcrumb.TypeName,
-                            'ArtifactType',
-                            this.GetIDFromUrl(breadcrumb.TypeUrl),
-                            breadcrumb.TypeUrl
-                        )
-                    )
-                    ;
-            }
-        }
     }
 
     private GetIDFromUrl(url: string) {

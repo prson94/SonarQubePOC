@@ -1,4 +1,140 @@
-﻿<div class="row">
+﻿<style>
+    .asset-browser-header {
+        position: relative;
+        background-color: transparent;
+        height: 50px;
+    }
+    .asset-browser-header .controls-left {
+        position: absolute; 
+        left: 20px; 
+        top: 10px; 
+        z-index: 50; 
+    }
+    .asset-browser-header .controls-right {
+        position: absolute; 
+        right: 20px; 
+        top: 10px; 
+        z-index: 50; 
+    }
+    .asset-browser-controls-bottom {
+        position: absolute; 
+        right: 20px; 
+        bottom: 10px; 
+        z-index: 50; 
+    }
+    .asset-browser-window {
+        position: absolute; 
+        right: 20px; 
+        top: 10px; 
+        min-height: 400px; 
+        min-width: 400px; 
+        z-index: 100; 
+        border: 1px solid #ccc; 
+        border-radius: 3px; 
+        background-color: #fff
+    }
+    .asset-browser-window-header {
+        background-color: #F0F0F0
+    }
+    .asset-browser-window-header-name {
+        float: left; margin: 10px 0 25px 10px; font-size: 1.2em; line-height: 1.5em
+    }
+    .asset-browser-window-header-class {
+        float: right; margin: 10px 10px 25px 0; font-size: .9em; color: #666; line-height: 1.5em;
+    }
+    .asset-browser-window-tabs {
+        max-width: 400px
+    }
+    .asset-browser-window-tabs-header {
+        background-color: #F0F0F0
+    }
+    .asset-browser-window-tabs-content {
+        max-height: 500px; 
+        overflow-y: auto
+    }
+    .asset-browser-window-tabs-content-field {
+        margin-top: 5px; 
+        margin-bottom: 15px
+    }
+    .asset-browser-window-tabs-content-field-name {
+        color: #666; 
+        font-weight: 600;
+    }
+    .asset-browser-window-tabs-content-score-low {
+        margin-left: 25px;
+        padding: 3px;
+        color: #ffffff;
+        background-color: #FF7155; 
+        border: 1px solid #FF7155; 
+        border-radius: 3px;
+    }
+    .asset-browser-window-tabs-content-score-medium {
+        margin-left: 25px;
+        padding: 3px;
+        color: #ffffff;
+        background-color: #FFB000; 
+        border: 1px solid #FFB000; 
+        border-radius: 3px;
+    }
+    .asset-browser-window-tabs-content-score-high {
+        margin-left: 25px;
+        padding: 3px;
+        color: #ffffff;
+        background-color: #00853E; 
+        border: 1px solid #00853E; 
+        border-radius: 3px;
+    }
+    button.asset-browser-button {
+        background-color: #F2F2F2;
+        border: 1px solid #ccc;
+        border-radius: 3px;        
+        margin: 0 3px 0 3px;
+        height: 30px;
+        width: 30px;
+        line-height: 15px;
+        font-size: 15px;
+        color: #333;
+    }
+    button.asset-browser-button:active {
+        background-color: #ccc;
+    }
+    button.asset-browser-button:hover {
+        background-color: #ddd;
+    }
+    .asset-browser-button-group {
+        background-color: #F2F2F2;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        display: inline-block;
+    }
+    .asset-browser-button-group button {
+        height: 30px;
+        width: 30px;
+        line-height: 15px;
+        font-size: 15px;
+        color: #333;
+        background-color: transparent;
+        border: none;
+    }
+    .asset-browser-button-group button:active {
+        background-color: #ccc;
+    }
+    .asset-browser-button-group button:hover {
+        background-color: #ddd;
+    }
+    .asset-browser-button-group button.selected {
+        background-color: #DDDDDD;
+    }
+    .asset-browser-button-group input[type="text"] {
+        border: none;
+        height: 25px;
+        padding: 3px;
+    }
+    .asset-browser-button-group button.light {
+        color: #999;
+    }
+</style>
+<div class="row">
     <div class="col s12">
         <div class="tile tile-detail" style="padding: 0">
             <div class="row" *ngIf="isLoading">
@@ -6,19 +142,104 @@
                     <d3s-loading isLoading="true"></d3s-loading>
                 </div>
             </div>
-            <header [hidden]="isLoading">
-                <d3s-tile-actions hasMenu="true" [menuItems]="menuItems" (menuClick)="menuAction($event)"></d3s-tile-actions>
-            </header>
+            <div [hidden]="isLoading" class="asset-browser-header">
+                <div class="controls-left">
+                    <div class="asset-browser-button-group">
+                        <input type="text" pInputText placeholder="Find in diagram...">
+                        <button type="button" class="light"><i class="fa fa-chevron-up"></i></button>
+                        <button type="button" class="light"><i class="fa fa-chevron-down"></i></button>
+                    </div>
+                    <!--<button type="button" class="asset-browser-button" title=""><i class="fa fa-mouse-pointer"></i></button>-->
+                    <button type="button" class="asset-browser-button" (click)="savePngButtonClick($event)" title="Download to PNG"><i class="fa fa-download"></i></button>
+                </div>
+                <div class="controls-right">
+                    <div class="asset-browser-button-group">
+                        <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()"><i class="fa fa-info-circle"></i></button>
+                        <button type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
+                        <button type="button" title="Filter asset browser"><i class="fa fa-filter"></i></button>
+                        <button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>
+                    </div>
+                </div>
+                </div>
             <div class="row" style="position: relative">
                 <div class="col s12" style="padding: 0">
                     <table>
                         <tbody>
                             <tr>
-                                <td style="vertical-align: top;">
-                                    <div #diagram
-                                         id="LineageDiagram"
-                                         style="overflow: hidden;"
-                                         class="diagram"></div>
+                                <td style="vertical-align: top; position: relative">
+                                    <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
+                                    <div *ngIf="isWindowVisible" class="asset-browser-window">
+                                        <div *ngIf="!showWindowTabs" style="padding:10px;">Nothing selected</div>
+                                        <div class="asset-browser-window-header">
+                                            <div [hidden]="!showWindowTabs && !isWindowLoading" class="asset-browser-window-header-name">
+                                                {{selectedDiagramAsset?.DisplayValue}}
+                                                <span style="font-size: 75%"><a [routerLink]="selectedDiagramAsset?.Url">[<span class="fa fa-link"></span>]</a></span>
+                                            </div>
+                                            <div class="asset-browser-window-header-class">{{selectedDiagramAsset?.AssetTypeClass}}</div>
+                                            <div class="clearfix"></div>
+                                        </div>
+                                        <p-tabView *ngIf="showWindowTabs" styleClass="asset-browser-window-tabs">
+                                            <p-tabPanel header="Details" headerStyleClass="asset-browser-window-tabs-header">
+                                                <d3s-loading [isLoading]="isWindowLoading"></d3s-loading>
+                                                <div [hidden]="isWindowLoading" class="asset-browser-window-tabs-content">
+                                                    <div class="asset-browser-window-tabs-content-field">
+                                                        <div class="asset-browser-window-tabs-content-field-name">Full Path:</div>
+                                                        <div style="word-break:break-word">{{selectedDiagramAsset?.Path}}</div>
+                                                    </div>
+
+                                                    <div class="asset-browser-window-tabs-content-field">
+                                                        <span class="asset-browser-window-tabs-content-field-name">Type:&#160;</span>
+                                                        <span>{{selectedDiagramAsset?.TypeName}}</span>
+                                                    </div>
+
+                                                    <div class="asset-browser-window-tabs-content-field" *ngFor="let field of selectedDiagramAsset?.Scores">
+                                                        <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}</span>
+                                                        <span [class]="scoreClass(field.Value)">{{field.Value}}%</span>
+                                                    </div>
+
+                                                    <div class="asset-browser-window-tabs-content-field" *ngFor="let field of selectedDiagramAsset?.Fields">
+                                                        <div *ngIf="field.Type == 'Html'">
+                                                            <div class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</div>
+                                                            <div [innerHtml]="field.Value"></div>
+                                                        </div>
+                                                        <div *ngIf="field.Type == 'JSON'">
+                                                            <div class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</div>
+                                                            <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
+                                                        </div>
+                                                        <div *ngIf="field.Type !== 'Html' && field.Type !== 'JSON'">
+                                                            <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:&#160;</span>
+                                                            <span [innerHtml]="field.Value"></span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </p-tabPanel>
+                                            <p-tabPanel header="Ownership" headerStyleClass="asset-browser-window-tabs-header" [disabled]="!OwnershipTabEnabled()">
+                                                <div class="asset-browser-window-tabs-content">
+                                                    <p-table #dt [value]="selectedDiagramAsset?.Owners" [metaKeySelection]="true" [style]="{'width':'450px'}">
+                                                        <ng-template pTemplate="header">
+                                                            <tr>
+                                                                <th style="width: 150px">Responsibility</th>
+                                                                <th style="width: 150px">Resource</th>
+                                                            </tr>
+                                                        </ng-template>
+                                                        <ng-template pTemplate="body" let-item>
+                                                            <tr (dblclick)="onDoubleClick(item)" [pSelectableRow]="item">
+                                                                <td>{{item.ResponsibilityTypeName}}</td>
+                                                                <td><i [class]="ownerRowClass(item.Icon)"></i>&#160;{{item.SecurityAssetName}}</td>
+                                                            </tr>
+                                                        </ng-template>
+                                                    </p-table>
+                                                </div>
+                                            </p-tabPanel>
+                                        </p-tabView>
+                                    </div>
+                                    <div #bottomCommandBar class="asset-browser-controls-bottom">
+                                        <div class="asset-browser-button-group">
+                                            <button type="button" title="Zoom in" (click)="zoomInButtonClick($event)"><i class="fa fa-search-plus"></i></button>
+                                            <button type="button" title="Zoom out" (click)="zoomOutButtonClick($event)"><i class="fa fa-search-minus"></i></button>
+                                            <button type="button" title="Full screen" (click)="fullScreenButtonClick($event)"><i class="fa fa-expand"></i></button>
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>

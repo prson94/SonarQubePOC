@@ -25,7 +25,7 @@ namespace igx.UnitTests
         internal AssetsController assetsController;
         public AssetControllerTest()
         {
-            this.assetsController = new AssetsController(GetCommunity(), GetCompany(), GetStorage(), GetQueue(), GetAssetRepository(),GetTagRepository())
+            this.assetsController = new AssetsController(GetCommunity(), GetCompany(), GetStorage(), GetQueue(), GetAssetRepository(),GetTagRepository(),GetRelationshipRepository())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -593,7 +593,7 @@ namespace igx.UnitTests
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
             
 
-            insertItem.Class = AssetTypeClass.Business;
+            insertItem.Class = AssetTypeClass.BusinessAsset;
             responseMessageResult = await GetResponseForPostAsset(insertItem);
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
 
@@ -636,7 +636,7 @@ namespace igx.UnitTests
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
 
 
-            insertItem.Class = AssetTypeClass.Business;
+            insertItem.Class = AssetTypeClass.BusinessAsset;
             responseMessageResult = await GetResponseForPutAsset(insertItem);
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
 

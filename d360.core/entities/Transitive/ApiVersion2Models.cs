@@ -72,6 +72,8 @@ namespace d360.core.entities
 
         [DataMember]
         public bool UseAsTransformation { get; set; }
+        [DataMember]
+        public bool? CanOwnFusion { get; set; }
 
 
 
@@ -300,6 +302,67 @@ namespace d360.core.entities
 
     }
 
+
+    public class RelationshipTypeResult
+    {
+        [DataMember]
+        public Guid uid { get; set; }
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+
+    public class RelationshipTypeInsert
+    {
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+        [DataMember]
+        public Guid PredicateUid { get; set; }
+        [DataMember]
+        public Guid SubjectUid { get; set; }
+        [DataMember]
+        public Cardinality SubjectCardinality { get; set; }
+        [DataMember]
+        public Guid ObjectUid { get; set; }
+        [DataMember]
+        public Cardinality ObjectCardinality { get; set; }
+    }
+
+    public class RelationshipTypeUpdate
+    {
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public Guid PredicateUid { get; set; }
+        [DataMember]
+        public Cardinality SubjectCardinality { get; set; }
+
+        [DataMember]
+        public Cardinality ObjectCardinality { get; set; }
+    }
+
+    public class RelationshipTypeDelete
+    {
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public bool Cascade { get; set; }
+    }
+
+
     public class RelationshipImportRequest
     {
         public int ItemNumber { get; set; }
@@ -425,5 +488,70 @@ namespace d360.core.entities
         public string Object { get; set; }
         public int ObjectId { get; set; }
         public int Id { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeUpsertResult
+    {
+        [DataMember]
+        public int ItemNumber { get; set; }
+
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeInsertModel
+    {
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeUpsertModel
+    {
+        [DataMember]
+        public Guid? Uid { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeDeleteResult
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeDeleteModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public bool Cascade { get; set; }
+
     }
 }

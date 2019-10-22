@@ -96,7 +96,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes a predicates of a given predicate list.
+        /// Deletes a given set of predicates.
         /// </summary>
         /// <param name="predicates">The list of predicates for deletion.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -149,10 +149,10 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Inserts a predicates of a given predicate list.
+        /// Inserts or updates a given set of predicates.
         /// </summary>
         /// <remarks>
-        /// For updating existing predicate, add predicate Uid to a predicate list parameter
+        /// For updating existing predicate, add the predicate Uid to the request.
         /// </remarks>
         /// <param name="predicates">The list of predicates for insertion.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -300,11 +300,13 @@ namespace d360.web.Controllers.V2
             document.SetCellValue(1, index++, "Intersect ID");
             document.SetCellValue(1, index++, "Subject Type");
             document.SetCellValue(1, index++, "Subject ID");
+            document.SetCellValue(1, index++, "Subject UID");
             document.SetCellValue(1, index++, "Subject Name");
             document.SetCellValue(1, index++, "Subject Type Name");
             document.SetCellValue(1, index++, "Predicate");
             document.SetCellValue(1, index++, "Object Type");
             document.SetCellValue(1, index++, "Object ID");
+            document.SetCellValue(1, index++, "Object UID");
             document.SetCellValue(1, index++, "Object Name");
             document.SetCellValue(1, index++, "Object Type Name");
 
@@ -321,11 +323,13 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, (int)row.ID);
                 document.SetCellValue(rowNumber, index++, (string)row.Subject);
                 document.SetCellValue(rowNumber, index++, (int)row.SubjectID);
+                document.SetCellValue(rowNumber, index++, row.SubjectUid.ToString());
                 document.SetCellValue(rowNumber, index++, (string)row.SubjectName);
                 document.SetCellValue(rowNumber, index++, (string)row.SubjectTypeName);
                 document.SetCellValue(rowNumber, index++, (string)row.PredicateName);
                 document.SetCellValue(rowNumber, index++, (string)row.Object);
                 document.SetCellValue(rowNumber, index++, (int)row.ObjectID);
+                document.SetCellValue(rowNumber, index++, row.ObjectUid.ToString());
                 document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
                 document.SetCellValue(rowNumber, index++, (string)row.ObjectTypeName);
 
@@ -411,6 +415,145 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+
+        /// <summary>
+        /// Creates relationship types based on the provided subject, object and predicate properties.
+        /// </summary>
+        /// <param name="relationshiptypes">List of relationship types</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPost,
+            Route("types"),
+            SwaggerRequestExample(typeof(RelationshipTypeInsert), typeof(RelationshipTypeInsertExample)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the relationship type", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostRelationshipTypesAsync(List<RelationshipTypeInsert> relationshiptypes)
+        {
+            var prefix = "Relationships.PostRelationshipTypesAsync => ";
+            var errorMessage = "";
+            try
+            { 
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+
+                if (relationshiptypes == null)
+                    relationshiptypes = readRequestJsonContent<List<RelationshipTypeInsert>>(Request).Result;
+
+                if (relationshiptypes == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationship types in this request."));
+
+                var execution = getApiExecution(relationshiptypes.Count);
+
+                var results = RelationshipRepository.PostRelationshipTypes(relationshiptypes, execution);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+             catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// This endpoint is used to update an existing relationship types predicate or cardinality properties.
+        /// </summary>
+        /// <param name="relationshiptypes"></param>
+        /// <returns>>An HTTP status code and message.</returns>
+        [
+           HttpPut,
+           Route("types"),
+           SwaggerRequestExample(typeof(RelationshipTypeUpdate), typeof(RelationshipTypeUpdateExample)),
+           SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the relationship type", typeof(ErrorResponse))
+       ]
+        public async Task<IHttpActionResult> PutRelationshipTypesAsync(List<RelationshipTypeUpdate> relationshiptypes)
+        {
+            var prefix = "Relationships.PutRelationshipTypesAsync => ";
+            var errorMessage = "";
+            try
+            {
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+
+                if (relationshiptypes == null)
+                    relationshiptypes = readRequestJsonContent<List<RelationshipTypeUpdate>>(Request).Result;
+
+                if (relationshiptypes == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationship types in this request."));
+
+                var execution = getApiExecution(relationshiptypes.Count);
+
+                var results = RelationshipRepository.PutRelationshipTypes(relationshiptypes, execution);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Removes the specified relationship types based on the provided relationship type Uid(s). When Cascade=true, the call deletes all relationships based on this type. When false, it triggers an error message stating that there are existing relationships.
+        /// </summary>
+        /// <param name="relationshiptypes"></param>
+        /// <returns>>An HTTP status code and message.</returns>
+        [
+           HttpDelete,
+           Route("types"),
+           SwaggerRequestExample(typeof(RelationshipTypeDelete), typeof(RelationshipTypeDeleteExample)),
+           SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the relationship type", typeof(ErrorResponse))
+       ]
+        public async Task<IHttpActionResult> DeleteRelationshipTypesAsync(List<RelationshipTypeDelete> relationshiptypes)
+        {
+            var prefix = "Relationships.DeleteRelationshipTypesAsync => ";
+            var errorMessage = "";
+            try
+            {
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+
+                if (relationshiptypes == null)
+                    relationshiptypes = readRequestJsonContent<List<RelationshipTypeDelete>>(Request).Result;
+
+                if (relationshiptypes == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                if (relationshiptypes.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} relationship types in this request."));
+
+                var execution = getApiExecution(relationshiptypes.Count);
+
+                var results = RelationshipRepository.DeleteRelationshipTypes(relationshiptypes, execution);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
+            }
+        }
         /// <summary>
         /// GET a list of relationship types.
         /// </summary>
@@ -472,19 +615,19 @@ namespace d360.web.Controllers.V2
             HttpGet,
             ApiExplorerSettings(IgnoreApi = true),
             MapToApiVersion("2.0"),
-            Route("isRelationshipExistsForAssetType/{assetTypeId}"),
+            Route("isTransformPredicateExists/{assetTypeId}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
             ]
-        public async Task<HttpResponseMessage> IsRelationshipExistsForAssetTypeAsync(int assetTypeId)
+        public async Task<HttpResponseMessage> IsTransformPredicateExists(int assetTypeId)
         {
-            var prefix = "Relationships.IsRelationshipExistsForAssetTypeAsync => ";
+            var prefix = "Relationships.IsTransformPredicateExists => ";
             var errorMessage = "";
 
             try
             {
-                var result = await this.RelationshipRepository.IsRelationshipExistsForAssetType(assetTypeId);
+                var result = await this.RelationshipRepository.IsTransformPredicateExists(assetTypeId);
                 return Request.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
@@ -898,11 +1041,9 @@ namespace d360.web.Controllers.V2
             document.SetCellValue(1, index++, "Id");
             document.SetCellValue(1, index++, "Uid");
             document.SetCellValue(1, index++, "Subject");
-            document.SetCellValue(1, index++, "Subject Uid");
             document.SetCellValue(1, index++, "Subject Class");
             document.SetCellValue(1, index++, "Predicate");
             document.SetCellValue(1, index++, "Object");
-            document.SetCellValue(1, index++, "Object Uid");
             document.SetCellValue(1, index++, "Object Class");
 
             #endregion
@@ -915,11 +1056,9 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, row.Id);
                 document.SetCellValue(rowNumber, index++, row.Uid.ToString());
                 document.SetCellValue(rowNumber, index++, row.Subject.Name);
-                document.SetCellValue(rowNumber, index++, row.Subject.Uid.ToString());
                 document.SetCellValue(rowNumber, index++, row.Subject.Class.ToString());
                 document.SetCellValue(rowNumber, index++, row.Predicate.Name);
                 document.SetCellValue(rowNumber, index++, row.Object.Name);
-                document.SetCellValue(rowNumber, index++, row.Object.Uid.ToString());
                 document.SetCellValue(rowNumber, index++, row.Object.Class.ToString());
             }
 

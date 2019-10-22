@@ -70,7 +70,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
             .subscribe(r => {
                 this.models = r;
                 this.isLoading = false;
-                if (this.models.length && this.models.length > 0) {
+                if (this.models != null && this.models.length > 0) {
                     this.selection = this.models[0];
                     this.selectionChange.emit(this.selection);
                 }

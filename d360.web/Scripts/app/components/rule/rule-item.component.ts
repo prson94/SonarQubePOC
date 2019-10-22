@@ -115,7 +115,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 
             this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
                 this.rightSidebarService.setCurrentArea(this.rule.Name, icon, 'Definition');
-                this.rightSidebarService.setCurrentObject('RuleType', this.ruleType.ID, 'Rule', this.rule.ID, false, null, this.rule.UID);
+                this.rightSidebarService.setCurrentObject('RuleType', this.ruleType.ID, 'Rule', this.rule.ID, false, this.ruleType.HasWorkflow, this.rule.UID);
                 this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Rule/${this.rule.UID}`, null, 6));
                 this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Rule/${this.rule.ID}`, null, 31));
                 this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Rule/${this.rule.ID}`, null, 26));
@@ -128,14 +128,14 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         this.ruleSub = this.rulesService.getRule(ruleId)
             .subscribe(result => {
                 this.rule = result;
+
                 this.setBrowserTitle(this.titleService, this.rule.Name);
                 this.messages = []; //clear any messages for this rule
                 this.loadItemSurvey();
 
-
                 this.rulesService.getRuleType(this.rule.TypeID).subscribe(r => { this.ruleType = r; this.buildbreadcrumb(); });
                 this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
-                this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID);
+                this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
 
                 this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId).then(p => {
                     this.clearSidebar();

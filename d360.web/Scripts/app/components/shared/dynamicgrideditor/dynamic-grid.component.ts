@@ -82,7 +82,8 @@ import { MessagesObservableService } from '../../../services/messages-observable
                 </span>
         <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" [objectType]="objectType"
                             [title]="itemName + ' Item'" [selection]="selected" [rowID]="rowID"
-                            (saveClick)="saveItem($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>
+                            (saveClick)="saveItem($event)" (closeClick)="closeEditor()"
+[objectTypeUid]="assetTypeUid" [isV2API]="useV2Api"></d3s-dynamic-editor>
         <d3s-delete-form *ngIf="showDelete && !assetTypeUid"
                          [callback]="theDeleteCallback"
                          [itemId]="selected?.ID"
@@ -116,6 +117,7 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     @Input() showDeleteButton: boolean = true;
     @Input() showAddButton: boolean = true;
     @Input() showExportButton: boolean = false;
+    @Input() useV2Api: boolean = false;
     
 
     @Output() editItemClick = new EventEmitter();
@@ -205,13 +207,19 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
 
     saveItem(event) {
         this.isLoading = true;
-        this.uriBasedService.saveItem(this.createUri, this.editUri, event.item)
-            .subscribe(result => {
-                this.showMessageForResult(this.messagesService, result);
-                //reload grid for now as the name / id of the field differs in display mode / edit mode
-                this.showEditor = false;
-                this.getData();
-            });
+        if (!this.useV2Api) {
+            this.uriBasedService.saveItem(this.createUri, this.editUri, event.item)
+                .subscribe(result => {
+                    this.showMessageForResult(this.messagesService, result);
+                    //reload grid for now as the name / id of the field differs in display mode / edit mode
+                    this.showEditor = false;
+                    this.getData();
+                });
+        }
+        else {
+            this.showEditor = false;
+            this.getData();
+        }
     }
 
     customSort(e: any) {

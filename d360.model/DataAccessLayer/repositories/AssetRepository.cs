@@ -38,7 +38,7 @@ namespace d360.model.DataAccessLayer
         }
         public List<AssetTypeClassInfo> GetAssetTypeList()
         {
-            return AssetTypeClass.Business.GetAsList();
+            return AssetTypeClass.BusinessAsset.GetAsList();
         }
         public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(AssetTypeClass? Class, Guid? fusionTypeUid)
         {
@@ -161,7 +161,7 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("@relatedAssetUid", relatedAssetUID);
                         relatedAssetSql = $"where {subjectAlias}.[UID] = @relatedAssetUid";
                     }
-                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
+                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and abs(I.SubjectID) = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
 
                 }
                 else if (queryParams.ToList().Any(q => q.Key.ToLower() == "_subjectuid"))
@@ -172,7 +172,7 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("@relatedAssetUid", relatedAssetUID);
                         relatedAssetSql = $"where {subjectAlias}.[UID] = @relatedAssetUid";
                     }
-                    intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
+                    intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and abs(I.SubjectID) = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
                 }
                 else
                 {
@@ -365,8 +365,8 @@ namespace d360.model.DataAccessLayer
 
             switch (model.Class)
             {
-                case AssetTypeClass.Business:
-                case AssetTypeClass.Technical:
+                case AssetTypeClass.BusinessAsset:
+                case AssetTypeClass.TechnicalAsset:
                     #region
                     var a = new AssetType
                     {
@@ -382,7 +382,8 @@ namespace d360.model.DataAccessLayer
                         Hierarchical = true,
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
-                        UseAsTransformation = model.UseAsTransformation
+                        UseAsTransformation = model.UseAsTransformation,
+                        CanOwnFusion = model.CanOwnFusion ?? false
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
@@ -552,7 +553,7 @@ namespace d360.model.DataAccessLayer
         }
         public Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeInsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate)
         {
-            List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.Business, AssetTypeClass.Technical, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
+            List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
 
             bool shouldRemoveOldRelationshipType = false;
             bool shouldRemoveExistingParentChildRelationshipType = false;
@@ -562,10 +563,11 @@ namespace d360.model.DataAccessLayer
 
             switch (model.Class)
             {
-                case AssetTypeClass.Business:
+                case AssetTypeClass.BusinessAsset:
                 case AssetTypeClass.Policy:
                 case AssetTypeClass.Reference:
-                case AssetTypeClass.Technical:
+                case AssetTypeClass.Model:
+                case AssetTypeClass.TechnicalAsset:
                     if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {model.Class.ToString()}", $"Invalid {model.Class.ToString()} provided. {AssetTypeErrors.CheckRequest}");
 
                     assetType.Name = model.Name;
@@ -573,13 +575,15 @@ namespace d360.model.DataAccessLayer
                     assetType.Description = model.Description;
                     assetType.HierarchyMaximumDepth = (model.Hierarchy != null) ? model.Hierarchy.MaximumDepth : 1;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
-                    if (model.Class == AssetTypeClass.Business || model.Class == AssetTypeClass.Technical)
+                    if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
                     {
                         assetType.UseAsTransformation = model.UseAsTransformation;
+                        assetType.CanOwnFusion = model.CanOwnFusion ?? false;
                     }
                     else
                     {
                         assetType.UseAsTransformation = false;
+                        assetType.CanOwnFusion = false;
                     }
                     assetType.Class = model.Class;
                     assetType.Notes = model.Notes;
@@ -907,7 +911,7 @@ namespace d360.model.DataAccessLayer
         public bool IsReachedTransformationLimit(AssetTypeInsert model)
         {
             bool reached = false;
-            if (model.Class == AssetTypeClass.Business && model.UseAsTransformation == true)
+            if (model.Class == AssetTypeClass.BusinessAsset && model.UseAsTransformation == true)
             {
                 var useAsTransformationLimit = Community.GetCompanySettingByKey<int>("UseAsTransformationLimit");
                 var totalUseAsTransform = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Count();
