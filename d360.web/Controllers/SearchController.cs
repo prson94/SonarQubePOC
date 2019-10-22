@@ -32,13 +32,14 @@ namespace d360.web.Controllers
         #region Json
 
         [HttpPost, Route("Results"), NonNullableParameters]
-        public JsonResult Results(string search, int? size, int? from, string group, string type, string adv)
+        public JsonResult Results(QueryRequest queryRequest)
         {
             var o = new SearchResultsViewModel();
 
-            if (!string.IsNullOrEmpty(search) || !string.IsNullOrEmpty(adv))
+            if (!string.IsNullOrEmpty(queryRequest.Term))
             {
-                o.Result = SearchSource.GetSearchResultsWithCategory(Company.CurrentCompanyID, Company.CurrentResourceID, search, size.GetValueOrDefault(100), from.GetValueOrDefault(0), o.Categories, group, type, adv);
+                o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories);
+
                 foreach (IndexResult result in o.Result.Results)
                 {
                     AddIcon(result);
@@ -51,9 +52,6 @@ namespace d360.web.Controllers
         [HttpGet, Route("AutoComplete"), NonNullableParameters]
         public JsonResult AutoComplete(string search)
         {
-            var sw = new Stopwatch();
-            sw.Start();
-
             List<string> results = new List<string>();
 
             if (!string.IsNullOrEmpty(search))

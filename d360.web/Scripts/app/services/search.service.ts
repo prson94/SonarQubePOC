@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { SearchResultsObject, SearchCategories, AdvancedSearchFilter } from '../models/search-result.model';
+import { SearchResultsObject, SearchCategories, AdvancedSearchFilter, SearchQuery, SearchAggregationFilter, SearchFieldFilter } from '../models/search-result.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -13,21 +13,44 @@ export class SearchService extends BaseObservableService  {
 
     getSearchResults(term: string, size: number, fromNum: number, searchTypes: string[], category?: SearchCategories, isExactMatch?: boolean, advancedSearchFilter?: AdvancedSearchFilter[]): Observable<SearchResultsObject> {
 
-        term = (isExactMatch ? `'${term}'` : term);
-
-        let headers = new HttpHeaders({
-            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', //pass as text since its a dynamic object and mvc has issue with dynamic models                        
+        var query = new SearchQuery({
+            Term: (isExactMatch ? `'${term}'` : term),
+            From: fromNum,
+            Size: size,
+            AggregationFilters: [],
+            FieldFilters: [],
+            Aggregations: []
         });
-        
-        let url = '';
+        if (category && category.Categories) {
+            query.AggregationFilters.push( new SearchAggregationFilter({
+                Field: 'd3sGroup',
+                Values: [category.Name]
+            }));
+        } else {
+            query.Aggregations.push('category');
+            if (searchTypes && searchTypes.length > 0)
+                query.AggregationFilters.push(new SearchAggregationFilter({
+                    Field: 'd3sGroup',
+                    Values: searchTypes
+                }));
+            if(category && !category.DisplayName)
+                query.AggregationFilters.push(new SearchAggregationFilter({
+                    Field: 'Type',
+                    Values: [category.Name]
+                }));
+        }
+        if (advancedSearchFilter) {
+            advancedSearchFilter.forEach(function (item) {
+                query.FieldFilters.push(new SearchFieldFilter({
+                    Field: item.field,
+                    Phrase: item.value,
+                    MatchWords: item.exact
+                }));
+            });
+        }
 
-        if (category && category.Categories)
-            url = `from=${fromNum}&size=${size}&search=${advancedSearchFilter ? '' : encodeURIComponent(term)}&group=&type=${category.Name}&adv=${advancedSearchFilter ? encodeURIComponent(JSON.stringify(advancedSearchFilter)) : ''}`;
-        else
-            url = `from=${fromNum}&size=${size}&search=${advancedSearchFilter ? '' : encodeURIComponent(term)}&group=${category && !category.DisplayName ? category.Name : ''}&type=${searchTypes ? searchTypes.join(',') : ''}&adv=${advancedSearchFilter ? encodeURIComponent(JSON.stringify(advancedSearchFilter)) : ''}`;
-
-       return this.http
-            .post('search/results', url, { headers })
+        return this.http
+            .post('search/NewResults', query)
             .pipe(
                 map(res => <SearchResultsObject>res),
                 catchError(err => this.handleError(err))
