@@ -1063,7 +1063,17 @@ namespace d360.web.Controllers.V2
                     resultList.Add(result);
                     continue;
                 }
+                if(assetTagApi.AssetUID == Guid.Empty)
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"Invalid AseetUid provided, no asset exists with the specified uid.",
+                        Success = false
+                    };
 
+                    resultList.Add(result);
+                    continue;
+                }
                 var asset = this.AssetRepository.GetAssetByUID(assetTagApi.AssetUID);
                 if (asset == null)
                 {
