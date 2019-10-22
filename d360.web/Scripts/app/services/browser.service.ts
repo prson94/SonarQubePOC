@@ -8,7 +8,7 @@ import {
 } from 'rxjs/operators';
 import {Observable} from 'rxjs';
 
-import { AssetBrowserLineageApiRequestModel, AssetBrowserLineageApiResponseModel, AssetBrowserTranslation, AssetBrowserTranslationNode, AssetBrowserLineageApiItemModel, AssetBrowserTranslationLink, AssetBrowserLineageApiRelationshipModel, AssetBrowserDiagramAsset, AssetBrowserTranslationRelationCount } from '../models/lineage.model';
+import { AssetBrowserLineageApiRequestModel, AssetBrowserLineageApiResponseModel, AssetBrowserTranslation, AssetBrowserTranslationNode, AssetBrowserLineageApiItemModel, AssetBrowserTranslationLink, AssetBrowserLineageApiRelationshipModel, AssetBrowserDiagramAsset, AssetBrowserTranslationRelationCount, AssetBrowserDirection } from '../models/lineage.model';
 
 import {MessagesObservableService} from './messages-observable.service';
 
@@ -369,14 +369,14 @@ export class BrowserService extends BaseObservableService {
             n.relations.push(assetBrowserTranslationRelationCount);
         });
 
-        n.showReveal = a.reveal;
+        n.showReveal = AssetBrowserDirection[a.reveal] as any; //convert string from API to enum value
         n.hop = a.hop;
         n.assetUid = a.assetUid;
         n.back = this.shadeColor(color, multiplier*15);
         n.icon = "\uf02d";
         n.impacts = [];
         n.isGroup = (a.items && a.items.length > 0);
-        n.key = a.key;//a.assetUid;
+        n.key = a.key;
         n.text = a.displayValue;
         if (parentKey && parentKey !== "") {
             n.group = parentKey;

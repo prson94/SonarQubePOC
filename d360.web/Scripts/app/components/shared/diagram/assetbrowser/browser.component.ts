@@ -247,7 +247,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.requestModel.IsReveal = false;
         this.requestModel.StartHop = 0;
         this.requestModel.Direction = AssetBrowserDirection.Both;
-        this.requestModel.Hops = 1;
+        this.requestModel.Hops = 3;
 
         //#region Testing with static data
         //let translationModel: AssetBrowserTranslation = this.browserService.getStaticDataForTesting();
@@ -285,12 +285,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         //add reveal nodes
         this.diagram.findTopLevelGroups().each(g => {
-            if (g.data.showReveal == true) {
-                let revealKey = g.data.key + '_reveal';
+            if (g.data.showReveal != AssetBrowserDirection.None) {
+                let dir = g.data.showReveal;
+                let revealKey = g.data.key + '_reveal'
                 let children = g.findSubGraphParts();
                 let childAssets = [];
-
-                g.data.showReveal = false;
 
                 childAssets.push(g.data.assetUid);
                 children.each(c => {
@@ -298,22 +297,47 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     childAssets.push(data.assetUid);
                 });
 
-                if (dm.findNodeDataForKey(revealKey) == null) {
-                    dm.addNodeData({
-                        template: 'MoreData',
-                        key: revealKey, back: g.data.back,
-                        showReveal: true,
-                        relations: g.data.relations,
-                        assetUid: g.data.assetUid,
-                        hop: g.data.hop,
-                        assetUids: childAssets
-                    });
+                if (dir == AssetBrowserDirection.Forward || dir == AssetBrowserDirection.Both) {
+                    if (dm.findNodeDataForKey(revealKey + '_Forward') == null) {
+                        dm.addNodeData({
+                            template: 'MoreData',
+                            key: revealKey + '_Forward',
+                            back: g.data.back,
+                            showReveal: AssetBrowserDirection.Forward,
+                            relations: g.data.relations,
+                            assetUid: g.data.assetUid,
+                            hop: g.data.hop,
+                            assetUids: childAssets
+                        });
 
-                    dm.addLinkData({
-                        from: g.data.key,
-                        to: revealKey
-                    });
-                }         
+                        dm.addLinkData({
+                            from: g.data.key,
+                            to: revealKey + '_Forward'
+                        });
+                    }
+                }
+
+                if (dir == AssetBrowserDirection.Backward || dir == AssetBrowserDirection.Both) {
+                    if (dm.findNodeDataForKey(revealKey + '_Backward') == null) {
+                        dm.addNodeData({
+                            template: 'MoreData',
+                            key: revealKey + '_Backward',
+                            back: g.data.back,
+                            showReveal: AssetBrowserDirection.Backward,
+                            relations: g.data.relations,
+                            assetUid: g.data.assetUid,
+                            hop: g.data.hop,
+                            assetUids: childAssets
+                        });
+
+                        dm.addLinkData({
+                            from: revealKey + '_Backward',
+                            to: g.data.key
+                        });
+                    }
+                }
+
+                g.data.showReveal = AssetBrowserDirection.None;
             }
         });
 
@@ -325,14 +349,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (obj != null && obj.part != null && obj.part.data != null) {
             let data = obj.part.data;
 
-            if (data.showReveal == true) {
+            if (data.showReveal != AssetBrowserDirection.None) {
                 this.diagram.startTransaction('reveal');
 
                 let model = new AssetBrowserLineageApiRequestModel();
                 model.AssetUids = data.assetUids;
                 model.IsReveal = true;
                 model.StartHop = data.hop;
-                model.Direction = AssetBrowserDirection.Both;
+                model.Direction = data.showReveal;
                 model.Hops = 1;
 
                 this.browserService.getAssetLineage(model)
@@ -340,7 +364,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(response);
 
                         this.diagramModelAsGraph().removeNodeData(data);
-                        let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == data.key);
+                        let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == data.key || l.from == data.key);
                         this.diagramModelAsGraph().removeLinkDataCollection(l);
 
                         this.parseData(translationModel, true);
@@ -490,7 +514,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         return subgraph;
     }
-
 
     //#endregion
 

@@ -57,7 +57,7 @@ namespace d360.web.Controllers.V2
             public string DisplayValue { get; set; }
             public AssetTypeClass Class { get; set; }
             public string AssetTypeName { get; set; }
-            public bool Reveal { get; set; }
+            public GetAssetLineagePostModelDirection Reveal { get; set; }
             public string RelationCounts { get; set; }
         }
 
