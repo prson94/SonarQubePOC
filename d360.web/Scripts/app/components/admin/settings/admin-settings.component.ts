@@ -89,7 +89,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes);
 
                 if (this.companySettings["FusionEnabled"] == false) {
-                    this.searchTypes = this.searchTypes.filter(x => x.title != 'Fusion' && x.title != 'Fusion Type');
+                    this.searchTypes = this.searchTypes.filter(x => x.title != 'Fusion' && x.title != 'Fusion Types');
                 }
 
                 if (+this.companySettings["LineageVersion"] != 3) {
