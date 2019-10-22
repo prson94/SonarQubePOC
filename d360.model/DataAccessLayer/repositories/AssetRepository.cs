@@ -852,6 +852,10 @@ namespace d360.model.DataAccessLayer
         {
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
         }
+        public AssetType GetAssetTypeByUidAndClass(Guid assetTypeUid, AssetTypeClass @class)
+        {
+            return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid && i.Class == @class).SingleOrDefault();
+        }
 
         public AssetType GetAssetTypeByModel(AssetTypeInsert model)
         {
