@@ -185,6 +185,7 @@ namespace d360.web.Controllers.V2
         {
             public string TypeName { get; set; }
             public AssetTypeClass AssetTypeClass { get; set; }
+            public string AssetTypeClassDisplayName { get { return AssetTypeClass.GetDisplayName(); } }
             public Guid Uid { get; set; }
             public string DisplayValue { get; set; }
             public string Path { get; set; }
@@ -209,8 +210,11 @@ namespace d360.web.Controllers.V2
 
         internal class AssetBrowserDiagramAssetOwner
         {
+            public int ResponsibilityTypeID { get; set; }
             public string ResponsibilityTypeName { get; set; }
             public string Icon { get; set; }
+            public int ResourceID { get; set; }
+            public string ResourceName { get; set; }
             public string SecurityAssetName { get; set; }
             public string Context { get; set; }
         }
@@ -266,11 +270,14 @@ select	A.TypeName,
 			for json path
 		) as Scores,
 		(
-			select	ResponsibilityTypeName,
+			select	ResponsibilityTypeID,
+					ResponsibilityTypeName,
 					case SecurityAsset
 						when 'G' then 'fa-users'
 						else 'fa-user'
 					end as Icon,
+					ResourceID,
+					ResourceName,
 					SecurityAssetName,
 					Context
 			from	ResponsibilityDetail

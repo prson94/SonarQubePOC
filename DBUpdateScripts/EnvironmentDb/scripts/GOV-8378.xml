@@ -94,7 +94,7 @@ END
     </rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="GOV-8378-LineageProc">
+  <changeSet author="Pappas" id="GOV-8378-LineageProc-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -139,7 +139,7 @@ begin
 		ToReveal bit, ToHop int, ToID bigint, objectUid uniqueidentifier, ToPath nvarchar(2500), ToSegment xml, 
 		predicateUid uniqueidentifier, [predicate] nvarchar(250), predicateType int)
 
-	create table #clean ([Hop] int, ID bigint, [Path] nvarchar(2500), Segment xml, Reveal bit)
+	create table #clean ([Hop] int, ID bigint, [Path] nvarchar(2500), Segment xml, Reveal int)
 	create index ix_TempTbl on #tbl ([Hop] desc, ToID asc)
 
 	declare @maxHops int = @hops*2 + @StartHop 
@@ -454,7 +454,7 @@ begin
 				FromID,
 				FromPath,
 				FromSegment,
-				FromReveal
+				case when FromReveal = 1 then 2 else 0 end
 		from	(
 				select	Row_number() over(partition by FromHop,FromID order by FromHop,FromID) as RowNum,
 						FromHop,
@@ -470,7 +470,7 @@ begin
 				ToID,
 				ToPath,
 				ToSegment,
-				ToReveal
+				case when ToReveal = 1 then 2 else 0 end
 		from	(
 				select	Row_number() over(partition by ToHop,ToID order by ToHop,ToID) as RowNum,
 						ToHop,
@@ -484,7 +484,7 @@ begin
 				) O where RowNum = 1
 
 	drop table if exists #hierarchies
-	create table #hierarchies ([Hop] float, ID bigint, [Key] varchar(50), Back varchar(25), Fore varchar(25), HierarchyLevel int, AssetTypeID int, AssetID bigint, AssetUid uniqueidentifier, DisplayValue nvarchar(500), Class int, AssetTypeName nvarchar(250), Reveal bit, RelationCounts varchar(max), XmlPosition int, ParentKey varchar(50), IsDupe bit null)
+	create table #hierarchies ([Hop] float, ID bigint, [Key] varchar(50), Back varchar(25), Fore varchar(25), HierarchyLevel int, AssetTypeID int, AssetID bigint, AssetUid uniqueidentifier, DisplayValue nvarchar(500), Class int, AssetTypeName nvarchar(250), Reveal int, RelationCounts varchar(max), XmlPosition int, ParentKey varchar(50), IsDupe bit null)
 	create index ix_TempHierarchies on #hierarchies ([Hop] asc, HierarchyLevel asc)
 
 	insert into #hierarchies
