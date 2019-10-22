@@ -200,7 +200,7 @@ export class AdminRelationshipsEditor {
             this.cardinalityOptions.push({ label: 'Select Cardinality', value: null });
             for (let item of result) {
                 this.cardinalityOptions.push({
-                    value: item.value,
+                    value: item.value.toString(),
                     label: item.title
                 });
             }
