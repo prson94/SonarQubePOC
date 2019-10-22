@@ -457,7 +457,7 @@ export class AssetBrowserTranslationNode {
     icon: string;
     impacts: string[];
     subgraph: any;
-    showReveal: boolean;
+    showReveal: AssetBrowserDirection;
     relations: AssetBrowserTranslationRelationCount[] = new Array();
 }
 
@@ -471,6 +471,7 @@ export class AssetBrowserTranslation {
 // #region Asset Browser : Request
 
 export enum AssetBrowserDirection {
+    None = 0,
     Forward = 1,
     Backward = 2,
     Both = 3
@@ -506,7 +507,7 @@ export class AssetBrowserLineageApiItemModel {
     displayValue: string;
     backColor: string;
     foreColor: string;
-    reveal: boolean;
+    reveal: AssetBrowserDirection;
     items: AssetBrowserLineageApiItemModel[];
     relationCounts: AssetBrowserLineageApiItemRelationCountModel[];
 }
@@ -536,6 +537,7 @@ export class AssetBrowserLineageApiResponseModel {
 
 export class AssetBrowserDiagramAsset {
     AssetTypeClass: AssetTypeClass;
+    AssetTypeClassDisplayName: string;
     TypeName: string;
     Uid: string;
     DisplayValue: string;
@@ -558,8 +560,11 @@ export class AssetBrowserDiagramAssetScore {
 }
 
 export class AssetBrowserDiagramAssetOwner {
+    ResponsibilityTypeID: number;
     ResponsibilityTypeName: string;
     Icon: string;
+    ResourceID: number;
+    ResourceName: string;
     SecurityAssetName: string;
     Context: string;
 }

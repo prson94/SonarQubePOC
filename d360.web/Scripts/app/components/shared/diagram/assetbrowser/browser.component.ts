@@ -152,11 +152,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         else if (+value > 60 && +value < 75) {
             css += "medium";
         }
-        else {
+        else { 
             css += "high";
-        }
+        } 
         return css;
-    }
+    } 
 
     private GetJSON(value: string) {
         try {
