@@ -624,7 +624,6 @@ namespace igx.UnitTests
         public async void PutAssetTypeAsync()
         {
 
-
             var insertItem = new AssetTypeInsert()
             {
                 IconStyle = new IconStyleInsert()

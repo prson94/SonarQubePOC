@@ -672,6 +672,216 @@ namespace d360.extensions.search
             return result;
         }
 
+        public IndexResults GetSearchResultsWithAggregation(int companyID, int resourceID, QueryRequest queryRequest, List<IndexTypeList> categories)
+        {
+            IndexResults result = new IndexResults();
+
+            Nest.Field fldName = new Nest.Field("Name");
+            Nest.Field fldGroup = new Nest.Field("d3sGroup");
+            Nest.Field fldType = new Nest.Field("Type");
+            Nest.Field fldTag = new Nest.Field("d3sTags.Value");
+
+            string tagSearch = "";
+            List<QueryContainer> baseQueries = new List<QueryContainer>();
+            List<QueryContainer> filterQueries = new List<QueryContainer>();
+
+            string phrase = queryRequest.Term;
+            if (!string.IsNullOrEmpty(phrase) && queryRequest.FieldFilters.Count == 0)
+            {
+                //Regular search
+                if (phrase.StartsWith("'") && phrase.EndsWith("'"))
+                {
+                    phrase = EscapeSpecialCharacters(phrase.Trim('\''));
+                    baseQueries.Add(new MatchPhraseQuery
+                    {
+                        Field = fldName,
+                        Query = phrase
+                    });
+                    tagSearch = phrase;
+                }
+                else
+                {
+                    if (phrase.EndsWith("*")) //If we have trailing *, remove before escaping
+                        phrase = phrase.Remove(phrase.Length - 1);
+                    phrase = EscapeSpecialCharacters(phrase) + "*";
+
+                    baseQueries.Add(new QueryStringQuery
+                    {
+                        Query = phrase
+                    });
+                    tagSearch = phrase;
+                }
+            }
+
+            foreach(FieldFilter fieldFilter in queryRequest.FieldFilters)
+            {
+                Nest.Field fld;
+                switch (fieldFilter.Field)
+                {
+                    case "d3sTags":
+                        tagSearch = EscapeSpecialCharacters(fieldFilter.Phrase);
+                        continue;
+                    case "_type":
+                        fld = new Nest.Field("d3sGroup");
+                        break;
+                    default:
+                        fld = new Nest.Field(fieldFilter.Field);
+                        break;
+                }
+                if(fieldFilter.MatchWords)
+                {
+                    baseQueries.Add(new MatchPhraseQuery
+                    {
+                        Field = fld,
+                        Query = fieldFilter.Phrase
+                    });
+                } else
+                {
+                    string p = fieldFilter.Phrase;
+                    if (p.EndsWith("*")) //If we have trailing *, remove before escaping
+                        p = p.Remove(p.Length - 1);
+                    p = EscapeSpecialCharacters(p) + "*";
+
+                    baseQueries.Add(new QueryStringQuery
+                    {
+                        Fields = fld,
+                        Query = p
+                    });
+
+                }
+            }
+
+            //Tag query
+            if(tagSearch != "")
+            {
+                baseQueries.Add(new NestedQuery
+                {
+                    Path = "d3sTags",
+                    Query = new BoolQuery
+                    {
+                        Must = new QueryContainer[] { new QueryStringQuery {
+                                            DefaultField = fldTag,
+                                            Query = tagSearch
+                                        }}
+                    },
+                    InnerHits = new InnerHits
+                    {
+                        Highlight = new Highlight
+                        {
+                            Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } }
+                        }
+                    }
+                });
+            }
+
+            //If neither advanced nor a phrase is available, return an empty result set
+            if (baseQueries.Count == 0)
+                return result;
+
+            foreach (AggregationFilter aggFilter in queryRequest.AggregationFilters)
+            {
+                filterQueries.Add(new TermsQuery
+                {
+                    Field = new Nest.Field(aggFilter.Field),
+                    Terms = aggFilter.Values
+                });
+            }
+
+            SearchRequest sReq = new SearchRequest
+            {
+                Query = new BoolQuery
+                {
+                    Must = new QueryContainer[] {
+                        new BoolQuery{
+                            Should = baseQueries
+                        }
+                    },
+                    Filter = new QueryContainer[] { new BoolQuery {
+                        Must = filterQueries
+                    } }
+                },
+                Highlight = new Highlight
+                {
+                    Fields = new Dictionary<Nest.Field, IHighlightField> { { fldName, new HighlightField {
+                        PreTags = new [] { "<em class='search-highlight'>" },
+                        PostTags = new [] { "</em>" },
+                        NumberOfFragments = 0
+                    } } },
+                    RequireFieldMatch = false
+                },
+                From = queryRequest.From,
+                Size = queryRequest.Size
+            };
+
+            // determine if we need aggreagtions
+            foreach(string aggregation in queryRequest.Aggregations)
+            {
+                if(aggregation == "category")
+                {
+                    //size=0 intepreted as integer.MAX_VALUE deprecated in ES 2.4.0.
+                    //Using 2000 for EX6 for now. @TODO: Consider using Composite aggreation
+                    sReq.Aggregations = new TermsAggregation("all_types")
+                    {
+                        Field = fldGroup,
+                        Aggregations = new TermsAggregation("category")
+                        {
+                            Field = fldType,
+                            Size = 2000
+                        }
+                    };
+                }
+            }
+
+            var client = new ElasticClient(GetConnectionSettings(companyID));
+            //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
+            string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
+            var response = client.LowLevel.Search<StringResponse>(GetCompanyIndexName(companyID), "_doc", jsonString);
+
+            if (!response.Success)
+                throw new ApplicationException(response.OriginalException.Message);
+
+            var searchResults = JsonConvert.DeserializeObject<SearchResultsModel>(response.Body);
+
+            result.Results = searchResults.hits.hits.Select(h => new IndexResult
+            {
+                Name = GetHighlightedNameValueIfExists(h),
+                DisplayName = GetDisplayName(h),
+                Description = GetHighlightedPropertyValueIfExists(h, "Description"),
+                Group = MapGroupToFriendlyName(h.d3sGroup),
+                ID = h._id,
+                NormalizedScore = (searchResults.hits.max_score.GetValueOrDefault() == 0 ? 0 : (h._score / searchResults.hits.max_score.GetValueOrDefault() * 100)),
+                Score = h._score,
+                Type = GetHighlightedPropertyValueIfExists(h, "Type"),
+                Url = GetHighlightedPropertyValueIfExists(h, "Url"),
+                Uid = GetGuidPropertyIfExists(h, "Uid"),
+                AssetTypeUid = GetGuidPropertyIfExists(h, "AssetTypeUid"),
+                Tags = GetTags(h)
+            }).ToList();
+
+
+            if (searchResults.aggregations != null && searchResults.aggregations.all_types != null && searchResults.aggregations.all_types.buckets != null)
+            {
+                categories.AddRange(searchResults.aggregations.all_types.buckets.Select(h => new IndexTypeList
+                {
+                    Name = h.key,
+                    DisplayName = MapGroupToFriendlyName(h.key),
+                    ResultCount = h.doc_count,
+                    Categories = h.category?.buckets.Select(c => new IndexCategory
+                    {
+                        Name = c.key,
+                        ResultCount = c.doc_count
+                    }).OrderBy(x => x.Name).ToList()
+                }).OrderBy(x => x.DisplayName));
+            }
+
+            result.ElapsedMS = searchResults.took;
+
+            if (searchResults.hits != null)
+                result.Matches = searchResults.hits.total;
+
+            return result;
+        }
+
         private string MapGroupToFriendlyName(string key)
         {
             if (string.IsNullOrEmpty(key)) return string.Empty;

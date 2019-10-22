@@ -106,10 +106,13 @@ namespace d360.model.DataAccessLayer
 inner join IntersectType T on T.ID = I.IntersectTypeID 
 left join [Predicate] P on P.ID = T.PredicateID 
 left join Asset S on S.Object = I.Subject and S.ObjectID = I.SubjectID 
-inner join AssetType ST on ( ( S.ID is not null and ST.ID = S.AssetTypeID ) or ( S.ID is null and ST.Object = I.Subject and ST.ObjectID = I.SubjectID ) )
+left join AssetType ST1 on S.ID is not null and ST1.ID = S.AssetTypeID
+left join AssetType ST2 on S.ID is null and ST2.Object = I.Subject and ST2.ObjectID = I.SubjectID
 left join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID 
-inner join AssetType OT on ( ( O.ID is not null and OT.ID = O.AssetTypeID ) or ( O.ID is null and OT.Object = I.Object and OT.ObjectID = I.ObjectID ) ) ";
-            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + " coalesce(ST.ID,S.ID) is not null and coalesce(OT.ID,O.ID) is not null ";
+left join AssetType OT1 on O.ID is not null and OT1.ID = O.AssetTypeID
+left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.ObjectID = I.ObjectID
+";
+            whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + " coalesce(ISNULL(ST1.ID, ST2.ID),S.ID) is not null and coalesce(ISNULL(OT1.ID,OT2.ID),O.ID) is not null ";
 
             var countSql = baseTableSql;
 
@@ -282,9 +285,9 @@ select	@pageSize as 'pageSize',
 				P.Name as 'Predicate.Name',
 				P.Inverse as 'Predicate.Inverse',
 				S.Uid as 'Subject.Uid',
-				ST.Uid as 'Subject.AssetTypeUid',
+				ISNULL(ST1.Uid,ST2.Uid) as 'Subject.AssetTypeUid',
 				O.Uid as 'Object.Uid',
-				OT.Uid as 'Object.AssetTypeUid'
+				ISNULL(OT1.Uid,OT2.Uid) as 'Object.AssetTypeUid'
 		{baseTableSql}
                 {fieldJoins} 
         {whereClause} 

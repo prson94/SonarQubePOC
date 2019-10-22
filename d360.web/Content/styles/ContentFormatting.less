@@ -1,8 +1,8 @@
 ﻿@import "_Variables.less";
 
-/*#region Common Page Structure */ 
+/*#region Common Page Structure */
 
-body { 
+body {
     margin: 0px;
     background-color: #f1f1f1;
     font-family: @body-font-family;
@@ -17,26 +17,32 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: normal;
     margin: 2px;
 }
+
 h1 {
     font-size: @font-size-h1;
     line-height: floor((@font-size-h1 * 1.1));
 }
+
 h2 {
     font-size: @font-size-h2;
     line-height: floor((@font-size-h2 * 1.1));
 }
+
 h3 {
     font-size: @font-size-h3;
     line-height: floor((@font-size-h3 * 1.1));
 }
+
 h4 {
     font-size: @font-size-h4;
     line-height: floor((@font-size-h4 * 1.1));
 }
+
 h5 {
     font-size: @font-size-h5;
     line-height: floor((@font-size-h5 * 1.1));
 }
+
 h6 {
     font-size: @font-size-h6;
     line-height: floor((@font-size-h6 * 1.1));
@@ -48,6 +54,7 @@ h6 {
     margin-bottom: 10px;
     margin-top: 15px;
 }
+
 .form-instructions-nospacing {
     font-size: 90%;
     color: @d3s-gray-2;
@@ -55,10 +62,13 @@ h6 {
     margin-top: 5px;
 }
 
-.FieldNameRequired ,
+.FieldNameRequired,
 .FieldName {
     font-weight: 600;
-    display: inline-block;
+    display: block;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .FieldNameRequired {
@@ -83,11 +93,15 @@ button.WhiteButton {
 .FieldName {
     color: @d3s-gray-2;
 }
+
 .FieldDisplayName {
     font-weight: 600;
 }
 
 .FieldDisplayContent {
+    overflow: hidden;
+    text-overflow: ellipsis;
+
     p {
         display: block;
         margin: 0px;
@@ -116,14 +130,16 @@ button.WhiteButton {
 ---------------------*/
 
 .ui.form {
-  position: relative;
-  max-width: 100%;
+    position: relative;
+    max-width: 100%;
 }
+
 .ui.form :first-child {
-  margin-top: 0em;
+    margin-top: 0em;
 }
+
 .ui.form :last-child {
-  margin-bottom: 0em;
+    margin-bottom: 0em;
 }
 
 /*--------------------
@@ -133,12 +149,12 @@ button.WhiteButton {
 .ui.form .info.message,
 .ui.form .warning.message,
 .ui.form .error.message {
-  display: none;
+    display: none;
 }
 
 /* Assumptions */
 .ui.form .message:first-child {
-  margin-top: 0px;
+    margin-top: 0px;
 }
 
 .clear {
@@ -150,9 +166,10 @@ button.WhiteButton {
     margin-bottom: 25px;
     padding-right: 3px;
     width: 100%;
+
     .TileTools {
         position: absolute;
-        right: 5px; 
+        right: 5px;
         top: -10px;
         z-index: 900;
         color: @d3s-gray-1;
@@ -255,12 +272,12 @@ button.WhiteButton {
 }
 
 .tile-detail {
-  background-color: #fff;
-  border: 0;
-  border-radius: 0;
-  padding-bottom: 10px;
-  box-shadow: 2px 2px 1px 0px rgba(0,0,0,0.15);
-} 
+    background-color: #fff;
+    border: 0;
+    border-radius: 0;
+    padding-bottom: 10px;
+    box-shadow: 2px 2px 1px 0px rgba(0,0,0,0.15);
+}
 
 .tile-clickable {
     cursor: pointer;
@@ -279,6 +296,7 @@ button.WhiteButton {
     font-size: 125%;
     font-weight: 600;
     width: 70%;
+
     :hover {
         text-decoration: underline;
         cursor: pointer;
@@ -294,9 +312,11 @@ button.WhiteButton {
 .tile-stat-value-highlight:before {
     content: "(";
 }
+
 .tile-stat-value-highlight:after {
     content: ")";
 }
+
 .tile-stat-value-highlight {
     color: @d3s-blue-4;
     font-size: 150%;
@@ -328,8 +348,9 @@ button.WhiteButton {
 .cell-value-name {
     font-weight: 600;
 }
+
 .cell-value-type {
-  font-size: 0.7em;
+    font-size: 0.7em;
 }
 
 .FormFieldContent {

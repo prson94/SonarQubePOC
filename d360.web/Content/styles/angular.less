@@ -1338,6 +1338,24 @@ a.breadcrumb {
     }
 }
 
+.autoInputBox{
+    position:absolute;
+    display:inline-block;
+}
+
+.ui-autocomplete .inputBox {
+    margin-left: 5px;
+    height: 32px;
+    width: 110px;
+    border-radius: 3px;
+    cursor: pointer;
+
+    &:focus {
+        border: 1px solid #54a4da;
+        cursor:text;
+    }
+}
+
 .search-results {
     z-index: 10;
     position: absolute;
@@ -2892,6 +2910,7 @@ button.tab, button.tab-scroller {
     border-radius: 0;
     color: @igx-blue;
     border-bottom: 3px solid transparent;
+    border-top: 3px solid transparent;
 
     &:focus, &.focused {
         box-shadow: none;
@@ -3979,6 +3998,7 @@ button.tab-scroller {
             display: flex;
 
             .field {
+                display: inline;
                 input {
                     &:focus {
                         outline: none;

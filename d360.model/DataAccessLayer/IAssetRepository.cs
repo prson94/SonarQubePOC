@@ -28,6 +28,7 @@ namespace d360.model.DataAccessLayer
         Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true);
         Predicate GetPredicateByUID(Guid predicateGuid);
         AssetType GetAssetTypeByUID(Guid assetTypeUid);
+        AssetType GetAssetTypeByUidAndClass(Guid assetTypeUid, AssetTypeClass @class);
         AssetType GetAssetTypeByModel(AssetTypeInsert model);
         ApiExecution GetExecutionItemByUid(Guid executionUid);
         void UpsertObjectStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx");

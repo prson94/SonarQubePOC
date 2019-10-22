@@ -50,6 +50,33 @@ export class SearchResultsObject {
     Result: SearchResultInfo;
 }
 
+export class SearchAggregationFilter {
+    Field: string;
+    Values: string[];
+    public constructor(init?: Partial<SearchAggregationFilter>) {
+        Object.assign(this, init);
+    }}
+
+export class SearchFieldFilter {
+    Field: string;
+    Phrase: string;
+    MatchWords: boolean = false;
+    public constructor(init?: Partial<SearchFieldFilter>) {
+        Object.assign(this, init);
+    }}
+
+export class SearchQuery {
+    Term: string;
+    Size: number;
+    From: number;
+    AggregationFilters: SearchAggregationFilter[];
+    FieldFilters: SearchFieldFilter[];
+    Aggregations: string[];
+    public constructor(init?: Partial<SearchQuery>) {
+        Object.assign(this, init);
+    }
+}
+
 export class AdvancedSearchFilter {
     constructor(field?: string, value?:string) {
         this.field = field;

@@ -21,7 +21,7 @@
             <ng-container [ngSwitch]="fieldDataType">
                 <ng-container *ngSwitchCase="'text'">
                     <div *ngIf="isEmail" class="FieldDisplayContent"><a [href]="'mailto:' + field.Value">{{field.Value}}</a></div>
-                    <div *ngIf="!isEmail" class="FieldDisplayContent" [ngStyle]="{'font-weight':(isName ? 'bold':'')}">{{field.Value}}</div>
+                    <div *ngIf="!isEmail" title="{{field.Value}}" class="FieldDisplayContent" [ngStyle]="{'font-weight':(isName ? 'bold':'')}">{{field.Value}}</div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'date'">
                     <div class="FieldDisplayContent">
@@ -57,7 +57,7 @@
                     <div class="FieldDisplayContent" [innerHtml]="field.Value" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
                 </ng-container>
                 <ng-container *ngSwitchDefault>
-                    <div class="FieldDisplayContent" [ngStyle]="{'font-weight':(isName ? 'bold':'')}">{{field.Value}}</div>
+                    <div class="FieldDisplayContent" title="{{field.Value}}" [ngStyle]="{'font-weight':(isName ? 'bold':'')}">{{field.Value}}</div>
                 </ng-container>
             </ng-container>
         </ng-container>

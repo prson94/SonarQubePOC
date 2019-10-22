@@ -10,6 +10,36 @@ namespace d360.extensions
 {
     #region Extensions Models
 
+    public class AggregationFilter
+    {
+        public string Field { get; set; }
+        public string[] Values { get; set; }
+    }
+
+    public class FieldFilter
+    {
+        public string Field { get; set; }
+        public string Phrase { get; set; }
+        public bool MatchWords { get; set; } = false;
+    }
+
+    public class QueryRequest
+    {
+        public QueryRequest()
+        {
+            AggregationFilters = new List<AggregationFilter>();
+            FieldFilters = new List<FieldFilter>();
+            Aggregations = new List<string>();
+        }
+        public string Term { get; set; }
+        public int Size { get; set; } = 100;
+        public int From { get; set; } = 0;
+        public List<AggregationFilter> AggregationFilters { get; set; }
+        public List<FieldFilter> FieldFilters { get; set; }
+        public List<string> Aggregations { get; set; }
+        SearchConnector SearchConnector { get; set; } = SearchConnector.And;
+    }
+
     public class IndexTypeList
     {
 
@@ -189,6 +219,8 @@ namespace d360.extensions
         /// <returns>A list of search results.</returns>
         /// <exception cref="SearchResultsException"></exception>
         IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "", string advancedFilterJSON = "");
+
+        IndexResults GetSearchResultsWithAggregation(int companyID, int resourceID, QueryRequest queryRequest, List<IndexTypeList> categories);
 
         IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, int size = 10, string type = "");
         
