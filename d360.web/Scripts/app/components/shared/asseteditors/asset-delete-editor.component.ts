@@ -27,18 +27,18 @@ export class AssetDeleteEditorComponent extends BaseComponent {
     ) {
         super();
 
-        this.theDeleteCallback = this.deleteAsset.bind(this);        
+        this.theDeleteCallback = this.deleteAsset.bind(this);
     }
-    
-    public deleteAsset(id:number): void {
+
+    public deleteAsset(id: number): void {
         this.assetService.deleteAsset(this.assetTypeUid, this.uid)
             .subscribe(
                 result => {
-                    this.showMessageForResult(this.messagesService, result);
+                    this.showMessageForApiResults(this.messagesService, result, `${this.displayValue} successfully deleted`, true);
                     this.onDeleted.emit();
                     this.changeDetectorRef.markForCheck();
                 }
-        )
+            )
     }
 
 }

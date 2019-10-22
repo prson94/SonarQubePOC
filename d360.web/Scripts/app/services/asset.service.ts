@@ -23,7 +23,7 @@ export class AssetService extends BaseObservableService {
     public deleteAsset(
         assetTypeUid: string,
         uid: string
-    ): Observable<JsonResult> {
+    ): Observable<ApiResult[]> {
 
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
