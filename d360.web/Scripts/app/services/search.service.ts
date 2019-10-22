@@ -50,7 +50,7 @@ export class SearchService extends BaseObservableService  {
         }
 
         return this.http
-            .post('search/NewResults', query)
+            .post('search/results', query)
             .pipe(
                 map(res => <SearchResultsObject>res),
                 catchError(err => this.handleError(err))
