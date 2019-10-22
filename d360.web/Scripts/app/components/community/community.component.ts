@@ -92,6 +92,9 @@ export class CommunityComponent extends BaseComponent implements OnInit {
                         plotShadow: false,
                         type: 'pie',
                         backgroundColor: 'transparent',
+                        style: {
+                            fontFamily: 'Source Sans Pro'
+                        }
                     },
                     title: {
                         text: null
