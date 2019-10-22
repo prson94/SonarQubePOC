@@ -377,7 +377,7 @@ namespace d360.web.Controllers.V2
 
                 var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));
 
-                AssetType assetType = AssetRepository.GetAssetTypeByUID(model.Uid);
+                AssetType assetType = AssetRepository.GetAssetTypeByUidAndClass(model.Uid, model.Class);
 
                 AssetType parentAssetType = null;
                 if (model.ParentUid != null && model.ParentUid != Guid.Empty)
