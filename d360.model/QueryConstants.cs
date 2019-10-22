@@ -1496,7 +1496,7 @@ order by IST.StartedOn desc, IST.CompletedOn desc
             join workflow.version v on v.typeid = t.id
 			left join AssetType ta on ta.object = e.object and ta.objectId = e.objectid
             left join reporting.Global_resource r on r.ResourceID = v.UpdatedBy
-            left join (select distinct object, objectid, versionid from workflow.item) i on i.versionid = v.id
+            left join (select distinct object, objectid, versionid from workflow.item where Object='Issue') i on i.versionid = v.id
 			left join Issue iss on i.Object ='Issue' and iss.ID = i.ObjectID
 			left join Asset issa on issa.Object = iss.Object and issa.ObjectID = iss.ObjectID
 			left join AssetType isst on isst.ID = issa.AssetTypeID

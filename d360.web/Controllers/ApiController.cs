@@ -3374,7 +3374,14 @@ outer apply (
                                 // Add the fields that you need to create link in Angular component.
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Taxonomy'", datafield = $"{dataField}_Object" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                if (i.FieldTypeName.ToLower() == "textpath" || i.FieldTypeName.ToLower() == "displayvalue")
+                                {
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ObjectId as varchar)", datafield = $"{dataField}_ObjectID" });
+                                }
+                                else
+                                {
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                }
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'Taxonomy' and ObjectID = A{pos}.{idColumn}))", datafield = $"{dataField}_Url" });
                                 break;
 

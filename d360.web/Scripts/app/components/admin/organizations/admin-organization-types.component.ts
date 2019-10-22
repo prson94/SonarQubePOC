@@ -89,7 +89,6 @@ import { AssetTypeClass } from '../../../models/asset.model';
                     </p-table>
                 </span>
         <d3s-asset-type-editor *ngIf="showEditor"
-                               [showParentPredicates]="false"
                                [assetTypeClass]="assetTypeClass"
                                [id]="type?.AssetTypeID"
                                [title]="(type?'Edit':'Add') + ' Organization Type'"
