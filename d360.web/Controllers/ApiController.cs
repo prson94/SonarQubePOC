@@ -4929,8 +4929,12 @@ from        (
             from        AssetType where [object]='ArtifactType'  and [Class] = 8                       
             union 
             select      'Artifact|' + cast(ObjectId as varchar(15)) as value,
-                        'Artifact Instance : ' + Name as title
-            from       AssetType where [object]='ArtifactType'          
+                        'Business Asset Instance : ' + Name as title
+            from       AssetType where [object]='ArtifactType' and [Class] = 1   
+            union 
+            select      'Artifact|' + cast(ObjectId as varchar(15)) as value,
+                        'Technical Asset Instance : ' + Name as title
+            from       AssetType where [object]='ArtifactType' and [Class] = 8  
             union
             select      'Resource|1' as value,
                         'Resource' as title

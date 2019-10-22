@@ -5,7 +5,7 @@
                 {{tabTitle}}
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add(0)"></d3s-tile-actions>
             </header>
-            
+
             <p-treeTable [value]="ArtifactTypes" #assetTypeTree selectionMode="single" [(selection)]="selectedRow" [globalFilterFields]="filterFields" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage">
                 <ng-template pTemplate="caption">
                     <input type="text" pInputText (input)="assetTypeTree.filterGlobal($event.target.value, 'contains')" placeholder="Search..." style="width: 100%;margin-bottom:10px;margin-right:0px;margin-left:0px">
@@ -46,7 +46,7 @@
                     </tr>
                 </ng-template>
             </p-treeTable>
-        </div>        
+        </div>
     </div>
     <div *ngIf="isEditing" class="col s12 m7 l8">
         <div class="tile tile-detail">
@@ -55,11 +55,11 @@
     </div>
     <div *ngIf="isAdding" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-asset-type-editor [showParentPredicates]="selectedRow != null && selectedRow.data != null && selectedRow.data.ID > 0" [assetTypeClass]="assetTypeClass" [parentID]="selectedRow?.data?.ID" [title]="'Add Business Asset'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
+            <d3s-asset-type-editor [assetTypeClass]="assetTypeClass" [parentID]="selectedRow?.data?.ID" [title]="'Add Business Asset'" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
         </div>
-    </div>    
+    </div>
     <div *ngIf="isDeleting" class="col s12 m7 l8">
-        <div class="tile tile-detail">            
+        <div class="tile tile-detail">
             <d3s-artifact-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeId]="selectedRow.data.ID" [assetTypeId]="selectedRow.data.AssetTypeID"></d3s-artifact-type-delete>
         </div>
     </div>
@@ -75,6 +75,6 @@
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
             <d3s-admin-relationships-list [filterToName]="selectedRow?.data?.Name" [objectType]="objectType" [objectID]="selectedRow?.data?.ID"></d3s-admin-relationships-list>
-        </div>        
+        </div>
     </div>
 </div>
