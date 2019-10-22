@@ -94,7 +94,7 @@ END
     </rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="GOV-8378-LineageProc-B">
+  <changeSet author="Pappas" id="GOV-8378-LineageProc-C">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -384,7 +384,7 @@ begin
 									where	MATCH(S-(E)->T)
 											and E.PredicateType = 12
 											and T.ID = R.FromID
-											and R.[Hop] = -@current+1
+											and R.[Hop] = case @isReveal when 1 then @StartHop else -@current+1 end
 											and E.Uid not in (select Uid from #tbl)
 									) S
 		end;
@@ -402,7 +402,7 @@ begin
 									where	MATCH(S-(E)->T)
 											and E.PredicateType = 12
 											and S.ID = R.FromID
-											and R.[Hop] = @current-1
+											and R.[Hop] = case @isReveal when 1 then @StartHop else @current-1 end
 											and E.Uid not in (select Uid from #tbl)
 									) S
 		end;
