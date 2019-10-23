@@ -549,16 +549,17 @@ where	T.[Class] in (1,2,3,4,6,7,8,9)").ToList();
             select A.* from (
             select	Object as ObjectType, 
 		            ObjectID as ObjectTypeID, 
-		            case Object
-			            when 'ArtifactType' then 'Artifacts :: '
-			            when 'TaxonomyType' then 'Models :: '
-			            when 'PolicyType' then 'Policies :: '
-			            when 'RuleType' then 'Rules :: '
-			            when 'FusionType' then 'Fusion Types :: '
-			            when 'ReferenceItemType' then 'Reference Item Type :: '
+		            case
+                        when Object = 'ArtifactType' AND (Class = 1) then 'Business Asset :: '
+                        when Object = 'ArtifactType' and (Class = 8 ) then 'Technical Asset :: '
+			            when Object = 'TaxonomyType' then 'Model :: '
+			            when Object = 'PolicyType' then 'Policy :: '
+			            when Object = 'RuleType' then 'Rule :: '
+			            when Object = 'FusionType' then 'Fusion Type :: '
+			            when Object = 'ReferenceItemType' then 'Reference Item Type :: '
 		            end + Name as Name
             from	AssetType
-            where	Class in (1,2,3,6,7,9)
+            where	Class in (1,2,3,6,7,8,9)
             union
             select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
             ) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id

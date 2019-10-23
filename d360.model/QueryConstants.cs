@@ -1263,8 +1263,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 		            [object] + '|' + cast(objectId as varchar) as [value],
 		            objectId as id,
 		            [object] as [type],		
-		            case when T.[object] = 'ArtifactType' then
-			            'Artifact Type'
+		            case when T.[object] = 'ArtifactType' and T.[Class] = 1 then
+			            'Business Asset'
+                    when T.[object] = 'ArtifactType' and T.[Class] = 8 then
+			            'Technical Asset'
 		            when T.[object] = 'RuleType' then
 			            'Rule Type'
 		            when T.[object] = 'PolicyType' then
@@ -1329,8 +1331,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 					else
 						'Unpublished'
 					end as Published,
-					case when e.[Object] = 'ArtifactType' then
-						'Artifact'
+					case when e.[Object] = 'ArtifactType' and D.[Class] = 1 then
+						'Business Asset'
+                    when e.[Object] = 'ArtifactType' and D.[Class] = 8 then
+						'Technical Asset'
 					when e.[Object] = 'RuleType' then
 						'Rule'
 					when e.[Object] = 'PolicyType' then

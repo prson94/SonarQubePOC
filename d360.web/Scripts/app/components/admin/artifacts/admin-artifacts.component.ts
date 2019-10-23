@@ -21,6 +21,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     searchFilter: string = "";
     objectType: string = "ArtifactType";
     adminType: string = "Artifacts";
+    addClassName: string;
     selectedRow: TreeNode;
     private sub: any;
     isAdding = false;
@@ -61,6 +62,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
             }
 
             let className: string = this.assetTypeClass == AssetTypeClass.BusinessAsset ? 'Business Asset' : 'Technical Asset';
+            this.addClassName = "Add " + className;
             let singularLabel: string = `${className} Type`;
 
             this.tabTitle = `${singularLabel}s`;
