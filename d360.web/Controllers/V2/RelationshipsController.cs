@@ -225,7 +225,7 @@ namespace d360.web.Controllers.V2
                 var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
                 var types = PredicateType.DataLineage.GetAsList()
-                    .Where(i => i.LineageVersionsSupported.Contains(lineageVersion))
+                    .Where(i => i.LineageVersionsSupported.Contains(lineageVersion) && !i.Obsolete)
                     .Select(i => new PredicateTypeApiViewModel {
                         Type = i.ID,
                         Name = i.Name,

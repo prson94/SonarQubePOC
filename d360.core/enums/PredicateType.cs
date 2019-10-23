@@ -37,13 +37,14 @@ namespace d360.core.enums
         [
             Name("Reference Data Lineage"),
             Description("Allow for defining links between reference items across lists."),
-            ReadOnly(false),
+            ReadOnly(true),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
             AllowEditFromRelationshipEditor(false),
-            LineageVersionsSupported(2)
+            LineageVersionsSupported(2),
+            Obsolete
         ]
         ReferenceLineage = 2,
         [
@@ -76,8 +77,9 @@ namespace d360.core.enums
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
-            AllowEditFromRelationshipEditor(true),
-            LineageVersionsSupported(1)
+            AllowEditFromRelationshipEditor(false),
+            LineageVersionsSupported(1),
+            Obsolete
         ]
         UserOwnership = 5,
         [
@@ -129,13 +131,14 @@ namespace d360.core.enums
         [
             Name("Object Ownership"),
             Description("This type of predicate allows for fusion configurations to be owned by glossary-level objects."),
-            ReadOnly(false),
+            ReadOnly(true),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
             AllowEditFromRelationshipEditor(false),
-            LineageVersionsSupported(1, 2)
+            LineageVersionsSupported(1, 2),
+            Obsolete
         ]
         ObjectOwnerhip = 11,
         [
@@ -193,6 +196,9 @@ namespace d360.core.enums
 
         [JsonIgnore]
         public bool ReadOnly { get; set; }
+
+        [JsonIgnore]
+        public bool Obsolete { get; set; }
 
         [JsonIgnore]
         public int[] LineageVersionsSupported { get; set; }
@@ -253,7 +259,8 @@ namespace d360.core.enums
                         ReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly,
                         LineageVersionsSupported = tm.IsDefined(typeof(LineageVersionsSupportedAttribute), false) ?
                                                     ((LineageVersionsSupportedAttribute)tm.GetCustomAttribute(typeof(LineageVersionsSupportedAttribute))).Versions :
-                                                    new int[4] { 0, 1, 2, 3 }, //0 accounts for unit tests
+                                                    new int[4] { 0, 1, 2, 3 }, //0 accounts for unit tests,
+                        Obsolete = tm.IsDefined(typeof(ObsoleteAttribute), false)
                     });
                 }
             }
