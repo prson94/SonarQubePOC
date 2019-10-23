@@ -243,13 +243,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private populateDiagram() {
         this.isLoading = true;
 
+        this.responseModel = null;
+        this.revealedKeys = [];
+
         this.requestModel = new AssetBrowserLineageApiRequestModel();
         this.requestModel.AssetUids = new Array();
         this.requestModel.AssetUids.push(this.assetUid);
         this.requestModel.IsReveal = false;
         this.requestModel.StartHop = 0;
         this.requestModel.Direction = AssetBrowserDirection.Both;
-        this.requestModel.Hops = 3;
+        this.requestModel.Hops = 1;
 
         //#region Testing with static data
         //let translationModel: AssetBrowserTranslation = this.browserService.getStaticDataForTesting();
@@ -415,6 +418,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private refreshDiagram() {
         this.assetUid = this.originalAssetUid;
+
         this.populateDiagram();
     }
 
