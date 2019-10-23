@@ -1338,9 +1338,24 @@ a.breadcrumb {
     }
 }
 
-.autoInputBox{
-    position:absolute;
-    display:inline-block;
+.autoInputBox {
+    position: absolute;
+    display: inline-block;
+
+    .ui-autocomplete-panel {
+        margin-left: 5px;
+        min-width: 200px;
+        max-width: 600px !important;
+    }
+
+    .ui-autocomplete-panel .ui-state-highlight {
+        background-color: #DFF3F7 !important;
+    }
+
+    .ui-autocomplete-panel .ui-autocomplete-list-item {
+        border-bottom: none !important;
+        color: black;
+    }
 }
 
 .ui-autocomplete .inputBox {
