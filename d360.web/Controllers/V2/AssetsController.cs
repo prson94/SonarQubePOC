@@ -481,16 +481,17 @@ namespace d360.web.Controllers.V2
             {
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
-                if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ModifyAsset))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
-
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
+
+
+                if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ModifyAsset))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
 
                 if (assets == null)
                     assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
 
-                if (assets == null)
+                if (assets == null || assets.Count == 0)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
@@ -568,7 +569,7 @@ namespace d360.web.Controllers.V2
                 if (assets == null)
                     assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
 
-                if (assets == null)
+                if (assets == null || assets.Count == 0)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
