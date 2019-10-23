@@ -23,13 +23,18 @@
         <p-autoComplete [(ngModel)]="inputValue"
                         (onBlur)="resetValue()"
                         class="autoInputBox"
+                        scrollHeight="400px"
+                        value="inputValue"
                         inputStyleClass="inputBox"
                         placeholder="Click to add..."
                         [suggestions]="searchResults"
                         (onKeyUp)="checkKey($event,inputValue)"
-                        field="name"
                         (onSelect)="saveTag($event)"
+                        field="name"
                         (completeMethod)="search($event,$event.query)">
+            <ng-template let-elm pTemplate="item">
+                <span [innerHTML]=" highlight(elm.name,inputValue) | safeHtml"></span>
+            </ng-template>
         </p-autoComplete>
     </ng-container>
     <ng-container *ngIf="tags && tags.length > 10">
