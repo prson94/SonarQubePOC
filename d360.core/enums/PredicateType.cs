@@ -12,6 +12,17 @@ namespace d360.core.enums
     public enum PredicateType
     {
         [
+            Name("Simple"),
+            Description("Allows you to create a simple association between two objects that do not fit into any other functional type, such as lineage."),
+            ReadOnly(false),
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(true),
+            ForceDifferentSubjectObject(false),
+            AllowEditFromRelationshipEditor(true)
+        ]
+        Simple = 7,
+        [
             Name("Data Lineage"),
             Description("Allows you to define source paths between objects."),
             ReadOnly(false),
@@ -80,17 +91,6 @@ namespace d360.core.enums
             AllowEditFromRelationshipEditor(true)
         ]
         Grammar = 6,
-        [
-            Name("Simple"),
-            Description("Allows you to create a simple association between two objects that do not fit into any other functional type, such as lineage."),
-            ReadOnly(false),
-            AllowIntersectTypeAssignment(true),
-            AllowMultiplePredicates(true),
-            AllowDifferentSubjectObject(true),
-            ForceDifferentSubjectObject(false),
-            AllowEditFromRelationshipEditor(true)
-        ]
-        Simple = 7,
         [
             Name("Mapping"),
             Description("Allows you to create mappings that are used in fusion rules."),
@@ -251,7 +251,7 @@ namespace d360.core.enums
                         AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditorAttribute)tm.GetCustomAttribute(typeof(AllowEditFromRelationshipEditorAttribute))).Allowed,
                         ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
                         ReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly,
-                        LineageVersionsSupported = tm.IsDefined(typeof(LineageVersionsSupportedAttribute), false) ? 
+                        LineageVersionsSupported = tm.IsDefined(typeof(LineageVersionsSupportedAttribute), false) ?
                                                     ((LineageVersionsSupportedAttribute)tm.GetCustomAttribute(typeof(LineageVersionsSupportedAttribute))).Versions :
                                                     new int[4] { 0, 1, 2, 3 }, //0 accounts for unit tests
                     });
@@ -264,7 +264,7 @@ namespace d360.core.enums
         public static PredicateTypeInfo AsInfoModel(this PredicateType type)
         {
             var t = type.GetType().GetMember(type.ToString()).First();
-            return 
+            return
                 new PredicateTypeInfo
                 {
                     Name = ((NameAttribute)t.GetCustomAttribute(typeof(NameAttribute))).Name,
