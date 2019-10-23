@@ -494,7 +494,7 @@ from	IntersectType I
             return results;
         }
 
-        public async Task<List<DatabaseBulkRelationshipResult>> DeleteRelationships(ApiExecution execution, IntersectType intersectType, RelationshipDeletes relationships, int timeout = 3600, bool triggerWorkflow = false)
+        public List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType intersectType, RelationshipDeletes relationships, int timeout = 3600, bool triggerWorkflow = false)
         {
             return companyContext.DeleteRelationships(execution, intersectType, relationships, timeout, triggerWorkflow);
         }

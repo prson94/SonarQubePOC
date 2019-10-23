@@ -67,7 +67,7 @@ namespace igx.jobs
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
-                companies.ForEach(async c =>
+                companies.ForEach(c =>
                 {
                     try
                     {

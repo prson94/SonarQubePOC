@@ -37,13 +37,13 @@ namespace d360.web.Controllers
             public string ObjectName { get; set; }
         }
 
-        
+
         [Route("LogActivity"), HttpPost()]
         [ValidateHttpAntiForgeryToken]
-        public async Task PostLogActivity(WebActivityEntity value)
+        public void PostLogActivity(WebActivityEntity value)
         {
-            var IP = GetClientIp(Request);            
-            
+            var IP = GetClientIp(Request);
+
             try
             {
                 Company.AddWebStatistic(
@@ -59,7 +59,7 @@ namespace d360.web.Controllers
                 );
 
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }

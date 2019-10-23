@@ -46,7 +46,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Theory]
         [InlineData(DataConstants.ValidGUID)]
         [InlineData(DataConstants.InvalidGUID)]
-        public async void DeleteTags(string uid)
+        public void DeleteTags(string uid)
         {
 
             var actionResult = tagsController.DeleteById(Guid.Parse(uid));
@@ -68,7 +68,7 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void PostTag()
+        public void PostTag()
         {
             var model = new TagApiModel() { Value = DataConstants.Tags.ValidName };
 
@@ -78,14 +78,14 @@ namespace igx.UnitTests.V2ControllerTests
 
             var str = res.Result.Content.ReadAsStringAsync().Result;
 
-            Assert.True(res.Result.IsSuccessStatusCode,XMsg.BadResponseCode);
+            Assert.True(res.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             AssertJSON.True<TagApiModel>(str);
 
         }
 
 
         [Fact]
-        public async void PostTag_Error()
+        public void PostTag_Error()
         {
             var model = new TagApiModel() { Value = "invalid_name" };
 
@@ -103,7 +103,7 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void PutTag()
+        public void PutTag()
         {
             var model = new TagApiModel() { uid = Guid.Parse(DataConstants.ValidGUID), Value = DataConstants.Tags.ValidName };
 
@@ -120,14 +120,14 @@ namespace igx.UnitTests.V2ControllerTests
 
 
         [Fact]
-        public async void PutTag_ErrorInvalidGuid()
+        public void PutTag_ErrorInvalidGuid()
         {
             var model = new TagApiModel() { uid = Guid.Parse(DataConstants.ValidGUID), Value = DataConstants.Tags.ValidName };
 
             var actionResult = tagsController.Put(Guid.Parse(DataConstants.InvalidGUID), model);
 
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
-            
+
             var str = res.Result.Content.ReadAsStringAsync().Result;
             var data = JsonConvert.DeserializeObject<JToken>(str);
 
@@ -139,7 +139,7 @@ namespace igx.UnitTests.V2ControllerTests
 
 
         [Fact]
-        public async void PutTag_ErrorInvalidName()
+        public void PutTag_ErrorInvalidName()
         {
             var model = new TagApiModel() { uid = Guid.Parse(DataConstants.ValidGUID), Value = "invalid name" };
 

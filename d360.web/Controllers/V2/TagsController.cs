@@ -49,7 +49,7 @@ namespace d360.web.Controllers.V2
             Route("search"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> Search()
+        public IHttpActionResult Search()
         {
             try
             {
@@ -271,12 +271,13 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Consolidates tags
         /// </summary>
+        /// <param name="parentUid">The unique identifier of the parent tag.</param>        
+        /// <param name="childrenUids">The list of children tags which we want to consolidate.</param>
         /// <returns>A status for the POST request.</returns>
         [
             HttpPost,
             Route("consolidate/{parentUid}"),
-            /// <param name="parentUid">The unique identifier of the parent tag.</param>        
-            /// <param name="childrenUids">The list of children tags which we want to consolidate.</param>
+
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<TagApiModel>)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the tag was not found.", typeof(ErrorResponse)),
@@ -467,7 +468,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> ExportTagToExcel(string tagUid)
+        public IHttpActionResult ExportTagToExcel(string tagUid)
         {
 
             Guid uid = Guid.Parse(tagUid);
@@ -522,7 +523,7 @@ namespace d360.web.Controllers.V2
         }
 
         [HttpGet, MapToApiVersion("2.0"), Route("{tagUid}/tooltip"), ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<IHttpActionResult> GetTagTooltipData(string tagUid, Guid? assetUid = null)
+        public IHttpActionResult GetTagTooltipData(string tagUid, Guid? assetUid = null)
         {
             try
             {

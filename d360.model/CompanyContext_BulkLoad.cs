@@ -545,7 +545,7 @@ order by	ColumnIndex", new { id });
                 {
                     intersectId = (operation == BulkRelationshipOperation.Relate) ?
                        RelateObjects(rowData, objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID, customFieldTypes, customFieldTypeMap) :
-                       (await UnrelateObjects(objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID));
+                       (UnrelateObjects(objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID));
 
                 }
                 else
@@ -589,7 +589,7 @@ order by	ColumnIndex", new { id });
 
             return true;
         }
-        private async Task<int> UnrelateObjects(int objectId, int subjectId, string objectType, string subjectType, int intersectTypeId)
+        private int UnrelateObjects(int objectId, int subjectId, string objectType, string subjectType, int intersectTypeId)
         {
             var intersectId = 0;
 

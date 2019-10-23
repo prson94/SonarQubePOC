@@ -390,7 +390,7 @@ namespace igx.UnitTests
                 .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>() { new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel() }));
 
             mock.Setup(x => x.DeleteRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipDeletes>(), 3600, It.IsAny<bool>()))
-                .Returns(Task.FromResult(new List<DatabaseBulkRelationshipResult>()));
+                .Returns(new List<DatabaseBulkRelationshipResult>());
 
             return mock.Object;
         }

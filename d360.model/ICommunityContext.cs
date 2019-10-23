@@ -33,18 +33,18 @@ namespace d360.model
         DbSet<ResourceType> ResourceTypes { get; set; }
         DbSet<Setting> Settings { get; set; }
 
-        bool Add<T>(T item) where T : BaseObject;
+        new bool Add<T>(T item) where T : BaseObject;
         bool ChangePassword(int resourceID, string oldPassword, string newPassword);
         string createRandomPassword();
-        bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
-        bool Delete<T>(T entity) where T : BaseObject;
+        new bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
+        new bool Delete<T>(T entity) where T : BaseObject;
         string GetCompanyConnectionString(bool skipCacheCheck = false);
         Dictionary<string, string> GetCompanySettings();
         T GetCompanySettingByKey<T>(string key);
         string HashPassword(string value);
         IEnumerable<T> Query<T>(string sql, object param = null);
         int SaveChanges();
-        bool Update<T>(T item) where T : BaseObject;
+        new bool Update<T>(T item) where T : BaseObject;
         Resource ValidateResource(string username, string password);
 
         bool IsFusionEnabled();

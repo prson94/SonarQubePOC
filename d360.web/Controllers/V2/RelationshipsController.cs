@@ -992,7 +992,7 @@ namespace d360.web.Controllers.V2
             List<DatabaseBulkRelationshipResult> results = null;
             try
             {
-                results = await RelationshipRepository.DeleteRelationships(execution, intersectType, relationships, 3600, triggerWorkflow);
+                results = RelationshipRepository.DeleteRelationships(execution, intersectType, relationships, 3600, triggerWorkflow);
 
                 // Close execution record.
                 execution.Processed = results.Count;

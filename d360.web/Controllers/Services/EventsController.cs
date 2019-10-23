@@ -32,7 +32,7 @@ namespace d360.web.Controllers.Services
         {
             Telemetry = new TelemetryClient();
             Telemetry.Context.InstrumentationKey = ConfigurationManager.AppSettings["AppInsightsInstrumentationKey"];
-            Telemetry.Context.Properties["CompanyID"] = company.CurrentCompanyID.ToString();
+            Telemetry.Context.GlobalProperties["CompanyID"] = company.CurrentCompanyID.ToString();
         }
 
         #endregion
