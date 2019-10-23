@@ -72,9 +72,8 @@ where	S.UrlPrefix like 'train%' and S.UrlPrefix not like '%-forms' and S.UrlPref
                     //lst.Items.Add(o.CompanyID.ToString(), o.UrlPrefix);
                 });
             }
-            catch (Exception ex)
+            catch
             {
-
                 throw;
             }
             finally

@@ -108,7 +108,7 @@ namespace d360.web.Models
 
             return new JsonSerializerSettings
             {
-                Binder = controllerSerializerSettings.Binder,
+                SerializationBinder = controllerSerializerSettings.SerializationBinder,
                 Converters = new List<JsonConverter>(controllerSerializerSettings.Converters),
                 CheckAdditionalContent = controllerSerializerSettings.CheckAdditionalContent,
                 ConstructorHandling = controllerSerializerSettings.ConstructorHandling,

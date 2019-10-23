@@ -469,7 +469,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 ExecutionAssetType.StepExecutionTimes = JsonConvert.SerializeObject(StepExecutionTimes);
                 Company.Update(ExecutionAssetType);
             }
-            catch(Exception ex)
+            catch
             {
             }
         }
@@ -492,7 +492,7 @@ where	[AllowChangeDetection] = 0").ToList();
                 ExecutionAssetType.RetryLog = JsonConvert.SerializeObject(ExecutionAssetTypeRetryLog);
                 Company.Update(ExecutionAssetType);
             }
-            catch (Exception ex)
+            catch
             {
             }
         }

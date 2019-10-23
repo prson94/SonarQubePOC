@@ -966,8 +966,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> DeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, bool triggerWorkflow = false)
         {
-            var prefix = "Relationships.DeleteRelationship => "; 
-
             IntersectType intersectType = RelationshipRepository.GetIntersectTypeByUid(intersectTypeUid);
 
             if (intersectType == null)
