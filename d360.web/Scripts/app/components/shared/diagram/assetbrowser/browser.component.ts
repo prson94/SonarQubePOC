@@ -243,6 +243,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private populateDiagram() {
         this.isLoading = true;
 
+        this.responseModel = null;
+        this.revealedKeys = [];
+
         this.requestModel = new AssetBrowserLineageApiRequestModel();
         this.requestModel.AssetUids = new Array();
         this.requestModel.AssetUids.push(this.assetUid);
@@ -415,6 +418,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private refreshDiagram() {
         this.assetUid = this.originalAssetUid;
+
         this.populateDiagram();
     }
 
