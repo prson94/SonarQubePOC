@@ -373,11 +373,12 @@ select  A.ObjectID as ID,
         A.TypeName as ArtifactType,
         A.CreatedOn,
         coalesce(A.UpdatedOn, A.CreatedOn) as UpdatedOn,
-		A.KeyHash,
+		A1.KeyHash,
         S.Value as CurrentScore,
         cast(S.Value * 100 as int) as CurrentScorePct
 from    AssetDetail A  
 		left join PredicateIntersect I on I.Object = 'Artifact' and I.ObjectID = A.ID and I.PredicateType = 3
+		inner join Asset A1 ON A.Id = A1.Id
         outer apply (
 					select	max(EffectiveDate) as EffectiveDate
 					from	[metrics].[Score] 
