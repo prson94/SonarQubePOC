@@ -12,6 +12,7 @@ namespace d360.model.validators
 {
     public static class FieldApiModelValidator
     {
+
         public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, bool areFusionFieldsAllowed = true, List<FieldType> existingFieldTypes = null)
         {
             var baseValidation = BaseModelValidation(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
@@ -29,9 +30,9 @@ namespace d360.model.validators
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
-                if (field.Name.Trim().ToLower() == "id" || field.Name.Trim().ToLower() == "uid")
+                if (!IsFieldNameAllowed(field.Name.Trim()))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot be ID or UID.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot be [{field.Name.Trim().ToUpper()}].");
                 }
                 if (!field.Type.IsOnlyOneTypeModelDefined())
                 {
@@ -207,6 +208,13 @@ namespace d360.model.validators
                 }
             }
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
+        }
+
+        private static bool IsFieldNameAllowed(string fieldApiName)
+        {
+            if (string.IsNullOrEmpty(fieldApiName)) return false;
+            List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon" };
+            return !disallowedFieldNames.Contains(fieldApiName.ToLower());
         }
     }
 }

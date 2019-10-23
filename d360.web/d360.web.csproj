@@ -1244,6 +1244,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\checktreenode.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\chips-filter\chips-filter-component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\chips-filter\chips-filter-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dynamic-percentage\dynamic-percentage-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dynamic-percentage\dynamic-percentage-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.component.ts" />
@@ -1428,6 +1430,7 @@
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-new-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-view-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\click-outside-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\copy-clipboard-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />

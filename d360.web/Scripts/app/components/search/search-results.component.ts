@@ -24,8 +24,10 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
     @Output() paginateClick = new EventEmitter();    
     @Input() selectedCategory: SearchCategories;
     @Output() selectedCategoryChange = new EventEmitter();
-
+    @Output() advFilterChanged = new EventEmitter();
     @ViewChild('searchContainer') container: ElementRef;
+
+    newFilterOptions: any[] = [];
 
     ngOnChanges(changes: any) {
         if (changes['results'] && !changes['results'].firstChange) {
@@ -39,6 +41,13 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
 
     ngAfterViewInit(): void {
         this.setResultsHeight();
+        this.newFilterOptions.push({ field: "Name", value: 'any' });
+        this.newFilterOptions.push({ field: "Description", value: 'any' });
+        this.newFilterOptions.push({ field: "Tags", value: 'any' });
+    }
+
+    filterChanged(options) {
+            this.advFilterChanged.emit(options);
     }
 
     setResultsHeight() {

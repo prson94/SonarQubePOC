@@ -1,7 +1,7 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
 import {AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild} from '@angular/core';
-import {DiagramObjectType, AssetBrowserLineageApiRequestModel, AssetBrowserTranslation, AssetBrowserDirection, AssetBrowserDiagramAsset, AssetBrowserTranslationNode, AssetBrowserTranslationLink } from '../../../../models/lineage.model';
+import {DiagramObjectType, AssetBrowserLineageApiRequestModel, AssetBrowserTranslation, AssetBrowserDirection, AssetBrowserDiagramAsset, AssetBrowserTranslationNode, AssetBrowserTranslationLink, AssetBrowserLineageApiResponseModel } from '../../../../models/lineage.model';
 import {PermissionsService} from '../../../../services/permissions.service';
 import {BrowserService} from '../../../../services/browser.service';
 import {DiagramBaseComponent} from '../diagram-base.component';
@@ -25,8 +25,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     DiagramObjectType = DiagramObjectType;
 
     private requestModel: AssetBrowserLineageApiRequestModel;
+    private responseModel: AssetBrowserLineageApiResponseModel;
+    private revealedKeys: string[] = [];
     private originalAssetUid: string;
-    private menuItems: MenuItem[]=[];
+    private menuItems: MenuItem[] = [];
 
     isWindowVisible: boolean = false;
     isWindowLoading = false;
@@ -241,6 +243,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private populateDiagram() {
         this.isLoading = true;
 
+        this.responseModel = null;
+        this.revealedKeys = [];
+
         this.requestModel = new AssetBrowserLineageApiRequestModel();
         this.requestModel.AssetUids = new Array();
         this.requestModel.AssetUids.push(this.assetUid);
@@ -257,6 +262,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.browserService.getAssetLineage(this.requestModel)
             .subscribe(data => {
+                this.responseModel = data;
                 let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
                 this.parseData(translationModel);
             });
@@ -270,8 +276,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         if (append === true) {
             data.nodes.forEach(n => {
-                if (dm.findNodeDataForKey(n.key) == null)
+                let x = dm.findNodeDataForKey(n.key);
+                if (x == null) {
                     dm.addNodeData(n);
+                }
             });
 
             data.links.forEach(l => {
@@ -352,6 +360,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (data.showReveal != AssetBrowserDirection.None) {
                 this.diagram.startTransaction('reveal');
 
+                this.diagramModelAsGraph().linkDataArray.filter(l => l.to == data.key).forEach(l => {
+                    this.revealedKeys.push(this.diagram.model.findNodeDataForKey(l.from).key);
+                });
+
+                this.diagramModelAsGraph().linkDataArray.filter(l => l.from == data.key).forEach(l => {
+                    this.revealedKeys.push(this.diagram.model.findNodeDataForKey(l.to).key);
+                });
+
                 let model = new AssetBrowserLineageApiRequestModel();
                 model.AssetUids = data.assetUids;
                 model.IsReveal = true;
@@ -361,13 +377,32 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 this.browserService.getAssetLineage(model)
                     .subscribe(response => {
-                        let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(response);
+
+                        response.assets.forEach(a => {
+                            if (this.responseModel.assets.find(r => r.assetUid == a.assetUid) == null) {
+                                this.responseModel.assets.push(a);
+                            }
+                        });
+
+                        response.intersects.forEach(i => {
+                            if (this.responseModel.intersects.find(r => r.intersectUid == i.intersectUid) == null) {
+                                this.responseModel.intersects.push(i);
+                            }
+                        });
+
+                        let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(this.responseModel);
+
+                        this.revealedKeys.forEach(n => {
+                            let t = translationModel.nodes.find(t => t.key == n);
+                            if (t != null)
+                                t.showReveal = AssetBrowserDirection.None;
+                        });
 
                         this.diagramModelAsGraph().removeNodeData(data);
                         let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == data.key || l.from == data.key);
                         this.diagramModelAsGraph().removeLinkDataCollection(l);
 
-                        this.parseData(translationModel, true);
+                        this.parseData(translationModel);
 
                         this.diagram.commitTransaction('reveal');
 
@@ -383,6 +418,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private refreshDiagram() {
         this.assetUid = this.originalAssetUid;
+
         this.populateDiagram();
     }
 

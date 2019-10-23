@@ -1046,6 +1046,10 @@ button.ui-button:disabled {
     margin-top: 6px;
 }
 
+.nm {
+    margin-top: -.5em !important;
+}
+
 .ui-dropdown-item.ui-state-hover {
     border: none;
 }
