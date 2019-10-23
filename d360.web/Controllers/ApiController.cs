@@ -6719,10 +6719,10 @@ where    A.RuleID = @id", new { id });
                         switch (report.ObjectType)
                         {
                             case "Artifact":
-                                sql = "select 'Artifact Instance : ' + Name from AssetType where objectid = @id and [Object]='ArtifactType'";
+                                sql = "select case when Class = 1 then 'Business Asset Instance : ' + Name when Class = 8 then 'Technical Asset Instance : ' + Name END, Class from AssetType where objectid = @id and [Object]='ArtifactType'";
                                 break;
                             case "ArtifactType":
-                                sql = "select 'Artifact Type : ' + Name from AssetType where objectid = @id and [Object]='ArtifactType'";
+                                sql = "select case when Class = 1 then 'Business Asset : ' + Name when Class = 8 then 'Technical Asset : ' + Name END, Class from AssetType where objectid = @id and [Object]='ArtifactType'";
                                 break;
                             case "Resource":
                                 sql = "select 'Resource Instance'";

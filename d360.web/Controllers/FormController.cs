@@ -1604,6 +1604,8 @@ namespace d360.web.Controllers
         public JsonResult AttributeTypeRelation_EditFields(int at, string ot, int oid)
         {
             var list = new List<EditableField>();
+            if (ot == "Business Asset" || ot == "Technical Asset")
+                ot = "ArtifactType";
             var sType = ot.ToString();
             var a = Company.Filter<AttributeTypeRelationDetail>(i => i.AttributeTypeID == at && i.ObjectID == oid && i.ObjectType == sType).SingleOrDefault();
 
@@ -12381,7 +12383,7 @@ order by	case
 
             var items = new List<SelectListItem>();
             //artifacts
-           items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.ArtifactType.ToString()).OrderBy(i => i.Name).Select(i => new { i.Object, i.ObjectID, i.Name, i.Class }).ToList().Select(i => new SelectListItem { Text = $"{i.Class.GetDisplayName()} :: {i.Name}" , Value = $"{i.Object}|{i.ObjectID}" }));
+           items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.ArtifactType.ToString()).OrderBy(i => i.Class).Select(i => new { i.Object, i.ObjectID, i.Name, i.Class }).ToList().Select(i => new SelectListItem { Text = $"{i.Class.GetDisplayName()} :: {i.Name}" , Value = $"{i.Object}|{i.ObjectID}" }));
 
             //models
             items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.TaxonomyType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Model Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.TaxonomyType.ToString(), i.ID) }));

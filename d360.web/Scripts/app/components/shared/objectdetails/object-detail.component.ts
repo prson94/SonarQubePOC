@@ -74,6 +74,8 @@ export class ObjectDetailComponent implements OnChanges {
                             if (f.Name == 'UID') {
                                 this.assetUID = f.Value;
                             }
+                            if (f.Name == "Object Type" && f.Value == "ArtifactType")
+                                f.Value = "Asset Class";
 
                         });
                         r.FirstColumnFields = r.FirstColumnFields.filter(f => f.Type != DetailFieldType.None);
@@ -99,6 +101,8 @@ export class ObjectDetailComponent implements OnChanges {
                             if (s.Name == 'UID') {
                                 this.assetUID = s.Value;
                             }
+                            if (s.Name == "Object Type" && s.Value == "ArtifactType")
+                                s.Value = "Asset Class";
                         });
 
                         r.SecondColumnFields = r.SecondColumnFields.filter(f => f.Type != DetailFieldType.None);
