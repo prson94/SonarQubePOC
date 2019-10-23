@@ -25,8 +25,7 @@ declare var CompanySettings;
         </d3s-header-typeahead-search>
 </div>
                         <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match Whole Words</span></label>
-                        <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>                        
-                        <button class="button" (click)="handleAdvancedClick()">Advanced Search</button>
+                        <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>
                 </div>      
                 <div *ngIf="!isAdvancedMode">
                     <div *ngIf="!newSearch" class="search-input-container">           
@@ -43,9 +42,6 @@ declare var CompanySettings;
                                 <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>                        
                             </div>
                         </div>
-                        <div class="search-input-adv-container hide-on-med-and-down">
-                            <button type="button" name="action" id="home-adv-btn" class="advanced-search-btn" (click)="handleAdvancedClick()">Advanced Search</button>
-                        </div>
                         <div class="search-input-button-container">
                             <button type="submit" name="action" id="home-search-btn" class="search-input-btn" (click)="triggerSearch()">
                                 <i class="fa fa-search"></i>
@@ -54,41 +50,7 @@ declare var CompanySettings;
                     </div>   
                     <d3s-search-autocomplete-list [searchText]="searchText" [setwidth]="autocompleteWidth" [autocompletions]="autocompletions"></d3s-search-autocomplete-list>            
                 </div>
-                <div *ngIf="isAdvancedMode" class="tile tile-detail">                             
-                    <form (ngSubmit)="triggerAdvancedSearch()" #advSearchForm="ngForm">
-                        <header>Advanced Search <d3s-tile-actions [hasAdd]="false" [hasClose]="true" (closeClick)="handleAdvancedClick()"></d3s-tile-actions></header>
-                        <div *ngFor="let filter of advancedFilters; let last=last; let idx = index" class="row advSearchRow">
-                            <div class="col s1 center-align">Field</div>
-                            <div class="col s3">
-                                <select [(ngModel)]="filter.field" [name]="'field'+idx" style="width:100%;" required>
-                                        <option value="" disabled selected>Please Choose...</option>
-                                        <option *ngFor="let p of fields" [value]="p.value">{{p.title}}</option>
-                                </select>
-                            </div>
-                            <div class="col s3" *ngIf="filter.field != '_type'">
-                                <input type="text" [(ngModel)]="filter.value" [name]="'input'+idx" style="width:100%" required placeholder="Enter a value" (keyup)="checkAdvSearchKey($event);">
-                            </div>
-                            <div class="col s3" *ngIf="filter.field == '_type'">
-                                <select [(ngModel)]="filter.value" [name]="'inp'+idx"style="width:100%;" placeholder="Choose a type" required>
-                                        <option value="" disabled selected>Please Choose...</option>
-                                        <option *ngFor="let p of searchObjectTypes" [value]="p.value">{{p.label}}</option>
-                                </select>
-                            </div>                            
-                            <div class="col s1" *ngIf="filter.field == '_type'">&nbsp;</div>
-                            <div class="col s1" *ngIf="last" (click)="addFilter()" style="cursor:pointer"><i class="fa fa-plus" aria-hidden="true" title="add filter" style="font-size:1.5em"></i></div>
-                            <div class="col s1" *ngIf="!last" (click)="removeFilter(filter)"  style="cursor:pointer"><i class="fa fa-minus" aria-hidden="true" title="remove filter" style="font-size:1.5em"></i></div>
-                            <div class="col s1" *ngIf="filter.field != '_type'">
-                                    <label><input type="checkbox" [(ngModel)]="filter.exact" [name]="'exm'+idx">Match Whole Words</label>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col s1 offset-s1">
-                                <button pButton [disabled]="!advSearchForm.form.valid" type="submit" label="Search" style="width:150px;"></button>                            
-                            </div>
-                        </div>
-                    </form>
-                </div>                     
-                `,
+              `,
     providers: [SearchService, TypeaheadSearchService],
 })
 
@@ -211,31 +173,6 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
                 this.autocompletions = res;
                 this.autocompleteLoading = false;
             });
-    }
-
-    private removeFilter(filter) {
-        let index = this.advancedFilters.findIndex(x => x == filter);
-
-        if (index >= 0 && index < this.advancedFilters.length) {
-            this.advancedFilters.splice(index,1);
-            this.advancedFiltersChange.emit(this.advancedFilters);
-        }
-    }
-
-    private addFilter() {
-        this.advancedFilters.push(new AdvancedSearchFilter());
-        this.advancedFiltersChange.emit(this.advancedFilters);
-    }
-
-    private handleAdvancedClick() {
-        if (this.hasAdvanced) {
-            this.isAdvancedMode = !this.isAdvancedMode;
-                        
-            this.isAdvancedModeChange.emit(this.isAdvancedMode);
-        }
-        else {
-            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&advanced=1&types=${this.searchTypes ? this.searchTypes.join(',') : ''}`);
-        }
     }
     
 };
