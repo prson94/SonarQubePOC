@@ -45,7 +45,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() title: string;
     @Input() directions: string;
     @Input() objectID: number = 0;
-    @Input() objectTypeUid: number = 0;
+    @Input() objectTypeUid: string;
     @Input() parentID: number;
     @Input() objectType: string;
     @Input() createUri: string;
@@ -521,7 +521,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             }
         }
 
-        this.assetService.saveAsset(this.objectTypeUid.toString(), asset)
+        this.assetService.saveAsset(this.objectTypeUid, asset)
             .subscribe(res => {
                 if (res.Success) {
                     let msg = asset.Uid ? 'Successfully updated' : 'Successfully added';

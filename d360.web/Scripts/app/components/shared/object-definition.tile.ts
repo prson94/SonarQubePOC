@@ -79,7 +79,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     }
 
     saveV2(event): void {
-        
+
         let values: any = {};
         let asset: AssetEditorModel = new AssetEditorModel();
         let assetTypeUid: string;
@@ -112,21 +112,30 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
             }
         }
         
-        this
-            .assetService
-            .saveAsset(assetTypeUid, asset)
-            .subscribe(result => {
-                this.showMessageForApiResult(this.messagesService, result, `${this.objectType} successfully updated.`);
-                if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                                
-                this.isLoading = false;
+        //this
+        //    .assetService
+        //    .saveAsset(asset.Uid, asset)
+        //    .subscribe(result => {
+        //        this.showMessageForApiResult(this.messagesService, result, `${this.objectType} successfully updated.`);
+        //        if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                                
+        //        this.isLoading = false;
 
-                this.load();
+        //        this.load();
 
-                this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was renamed
-                this.onEditComplete.emit(this.object);
-                this.formMode = FormMode.Default;
-                this.formModeChange.emit(this.formMode);
-            });
-        
+        //        this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was renamed
+        //        this.onEditComplete.emit(this.object);
+        //        this.formMode = FormMode.Default;
+        //        this.formModeChange.emit(this.formMode);
+        //    });
+
+        if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                                
+        this.isLoading = false;
+
+        this.load();
+
+        this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was renamed
+        this.onEditComplete.emit(this.object);
+        this.formMode = FormMode.Default;
+        this.formModeChange.emit(this.formMode);
     }
 }
