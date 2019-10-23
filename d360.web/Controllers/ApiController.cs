@@ -6858,7 +6858,7 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Object Type", FieldName = "SurveyTypeObjectType", FieldDescription = surveyType.GetDescription(i => i.Object), Value = dtlSurveyType.Class.ToString() }
+                                new ReadOnlyField { Name = "Object Type", FieldName = "SurveyTypeObjectType", FieldDescription = surveyType.GetDescription(i => i.Object), Value = dtlSurveyType.Class.GetDisplayName().ToString() }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {
