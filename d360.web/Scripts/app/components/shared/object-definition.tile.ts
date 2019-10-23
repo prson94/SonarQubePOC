@@ -112,22 +112,6 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
             }
         }
         
-        //this
-        //    .assetService
-        //    .saveAsset(asset.Uid, asset)
-        //    .subscribe(result => {
-        //        this.showMessageForApiResult(this.messagesService, result, `${this.objectType} successfully updated.`);
-        //        if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                                
-        //        this.isLoading = false;
-
-        //        this.load();
-
-        //        this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was renamed
-        //        this.onEditComplete.emit(this.object);
-        //        this.formMode = FormMode.Default;
-        //        this.formModeChange.emit(this.formMode);
-        //    });
-
         if (asset.Uid) this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was edited                                
         this.isLoading = false;
 
