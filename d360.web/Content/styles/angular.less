@@ -1338,9 +1338,24 @@ a.breadcrumb {
     }
 }
 
-.autoInputBox{
-    position:absolute;
-    display:inline-block;
+.autoInputBox {
+    position: absolute;
+    display: inline-block;
+
+    .ui-autocomplete-panel {
+        margin-left: 5px;
+        min-width: 200px;
+        max-width: 600px !important;
+    }
+
+    .ui-autocomplete-panel .ui-state-highlight {
+        background-color: #DFF3F7 !important;
+    }
+
+    .ui-autocomplete-panel .ui-autocomplete-list-item {
+        border-bottom: none !important;
+        color: black;
+    }
 }
 
 .ui-autocomplete .inputBox {
@@ -2634,6 +2649,7 @@ modal-overlay .modal-dialog .content {
         text-overflow: ellipsis;
         white-space: nowrap;
         overflow: hidden;
+        font-family: 'Source Sans Pro' !important;
     }
 
     .grow {
@@ -2645,7 +2661,7 @@ modal-overlay .modal-dialog .content {
         flex-direction: row;
         align-items: center;
         padding: 15px;
-
+        font-family: 'nunito sans';
         .checkbox {
             white-space: nowrap;
         }
@@ -4434,6 +4450,7 @@ a.mid-blue {
 
             span {
                 height: 16px;
+                padding-left: 4px;
             }
         }
 
@@ -4467,6 +4484,10 @@ a.mid-blue {
             box-shadow: 0 1px 0 0 rgba(22, 29, 37, 0.05);
             border: solid 1px #b9c0c5;
             background-image: linear-gradient(to bottom, #ffffff, #f9fafb);
+
+            .ui-chkbox-icon{
+                padding-left: 0px !important;
+            }
         }
 
         .ui-chkbox.ui-chkbox-icon {

@@ -131,7 +131,11 @@ export class FusionStatisticsComponent extends BaseComponent implements OnInit {
                 type: 'solidgauge',
                 backgroundColor: 'transparent',
                 height: 87,
-                width: 187
+                width: 187,
+                style: {
+                    fontFamily: 'Source Sans Pro'
+                }
+
             },
             title: '',
             pane: {

@@ -337,6 +337,15 @@ export class TagView extends AdminBaseComponent implements OnInit {
         event.stopPropagation();
     }
 
+    public highlight(item, input) {
+        if (!input) {
+            return item;
+        }
+        return item.replace(new RegExp(input, "gi"), match => {
+            return '<span style="background: #F5FF57;">' + match + '</span>';
+        });
+    }
+
     enter(tag: any, el: HTMLElement) {
         this.isTooltipLoaded = false;
         this.tagService.getTagTooltip(tag.uid, this.assetUID)
