@@ -728,6 +728,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         this.isWindowLoading = true;
                         this.browserService.getAssetBrowserDiagramAsset(obj.part.data.assetUid).subscribe(response => {
                             this.selectedDiagramAsset = response;
+                            this.selectedDiagramAsset.Url = "/" + this.selectedDiagramAsset.Url;
                             this.isWindowVisible = true;
                             this.isWindowLoading = false;
                             this.showWindowTabs = true;

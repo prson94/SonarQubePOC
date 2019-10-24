@@ -337,4 +337,5 @@
   <include file="scripts/GOV-8507.xml"/> <!-- Update [DeleteAssetType] proc to exclude fusion.Rule table -->
   <include file="scripts/GOV-8450.xml"/> <!-- graph.GetLineageByAsset -->
   <include file="scripts/GOV-8512.xml"/> <!-- graph.GetImpactRelationshipsByAssets -->
+  <include file="scripts/GOV-8549.xml"/> <!-- graph.GetLineageByAsset -->
 </databaseChangeLog>
