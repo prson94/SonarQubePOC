@@ -170,9 +170,8 @@ namespace d360.web.Controllers.V2
                     postModel.StartHop,
                     direction = (int)postModel.Direction, 
                     hops = (postModel.Hops > 0) ? postModel.Hops : 1 
-                }, timeout: 10);
+                }, timeout: 60);
 
-                var hops = reader.Read<RawResultList1>().ToList();
                 var hierarchies = reader.Read<RawResultList2>().OrderBy(i => i.Hop).ThenBy(i => i.ID).ThenBy(i => i.HierarchyLevel).ToList();
                 var relationships = reader.Read<RawResultList3>().OrderBy(i => i.Hop).ToList();
 
@@ -213,7 +212,7 @@ namespace d360.web.Controllers.V2
                         new List<string>() { "Uid" }
                         ),
                     postModel.StartHop
-                }, timeout: 10);
+                }, timeout: 60);
 
                 var hierarchies = reader.Read<RawResultList2>().OrderBy(i => i.Hop).ThenBy(i => i.ID).ThenBy(i => i.HierarchyLevel).ToList();
                 var relationships = reader.Read<RawResultList3>().OrderBy(i => i.Hop).ToList();
