@@ -485,6 +485,11 @@ export class AssetBrowserLineageApiRequestModel {
     Hops: number;
 }
 
+export class AssetBrowserImpactApiRequestModel {
+    AssetUids: string[];
+    StartHop: number;
+}
+
 // #endregion Request
 
 // #region Asset Browser : Response

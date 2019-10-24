@@ -791,5 +791,14 @@ namespace d360.web.Models
         public int Hops { get; set; } = 3;
     }
 
+    [DataContract]
+    public class GetAssetImpactsPostModel
+    {
+        [DataMember]
+        public List<Guid> AssetUids { get; set; }
+        [DataMember]
+        public int StartHop { get; set; }
+    }
+
     #endregion
 }
