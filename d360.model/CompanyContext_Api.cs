@@ -4329,15 +4329,40 @@ from    [Intersect] T
 
             Connection.Execute(@"Update api.ExecutionRelationshipType
                                     Set Success=0,
-                                    Message='Does not contain required fields.' 
+                                    Message='SubjectUid is missing / incorrect format.' 
                                     Where ExecutionID = @executionID and Success is null and
-                                    (SubjectUid is null or ObjectUid is null or PredicateUid is null 
-                                        or SubjectCardinality is null or ObjectCardinality is null
-                                        or SubjectCardinality =0 or ObjectCardinality =0
-                                        or SubjectUid ='00000000-0000-0000-0000-000000000000'
-                                        or ObjectUid ='00000000-0000-0000-0000-000000000000'
-                                        or PredicateUid ='00000000-0000-0000-0000-000000000000'
+                                    (SubjectUid is null or SubjectUid ='00000000-0000-0000-0000-000000000000'
+                                          ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='ObjectUid is missing / incorrect format.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (ObjectUid is null or ObjectUid ='00000000-0000-0000-0000-000000000000'
+                                       ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='PredicateUid is missing / incorrect format.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (PredicateUid is null or PredicateUid ='00000000-0000-0000-0000-000000000000'
                                     ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='SubjectCardinality is missing / incorrect' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (SubjectCardinality is null  or SubjectCardinality =0 ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='ObjectCardinality is missing / incorrect' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (ObjectCardinality is null or ObjectCardinality =0) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
 
             Connection.Execute(@"
                                 With cte_relations as (
@@ -4438,13 +4463,32 @@ from    [Intersect] T
 
             Connection.Execute(@"Update api.ExecutionRelationshipType
                                     Set Success=0,
-                                    Message='Does not contain required fields.' 
+                                    Message='Uid is missing / incorrect format.' 
                                     Where ExecutionID = @executionID and Success is null and
-                                    (Uid is null or PredicateUid is null 
-                                        or SubjectCardinality is null or ObjectCardinality is null
-                                        or SubjectCardinality =0 or ObjectCardinality =0
-                                        or Uid ='00000000-0000-0000-0000-000000000000'
-                                        or PredicateUid ='00000000-0000-0000-0000-000000000000'
+                                    (Uid is null or Uid ='00000000-0000-0000-0000-000000000000'
+                                       ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='SubjectCardinality is missing / incorrect.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (SubjectCardinality is null or SubjectCardinality =0 ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='ObjectCardinality is missing / incorrect.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (ObjectCardinality is null or ObjectCardinality =0 ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='PredicateUid is missing / incorrect format.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (PredicateUid is null or PredicateUid ='00000000-0000-0000-0000-000000000000'
                                     ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
             Connection.Execute(@"
