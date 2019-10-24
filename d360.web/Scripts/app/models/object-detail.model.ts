@@ -171,6 +171,7 @@ export class ObjectDetail {
     IconForeColor: string;
     IconText: string;
     AssetID: number;
+    AssetTypeUid: string;
 }
 
 
