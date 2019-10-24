@@ -87,6 +87,18 @@ namespace d360.web.Models
         }
     }
 
+    public class GetAssetImpactsPostModelExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new GetAssetImpactsPostModel
+            {
+                StartHop = 0,
+                AssetUids = new List<Guid>() { Guid.Empty }
+            };
+        }
+    }
+
     #endregion
 
     #region RelationshipType Example

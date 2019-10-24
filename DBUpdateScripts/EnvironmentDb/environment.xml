@@ -335,4 +335,5 @@
   <include file="scripts/GOV-8303.xml"/> <!-- Alter constraint for AssetDataProfile table-->
   <include file="scripts/GOV-8480.xml"/> <!-- Removing legacy from sitenav dashboard options -->
   <include file="scripts/GOV-8450.xml"/> <!-- graph.GetLineageByAsset -->
+  <include file="scripts/GOV-8512.xml"/> <!-- graph.GetImpactRelationshipsByAssets -->
 </databaseChangeLog>

@@ -8,7 +8,7 @@ import {
 } from 'rxjs/operators';
 import {Observable} from 'rxjs';
 
-import { AssetBrowserLineageApiRequestModel, AssetBrowserLineageApiResponseModel, AssetBrowserTranslation, AssetBrowserTranslationNode, AssetBrowserLineageApiItemModel, AssetBrowserTranslationLink, AssetBrowserLineageApiRelationshipModel, AssetBrowserDiagramAsset, AssetBrowserTranslationRelationCount, AssetBrowserDirection } from '../models/lineage.model';
+import { AssetBrowserLineageApiRequestModel, AssetBrowserLineageApiResponseModel, AssetBrowserTranslation, AssetBrowserTranslationNode, AssetBrowserLineageApiItemModel, AssetBrowserTranslationLink, AssetBrowserLineageApiRelationshipModel, AssetBrowserDiagramAsset, AssetBrowserTranslationRelationCount, AssetBrowserDirection, AssetBrowserImpactApiRequestModel } from '../models/lineage.model';
 
 import {MessagesObservableService} from './messages-observable.service';
 
@@ -99,6 +99,21 @@ export class BrowserService extends BaseObservableService {
         model: AssetBrowserLineageApiRequestModel
     ): Observable<AssetBrowserLineageApiResponseModel> {
         const url = `api/v2/browser`;
+
+        return this.http.post(url, model).pipe(
+            map(response => response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    /**
+    * Retrieve results from the Govern API for lineage regarding a specific asset.
+    * @returns A deep models with hierarchical assets and relationships between them.
+    */
+    public getAssetImpacts(
+        model: AssetBrowserImpactApiRequestModel
+    ): Observable<AssetBrowserLineageApiResponseModel> {
+        const url = `api/v2/browser/impacts`;
 
         return this.http.post(url, model).pipe(
             map(response => response),

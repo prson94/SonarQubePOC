@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="GOV-8450">
+  <changeSet author="Pappas" id="GOV-8450-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -172,7 +172,7 @@ begin
 						graph.AssetNode T,
 						#assetIds A
 				where	MATCH(S-(E)->T)
-						and E.PredicateType in(12,13)--= 12
+						and E.PredicateType in(12,13)
 						and T.ID = A.ID;
 		end;
 
@@ -461,7 +461,7 @@ begin
 		where	MATCH(S-(E)->T)
 				and S.ID = H.ID
 				and P.ID = E.PredicateID
-				--and E.PredicateType not in (3,4,12,13)
+				and E.PredicateType not in (3,4,12,13)
 		union
 		select	H.Hop, H.ID, P.Inverse, 2, S.Uid
 		from	graph.AssetNode S,
@@ -472,7 +472,7 @@ begin
 		where	MATCH(S-(E)->T)
 				and T.ID = H.ID
 				and P.ID = E.PredicateID
-				--and E.PredicateType not in (3,4,12,13);
+				and E.PredicateType not in (3,4,12,13);
 
 	update	H
 	set		H.RelationCounts =	(
