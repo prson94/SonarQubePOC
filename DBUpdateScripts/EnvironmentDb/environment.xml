@@ -334,5 +334,6 @@
   <include file="scripts/GOV-6749.xml"/> <!-- Add [api].[ExecutionRelationshipType] -->
   <include file="scripts/GOV-8303.xml"/> <!-- Alter constraint for AssetDataProfile table-->
   <include file="scripts/GOV-8480.xml"/> <!-- Removing legacy from sitenav dashboard options -->
+  <include file="scripts/GOV-8507.xml"/> <!-- Update [DeleteAssetType] proc to exclude fusion.Rule table -->
   <include file="scripts/GOV-8450.xml"/> <!-- graph.GetLineageByAsset -->
 </databaseChangeLog>
