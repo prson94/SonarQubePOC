@@ -1084,13 +1084,28 @@ namespace d360.model.DataAccessLayer
                                     var field = fieldTypes.FirstOrDefault(f => f.Name.ToLower() == q.Value.ToLower());
                                     var valueColumn = "FormattedValue";
                                     var fieldDataType = getFieldDataType(field);
-                                    if (field.Type == "Link") valueColumn = "Value";
 
                                     if (field == null)
                                     {
-                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "A.ID";
+                                        var orderBy = "A.ID";
+                                        switch (q.Value.Trim().ToLower())
+                                        {
+                                            case "createdon":
+                                                orderBy = "A.CreatedOn DESC";
+                                                break;
+                                            case "updatedon":
+                                                orderBy = "A.UpdatedOn DESC";
+                                                break;
+                                            default:
+                                                orderBy = "A.ID";
+                                                break;
+                                        }
+
+                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + orderBy;
                                         return;
                                     }
+
+                                    if (field.Type == "Link") valueColumn = "Value";
 
                                     if (!string.IsNullOrEmpty(fieldDataType))
                                         orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"cast(F{field.ID}.{valueColumn} as {fieldDataType})";
@@ -1201,7 +1216,7 @@ namespace d360.model.DataAccessLayer
         }
         private string getFieldDataType(FieldType field)
         {
-            switch (field.Type)
+            switch (field?.Type)
             {
                 case "Date":
                 case "DateTime":
