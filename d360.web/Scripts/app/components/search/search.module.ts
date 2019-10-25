@@ -13,7 +13,6 @@ import { HeroSearchInputComponent } from './hero-search-input';
 import { SearchResultsComponent } from './search-results.component'
 import { SearchResultItemComponent } from './search-result-item.component'
 import { SearchComponent } from './search.component'
-import { SearchAutocompleteListComponent } from './search-autocomplete-list.component';
 import { SearchInputComponent } from './search-input.component';
 import { DynamicPercentageModule } from '../shared/small-widgets/dynamic-percentage/dynamic-percentage-module';
 import { PaginatorModule } from '../shared/small-widgets/paginator/paginator-bar-module';
@@ -29,7 +28,6 @@ import { SharedModule } from 'primeng/shared';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { TypeaheadSearchModule } from '../shared/search/typeahead-search.component';
-
 
 @NgModule({
     imports: [CommonModule,
@@ -64,7 +62,6 @@ import { TypeaheadSearchModule } from '../shared/search/typeahead-search.compone
         SearchResultsComponent,
         SearchResultItemComponent,
         SearchComponent,
-        SearchAutocompleteListComponent,    
         SearchInputComponent,  
         HeroSearchInputComponent
     ],
