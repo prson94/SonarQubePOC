@@ -29,7 +29,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     isDeleting = false;
     isEditingFieldType = false;
     isAddingFieldType = false;
-    ArtifactTypes: TreeNode[];
+    artifactTypes: TreeNode[];
     editorModel: any;
     theDeleteCallback: Function;
     filterFields: string[] = ["Name"];
@@ -93,25 +93,25 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.isLoading = true;
         this.artifactsService.getArtifactTypeTree(this.assetTypeClass)
             .subscribe(data => {
-                this.ArtifactTypes = data;                
+                this.artifactTypes = data;                
                 if (selectionId <= 0) {
-                    this.selectedRow = this.ArtifactTypes[0];
+                    this.selectedRow = this.artifactTypes[0];
                 } else {                    
-                    this.selectedRow = this.artifactsService.findArtifactType(this.ArtifactTypes, selectionId);
+                    this.selectedRow = this.artifactsService.findArtifactType(this.artifactTypes, selectionId);
                 }
                 this.isLoading = false;
             });
     }
 
     delete(id: number) {
-        this.selectedRow = this.artifactsService.findArtifactType(this.ArtifactTypes, id);
+        this.selectedRow = this.artifactsService.findArtifactType(this.artifactTypes, id);
         this.isAdding = false;
         this.isEditing = false;
         this.isDeleting = true;
     }
 
     edit(id: number) {
-        this.editorModel = this.artifactsService.findArtifactType(this.ArtifactTypes, id);
+        this.editorModel = this.artifactsService.findArtifactType(this.artifactTypes, id);
         this.isAdding = false;
         this.isEditing = true;
         this.isDeleting = false;
@@ -122,7 +122,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         if (id == 0) {
             this.editorModel = { data: { ID: 0 } };
         } else {
-            this.editorModel = this.artifactsService.findArtifactType(this.ArtifactTypes, id);
+            this.editorModel = this.artifactsService.findArtifactType(this.artifactTypes, id);
         }
 
         this.isEditing = false;
