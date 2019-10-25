@@ -37,6 +37,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     @Input() isEditable: boolean = false;
     @Input() allowAddTag: boolean = false;
     @Input() assetUID: string;
+    @Input() ignoreResizing: boolean = false;
     showEditor: boolean = false;
     showDelete: boolean = false;
     private inputValue: any;
@@ -373,8 +374,11 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     manageWidth() {
+        if (this.ignoreResizing) return;
+
         if (this.container) {
             let parent = this.getParentForResizing(this.container.nativeElement, 'TD,DIV');
+
             if (!parent) {
                 console.warn("No suitable parent found for tag resizing!");
             }
