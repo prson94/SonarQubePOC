@@ -92,6 +92,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
                 this.searchTypes = params['types'].split(',').filter((x): x is string => x.length > 0);
             }
             this.searchStateService.setSearchCategories(this.searchTypes);
+            this.searchStateService.setFieldFilters(this.advancedFilters);
             if (this.searchText.length > 0) {
                 this.doSearch();
             }

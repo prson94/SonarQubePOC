@@ -126,8 +126,10 @@ export class SearchStateService extends BaseObservableService {
      * @param replace
      */
     setFieldFilters(advFilters: AdvancedSearchFilter[], replace: boolean = true) {
-        if (replace)
+        if (advFilters.length != this._query.FieldFilters.length) {
             this._query.FieldFilters = [];
+            this._needAggregation = true;
+        }
         advFilters.forEach(function (item) {
             var field = item.field == "Tags" ? "d3sTags" : item.field;
             var idx = this._query.FieldFilters.findIndex((f) => f.Field === field);
@@ -137,12 +139,18 @@ export class SearchStateService extends BaseObservableService {
                     Phrase: item.value,
                     MatchWords: item.exact
                 }));
-            } else {
-                this._query.FieldFilters[idx].Phrase = item.value;
-                this._query.FieldFilters[idx].MatchWords = item.exact;
+                this._needAggregation = true;
+            } else if (replace) {
+                if (this._query.FieldFilters[idx].Phrase != item.value) {
+                    this._query.FieldFilters[idx].Phrase = item.value;
+                    this._needAggregation = true;
+                }
+                if (this._query.FieldFilters[idx].MatchWords != item.exact) {
+                    this._query.FieldFilters[idx].MatchWords = item.exact;
+                    this._needAggregation = true;
+                }               
             }
         }, this);
-        this._needAggregation = true;
     }
 
     /**
@@ -179,7 +187,7 @@ export class SearchStateService extends BaseObservableService {
             this._categories.next([]);
         }
         this.setAggregationFilter('d3sGroup', this._searchTypes, false);
-
+        console.log('doSearch', this._query);
         this.searchService.getSearchResultsByQuery(this._query).pipe(
             debounceTime(1000)).subscribe(res => {
             if (res.Categories.length != 0) {
