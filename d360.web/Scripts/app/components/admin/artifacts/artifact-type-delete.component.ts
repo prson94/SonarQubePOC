@@ -6,6 +6,8 @@ import { SortOrder } from '../../../models/enums.model';
 import { BaseComponent } from '../../shared/base.component';
 import { forkJoin } from 'rxjs';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { AssetTypeClass } from '../../../models/asset.model';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
     selector: 'd3s-artifact-type-delete',
@@ -20,18 +22,36 @@ export class ArtifactTypeDeleteComponent extends BaseComponent implements OnInit
     @Output() onCancel = new EventEmitter();
 
     public artifactType: ArtifactType;
+    assetTypeClass: AssetTypeClass;
     private count: number = 0;
     private signoff: boolean = false;
+    private className: string;
+    private sub: any;
 
     constructor(
         private artifactTypeService:ArtifactTypeService,
         private artifactService: ArtifactService,
         private messagesService: MessagesObservableService,
+        private route: ActivatedRoute,
     ) {
         super();
     }
 
     ngOnInit() {
+        this.sub = this.route.params.subscribe(params => {
+            try {
+                let assetTypeClassString: keyof typeof AssetTypeClass = params['class'];
+                this.assetTypeClass = AssetTypeClass[assetTypeClassString];
+                if (!this.assetTypeClass) {
+                    this.assetTypeClass = AssetTypeClass.BusinessAsset;
+                }
+            } catch (e) {
+                this.assetTypeClass = AssetTypeClass.BusinessAsset;
+            }
+
+            let name: string = this.assetTypeClass == AssetTypeClass.BusinessAsset ? 'Business Asset' : 'Technical Asset';
+            this.className = name;
+        });
         this.load();
     }
 

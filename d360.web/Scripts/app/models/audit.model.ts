@@ -13,6 +13,7 @@
     ResourceID: number;
     ResourceName: string;
     Field: string;
+    Class: number;
     NewValue: string;
     PreviousValue: string;
     Version: string;
