@@ -14,47 +14,23 @@ import { StringConstants } from '../../static/string-constants';
 declare var CompanySettings;
 @Component({
     selector: 'd3s-search-input',
-    template: ` <div *ngIf="newSearch && !isAdvancedMode"
-                class="titlebar-search">           
-                        <div class="field grow mr10">
-        <d3s-header-typeahead-search 
-                  [additionalCssClasses]="'gov-search'" 
-                  [autocompletePlaceholder]="'Please enter search terms?'"
-                  [searchOptions]="searchTypes"
-                  [defaultValue]="searchText">
-        </d3s-header-typeahead-search>
-</div>
-                        <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match Whole Words</span></label>
-                        <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>
-                </div>      
-                <div *ngIf="!isAdvancedMode">
-                    <div *ngIf="!newSearch" class="search-input-container">           
-                        <div class="search-input-text-container">                        
-                            <input #searchip [ngModel]="searchText" (ngModelChange)="searchText=$event;searchTextChange.emit(searchText);autocompleteWidth=searchip.offsetWidth;" (keyup)="checkSearchKey($event);" type="text" id="home-search-text" placeholder="What do you want to find?" class="search-input-text" autofocus autocomplete="off" />                        
-                        </div>
-                        <div class="search-input-exact-container hide-on-med-and-down">
-                            <div class="adv-search-btn">
-                                <label><input type="checkbox" name="search-exact-chk" id="search-exact-chk" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"> Match Whole Words</label>
-                            </div>
-                        </div>
-                        <div class="search-input-types-container hide-on-med-and-down">
-                            <div class="search-btn">
-                                <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>                        
-                            </div>
-                        </div>
-                        <div class="search-input-button-container">
-                            <button type="submit" name="action" id="home-search-btn" class="search-input-btn" (click)="triggerSearch()">
-                                <i class="fa fa-search"></i>
-                            </button>
-                        </div>                    
-                    </div>   
-                    <d3s-search-autocomplete-list [searchText]="searchText" [setwidth]="autocompleteWidth" [autocompletions]="autocompletions"></d3s-search-autocomplete-list>            
+    template: `<div class="titlebar-search">           
+                    <div class="field grow mr10">
+                        <d3s-header-typeahead-search 
+                                  [additionalCssClasses]="'gov-search'" 
+                                  [autocompletePlaceholder]="'Please enter search terms?'"
+                                  [searchOptions]="searchTypes"
+                                  [defaultValue]="searchText">
+                        </d3s-header-typeahead-search>
+                    </div>
+                    <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match Whole Words</span></label>
+                    <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>
                 </div>
               `,
     providers: [SearchService, TypeaheadSearchService],
 })
 
-export class SearchInputComponent extends BaseComponent implements OnChanges, OnDestroy, OnInit {
+export class SearchInputComponent extends BaseComponent implements OnDestroy, OnInit {
     @Input() isExactMatch: boolean = true;
     @Output() isExactMatchChange = new EventEmitter();
 
@@ -66,24 +42,12 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
 
     @Output() search = new EventEmitter();
 
-    @Input() hasAdvanced: boolean = false;
-
-    @Input() isAdvancedMode: boolean = false;
-    @Output() isAdvancedModeChange = new EventEmitter();
-
     @Input() advancedFilters: AdvancedSearchFilter[] = [];
     @Output() advancedFiltersChange = new EventEmitter();
 
     @Input() newSearch: boolean = false;
     private searchSub: ISubscription;
     private autocompleteLoading: boolean = false;
-
-    private fields: DropdownOption[] = [
-        { title: "Category", value: "Type" },
-        { title: "Description", value: "Description" },
-        { title: "Name", value: "Name" },
-        { title: "Type", value: "_type" },
-    ];
 
     private searchObjectTypes: SelectItem[] = SettingsHelper.getSearchTypesList().map((set) => {
         return {
@@ -113,11 +77,6 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
         }
     }
 
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (this.isAdvancedMode && this.advancedFilters.length == 0)
-            this.advancedFilters.push(new AdvancedSearchFilter("Name", this.searchText) );
-    }
-
     ngOnDestroy(): void {
         if (this.searchSub) this.searchSub.unsubscribe();
     }
@@ -132,25 +91,11 @@ export class SearchInputComponent extends BaseComponent implements OnChanges, On
         });        
     }
 
-    private triggerAdvancedSearch() {
-        this.cancelAutocomplete();
-        this.autocompletions = [];
-        this.search.emit({
-            adv: this.advancedFilters
-        });        
-    }
-
     private cancelAutocomplete() {
         if (this.simpleSearchID > 0) {
             this.autocompleteLoading = false;
             window.clearTimeout(this.simpleSearchID);
             this.simpleSearchID = 0;
-        }
-    }
-
-    private checkAdvSearchKey(event) {
-        if (event.keyCode == 13) {
-            this.triggerAdvancedSearch();
         }
     }
 

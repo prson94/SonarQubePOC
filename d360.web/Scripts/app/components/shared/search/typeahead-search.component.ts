@@ -71,8 +71,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     openSearch() {
         let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
-
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&advanced=0&types=${options ? options.join(',') : ''}`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&types=${options ? options.join(',') : ''}`);
     }
 
     selectItem(ac) {
@@ -101,7 +100,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         if (event.keyCode == 13) {
             let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
 
-            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${event.srcElement.value ? encodeURIComponent(event.srcElement.value) : ''}&advanced=0&types=${options ? options.join(',') : ''}`);
+            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${event.srcElement.value ? encodeURIComponent(event.srcElement.value) : ''}&types=${options ? options.join(',') : ''}`);
             this.removeFocus(ac);
         }
     }

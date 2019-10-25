@@ -21,12 +21,19 @@ declare var CompanySettings;
                         <div class="title">
                             <span class="large icon badge"><i class="fa fa-search"></i></span>
                             <h1>Search Results</h1>
-                            <d3s-search-input [newSearch]="true" (search)="doSearch()" [isAdvancedMode]="showAdvanced" (advancedFiltersChange)="changeheight()" (isAdvancedModeChange)="handleAdvancedChange($event)" [(advancedFilters)]="advancedFilters" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [hasAdvanced]="true" [(searchText)]="searchText" [style.width]="'100%'" [style.height.px]="32"></d3s-search-input>
+                            <d3s-search-input
+                                (search)="doSearch()"
+                                (advancedFiltersChange)="changeheight()"
+                                [(advancedFilters)]="advancedFilters"
+                                [(isExactMatch)]="isExactMatch"
+                                [(searchTypes)]="searchTypes"
+                                [(searchText)]="searchText"
+                                [style.width]="'100%'"
+                                [style.height.px]="32"></d3s-search-input>
                         </div>
                     </div>
                 <d3s-search-results [from]="fromNumber" 
                     [loading]="isLoading" [itemsPerPage]="resultsPerPage"
-                    [useSubscription]="true"
                     [results]="searchResults" 
                     [categories]="categories" 
                     (paginateClick)="paginate($event);" 
@@ -98,11 +105,6 @@ export class SearchComponent extends BaseComponent implements OnInit {
     private searchFilterChanged(options) {
         this.advancedFilters = options;
         this.doSearch();
-    }
-    handleAdvancedChange(event) {
-        this.showAdvanced = event;
-        this.searchResults = null;
-        this.changeheight();
     }
 
     private changeheight() {
