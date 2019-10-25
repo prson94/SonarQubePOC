@@ -1,8 +1,8 @@
 import { debounceTime } from 'rxjs/operators';
-import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange } from '@angular/core';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { SearchResult } from '../../../models/search-result.model';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 
@@ -44,6 +44,13 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     ngOnInit() {
         if (this.defaultValue) {
+            this.result = new SearchResult();
+            this.result.Name = this.defaultValue;
+        }
+    }
+
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (changes['defaultValue']) {
             this.result = new SearchResult();
             this.result.Name = this.defaultValue;
         }
