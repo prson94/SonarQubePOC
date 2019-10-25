@@ -70,9 +70,23 @@ export class ChipsFilterComponent implements OnInit {
     update(filterValue: string, exact: any) {
         this.currentFilter.value = filterValue;
         this.currentFilter.exact = exact;
-        this.selectedFilters.push(this.currentFilter);
+
+        var newFilter = this.getCurrentFilterDeepClone();
+
+        this.selectedFilters.push(newFilter);
         this.close();
         this.applyFlter.emit(this.selectedFilters);
+    }
+
+    private getCurrentFilterDeepClone(): AdvancedSearchFilter {
+        var filter = new AdvancedSearchFilter();
+
+        filter.connector = this.currentFilter.connector;
+        filter.exact = this.currentFilter.exact;
+        filter.field = this.currentFilter.field;
+        filter.value = this.currentFilter.value;
+
+        return filter;
     }
 
     removeFilterOption(item) {
