@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -290,6 +290,16 @@
     <Compile Include="App_Start\IpRestrictionMiddleware.cs" />
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Forms\FormController_Attribute.cs" />
+    <Compile Include="Controllers\Forms\FormController_CustomAPI.cs" />
+    <Compile Include="Controllers\Forms\FormController_FieldType.cs" />
+    <Compile Include="Controllers\Forms\FormController_Fusion.cs" />
+    <Compile Include="Controllers\Forms\FormController_Organization.cs" />
+    <Compile Include="Controllers\Forms\FormController_Relationship.cs" />
+    <Compile Include="Controllers\Forms\FormController_Responsibility.cs" />
+    <Compile Include="Controllers\Forms\FormController_Rule.cs" />
+    <Compile Include="Controllers\Forms\FormController_Survey.cs" />
+    <Compile Include="Controllers\Forms\FormController_Taxonomy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\Obsolete\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
@@ -330,7 +340,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controllers\BaseController.cs" />
-    <Compile Include="Controllers\FormController.cs" />
+    <Compile Include="Controllers\Forms\FormController.cs" />
     <Compile Include="Controllers\FieldsController.cs">
       <SubType>Code</SubType>
     </Compile>
