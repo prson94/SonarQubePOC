@@ -183,7 +183,7 @@ order by wi.StartedOn desc",
         [HttpGet, Route("workflowmonitor/filter/definition")]
         public HttpResponseMessage GetFilerDefinition()
         {
-            var filterValues = new List<string>() { "Artifact", "Rule", "Policy", "Model", "Action", "Relationship", "Fusion" }.OrderBy(x => x).ToList();
+            var filterValues = new List<string>() { "Business Asset","Technical Asset", "Rule", "Policy", "Model", "Action", "Relationship", "Fusion" }.OrderBy(x => x).ToList();
 
             var filterColumns = new List<GridFilterColumn>();
             filterColumns.Add(new GridFilterColumn { text = "Asset", datafield = "Asset", filtertype = GridColumn.FILTER_TYPE_STRING, columntype = GridColumn.COLUMN_TYPE_STRING });
