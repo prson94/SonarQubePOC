@@ -45,8 +45,8 @@ declare var CompanySettings;
                         {{result?.Group}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
                     </span>
                     <span class="description" *ngIf="result?.Description" [innerHtml]="result.Description"></span>
-                    <div *ngIf="result?.Tags"  class="tags">
-                        <d3s-tag-view [data]="parseTagResult(result?.Tags)"></d3s-tag-view>
+                    <div *ngIf="result?.Tags" class="tags">
+                        <d3s-tag-view [ignoreResizing]="true" [data]="parseTagResult(result?.Tags)"></d3s-tag-view>
                     </div>      
                 </div>        
                 `,
