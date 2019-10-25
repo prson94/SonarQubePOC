@@ -6,7 +6,7 @@
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add(0)"></d3s-tile-actions>
             </header>
 
-            <p-treeTable [value]="ArtifactTypes" #assetTypeTree selectionMode="single" [(selection)]="selectedRow" [globalFilterFields]="filterFields" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage">
+            <p-treeTable #dt [value]="artifactTypes" #assetTypeTree selectionMode="single" [(selection)]="selectedRow" [globalFilterFields]="filterFields" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3" >
                 <ng-template pTemplate="caption">
                     <input type="text" pInputText (input)="assetTypeTree.filterGlobal($event.target.value, 'contains')" placeholder="Search..." style="width: 100%;margin-bottom:10px;margin-right:0px;margin-left:0px">
                 </ng-template>
@@ -44,6 +44,10 @@
                             </div>
                         </td>
                     </tr>
+                </ng-template>
+                <ng-template pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+                                          [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
                 </ng-template>
             </p-treeTable>
         </div>
