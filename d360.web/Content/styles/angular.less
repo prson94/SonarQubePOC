@@ -1479,6 +1479,11 @@ a.breadcrumb {
 }
 
 .search-typeahead-suggestion {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+
     .folder-icon {
         display: inline-block;
         width: 26px;
@@ -1507,10 +1512,21 @@ a.breadcrumb {
         vertical-align: middle;
     }
 
+    .displayname {
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .tag-list-container {
+        overflow: hidden;
+    }
+
     .category {
-        margin-top: 8px;
         color: @d3s-gray-2;
-        float: right;
+        margin-left: auto;
+        white-space: nowrap;
+        padding-left: 5px;
 
         i.fa {
             padding: 0 7px !important;
@@ -1522,8 +1538,8 @@ a.breadcrumb {
 .global-search-typeahead {
     .ui-autocomplete-panel {
         top: 36px !important;
-        left: -210px !important;
-        width: 602px !important;
+        max-width: 800px !important;
+        transform: translateX(-10px) !important;
     }
 }
 
