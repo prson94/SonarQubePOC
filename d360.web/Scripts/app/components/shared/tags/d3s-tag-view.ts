@@ -309,7 +309,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.ref.markForCheck();
     }
 
-    private getParentForResizing(element: HTMLElement, tags: string) {
+    private getParentForResizing(element: HTMLElement, tags: string): HTMLElement {
         var searchFor = tags.split(',');
         var el = null;
         searchFor.forEach(tagName => {
@@ -381,6 +381,9 @@ export class TagView extends AdminBaseComponent implements OnInit {
 
             if (!parent) {
                 console.warn("No suitable parent found for tag resizing!");
+            } else if (parent.classList.contains("tagsnomanagewidth")) {
+                this.setVisibility();
+                return;
             }
 
             let ofWidth = parent ? parent.offsetWidth - 10 : 500;
