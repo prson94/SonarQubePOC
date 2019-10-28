@@ -1058,7 +1058,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private createPortGroupNode(): go.Group {
-
         return this.g(
             go.Group,
             "Auto",
@@ -1077,14 +1076,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     )
             },
             this.g(
-                go.Shape,
-                "Rectangle",
-                { fill: null, strokeWidth: 0, isPanelMain: true, stroke: null }
-            ),
-            
-            this.g(
                 go.Panel,
-                "Vertical",  // title above Placeholder  
+                "Vertical", 
                 this.g(go.Panel, "Table",
                     new go.Binding("itemArray", "currentRelations"),
                     {
@@ -1096,71 +1089,76 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     { width: 0, height: 0, portId: "T", toSpot: go.Spot.TopCenter, toLinkable: true },
                     new go.Binding("stroke", "back")
                 ),
-                this.g(
-                    go.Panel,
-                    "Horizontal",
-                    // button next to TextBlock
-                    { stretch: go.GraphObject.Horizontal },
-                    new go.Binding("background", "back"),
+                this.g(go.Panel, "Auto",
                     this.g(
-                        "SubGraphExpanderButton",
-                        { alignment: go.Spot.Right, margin: 5 }
+                        go.Shape,
+                        "Rectangle",
+                        { fill: null, strokeWidth: 2, isPanelMain: true },
+                        new go.Binding("stroke", "back")
                     ),
-                    //icon
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 0,
-                            alignment: go.Spot.Center,
-                            editable: false,
-                            font: "12px FontAwesome",
-                            stroke: "#404040"
-                        },
-                        new go.Binding("text", "icon")
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            alignment: go.Spot.Left,
-                            editable: true,
-                            margin: 5,
-                            font: "bold 12px sans-serif",
-                            opacity: 0.75,
-                            stroke: "#404040"
-                        },
-                        new go.Binding("text", "text").makeTwoWay()
-                    )
-                ),  // end Horizontal Panel
+                    this.g(go.Panel, "Vertical",
+                        this.g(
+                            go.Panel,
+                            "Horizontal",
+                            // button next to TextBlock
+                            { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
+                            new go.Binding("background", "back"),
+                            this.g(
+                                "SubGraphExpanderButton",
+                                { alignment: go.Spot.Right, margin: 5 }
+                            ),
+                            //icon
+                            this.g(
+                                go.TextBlock,
+                                {
+                                    row: 0,
+                                    margin: 0,
+                                    alignment: go.Spot.Center,
+                                    editable: false,
+                                    font: "12px FontAwesome",
+                                    stroke: "#404040"
+                                },
+                                new go.Binding("text", "icon")
+                            ),
+                            this.g(
+                                go.TextBlock,
+                                {
+                                    alignment: go.Spot.Left,
+                                    editable: true,
+                                    margin: 5,
+                                    font: "bold 12px sans-serif",
+                                    opacity: 0.75,
+                                    stroke: "#404040"
+                                },
+                                new go.Binding("text", "text").makeTwoWay()
+                            )
+                        ),  // end Horizontal Panel
+                        this.g(
+                            go.Panel,
+                            "Horizontal",
+                            // button next to TextBlock
+                            { stretch: go.GraphObject.Horizontal },
+                            this.g(
+                                go.Shape,  // the "left" port
+                                { width: 0, height: 0, portId: "L", toSpot: go.Spot.LeftCenter, toLinkable: true, stroke: "transparent" }
+                            ),
+                            this.g(
+                                go.Placeholder,
+                                { padding: 2, alignment: go.Spot.TopLeft },
+                            ),
+                            this.g(
+                                go.Shape,  // the "right" port
+                                { width: 0, height: 0, portId: "R", toSpot: go.Spot.RightCenter, toLinkable: true, stroke: "transparent" }
+                            )
+                        ),  //end Horizontal Panel
 
-                this.g(
-                    go.Panel,
-                    "Horizontal",
-                    // button next to TextBlock
-                    { stretch: go.GraphObject.Horizontal },
-                    this.g(
-                        go.Shape,  // the "left" port
-                        { width: 0, height: 0, portId: "L", toSpot: go.Spot.LeftCenter, toLinkable: true, stroke: "transparent" }
-                    ),
-                    this.g(
-                        go.Placeholder,
-                        { padding: 2, alignment: go.Spot.TopLeft },
-                    ),
-                    this.g(
-                        go.Shape,  // the "right" port
-                        { width: 0, height: 0, portId: "R", toSpot: go.Spot.RightCenter, toLinkable: true, stroke: "transparent" }
-                    )
-                ),  // end Horizontal Panel
-
-                this.g(
-                    go.Shape,  // the "bottom" port
-                    { width: 0, height: 0, portId: "B", toSpot: go.Spot.BottomCenter, toLinkable: true, stroke: "transparent" }
-                ),
-                
-            ),
-            
-            
-            // end Vertical Panel
+                        this.g(
+                            go.Shape,  // the "bottom" port
+                            { width: 0, height: 0, portId: "B", toSpot: go.Spot.BottomCenter, toLinkable: true, stroke: "transparent" }
+                        ),
+                    ) //end Vertical Panel,
+                ) //end Auto Panel (main group Panel),
+            ), //end Vertical Panel
         );
     }
 
