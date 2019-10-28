@@ -107,9 +107,8 @@ export class ChipsFilterComponent {
         this.currentFilter = undefined;
     }
     
-    private setFocus() {
-        
-        setTimeout(() => { // this will make the execution after the above boolean has changed
+    private setFocus() {        
+        setTimeout(() => {
             if (this.searchInputElement)
                 this.searchInputElement.nativeElement.focus();
         }, 150);
