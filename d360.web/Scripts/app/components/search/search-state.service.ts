@@ -37,6 +37,10 @@ export class SearchStateService extends BaseObservableService {
     get loading() {
         return new Observable(fn => this._loading.subscribe(fn));
     }
+    private _treeLoading: BehaviorSubject<boolean> = new BehaviorSubject(false);
+    get treeLoading() {
+        return new Observable(fn => this._treeLoading.subscribe(fn));
+    }
 
     private _query: SearchQuery;
     private _searchTypes: string[];
@@ -185,9 +189,10 @@ export class SearchStateService extends BaseObservableService {
         this._query.Aggregations = (this._needAggregation || this._categories.value.length == 0) ? ['category'] : [];
         if (this._query.Aggregations.length > 0) {
             this._categories.next([]);
+            this._treeLoading.next(true);
         }
         this.setAggregationFilter('d3sGroup', this._searchTypes, false);
-        console.log('doSearch', this._query);
+//        console.log('doSearch', this._query);
         this.searchService.getSearchResultsByQuery(this._query).pipe(
             debounceTime(1000)).subscribe(res => {
             if (res.Categories.length != 0) {
@@ -209,6 +214,7 @@ export class SearchStateService extends BaseObservableService {
                     }
                 });
                 this._categories.next(filterTree);
+                this._treeLoading.next(false);
                 this._needAggregation = false;
             }
             this._resultCount.next(res.Result.Matches);
