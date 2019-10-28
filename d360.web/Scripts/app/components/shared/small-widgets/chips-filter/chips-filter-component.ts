@@ -32,7 +32,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                                 </li>
                                 <li>
                                     <span>
-                                        <button class="button" (click)="close();">Close</button>
+                                        <button class="button" (click)="close();">Cancel</button>
                                         <button class="button primary pull-right" (click)="update(filterText,exact.checked)"  [disabled]="!filterText || filterText == ''">Update</button>
                                     </span>
                                 </li>
