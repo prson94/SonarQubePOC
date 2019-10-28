@@ -1,8 +1,5 @@
-﻿
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, Output, EventEmitter, OnInit } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { FormsModule } from '@angular/forms'; 
-import * as _ from 'lodash';
 import { AdvancedSearchFilter } from '../../../../models/search-result.model';
 
 @Component({
@@ -22,7 +19,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                             <ul *ngIf="isInputOpen" class="chips-input-list" (click)="doNothing($event)">
                                 <li>
                                     <span>
-                                        <div class="field mr10"><input [(ngModel)]="filterText" type="text" placeholder="Please enter a value"></div>
+                                        <div class="field mr10"><input [(ngModel)]="filterText" type="text" placeholder="Please enter a value" #searchInput></div>
                                     </span>
                                 </li>
                                 <li>
@@ -44,8 +41,8 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ChipsFilterComponent implements OnInit {
-
+export class ChipsFilterComponent {
+    @ViewChild('searchInput') searchInputElement: ElementRef;
     @Input() filterOption: any[] = [];
     @Output() applyFlter = new EventEmitter();
     private openMenu: boolean = false;
@@ -100,6 +97,7 @@ export class ChipsFilterComponent implements OnInit {
         event.stopPropagation();
         this.isInputOpen = true;
         this.currentFilter = item;
+        this.setFocus();
     }
 
     close() {
@@ -108,7 +106,12 @@ export class ChipsFilterComponent implements OnInit {
         this.filterText = '';
         this.currentFilter = undefined;
     }
-
-    ngOnInit(): void {
+    
+    private setFocus() {
+        
+        setTimeout(() => { // this will make the execution after the above boolean has changed
+            if (this.searchInputElement)
+                this.searchInputElement.nativeElement.focus();
+        }, 150);
     }
 };
