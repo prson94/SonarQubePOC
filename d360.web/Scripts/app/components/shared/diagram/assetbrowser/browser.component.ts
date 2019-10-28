@@ -339,6 +339,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (dm.linkDataArray.find(i => i.to == l.to && i.from == l.from) == null)
                     dm.addLinkData(l);
             });
+
         } else {
             dm.nodeDataArray = data.nodes;
             dm.linkDataArray = data.links;
@@ -357,12 +358,29 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 childAssets.push(data.assetUid);
 
                 if (data.relations != null && data.relations.length > 0) {
-                    childRelations = childRelations.concat(data.relations);
+                    data.relations.forEach(r => {
+                        r.key = `${data.key}_${r.predicate}_${r.direction}_${r.assets.sort().join()}`;
+                        if (g.data.relations.find(c => c.key == r.key) == null) {
+                            childRelations.push(r);
+                        }
+                    })
                 }
             });
 
             g.data.relations = g.data.relations.concat(childRelations);
-            this.diagram.model.setDataProperty(g.data, "relations", g.data.relations.slice());
+
+            if (g.data.relations.length > 5) {
+                let sum = 0;
+                g.data.relations.forEach(r => { sum += r.count });
+
+                this.diagram.model.setDataProperty(g.data, "relations", g.data.relations.slice());
+                this.diagram.model.setDataProperty(g.data, "currentRelations", [{count: sum, predicate: 'relates to', isContext: true}]);
+            } else {
+                this.diagram.model.setDataProperty(g.data, "relations", g.data.relations.slice());
+                this.diagram.model.setDataProperty(g.data, "currentRelations", g.data.relations.slice());
+            }
+
+
 
             if (g.data.showReveal != AssetBrowserDirection.None) {
                 let dir = g.data.showReveal;
@@ -777,6 +795,29 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
+    private clickBadge(e, obj) {
+        if (obj != null && obj.part != null && obj.part.data != null) {
+            let ix = obj.itemIndex;
+            let node: AssetBrowserTranslationNode = obj.part.data;
+            let relation: AssetBrowserTranslationRelationCount = node.currentRelations[ix];
+
+            if (relation.isContext === true) {
+                this.diagram.commandHandler.showContextMenu(obj);
+            } else {
+                let requestModel: AssetBrowserImpactApiRequestModel = new AssetBrowserImpactApiRequestModel();
+
+                requestModel.AssetUids = relation.assets;
+                requestModel.StartHop = node.hop;
+
+                this.browserService.getAssetImpacts(requestModel)
+                    .subscribe(response => {
+                        let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(response);
+                        this.parseData(translationModel, true);
+                    });
+            }
+        }
+    }
+
     //#endregion
 
     //#region templates
@@ -828,12 +869,29 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
     }
 
+    private createImpactBadgeContextMenu(): go.Adornment {
+        return this.g(go.Adornment,
+            "Vertical",
+            {
+                areaBackground: "#ffffff",
+                background: "#ffffff"
+            },
+            new go.Binding("itemArray", "relations"),
+            {
+                itemTemplate: this.createImpactBadgeButton()
+            }
+        );
+    }
 
     private createImpactBadge(): go.Panel {
-        //let height = 17;
-
-        return this.g(go.Panel, "Spot",
-            { name: '_impactBadge', alignment: go.Spot.TopCenter, alignmentFocus: go.Spot.Bottom, padding: 0 },
+        return this.g(go.Panel, "TableRow", {
+            name: '_impactBadge',
+            alignment: go.Spot.TopCenter,
+            alignmentFocus: go.Spot.Bottom,
+            padding: 0,
+            click: (e, obj) => this.clickBadge(e, obj),
+            contextMenu: this.createImpactBadgeContextMenu(),
+            },
             this.g(go.Panel, "Horizontal", {alignment: go.Spot.Center},
                 this.g(go.Panel, "Auto", {  },
                     this.g(go.Shape, 
@@ -853,6 +911,53 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     ),
                 ),
                 this.g(go.Panel, "Auto", { background: "#404040"}, 
+                    this.g(go.Shape, "RoundedRectangle",
+                        { parameter1: 2, stroke: "#404040", strokeWidth: 1, fill: null }
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            row: 0,
+                            margin: 2,
+                            alignment: go.Spot.Center,
+                            editable: false,
+                            font: "8pt helvetica, arial, sans-serif",
+                            stroke: "white"
+                        },
+                        new go.Binding("text", "count")
+                    ),
+                )
+            )
+        );
+    }
+
+    private createImpactBadgeButton(): any {
+        return  this.g("ContextMenuButton", {
+            name: '_impactBadge',
+            alignment: go.Spot.TopCenter,
+            alignmentFocus: go.Spot.Bottom,
+            padding: 0,
+            click: (e, obj) => this.clickBadge(e, obj),
+        },
+            this.g(go.Panel, "Horizontal", { alignment: go.Spot.Center },
+                this.g(go.Panel, "Auto", {},
+                    this.g(go.Shape,
+                        { figure: "RoundedRectangle", parameter1: 2, fill: "white", stroke: "#404040", strokeWidth: 1 },
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            row: 0,
+                            margin: 2,
+                            alignment: go.Spot.Left,
+                            editable: false,
+                            font: "8pt helvetica, arial, sans-serif",
+                            stroke: "#404040"
+                        },
+                        new go.Binding("text", "predicate")
+                    ),
+                ),
+                this.g(go.Panel, "Auto", { background: "#404040" },
                     this.g(go.Shape, "RoundedRectangle",
                         { parameter1: 2, stroke: "#404040", strokeWidth: 1, fill: null }
                     ),
@@ -980,8 +1085,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 go.Panel,
                 "Vertical",  // title above Placeholder  
-                this.g(go.Panel, "Vertical",
-                    new go.Binding("itemArray", "relations"),
+                this.g(go.Panel, "Table",
+                    new go.Binding("itemArray", "currentRelations"),
                     {
                         itemTemplate: this.createImpactBadge()
                     }

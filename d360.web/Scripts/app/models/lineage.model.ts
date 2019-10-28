@@ -429,6 +429,7 @@ export class SourceRuleSource {
 // #region Asset Browser : Translation
 
 export class AssetBrowserTranslationRelationCount {
+    key: string;
     predicate: string;
     predicateUid: string;
     direction: AssetBrowserDirection;
@@ -458,6 +459,7 @@ export class AssetBrowserTranslationNode {
     subgraph: any;
     showReveal: AssetBrowserDirection;
     relations: AssetBrowserTranslationRelationCount[] = new Array();
+    currentRelations: AssetBrowserTranslationRelationCount[] = new Array();
 }
 
 export class AssetBrowserTranslation {
