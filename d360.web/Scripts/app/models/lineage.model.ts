@@ -442,7 +442,7 @@ export class AssetBrowserTranslationLink {
     toPort: string;
     text: string;
     back: string;
-    impacts: string[] = new Array();
+    impacts: string[];
 }
 
 export class AssetBrowserTranslationNode {
@@ -455,7 +455,6 @@ export class AssetBrowserTranslationNode {
     template: string;
     back: string;
     icon: string;
-    impacts: string[];
     subgraph: any;
     showReveal: AssetBrowserDirection;
     relations: AssetBrowserTranslationRelationCount[] = new Array();
