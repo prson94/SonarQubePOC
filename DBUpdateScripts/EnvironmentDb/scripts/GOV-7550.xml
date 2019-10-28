@@ -12,21 +12,21 @@
             splitStatements="true"
             stripComments="true">
 <![CDATA[
-		ALTER     FUNCTION [dbo].[GetSecurityAssetUid]  
-        (            
-         @SecurityAsset varchar(1), @SecurityAssetID int  
-        )  
-        RETURNS TABLE  with Schemabinding  
-        AS  
-        RETURN   
-        (  
-         select A.[UID], gr.firstname + ' ' + gr.LastName as 'Name' from [dbo].[Asset] A inner join reporting.global_resource gr on A.objectid = gr.resourceid where A.[Object] = 'Resource' and A.[ObjectID] = @SecurityAssetID and @SecurityAsset = 'R'      
+ALTER     FUNCTION [dbo].[GetSecurityAssetUid]  
+(            
+    @SecurityAsset varchar(1), @SecurityAssetID int  
+)  
+RETURNS TABLE  with Schemabinding  
+AS  
+RETURN   
+(  
+    select A.[UID], gr.firstname + ' ' + gr.LastName as 'Name' from [dbo].[Asset] A inner join reporting.global_resource gr on A.objectid = gr.resourceid where A.[Object] = 'Resource' and A.[ObjectID] = @SecurityAssetID and @SecurityAsset = 'R'     and gr.[State]=1 
  
-         union all  
-         select A.[UID], g.name as 'Name' from [dbo].[Asset] A inner join [dbo].[Group] g on A.ObjectID = g.id where A.[Object] = 'Group' and A.[ObjectID] = @SecurityAssetID and @SecurityAsset = 'G'  
-         union all  
-         select A.[UID], o.name as 'Name' from [dbo].[Asset] A inner join [dbo].[Organization] o on A.ObjectID = o.ID where A.[Object] = 'Organization' and A.[ObjectID] = @SecurityAssetID and @SecurityAsset = 'O'  
-        )
+    union all  
+    select A.[UID], g.name as 'Name' from [dbo].[Asset] A inner join [dbo].[Group] g on A.ObjectID = g.id where A.[Object] = 'Group' and A.[ObjectID] = @SecurityAssetID and @SecurityAsset = 'G'  
+    union all  
+    select A.[UID], o.name as 'Name' from [dbo].[Asset] A inner join [dbo].[Organization] o on A.ObjectID = o.ID where A.[Object] = 'Organization' and A.[ObjectID] = @SecurityAssetID and @SecurityAsset = 'O'  and o.[State]=1
+)
 ]]>
     </sql>
     <rollback>
