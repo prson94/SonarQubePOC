@@ -301,6 +301,7 @@
     <Compile Include="Controllers\V2\DataQualityController.cs" />
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
+    <Compile Include="Controllers\V2\Filter\ModelValidation.cs" />
     <Compile Include="Controllers\V2\FusionController.cs" />
     <Compile Include="Controllers\V2\ActionsController.cs" />
     <Compile Include="Controllers\V2\BrowserController.cs" />
