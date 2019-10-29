@@ -1,7 +1,21 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
 import {AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild} from '@angular/core';
-import {DiagramObjectType, AssetBrowserLineageApiRequestModel, AssetBrowserTranslation, AssetBrowserDirection, AssetBrowserDiagramAsset, AssetBrowserTranslationNode, AssetBrowserTranslationLink, AssetBrowserLineageApiResponseModel, AssetBrowserLineageApiRelationshipModel } from '../../../../models/lineage.model';
+import {
+    DiagramObjectType,
+    AssetBrowserLineageApiRequestModel,
+    AssetBrowserTranslation,
+    AssetBrowserDirection,
+    AssetBrowserDiagramAsset,
+    AssetBrowserTranslationNode,
+    AssetBrowserTranslationLink,
+    AssetBrowserLineageApiResponseModel,
+    AssetBrowserLineageApiRelationshipModel,
+    AssetBrowserTranslationRelationCount,
+    AssetBrowserImpactApiRequestModel,
+    AssetBrowserImpactApiAssetRequestModel,
+    AssetBrowserLineageApiItemModel
+} from '../../../../models/lineage.model';
 import {PermissionsService} from '../../../../services/permissions.service';
 import {BrowserService} from '../../../../services/browser.service';
 import {DiagramBaseComponent} from '../diagram-base.component';
