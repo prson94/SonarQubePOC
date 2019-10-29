@@ -429,6 +429,7 @@ export class SourceRuleSource {
 // #region Asset Browser : Translation
 
 export class AssetBrowserTranslationRelationCount {
+    key: string;
     predicate: string;
     predicateUid: string;
     direction: AssetBrowserDirection;

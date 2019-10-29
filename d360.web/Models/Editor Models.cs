@@ -796,7 +796,9 @@ namespace d360.web.Models
     {
         [DataMember]
         public List<GetAssetImpactSourceItemPostModel> Assets { get; set; }
+        [DataMember]
         public Guid PredicateUid { get; set; }
+        [DataMember]
         public int StartHop { get; set; }
     }
 
