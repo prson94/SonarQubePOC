@@ -7,7 +7,9 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
     template: `
 		        <div class="chips-input">
                     <div class="chip-option" *ngFor="let item of selectedFilters">{{item.field}}: {{item.value}}<i class="fa fa-times-circle" (click)="removeFilterOption(item)"></i></div>
-                    <div class="chip-option clickable" (click)="toggleMenu()" (blur)="close()">
+                    <div class="chip-option clickable" tabindex=0
+                        (click)="toggleMenu()" 
+                        (keydown.esc)="closeMenu()">
                         Add Filter...
                         <div class="popup-menu" [ngClass]="{'popup-open': openMenu || isInputOpen}">
                             <ul *ngIf="!isInputOpen">
@@ -16,7 +18,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                                     <span class="col3"></span>
                                 </li>
                             </ul>
-                            <ul *ngIf="isInputOpen" class="chips-input-list" (click)="doNothing($event)">
+                            <ul *ngIf="isInputOpen" class="chips-input-list" (click)="doNothing($event)" (keydown.enter)="update(filterText,exact.checked)">
                                 <li>
                                     <span>
                                         <div class="field mr10"><input [(ngModel)]="filterText" type="text" placeholder="Please enter a value" #searchInput></div>
@@ -24,12 +26,12 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                                 </li>
                                 <li>
                                     <span>
-                                        <label class="checkbox mr10"><input type="checkbox" #exact><span>Match Whole Words</span></label>
+                                        <label class="checkbox mr10"><input type="checkbox" #exact/><span>Match Whole Words</span></label>
                                     </span>
                                 </li>
                                 <li>
                                     <span>
-                                        <button class="button" (click)="close();">Cancel</button>
+                                        <button class="button" (click)="closeMenu();">Cancel</button>
                                         <button class="button primary pull-right" (click)="update(filterText,exact.checked)"  [disabled]="!filterText || filterText == ''">Update</button>
                                     </span>
                                 </li>
@@ -52,26 +54,31 @@ export class ChipsFilterComponent {
     private currentFilter: AdvancedSearchFilter;
     private isInputOpen: boolean = false;
     constructor(
-        ref: ChangeDetectorRef,
+        private ref: ChangeDetectorRef,
         private router: Router
     ) {
     }
 
     private toggleMenu() {
-        this.openMenu = !this.openMenu;
-        this.isInputOpen = false;
+        if (this.openMenu)
+            this.closeMenu();
+        else
+            this.openMenu = true;
+        this.ref.markForCheck();
     }
     doNothing(event) {
         event.stopPropagation();
     }
     update(filterValue: string, exact: any) {
+        if (!filterValue)
+            return;
         this.currentFilter.value = filterValue;
         this.currentFilter.exact = exact;
 
         var newFilter = this.getCurrentFilterDeepClone();
 
         this.selectedFilters.push(newFilter);
-        this.close();
+        this.closeMenu();
         this.applyFlter.emit(this.selectedFilters);
     }
 
@@ -100,11 +107,14 @@ export class ChipsFilterComponent {
         this.setFocus();
     }
 
-    close() {
-        this.openMenu = true;
-        this.isInputOpen = false;
+    closeMenu() {
         this.filterText = '';
         this.currentFilter = undefined;
+        setTimeout(() => {
+            this.isInputOpen = false;
+            this.openMenu = false;
+            this.ref.markForCheck();
+        }, 150);
     }
     
     private setFocus() {        
