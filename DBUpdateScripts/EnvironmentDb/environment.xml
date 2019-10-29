@@ -338,5 +338,6 @@
   <include file="scripts/GOV-8450.xml"/> <!-- graph.GetLineageByAsset -->
   <include file="scripts/GOV-8512.xml"/> <!-- graph.GetImpactRelationshipsByAssets -->
   <include file="scripts/GOV-8549.xml"/> <!-- graph.GetLineageByAsset -->
+  <include file="scripts/GOV-8591.xml"/> <!-- graph.GetLineageByAsset -->
   <include file="scripts/GOV-7550.xml"/> 
 </databaseChangeLog>
