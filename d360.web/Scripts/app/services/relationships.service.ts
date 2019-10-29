@@ -32,7 +32,7 @@ export class RelationshipsService extends BaseObservableService {
     }
 
     saveRelationships(intersectTypeUid: number, model: any[]): Observable<ApiResult[]> {
-        return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true`, model).pipe(
+        return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true&lookupFieldsPassedByValue=true`, model).pipe(
             map(response => response),
             catchError(err => this.handleError(err, true))
         );
