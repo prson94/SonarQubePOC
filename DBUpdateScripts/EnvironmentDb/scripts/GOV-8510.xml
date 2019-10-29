@@ -31,7 +31,7 @@ end
     </rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="GOV-8510">
+  <changeSet author="Pappas" id="GOV-8510-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -199,7 +199,8 @@ begin
 
 	-- We only want to create assets that do not have the key column populated, as those Key-populated assets came into the proc, and already exist.
 	insert into #rawHierarchies
-		select	T.[Hop],
+		select	distinct
+				T.[Hop],
 				T.ID,
 				doc.c.value('@level', 'int') as [HierarchyLevel],
 				doc.c.value('@assetTypeId', 'int') as [assetTypeId],
