@@ -4,7 +4,6 @@ import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SearchStateService } from './search-state.service';
 import { SearchResultsObject, SearchCategories, AdvancedSearchFilter, SearchAggregationFilter } from '../../models/search-result.model';
@@ -32,23 +31,19 @@ declare var CompanySettings;
                     </div>
                 <d3s-search-results [from]="fromNumber" 
                     [loading]="isLoading" [itemsPerPage]="resultsPerPage"
-                    [results]="searchResults" 
-                    [categories]="categories"
-                    [filterTree]="filterTree"
+                    [results]="searchResults"
                     (selectedCategoryChange)="filterCheckTree($event);"
                     (advFilterChanged)="searchFilterChanged($event);">
                 </d3s-search-results>
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 `,
-    providers: [SearchService, TypeaheadSearchService],
+    providers: [TypeaheadSearchService],
 })
 
 export class SearchComponent extends BaseComponent implements OnInit {
     public searchResults: SearchResultsObject;
     public categories: SearchCategories[] = [];
-    public filterTree: CheckTreeNode[];
-    public selectedCategory: SearchCategories;
     public searchText: string;
     public isExactMatch: boolean = true;
     public searchTypes: string[] = CurrentCompanySettings.defaultSearchTypes ? CurrentCompanySettings.defaultSearchTypes.split(',') : [];
@@ -58,15 +53,12 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public fromNumber: number = 0;
     public sub: any;
 
-    private displayNameLookup: string[];
-
     @ViewChild('title') title: ElementRef;
 
     constructor(private route: ActivatedRoute,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected rightSidebarService: RightSidebarService,
-        private searchService: SearchService,
         private searchStateService: SearchStateService,
         private typeaheadSearchService: TypeaheadSearchService) {
         super();
@@ -91,8 +83,10 @@ export class SearchComponent extends BaseComponent implements OnInit {
             if (params['types'] != undefined) {
                 this.searchTypes = params['types'].split(',').filter((x): x is string => x.length > 0);
             }
+            this.searchStateService.reset();
             this.searchStateService.setSearchCategories(this.searchTypes);
             this.searchStateService.setFieldFilters(this.advancedFilters);
+            this.searchStateService.selectedFilters = [];
             if (this.searchText.length > 0) {
                 this.doSearch();
             }
@@ -120,8 +114,13 @@ export class SearchComponent extends BaseComponent implements OnInit {
     }
 
     public filterCheckTree(selectedNodes: CheckTreeNode[]) {
-        this.searchStateService.setAggregationFilter("d3sGroup", selectedNodes.filter((x) => x.type == "category").map((x) => x.data));
-        this.searchStateService.setAggregationFilter("Type", selectedNodes.filter((x) => x.type == "subCategory").map((x) => x.data));
+        var types = selectedNodes.filter((x) => x.type == "subCategory").map((x) => x.data);
+        var categories = selectedNodes.filter((x) => x.type == "category").map((x) => x.data);
+        if (types.length > 0) {
+            categories = categories.concat(this.searchStateService.currentCategories.filter((x) => x.type == "category" && x.partialSelected == true).map((x) => x.data));
+        }
+        this.searchStateService.setAggregationFilter("d3sGroup", categories);
+        this.searchStateService.setAggregationFilter("Type", types);
 
         this.doSearch();
     }
