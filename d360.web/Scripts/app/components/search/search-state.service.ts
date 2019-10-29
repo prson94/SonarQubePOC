@@ -214,11 +214,11 @@ export class SearchStateService extends BaseObservableService {
                     }
                 });
                 this._categories.next(filterTree);
-                this._treeLoading.next(false);
                 this._needAggregation = false;
             }
             this._resultCount.next(res.Result.Matches);
             this._results.next(res.Result.Results);
+            this._treeLoading.next(false);
             this._loading.next(false);
         });
     }
