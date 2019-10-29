@@ -1,7 +1,7 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
 import {AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild} from '@angular/core';
-import {DiagramObjectType, AssetBrowserLineageApiRequestModel, AssetBrowserTranslation, AssetBrowserDirection, AssetBrowserDiagramAsset, AssetBrowserTranslationNode, AssetBrowserTranslationLink, AssetBrowserLineageApiResponseModel } from '../../../../models/lineage.model';
+import {DiagramObjectType, AssetBrowserLineageApiRequestModel, AssetBrowserTranslation, AssetBrowserDirection, AssetBrowserDiagramAsset, AssetBrowserTranslationNode, AssetBrowserTranslationLink, AssetBrowserLineageApiResponseModel, AssetBrowserLineageApiRelationshipModel } from '../../../../models/lineage.model';
 import {PermissionsService} from '../../../../services/permissions.service';
 import {BrowserService} from '../../../../services/browser.service';
 import {DiagramBaseComponent} from '../diagram-base.component';
@@ -29,7 +29,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private revealedKeys: string[] = [];
     private originalAssetUid: string;
     private menuItems: MenuItem[] = [];
-
     isWindowVisible: boolean = false;
     isWindowLoading = false;
     showWindowTabs: boolean = false;
@@ -174,17 +173,64 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             n.isHighlighted = false;
         });
 
-        if (obj.data) {
-            if (obj.data.impacts) {
-                let keysToHighlight: string[] = obj.data.impacts;
-                keysToHighlight.forEach(k => {
-                    let node: go.Node = obj.diagram.findNodeForKey(k);
-                    if (node) {
-                        node.isHighlighted = true;
-                    }
-                });
+        if (obj.key) {
+            // Highlight the selected node.
+            obj.isHighlighted = true;
+
+            // Recurse through and highlight based on the atomic (non-grouped) links.
+            this.highlightNodeImpacts(obj.key.toString(), AssetBrowserDirection.Both);
+        }
+        else {
+            // You are clicking on a link instead.
+            let link = this.diagram.findLinkForData(obj.data);
+            //this.diagram.nodes.iterator.each(n => {
+            //    n.containingGroup
+            //});
+            //link.fromNode.
+            if (obj.data) {
+                if (obj.data.impacts) {
+                    let keysToHighlight: string[] = obj.data.impacts;
+                    keysToHighlight.forEach(k => {
+                        let node: go.Node = obj.diagram.findNodeForKey(k);
+                        if (node) {
+                            node.isHighlighted = true;
+                        }
+                    });
+                }
             }
         }
+    }
+
+    private highlightNodeImpacts(key: string, direction: AssetBrowserDirection) {
+
+        let fwd: boolean = ((direction == AssetBrowserDirection.Both) || (direction == AssetBrowserDirection.Forward));
+        let bwd: boolean = ((direction == AssetBrowserDirection.Both) || (direction == AssetBrowserDirection.Backward));
+
+        this.responseModel.intersects.forEach(l => {
+
+            // Loop through the links to find ones where this node is subject, then traverse each one and do the same thing, recursively.
+            if (fwd) {
+                if (l.subjectKey == key) {
+                    let oNode = this.diagram.findNodeForKey(l.objectKey);
+                    if (oNode) {
+                        oNode.isHighlighted = true;
+                        this.highlightNodeImpacts(l.objectKey, AssetBrowserDirection.Forward);
+                    }
+                }
+            }
+
+            // Loop through the links to find ones where this node is object, then traverse each one and do the same thing, recursively.
+            if (bwd) {
+                if (l.objectKey == key) {
+                    let sNode = this.diagram.findNodeForKey(l.subjectKey);
+                    if (sNode) {
+                        sNode.isHighlighted = true;
+                        this.highlightNodeImpacts(l.subjectKey, AssetBrowserDirection.Backward);
+                    }
+                }
+            }
+        });
+        
     }
 
     private shadeColor(col, amt) {
@@ -904,6 +950,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 contextMenu: this.createContextMenu(),
                 computesBoundsAfterDrag: true,
                 handlesDragDropForMembers: true,
+                stretch: go.GraphObject.Horizontal,
                 layout:
                     this.g(
                         go.GridLayout,
@@ -918,7 +965,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 go.Shape,
                 "Rectangle",
-                { fill: null, strokeWidth: 2 },
+                { fill: null, strokeWidth: 2, stretch: go.GraphObject.Horizontal },
                 new go.Binding("stroke", "back"),
             ),
             this.g(
@@ -971,7 +1018,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return this.g(go.Node, "Auto",
             {
                 contextMenu: this.createContextMenu(),
-                click: this.highlightPath
+                click: (e, obj) => this.highlightPath(e, obj as any)
             },
             this.g(
                 go.Panel,
@@ -1082,7 +1129,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 corner: 5,
                 relinkableFrom: false,
                 relinkableTo: false,
-                click: this.highlightPath
+                click: (e, obj) => this.highlightPath(e, obj as any)
             }, // the whole link panel
             this.g(go.Shape, {
                     stroke: "gray", strokeWidth: 2

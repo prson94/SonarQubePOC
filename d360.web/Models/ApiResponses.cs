@@ -114,7 +114,6 @@ namespace d360.web.Models
 
     public interface IAssetBrowserLineageApiItemModel
     {
-        long id { get; set; }
         int hop { get; set; }
         Guid assetUid { get; set; }
         string displayValue { get; set; }
@@ -127,8 +126,6 @@ namespace d360.web.Models
     [DataContract]
     public class AssetBrowserLineageApiItemModel : IAssetBrowserLineageApiItemModel
     {
-        [IgnoreDataMember]
-        public long id { get; set; }
         [DataMember]
         public int hop { get; set; }
         [DataMember]
