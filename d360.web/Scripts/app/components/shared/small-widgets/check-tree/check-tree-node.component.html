@@ -4,14 +4,14 @@
              tabIndex="0"
              (keydown)="onKeyDown($event)" [attr.aria-posinset]="this.index + 1" [attr.aria-expanded]="this.node.expanded" [attr.aria-selected]="isSelected()">
             <span class="tree-toggler" [ngClass]="'lv'+level" (click)="toggle($event)">
-                <i *ngIf="!isLeaf()" class="tree-toggler fa" [ngClass]="{'fa-angle-right':!node.expanded,'fa-angle-down':node.expanded}"></i>
+                <i *ngIf="!isLeaf()" class="tree-toggler fa" [ngClass]="{'fa-caret-right':!node.expanded,'fa-caret-down':node.expanded}"></i>
             </span><div class="ui-chkbox">
                 <div class="ui-chkbox-box ui-widget ui-corner-all ui-state-default" [ngClass]="{'ui-state-disabled': node.selectable === false}">
                     <span class="ui-chkbox-icon ui-clickable pi"
                           [ngClass]="{'pi-check':isSelected(),'pi-minus':node.partialSelected}"></span>
                 </div>
             </div>
-                <span *ngIf="!tree.getTemplateForNode(node)" class="check-tree-label">{{node.label}}</span>
+                <span *ngIf="!tree.getTemplateForNode(node)" class="check-tree-label" title="{{node.label}}">{{node.label}}</span>
                 <span *ngIf="tree.getTemplateForNode(node)">
                     <ng-container *ngTemplateOutlet="tree.getTemplateForNode(node); context: {$implicit: node}"></ng-container>
                 </span>

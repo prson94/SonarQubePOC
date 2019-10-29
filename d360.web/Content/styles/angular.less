@@ -4031,6 +4031,7 @@ button.tab-scroller {
 
             .field {
                 display: inline;
+
                 input {
                     &:focus {
                         outline: none;
@@ -4119,6 +4120,8 @@ button.tab-scroller {
                 display: inline-flex;
                 flex-direction: column;
                 flex-shrink: 0;
+                min-width: 200px;
+                max-width: 400px;
 
                 .scrollpane {
                     flex-grow: 1;
@@ -4148,6 +4151,21 @@ button.tab-scroller {
                                 .lv2 {
                                     width: 40px;
                                 }
+
+                                .ui-chkbox {
+                                    margin-right: 8px;
+                                    .ui-chkbox-box {
+                                        border-radius: 3px !important;
+                                        background-color: white;
+                                    }
+                                }
+
+                                .check-tree-label {
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                    margin-right: 20px;
+                                }
                             }
                         }
 
@@ -4169,6 +4187,8 @@ button.tab-scroller {
                             margin-left: auto;
                             background: #dcdfe2;
                             color: #202020;
+                            position: relative;
+                            top: -3px;
                         }
                     }
                 }
