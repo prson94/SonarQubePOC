@@ -1751,10 +1751,15 @@ where	I.ID is null";
 
             AssetType subjectAssetType = null;
             AssetType objectAssetType = null;
+            subjectAssetType = Filter<AssetType>(i => i.Object == model.Subject && i.ObjectID == model.SubjectID).FirstOrDefault();
+            objectAssetType = Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).FirstOrDefault();
+
+            model.SubjectUid = subjectAssetType?.uid;
+            model.ObjectUid = objectAssetType?.uid;
+
             if (predicateModel.Type == PredicateType.BusinessToTechnical || predicateModel.Type == PredicateType.Transformation)
             {
-                subjectAssetType = Filter<AssetType>(i => i.Object == model.Subject && i.ObjectID == model.SubjectID).FirstOrDefault();
-                objectAssetType = Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).FirstOrDefault();
+                
 
                 if (predicateModel.Type == PredicateType.BusinessToTechnical)
                 {
