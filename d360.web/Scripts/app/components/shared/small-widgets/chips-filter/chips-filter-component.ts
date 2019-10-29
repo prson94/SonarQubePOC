@@ -116,8 +116,6 @@ export class ChipsFilterComponent {
     }
 
     closeMenu() {
-        this.openMenu = true;
-        this.isInputOpen = false;
         this.filterText = '';
         this.currentFilter = undefined;
         setTimeout(() => {
