@@ -36,16 +36,9 @@ namespace d360.web.Controllers.V2
 
         #region Internal Classes For GetAssetLineage Endpoint
 
-        internal class RawResultList1
-        {
-            public int Hop { get; set; }
-            public long ID { get; set; }
-        }
-
         internal class RawResultList2
         {
             public int Hop { get; set; }
-            public long ID { get; set; }
             public string Key { get; set; }
             public string ParentKey { get; set; }
             public string Back { get; set; }
@@ -91,7 +84,7 @@ namespace d360.web.Controllers.V2
                         relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
                     }
                     
-                    var child = new AssetBrowserLineageApiItemModel { hop = h.Hop, id = h.ID, key = h.Key, assetUid = h.AssetUid, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
+                    var child = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
 
                     recurse(hierarchies, child);
 
@@ -117,7 +110,7 @@ namespace d360.web.Controllers.V2
                     relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
                 }
 
-                var current = new AssetBrowserLineageApiTopItemModel { hop = h.Hop, id = h.ID, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
+                var current = new AssetBrowserLineageApiTopItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
                 recurse(hierarchies, current);
                 model.assets.Add(current);
             }
@@ -172,8 +165,8 @@ namespace d360.web.Controllers.V2
                     hops = (postModel.Hops > 0) ? postModel.Hops : 1 
                 }, timeout: 60);
 
-                var hierarchies = reader.Read<RawResultList2>().OrderBy(i => i.Hop).ThenBy(i => i.ID).ThenBy(i => i.HierarchyLevel).ToList();
-                var relationships = reader.Read<RawResultList3>().OrderBy(i => i.Hop).ToList();
+                var hierarchies = reader.Read<RawResultList2>().ToList();
+                var relationships = reader.Read<RawResultList3>().ToList();
 
                 return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(hierarchies, relationships));
             }
@@ -214,7 +207,7 @@ namespace d360.web.Controllers.V2
                     postModel.StartHop
                 }, timeout: 60);
 
-                var hierarchies = reader.Read<RawResultList2>().OrderBy(i => i.Hop).ThenBy(i => i.ID).ThenBy(i => i.HierarchyLevel).ToList();
+                var hierarchies = reader.Read<RawResultList2>().OrderBy(i => i.Hop).ThenBy(i => i.HierarchyLevel).ToList();
                 var relationships = reader.Read<RawResultList3>().OrderBy(i => i.Hop).ToList();
 
                 return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(hierarchies, relationships));
