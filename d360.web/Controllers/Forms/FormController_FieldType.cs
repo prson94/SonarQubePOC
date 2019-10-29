@@ -860,7 +860,7 @@ namespace d360.web.Controllers
                 .OrderBy(ft => ft.FriendlyName)
                 .Select(ft => new { ft.FriendlyName, ft.Name, ft.ID })
                 .ToList()
-                .Select(ft => new { title = $"{ft.FriendlyName} ({ft.Name})", value = ft.ID.ToString() })
+                .Select(ft => new { title = $"{ft.FriendlyName} ({ft.Name})", value = ft.ID })
                 .ToList();
 
             #endregion
