@@ -1,4 +1,4 @@
-﻿import { NgModule }       from '@angular/core';
+﻿﻿import { NgModule }       from '@angular/core';
 import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
@@ -13,11 +13,12 @@ import { HeroSearchInputComponent } from './hero-search-input';
 import { SearchResultsComponent } from './search-results.component'
 import { SearchResultItemComponent } from './search-result-item.component'
 import { SearchComponent } from './search.component'
-import { SearchAutocompleteListComponent } from './search-autocomplete-list.component';
 import { SearchInputComponent } from './search-input.component';
 import { DynamicPercentageModule } from '../shared/small-widgets/dynamic-percentage/dynamic-percentage-module';
 import { PaginatorModule } from '../shared/small-widgets/paginator/paginator-bar-module';
+import { CheckTreeModule } from '../shared/small-widgets/check-tree/check-tree.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { ChipsFilterModule } from '../shared/small-widgets/chips-filter/chips-filter-module';
 import { SearchRoutingModule} from './search.routes';
 
 import { CheckboxModule } from 'primeng/checkbox';
@@ -28,7 +29,7 @@ import { SharedModule } from 'primeng/shared';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { TypeaheadSearchModule } from '../shared/search/typeahead-search.component';
-
+import { SearchStateService } from './search-state.service';
 
 @NgModule({
     imports: [CommonModule,
@@ -48,6 +49,7 @@ import { TypeaheadSearchModule } from '../shared/search/typeahead-search.compone
         TooltipModule,        
         PaginatorModule,
         SharedModule,
+        CheckTreeModule,
 
         //d3s        
         CoreModule,
@@ -55,6 +57,7 @@ import { TypeaheadSearchModule } from '../shared/search/typeahead-search.compone
         DynamicPercentageModule,
         SharedDynamicGridEditorModule,
         PaginatorModule,
+        ChipsFilterModule,
         TypeaheadSearchModule
     ],
     declarations: [
@@ -62,8 +65,7 @@ import { TypeaheadSearchModule } from '../shared/search/typeahead-search.compone
         SearchResultsComponent,
         SearchResultItemComponent,
         SearchComponent,
-        SearchAutocompleteListComponent,    
-        SearchInputComponent,  
+        SearchInputComponent,
         HeroSearchInputComponent
     ],
     exports: [
@@ -75,7 +77,9 @@ import { TypeaheadSearchModule } from '../shared/search/typeahead-search.compone
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
-            multi: true },
+            multi: true
+        },
+        SearchStateService
     ]
 })
 export class SearchModule { }

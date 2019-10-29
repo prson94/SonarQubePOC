@@ -57,7 +57,7 @@ namespace d360.web.Controllers.V2
             public string DisplayValue { get; set; }
             public AssetTypeClass Class { get; set; }
             public string AssetTypeName { get; set; }
-            public bool Reveal { get; set; }
+            public GetAssetLineagePostModelDirection Reveal { get; set; }
             public string RelationCounts { get; set; }
         }
 
@@ -104,8 +104,43 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        private AssetBrowserLineageApiResponseModel buildResponseModel(List<RawResultList2> hierarchies, List<RawResultList3> relationships)
+        {
+            var model = new AssetBrowserLineageApiResponseModel();
+
+            foreach (var h in hierarchies.Where(i => string.IsNullOrEmpty(i.ParentKey)))
+            {
+                // For badging in browser.
+                var relationCounts = new List<AssetBrowserLineageApiItemRelationCountModel>();
+                if (!string.IsNullOrEmpty(h.RelationCounts))
+                {
+                    relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
+                }
+
+                var current = new AssetBrowserLineageApiTopItemModel { hop = h.Hop, id = h.ID, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
+                recurse(hierarchies, current);
+                model.assets.Add(current);
+            }
+
+            model.intersects = relationships.Select(r => new AssetBrowserLineageApiRelationshipModel
+            {
+                backColor = "",
+                foreColor = "",
+                intersectUid = r.Uid,
+                objectUid = r.objectUid,
+                objectKey = r.objectKey,
+                predicate = r.predicate,
+                predicateUid = r.predicateUid,
+                predicateType = r.predicateType,
+                subjectUid = r.subjectUid,
+                subjectKey = r.subjectKey
+            }).ToList();
+
+            return model;
+        }
+
         /// <summary>
-        /// Gets lineage for the specified asset.
+        /// Gets lineage for the specified assets.
         /// </summary>
         /// <remarks>
         /// 
@@ -135,42 +170,54 @@ namespace d360.web.Controllers.V2
                     postModel.StartHop,
                     direction = (int)postModel.Direction, 
                     hops = (postModel.Hops > 0) ? postModel.Hops : 1 
-                }, timeout: 10);
+                }, timeout: 60);
 
-                var hops = reader.Read<RawResultList1>().ToList();
                 var hierarchies = reader.Read<RawResultList2>().OrderBy(i => i.Hop).ThenBy(i => i.ID).ThenBy(i => i.HierarchyLevel).ToList();
                 var relationships = reader.Read<RawResultList3>().OrderBy(i => i.Hop).ToList();
 
-                var model = new AssetBrowserLineageApiResponseModel();
+                return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(hierarchies, relationships));
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
+        }
 
-                foreach (var h in hierarchies.Where(i => string.IsNullOrEmpty(i.ParentKey)))
+        /// <summary>
+        /// Gets impact relationships for the specified assets.
+        /// </summary>
+        /// <remarks>
+        /// 
+        /// </remarks>
+        /// <param name="postModel"></param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            Route("impacts"),
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerRequestExample(typeof(GetAssetImpactsPostModel), typeof(GetAssetImpactsPostModelExample)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserLineageApiResponseModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetAssetImpacts(GetAssetImpactsPostModel postModel)
+        {
+            try
+            {
+                var reader = await Company.QueryMultipleAsync(@"exec graph.GetImpactRelationshipsByAssets @assets, @StartHop", new
                 {
-                    // For badging in browser.
-                    var relationCounts = new List<AssetBrowserLineageApiItemRelationCountModel>();
-                    if (!string.IsNullOrEmpty(h.RelationCounts))
-                    {
-                        relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
-                    }
-                    
-                    var current = new AssetBrowserLineageApiTopItemModel { hop = h.Hop, id = h.ID, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
-                    recurse(hierarchies, current);
-                    model.assets.Add(current);
-                }
+                    assets = postModel.AssetUids.AsTableValuedParameter<Guid>(
+                        "dbo.UidTable",
+                        new List<string>() { "Uid" }
+                        ),
+                    postModel.StartHop
+                }, timeout: 60);
 
-                model.intersects = relationships.Select(r => new AssetBrowserLineageApiRelationshipModel { 
-                    backColor = "", 
-                    foreColor = "", 
-                    intersectUid = r.Uid, 
-                    objectUid = r.objectUid, 
-                    objectKey = r.objectKey,
-                    predicate = r.predicate, 
-                    predicateUid = r.predicateUid, 
-                    predicateType = r.predicateType,
-                    subjectUid = r.subjectUid ,
-                    subjectKey = r.subjectKey
-                }).ToList();
+                var hierarchies = reader.Read<RawResultList2>().OrderBy(i => i.Hop).ThenBy(i => i.ID).ThenBy(i => i.HierarchyLevel).ToList();
+                var relationships = reader.Read<RawResultList3>().OrderBy(i => i.Hop).ToList();
 
-                return Request.CreateResponse(HttpStatusCode.OK, model);
+                return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(hierarchies, relationships));
             }
             catch (Exception ex)
             {
@@ -185,6 +232,7 @@ namespace d360.web.Controllers.V2
         {
             public string TypeName { get; set; }
             public AssetTypeClass AssetTypeClass { get; set; }
+            public string AssetTypeClassDisplayName { get { return AssetTypeClass.GetDisplayName(); } }
             public Guid Uid { get; set; }
             public string DisplayValue { get; set; }
             public string Path { get; set; }
@@ -209,8 +257,11 @@ namespace d360.web.Controllers.V2
 
         internal class AssetBrowserDiagramAssetOwner
         {
+            public int ResponsibilityTypeID { get; set; }
             public string ResponsibilityTypeName { get; set; }
             public string Icon { get; set; }
+            public int ResourceID { get; set; }
+            public string ResourceName { get; set; }
             public string SecurityAssetName { get; set; }
             public string Context { get; set; }
         }
@@ -266,11 +317,14 @@ select	A.TypeName,
 			for json path
 		) as Scores,
 		(
-			select	ResponsibilityTypeName,
+			select	ResponsibilityTypeID,
+					ResponsibilityTypeName,
 					case SecurityAsset
 						when 'G' then 'fa-users'
 						else 'fa-user'
 					end as Icon,
+					ResourceID,
+					ResourceName,
 					SecurityAssetName,
 					Context
 			from	ResponsibilityDetail

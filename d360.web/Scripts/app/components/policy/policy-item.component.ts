@@ -38,6 +38,7 @@ declare var CompanySettings;
                             <d3s-object-definition-tile [nymTypes]="policyType?.NymTypes"
                                                         [objectPermissions]="permissions"
                                                         [objectType]="'Policy'"
+                                                        [useV2Api]="true"
                                                         [objectID]="selected?.ID"
                                                         [hasAttributes]="policyType.AllowAttributes"
                                                         (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>

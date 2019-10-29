@@ -682,17 +682,19 @@ namespace d360.extensions.search
             Nest.Field fldTag = new Nest.Field("d3sTags.Value");
 
             string tagSearch = "";
-            List<QueryContainer> baseQueries = new List<QueryContainer>();
+            bool tagMust = false;
+            List<QueryContainer> shouldQueries = new List<QueryContainer>();
+            List<QueryContainer> mustQueries = new List<QueryContainer>();
             List<QueryContainer> filterQueries = new List<QueryContainer>();
 
             string phrase = queryRequest.Term;
-            if (!string.IsNullOrEmpty(phrase) && queryRequest.FieldFilters.Count == 0)
+            if (!string.IsNullOrEmpty(phrase))
             {
                 //Regular search
                 if (phrase.StartsWith("'") && phrase.EndsWith("'"))
                 {
                     phrase = EscapeSpecialCharacters(phrase.Trim('\''));
-                    baseQueries.Add(new MatchPhraseQuery
+                    shouldQueries.Add(new MatchPhraseQuery
                     {
                         Field = fldName,
                         Query = phrase
@@ -705,7 +707,7 @@ namespace d360.extensions.search
                         phrase = phrase.Remove(phrase.Length - 1);
                     phrase = EscapeSpecialCharacters(phrase) + "*";
 
-                    baseQueries.Add(new QueryStringQuery
+                    shouldQueries.Add(new QueryStringQuery
                     {
                         Query = phrase
                     });
@@ -715,11 +717,15 @@ namespace d360.extensions.search
 
             foreach(FieldFilter fieldFilter in queryRequest.FieldFilters)
             {
+                if (string.IsNullOrEmpty(fieldFilter.Phrase))
+                    continue;
+
                 Nest.Field fld;
                 switch (fieldFilter.Field)
                 {
                     case "d3sTags":
                         tagSearch = EscapeSpecialCharacters(fieldFilter.Phrase);
+                        tagMust = true;
                         continue;
                     case "_type":
                         fld = new Nest.Field("d3sGroup");
@@ -730,7 +736,7 @@ namespace d360.extensions.search
                 }
                 if(fieldFilter.MatchWords)
                 {
-                    baseQueries.Add(new MatchPhraseQuery
+                    filterQueries.Add(new MatchPhraseQuery
                     {
                         Field = fld,
                         Query = fieldFilter.Phrase
@@ -742,7 +748,7 @@ namespace d360.extensions.search
                         p = p.Remove(p.Length - 1);
                     p = EscapeSpecialCharacters(p) + "*";
 
-                    baseQueries.Add(new QueryStringQuery
+                    filterQueries.Add(new QueryStringQuery
                     {
                         Fields = fld,
                         Query = p
@@ -754,7 +760,7 @@ namespace d360.extensions.search
             //Tag query
             if(tagSearch != "")
             {
-                baseQueries.Add(new NestedQuery
+                NestedQuery tagQuery = new NestedQuery
                 {
                     Path = "d3sTags",
                     Query = new BoolQuery
@@ -771,13 +777,18 @@ namespace d360.extensions.search
                             Fields = new Dictionary<Nest.Field, IHighlightField> { { fldTag, new HighlightField { } } }
                         }
                     }
-                });
+                };
+                if (tagMust)
+                    filterQueries.Add(tagQuery);
+                else
+                    shouldQueries.Add(tagQuery);
             }
 
             //If neither advanced nor a phrase is available, return an empty result set
-            if (baseQueries.Count == 0)
+            if (shouldQueries.Count == 0)
                 return result;
 
+            //No need to ignore filters with empty values. NEST does that for us
             foreach (AggregationFilter aggFilter in queryRequest.AggregationFilters)
             {
                 filterQueries.Add(new TermsQuery
@@ -793,7 +804,8 @@ namespace d360.extensions.search
                 {
                     Must = new QueryContainer[] {
                         new BoolQuery{
-                            Should = baseQueries
+                            Should = shouldQueries,
+                            Must = mustQueries
                         }
                     },
                     Filter = new QueryContainer[] { new BoolQuery {

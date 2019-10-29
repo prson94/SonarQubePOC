@@ -44,6 +44,10 @@ export class AdminAttributeAllocationComponent extends BaseComponent {
             .attributeTypeService
             .getAttributeTypeAllocations(this.attributeID)
             .subscribe(result => {
+                result.forEach(i => {
+                    if (i.ObjectType == "ArtifactType")
+                        i.ObjectType = "Business Asset";
+                })
                 this.allocations = result;
                 this.isLoading = false;
             });

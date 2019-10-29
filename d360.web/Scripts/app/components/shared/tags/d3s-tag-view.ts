@@ -37,6 +37,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
     @Input() isEditable: boolean = false;
     @Input() allowAddTag: boolean = false;
     @Input() assetUID: string;
+    @Input() ignoreResizing: boolean = false;
     showEditor: boolean = false;
     showDelete: boolean = false;
     private inputValue: any;
@@ -308,7 +309,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.ref.markForCheck();
     }
 
-    private getParentForResizing(element: HTMLElement, tags: string) {
+    private getParentForResizing(element: HTMLElement, tags: string): HTMLElement {
         var searchFor = tags.split(',');
         var el = null;
         searchFor.forEach(tagName => {
@@ -335,6 +336,15 @@ export class TagView extends AdminBaseComponent implements OnInit {
         if ((this.isEditable != true && this.showDelete == false) || (<HTMLElement>event.target).className == 'tag-item-wrapper')
             this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid.toString().toLowerCase()}`]);
         event.stopPropagation();
+    }
+
+    public highlight(item, input) {
+        if (!input) {
+            return item;
+        }
+        return item.replace(new RegExp(input, "gi"), match => {
+            return '<span style="background: #F5FF57;">' + match + '</span>';
+        });
     }
 
     enter(tag: any, el: HTMLElement) {
@@ -364,10 +374,16 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     manageWidth() {
+        if (this.ignoreResizing) return;
+
         if (this.container) {
             let parent = this.getParentForResizing(this.container.nativeElement, 'TD,DIV');
+
             if (!parent) {
                 console.warn("No suitable parent found for tag resizing!");
+            } else if (parent.classList.contains("tagsnomanagewidth")) {
+                this.setVisibility();
+                return;
             }
 
             let ofWidth = parent ? parent.offsetWidth - 10 : 500;

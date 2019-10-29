@@ -918,6 +918,9 @@ where A.FusionTypeID = @id", columns, joins);
             if (!Company.CurrentResourceIsAdmin)
                 return Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to upload fusion data for this configuration.");
 
+            if (!Community.IsFusionEnabled())
+                return Request.CreateErrorResponse(HttpStatusCode.Forbidden, "You are not allowed to upload fusion data. Fusion is disabled in this environment.");
+
             #region Validation
             var fusion = Company.Filter<Fusion>(x => x.ID == fusionID).Select(x=>new { x.ID,x.FusionTypeID}).SingleOrDefault();
             if (fusion == null)

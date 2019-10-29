@@ -133,6 +133,10 @@ namespace d360.web.Controllers.V2
 
             try
             {
+
+                if (model == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
                 #region GetData
                 TypeIdentifierInfoModel typeIdentifierInfoModel = null;
 

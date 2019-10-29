@@ -1046,6 +1046,10 @@ button.ui-button:disabled {
     margin-top: 6px;
 }
 
+.nm {
+    margin-top: -.5em !important;
+}
+
 .ui-dropdown-item.ui-state-hover {
     border: none;
 }
@@ -1470,4 +1474,9 @@ p-multiselect .ui-multiselect {
 /*Dropdown default z index for IE issue*/
 p-dropdown .ui-dropdown-panel {
     z-index: 10;
+}
+
+/*Calendar default z index for IE issue*/
+p-calendar .ui-datepicker {
+    z-index: 2000 !important;
 }

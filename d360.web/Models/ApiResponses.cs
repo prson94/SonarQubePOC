@@ -118,7 +118,7 @@ namespace d360.web.Models
         int hop { get; set; }
         Guid assetUid { get; set; }
         string displayValue { get; set; }
-        bool reveal { get; set; }
+        GetAssetLineagePostModelDirection reveal { get; set; }
         string key { get; set; }
         List<AssetBrowserLineageApiItemRelationCountModel> relationCounts { get; set; }
         List<AssetBrowserLineageApiItemModel> items { get; set; }
@@ -138,7 +138,7 @@ namespace d360.web.Models
         [DataMember]
         public string displayValue { get; set; }
         [DataMember]
-        public bool reveal { get; set; }
+        public GetAssetLineagePostModelDirection reveal { get; set; }
         [DataMember]
         public List<AssetBrowserLineageApiItemRelationCountModel> relationCounts { get; set; }
         [DataMember]

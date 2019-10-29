@@ -357,7 +357,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                 filteredObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
                 string notInSql = $"not in ({string.Join(",", filteredObjects.Select(x => "'" + x + "'"))})";
 
-                whereClause += $" and (I.Object {notInSql} and I.Subject {notInSql})";
+                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (I.Object {notInSql} and I.Subject {notInSql})";
             }
 
 
