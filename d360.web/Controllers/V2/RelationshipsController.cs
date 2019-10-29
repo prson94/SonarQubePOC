@@ -698,6 +698,7 @@ namespace d360.web.Controllers.V2
         /// <param name="intersectTypeUid">The unique identifier of the intersect type.</param>
         /// <param name="relationships">The payload of your request. Must include SubjectAssetUid and ObjectAssetUid.</param>
         /// <param name="triggerWorkflow">Set this flag to 'true' to trigger workflows with this action. If flag is not set, default value is false.</param>
+        /// <param name="lookupFieldsPassedByValue">Optional query string parameter that allows you to pass list values numeric value instead of plain text value.  The default value for this is false.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
@@ -708,7 +709,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships, bool triggerWorkflow = false)
+        public async Task<IHttpActionResult> PostRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships, bool triggerWorkflow = false, bool lookupFieldsPassedByValue = false)
         {
             var prefix = "Relationships.PostRelationshipsAsync => ";
             var errorMessage = "";
@@ -736,7 +737,7 @@ namespace d360.web.Controllers.V2
                 List<DatabaseBulkRelationshipResult> results = null;
                 try
                 {
-                    results = Company.ImportRelationships(execution, intersectType, relationships, 3600, triggerWorkflow);
+                    results = Company.ImportRelationships(execution, intersectType, relationships, 3600, triggerWorkflow, lookupFieldsPassedByValue);
 
                     // Close execution record.
                     execution.Processed = results.Count;
