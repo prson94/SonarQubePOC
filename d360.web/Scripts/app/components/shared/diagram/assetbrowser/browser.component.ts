@@ -317,7 +317,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.responseModel = data;
                 let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
                 this.parseData(translationModel);
-                console.log(translationModel);
             });
 
         this.isLoading = false;
@@ -327,6 +326,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.startTransaction("load_all_data");
         let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
 
+        //#region add data to diagram model
         if (append === true) {
             data.nodes.forEach(n => {
                 let x = dm.findNodeDataForKey(n.key);
@@ -344,8 +344,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             dm.nodeDataArray = data.nodes;
             dm.linkDataArray = data.links;
         }
+        //#endregion
 
-        //add reveal nodes
+        //#region process dynamic elements like reveal nodes and relation badges
         this.diagram.findTopLevelGroups().each(g => {
             let children = g.findSubGraphParts();
             let childAssets = [];
@@ -358,28 +359,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 childAssets.push(data.assetUid);
 
                 if (data.relations != null && data.relations.length > 0) {
-                    data.relations.forEach(r => {
+                    for (let i = 0; i < data.relations.length; i++) {
+                        let r = data.relations[i];
                         r.key = `${data.key}_${r.predicate}_${r.direction}_${r.assets.sort().join()}`;
                         if (g.data.relations.find(c => c.key == r.key) == null) {
                             childRelations.push(r);
                         }
-                    })
+                        data.relations.splice(i, 1);
+                    }
                 }
             });
 
             g.data.relations = g.data.relations.concat(childRelations);
-
-            if (g.data.relations.length > 5) {
-                let sum = 0;
-                g.data.relations.forEach(r => { sum += r.count });
-
-                this.diagram.model.setDataProperty(g.data, "relations", g.data.relations.slice());
-                this.diagram.model.setDataProperty(g.data, "currentRelations", [{count: sum, predicate: 'relates to', isContext: true}]);
-            } else {
-                this.diagram.model.setDataProperty(g.data, "relations", g.data.relations.slice());
-                this.diagram.model.setDataProperty(g.data, "currentRelations", g.data.relations.slice());
-            }
-
+            this.diagram.model.setDataProperty(g.data, "relations", g.data.relations.slice());
 
 
             if (g.data.showReveal != AssetBrowserDirection.None) {
@@ -431,6 +423,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 g.data.showReveal = AssetBrowserDirection.None;
             }
         });
+        //#endregion
 
         this.diagram.commitTransaction("load_all_data");
         this.reOrderLayout();
@@ -799,22 +792,31 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (obj != null && obj.part != null && obj.part.data != null) {
             let ix = obj.itemIndex;
             let node: AssetBrowserTranslationNode = obj.part.data;
-            let relation: AssetBrowserTranslationRelationCount = node.currentRelations[ix];
+            let relation: AssetBrowserTranslationRelationCount = node.relations[ix];
+            let requestModel: AssetBrowserImpactApiRequestModel = new AssetBrowserImpactApiRequestModel();
 
-            if (relation.isContext === true) {
-                this.diagram.commandHandler.showContextMenu(obj);
-            } else {
-                let requestModel: AssetBrowserImpactApiRequestModel = new AssetBrowserImpactApiRequestModel();
+            requestModel.AssetUids = [];
+            requestModel.AssetUids.push(node.assetUid);
+            requestModel.AssetUids = requestModel.AssetUids.concat(relation.assets);
+            requestModel.StartHop = node.hop;
 
-                requestModel.AssetUids = relation.assets;
-                requestModel.StartHop = node.hop;
-
-                this.browserService.getAssetImpacts(requestModel)
-                    .subscribe(response => {
-                        let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(response);
-                        this.parseData(translationModel, true);
-                    });
+            let n = node;
+            if (n.isGroup) {
+                (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
+                    requestModel.AssetUids.push(g.data.assetUid);
+                })
             }
+
+            this.diagram.model.removeArrayItem(node.relations, ix);
+
+            this.browserService.getAssetImpacts(requestModel)
+                .subscribe(response => {
+                    let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(response);
+
+                    console.log(node, translationModel);
+
+                    this.parseData(translationModel, true);
+                });
         }
     }
 
@@ -824,78 +826,64 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private initializeCustomShapes() {
         go.Shape.defineFigureGenerator("RoundedRectLeft", (shape, w, h) => {
-            let p1 = 5;  // default corner size
+            let p1 = 5;  
             if (shape !== null) {
                 var param1 = shape.parameter1;
-                if (!isNaN(param1) && param1 >= 0) p1 = param1;  // can't be negative or NaN
+                if (!isNaN(param1) && param1 >= 0) p1 = param1; 
             }
             p1 = Math.min(p1, w / 2);
-            p1 = Math.min(p1, h / 2);  // limit by whole height or by half height?
+            p1 = Math.min(p1, h / 2); 
             let geo = new go.Geometry();
-            // a single figure consisting of straight lines and quarter-circle arcs
+
             geo.add(new go.PathFigure(0, p1)
                 .add(new go.PathSegment(go.PathSegment.Arc, 180, 90, p1, p1, p1, p1))
-                .add(new go.PathSegment(go.PathSegment.Line, w - p1, 0))
-                .add(new go.PathSegment(go.PathSegment.Arc, 270, 90, w - p1, p1, p1, p1))
+                .add(new go.PathSegment(go.PathSegment.Line, w, 0))
                 .add(new go.PathSegment(go.PathSegment.Line, w, h))
-                .add(new go.PathSegment(go.PathSegment.Line, 0, h).close()));
+                .add(new go.PathSegment(go.PathSegment.Line, p1, h))
+                .add(new go.PathSegment(go.PathSegment.Arc, 90, 90, p1, h - p1, p1, p1).close()));
 
-            // don't intersect with two top corners when used in an "Auto" Panel
             geo.spot1 = new go.Spot(0, 0, 0.3 * p1, 0.3 * p1);
             geo.spot2 = new go.Spot(1, 1, -0.3 * p1, 0);
             return geo;
         });
 
         go.Shape.defineFigureGenerator("RoundedRectRight", (shape, w, h) => {
-            let p1 = 5;  // default corner size
+            let p1 = 5; 
             if (shape !== null) {
                 var param1 = shape.parameter1;
-                if (!isNaN(param1) && param1 >= 0) p1 = param1;  // can't be negative or NaN
+                if (!isNaN(param1) && param1 >= 0) p1 = param1; 
             }
             p1 = Math.min(p1, w / 2);
-            p1 = Math.min(p1, h / 2);  // limit by whole height or by half height?
+            p1 = Math.min(p1, h / 2); 
             let geo = new go.Geometry();
-            // a single figure consisting of straight lines and quarter-circle arcs
-            geo.add(new go.PathFigure(0, p1)
-                .add(new go.PathSegment(go.PathSegment.Arc, 180, 90, p1, p1, p1, p1))
+
+
+            geo.add(new go.PathFigure(0, 0)
                 .add(new go.PathSegment(go.PathSegment.Line, w - p1, 0))
                 .add(new go.PathSegment(go.PathSegment.Arc, 270, 90, w - p1, p1, p1, p1))
-                .add(new go.PathSegment(go.PathSegment.Line, w, h))
+                .add(new go.PathSegment(go.PathSegment.Line, w, h - p1))
+                .add(new go.PathSegment(go.PathSegment.Arc, 0, 90, w - p1, h - p1, p1, p1))
                 .add(new go.PathSegment(go.PathSegment.Line, 0, h).close()));
-            // don't intersect with two top corners when used in an "Auto" Panel
+
+
             geo.spot1 = new go.Spot(0, 0, 0.3 * p1, 0.3 * p1);
             geo.spot2 = new go.Spot(1, 1, -0.3 * p1, 0);
             return geo;
         });
     }
 
-    private createImpactBadgeContextMenu(): go.Adornment {
-        return this.g(go.Adornment,
-            "Vertical",
-            {
-                areaBackground: "#ffffff",
-                background: "#ffffff"
-            },
-            new go.Binding("itemArray", "relations"),
-            {
-                itemTemplate: this.createImpactBadgeButton()
-            }
-        );
-    }
-
-    private createImpactBadge(): go.Panel {
+    private createRelationsBadge(): go.Panel {
         return this.g(go.Panel, "TableRow", {
-            name: '_impactBadge',
             alignment: go.Spot.TopCenter,
             alignmentFocus: go.Spot.Bottom,
             padding: 0,
+            cursor: "pointer",
             click: (e, obj) => this.clickBadge(e, obj),
-            contextMenu: this.createImpactBadgeContextMenu(),
             },
             this.g(go.Panel, "Horizontal", {alignment: go.Spot.Center},
-                this.g(go.Panel, "Auto", {  },
+                this.g(go.Panel, "Auto",
                     this.g(go.Shape, 
-                        { figure: "RoundedRectangle", parameter1: 2, fill: "white", stroke: "#404040", strokeWidth: 1 },
+                        { figure: "RoundedRectLeft", parameter1: 2, fill: "white", stroke: "#404040", strokeWidth: 1 },
                     ),
                     this.g(
                         go.TextBlock,
@@ -910,56 +898,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         new go.Binding("text", "predicate")
                     ),
                 ),
-                this.g(go.Panel, "Auto", { background: "#404040"}, 
-                    this.g(go.Shape, "RoundedRectangle",
-                        { parameter1: 2, stroke: "#404040", strokeWidth: 1, fill: null }
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 2,
-                            alignment: go.Spot.Center,
-                            editable: false,
-                            font: "8pt helvetica, arial, sans-serif",
-                            stroke: "white"
-                        },
-                        new go.Binding("text", "count")
-                    ),
-                )
-            )
-        );
-    }
-
-    private createImpactBadgeButton(): any {
-        return  this.g("ContextMenuButton", {
-            name: '_impactBadge',
-            alignment: go.Spot.TopCenter,
-            alignmentFocus: go.Spot.Bottom,
-            padding: 0,
-            click: (e, obj) => this.clickBadge(e, obj),
-        },
-            this.g(go.Panel, "Horizontal", { alignment: go.Spot.Center },
-                this.g(go.Panel, "Auto", {},
-                    this.g(go.Shape,
-                        { figure: "RoundedRectangle", parameter1: 2, fill: "white", stroke: "#404040", strokeWidth: 1 },
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 2,
-                            alignment: go.Spot.Left,
-                            editable: false,
-                            font: "8pt helvetica, arial, sans-serif",
-                            stroke: "#404040"
-                        },
-                        new go.Binding("text", "predicate")
-                    ),
-                ),
-                this.g(go.Panel, "Auto", { background: "#404040" },
-                    this.g(go.Shape, "RoundedRectangle",
-                        { parameter1: 2, stroke: "#404040", strokeWidth: 1, fill: null }
+                this.g(go.Panel, "Auto",
+                    this.g(go.Shape, "RoundedRectRight",
+                        { parameter1: 2, stroke: "#404040", strokeWidth: 1, fill: "#404040" }
                     ),
                     this.g(
                         go.TextBlock,
@@ -1079,9 +1020,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 go.Panel,
                 "Vertical", 
                 this.g(go.Panel, "Table",
-                    new go.Binding("itemArray", "currentRelations"),
+                    new go.Binding("itemArray", "relations"),
                     {
-                        itemTemplate: this.createImpactBadge()
+                        itemTemplate: this.createRelationsBadge()
                     }
                 ),
                 this.g(
