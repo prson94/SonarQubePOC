@@ -6,7 +6,33 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
     selector: 'd3s-chips-filter',
     template: `
 		        <div class="chips-input">
-                    <div class="chip-option" *ngFor="let item of selectedFilters">{{item.field}}: {{item.value}}<i class="fa fa-times-circle" (click)="removeFilterOption(item)"></i></div>
+                    <div 
+                    class="chip-option" 
+                    *ngFor="let item of selectedFilters"
+                    (click)="openEdit()">
+                        {{item.field}}: {{item.value}}  
+                        <i class="fa fa-times-circle" (click)="removeFilterOption(item)"></i>
+                        <div class="popup-menu" [ngClass]="{'popup-open': isEditOpen}">
+                            <ul class="chips-input-list" (click)="doNothing($event)" (keydown.enter)="edit(item,filterText,exact.checked)">
+                                <li>
+                                    <span>
+                                        <div class="field mr10"><input [(ngModel)]="filterText" type="text" placeholder="Please enter a value" #searchInput/></div>
+                                    </span>
+                                </li>
+                                <li>
+                                    <span>
+                                        <label class="checkbox mr10"><input type="checkbox" #exact/><span>Match Whole Words</span></label>
+                                    </span>
+                                </li>
+                                <li>
+                                    <span>
+                                        <button class="button" (click)="closeMenu();">Cancel</button>
+                                        <button class="button primary pull-right" (click)="edit(item,filterText,exact.checked)"  [disabled]="!filterText || filterText == ''">Update</button>
+                                    </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                     <div class="chip-option clickable" tabindex=0
                         (click)="toggleMenu()" 
                         (keydown.esc)="closeMenu()">
@@ -54,6 +80,7 @@ export class ChipsFilterComponent {
     private selectedFilters: AdvancedSearchFilter[] = [];
     private currentFilter: AdvancedSearchFilter;
     private isInputOpen: boolean = false;
+    private isEditOpen: boolean = false;
     @ViewChild('popup') popup: ElementRef;
     constructor(
         private ref: ChangeDetectorRef,
@@ -69,9 +96,13 @@ export class ChipsFilterComponent {
         this.checkMenuPosistion();
         this.ref.markForCheck();
     }
+    private openEdit() {
+        this.isEditOpen = true;
+    }
     doNothing(event) {
         event.stopPropagation();
     }
+
     update(filterValue: string, exact: any) {
         if (!filterValue)
             return;
@@ -84,8 +115,13 @@ export class ChipsFilterComponent {
         this.closeMenu();
         this.applyFlter.emit(this.selectedFilters);
     }
-
-
+    edit(item: AdvancedSearchFilter, filterValue: string, exact: any) {
+        item.value = filterValue;
+        item.exact = exact;
+        this.closeMenu();
+        this.applyFlter.emit(this.selectedFilters);
+    }
+   
 
     removeFilterOption(item) {
         let index = this.selectedFilters.indexOf(item);
@@ -104,12 +140,14 @@ export class ChipsFilterComponent {
     }
 
     private checkMenuPosistion() {
-        this.popup.nativeElement.style.right = 'auto';
         window.setTimeout(() => {
-            let dims = this.popup.nativeElement.getBoundingClientRect();
-            let maxLeft = window.innerWidth;
-            if (dims.right > maxLeft) {
-                this.popup.nativeElement.style.right = '0px';
+            if (this.popup) {
+                this.popup.nativeElement.style.right = 'auto';
+                let dims = this.popup.nativeElement.getBoundingClientRect();
+                let maxLeft = window.innerWidth;
+                if (dims.right > maxLeft) {
+                    this.popup.nativeElement.style.right = '0px';
+                }
             }
         }, 100);
     }
@@ -120,6 +158,7 @@ export class ChipsFilterComponent {
         setTimeout(() => {
             this.isInputOpen = false;
             this.openMenu = false;
+            this.isEditOpen = false;
             this.ref.markForCheck();
         }, 150);
     }
