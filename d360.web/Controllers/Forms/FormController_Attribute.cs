@@ -380,6 +380,10 @@ namespace d360.web.Controllers
         public JsonResult AttributeTypeRelation_EditFields(int at, string ot, int oid)
         {
             var list = new List<EditableField>();
+
+            if (ot == "Business Asset" || ot == "Technical Asset")
+                ot = "ArtifactType";
+
             var sType = ot.ToString();
             var a = Company.Filter<AttributeTypeRelationDetail>(i => i.AttributeTypeID == at && i.ObjectID == oid && i.ObjectType == sType).SingleOrDefault();
 
