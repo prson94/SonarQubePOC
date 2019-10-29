@@ -817,7 +817,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.browserService.getAssetImpacts(requestModel)
                 .subscribe(response => {
                     let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(response);
-
+                    //testing console.log(requestModel, response, translationModel);
                     this.parseData(translationModel, true);
                 });
         }
