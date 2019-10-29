@@ -233,34 +233,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         
     }
 
-    private shadeColor(col, amt) {
-
-        var usePound = false;
-        if (col[0] == "#") {
-            col = col.slice(1);
-            usePound = true;
-        }
-
-        var num = parseInt(col, 16);
-
-        var r = (num >> 16) + amt;
-
-        if (r > 255) r = 255;
-        else if (r < 0) r = 0;
-
-        var b = ((num >> 8) & 0x00FF) + amt;
-
-        if (b > 255) b = 255;
-        else if (b < 0) b = 0;
-
-        var g = (num & 0x0000FF) + amt;
-
-        if (g > 255) g = 255;
-        else if (g < 0) g = 0;
-
-        return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16);
-    }
-
     private initializeDiagram() {
 
         this.initializeCustomShapes();
@@ -816,11 +788,55 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             this.browserService.getAssetImpacts(requestModel)
                 .subscribe(response => {
+
+                    let nodeToPull = this.findInApiModel(node.key, this.responseModel);
+                    if (nodeToPull) {
+                        response.assets.push(nodeToPull);
+                    }
+
                     let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(response);
                     //testing console.log(requestModel, response, translationModel);
                     this.parseData(translationModel, true);
                 });
         }
+    }
+
+    private findInApiModel(key: string, model: AssetBrowserLineageApiResponseModel): AssetBrowserLineageApiItemModel {
+        let found: AssetBrowserLineageApiItemModel;
+
+        model.assets.forEach(root => {
+            if (!found) {
+                if (this.findInApiItemModel(key, root)) {
+                    found = root;
+                }
+            }
+        });
+
+        return found;
+    }
+
+    private findInApiItemModel(key: string, model: AssetBrowserLineageApiItemModel): boolean {
+        let found: boolean = false;
+
+        if (model.key == key) {
+            found = true;
+        }
+        else {
+            model.items.forEach(child => {
+                if (!found) {
+                    if (child.key == key) {
+                        found = true;
+                    }
+                    else {
+                        if (child.items) {
+                            found = this.findInApiItemModel(key, child);
+                        }
+                    }
+                }
+            });
+        }
+
+        return found;
     }
 
     //#endregion
