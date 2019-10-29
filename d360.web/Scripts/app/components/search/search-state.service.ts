@@ -21,7 +21,9 @@ export class SearchStateService extends BaseObservableService {
     }
 
     private _categories: BehaviorSubject<CheckTreeNode[]> = new BehaviorSubject([]);
-    
+    get currentCategories() {
+        return this._categories.value;
+    }
     get categories() {
         return new Observable(fn => this._categories.subscribe(fn));
     }
@@ -41,6 +43,8 @@ export class SearchStateService extends BaseObservableService {
     get treeLoading() {
         return new Observable(fn => this._treeLoading.subscribe(fn));
     }
+
+    public selectedFilters: CheckTreeNode[];
 
     private _query: SearchQuery;
     private _searchTypes: string[];
@@ -198,6 +202,7 @@ export class SearchStateService extends BaseObservableService {
             if (res.Categories.length != 0) {
                 var filterTree = res.Categories.map((val) => {
                     return {
+                        "key": val.Name,
                         "label": this.getDisplayLookup(val.Name),
                         "type": "category",
                         "expanded": true,
@@ -205,6 +210,7 @@ export class SearchStateService extends BaseObservableService {
                         "count": val.ResultCount,
                         "children": val.Categories.map((cat) => {
                             return {
+                                "key": val.Name+'___'+cat.Name,
                                 "label": cat.Name,
                                 "type": "subCategory",
                                 "data": cat.Name,

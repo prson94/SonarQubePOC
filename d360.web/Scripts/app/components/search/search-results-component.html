@@ -7,7 +7,7 @@
                     <d3s-loading [isLoading]="(searchStateService.treeLoading | async)"></d3s-loading>
                     <d3s-check-tree *ngIf="!(searchStateService.treeLoading | async)"
                                     [value]="searchStateService.categories | async"
-                                    [(selection)]="selectedFilters"
+                                    [(selection)]="searchStateService.selectedFilters"
                                     (onNodeSelect)="nodeSelectDeselect($event)"
                                     (onNodeUnselect)="nodeSelectDeselect($event)"
                                     [emptyMessage]="'No categories found'">

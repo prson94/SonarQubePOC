@@ -1,7 +1,7 @@
 ﻿import { Component, Input, EventEmitter, Output, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SearchService } from '../../services/search.service';
-import { SearchResultsObject, SearchCategories } from '../../models/search-result.model';
+import { SearchResultsObject } from '../../models/search-result.model';
 import { CheckTreeNode } from '../shared/small-widgets/check-tree/checktreenode';
 import { SearchStateService } from './search-state.service';
 
@@ -17,20 +17,15 @@ import { SearchStateService } from './search-state.service';
 
 export class SearchResultsComponent extends BaseComponent implements AfterViewInit {
     @Input() results: SearchResultsObject;
-    @Input() categories: SearchCategories[] = [];
-    @Input() filterTree: CheckTreeNode[];
     @Input() itemsPerPage: number = 5;
     @Input() from: number = 0;
     @Input() loading: boolean = false;
 
-    @Input() selectedCategory: SearchCategories;
     @Output() selectedCategoryChange = new EventEmitter();
     @Output() advFilterChanged = new EventEmitter();
     @ViewChild('searchContainer') container: ElementRef;
 
     newFilterOptions: any[] = [];
-
-    selectedFilters: CheckTreeNode[];
 
     ngOnInit() {
     }
@@ -66,7 +61,7 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
     }
 
     private nodeSelectDeselect(event) {
-        this.selectedCategoryChange.emit(this.selectedFilters);
+        this.selectedCategoryChange.emit(this.searchStateService.selectedFilters);
     }
 
     private paginate(data) {
