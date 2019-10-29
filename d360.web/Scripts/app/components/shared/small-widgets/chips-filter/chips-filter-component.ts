@@ -1,7 +1,6 @@
 ﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { AdvancedSearchFilter } from '../../../../models/search-result.model';
-import { Element } from '@angular/compiler/src/render3/r3_ast';
 
 @Component({
     selector: 'd3s-chips-filter',
