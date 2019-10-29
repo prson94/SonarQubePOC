@@ -198,12 +198,13 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var reader = await Company.QueryMultipleAsync(@"exec graph.GetImpactRelationshipsByAssets @assets, @StartHop", new
+                var reader = await Company.QueryMultipleAsync(@"exec graph.GetImpactRelationshipsByAssets @assets, @PredicateUid, @StartHop", new
                 {
-                    assets = postModel.AssetUids.AsTableValuedParameter<Guid>(
-                        "dbo.UidTable",
-                        new List<string>() { "Uid" }
+                    assets = postModel.Assets.AsTableValuedParameter(
+                        "dbo.AssetBrowserImpactTable",
+                        new List<string>() { "Key", "Uid" }
                         ),
+                    postModel.PredicateUid,
                     postModel.StartHop
                 }, timeout: 60);
 

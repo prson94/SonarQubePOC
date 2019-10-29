@@ -94,7 +94,7 @@ namespace d360.web.Models
             return new GetAssetImpactsPostModel
             {
                 StartHop = 0,
-                AssetUids = new List<Guid>() { Guid.Empty }
+                Assets = new List<GetAssetImpactSourceItemPostModel>() { new GetAssetImpactSourceItemPostModel { Key = "textkey", Uid = Guid.Empty } }
             };
         }
     }

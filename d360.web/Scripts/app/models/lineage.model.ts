@@ -430,9 +430,9 @@ export class SourceRuleSource {
 
 export class AssetBrowserTranslationRelationCount {
     predicate: string;
+    predicateUid: string;
     direction: AssetBrowserDirection;
     count: number;
-    assets: string[] = new Array();
 }
 
 export class AssetBrowserTranslationLink {
@@ -485,23 +485,25 @@ export class AssetBrowserLineageApiRequestModel {
 }
 
 export class AssetBrowserImpactApiRequestModel {
-    AssetUids: string[];
+    Assets: AssetBrowserImpactApiAssetRequestModel[];
+    PredicateUid: string;
     StartHop: number;
+}
+
+export class AssetBrowserImpactApiAssetRequestModel {
+    Uid: string;
+    Key: string;
 }
 
 // #endregion Request
 
 // #region Asset Browser : Response
 
-export class AssetBrowserLineageApiItemRelationCountAssetModel {
-    Uid: string;
-}
-
 export class AssetBrowserLineageApiItemRelationCountModel {
     Predicate: string;
+    PredicateUid: string;
     Direction: AssetBrowserDirection;
     Count: number;
-    Assets: AssetBrowserLineageApiItemRelationCountAssetModel[];
 }
 
 export class AssetBrowserLineageApiItemModel {
