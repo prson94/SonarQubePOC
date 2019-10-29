@@ -10,9 +10,10 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                     <div class="chip-option clickable" tabindex=0
                         (click)="toggleMenu()" 
                         (keydown.esc)="closeMenu()">
-                        Add Filter...
+                        <span *ngIf="!currentFilter">Add Filter...</span>
+                        <span *ngIf="currentFilter" class="chip-option input">{{currentFilter.field}}: Any<i class="fa fa-times-circle" (click)="closeMenu()"></i></span>
                         <div class="popup-menu" [ngClass]="{'popup-open': openMenu || isInputOpen}">
-                            <ul *ngIf="!isInputOpen">
+                            <ul *ngIf="!isInputOpen" class="chips-options-list">
                                 <li *ngFor="let item of filterOption" (click)="openInput($event,item)">
                                     <span>{{item.field}}</span>
                                     <span class="col3"></span>
@@ -21,7 +22,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                             <ul *ngIf="isInputOpen" class="chips-input-list" (click)="doNothing($event)" (keydown.enter)="update(filterText,exact.checked)">
                                 <li>
                                     <span>
-                                        <div class="field mr10"><input [(ngModel)]="filterText" type="text" placeholder="Please enter a value" #searchInput></div>
+                                        <div class="field mr10"><input [(ngModel)]="filterText" type="text" placeholder="Please enter a value" #searchInput/></div>
                                     </span>
                                 </li>
                                 <li>
@@ -53,6 +54,7 @@ export class ChipsFilterComponent {
     private selectedFilters: AdvancedSearchFilter[] = [];
     private currentFilter: AdvancedSearchFilter;
     private isInputOpen: boolean = false;
+    @ViewChild('popup') popup: ElementRef;
     constructor(
         private ref: ChangeDetectorRef,
         private router: Router
@@ -64,6 +66,7 @@ export class ChipsFilterComponent {
             this.closeMenu();
         else
             this.openMenu = true;
+        this.checkMenuPosistion();
         this.ref.markForCheck();
     }
     doNothing(event) {
@@ -75,36 +78,40 @@ export class ChipsFilterComponent {
         this.currentFilter.value = filterValue;
         this.currentFilter.exact = exact;
 
-        var newFilter = this.getCurrentFilterDeepClone();
+        var newFilter = { ...this.currentFilter };
 
         this.selectedFilters.push(newFilter);
         this.closeMenu();
         this.applyFlter.emit(this.selectedFilters);
     }
 
-    private getCurrentFilterDeepClone(): AdvancedSearchFilter {
-        var filter = new AdvancedSearchFilter();
 
-        filter.connector = this.currentFilter.connector;
-        filter.exact = this.currentFilter.exact;
-        filter.field = this.currentFilter.field;
-        filter.value = this.currentFilter.value;
-
-        return filter;
-    }
 
     removeFilterOption(item) {
         let index = this.selectedFilters.indexOf(item);
         if (index > -1)
             this.selectedFilters.splice(index, 1);
         this.applyFlter.emit(this.selectedFilters);
+        this.checkMenuPosistion();
     }
 
-    openInput(event,item) {
+    openInput(event, item) {
         event.stopPropagation();
         this.isInputOpen = true;
         this.currentFilter = item;
         this.setFocus();
+        this.checkMenuPosistion();
+    }
+
+    private checkMenuPosistion() {
+        this.popup.nativeElement.style.right = 'auto';
+        window.setTimeout(() => {
+            let dims = this.popup.nativeElement.getBoundingClientRect();
+            let maxLeft = window.innerWidth;
+            if (dims.right > maxLeft) {
+                this.popup.nativeElement.style.right = '0px';
+            }
+        }, 100);
     }
 
     closeMenu() {
@@ -116,8 +123,8 @@ export class ChipsFilterComponent {
             this.ref.markForCheck();
         }, 150);
     }
-    
-    private setFocus() {        
+
+    private setFocus() {
         setTimeout(() => {
             if (this.searchInputElement)
                 this.searchInputElement.nativeElement.focus();

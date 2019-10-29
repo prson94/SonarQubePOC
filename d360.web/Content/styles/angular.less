@@ -4584,13 +4584,19 @@ a.mid-blue {
         margin: 2px;
         background: #f7f7f7;
         line-height: 26px;
-        padding: 0px 4px;
+        padding: 0px 8px;
         display: inline-flex;
 
         i {
-            padding-left: 4px;
+            margin-left: 8px;
             line-height: 26px;
             cursor: pointer;
+        }
+
+        &.input {
+            color: black;
+            border: none;
+            margin: 0px;
         }
 
         &.clickable {
@@ -4606,16 +4612,24 @@ a.mid-blue {
             display: inline-block;
             position: absolute;
             z-index: 1;
-            margin-top: 26px;
+            margin-top: 28px;
             color: black;
+            margin-left: -9px;
 
             .chips-input-list {
                 cursor: default;
+                padding: 14px;
+                width: 222px;
+                margin: 14px;
 
                 .checkbox {
                     display: flex;
                     align-self: center;
                     flex-shrink: 0;
+
+                    &:focus-within {
+                        box-shadow: rgba(9, 113, 185, 0.67) 0 0 1px 1px;
+                    }
 
                     input {
                         width: 17px;
