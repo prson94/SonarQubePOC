@@ -1778,6 +1778,7 @@
     <OutputPath>bin\</OutputPath>
     <Optimize>true</Optimize>
     <DocumentationFile>App_Data\Documentation.XML</DocumentationFile>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <OutputPath>bin\</OutputPath>
