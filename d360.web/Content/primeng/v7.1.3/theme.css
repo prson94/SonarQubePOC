@@ -1475,3 +1475,8 @@ p-multiselect .ui-multiselect {
 p-dropdown .ui-dropdown-panel {
     z-index: 10;
 }
+
+/*Calendar default z index for IE issue*/
+p-calendar .ui-datepicker {
+    z-index: 2000 !important;
+}
