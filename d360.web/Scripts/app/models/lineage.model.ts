@@ -459,7 +459,6 @@ export class AssetBrowserTranslationNode {
     subgraph: any;
     showReveal: AssetBrowserDirection;
     relations: AssetBrowserTranslationRelationCount[] = new Array();
-    currentRelations: AssetBrowserTranslationRelationCount[] = new Array();
 }
 
 export class AssetBrowserTranslation {

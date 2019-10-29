@@ -107,9 +107,9 @@ namespace d360.web.Models
     public class AssetBrowserLineageApiItemRelationCountModel
     {
         public string Predicate { get; set; }
+        public Guid PredicateUid { get; set; }
         public GetAssetLineagePostModelDirection Direction { get; set; }
         public int Count { get; set; }
-        public List<AssetBrowserLineageApiItemRelationCountAssetModel> Assets { get; set; }
     }
 
     public interface IAssetBrowserLineageApiItemModel

@@ -361,7 +361,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (data.relations != null && data.relations.length > 0) {
                     for (let i = 0; i < data.relations.length; i++) {
                         let r = data.relations[i];
-                        r.key = `${data.key}_${r.predicate}_${r.direction}_${r.assets.sort().join()}`;
+                        r.key = `${data.key}_${r.predicateUid}`;
                         if (g.data.relations.find(c => c.key == r.key) == null) {
                             childRelations.push(r);
                         }
@@ -795,15 +795,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let relation: AssetBrowserTranslationRelationCount = node.relations[ix];
             let requestModel: AssetBrowserImpactApiRequestModel = new AssetBrowserImpactApiRequestModel();
 
-            requestModel.AssetUids = [];
-            requestModel.AssetUids.push(node.assetUid);
-            requestModel.AssetUids = requestModel.AssetUids.concat(relation.assets);
+
             requestModel.StartHop = node.hop;
+            requestModel.Assets = [];
+            requestModel.PredicateUid = relation.predicateUid;
 
             let n = node;
             if (n.isGroup) {
                 (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
-                    requestModel.AssetUids.push(g.data.assetUid);
+                    if (g.data.isGroup == undefined || g.data.isGroup == false) {
+                        let asset = new AssetBrowserImpactApiAssetRequestModel();
+                        asset.Uid = g.data.assetUid;
+                        asset.Key = g.data.key
+                        requestModel.Assets.push(asset);
+                    }
                 })
             }
 
@@ -812,8 +817,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.browserService.getAssetImpacts(requestModel)
                 .subscribe(response => {
                     let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(response);
-
-                    console.log(node, translationModel);
 
                     this.parseData(translationModel, true);
                 });
