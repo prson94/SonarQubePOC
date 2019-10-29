@@ -795,9 +795,18 @@ namespace d360.web.Models
     public class GetAssetImpactsPostModel
     {
         [DataMember]
-        public List<Guid> AssetUids { get; set; }
-        [DataMember]
+        public List<GetAssetImpactSourceItemPostModel> Assets { get; set; }
+        public Guid PredicateUid { get; set; }
         public int StartHop { get; set; }
+    }
+
+    [DataContract]
+    public class GetAssetImpactSourceItemPostModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+        [DataMember]
+        public string Key { get; set; }
     }
 
     #endregion

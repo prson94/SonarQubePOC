@@ -393,9 +393,7 @@ export class BrowserService extends BaseObservableService {
             assetBrowserTranslationRelationCount.count = rC.Count;
             assetBrowserTranslationRelationCount.direction = rC.Direction;
             assetBrowserTranslationRelationCount.predicate = rC.Predicate;
-            rC.Assets.forEach(rcA => {
-                assetBrowserTranslationRelationCount.assets.push(rcA.Uid);
-            });
+            assetBrowserTranslationRelationCount.predicateUid = rC.PredicateUid;
             n.relations.push(assetBrowserTranslationRelationCount);
         });
 
