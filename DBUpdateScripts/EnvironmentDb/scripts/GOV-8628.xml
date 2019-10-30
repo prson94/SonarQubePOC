@@ -12,6 +12,7 @@
             splitStatements="true"
             stripComments="true">
 <![CDATA[
+
 ALTER   procedure [bulkload].[UpdateDynamicLookupFieldColumns]
 	@id int	
 as
@@ -64,11 +65,11 @@ begin
 								IC.RowIndex,
 								IC.ColumnIndex,
 								case 									
-									when ( (L_D.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'ReferenceItemType') ) then 'ReferenceItemType'									
+									when ( (L_D.[ObjectId] is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'ReferenceItemType') ) then 'ReferenceItemType'									
 									else NULL
 								end as LookupObject,
 								case 									
-									when L_D.ID is not null then L_D.ID
+									when L_D.[ObjectId] is not null then L_D.[ObjectId]
 									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0																		
 									else NULL
 								end as LookupObjectID 
@@ -77,7 +78,8 @@ begin
 								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
 								inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
 
-								inner join ReferenceItemType L_D on L_D.[Name] = IC.Value								
+								inner join AssetType L_D on L_D.[object] = L.[Object]	 and L_D.[object]='ReferenceItemType' and
+								L_D.ObjectId = L.ObjectId								
 						where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'ReferenceItemType'
 						) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
 
