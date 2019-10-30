@@ -78,8 +78,8 @@ begin
 								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
 								inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
 
-								inner join AssetType L_D on L_D.[object] = L.[Object]	 and L_D.[object]='ReferenceItemType' and
-								L_D.ObjectId = L.ObjectId								
+								inner join AssetType L_D on  L_D.[object]='ReferenceItemType' and
+								L_D.[Name] = IC.Value								
 						where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'ReferenceItemType'
 						) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
 
