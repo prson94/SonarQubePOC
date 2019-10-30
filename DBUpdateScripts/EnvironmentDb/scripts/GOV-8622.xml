@@ -1,0 +1,82 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-8622-B">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+ALTER FUNCTION [dbo].[GetAssetKeyHashById](
+      @id bigint
+      )
+      RETURNS TABLE
+      AS
+      RETURN
+      (
+		  select		
+			  A.AssetTypeID,
+			  A.ID,
+			  CONVERT(
+			  varchar(32),
+			  SUBSTRING(HASHBYTES('SHA1', STRING_AGG(A.FieldTypeID + A.[Value], char(59))), 3, 32),
+			  2) as KeyHash
+		  from (
+				select	B.ID, 
+						B.AssetTypeID, 
+						F.[Value], 
+						cast(FieldTypeID as nvarchar) + ':' as FieldTypeID
+				from	Asset B
+						inner join Field F on F.ObjectType = B.[Object] and F.ObjectID = B.ObjectID 
+						inner join FieldType FT on FT.ID = F.FieldTypeID and FT.AssetTypeID = B.AssetTypeID and FT.IsPartOfKey = 1
+				where	B.ID = @id
+				
+				union all
+				
+				select	C.ID, 
+						C.AssetTypeID, 
+						C.Code as [Value], 
+						'' as FieldTypeID
+				from	Asset C
+				where	C.[Object] = 'ReferenceItem' 
+						and C.ID = @id
+		  ) A
+		  group by	A.AssetTypeID, A.ID
+      )
+		]]>
+    </sql>
+	<rollback>
+	<![CDATA[	
+ALTER FUNCTION [dbo].[GetAssetKeyHashById](
+      @id bigint
+      )
+      RETURNS TABLE
+      AS
+      RETURN
+      (
+
+
+      select		A.AssetTypeID,
+      A.ID,
+      CONVERT(
+      varchar(32),
+      SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32),
+      2) as KeyHash
+      from		Asset A
+      inner join Field F on F.ObjectType = A.Object and F.ObjectID = A.ObjectID 
+      inner join FieldType FT on FT.ID = F.FieldTypeID
+      and FT.AssetTypeID = A.AssetTypeID
+      and FT.IsPartOfKey = 1
+      where a.id = @id
+      group by	A.AssetTypeID, A.ID
+    
+      )
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
