@@ -60,6 +60,10 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         if (this.searchSub) this.searchSub.unsubscribe();
     }
 
+    syncSearchText(event) {
+        this.searchText = event.srcElement.value;
+    }
+
     search(event) {
         this.searchText = event.query;
         let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
@@ -84,6 +88,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     selectItem(ac) {
         if (this.result.Type == this.endSearchAllTypeToken) {
+            this.result.Name = this.searchText
             this.openSearch()
         } else {
             this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));

@@ -10,7 +10,8 @@
                         [placeholder]="autocompletePlaceholder"
                         [minLength]="1"
                         (onBlur)="clearValue()"
-                        (onSelect)="selectItem(ac)">
+                        (onSelect)="selectItem(ac)"
+                        (onKeyUp)="syncSearchText($event)">
             <ng-template let-result pTemplate="item">
                 <div>
                     <div *ngIf="result?.Type == endSearchAllTypeToken;else suggestion" class="search-typeahead-suggestion">
