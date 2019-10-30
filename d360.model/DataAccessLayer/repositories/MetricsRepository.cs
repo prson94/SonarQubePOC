@@ -588,5 +588,47 @@ namespace d360.model.DataAccessLayer
         {
             return Company.BulkMetricsImport(model, execution);
         }
+
+        public MetricScoreApiModel GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string,string>> queryParams)
+        {
+            var result = new MetricScoreApiModel();
+            List<SqlParameter> sqlParameters = new List<SqlParameter>();
+
+
+            sqlParameters.Add(new SqlParameter("@pageSize", result.pageSize));
+            sqlParameters.Add(new SqlParameter("@pageNum", result.pageNum));
+
+            var baseSql = $@"
+                    ;WITH Scores_CTE AS (
+                    select 
+	                     A.uid
+	                     from metrics.Score MS
+		                    inner join Asset A on A.uid = MS.AssetUid
+		                    inner join AssetType AT on A.AssetTypeID = AT.ID
+                    )
+                    select 
+                    @pageSize,
+                    @pageNum,
+                    (select count(*) from Scores_CTE) as total,
+                    (select 
+	                    LOWER(uid) as AssetUid,
+	                    (select EffectiveDate, Value as Score 
+		                     from metrics.Score 
+		                     where AssetUid = uid 
+		                     order by EffectiveDate desc
+		                     for json path) as Scores
+		                     from Scores_CTE
+	                    group by uid
+	                    order by uid
+	                    offset (@pageNum-1) rows fetch next @pageSize rows only
+                    for json path) as items
+                    ";
+
+
+            result = Company.Query<MetricScoreApiModel>(baseSql, sqlParameters).FirstOrDefault();
+
+            return result;
+        }
+
     }
 }

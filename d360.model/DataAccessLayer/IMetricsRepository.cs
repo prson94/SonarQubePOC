@@ -16,5 +16,6 @@ namespace d360.model.DataAccessLayer
         List<string> GetMetricFieldFragments(Guid assetTypeUid);
         MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate);
         List<string> GetMetricStructureFragments(Guid assetTypeUid);
+        MetricScoreApiModel GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }
