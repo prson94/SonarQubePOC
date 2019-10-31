@@ -340,6 +340,7 @@
   <include file="scripts/GOV-8549.xml"/> <!-- graph.GetLineageByAsset -->
   <include file="scripts/GOV-8591.xml"/> <!-- graph.GetLineageByAsset -->
   <include file="scripts/GOV-8510.xml"/> <!-- graph.GetImpactRelationshipsByAssets updates -->
+  <include file="scripts/GOV-8628.xml"/>
   <include file="scripts/GOV-8622.xml"/> <!-- update bulk load key hash function for ref lists -->
 
   <!-- Sprint 9 2019 Start-->
