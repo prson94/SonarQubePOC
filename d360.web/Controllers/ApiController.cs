@@ -2501,7 +2501,7 @@ order by    rnk, [Name]";
                 from 
                     asset a
                 inner join assettype t on t.id = a.assettypeid
-				left join objectstyle s on s.objecttype = t.[object] and s.objectid = t.objectid
+                left join AssetTypeStyle S on S.ID = T.ID
                 {1}
                 where  
                     t.id = @id and (@query is null or {2} like '%' + @query + '%')

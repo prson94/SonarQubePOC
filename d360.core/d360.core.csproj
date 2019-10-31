@@ -222,7 +222,6 @@
     <Compile Include="entities\Community\Plugins\PackageContent.cs" />
     <Compile Include="entities\Community\CompanyResource.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelation.cs" />
-    <Compile Include="entities\ObjectStyle.cs" />
     <Compile Include="entities\Contracts\ICreatedObject.cs" />
     <Compile Include="entities\Contracts\IUpdatedObject.cs" />
     <Compile Include="entities\Transitive\FusionConfigurationScheduleRequestModel.cs" />

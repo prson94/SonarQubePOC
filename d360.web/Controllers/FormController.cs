@@ -68,7 +68,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = row, Column = 2, Required = true, FieldName = "IconForeColor", Name = "Text Color", FieldDescription = "The icon's text color", FieldType = DataType.Color.ToString(), Value = f });
         }
 
-        void upsertObjectStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx")
+        void upsertAssetStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx")
         {
             var assetType = Company.Filter<AssetType>(i => i.Object == type && i.ObjectID == id).FirstOrDefault();
             var style = Company.GetAssetTypeStyle(assetType.ID);
@@ -144,12 +144,12 @@ namespace d360.web.Controllers
 
         }
 
-        void upsertObjectStyle(SystemObjects type, int id, string foreColor, string backColor, string objectName = "Tx")
+        void upsertAssetStyle(SystemObjects type, int id, string foreColor, string backColor, string objectName = "Tx")
         {
-            upsertObjectStyle(type.ToString(), id, foreColor, backColor, objectName);
+            upsertAssetStyle(type.ToString(), id, foreColor, backColor, objectName);
         }
 
-        void upsertObjectStyle(SystemObjects type, int id, FormCollection form, string objectName = "Tx")
+        void upsertAssetStyle(SystemObjects type, int id, FormCollection form, string objectName = "Tx")
         {
             var assetType = Company.Filter<AssetType>(i => i.Object == type.ToString() && i.ObjectID == id).FirstOrDefault();
             var style = Company.GetAssetTypeStyle(assetType.ID);
@@ -4776,7 +4776,7 @@ offset 0 rows fetch next 25 rows only
                 Company.Add(model);
 
                 if (style != null)
-                    upsertObjectStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
+                    upsertAssetStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
 
                 return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
             }
@@ -4846,7 +4846,7 @@ offset 0 rows fetch next 25 rows only
 
                 Company.Update(model);
                 if (style != null)
-                    upsertObjectStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
+                    upsertAssetStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
             }
@@ -11870,7 +11870,7 @@ order by	case
                     IsPartOfKey = true
                 });
 
-                upsertObjectStyle(SystemObjects.RuleType, a.ID, form, a.Name);
+                upsertAssetStyle(SystemObjects.RuleType, a.ID, form, a.Name);
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -11934,7 +11934,7 @@ order by	case
 
                 Company.Update(model);
 
-                upsertObjectStyle(SystemObjects.RuleType, model.ID, form, model.Name);
+                upsertAssetStyle(SystemObjects.RuleType, model.ID, form, model.Name);
 
                 Company.CreateOrUpdateTypeDisplayValuesAsync(id, "RuleType");
 
