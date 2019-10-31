@@ -3,7 +3,7 @@ import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
 import { FusionService } from '../../../services/fusion.service';
-import { ObjectStyleService } from '../../../services/object-style.service';
+import { AssetStyleService } from '../../../services/asset-style.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { FormMode } from '../../../models/form.model';
 import { FusionType } from '../../../models/fusion.model';
@@ -14,7 +14,7 @@ import { AssetTypeStyle } from '../../../models/asset-type-style.model';
 
 @Component({
     selector: 'd3s-admin-fusion',
-    providers: [FusionService, ObjectStyleService],
+    providers: [FusionService, AssetStyleService],
     templateUrl: './admin-fusion.component.html',
 })
 
@@ -33,7 +33,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
         private fusionService: FusionService,
         titleService: Title,
         private messagesService: MessagesObservableService,
-        private objectStyleService: ObjectStyleService
+        private objectStyleService: AssetStyleService
     ) {
         super(headerBreadcrumbService, titleService, rightSidebarService);
         this.areaName = 'Fusion';

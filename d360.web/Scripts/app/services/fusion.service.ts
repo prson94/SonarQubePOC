@@ -1,10 +1,9 @@
-﻿import {Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs";
-import {catchError, map} from "rxjs/operators";
+﻿import { Injectable } from '@angular/core';
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
-import {JsonResult} from '../models/jsonresult.model';
-import {ObjectStyle} from '../models/object-style.model';
+import { JsonResult } from '../models/jsonresult.model';
 import {
     AttributeNode,
     Fusion,
@@ -25,12 +24,12 @@ import {
     FusionWorkerExecution,
     MapRuleItemDetail,
     RelationIntersectType,
-   } from '../models/fusion.model';
-import {GridColumn} from '../models/grid-definition.model';
-import {SortOrder} from '../models/enums.model';
-import {MessagesObservableService} from './messages-observable.service';
-import {BaseObservableService} from "./baseObservable.service";
-import {FormHelper} from "../models/form.model";
+} from '../models/fusion.model';
+import { GridColumn } from '../models/grid-definition.model';
+import { SortOrder } from '../models/enums.model';
+import { MessagesObservableService } from './messages-observable.service';
+import { BaseObservableService } from "./baseObservable.service";
+import { FormHelper } from "../models/form.model";
 import { TreeNode } from 'primeng/components/common/api';
 import { AssetTypeStyle } from '../models/asset-type-style.model';
 
@@ -134,7 +133,7 @@ export class FusionService extends BaseObservableService {
 
         this
             .http
-            .get(url, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, 'fusion agent history.xlsx'));
+            .get(url, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'fusion agent history.xlsx'));
     }
 
     getFusionAgentErrorHistory(
@@ -270,7 +269,7 @@ export class FusionService extends BaseObservableService {
 
         this
             .http
-            .get(url, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, 'fusion execution history.xlsx'));
+            .get(url, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'fusion execution history.xlsx'));
     }
 
     getFusionStatsSummary(daysToLookBack: number): Observable<FusionSummaryStats> {
@@ -337,7 +336,7 @@ export class FusionService extends BaseObservableService {
     ): Observable<any> {
         return this
             .http
-            .post('form/FusionType', {fusion: fusionType, style: assetStyle})
+            .post('form/FusionType', { fusion: fusionType, style: assetStyle })
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
@@ -350,7 +349,7 @@ export class FusionService extends BaseObservableService {
     ): Observable<any> {
         return this
             .http
-            .put('form/FusionType', {fusion: fusionType, style: assetStyle})
+            .put('form/FusionType', { fusion: fusionType, style: assetStyle })
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
@@ -359,11 +358,11 @@ export class FusionService extends BaseObservableService {
 
     postFusionAttributeType(
         fusionAttributeType: FusionAttributeType,
-        objectStyle: ObjectStyle = null
+        assetStyle: AssetTypeStyle = null
     ): Observable<any> {
         return this
             .http
-            .post('form/FusionAttributeType', {fusion: fusionAttributeType, style: objectStyle})
+            .post('form/FusionAttributeType', { fusion: fusionAttributeType, style: assetStyle })
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
@@ -372,11 +371,11 @@ export class FusionService extends BaseObservableService {
 
     putFusionAttributeType(
         fusionAttributeType: FusionAttributeType,
-        objectStyle: ObjectStyle = null
+        assetStyle: AssetTypeStyle = null
     ): Observable<any> {
         return this
             .http
-            .put('form/FusionAttributeType', {fusion: fusionAttributeType, style: objectStyle})
+            .put('form/FusionAttributeType', { fusion: fusionAttributeType, style: assetStyle })
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
@@ -404,11 +403,11 @@ export class FusionService extends BaseObservableService {
             );
     }
 
-   
 
-   
 
-    
+
+
+
 
     getFusionExecutionErrors(executionId: number): Observable<FusionExecutionError[]> {
         return this
@@ -421,7 +420,7 @@ export class FusionService extends BaseObservableService {
     }
 
     getFusionExecutionErrorsExport(executionId: number) {
-        this.http.get(`services/fusion/executionerrorsexport/${executionId}`, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, 'fusion execution errors.xlsx'));
+        this.http.get(`services/fusion/executionerrorsexport/${executionId}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'fusion execution errors.xlsx'));
     }
 
     getFusionExecutionResults(
@@ -455,20 +454,20 @@ export class FusionService extends BaseObservableService {
             url += `?filter=${encodeURIComponent(simpleFilter)}`;
         }
 
-        this.http.get(url, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, 'fusion execution results.xlsx'));
+        this.http.get(url, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'fusion execution results.xlsx'));
     }
 
     downloadRawFusionData(executionId: number, name: string) {
         let uri = `internal/fusion/_FusionExecutionRawLog?id=${executionId}`;
 
-        this.http.get(uri, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, name));
+        this.http.get(uri, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, name));
     }
 
     downloadFusionManualLoadTemplate(fusionId: number, fusionTypeId: number, fusionAttributeTypeId: number) {
         let uri = `internal/fusion/${fusionTypeId}/configurations/${fusionId}/template/${fusionAttributeTypeId}`;
         let filename = `Load Template For ${fusionAttributeTypeId}.xlsx`;
 
-        this.http.get(uri, {responseType: 'blob'}).subscribe(data => this.downloadFile(data, filename));
+        this.http.get(uri, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, filename));
     }
 
     downloadFile(
@@ -489,7 +488,6 @@ export class FusionService extends BaseObservableService {
         }
     }
 
-    
 
 
 
@@ -499,31 +497,32 @@ export class FusionService extends BaseObservableService {
 
 
 
-    
-
-   
-
-   
-
-   
-
-   
-
-    
-
-    
-
-    
-    
-
-    
-
-    
-
-    
 
 
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     getFindAttributeTypes() {
         return this
@@ -536,7 +535,7 @@ export class FusionService extends BaseObservableService {
     }
 
 
-   
+
 
     getFusionConfigurationFromAttributeId(fusionAtttributeId: number): Observable<FusionConfigurationDetails> {
         return this
@@ -548,11 +547,11 @@ export class FusionService extends BaseObservableService {
             );
     }
 
-   
 
-    
 
-    
+
+
+
 
     deleteFusionQuery(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'FusionQueryAttribute', id);
@@ -586,11 +585,11 @@ export class FusionService extends BaseObservableService {
             .http
             .post(
                 url,
-                {id: id}
+                { id: id }
             ).pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 }

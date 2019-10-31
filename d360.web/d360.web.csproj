@@ -1627,7 +1627,6 @@
     <TypeScriptCompile Include="Scripts\app\models\message-bar-item.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\object-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\reference.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
@@ -1726,7 +1725,7 @@
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lookup.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\object-style.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\asset-style.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\rules.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\tag.service.ts" />
