@@ -1,0 +1,27 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Sebastian Abraham" id="GOV-8494">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="true">
+<![CDATA[
+
+		DROP INDEX IF EXISTS [IX_AssetDataProfile_AssetID] ON [dbo].AssetDataProfile
+		CREATE NONCLUSTERED INDEX [IX_AssetDataProfile_AssetID] ON [dbo].AssetDataProfile ( AssetID ASC )
+		WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF)
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+DROP INDEX IF EXISTS [IX_AssetDataProfile_AssetID] ON [dbo].AssetDataProfile
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>
