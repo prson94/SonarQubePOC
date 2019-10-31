@@ -1,0 +1,47 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="SDooley" id="GOV-6650">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+IF (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'PolicyTypeLevel-retired'))
+BEGIN
+	DROP TABLE [dbo].[PolicyTypeLevel-retired]
+END 
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF (NOT EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'PolicyTypeLevel-retired'))
+BEGIN
+CREATE TABLE [dbo].[PolicyTypeLevel-retired](
+	[PolicyTypeID] [int] NOT NULL,
+	[Level] [int] NOT NULL,
+	[Name] [nvarchar](250) NOT NULL,
+	[Description] [nvarchar](4000) NULL,
+ CONSTRAINT [PK_PolicyTypeLevel] PRIMARY KEY CLUSTERED 
+(
+	[PolicyTypeID] ASC,
+	[Level] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+END
+]]>
+	</rollback>
+  </changeSet>
+
+  </databaseChangeLog>

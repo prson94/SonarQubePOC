@@ -27,7 +27,7 @@ declare var CompanySettings;
                 <div class="row" *ngIf="!isLoading">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <d3s-object-definition-tile [objectType]="'Rule'" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="ruleType?.AllowAttributes" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
+                            <d3s-object-definition-tile [objectType]="'Rule'" [useV2Api]="true" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="ruleType?.AllowAttributes" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
                         </div>
                     </div>
                 </div>

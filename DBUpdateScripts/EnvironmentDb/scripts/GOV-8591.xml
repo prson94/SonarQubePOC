@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="GOV-8591">
+  <changeSet author="Pappas" id="GOV-8591-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -410,73 +410,9 @@ begin
 				where	E.ID is null
 				) O where RowNum = 1;
 
-	--with h as (
-	--	select	A.Hop,
-	--			P.ID as ParentID,
-	--			C.ID as AssetID,
-	--			0 as HierarchyLevel,
-	--			A.Reveal
-	--	from	graph.AssetNode P,
-	--			graph.AssetEdge E,
-	--			graph.AssetNode C,
-	--			#clean A
-	--	where	MATCH(P-(E)->C)
-	--			and E.PredicateType in (3, 4)
-	--			and C.ID = A.ID
-	--	union all
-	--	select	h.Hop,
-	--			P.ID as ParentID,
-	--			C.ID as AssetID,
-	--			h.HierarchyLevel-1 as HierarchyLevel,
-	--			h.Reveal
-	--	from	graph.AssetNode P,
-	--			graph.AssetEdge E,
-	--			graph.AssetNode C,
-	--			h
-	--	where	MATCH(P-(E)->C)
-	--			and E.PredicateType in (3, 4)
-	--			and C.ID = h.ParentID
-	--)
-
-	--insert into #rawHierarchies
-	--	select	--distinct
-	--			Hop,
-	--			ConstantID,
-	--			HierarchyLevel,
-	--			A.AssetTypeID,
-	--			AssetID,
-	--			HierarchyLevel as XmlPosition,
-	--			Reveal
-	--	from	h
-	--			inner join Asset A on A.ID = h.AssetID
-	--	order by Hop, HierarchyLevel, ParentID, AssetID;
-
-	--update	T
-	--set		T.ID = T.AssetID
-	--from	#rawHierarchies T
-	--		inner join	(
-	--					select		min(HierarchyLevel)  as HierarchyLevel,
-	--								Hop,
-	--								ID
-	--					from		#rawHierarchies
-	--					group by	Hop, ID
-	--					) S on S.Hop = T.Hop and S.ID = T.ID and S.HierarchyLevel = T.HierarchyLevel;
-
-	--insert into #rawHierarchies
-	--	select	--distinct
-	--			T.[Hop],
-	--			T.Segment.value('(/path/segment/@assetId)[1]', 'bigint') as ID, 
-	--			doc.c.value('@level', 'int') as [HierarchyLevel],
-	--			doc.c.value('@assetTypeId', 'int') as [assetTypeId],
-	--			doc.c.value('@assetId', 'bigint') as [assetId],
-	--			doc.c.value('count(for $a in . return /path/segment[.<<$a])+1', 'int') as XmlPosition,
-	--			T.Reveal
-	--	from	#clean T
-	--			cross apply T.Segment.nodes('/path/segment') doc(c);
-	
 	insert into #rawHierarchies
 		select	T.[Hop],
-				T.ID, --T.Segment.value('(/path/segment/@assetId)[1]', 'bigint') as ID, 
+				T.ID,
 				doc.c.value('@level', 'int') as [HierarchyLevel],
 				doc.c.value('@assetTypeId', 'int') as [assetTypeId],
 				doc.c.value('@assetId', 'bigint') as [assetId],
@@ -489,8 +425,6 @@ begin
 	set		T.ParentID = S.AssetID
 	from	#rawHierarchies T
 			inner join #rawHierarchies S on S.Hop = T.Hop and S.ID = T.ID and S.HierarchyLevel = T.HierarchyLevel-1
-
---select * from #rawHierarchies
 
 	insert into #hierarchies
 		select	T.[Hop],
@@ -519,9 +453,9 @@ begin
 				inner join Asset A on A.ID = d.AssetID; 
 
 	-- Determine relationships breakdown by predicate.
-	declare @relItems table (Hop int, AssetID bigint, [Predicate] nvarchar(250), Direction int, AssetUid uniqueidentifier)
+	declare @relItems table (Hop int, AssetID bigint, [Predicate] nvarchar(250), PredicateUid uniqueidentifier, Direction int, AssetUid uniqueidentifier)
 	insert into @relItems
-		select	H.Hop, H.ID, P.Inverse, 1, T.Uid
+		select	H.Hop, H.ID, P.Inverse, P.Uid, 1, T.Uid
 		from	graph.AssetNode S,
 				graph.AssetEdge E,
 				graph.AssetNode T,
@@ -532,7 +466,7 @@ begin
 				and P.ID = E.PredicateID
 				and E.PredicateType not in (3,4,12,13)
 		union
-		select	H.Hop, H.ID, P.Inverse, 2, S.Uid
+		select	H.Hop, H.ID, P.Inverse, P.Uid, 2, S.Uid
 		from	graph.AssetNode S,
 				graph.AssetEdge E,
 				graph.AssetNode T,
@@ -547,16 +481,11 @@ begin
 	set		H.RelationCounts =	(
 								select	O.[Predicate], 
 										O.Direction, 
-										(
-											select	AssetUid as 'Uid'
-											from	@relItems
-											where	Hop = H.Hop and AssetID = H.AssetID and [Predicate] = O.[Predicate]
-											for json path
-										) as Assets,
+										O.PredicateUid,
 										count(1) as [Count]
 								from	@relItems O
 								where	O.Hop = H.Hop and O.AssetID = H.AssetID
-								group by O.[Predicate], O.Direction
+								group by O.[Predicate], O.PredicateUid, O.Direction
 								for json path
 								)
 	from	#hierarchies H

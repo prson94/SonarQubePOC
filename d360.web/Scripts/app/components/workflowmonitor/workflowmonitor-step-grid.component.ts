@@ -50,7 +50,7 @@ declare var CurrentResourceID;
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
-            <tr (click)="rowClick(item)" [pSelectableRow]="item">
+            <tr (click)="rowClick(item)" [pSelectableRow]="item"  style="word-wrap: break-word">
                 <td>
                     <a *ngIf="item.IsAssignedLoginUser=='True'" (click)="doSelect(item)">{{item.Name}}</a>
                     <span *ngIf="item.IsAssignedLoginUser!='True'">{{item.Name}}</span>
