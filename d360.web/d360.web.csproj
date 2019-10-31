@@ -1440,6 +1440,7 @@
     <TypeScriptCompile Include="Scripts\app\http-interceptors\error-notify-interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\http-interceptors\govern-request.interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\models\apiresult.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\asset-type-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\cascade.model.ts" />

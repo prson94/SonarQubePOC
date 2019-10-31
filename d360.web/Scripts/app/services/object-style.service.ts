@@ -1,10 +1,10 @@
 ﻿import { Injectable } from '@angular/core';
-import { ObjectStyle } from '../models/object-style.model';
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
 import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
+import { AssetTypeStyle } from '../models/asset-type-style.model';
 
 @Injectable()
 export class ObjectStyleService extends BaseObservableService {
@@ -15,12 +15,11 @@ export class ObjectStyleService extends BaseObservableService {
         super(messagesService);
     }
 
-    getObjectStyle(
-        objectID: number,
-        objectType: string
-    ): Observable<ObjectStyle> {
-        return this.http.get(`api/${objectType}/${objectID}/style`).pipe(
-            map(response => <ObjectStyle>response),
+    getAssetTypeStyle(
+        assetTypeId: number
+    ): Observable<AssetTypeStyle> {
+        return this.http.get(`api/${assetTypeId}/style`).pipe(
+            map(response => <AssetTypeStyle>response),
             catchError(err => this.handleError(err))
         );
     }

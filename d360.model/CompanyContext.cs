@@ -96,6 +96,8 @@ namespace d360.model
 
         public DbSet<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
 
+        public DbSet<AssetTypeStyle> AssetTypeStyles { get; set; }
+
         public DbSet<d360.core.entities.Attribute> Attributes { get; set; }
 
         public DbSet<AttributeDetail> AttributeDetails { get; set; }                            /* VIEW */
@@ -189,7 +191,6 @@ namespace d360.model
 
         public DbSet<NymRelation> NymRelations { get; set; }
 
-        public DbSet<ObjectStyle> ObjectStyles { get; set; }
 
         public DbSet<Predicate> Predicates { get; set; }
 
@@ -1037,14 +1038,17 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             return Database.SqlQuery<string>(query).SingleOrDefault();            
         }
 
-        public ObjectStyle GetObjectStyle(string type, int id)
+        public AssetTypeStyle GetAssetTypeStyle(int assetTypeId)
         {
-            return Filter<ObjectStyle>(i => i.ObjectType == type && i.ObjectID == id).FirstOrDefault();
+            return Filter<AssetTypeStyle>(i => i.ID == assetTypeId).FirstOrDefault();
         }
 
-        public ObjectStyle GetObjectStyle(SystemObjects type, int id)
+        public AssetTypeStyle GetAssetTypeStyle(string type, int id)
         {
-            return GetObjectStyle(type.ToString(), id);
+            var assetType = Filter<AssetType>(i => i.Object == type && i.ObjectID == id).FirstOrDefault();
+            if (assetType != null)
+                return GetAssetTypeStyle(assetType.ID);
+            return null;
         }
 
         public AssetType GetParentType(int id, SystemObjects obj)

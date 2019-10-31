@@ -53,7 +53,7 @@ namespace d360.web.Controllers
 
         #region Field Loading For Type Forms Below
 
-        void loadIconFields(List<EditableField> list, int row, ObjectStyle style = null)
+        void loadIconFields(List<EditableField> list, int row, AssetTypeStyle style = null)
         {
             var b = "#000000";
             var f = "#ffffff";
@@ -70,27 +70,28 @@ namespace d360.web.Controllers
 
         void upsertObjectStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx")
         {
-            var style = Company.GetObjectStyle(type, id);
+            var assetType = Company.Filter<AssetType>(i => i.Object == type && i.ObjectID == id).FirstOrDefault();
+            var style = Company.GetAssetTypeStyle(assetType.ID);
+
             bool add = (style == null);
 
             if (add)
             {
-                style = new ObjectStyle
+                style = new AssetTypeStyle
                 {
-                    ObjectType = type,
-                    ObjectID = id,
+                    ID = assetType.ID,
                     IconBackColor = backColor,
                     IconForeColor = foreColor,
                     IconText = getIconText(objectName)
                 };
-                Company.Add<ObjectStyle>(style);
+                Company.Add(style);
             }
             else
             {
                 style.IconBackColor = backColor;
                 style.IconForeColor = foreColor;
                 style.IconText = getIconText(objectName);
-                Company.Update<ObjectStyle>(style);
+                Company.Update(style);
             }
         }
 
@@ -150,7 +151,8 @@ namespace d360.web.Controllers
 
         void upsertObjectStyle(SystemObjects type, int id, FormCollection form, string objectName = "Tx")
         {
-            var style = Company.GetObjectStyle(type, id);
+            var assetType = Company.Filter<AssetType>(i => i.Object == type.ToString() && i.ObjectID == id).FirstOrDefault();
+            var style = Company.GetAssetTypeStyle(assetType.ID);
             bool add = (style == null);
 
             string iconText = "Tx";
@@ -167,22 +169,21 @@ namespace d360.web.Controllers
 
             if (add)
             {
-                style = new ObjectStyle
+                style = new AssetTypeStyle
                 {
-                    ObjectType = type.ToString(),
-                    ObjectID = id,
+                    ID = assetType.ID,
                     IconBackColor = form["IconBackColor"],
                     IconForeColor = form["IconForeColor"],
                     IconText = iconText
                 };
-                Company.Add<ObjectStyle>(style);
+                Company.Add(style);
             }
             else
             {
                 style.IconBackColor = form["IconBackColor"];
                 style.IconForeColor = form["IconForeColor"];
                 style.IconText = iconText;
-                Company.Update<ObjectStyle>(style);
+                Company.Update(style);
             }
         }
 
@@ -1004,7 +1005,7 @@ namespace d360.web.Controllers
                     if (assetType == null)
                         return jsonNetException($"No asset type found for the ID {id.Value}", HttpStatusCode.NotFound);
 
-                    var style = Company.Filter<ObjectStyle>(i => i.ObjectType == assetType.Object && i.ObjectID == assetType.ObjectID).FirstOrDefault();
+                    var style = Company.GetAssetTypeStyle(assetType.ID);
 
                     model = new AssetTypeEditorModel()
                     {
@@ -4759,7 +4760,7 @@ offset 0 rows fetch next 25 rows only
         #region Form Get/Post
 
         [ActionName("FusionType"), HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("FusionType")]
-        public JsonResult PostFusionType(FusionType fusion, ObjectStyle style = null)
+        public JsonResult PostFusionType(FusionType fusion, AssetTypeStyle style = null)
         {
             try
             {
@@ -4830,7 +4831,7 @@ offset 0 rows fetch next 25 rows only
         }
 
         [ActionName("FusionType"), HttpPut, ValidateInput(false), Route("FusionType")]
-        public JsonResult PutFusionType(FusionType fusion, ObjectStyle style = null)
+        public JsonResult PutFusionType(FusionType fusion, AssetTypeStyle style = null)
         {
             try
             {
@@ -11818,7 +11819,7 @@ order by	case
 
             var list = new List<EditableField>();
             var a = Company.GetById<RuleType>(id);
-            var style = Company.GetObjectStyle(SystemObjects.RuleType, id);
+            var style = Company.GetAssetTypeStyle(SystemObjects.RuleType.ToString(), id);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });

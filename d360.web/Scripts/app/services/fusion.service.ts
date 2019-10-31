@@ -32,6 +32,7 @@ import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 import {FormHelper} from "../models/form.model";
 import { TreeNode } from 'primeng/components/common/api';
+import { AssetTypeStyle } from '../models/asset-type-style.model';
 
 @Injectable()
 export class FusionService extends BaseObservableService {
@@ -332,11 +333,11 @@ export class FusionService extends BaseObservableService {
 
     postFusionType(
         fusionType: FusionType,
-        objectStyle: ObjectStyle = null
+        assetStyle: AssetTypeStyle = null
     ): Observable<any> {
         return this
             .http
-            .post('form/FusionType', {fusion: fusionType, style: objectStyle})
+            .post('form/FusionType', {fusion: fusionType, style: assetStyle})
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
@@ -345,11 +346,11 @@ export class FusionService extends BaseObservableService {
 
     putFusionType(
         fusionType: FusionType,
-        objectStyle: ObjectStyle = null
+        assetStyle: AssetTypeStyle = null
     ): Observable<any> {
         return this
             .http
-            .put('form/FusionType', {fusion: fusionType, style: objectStyle})
+            .put('form/FusionType', {fusion: fusionType, style: assetStyle})
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

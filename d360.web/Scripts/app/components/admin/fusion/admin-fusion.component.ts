@@ -1,16 +1,16 @@
-﻿import {Component, NgZone, OnDestroy} from '@angular/core';
-import {Breadcrumb} from '../../../models/breadcrumb.model';
-import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {RightSidebarService} from '../../../services/right-sidebar.service';
-import {FusionService} from '../../../services/fusion.service';
-import {ObjectStyleService} from '../../../services/object-style.service';
-import {AdminBaseComponent} from '../admin-base.component';
-import {FormMode} from '../../../models/form.model';
-import {FusionType} from '../../../models/fusion.model';
-import {ObjectStyle} from '../../../models/object-style.model';
-import {Title} from '@angular/platform-browser';
+﻿import { Component, NgZone, OnDestroy } from '@angular/core';
+import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { FusionService } from '../../../services/fusion.service';
+import { ObjectStyleService } from '../../../services/object-style.service';
+import { AdminBaseComponent } from '../admin-base.component';
+import { FormMode } from '../../../models/form.model';
+import { FusionType } from '../../../models/fusion.model';
+import { Title } from '@angular/platform-browser';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { AssetTypeStyle } from '../../../models/asset-type-style.model';
 
 @Component({
     selector: 'd3s-admin-fusion',
@@ -25,7 +25,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
     fusionTypes: FusionType[];
     selectedRow: FusionType;
     newFusionType: FusionType;
-    newFusionStyle: ObjectStyle;
+    newFusionStyle: AssetTypeStyle;
 
     constructor(
         rightSidebarService: RightSidebarService,
@@ -69,7 +69,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
 
     add() {
         this.newFusionType = new FusionType();
-        this.newFusionStyle = new ObjectStyle();
+        this.newFusionStyle = new AssetTypeStyle();
         this.newFusionStyle.IconBackColor = '#000000';
         this.newFusionStyle.IconForeColor = '#ffffff';
         this.formMode = FormMode.Adding;
@@ -77,14 +77,13 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
 
     edit() {
         this.isLoading = true;
-        this.objectStyleService.getObjectStyle(this.selectedRow.ID, 'FusionType').subscribe(
+        this.objectStyleService.getAssetTypeStyle(this.selectedRow.AssetTypeID).subscribe(
             data => {
                 this.newFusionStyle = data;
 
                 if (!this.newFusionStyle) {
-                    this.newFusionStyle = new ObjectStyle();
-                    this.newFusionStyle.ObjectType = 'FusionType';
-                    this.newFusionStyle.ObjectID = this.selectedRow.ID;
+                    this.newFusionStyle = new AssetTypeStyle();
+                    this.newFusionStyle.ID = this.selectedRow.AssetTypeID;
                     this.newFusionStyle.IconBackColor = '#000000';
                     this.newFusionStyle.IconForeColor = '#ffffff';
                 }

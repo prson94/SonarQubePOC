@@ -5425,10 +5425,10 @@ where    A.RuleID = @id", new { id });
             return status;
         }
 
-        [Route("{type}/{id:int}/style")]
-        public ObjectStyle GetObjectStyle(SystemObjects type, int id)
+        [Route("{id:int}/style")]
+        public AssetTypeStyle GetObjectStyle(int assetTypeId)
         {
-            return Company.GetObjectStyle(type, id);
+            return Company.GetAssetTypeStyle(assetTypeId);
         }
 
         [Route("{type}/{uid}/detail")]

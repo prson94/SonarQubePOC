@@ -80,6 +80,7 @@
     <Compile Include="entities\AssetTypeExportTemplate.cs" />
     <Compile Include="entities\AssetTypeExportTemplateStyle.cs" />
     <Compile Include="entities\AssetTypeLevel.cs" />
+    <Compile Include="entities\AssetTypeStyle.cs" />
     <Compile Include="entities\Community\Client.cs" />
     <Compile Include="entities\Community\CompanyHelpResource.cs" />
     <Compile Include="entities\Community\GenericCommand.cs" />
