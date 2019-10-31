@@ -105,6 +105,7 @@ namespace d360.web.Controllers.V2
 										WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
 										ELSE fa.Value
 	                                 END as NewValue, 
+                                     AT.Class,
 	                                 fa.[Version] as 'Version',	    
 	                                CASE 
 	                                     WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
@@ -122,7 +123,8 @@ namespace d360.web.Controllers.V2
 	                                from reporting.global_audit ga 
                                        left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) and ga.Action != 'Removed'
                                        inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
-	                               where ga.[Object] = @objType";
+	                               where ga.[Object] = @objType
+                                   left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID";
                 }
 
 
@@ -138,6 +140,7 @@ namespace d360.web.Controllers.V2
                                     end as ResourceName, 
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
+                                     AT.Class,
                                      fa.[Version] as 'Version',	                            
                                   ( select			
                                 top 1 fa_sub.value as 'value'			                            
@@ -148,7 +151,8 @@ namespace d360.web.Controllers.V2
                             from reporting.global_audit ga 
         left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
                                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'Fusion' 
-                                and ga.ObjectID in ( Select  Id from Fusion where fusiontypeid= @objId)";
+                                and ga.ObjectID in ( Select  Id from Fusion where fusiontypeid= @objId)
+                                left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID";
                 }
 
                 if (type == SystemObjects.ReferenceItemType)
@@ -166,6 +170,7 @@ namespace d360.web.Controllers.V2
                                     end as ResourceName,
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
+                                     AT.Class,
                                      fa.[Version] as 'Version',	                            
                                   ( select			
                                 top 1 fa_sub.value as 'value'			                            
@@ -175,7 +180,8 @@ namespace d360.web.Controllers.V2
 
                             from reporting.global_audit ga 
         left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
-                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'ReferenceItem' and ga.ObjectID IN @ReferenceIDs";
+                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'ReferenceItem' and ga.ObjectID IN @ReferenceIDs
+                                left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID";
                     dbArgs.Add("ReferenceIDs", referenceItemTypeIDs);
 
                 }
