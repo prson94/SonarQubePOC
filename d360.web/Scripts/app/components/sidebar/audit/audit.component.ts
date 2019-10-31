@@ -93,13 +93,21 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
             .subscribe(result => {
                 this.isLoading = false;
                 result.results.forEach(function (object) {
-                    if (object.ActionObject == "ArtifactType" && object.Class == 1) {
+                    if ((object.ActionObject == "ArtifactType" && object.Class == 1) || (object.ActionObject == "Artifact" && object.AssetTypeClass == 1)) {
                         object.ActionObject = "Business Asset";
                         object.ActionObjectTypeName = "Business Asset";
+                        if (object.ActionDescription.includes("Artifact")) {
+                            object.ActionDescription = object.ActionDescription.replace("ArtifactType", "Business Asset");
+                            object.ActionDescription = object.ActionDescription.replace("Artifact", "Business Asset");
+                        }
                     }
-                    if (object.ActionObject == "ArtifactType" && object.Class == 8) {
+                    if ((object.ActionObject == "ArtifactType" && object.Class == 8) || (object.ActionObject == "Artifact" && object.AssetTypeClass == 8)) {
                         object.ActionObject = "Technical Asset";
                         object.ActionObjectTypeName = "Technical Asset";
+                        if (object.ActionDescription.includes("Artifact")) {
+                            object.ActionDescription = object.ActionDescription.replace("ArtifactType", "Technical Asset");
+                            object.ActionDescription = object.ActionDescription.replace("Artifact", "Technical Asset");
+                        }
                     }
                 });
                 this.audits = result.results;
