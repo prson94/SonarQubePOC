@@ -1046,6 +1046,10 @@ button.ui-button:disabled {
     margin-top: 6px;
 }
 
+.nm {
+    margin-top: -.5em !important;
+}
+
 .ui-dropdown-item.ui-state-hover {
     border: none;
 }
@@ -1408,7 +1412,7 @@ tbody.ui-table-tbody > tr.ui-state-highlight {
     Stewarts overrides
 */
 .ui-widget, .ql-container {
-    font-family: 'Nunito Sans', sans-serif;
+    font-family: 'Source Sans Pro', sans-serif;
     font-size: 14px;
 }
 
@@ -1466,8 +1470,15 @@ button.ui-button:disabled {
 p-multiselect .ui-multiselect {
     z-index: 1;
 }
-
+p-multiselect .ui-multiselect.ui-multiselect-open {
+  z-index: 2;
+}
 /*Dropdown default z index for IE issue*/
 p-dropdown .ui-dropdown-panel {
     z-index: 10;
+}
+
+/*Calendar default z index for IE issue*/
+p-calendar .ui-datepicker {
+    z-index: 2000 !important;
 }

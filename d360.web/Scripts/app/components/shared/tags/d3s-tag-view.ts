@@ -37,8 +37,10 @@ export class TagView extends AdminBaseComponent implements OnInit {
     @Input() isEditable: boolean = false;
     @Input() allowAddTag: boolean = false;
     @Input() assetUID: string;
+    @Input() ignoreResizing: boolean = false;
     showEditor: boolean = false;
     showDelete: boolean = false;
+    private inputValue: any;
     private searchResults: any[] = [];
     private tags: any[];
     private searchTags: any[];
@@ -112,16 +114,6 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     search(event, searchValue) {
-        if (event.key != "Enter" && event.key != undefined) {
-            this.selectedtag.Value = undefined;
-            this.selectedtag.uid = undefined;
-        }
-        if (event.key == "Enter") {
-            if (this.selectedtag.Value == undefined)
-                this.selectedtag.Value = searchValue;
-            if (this.selectedtag.Value != "")
-                this.saveTag({ Value: this.selectedtag.Value, uid: this.selectedtag.uid });
-        }
         this.tagsLoading = true;
         clearTimeout(this.timeouthandle);
         this.timeouthandle = window.setTimeout(() => {
@@ -158,21 +150,28 @@ export class TagView extends AdminBaseComponent implements OnInit {
         }
     }
 
+    checkKey(event,value) {
+        if (event.key == "Enter" ) {
+            event.name = value;
+            this.saveTag(event);
+        }
+    }
+
     saveTag(event) {
         this.existingTag = false;
         var tags = Array<TagApiModel>();
         let tag = new TagApiModel();
         tag.AssetUID = this.assetUID;
-        tag.TagName = event.Value;
+        tag.TagName = event.name;
         tags.push(tag);
         this.tags.forEach(x => {
-            if (x.Value == event.Value) {
+            if (x.Value == event.name) {
                 this.existingTag = true;
                 this.showEditor = false;
                 this.messagesService.showError('Error', 'Tag already assigned to Asset');
             }
         })
-        if (event.Value.includes("|")) {
+        if (event.name.includes("|")) {
             this.existingTag = true;
             this.messagesService.showError('Error', "Tag can't contain | character");
         }
@@ -180,6 +179,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
             this.tagService.doesTagExist(event)
                 .subscribe(result => {
                     if (result == null) {
+                        event.Value = event.name;
                         this.tagService.saveTag(event)
                             .subscribe(result => {
                                 let msg: string = '';
@@ -201,9 +201,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
                                         this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                                         event.UseCount = 0;
                                         this.searchResults = [];
-                                        this.tagInput.nativeElement.value = "";
-                                        this.resetStyle();
-                                        this.resultPanel.hide();
+                                        this.inputValue = "";
                                         this.ref.markForCheck();
                                     });
                             });
@@ -213,17 +211,16 @@ export class TagView extends AdminBaseComponent implements OnInit {
                             .subscribe(result => {
                                 let msg: string = '';
                                 if (result != null) {
-                                    msg = `${event.Value} succesfully added to Asset`;
+                                    msg = `${event.name} succesfully added to Asset`;
                                 }
                                 this.showMessageForResult(this.messagesService, result, msg);
                                 event.uid = result[0].Uid;
+                                event.Value = event.name;
                                 this.tags.push(event);
                                 this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                                 event.UseCount = 0;
-                                this.tagInput.nativeElement.value = "";
                                 this.searchResults = [];
-                                this.resetStyle();
-                                this.resultPanel.hide();
+                                this.inputValue = "";
                                 this.ref.markForCheck();
 
                             });
@@ -290,11 +287,9 @@ export class TagView extends AdminBaseComponent implements OnInit {
         event.stopPropagation();
         this.setVisibility();
     }
-    resetStyle() {
-        this.tagInput.nativeElement.value = "";
-        this.targetPanel.style.background = "#f0f0f0";
-        this.targetPanel.style.border = "1px solid #f0f0f0";
-        this.tagInput.nativeElement.style.background = "#f0f0f0";
+
+    resetValue() {
+        this.inputValue = null;
     }
 
     setVisibility() {
@@ -314,7 +309,7 @@ export class TagView extends AdminBaseComponent implements OnInit {
         this.ref.markForCheck();
     }
 
-    private getParentForResizing(element: HTMLElement, tags: string) {
+    private getParentForResizing(element: HTMLElement, tags: string): HTMLElement {
         var searchFor = tags.split(',');
         var el = null;
         searchFor.forEach(tagName => {
@@ -341,6 +336,15 @@ export class TagView extends AdminBaseComponent implements OnInit {
         if ((this.isEditable != true && this.showDelete == false) || (<HTMLElement>event.target).className == 'tag-item-wrapper')
             this.router.navigate([`${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${item.uid.toString().toLowerCase()}`]);
         event.stopPropagation();
+    }
+
+    public highlight(item, input) {
+        if (!input) {
+            return item;
+        }
+        return item.replace(new RegExp(input, "gi"), match => {
+            return '<span style="background: #F5FF57;">' + match + '</span>';
+        });
     }
 
     enter(tag: any, el: HTMLElement) {
@@ -370,10 +374,16 @@ export class TagView extends AdminBaseComponent implements OnInit {
     }
 
     manageWidth() {
+        if (this.ignoreResizing) return;
+
         if (this.container) {
             let parent = this.getParentForResizing(this.container.nativeElement, 'TD,DIV');
+
             if (!parent) {
                 console.warn("No suitable parent found for tag resizing!");
+            } else if (parent.classList.contains("tagsnomanagewidth")) {
+                this.setVisibility();
+                return;
             }
 
             let ofWidth = parent ? parent.offsetWidth - 10 : 500;

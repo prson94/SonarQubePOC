@@ -1,8 +1,8 @@
 import { debounceTime } from 'rxjs/operators';
-import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange } from '@angular/core';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { SearchResult } from '../../../models/search-result.model';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 
@@ -49,8 +49,19 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         }
     }
 
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        if (changes['defaultValue']) {
+            this.result = new SearchResult();
+            this.result.Name = this.defaultValue;
+        }
+    }
+
     ngOnDestroy(): void {
         if (this.searchSub) this.searchSub.unsubscribe();
+    }
+
+    syncSearchText(event) {
+        this.searchText = event.srcElement.value;
     }
 
     search(event) {
@@ -70,13 +81,14 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     }
 
     openSearch() {
+        this.searchText = (typeof this.result === 'string') ? this.result : this.result.Name;
         let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
-
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&advanced=0&types=${options ? options.join(',') : ''}`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&types=${options ? options.join(',') : ''}`);
     }
 
     selectItem(ac) {
         if (this.result.Type == this.endSearchAllTypeToken) {
+            this.result.Name = this.searchText
             this.openSearch()
         } else {
             this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));
@@ -101,7 +113,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         if (event.keyCode == 13) {
             let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
 
-            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${event.srcElement.value ? encodeURIComponent(event.srcElement.value) : ''}&advanced=0&types=${options ? options.join(',') : ''}`);
+            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${event.srcElement.value ? encodeURIComponent(event.srcElement.value) : ''}&types=${options ? options.join(',') : ''}`);
             this.removeFocus(ac);
         }
     }

@@ -549,16 +549,17 @@ where	T.[Class] in (1,2,3,4,6,7,8,9)").ToList();
             select A.* from (
             select	Object as ObjectType, 
 		            ObjectID as ObjectTypeID, 
-		            case Object
-			            when 'ArtifactType' then 'Artifacts :: '
-			            when 'TaxonomyType' then 'Models :: '
-			            when 'PolicyType' then 'Policies :: '
-			            when 'RuleType' then 'Rules :: '
-			            when 'FusionType' then 'Fusion Types :: '
-			            when 'ReferenceItemType' then 'Reference Item Type :: '
+		            case
+                        when Object = 'ArtifactType' AND (Class = 1) then 'Business Asset :: '
+                        when Object = 'ArtifactType' and (Class = 8 ) then 'Technical Asset :: '
+			            when Object = 'TaxonomyType' then 'Model :: '
+			            when Object = 'PolicyType' then 'Policy :: '
+			            when Object = 'RuleType' then 'Rule :: '
+			            when Object = 'FusionType' then 'Fusion Type :: '
+			            when Object = 'ReferenceItemType' then 'Reference Item Type :: '
 		            end + Name as Name
             from	AssetType
-            where	Class in (1,2,3,6,7,9)
+            where	Class in (1,2,3,6,7,8,9)
             union
             select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
             ) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
@@ -1750,10 +1751,15 @@ where	I.ID is null";
 
             AssetType subjectAssetType = null;
             AssetType objectAssetType = null;
+            subjectAssetType = Filter<AssetType>(i => i.Object == model.Subject && i.ObjectID == model.SubjectID).FirstOrDefault();
+            objectAssetType = Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).FirstOrDefault();
+
+            model.SubjectUid = subjectAssetType?.uid;
+            model.ObjectUid = objectAssetType?.uid;
+
             if (predicateModel.Type == PredicateType.BusinessToTechnical || predicateModel.Type == PredicateType.Transformation)
             {
-                subjectAssetType = Filter<AssetType>(i => i.Object == model.Subject && i.ObjectID == model.SubjectID).FirstOrDefault();
-                objectAssetType = Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).FirstOrDefault();
+                
 
                 if (predicateModel.Type == PredicateType.BusinessToTechnical)
                 {
@@ -3095,9 +3101,10 @@ select @err";
                             var isTaxonomyType = (relationFieldInfo.Object == SystemObjects.TaxonomyType.ToString());
                             var isPolicyType = (relationFieldInfo.Object == SystemObjects.PolicyType.ToString());
                             var isArtifactType = (relationFieldInfo.Object == SystemObjects.ArtifactType.ToString());
-                            var useAssetTable = isPolicyType || isTaxonomyType  || isArtifactType; 
+                            var useAssetTable = isPolicyType || isTaxonomyType|| isArtifactType;
+                            var useAssetTypeTable = isReferenceItemType;
 
-                            var tableName = isReferenceItemType ? relationFieldInfo.Object : relationFieldInfo.Object.Replace("Type", "");
+                            var tableName = relationFieldInfo.Object.Replace("Type", "");
                             var typeIDColumnName = relationFieldInfo.Object + "ID";
 
                             if (includeIdColumn) columns += $"{name}_T.ID as [{name}ID], ";
@@ -3113,12 +3120,15 @@ select @err";
 
                             joins += $" left join [Intersect] {name}_T on {name}_T.IntersectTypeID = {f.LookupObjectID} and";
                             joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
-                            if (!useAssetTable)
+                            if (!useAssetTable && !useAssetTypeTable)
                             {
-                                joins += (isReferenceItemType)
-                                    ? $" left join [{tableName}] {name}_OT on "
-                                    : $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
+                                joins +=  $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
                                 joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                            }else if (useAssetTypeTable)
+                            {
+                                joins += $" left join [AssetType] {name}_OT on ";
+                                joins += $" {name}_OT.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                joins += $" and {name}_OT.Object ='{relationFieldInfo.Object}' and  {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject") + $"= '{relationFieldInfo.Object}'";
                             }
                             else
                             {

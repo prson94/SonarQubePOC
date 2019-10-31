@@ -39,6 +39,6 @@ export class HomeSearchComponent extends BaseComponent {
     }
 
     private navigateSearch() {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&advanced=0&types=${this.searchTypes ? this.searchTypes.join(',') : ''}`);
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&types=${this.searchTypes ? this.searchTypes.join(',') : ''}`);
     }
 };

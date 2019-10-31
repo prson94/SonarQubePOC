@@ -32,5 +32,8 @@ namespace d360.model.DataAccessLayer
         List<PredicateDeleteResult> DeletePredicates(PredicateDeletes predicates, ApiExecution execution);
         List<PredicateUpsertResult> UpsertPredicates(PredicateUpserts predicates, ApiExecution execution);
         Task<bool> IsTransformPredicateExists(int assetTypeId);
-     }
+         List<RelationshipTypeResult> PostRelationshipTypes(List<RelationshipTypeInsert> relationshipTypes, ApiExecution execution);
+        List<RelationshipTypeResult> PutRelationshipTypes(List<RelationshipTypeUpdate> relationshipTypes, ApiExecution execution);
+        List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution);
+    }
 }

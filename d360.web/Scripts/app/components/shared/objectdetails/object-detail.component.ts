@@ -4,7 +4,7 @@ import { ObjectDetailService } from '../../../services/object-detail.service';
 import { LookupGrid } from '../../../models/grid-definition.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
-declare var CompanySettings;
+declare var CompanySettings;'object-detail'
 
 @Component({
     selector: 'object-detail',
@@ -48,6 +48,12 @@ export class ObjectDetailComponent implements OnChanges {
                 .subscribe(data => {
                     this.rows = data.rows;
                     this.categories = [];
+
+                    for (var i = 0; i < this.rows.length; i++) {
+                        if (this.rows[i].Category != null && this.rows[i].Category == '') {
+                            this.rows[i].Category = null;
+                        }
+                    }
 
                     this.rows.forEach(r => {
                         if (r.Category && this.categories.find(c => c.name == r.Category) == null)

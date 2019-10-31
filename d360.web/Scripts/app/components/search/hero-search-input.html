@@ -10,7 +10,9 @@
                    [defaultLabel]="'Search All Categories'"
                    [maxSelectedLabels]="1"
                    (ngModelChange)="searchTypes=$event;"
-                   (onChange)="setEventTypeLabel()" >
+                   (onChange)="setEventTypeLabel()"
+                   [dropdownIcon]="'fa fa-chevron-down nm'"
+                   [optionLabel]="title">
     </p-multiSelect>
     <div class="field mr10">
         <d3s-header-typeahead-search 

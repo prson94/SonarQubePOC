@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.queue;
 using Dapper;
+using Microsoft.ApplicationInsights;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json.Linq;
 using System;
@@ -11,6 +12,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -453,8 +455,10 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 
         private void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
         {
-            if (!resolveRelationshipOnObjectId)
-            {
+
+            string assetJoin = resolveRelationshipOnObjectId ? "AD.ObjectID = cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
+
+
                 Connection.Execute($@"
                 begin
 	                drop table if exists #Relationships;
@@ -476,8 +480,8 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                     AD.Object as Subject,
                                     AD.ObjectId as SubjectId,
                                     case 
-                                    when AD.Type = IT.Object AND AD.TypeID = IT.ObjectID then 0
-                                    else 1
+                                    when AD.Type = IT.Object AND AD.TypeID = IT.ObjectID then 1
+                                    else 0
                                     end as switchObject
                             from    {tableName} A
                                     inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
@@ -488,7 +492,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                     cross apply string_split(F.FieldValue, ',') V                                    
                                     inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
                                     inner join IntersectType IT on IT.ID = FT.LookupObjectId
-                                    inner join AssetDetail AD on AD.DisplayValue = V.[value]
+                                    inner join AssetDetail AD on {assetJoin}
                                             and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
                                                 or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
                             where   A.ExecutionID = @executionID
@@ -528,6 +532,19 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                 and I.[Object] = R.[Object] 
                                 and I.ObjectID = R.ObjectID;
 
+                            --check reverse if subject/object type are the same
+					        update R
+                            set R.ID = I.ID
+                            from #Relationships R
+					        inner join IntersectType T on T.ID = R.IntersectTypeID and T.Subject = T.Object and T.SubjectID = T.ObjectID
+                            inner join [Intersect] I on 
+                                I.IntersectTypeID = R.IntersectTypeID 
+                                and I.[Subject] = R.[Object] 
+                                and I.SubjectID = R.ObjectID
+                                and I.[Object] = R.[Subject] 
+                                and I.ObjectID = R.SubjectID
+					        where R.ID is null;
+
                             delete I
 			                from [Intersect] I
 			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
@@ -548,105 +565,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                             where  ID is null;
                 end
 ",
-                new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-            }
-            else
-            {
-                Connection.Execute($@"
-begin
-	                drop table if exists #Relationships;
-	                create table #Relationships
-	                (
-		                ID int,
-		                IntersectTypeID int,
-		                [Subject] varchar(50),
-		                SubjectID int,
-		                [Object] varchar(50),
-		                ObjectID int
-	                )
-;with R
-    as (
-            select  distinct 
-                    A.Object,
-                    A.ObjectID,
-                    FT.LookupObjectId as IntersectTypeId,
-                    AD.Object as Subject,
-                    AD.ObjectId as SubjectId,
-                    case 
-                    when AD.Type = IT.Object AND AD.TypeID = IT.ObjectID then 0
-                    else 1
-                    end as switchObject
-            from    {tableName} A
-                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
-                        and F.ItemNumber = A.ItemNumber 
-                        and A.ObjectID is not null 
-                        and F.FieldTypeID is not null
-						and A.Success is null
-                    cross apply string_split(F.FieldValue, ',') V
-                    inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
-                    inner join IntersectType IT on IT.ID = FT.LookupObjectId
-                    inner join AssetDetail AD on AD.ObjectID = cast(V.[value] as int)
-                            and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
-                                or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
-            where   A.ExecutionID = @executionID
-                    and A.ItemNumber between @beginItemNumber and @endItemNumber 
-                    and (F.Ignore = 0 or F.Ignore is null)
-                    and FT.Type = 'Relationship'
-            )
-            insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID)
-            select
-                null as ID,
-			    IntersectTypeId, 
-			    CASE 
-				    when switchObject = 0 then Subject
-				    else Object
-			    END AS Subject, 
-			    CASE 
-				    when switchObject = 0 then SubjectId
-				    else ObjectID
-			    END AS SubjectId,
-			    CASE 
-				    when switchObject = 0 then Object
-				    else Subject
-			    END AS Object, 
-			    CASE 
-				    when switchObject = 0 then ObjectId
-				    else SubjectId
-			    END AS ObjectID
-			from R;
-
-                    update R
-                    set R.ID = I.ID
-                    from #Relationships R
-                    inner join [Intersect] I on 
-                        I.IntersectTypeID = R.IntersectTypeID 
-                        and I.[Subject] = R.[Subject] 
-                        and I.SubjectID = R.SubjectID 
-                        and I.[Object] = R.[Object] 
-                        and I.ObjectID = R.ObjectID;
-
-                    delete I
-			        from [Intersect] I
-			        inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
-			        where not exists (select 1 from #Relationships where [Subject] = I.[Subject] and SubjectID = I.SubjectID);
-
-                    delete I
-			        from [Intersect] I
-			        inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Subject] = I.[Subject] and R.SubjectID = I.SubjectID
-			        where not exists (select 1 from #Relationships where [Object] = I.[Object] and ObjectID = I.ObjectID);
-
-
-                    insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
-                    select  IntersectTypeID,
-                            Subject,
-                            SubjectID,
-                            Object,
-                            ObjectID    
-                    from    #Relationships
-                    where  ID is null;
-                end",
-                new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-            }
+                new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);          
         }
 
         private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
@@ -1529,6 +1448,16 @@ from	IntersectType I
                                         {
                                             #region Cascade Behaviour
 
+                                            //AssetDataProfile
+                                            Connection.Execute($@"             
+			update  S 
+            set     S.Success = 0 ,
+			        [Message] ='You have not enabled Cascade, yet there are profiling data for this asset.'
+			from    api.ExecutionDeletedAsset S 
+			        inner join AssetDataProfile ADP on ADP.AssetID = S.AssetID
+			where	S.[ExecutionId] = @ExecutionID and S.[AssetId] is not null and S.[Cascade] = 0", 
+            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
                                             // Parent/Child Relationships
                                             if (predicateType.HasValue)
                                             {
@@ -2239,8 +2168,375 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             return results;
         }
 
+        public List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600)
+        {
+            var results = new List<RelationshipTypeResult>();
+            var dupes = import.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            if (dupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                #region Build data tables for bulk load.
+                var table = new DataTable();
+                table.Columns.Add("ExecutionID", typeof(Guid));
+                table.Columns.Add("ExecutionItemUid", typeof(Guid));
+                table.Columns.Add("ItemNumber", typeof(int));
+                table.Columns.Add("SubjectUid", typeof(Guid));
+                table.Columns.Add("Subject", typeof(string));
+                table.Columns.Add("SubjectID", typeof(int));
+                table.Columns.Add("SubjectCardinality", typeof(int));
+                table.Columns.Add("ObjectUid", typeof(Guid));
+                table.Columns.Add("Object", typeof(string));
+                table.Columns.Add("ObjectID", typeof(int));
+                table.Columns.Add("ObjectCardinality", typeof(int));
+                table.Columns.Add("PredicateUid", typeof(Guid));
+                table.Columns.Add("PredicateID", typeof(int));
+                table.Columns.Add("Message", typeof(string));
+                table.Columns.Add("Success", typeof(bool));
+                table.Columns.Add("IsNew", typeof(bool));
+                table.Columns.Add("uid", typeof(Guid));
+
+                int i = 0;
+                foreach (var item in import)
+                {
+                    var row = table.NewRow();
+
+                    row["ExecutionID"] = execution.ExecutionID;
+                    row["ItemNumber"] = i++;
+                    if (item.ExecutionItemUid.HasValue)
+                        row["ExecutionItemUid"] = item.ExecutionItemUid.Value;
+                    row["SubjectUid"] = item.SubjectUid;
+                    row["SubjectCardinality"] = (int)item.SubjectCardinality;
+                    row["ObjectUid"] = item.ObjectUid;
+                    row["ObjectCardinality"] = (int)item.ObjectCardinality;
+                    row["PredicateUid"] = item.PredicateUid;
+                    row["IsNew"] = true;
+
+                    table.Rows.Add(row);
+                }
+
+                #endregion
+                try
+                {
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                    #region Bulk Copy
+                    var bulkCopy = new SqlBulkCopy(Connection)
+                    {
+                        BatchSize = table.Rows.Count,
+                        DestinationTableName = "api.ExecutionRelationshipType",
+                        BulkCopyTimeout = timeout
+                    };
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+
+                    bulkCopy.ColumnMappings.Add("SubjectUid", "SubjectUid");
+                    bulkCopy.ColumnMappings.Add("SubjectCardinality", "SubjectCardinality");
+                    bulkCopy.ColumnMappings.Add("ObjectUid", "ObjectUid");
+                    bulkCopy.ColumnMappings.Add("ObjectCardinality", "ObjectCardinality");
+                    bulkCopy.ColumnMappings.Add("PredicateUid", "PredicateUid");
+                    bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
+
+
+                    bulkCopy.WriteToServer(table);
+
+                    bulkCopy = null;
+                    #endregion
+
+                    this.ValidateRelationshipsType(execution, timeout);
+
+                    Connection.Execute(@"
+                             Update api.ExecutionRelationshipType
+                            Set uid =Newid()
+                            Where ExecutionID=@executionID and Success is null;
+
+                            insert into [intersecttype]
+                            (SubjectUid,[Subject],SubjectID,ObjectUid,[Object],ObjectID,PredicateID,
+                            SubjectCardinality,ObjectCardinality,
+                            CreatedBy,CreatedOn,UpdatedBy,UpdatedOn,uid
+                            )
+                            Select SubjectUid,[Subject],SubjectID,
+							ObjectUid,[Object],ObjectID,PredicateID,
+                            SubjectCardinality,ObjectCardinality,@resourceId,@utcNow,@resourceId,@utcNow,uid
+                            from
+                            api.ExecutionRelationshipType
+                            Where ExecutionID=@executionID and Success is null;
+
+                             Update api.ExecutionRelationshipType
+                            Set Success =1,
+                            Message ='Added Successfully'
+                            Where ExecutionID=@executionID and Success is null; ",
+                            new { executionID = execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow }, commandTimeout: timeout);
+
+                    results = Query<RelationshipTypeResult>(
+                                        $"select ExecutionItemUid,Uid,Message,Success from api.ExecutionRelationshipType where ExecutionID = @ExecutionID",
+                                        new { ExecutionID = execution.ExecutionID }).ToList();
+                }
+                finally
+                {
+                    if (Database.Connection.State == ConnectionState.Open)
+                        Connection.Close();
+                }
+
+            }
+            return results;
+        }
+
+        public List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600)
+        {
+            var results = new List<RelationshipTypeResult>();
+            var dupes = import.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            if (dupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                #region Build data tables for bulk load.
+                var table = new DataTable();
+                table.Columns.Add("ExecutionID", typeof(Guid));
+                table.Columns.Add("ExecutionItemUid", typeof(Guid));
+                table.Columns.Add("ItemNumber", typeof(int));
+                table.Columns.Add("SubjectUid", typeof(Guid));
+                table.Columns.Add("Subject", typeof(string));
+                table.Columns.Add("SubjectID", typeof(int));
+                table.Columns.Add("SubjectCardinality", typeof(int));
+                table.Columns.Add("ObjectUid", typeof(Guid));
+                table.Columns.Add("Object", typeof(string));
+                table.Columns.Add("ObjectID", typeof(int));
+                table.Columns.Add("ObjectCardinality", typeof(int));
+                table.Columns.Add("PredicateUid", typeof(Guid));
+                table.Columns.Add("PredicateID", typeof(int));
+                table.Columns.Add("Message", typeof(string));
+                table.Columns.Add("Success", typeof(bool));
+                table.Columns.Add("IsNew", typeof(bool));
+                table.Columns.Add("uid", typeof(Guid));
+
+                int i = 0;
+                foreach (var item in import)
+                {
+                    var row = table.NewRow();
+
+                    row["ExecutionID"] = execution.ExecutionID;
+                    row["ItemNumber"] = i++;
+                    if (item.ExecutionItemUid.HasValue)
+                        row["ExecutionItemUid"] = item.ExecutionItemUid.Value;
+                    row["SubjectCardinality"] = (int)item.SubjectCardinality;
+                    row["ObjectCardinality"] = (int)item.ObjectCardinality;
+                    row["PredicateUid"] = item.PredicateUid;
+                    row["uid"] = item.Uid;
+                    row["IsNew"] = false;
+
+                    table.Rows.Add(row);
+                }
+
+                #endregion
+                try
+                {
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                    #region Bulk Copy
+                    var bulkCopy = new SqlBulkCopy(Connection)
+                    {
+                        BatchSize = table.Rows.Count,
+                        DestinationTableName = "api.ExecutionRelationshipType",
+                        BulkCopyTimeout = timeout
+                    };
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+
+                    bulkCopy.ColumnMappings.Add("SubjectCardinality", "SubjectCardinality");
+                    bulkCopy.ColumnMappings.Add("ObjectCardinality", "ObjectCardinality");
+                    bulkCopy.ColumnMappings.Add("PredicateUid", "PredicateUid");
+                    bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
+                    bulkCopy.ColumnMappings.Add("uid", "uid");
+
+                    bulkCopy.WriteToServer(table);
+
+                    bulkCopy = null;
+                    #endregion
+
+                    this.ValidateUpdateRelationshipsType(execution, timeout);
+
+                    Connection.Execute(@"
+                            Update IT
+                            Set PredicateID=ER.PredicateID,
+                                SubjectCardinality=ER.SubjectCardinality, 
+                                ObjectCardinality=ER.ObjectCardinality,
+                                UpdatedBy=@resourceId,
+                                UpdatedOn=@utcNow
+                            from [intersecttype] IT
+                            inner join [api].[ExecutionRelationshipType] ER on IT.UID = ER.UID
+                            where  ER.ExecutionID=@executionID and
+                            ER.Success is null
+
+                           
+                             Update api.ExecutionRelationshipType
+                            Set Success =1,
+                            Message ='Updated Successfully'
+                            Where ExecutionID=@executionID and Success is null; ",
+                            new { executionID = execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow }, commandTimeout: timeout);
+
+                    results = Query<RelationshipTypeResult>(
+                                        $"select ExecutionItemUid,Uid,Message,Success from api.ExecutionRelationshipType where ExecutionID = @ExecutionID",
+                                        new { ExecutionID = execution.ExecutionID }).ToList();
+                }
+                finally
+                {
+                    if (Database.Connection.State == ConnectionState.Open)
+                        Connection.Close();
+                }
+
+            }
+            return results;
+        }
+
+        public List<RelationshipTypeResult> DeleteRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeDelete> import, int timeout = 3600)
+        {
+            var results = new List<RelationshipTypeResult>();
+            var dupes = import.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            if (dupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                #region Build data tables for bulk load.
+                var table = new DataTable();
+                table.Columns.Add("ExecutionID", typeof(Guid));
+                table.Columns.Add("ExecutionItemUid", typeof(Guid));
+                table.Columns.Add("ItemNumber", typeof(int));
+                table.Columns.Add("uid", typeof(Guid));
+                table.Columns.Add("Cascade", typeof(bool));
+                table.Columns.Add("Message", typeof(string));
+                table.Columns.Add("Success", typeof(bool));
+
+
+
+                int i = 0;
+                foreach (var item in import)
+                {
+                    var row = table.NewRow();
+
+                    row["ExecutionID"] = execution.ExecutionID;
+                    row["ItemNumber"] = i++;
+                    if (item.ExecutionItemUid.HasValue)
+                        row["ExecutionItemUid"] = item.ExecutionItemUid.Value;
+                    row["uid"] = item.Uid;
+                    row["Cascade"] = item.Cascade;
+                    table.Rows.Add(row);
+                }
+
+                #endregion
+                try
+                {
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                    #region Bulk Copy
+                    var bulkCopy = new SqlBulkCopy(Connection)
+                    {
+                        BatchSize = table.Rows.Count,
+                        DestinationTableName = "api.ExecutionDeletedRelationshipType",
+                        BulkCopyTimeout = timeout
+                    };
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                    bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
+
+
+                    bulkCopy.WriteToServer(table);
+
+                    bulkCopy = null;
+                    #endregion
+
+                    this.ValidateDeleteReleationshipsType(execution, timeout);
+
+                    Connection.Execute(@"
+                            
+                                delete  T
+                                from    [Field] T
+                                        inner join (Select I.ID from [Intersect] I
+                                        inner join [intersecttype] IST on
+                                        I.intersecttypeid = IST.ID
+                                        inner join api.ExecutionDeletedRelationshipType ER on ER.UID = IST.UID 
+                                        where ER.ExecutionID = @ExecutionID 
+                                        and ER.Success is null) S on T.ObjectType = 'Intersect' 
+                                        and S.ID = T.ObjectID ;
+
+                                delete FT
+                                from    [FieldType] FT
+                                        inner join (Select I.ID from [intersecttype] I
+                                        inner join api.ExecutionDeletedRelationshipType ER on ER.UID = I.UID 
+                                        where ER.ExecutionID = @ExecutionID 
+                                        and ER.Success is null) S on FT.[Object] = 'IntersectType' 
+                                        and S.ID = FT.ObjectID ;
+
+
+                            delete  T
+                            from    [Intersect] T
+                                    inner join [intersecttype] I on
+                                    T.intersecttypeid = I.ID
+                                    inner join api.ExecutionDeletedRelationshipType ER on ER.UID = I.UID 
+                                    where ER.ExecutionID = @ExecutionID 
+                                    and ER.Success is null;
+
+                           delete  I
+                            from    [intersecttype] I
+                                    inner join api.ExecutionDeletedRelationshipType ER on ER.UID = I.UID 
+                                    where ER.ExecutionID = @ExecutionID 
+                                    and ER.Success is null;
+
+                             Update api.ExecutionDeletedRelationshipType
+                            Set Success =1,
+                            Message ='Deleted Successfully'
+                            Where ExecutionID=@executionID and Success is null; ",
+                            new { executionID = execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow }, commandTimeout: timeout);
+
+                    results = Query<RelationshipTypeResult>(
+                                        $"select ExecutionItemUid,Uid,Message,Success from api.ExecutionDeletedRelationshipType where ExecutionID = @ExecutionID",
+                                        new { ExecutionID = execution.ExecutionID }).ToList();
+                }
+                finally
+                {
+                    if (Database.Connection.State == ConnectionState.Open)
+                        Connection.Close();
+                }
+            }
+            return results;
+        }
+
+        private  void AITrackTrace(TelemetryClient client,ApiExecution execution,string methodName,string logMessage,long ElapsedMilliseconds,bool isLog)
+        {
+            if (!isLog) return;
+
+            var propsToSend = new Dictionary<string, string> {
+                { "MethodName", methodName },
+               { logMessage, ElapsedMilliseconds.ToString() },
+            };
+
+            client.TrackTrace(execution.ExecutionID.ToString(), propsToSend);
+        }
         public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500)
         {
+            var swBegin = Stopwatch.StartNew();
+            TelemetryClient client = new TelemetryClient();
+            const string METHOD_NAME = "ImportAssets";
+            bool isLog = import.Count() > 1;
             var results = new List<DatabaseBulkAssetResult>();
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (dupes.Any())
@@ -2250,6 +2546,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             }
             else
             {
+                
                 var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
                 if (isInsert)
                 {
@@ -2262,6 +2559,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                 }
                 else
                 {
+                    var sw = Stopwatch.StartNew();
                     #region Build data tables for bulk load.
 
                     var table = new DataTable();
@@ -2326,12 +2624,15 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                             );
                         }
 
+                        this.AITrackTrace(client, execution, METHOD_NAME, "BuildDatatable and initialization", sw.ElapsedMilliseconds, isLog);
+                        sw.Restart();
                         // Get field types.
                         fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { at.Object, at.ObjectID }).ToList();
                         jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
                         requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
                         hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
-
+                        this.AITrackTrace(client, execution, METHOD_NAME, "Get field types", sw.ElapsedMilliseconds, isLog);
+                        sw.Restart();
                         #region Generate data sets
 
                         if (predicateType.HasValue)
@@ -2360,7 +2661,8 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                                 }
                             }
                         }
-
+                        this.AITrackTrace(client, execution, METHOD_NAME, "Get predicateType.HasValue", sw.ElapsedMilliseconds, isLog);
+                        sw.Restart();
                         int i = 1;
                         foreach (var model in import)
                         {
@@ -2462,7 +2764,8 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                             i++;
                         }
-
+                        this.AITrackTrace(client, execution, METHOD_NAME, "ValidateFields", sw.ElapsedMilliseconds, isLog);
+                        sw.Restart();
                         #endregion
 
                         if (results.Count > 0) // There are errors already processed.
@@ -2534,6 +2837,8 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                         bulkCopy = null;
 
+                        this.AITrackTrace(client, execution, METHOD_NAME, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, isLog);
+                        sw.Restart();
                         #endregion
 
                         if (hasLookupFieldTypes)
@@ -2541,16 +2846,22 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                             if (lookupFieldsPassedByValue)
                             {
                                 CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout);
+                                this.AITrackTrace(client, execution, METHOD_NAME, "CopyFieldLookupValuesAsIs", sw.ElapsedMilliseconds, isLog);
+                                sw.Restart();
                             }
                             else
                             {
                                 ResolveFieldLookupValues(execution.ExecutionID, timeout);
+                                this.AITrackTrace(client, execution, METHOD_NAME, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, isLog);
+                                sw.Restart();
                             }
                         }
 
                         if (at.Object == "RuleType")
                         {
                             ResolveRuleTypeLookupValues(execution.ExecutionID, timeout);
+                            this.AITrackTrace(client, execution, METHOD_NAME, "ResolveRuleTypeLookupValues", sw.ElapsedMilliseconds, isLog);
+                            sw.Restart();
                         }
 
                         if (hasLookupFieldTypes)
@@ -2568,6 +2879,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                             LogAssetErrors(execution.ExecutionID, timeout);             // If you cannot find asset based on Uids provided.
                             LoadMissingKeyFields(execution.ExecutionID, at, timeout);   // Get missing key fields if this is an update.
                         }
+
+                        this.AITrackTrace(client, execution, METHOD_NAME, "Log Errors", sw.ElapsedMilliseconds, isLog);
+                        sw.Restart();
 
                         #region Generate proposed key hash and compare against existing data.
 
@@ -2637,6 +2951,10 @@ insert into #Keys
 
 {keyComparisonUpdateStatement}",
                             new { execution.ExecutionID, at.ID }, commandTimeout: timeout);
+
+                            this.AITrackTrace(client, execution, METHOD_NAME, "FusionAttributeType - ProposedKey", sw.ElapsedMilliseconds, isLog);
+                            sw.Restart();
+
                         }
                         else if (at.Object == "ReferenceItemType")
                         {
@@ -2662,6 +2980,8 @@ insert into #Keys
 
 {keyComparisonUpdateStatement}",
                             new { execution.ExecutionID, at.ID }, commandTimeout: timeout);
+                            this.AITrackTrace(client, execution, METHOD_NAME, "ReferenceItemType - ProposedKey", sw.ElapsedMilliseconds, isLog);
+                            sw.Restart();
                         }
                         else
                         {
@@ -2709,6 +3029,8 @@ insert into #Keys
 
 {keyComparisonUpdateStatement}",
                             new { execution.ExecutionID, at.ID, intersectTypeID }, commandTimeout: timeout);
+                            this.AITrackTrace(client, execution, METHOD_NAME, "Others - ProposedKey", sw.ElapsedMilliseconds, isLog);
+                            sw.Restart();
                         }
 
                         #endregion
@@ -2729,10 +3051,14 @@ from	api.ExecutionAsset T
 					) S on T.ExecutionID = @ExecutionID and S.ProposedKey = T.ProposedKey and S.ItemNumber < T.ItemNumber;",
                         new { execution.ExecutionID }, commandTimeout: timeout);
 
+                        this.AITrackTrace(client, execution, METHOD_NAME, "Invalidate repetitious items in load", sw.ElapsedMilliseconds, isLog);
+                        sw.Restart();
                         #endregion
 
                         // Validate permissions
                         LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, "ExecutionAsset");
+                        this.AITrackTrace(client, execution, METHOD_NAME, "LogAssetPermissionErrors -  Permission.ModifyAsset- ExecutionAsset", sw.ElapsedMilliseconds, isLog);
+                        sw.Restart();
 
                         generalChecksCompleted = true;
                     }
@@ -2747,7 +3073,7 @@ from	api.ExecutionAsset T
                         results = new List<DatabaseBulkAssetResult>();
                         results.AddRange(import.Select(i => new DatabaseBulkAssetResult { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
                     }
-
+                    sw.Restart();
                     if (generalChecksCompleted)
                     {
                         int loopSize = mergeBlockSize;
@@ -2793,6 +3119,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
                                             case AssetTypeClass.Model:
                                                 #region
+                                                sw.Restart();
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
@@ -2839,6 +3166,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                         where	{executionAssetWhereSql};",
                                                     new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                                 }
+                                                this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Model >> api.ExecutionAsset", sw.ElapsedMilliseconds, isLog);
                                                 break;
                                             #endregion
                                             case AssetTypeClass.FusionAttribute:
@@ -2881,6 +3209,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
     {insertGraphAssetNode}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> 1", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 else
                                                 {
@@ -2895,10 +3224,11 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     set		IsNew = 0
     where	{executionAssetWhereSql};",
                                                     new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> 2", sw.ElapsedMilliseconds, isLog);
                                                 }
 
                                                 #region Recalculate the text paths
-
+                                                sw.Restart();
                                                 Connection.Execute($@"
     WITH hierarchy (RootID, ID, ParentID, ItemPath) AS
     (
@@ -2921,7 +3251,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     from	FusionAttribute T
 		    inner join hierarchy cte on cte.RootID = T.ID and cte.ParentID is null option (MAXRECURSION 10);",
                                                 new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-
+                                                this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> 3", sw.ElapsedMilliseconds, isLog);
                                                 #endregion
 
                                                 break;
@@ -2934,6 +3264,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                 if (at.Class == AssetTypeClass.Policy)
                                                     @object = "Policy";
 
+                                                sw.Restart();
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
@@ -2965,6 +3296,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
     {insertGraphAssetNode}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> 1", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 else
                                                 {
@@ -2979,15 +3311,17 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     set		IsNew = 0
     where	{executionAssetWhereSql};",
                                                     new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, @object, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> 2", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 break;
                                             #endregion
                                             case AssetTypeClass.Rule:
                                                 #region
+                                                sw.Restart();
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
-    create table #ObjectMergeTableResult (ID int, ItemNumber int);
+    create table #ObjectMergeTableResult (ID int, ItemNumber int,[Operation] varchar(10));
     CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
 
     merge   [Rule] as T
@@ -3004,7 +3338,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     when    not matched then
     insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
     values  (@ObjectID, S.Threshold, @R, @D, @R, @D)
-    output  inserted.ID, S.ItemNumber into #ObjectMergeTableResult;
+    output  inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
     update  T
     set     T.Object = 'Rule',
@@ -3019,6 +3353,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow },
                                                     transaction: trans,
                                                     commandTimeout: timeout);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Rule >> api.ExecutionAsset >> 1", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 else
                                                 {
@@ -3036,11 +3371,13 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     set		IsNew = 0
     where	{executionAssetWhereSql};",
                                                     new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Rule >> api.ExecutionAsset >> 2", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 break;
                                             #endregion
                                             case AssetTypeClass.Reference:
                                                 #region
+                                                sw.Restart();
                                                 if (isInsert)
                                                 {
                                                     Connection.Execute($@"
@@ -3072,6 +3409,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
                                                         {updateAssetInfoOnExecutionRecordsSql}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Reference >> api.ExecutionAsset >> 1", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 else
                                                 {
@@ -3088,6 +3426,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                         set		IsNew = 0
                                                         where	{executionAssetWhereSql};",
                                                     new { execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Reference >> api.ExecutionAsset >> 2", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 break;
                                                 #endregion
@@ -3095,7 +3434,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                         }
 
                                         #region Parent/Child Relationship
-
+                                        sw.Restart();
                                         if (intersectTypeID.HasValue)
                                         {
                                             parentIntersectGuids = Connection.Query<Guid>($@"
@@ -3152,32 +3491,43 @@ create table #ParentChildRelationships([operation] varchar(10),[uid] uniqueident
 select [uid] from #ParentChildRelationships",
                                             new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
                                             .ToList();
+                                            this.AITrackTrace(client, execution, METHOD_NAME, "Parent/Child Relationship >> graph.AssetEdge >> 1", sw.ElapsedMilliseconds, isLog);
                                         }
 
                                         #endregion
                                         fieldTypeUpdates.Clear();
+                                        sw.Restart();
                                         fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+                                        this.AITrackTrace(client, execution, METHOD_NAME, "MergeFields >> 1", sw.ElapsedMilliseconds, isLog);
+                                        sw.Restart();
                                         ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
-
+                                        this.AITrackTrace(client, execution, METHOD_NAME, "ImportRelationships >> 1", sw.ElapsedMilliseconds, isLog);
                                         if (jsonFieldTypes.Count > 0)
                                         {
+                                            sw.Restart();
                                             MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, fieldJsonPropertyLoadLimitToTopLevel);
+                                            this.AITrackTrace(client, execution, METHOD_NAME, "MergeJsonFieldProperties >> 1", sw.ElapsedMilliseconds, isLog);
                                         }
 
                                         // Must execute BEFORE the Success flag is updated below.
+                                        sw.Restart();
                                         MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
+                                        this.AITrackTrace(client, execution, METHOD_NAME, "MergeAssetDisplayValues >> 1", sw.ElapsedMilliseconds, isLog);
 
                                         //Delete all field without value ONLY do this if there are lookup fields AND this is an update.
                                         if (hasLookupFieldTypes && !isInsert)
                                         {
+                                            sw.Restart();
                                             DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
+                                            this.AITrackTrace(client, execution, METHOD_NAME, "DeleteEmptyAssetListFieldByApiExecutionUid >> 1", sw.ElapsedMilliseconds, isLog);
                                         }
 
+                                        sw.Restart();
                                         // Update success flag.
                                         Connection.Execute(
                                             $@"update api.ExecutionAsset set Success = 1 where {executionAssetWhereSql} and Object is not null and ObjectID is not null;",
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-
+                                        this.AITrackTrace(client, execution, METHOD_NAME, "Update success flag", sw.ElapsedMilliseconds, isLog);
                                         trans.Commit();
 
                                         runCompleted = true;
@@ -3196,13 +3546,14 @@ select [uid] from #ParentChildRelationships",
                                 }
                             }
 
+                            sw.Restart();
                             results.AddRange(
                                 Query<DatabaseBulkAssetResult>(
                                     $"select * from api.ExecutionAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }
                                 )
                             );
-
+                            this.AITrackTrace(client, execution, METHOD_NAME, "results.AddRange >> DatabaseBulkAssetResult", sw.ElapsedMilliseconds, isLog);
                             OnAssetsPartiallyProcessed(new AssetsPartiallyProcessedEventArgs
                             {
                                 Results = results
@@ -3228,24 +3579,33 @@ select [uid] from #ParentChildRelationships",
                         try
                         {
                             var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
+                            sw.Restart();
                             SendAssetGraphEvents(graphResults, changedFields);
+                            this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
                         }
                         catch { }
 
 
                         if (sendWorkflowEvents)
                         {
+                            sw.Restart();
                             SendWorkflowEvents(at.Object, at.ObjectID, results, null, fieldTypeUpdates);
+                            this.AITrackTrace(client, execution, METHOD_NAME, "SendWorkflowEvents", sw.ElapsedMilliseconds, isLog);
                         }
                     }
                 }
             }
 
+            this.AITrackTrace(client, execution, METHOD_NAME, "End of Method", swBegin.ElapsedMilliseconds, isLog);
             return results;
         }
 
-        public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false)
+        public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false)
         {
+            var swBegin = Stopwatch.StartNew();
+            TelemetryClient client = new TelemetryClient();
+            const string METHOD_NAME = "ImportRelationships";
+            bool isLog = import.Count() > 1;
             var results = new List<DatabaseBulkRelationshipResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
@@ -3257,6 +3617,7 @@ select [uid] from #ParentChildRelationships",
             }
             else
             {
+                var sw = Stopwatch.StartNew();
                 try
                 {
                     currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionRelationship");
@@ -3292,11 +3653,13 @@ select [uid] from #ParentChildRelationships",
                     #endregion
 
                     // Get field types.
+                    sw.Restart();
                     var fieldTypes = Query<FieldType>("select * from FieldType where Object = 'IntersectType' and ObjectID = @ID", new { rt.ID }).ToList();
+                    this.AITrackTrace(client, execution, METHOD_NAME, "Get field types", sw.ElapsedMilliseconds, isLog);
                     var requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
 
                     #region Generate data sets
-
+                    sw.Restart();
                     for (int i = 1; i <= import.Count; i++)
                     {
                         if (i > currentLocation.HighestItemNumber)
@@ -3327,7 +3690,7 @@ select [uid] from #ParentChildRelationships",
                             }
                         }
                     }
-
+                    this.AITrackTrace(client, execution, METHOD_NAME, " Generate data sets", sw.ElapsedMilliseconds, isLog);
                     #endregion
 
                     if (results.Count > 0) // There are errors already processed.
@@ -3342,7 +3705,7 @@ select [uid] from #ParentChildRelationships",
                         Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
                     #region Bulk Copy
-
+                    sw.Restart();
                     SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
 
                     bulkCopy.BatchSize = table.Rows.Count;
@@ -3372,14 +3735,25 @@ select [uid] from #ParentChildRelationships",
                     bulkCopy.WriteToServer(fieldTable);
 
                     bulkCopy = null;
-
+                    this.AITrackTrace(client, execution, METHOD_NAME, " Bulk Copy", sw.ElapsedMilliseconds, isLog);
                     #endregion
+                    sw.Restart();
+                    if (lookupFieldsPassedByValue)
+                    {
+                        CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout);
+                    }
+                    else
+                    {
+                        ResolveFieldLookupValues(execution.ExecutionID, timeout);
 
-                    ResolveFieldLookupValues(execution.ExecutionID, timeout);
+                    }
+                    this.AITrackTrace(client, execution, METHOD_NAME, " ResolveFieldLookupValues", sw.ElapsedMilliseconds, isLog);
+                    sw.Restart();
                     LogFieldLookupErrors(execution.ExecutionID, "IntersectType", rt.ID, "Relationship", timeout);
+                    this.AITrackTrace(client, execution, METHOD_NAME, " LogFieldLookupErrors", sw.ElapsedMilliseconds, isLog);
 
                     #region Validate subjects/objects
-
+                    sw.Restart();
                     Connection.Execute(@"
 declare @st varchar(50),
 		@stid int,
@@ -3431,11 +3805,11 @@ begin
             where T.ExecutionID = @ExecutionID;
 end",
                     new { execution.ExecutionID, rt.uid }, commandTimeout: timeout);
-
+                    this.AITrackTrace(client, execution, METHOD_NAME, " Validate subjects/objects", sw.ElapsedMilliseconds, isLog);
                     #endregion
 
                     #region Log subject/object resolution errors
-
+                    sw.Restart();
                     Connection.Execute(@"
 update	api.ExecutionRelationship
 set		Success = 0,
@@ -3447,13 +3821,14 @@ set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve object of this relationship to a valid asset.'
 where	ExecutionID = @ExecutionID and (Object is null or ObjectID is null);",
                     new { execution.ExecutionID }, commandTimeout: timeout);
-
+                    this.AITrackTrace(client, execution, METHOD_NAME, " Log subject/object resolution errors", sw.ElapsedMilliseconds, isLog);
                     #endregion
 
                     #region Cardinality Validation
 
                     if (rt.SubjectCardinality == Cardinality.One)
                     {
+                        sw.Restart();
                         Connection.Execute(@"
 update	T
 set		T.Message = coalesce(T.Message + '; ', '') + 'Object already related to one item and cardinality is set to one.',
@@ -3483,10 +3858,12 @@ from	api.ExecutionRelationship T
 					group by ER.ExecutionID, ER.ObjectUid
 					) S on S.ExecutionID = T.ExecutionID and S.ObjectUid = T.ObjectUid and S.ItemNumber < T.ItemNumber;",
                         new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
+                        this.AITrackTrace(client, execution, METHOD_NAME, " SubjectCardinality == Cardinality.One", sw.ElapsedMilliseconds, isLog);
                     }
 
                     if (rt.ObjectCardinality == Cardinality.One)
                     {
+                        sw.Restart();
                         Connection.Execute(@"
 update	T
 set		T.Message = coalesce(T.Message + '; ', '') + 'Subject already related to one item and cardinality is set to one.',
@@ -3516,12 +3893,13 @@ from	api.ExecutionRelationship T
 					group by ER.ExecutionID, ER.SubjectUid
 					) S on S.ExecutionID = T.ExecutionID and S.SubjectUid = T.SubjectUid and S.ItemNumber < T.ItemNumber;",
                         new { execution.ExecutionID, IntersectTypeID = rt.ID }, commandTimeout: timeout);
+                        this.AITrackTrace(client, execution, METHOD_NAME, " ObjectCardinality == Cardinality.One", sw.ElapsedMilliseconds, isLog);
                     }
 
                     #endregion
 
                     #region Permissions Validation
-
+                    sw.Restart();
                     Connection.Execute(@"
 declare @IsAdministrator bit = 0
 select	@IsAdministrator = IsAdministrator
@@ -3573,7 +3951,7 @@ begin
                         ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
 end",
                     new { execution.ExecutionID, execution.ResourceID }, commandTimeout: timeout);
-
+                    this.AITrackTrace(client, execution, METHOD_NAME, "  Permissions Validation", sw.ElapsedMilliseconds, isLog);
                     #endregion
 
                     generalChecksCompleted = true;
@@ -3610,6 +3988,7 @@ end",
                                 try
                                 {
                                     #region Intersect table merge
+                                    sw.Restart();
                                     Connection.Execute($@"
         drop table if exists #ObjectMergeTableResult;
         create table #ObjectMergeTableResult (ID int, ItemNumber int, [Action] nvarchar(10));
@@ -3640,15 +4019,20 @@ end",
 		        inner join #ObjectMergeTableResult S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber
                 inner join [Intersect] IT on IT.ID = S.ID
         where   T.ItemNumber between @beginItemNumber and @endItemNumber;", new { execution.ExecutionID, beginItemNumber, endItemNumber, CurrentResourceID, rtID = rt.ID }, transaction: trans, commandTimeout: timeout);
+                                    this.AITrackTrace(client, execution, METHOD_NAME, "Intersect table merge", sw.ElapsedMilliseconds, isLog);
 
                                     #endregion
                                     fieldTypeUpdates.Clear();
+                                    sw.Restart();
                                     fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionRelationship", "'Intersect' as [Object]", "A.IntersectID as ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+                                    this.AITrackTrace(client, execution, METHOD_NAME, "MergeFields", sw.ElapsedMilliseconds, isLog);
 
                                     // Update success flag
+                                    sw.Restart();
                                     Connection.Execute(
                                         $"update api.ExecutionRelationship set Success = 1 where Success is null and ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber and IntersectID is not null;",
                                         new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                    this.AITrackTrace(client, execution, METHOD_NAME, "Update success flag", sw.ElapsedMilliseconds, isLog);
 
                                     trans.Commit();
 
@@ -3662,7 +4046,9 @@ end",
 
                                     if (retryCount > API_V2_RETRY_LIMIT)
                                     {
+                                        sw.Restart();
                                         LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionRelationship", ex.GetFullExceptionData(false), timeout);
+                                        this.AITrackTrace(client, execution, METHOD_NAME, "LogLoopExecutionError", sw.ElapsedMilliseconds, isLog);
                                     }
                                     else
                                     {
@@ -3671,13 +4057,14 @@ end",
                                 }
                             }
                         }
-
+                        sw.Restart();
                         results.AddRange(
                             Query<DatabaseBulkRelationshipResult>(
                                 $"select * from api.ExecutionRelationship where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
                                 new { execution.ExecutionID, beginItemNumber, endItemNumber }
                             )
                         );
+                        this.AITrackTrace(client, execution, METHOD_NAME, "results.AddRange >> DatabaseBulkRelationshipResult ", sw.ElapsedMilliseconds, isLog);
 
                         OnRelationshipsPartiallyProcessed(new RelationshipsPartiallyProcessedEventArgs
                         {
@@ -3689,13 +4076,17 @@ end",
                     }
 
                     Connection.Close();
-
+                    sw.Restart();
                     SendAssetGraphEvents(results);
-
+                    this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
+                    sw.Restart();
                     if (sendWorkflowEvents)
                         SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
+
+                    this.AITrackTrace(client, execution, METHOD_NAME, "SendWorkflowEvents", sw.ElapsedMilliseconds, isLog);
                 }
             }
+            this.AITrackTrace(client, execution, METHOD_NAME, "End Method", swBegin.ElapsedMilliseconds, isLog);
             return results;
         }
 
@@ -3998,6 +4389,307 @@ from    [Intersect] T
             return results;
         }
 
+
+        private void ValidateDeleteReleationshipsType(ApiExecution execution, int timeout = 3600)
+        {
+            var predicateTypeInfo = new PredicateType().GetAsList();
+            var disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
+
+            Connection.Execute(@"
+                                    Update ER
+                                    Set Success=0,
+                                    Message='Relationship type (Uid) not found.' 
+                                    from [api].[ExecutionDeletedRelationshipType] ER
+                                    where  ER.ExecutionID=@executionID and
+                                    ER.Success is null
+                                    and not exists (select 1 from IntersectType where Uid = ER.[UID])
+                         ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+
+            Connection.Execute(@"
+                                    Update ER
+                                    Set Success=0,
+                                    Message='Relationship type not allowed to delete' 
+                                    from [api].[ExecutionDeletedRelationshipType] ER
+                                    where  ER.ExecutionID=@executionID and
+                                    ER.Success is null
+                                    and  exists (select 1 from IntersectType I
+                                                        inner join [Predicate] P on P.ID = I.PredicateID
+                                                    where I.Uid = ER.[UID] and P.[TYPE]  in @disallowEditIds)
+                          ", new { executionID = execution.ExecutionID, disallowEditIds = disallowEditIds }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"
+                                    Update ER
+                                    Set Success=0,
+                                    Message='Relationship type has existing relationships' 
+                                    from [api].[ExecutionDeletedRelationshipType] ER
+                                    where  ER.ExecutionID=@executionID and ER.[Cascade] =0 and
+                                    ER.Success is null
+                                    and  exists (select 1 from IntersectType I
+                                                        inner join [Intersect] T  on I.ID = T.IntersectTypeID
+                                                    where I.Uid = ER.[UID] )
+                            ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+
+        }
+        private void ValidateRelationshipsType(ApiExecution execution, int timeout = 3600)
+        {
+            var predicateTypeInfo = new PredicateType().GetAsList();
+            var disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='SubjectUid is missing / incorrect format.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (SubjectUid is null or SubjectUid ='00000000-0000-0000-0000-000000000000'
+                                          ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='ObjectUid is missing / incorrect format.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (ObjectUid is null or ObjectUid ='00000000-0000-0000-0000-000000000000'
+                                       ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='PredicateUid is missing / incorrect format.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (PredicateUid is null or PredicateUid ='00000000-0000-0000-0000-000000000000'
+                                    ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='SubjectCardinality is missing / incorrect' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (SubjectCardinality is null  or SubjectCardinality =0 ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='ObjectCardinality is missing / incorrect' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (ObjectCardinality is null or ObjectCardinality =0) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"
+                                With cte_relations as (
+                                Select ItemNumber, Row_Number() Over
+                                (PARTITION BY SubjectUID,ObjectUID,PredicateUID,SubjectCardinality,ObjectCardinality
+                                order by ItemNumber)  row_num
+                                from  [api].[ExecutionRelationshipType]
+                                where ExecutionID=@executionID and Success is null
+                                )
+                                Update ER
+                                SET Success=0,
+                                Message='Duplicate RelationshipTypes'
+                                from api.[ExecutionRelationshipType] ER
+                                Where ER.ExecutionID=@executionID
+                                and Success is null
+                                and  exists (
+                                select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber)
+                            ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"
+                            Update ER
+                            Set [Subject]= AST.[Object],
+                            SubjectID= AST.[ObjectID]
+                            from [api].[ExecutionRelationshipType] ER
+                            inner join AssetType AST on AST.UID = ER.SubjectUID
+                            where  ER.ExecutionID=@executionID and
+                            ER.Success is null
+                       ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"
+                            Update ER
+                            Set [Object]= AST.[Object],
+                            ObjectID= AST.[ObjectID]
+                            from [api].[ExecutionRelationshipType] ER
+                            inner join AssetType AST on AST.UID = ER.ObjectUID
+                            where  ER.ExecutionID=@executionID and
+                            ER.Success is null
+                            ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"
+                            Update ER
+                            Set PredicateID=P.ID
+                            from [api].[ExecutionRelationshipType] ER
+                            inner join [Predicate] P on P.UID = ER.PredicateUID
+                            where  ER.ExecutionID=@executionID and
+                            ER.Success is null
+                        ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='Subject asset type not found' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (SubjectId is null or [Subject] is null) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='Object asset type not found' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (ObjectId is null  or [Object] is null) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='Predicate not found' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    PredicateID is null  ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"
+                                            Update ER
+                                            Set PredicateID=null,
+                                            Success=0,
+                                            Message='Predicate not allowed' 
+                                            from [api].[ExecutionRelationshipType] ER
+                                            inner join [Predicate] P on P.UID = ER.PredicateUID
+                                            where  ER.ExecutionID=@executionID 
+                                            and P.[TYPE]  in @disallowEditIds and
+                                            ER.Success is null and ER.PredicateID is not null
+                                        ", new { executionID = execution.ExecutionID, disallowEditIds = disallowEditIds }, commandTimeout: timeout);
+
+            Connection.Execute(@"
+                                                    Update ER
+                                                    Set Success=0,
+                                                    Message='Another relationship already exists with this configuration.' 
+                                                    from [api].[ExecutionRelationshipType] ER
+                                                    where  ER.ExecutionID=@executionID and
+                                                    ER.Success is null
+                                                    and exists (select 1 from IntersectType where [Subject] = ER.[Subject] 
+                                                    and SubjectID = ER.SubjectID and [Object] = ER.[Object] and ObjectID =ER.ObjectID and PredicateID = ER.PredicateID)
+                                         ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+        }
+
+        private void ValidateUpdateRelationshipsType(ApiExecution execution, int timeout = 3600)
+        {
+            var predicateTypeInfo = new PredicateType().GetAsList();
+            var disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='Uid is missing / incorrect format.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (Uid is null or Uid ='00000000-0000-0000-0000-000000000000'
+                                       ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='SubjectCardinality is missing / incorrect.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (SubjectCardinality is null or SubjectCardinality =0 ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='ObjectCardinality is missing / incorrect.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (ObjectCardinality is null or ObjectCardinality =0 ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='PredicateUid is missing / incorrect format.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (PredicateUid is null or PredicateUid ='00000000-0000-0000-0000-000000000000'
+                                    ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"
+                                With cte_relations as (
+                                Select ItemNumber, Row_Number() Over
+                                (PARTITION BY UID
+                                order by ItemNumber)  row_num
+                                from  [api].[ExecutionRelationshipType]
+                                where ExecutionID=@executionID and Success is null
+                                )
+                                Update ER
+                                SET Success=0,
+                                Message='Duplicate RelationshipTypes'
+                                from api.[ExecutionRelationshipType] ER
+                                Where ER.ExecutionID=@executionID
+                                and Success is null
+                                and  exists (
+                                select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber)
+                            ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"
+                                    Update ER
+                                    Set Success=0,
+                                    Message='Relationship type (Uid) not found.' 
+                                    from [api].[ExecutionRelationshipType] ER
+                                    where  ER.ExecutionID=@executionID and
+                                    ER.Success is null
+                                    and not exists (select 1 from IntersectType where Uid = ER.[UID])
+                         ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"
+                            Update ER
+                            Set PredicateID=P.ID
+                            from [api].[ExecutionRelationshipType] ER
+                            inner join [Predicate] P on P.UID = ER.PredicateUID
+                            where  ER.ExecutionID=@executionID and
+                            ER.Success is null
+                        ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+            Connection.Execute(@"Update api.ExecutionRelationshipType
+                                    Set Success=0,
+                                    Message='Predicate not found' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    PredicateID is null  ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"
+                            Update ER
+                            Set PredicateID=null,
+                            Success=0,
+                            Message='Predicate not allowed' 
+                            from [api].[ExecutionRelationshipType] ER
+                            inner join [Predicate] P on P.UID = ER.PredicateUID
+                            where  ER.ExecutionID=@executionID 
+                            and P.[TYPE]  in @disallowEditIds and
+                            ER.Success is null and ER.PredicateID is not null
+                        ", new { executionID = execution.ExecutionID, disallowEditIds = disallowEditIds }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"
+                            Update ER
+                            Set Success=0,
+                            Message='Relationships already present for this type' 
+                            from [api].[ExecutionRelationshipType] ER
+                            inner join [intersecttype] IT on IT.UID = ER.UID
+                            where  ER.ExecutionID=@executionID and
+                            ER.Success is null
+                            and  exists (select 1 from [Intersect] where IntersectTypeID =IT.ID)
+                        ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+            Connection.Execute(@"
+                            Update ER
+                            Set Success=0,
+                            Message='Relationship type with the specified predicate already exists' 
+                            from [api].[ExecutionRelationshipType] ER
+                            inner join [intersecttype] IT on IT.UID = ER.UID
+                            where  ER.ExecutionID=@executionID and
+                            ER.Success is null
+                            and  exists (select 1 from [intersecttype] I 
+                                            inner join Predicate P on P.ID = I.PredicateID 
+                                            where P.Uid=ER.PredicateUid and I.Subject =IT.Subject and I.SubjectID=IT.SubjectID 
+                                            and  I.Uid != IT.Uid  and I.[Object]=IT.[Object] and I.ObjectID=IT.ObjectID )
+                        ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+
+        }
         private void ValidateAssetCrossReference(ApiExecution execution, int timeout = 3600)
         {
             Connection.Execute(@"Update api.ExecutionAssetCrossReference
@@ -4340,9 +5032,23 @@ from    [Intersect] T
             CurrentExecutionLocationModel currentLocation = null;
 
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            var predDupes = import.GroupBy(x => x.Name + x.Type).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
+
+            var predInverseDupes = import.GroupBy(x => x.Inverse + x.Type).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
+
             if (executionItemDupes.Any())
             {
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else if (predDupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate predicate items: {string.Join(", ", predDupes.Select(i => i.Items.First().Name + "|" + i.Items.First().Type.ToString()))}. Name and type must be unique within a batch.";
+                results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
+            }
+            else if (predInverseDupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate predicate items: {string.Join(", ", predInverseDupes.Select(i => i.Items.First().Inverse + "|" + i.Items.First().Type.ToString()))}. Inverse and type must be unique within a batch.";
                 results.AddRange(import.Select(i => new PredicateUpsertResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -4430,17 +5136,50 @@ from    [Intersect] T
 
 
                     #region Log data errors
-                    var allowedPredicates = Enum.GetValues(typeof(PredicateType)).Cast<PredicateType>().Where(x => x.CanUserInsert()).ToList();
-                    var allowedTypes = allowedPredicates.Select(x => "''" + x.ToString() + "''").ToList();
+                    var allowedPredicates = new List<PredicateType>() {
+                        PredicateType.Grammar,
+                        PredicateType.SeeAlso,
+                        PredicateType.Simple
+                    };
+
+                    if (Community.GetCompanySettingByKey<int>("LineageVersion") == 3)
+                    {
+                        allowedPredicates.Add(PredicateType.BusinessToTechnical);
+                        allowedPredicates.Add(PredicateType.Transformation);
+                    }
+
+                    else if (Community.GetCompanySettingByKey<int>("LineageVersion") == 1)
+                    {
+                        allowedPredicates.Add(PredicateType.DataLineage);
+                        allowedPredicates.Add(PredicateType.Usage);
+                    }
+                    else
+                    {
+                        allowedPredicates.Add(PredicateType.DataLineage);
+                    }
+
+                    List<PredicateType> systemReserved = new List<PredicateType>() { PredicateType.InterTypeHierarchy, PredicateType.IntraTypeHierarchy, PredicateType.ObjectOwnerhip };
+
+                    foreach (PredicateType pred in (PredicateType[])Enum.GetValues(typeof(PredicateType)))
+                    {
+                        if (pred.IsSystemReserved() && !systemReserved.Contains(pred))
+                        {
+                            systemReserved.Add(pred);
+                        }
+                    }
+
                     var allowedTypesInt = allowedPredicates.Select(x => (int)x).ToList();
                     string checkTypeSQL = $"Type not in ({string.Join(",", allowedTypesInt)})";
+
+                    var systemReservedInt = systemReserved.Select(x => (int)x).ToList();
+                    string systemReservedSQL = $"Type in ({string.Join(",", systemReservedInt)})";
 
                     var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
                     List<int> notAllowedTypesForLineage = new List<int>() { -1 };
 
                     foreach (var item in import)
                     {
-                        if (!item.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
+                        if ((int)item.Type != 0 && !item.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion))
                         {
                             notAllowedTypesForLineage.Add((int)item.Type);
                         }
@@ -4455,6 +5194,27 @@ from    [Intersect] T
     from api.ExecutionPredicate EP
     inner join [Predicate] P on P.Name = EP.Name and P.Type = EP.Type
     where	ExecutionID = @ExecutionID and EP.uid is null
+
+    update	api.ExecutionPredicate 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate with same Inverse and Type already exists'
+    from api.ExecutionPredicate EP
+    inner join [Predicate] P on P.Inverse = EP.Inverse and P.Type = EP.Type
+    where	ExecutionID = @ExecutionID and EP.uid is null
+
+    update	api.ExecutionPredicate 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate with same Inverse and Type already exists'
+    from api.ExecutionPredicate EP
+    inner join [Predicate] P on P.Inverse = EP.Inverse and P.Type = EP.Type and P.uid != EP.uid
+    where	ExecutionID = @ExecutionID and EP.uid is not null
+
+    update	api.ExecutionPredicate
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate with same Name and Type already exists'
+    from api.ExecutionPredicate EP
+    inner join [Predicate] P on P.Name = EP.Name and P.Type = EP.Type and P.uid != EP.uid
+    where	ExecutionID = @ExecutionID and EP.uid is not null
 
     update	api.ExecutionPredicate
     set		Success = 0,
@@ -4482,13 +5242,18 @@ from    [Intersect] T
 
     update	api.ExecutionPredicate
     set		Success = 0,
-		    [Message] = coalesce([Message] + '; ', '') + 'Predicate Type invalid. Allowed values are {string.Join(",", allowedTypes)}'
+		    [Message] = coalesce([Message] + '; ', '') + 'Predicate Type invalid. Allowed values are {string.Join(", ", allowedPredicates)}'
     where	ExecutionID = @ExecutionID and {checkTypeSQL.Replace("''", "'")}
 
     update	api.ExecutionPredicate
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Your current version of lineage does not support using this predicates of this type.'
     where	ExecutionID = @ExecutionID and {checkLineageTypes}
+
+        update	api.ExecutionPredicate
+    set		Success = 0,
+		    [Message] = 'Predicate is system reserved and may not be created.'
+    where	ExecutionID = @ExecutionID and {systemReservedSQL}
 ;";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);

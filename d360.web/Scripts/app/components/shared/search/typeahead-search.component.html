@@ -10,16 +10,17 @@
                         [placeholder]="autocompletePlaceholder"
                         [minLength]="1"
                         (onBlur)="clearValue()"
-                        (onSelect)="selectItem(ac)">
+                        (onSelect)="selectItem(ac)"
+                        (onKeyUp)="syncSearchText($event)">
             <ng-template let-result pTemplate="item">
                 <div>
                     <div *ngIf="result?.Type == endSearchAllTypeToken;else suggestion" class="search-typeahead-suggestion">
-                        <i class="folder-icon searchall fa fa-search"></i><span>Show All Results</span>
+                        <i class="folder-icon searchall fa fa-search"></i><span class="displayname">Show All Results</span>
                         <span class="category">Choose this option or hit Enter to see all matches</span>
                     </div>
                     <ng-template #suggestion>
                         <div class="search-typeahead-suggestion">
-                            <i *ngIf="result?.Icon" class="folder-icon fa {{result.Icon}}"></i><span *ngIf="result?.ImageUrl" class="folder-icon"><img [src]="result.ImageUrl" /></span><span>{{result.DisplayName}}</span>
+                            <i *ngIf="result?.Icon" class="folder-icon fa {{result.Icon}}"></i><span *ngIf="result?.ImageUrl" class="folder-icon"><img [src]="result.ImageUrl" /></span><span class="displayname">{{result.DisplayName}}</span>
                             <span *ngIf="result?.Tags" class="tag-list-container">
                                 <button *ngFor="let tag of result?.Tags" class="button">
                                     <span class="tag-item-wrapper" [innerHtml]="tag.Value"></span>

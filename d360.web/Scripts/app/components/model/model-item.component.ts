@@ -33,6 +33,7 @@ declare var CompanySettings;
                             <d3s-object-definition-tile [nymTypes]="model?.NymTypes"
                                                         [objectPermissions]="permissions"
                                                         [objectType]="'Taxonomy'"
+                                                        [useV2Api]="true"
                                                         [objectID]="selected?.ID"
                                                         [hasAttributes]="model?.AllowAttributes"
                                                         (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>

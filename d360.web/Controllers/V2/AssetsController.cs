@@ -377,7 +377,12 @@ namespace d360.web.Controllers.V2
 
                 var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));
 
-                AssetType assetType = AssetRepository.GetAssetTypeByUID(model.Uid);
+                if (model.Class == AssetTypeClass.Glossary)
+                {
+                    model.Class = AssetTypeClass.BusinessAsset;
+                }
+
+                AssetType assetType = AssetRepository.GetAssetTypeByUidAndClass(model.Uid, model.Class);
 
                 AssetType parentAssetType = null;
                 if (model.ParentUid != null && model.ParentUid != Guid.Empty)
@@ -476,16 +481,17 @@ namespace d360.web.Controllers.V2
             {
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
-                if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ModifyAsset))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
-
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
+
+
+                if (!Company.HasAssetTypePermission(assetType.Object, assetType.ObjectID, Permission.ModifyAsset))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add assets of this type."));
 
                 if (assets == null)
                     assets = readRequestJsonContent<List<AssetInsert>>(Request).Result;
 
-                if (assets == null)
+                if (assets == null || assets.Count == 0)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
@@ -563,7 +569,7 @@ namespace d360.web.Controllers.V2
                 if (assets == null)
                     assets = readRequestJsonContent<List<AssetUpdate>>(Request).Result;
 
-                if (assets == null)
+                if (assets == null || assets.Count == 0)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
                 if (assets.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
@@ -1078,14 +1084,24 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"Invalid TagUid {assetTagApi.TagUID} ,no tag exists with the specified uid.",
+                        Message = $"Invalid TagUid provided, no tag exists with the specified uid.",
                         Success = false
                     };
 
                     resultList.Add(result);
                     continue;
                 }
+                if(assetTagApi.AssetUID == Guid.Empty)
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"Invalid AseetUid provided, no asset exists with the specified uid.",
+                        Success = false
+                    };
 
+                    resultList.Add(result);
+                    continue;
+                }
                 var asset = this.AssetRepository.GetAssetByUID(assetTagApi.AssetUID);
                 if (asset == null)
                 {
@@ -1102,7 +1118,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists , it is not valid to add a second association",
+                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists, it is not valid to add a second association",
                         Success = false
                     };
                     resultList.Add(result);
@@ -1134,7 +1150,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists , it is not valid to add a second association",
+                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists, it is not valid to add a second association",
                         Success = false
                     };
                     resultList.Add(result);
@@ -1204,7 +1220,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"A non-admin user can only remove the tag(Uid:  {assetTagApi.TagUID}) association to an asset (Uid: {assetTagApi.AssetUID}) if they initially created the association for or they have edit rights to asset",
+                        Message = $"A non-admin user can only remove the tag (Uid:  {assetTagApi.TagUID}) association to an asset (Uid: {assetTagApi.AssetUID}) if they initially created the association for or they have edit rights to asset",
                         Success = false
                     };
                     resultList.Add(result);

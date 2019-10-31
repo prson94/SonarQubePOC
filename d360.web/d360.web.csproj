@@ -623,6 +623,7 @@
     <EmbeddedResource Include="Content\Swagger\swagger.css">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
@@ -976,24 +977,10 @@
     <Content Include="Views\Authentication\Register.cshtml" />
     <Content Include="Views\Shared\GenericError.cshtml" />
     <Content Include="Views\Shared\Terms.cshtml" />
-    <Content Include="fonts\nunitosans\nunito-sans-regular.woff2" />
-    <Content Include="fonts\nunitosans\nunito-sans-regular2.woff2" />
-    <Content Include="fonts\nunitosans\NunitoSans-Black.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-BlackItalic.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-Bold.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-BoldItalic.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-ExtraBold.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-ExtraBoldItalic.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-ExtraLight.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-ExtraLightItalic.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-Italic.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-Light.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-LightItalic.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-Regular.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-SemiBold.ttf" />
-    <Content Include="fonts\nunitosans\NunitoSans-SemiBoldItalic.ttf" />
-    <Content Include="fonts\nunitosans\nunito-sans-regular.woff" />
-    <Content Include="fonts\nunitosans\nunito-sans-regular2.woff" />
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.eot" />
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.ttf" />
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.woff" />
+    <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.woff2" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east-development - Web Deploy.pubxml" />
     <None Include="Properties\PublishProfiles\d3s-ui-au-east-uat - Web Deploy.pubxml" />
@@ -1125,6 +1112,7 @@
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
     <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
     <TypeScriptCompile Include="Scripts\app\components\search\hero-search-input.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\search\search-state.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\shared-asset-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor-use-as-transformation.component.ts" />
@@ -1257,6 +1245,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\checktreenode.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\chips-filter\chips-filter-component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\chips-filter\chips-filter-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dynamic-percentage\dynamic-percentage-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\dynamic-percentage\dynamic-percentage-module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.component.ts" />
@@ -1441,6 +1431,7 @@
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-new-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-view-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\click-outside-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\copy-clipboard-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
@@ -1566,7 +1557,6 @@
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\home-search.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\search\search-autocomplete-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-input.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-result-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-results.component.ts" />

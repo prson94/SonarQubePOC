@@ -80,13 +80,76 @@ namespace d360.web.Models
             {
                 Direction = GetAssetLineagePostModelDirection.Both,
                 Hops = 3,
-                StartFromAssets = new List<Guid>() { Guid.Empty }
+                IsReveal = false,
+                StartHop = 0,
+                AssetUids = new List<Guid>() { Guid.Empty }
+            };
+        }
+    }
+
+    public class GetAssetImpactsPostModelExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new GetAssetImpactsPostModel
+            {
+                StartHop = 0,
+                Assets = new List<GetAssetImpactSourceItemPostModel>() { new GetAssetImpactSourceItemPostModel { Key = "textkey", Uid = Guid.Empty } }
             };
         }
     }
 
     #endregion
 
+    #region RelationshipType Example
+    public class RelationshipTypeInsertExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new RelationshipTypeInsert
+            {
+                ExecutionItemUid = Guid.Empty,
+                PredicateUid = Guid.Empty,
+                SubjectUid = Guid.Empty,
+                ObjectUid = Guid.Empty,
+                SubjectCardinality = core.enums.Cardinality.Many,
+                ObjectCardinality = core.enums.Cardinality.Many
+            };
+
+        }
+    }
+
+    public class RelationshipTypeUpdateExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new RelationshipTypeUpdate
+            {
+                ExecutionItemUid = Guid.Empty,
+                Uid = Guid.Empty,
+                PredicateUid = Guid.Empty,
+                SubjectCardinality = core.enums.Cardinality.Many,
+                ObjectCardinality = core.enums.Cardinality.Many
+            };
+
+        }
+    }
+
+    public class RelationshipTypeDeleteExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new RelationshipTypeDelete
+            {
+                ExecutionItemUid = Guid.Empty,
+                Uid = Guid.Empty,
+                Cascade = false
+            };
+        }
+    }
+
+
+    #endregion
     #region Workflow Type Examples
 
 

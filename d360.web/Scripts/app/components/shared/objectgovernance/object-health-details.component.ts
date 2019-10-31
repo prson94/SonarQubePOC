@@ -100,7 +100,10 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
                         this.scoreHistory = {
                             chart: {
-                                zoomType: 'x'
+                                zoomType: 'x',
+                                style: {
+                                    fontFamily: 'Source Sans Pro'
+                                }
                             },
                             title: {
                                 text: ''

@@ -34,6 +34,8 @@ namespace d360.core.validators
 
         public WorkHttpStatus ValidateModel(bool isInsert, AssetTypeInsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType = null)
         {
+
+
             if (!SupportedClasses.Contains(model.Class))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.UnsupportedAssetClass);
 
@@ -53,19 +55,29 @@ namespace d360.core.validators
                 }
             }
 
+            bool ForceParentToItself = model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy;
+
             if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
             {
                 if (parentAssetType == null)
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
                 else if (parentAssetType.Object != SystemObjectHelper.GetSystemObjects(model.Class).ToString())
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
-                else if (!ParentAssetTypeClass.Contains(model.Class))
+                else if (!ParentAssetTypeClass.Contains(model.Class) && !ForceParentToItself)
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
+
+                if (ForceParentToItself)
+                {
+                    if (model.ParentUid != model.Uid)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
+                    }
+                }
             }
 
             if (!isInsert)
             {
-                if (model.ParentUid.HasValue && model.ParentUid == model.Uid)
+                if (model.ParentUid.HasValue && model.ParentUid == model.Uid && !ForceParentToItself)
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
             }
 
@@ -158,9 +170,10 @@ namespace d360.core.validators
                 if (valid) return true;
             }
 
-            var field = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == fieldName.ToLower()).SingleOrDefault();
+            var doesOrderFieldExists = CompanyContext.FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == fieldName.ToLower());
+            string[] defaultAssetFields = { "createdon", "updatedon", "assetid" };
 
-            return (field != null);
+            return doesOrderFieldExists || defaultAssetFields.Contains(fieldName.Trim().ToLower());
         }
     }
 }

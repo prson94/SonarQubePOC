@@ -780,22 +780,35 @@ namespace d360.web.Models
     public class GetAssetLineagePostModel
     {
         [DataMember]
+        public List<Guid> AssetUids { get; set; }
+        [DataMember]
+        public bool IsReveal { get; set; }
+        [DataMember]
+        public int StartHop { get; set; }
+        [DataMember]
         public GetAssetLineagePostModelDirection Direction { get; set; } = GetAssetLineagePostModelDirection.Both;
         [DataMember]
         public int Hops { get; set; } = 3;
+    }
+
+    [DataContract]
+    public class GetAssetImpactsPostModel
+    {
         [DataMember]
-        public List<Guid> StartFromAssets = new List<Guid>();
-        public string StartFromAssetsJson
-        {
-            get
-            {
-                if (StartFromAssets == null)
-                {
-                    StartFromAssets = new List<Guid>();
-                }
-                return JsonConvert.SerializeObject(StartFromAssets);
-            }
-        }
+        public List<GetAssetImpactSourceItemPostModel> Assets { get; set; }
+        [DataMember]
+        public Guid PredicateUid { get; set; }
+        [DataMember]
+        public int StartHop { get; set; }
+    }
+
+    [DataContract]
+    public class GetAssetImpactSourceItemPostModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+        [DataMember]
+        public string Key { get; set; }
     }
 
     #endregion

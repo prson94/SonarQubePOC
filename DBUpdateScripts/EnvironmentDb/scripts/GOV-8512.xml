@@ -1,0 +1,343 @@
+﻿<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-8512">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">	
+<![CDATA[
+create or alter procedure [graph].[GetImpactRelationshipsByAssets]
+	@assets dbo.UidTable readonly,
+	@StartHop int = 0
+as
+begin
+	set nocount on;
+
+	drop table if exists #assetIds
+	create table #assetIds (ID bigint, Class int)
+	create index ix_TempAssetIds on #assetIds (ID asc)
+
+	drop table if exists #tbl
+	drop table if exists #clean
+	create table #tbl (
+		[Hop] int, Uid uniqueidentifier, 
+		FromReveal bit, FromHop int, FromID bigint, subjectUid uniqueidentifier, FromPath nvarchar(2500), FromSegment xml, 
+		ToReveal bit, ToHop int, ToID bigint, objectUid uniqueidentifier, ToPath nvarchar(2500), ToSegment xml, 
+		predicateUid uniqueidentifier, [predicate] nvarchar(250), predicateType int)
+
+	create table #clean ([Hop] int, ID bigint, [Path] nvarchar(2500), Segment xml, Reveal int)
+	create index ix_TempTbl on #tbl ([Hop] desc, ToID asc)
+
+	declare @maxHops int = 1 + @StartHop 
+
+	insert into #assetIds
+		select	distinct 
+				A.ID, 
+				T.[Class] 
+		from	Asset A 
+				inner join @assets O on O.Uid = A.Uid
+				inner join AssetType T on T.ID = A.AssetTypeID
+
+	if not exists(select 1 from #assetIds)
+	begin
+		insert into #assetIds values(0, 0)
+	end;
+
+	insert into #tbl ([Hop], Uid, FromReveal, FromHop, FromID, subjectUid, FromPath, FromSegment, ToReveal, ToHop, ToID, objectUid, ToPath, ToSegment, predicateUid, predicateType)
+		select	@StartHop as [Hop],
+				E.Uid,
+						
+				0 as FromReveal,
+				@StartHop-1 as FromHop,
+				S.ID as FromID,
+				S.Uid as FromUid, 
+				S.[Path] as FromPath,
+				S.Segments as FromSegment,
+
+				0 as ToReveal,
+				@StartHop as ToHop,
+				T.ID as ToID,
+				T.Uid as ToUid, 
+				T.[Path] as ToPath,
+				T.Segments as ToSegment,
+					
+				E.PredicateUid,
+				E.PredicateType
+
+		from	graph.AssetNode S,
+				graph.AssetEdge E,
+				graph.AssetNode T,
+				#assetIds A
+		where	MATCH(S-(E)->T)
+				and E.PredicateType not in (3,4,12,13)
+				and T.ID = A.ID;
+
+		insert into #tbl ([Hop], Uid, FromReveal, FromHop, FromID, subjectUid, FromPath, FromSegment, ToReveal, ToHop, ToID, objectUid, ToPath, ToSegment, predicateUid, predicateType)
+			select	@StartHop as [Hop],
+					E.Uid,
+						
+					0 as FromReveal,
+					@StartHop as FromHop,
+					S.ID as FromID,
+					S.Uid as FromUid, 
+					S.[Path] as FromPath,
+					S.Segments as FromSegment,
+						
+					0 as ToReveal,
+					@StartHop+1 as ToHop,
+					T.ID as ToID,
+					T.Uid as ToUid, 
+					T.[Path] as ToPath,
+					T.Segments as ToSegment,
+					
+					E.PredicateUid,
+					E.PredicateType
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					#assetIds A
+			where	MATCH(S-(E)->T)
+					and E.PredicateType not in (3,4,12,13)
+					and S.ID = A.ID;
+
+		-- Populate the predicate name.
+		update	T
+		set		T.[predicate] = S.Name
+		from	#tbl T
+				inner join [Predicate] S on S.Uid = T.predicateUid;
+
+	-- Get cleaned up version of unique nodes based on Hop and AssetUid.
+	insert into #clean
+		select	FromHop,
+				FromID,
+				FromPath,
+				FromSegment,
+				case when FromReveal = 1 then 2 else 0 end
+		from	(
+				select	Row_number() over(partition by FromHop,FromID order by FromHop,FromID) as RowNum,
+						FromHop,
+						FromID,
+						FromPath,
+						FromSegment,
+						FromReveal
+				from	#tbl
+				where	FromPath is not null
+				) O where RowNum = 1
+
+	insert into #clean
+		select	ToHop,
+				ToID,
+				ToPath,
+				ToSegment,
+				case when ToReveal = 1 then 2 else 0 end
+		from	(
+				select	Row_number() over(partition by ToHop,ToID order by ToHop,ToID) as RowNum,
+						ToHop,
+						ToID,
+						ToPath,
+						ToSegment,
+						ToReveal
+				from	#tbl N
+						left join #clean E on E.Hop = N.ToHop and E.ID = N.ToID
+				where	E.ID is null
+						and ToPath is not null
+				) O where RowNum = 1
+
+	drop table if exists #hierarchies
+	create table #hierarchies ([Hop] float, ID bigint, [Key] varchar(50), Back varchar(25), Fore varchar(25), HierarchyLevel int, AssetTypeID int, AssetID bigint, AssetUid uniqueidentifier, DisplayValue nvarchar(500), Class int, AssetTypeName nvarchar(250), Reveal int, RelationCounts varchar(max), XmlPosition int, ParentKey varchar(50), ParentID bigint null, IsDupe bit null)
+	create index ix_TempHierarchies on #hierarchies ([Hop] asc, HierarchyLevel asc)
+
+	insert into #hierarchies
+		select	T.[Hop],
+				
+				T.Segment.value('(/path/segment/@assetId)[1]', 'bigint'), 
+				utility.GetHash(cast(T.[Hop] as varchar) + '|' + doc.c.value('@assetId', 'varchar(50)')) as [Key],
+				coalesce(S.[IconBackColor], '#000000'),
+				coalesce(S.[IconForeColor], '#FFFFFF'),
+				doc.c.value('@level', 'int') as [HierarchyLevel],
+				doc.c.value('@assetTypeId', 'int') as [assetTypeId],
+				doc.c.value('@assetId', 'bigint') as [assetId],
+				A.Uid,
+				d.DisplayValue,
+				[AT].Class,
+				[AT].Name as AssetTypeName,
+				T.Reveal,
+				'[]',
+				doc.c.value('count(for $a in . return /path/segment[.<<$a])+1', 'int'),
+				null,
+				P.ParentID,
+				1 as IsDupe
+		from	#clean T
+				cross apply T.Segment.nodes('/path/segment') doc(c)
+				inner join AssetDisplayValue d on d.AssetID = doc.c.value('@assetId', 'bigint')
+				inner join AssetType [AT] on [AT].ID = doc.c.value('@assetTypeId', 'int')
+				left join ObjectStyle S on S.ObjectType = [AT].Object and S.ObjectID = [AT].ObjectID
+				inner join Asset A on A.ID = d.AssetID
+				left join (
+					select	T.[Hop],
+							T.Segment.value('(/path/segment/@assetId)[1]', 'bigint') as ID, 
+							doc.c.value('@assetId', 'bigint') as [assetId],
+							doc.c.value('count(for $a in . return /path/segment[.<<$a])+1', 'int') as [Level],
+							par.c.value('@assetId', 'bigint') as ParentID
+					from	#clean T
+							cross apply T.Segment.nodes('/path/segment') doc(c)
+							outer apply T.Segment.nodes('/path/segment') par(c)
+					where	doc.c.value('count(for $a in . return /path/segment[.<<$a])+1', 'int') = par.c.value('count(for $a in . return /path/segment[.<<$a])+1', 'int')+1				
+				) P on P.Hop = T.[Hop] and P.ID = T.Segment.value('(/path/segment/@assetId)[1]', 'bigint') and P.assetId = doc.c.value('@assetId', 'bigint');
+
+	--Add Type as parent to those nodes that have a single-level hierarchy.
+	drop table if exists #singles
+	create table #singles (Hop int, ID bigint)
+	insert into #singles
+		select	Hop, ID
+		from	#hierarchies
+		group by Hop, ID
+		having count(1) = 1;
+
+	update	T
+	set		T.HierarchyLevel = 2,
+			T.XmlPosition = 2
+	from	#hierarchies T
+			inner join	#singles S on S.Hop = T.Hop and S.ID = T.ID;
+
+	insert into #hierarchies
+		select	T.Hop,
+				T.ID,
+				utility.GetHash(cast(T.[Hop] as varchar) + '|' + cast(A.Uid as varchar(50))),
+				T.Back,
+				T.Fore,
+				1 as HierarchyLevel,
+				T.AssetTypeID,
+				A.ID as AssetID,
+				A.Uid as AssetUid,
+				A.Name as DisplayValue,
+				A.Class,
+				A.Name as AssetTypeName,
+				0 as Reveal,
+				'[]' as RelationCounts,
+				1 as XmlPosition,
+				null as ParentKey,
+				null as ParentID,
+				0 as IsDupe
+		from	#hierarchies T
+				inner join	#singles S on S.Hop = T.Hop and S.ID = T.ID
+				inner join AssetType A on A.ID = T.AssetTypeID;
+
+		update	T
+		set		T.ID = T.AssetTypeID
+		from	#hierarchies T
+				inner join	#singles S on S.Hop = T.Hop and S.ID = T.ID;
+
+	-- Resolve the parent key.
+	update	C
+	set		C.ParentKey = P.[Key]
+	from	#hierarchies C
+			left join #hierarchies P on P.Hop = C.Hop and P.ID = C.ID and P.XmlPosition = C.XmlPosition-1;
+	
+	update	C
+	set		C.ParentKey = P.[Key]
+	from	#hierarchies C
+			left join #hierarchies P on P.Hop = C.Hop and P.ID = C.ID and P.AssetID = C.ParentID 
+	where	C.ParentID is not null;
+
+	--De-dupe the #hierarchies table
+	insert into #hierarchies
+		select	[Hop], ID, [Key], Back, Fore, HierarchyLevel, AssetTypeID, AssetID, AssetUid, DisplayValue, Class, AssetTypeName, Reveal, RelationCounts, XmlPosition, ParentKey, ParentID, 0 as IsDupe
+		from	(
+				select	Row_number() over(partition by Hop,ID,[Key] order by Hop,ID,[Key]) as RowNum,
+						*
+				from	#hierarchies
+				) O
+		where	O.RowNum = 1
+		order by Hop, ID, HierarchyLevel;
+
+	delete #hierarchies where IsDupe = 1;
+
+	-- Cleanup
+	update #hierarchies set Reveal = 0 where Reveal is null;
+
+
+	-- Determine relationships breakdown by predicate.
+	declare @relItems table (Hop int, AssetID bigint, [Predicate] nvarchar(250), Direction int, AssetUid uniqueidentifier)
+	insert into @relItems
+		select	H.Hop, H.ID, P.Inverse, 1, T.Uid
+		from	graph.AssetNode S,
+				graph.AssetEdge E,
+				graph.AssetNode T,
+				#clean H,
+				[Predicate] P
+		where	MATCH(S-(E)->T)
+				and S.ID = H.ID
+				and P.ID = E.PredicateID
+				and E.PredicateType not in (3,4,12,13)
+				and H.Hop <> @StartHop
+				and T.ID not in (select ID from #assetIds)
+		union
+		select	H.Hop, H.ID, P.Inverse, 2, S.Uid
+		from	graph.AssetNode S,
+				graph.AssetEdge E,
+				graph.AssetNode T,
+				#clean H,
+				[Predicate] P
+		where	MATCH(S-(E)->T)
+				and T.ID = H.ID
+				and P.ID = E.PredicateID
+				and E.PredicateType not in (3,4,12,13)
+				and H.Hop <> @StartHop
+				and S.ID not in (select ID from #assetIds);
+
+	update	H
+	set		H.RelationCounts =	(
+								select	O.[Predicate], 
+										O.Direction, 
+										(
+											select	AssetUid as 'Uid'
+											from	@relItems
+											where	Hop = H.Hop and AssetID = H.AssetID and [Predicate] = O.[Predicate]
+											for json path
+										) as Assets,
+										count(1) as [Count]
+								from	@relItems O
+								where	O.Hop = H.Hop and O.AssetID = H.AssetID
+								group by O.[Predicate], O.Direction
+								for json path
+								)
+	from	#hierarchies H;
+	   
+	-- Now return the data sets to caller.
+
+	--select	* from #clean order by Hop;
+
+	select		distinct
+				Hop, ID, [Key], ParentKey, Back, Fore, HierarchyLevel, AssetTypeID, AssetID, AssetUid, DisplayValue, Class, AssetTypeName, Reveal, RelationCounts 
+	from		#hierarchies 
+	order by	Hop, ID, HierarchyLevel;
+	
+	select		[Hop], 
+				Uid, 
+				subjectUid, 
+				utility.GetHash(cast([FromHop] as varchar) + '|' + cast(FromID as varchar(50))) as [subjectKey],
+				FromID as subjectId, 
+				objectUid, 
+				utility.GetHash(cast([ToHop] as varchar) + '|' + cast(ToID as varchar(50))) as [objectKey],
+				ToID as objectId, 
+				predicateUid, [predicate], predicateType 
+	from		#tbl 
+	order by	Hop;
+end
+ ]]>
+    </sql>
+	<rollback>
+<![CDATA[	
+drop procedure if exists [graph].[GetImpactRelationshipsByAssets]
+]]>
+    </rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -64,7 +64,7 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
                 .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>() { new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel() }));
 
-            mock.Setup(x => x.ImportRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipInserts>(), It.IsAny<int>(), It.IsAny<bool>()))
+            mock.Setup(x => x.ImportRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipInserts>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .Returns(new List<DatabaseBulkRelationshipResult>() { new DatabaseBulkRelationshipResult() });
 
             mock.Setup(x => x.HasAssetTypePermission(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Permission>()))
@@ -106,7 +106,7 @@ namespace igx.UnitTests
         public IAssetRepository GetAssetRepository()
         {
             var mockRepo = new Mock<IAssetRepository>();
-            var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage(),GetCommunity());
+            var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage(), GetCommunity());
 
             mockRepo.Setup(x => x.GetAssetType(It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>()))
                 .Returns(
@@ -115,6 +115,9 @@ namespace igx.UnitTests
 
             mockRepo.Setup(x => x.GetAssetByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Asset() : null);
+
+            mockRepo.Setup(x => x.GetAssetTypeByUidAndClass(It.IsAny<Guid>(), It.IsAny<AssetTypeClass>()))
+                .Returns((Guid uid, AssetTypeClass @class) => uid == Guid.Parse(DataConstants.ValidGUID) ? new AssetType() { Object = "ArtifactType", uid = uid } : null);
 
             mockRepo.Setup(x => x.GetAssetTypeList()).Returns(AssetTypeClass.BusinessAsset.GetAsList());
 
@@ -130,7 +133,7 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.GetPredicateByUID(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new Predicate() { UID = uid, Type = PredicateType.InterTypeHierarchy } : null);
 
-            mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true,true,false))
+            mockRepo.Setup(x => x.PostAssets(It.IsAny<List<AssetInsert>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true, true, false))
                 .Returns((List<AssetInsert> assetInsertList, object o2, object o3, object o4, object o5, object o6) =>
                  {
                      if (assetInsertList.Count == 0) return null;
@@ -138,7 +141,7 @@ namespace igx.UnitTests
                  }
                 );
 
-            mockRepo.Setup(x => x.PutAssets(It.IsAny<List<AssetUpdate>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true,true,false))
+            mockRepo.Setup(x => x.PutAssets(It.IsAny<List<AssetUpdate>>(), It.IsAny<AssetType>(), It.IsAny<ApiExecution>(), true, true, false))
                 .Returns((List<AssetUpdate> assetUpdateList, object o2, object o3, object o4, object o5, object o6) =>
                 {
                     if (assetUpdateList.Count == 0) return null;
@@ -160,7 +163,7 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.PutBulkAssets(It.IsAny<Guid>(), It.IsAny<List<AssetUpdate>>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
                .Returns(Task.FromResult(new ApiExecutionInfo()));
 
-            mockRepo.Setup(x => x.BulkDeleteAssets(It.IsAny<Guid>(), It.IsAny<AssetDeletes>(), It.IsAny<ApiExecution>(),true))
+            mockRepo.Setup(x => x.BulkDeleteAssets(It.IsAny<Guid>(), It.IsAny<AssetDeletes>(), It.IsAny<ApiExecution>(), true))
                .Returns(Task.FromResult(new ApiExecutionInfo()));
 
             mockRepo.Setup(x => x.GetExecutionItemByUid(It.IsAny<Guid>()))
@@ -345,7 +348,8 @@ namespace igx.UnitTests
                 .Returns((Guid uid) => uid.ToString() == DataConstants.ValidGUID ? new IntersectType() : null);
 
             mock.Setup(x => x.GetPredicates(It.IsAny<Guid?>(), It.IsAny<PredicateType?>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool?>()))
-                .Returns((Guid? PredicateUid, PredicateType? Type, string Name, string Inverse, bool? IsUsed) => {
+                .Returns((Guid? PredicateUid, PredicateType? Type, string Name, string Inverse, bool? IsUsed) =>
+                {
                     var predicates = DataConstants.GetPredicates();
                     if (PredicateUid.HasValue)
                     {

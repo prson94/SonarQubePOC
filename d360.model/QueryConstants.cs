@@ -1263,8 +1263,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 		            [object] + '|' + cast(objectId as varchar) as [value],
 		            objectId as id,
 		            [object] as [type],		
-		            case when T.[object] = 'ArtifactType' then
-			            'Artifact Type'
+		            case when T.[object] = 'ArtifactType' and T.[Class] = 1 then
+			            'Business Asset'
+                    when T.[object] = 'ArtifactType' and T.[Class] = 8 then
+			            'Technical Asset'
 		            when T.[object] = 'RuleType' then
 			            'Rule Type'
 		            when T.[object] = 'PolicyType' then
@@ -1329,8 +1331,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 					else
 						'Unpublished'
 					end as Published,
-					case when e.[Object] = 'ArtifactType' then
-						'Artifact'
+					case when e.[Object] = 'ArtifactType' and D.[Class] = 1 then
+						'Business Asset'
+                    when e.[Object] = 'ArtifactType' and D.[Class] = 8 then
+						'Technical Asset'
 					when e.[Object] = 'RuleType' then
 						'Rule'
 					when e.[Object] = 'PolicyType' then
@@ -1492,7 +1496,7 @@ order by IST.StartedOn desc, IST.CompletedOn desc
             join workflow.version v on v.typeid = t.id
 			left join AssetType ta on ta.object = e.object and ta.objectId = e.objectid
             left join reporting.Global_resource r on r.ResourceID = v.UpdatedBy
-            left join (select distinct object, objectid, versionid from workflow.item) i on i.versionid = v.id
+            left join (select distinct object, objectid, versionid from workflow.item where Object='Issue') i on i.versionid = v.id
 			left join Issue iss on i.Object ='Issue' and iss.ID = i.ObjectID
 			left join Asset issa on issa.Object = iss.Object and issa.ObjectID = iss.ObjectID
 			left join AssetType isst on isst.ID = issa.AssetTypeID

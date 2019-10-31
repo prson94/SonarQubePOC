@@ -184,7 +184,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         let thisLevel = this.levels.filter(x => x.Level == this.selected.data.Level);
 
         if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
-        return `(Level ${this.selected.data.Level + 1}) Item`;
+        return `(Level ${this.selected.data.Level}) Item`;
     }
 
     private buildTreeNodeArray(models: ModelHierarchy[], levelNumber: number, Parent?: number): TreeNode[] {

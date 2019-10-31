@@ -126,8 +126,7 @@ namespace igx.UnitTests
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-                AssertJSON.True<List<DatabaseBulkAssetResult>>(str);
+                Assert.True(!responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && numberOfassetInsertList > 0)
@@ -196,8 +195,7 @@ namespace igx.UnitTests
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
 
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-                AssertJSON.True<List<DatabaseBulkAssetResult>>(str);
+                Assert.True(!responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
             }
 
             if (isGoodUID && numberOfassetInsertList > 0)
@@ -623,7 +621,6 @@ namespace igx.UnitTests
         [Fact]
         public async void PutAssetTypeAsync()
         {
-
 
             var insertItem = new AssetTypeInsert()
             {

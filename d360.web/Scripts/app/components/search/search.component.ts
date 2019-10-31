@@ -4,13 +4,12 @@ import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
-import { SearchResultsObject, SearchCategories, AdvancedSearchFilter } from '../../models/search-result.model';
+import { SearchStateService } from './search-state.service';
+import { SearchResultsObject, SearchCategories, AdvancedSearchFilter, SearchAggregationFilter } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
 import { RightSidebarService } from '../../services/right-sidebar.service';
-import { SettingsHelper } from '../../models/settings.model';
-
+import { CheckTreeNode } from '../shared/small-widgets/check-tree/checktreenode';
 
 declare var CompanySettings;
 
@@ -21,26 +20,30 @@ declare var CompanySettings;
                         <div class="title">
                             <span class="large icon badge"><i class="fa fa-search"></i></span>
                             <h1>Search Results</h1>
-                            <d3s-search-input [newSearch]="true" (search)="doSearch()" [isAdvancedMode]="showAdvanced" (advancedFiltersChange)="changeheight()" (isAdvancedModeChange)="handleAdvancedChange($event)" [(advancedFilters)]="advancedFilters" [(isExactMatch)]="isExactMatch" [(searchTypes)]="searchTypes" [hasAdvanced]="true" [(searchText)]="searchText" [style.width]="'100%'" [style.height.px]="32"></d3s-search-input>
+                            <d3s-search-input
+                                (search)="inputSearch($event)"
+                                [(isExactMatch)]="isExactMatch"
+                                [(searchTypes)]="searchTypes"
+                                [(searchText)]="searchText"
+                                [style.width]="'100%'"
+                                [style.height.px]="32"></d3s-search-input>
                         </div>
                     </div>
                 <d3s-search-results [from]="fromNumber" 
                     [loading]="isLoading" [itemsPerPage]="resultsPerPage"
-                    [useSubscription]="true"
-                    [results]="searchResults" 
-                    [categories]="categories" 
-                    (paginateClick)="paginate($event);" 
-                    (selectedCategoryChange)="filterByCategory($event);"></d3s-search-results>
+                    [results]="searchResults"
+                    (selectedCategoryChange)="filterCheckTree($event);"
+                    (advFilterChanged)="searchFilterChanged($event);">
+                </d3s-search-results>
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 `,
-    providers: [SearchService, TypeaheadSearchService],
+    providers: [TypeaheadSearchService],
 })
 
 export class SearchComponent extends BaseComponent implements OnInit {
     public searchResults: SearchResultsObject;
     public categories: SearchCategories[] = [];
-    public selectedCategory: SearchCategories;
     public searchText: string;
     public isExactMatch: boolean = true;
     public searchTypes: string[] = CurrentCompanySettings.defaultSearchTypes ? CurrentCompanySettings.defaultSearchTypes.split(',') : [];
@@ -49,9 +52,6 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public resultsPerPage: number = 10;
     public fromNumber: number = 0;
     public sub: any;
-    public showAdvanced: boolean = false;
-
-    private displayNameLookup: string[];
 
     @ViewChild('title', { static: false }) title: ElementRef;
 
@@ -59,7 +59,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected rightSidebarService: RightSidebarService,
-        private searchService: SearchService,
+        private searchStateService: SearchStateService,
         private typeaheadSearchService: TypeaheadSearchService) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -78,104 +78,50 @@ export class SearchComponent extends BaseComponent implements OnInit {
         this.rightSidebarService.showHeader(false);
 
         this.sub = this.route.queryParams.subscribe(params => {
-            this.showAdvanced = params['advanced'] == '1';
             this.searchText = params['query'] ? params['query'] : '';
             this.isExactMatch = params['exactMatch'] ? params['exactMatch'] != '0' : (CompanySettings.SearchExactMatch && CompanySettings.SearchExactMatch == 'true');
             if (params['types'] != undefined) {
-                this.searchTypes = params['types'].split(',').filter((x): x is string =>  x.length > 0);
+                this.searchTypes = params['types'].split(',').filter((x): x is string => x.length > 0);
             }
-            if (this.searchText.length > 0) this.doSearch();
-
+            this.searchStateService.reset();
+            this.searchStateService.setSearchCategories(this.searchTypes);
+            this.searchStateService.setFieldFilters(this.advancedFilters);
+            this.searchStateService.selectedFilters = [];
+            if (this.searchText.length > 0) {
+                this.doSearch();
+            }
         });
+    }
 
-        if (this.showAdvanced) {
-            this.changeheight();
+    private searchFilterChanged(options) {
+        this.advancedFilters = options;
+        this.searchStateService.setFieldFilters(this.advancedFilters);
+        this.doSearch();
+    }
+
+    private inputSearch($event) {
+        this.searchText = $event.text;
+        this.isExactMatch = $event.exactMatch;
+        this.searchTypes = $event.types;
+        this.searchStateService.setSearchCategories(this.searchTypes);
+        if (this.searchText.length > 0) {
+            this.doSearch();
         }
     }
 
-    handleAdvancedChange(event) {
-        this.showAdvanced = event;
-        this.searchResults = null;
-        this.changeheight();
+    public doSearch() {
+        this.searchStateService.search(this.isExactMatch ? `'${this.searchText}'` : this.searchText);
     }
 
-    private changeheight() {
-        window.setTimeout(() => {
-            if (this.title.nativeElement) {
-                let tiles = this.title.nativeElement.getElementsByClassName('tile');
-                if (tiles.length > 0) {
-                    let dims = this.title.nativeElement.getElementsByClassName('tile')[0].getBoundingClientRect();
-                    console.log(dims);
-                    this.title.nativeElement.style.height = dims.bottom + 'px';
-
-                } else {
-                    this.title.nativeElement.style.height = '67px';
-                }
-            }
-        }, 100);
-    }
-
-    private getDisplayLookup(category:string) {
-        if (this.displayNameLookup == undefined) {
-            this.displayNameLookup = SettingsHelper.getSearchTypesList().reduce(function (map, obj) {
-                map[obj.value] = obj.title;
-                return map;
-            }, []);
+    public filterCheckTree(selectedNodes: CheckTreeNode[]) {
+        var types = selectedNodes.filter((x) => x.type == "subCategory").map((x) => x.data);
+        var categories = selectedNodes.filter((x) => x.type == "category").map((x) => x.data);
+        if (types.length > 0) {
+            categories = categories.concat(this.searchStateService.currentCategories.filter((x) => x.type == "category" && x.partialSelected == true).map((x) => x.data));
         }
-        if (this.displayNameLookup[category] != undefined)
-            return this.displayNameLookup[category];
-        else
-            return category;
-    }
+        this.searchStateService.setAggregationFilter("d3sGroup", categories);
+        this.searchStateService.setAggregationFilter("Type", types);
 
-    public doSearch(filterCategory?: SearchCategories) {
-        this.isLoading = true;
-        this.searchService.getSearchResults(this.searchText, this.resultsPerPage, this.fromNumber, (this.showAdvanced ? undefined : this.searchTypes), filterCategory, this.isExactMatch, this.showAdvanced ? this.advancedFilters : undefined)
-            .subscribe(res => {
-                this.isLoading = false;
-                this.searchResults = res;
-                if (filterCategory == undefined) {
-                    this.categories = res.Categories.map((val) => {
-                        return {
-                            "Name": val.Name,
-                            "DisplayName": this.getDisplayLookup(val.Name),
-                            "ResultCount": val.ResultCount,
-                            "Categories": val.Categories
-                        }
-                    });
-                }
-            });
-    }
-
-    public filterByCategory(category) {
-        this.selectedCategory = category;
-        this.fromNumber = 0;
-        this.doSearch(this.selectedCategory);
-    }
-
-    public paginate(event) {
-        if (!event.size == undefined) {
-            console.log("ERROR : MISSING ITEMS PER PAGE.");
-
-            return;
-        }
-
-        if (event.page == undefined) {
-            console.log("ERROR : MISSING PAGE NUMBER.");
-
-            return;
-        }
-
-        if (!event.first == undefined) {
-            console.log("ERROR : MISSING INDEX OF FIRST PAGE.");
-
-            return;
-        }
-
-        this.resultsPerPage = event.size;
-        
-        this.fromNumber = event.first;
-
-        this.doSearch(this.selectedCategory);
+        this.doSearch();
     }
 };

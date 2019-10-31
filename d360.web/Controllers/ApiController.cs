@@ -3374,7 +3374,14 @@ outer apply (
                                 // Add the fields that you need to create link in Angular component.
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Preview'", datafield = $"{dataField}_Context" });
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"'Taxonomy'", datafield = $"{dataField}_Object" });
-                                columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                if (i.FieldTypeName.ToLower() == "textpath" || i.FieldTypeName.ToLower() == "displayvalue")
+                                {
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ObjectId as varchar)", datafield = $"{dataField}_ObjectID" });
+                                }
+                                else
+                                {
+                                    columnModels.Add(new ComplexColumnModel { DisplayColumn = $"cast(A{pos}.ID as varchar)", datafield = $"{dataField}_ObjectID" });
+                                }
                                 columnModels.Add(new ComplexColumnModel { DisplayColumn = $"dbo.GenerateAssetUrl((select ID from Asset where Object = 'Taxonomy' and ObjectID = A{pos}.{idColumn}))", datafield = $"{dataField}_Url" });
                                 break;
 
@@ -4921,12 +4928,20 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
 select      *
 from        (                 
             select      'ArtifactType|' + cast(ObjectId as varchar(15)) as value,
-                        'Artifact Type : ' + Name as title
-            from        AssetType where [object]='ArtifactType'                        
-            union       
+                        'Business Asset : ' + Name as title
+            from        AssetType where [object]='ArtifactType'  and [Class] = 1                       
+            union
+            select      'ArtifactType|' + cast(ObjectId as varchar(15)) as value,
+                        'Technical Asset : ' + Name as title
+            from        AssetType where [object]='ArtifactType'  and [Class] = 8                       
+            union 
             select      'Artifact|' + cast(ObjectId as varchar(15)) as value,
-                        'Artifact Instance : ' + Name as title
-            from       AssetType where [object]='ArtifactType'          
+                        'Business Asset Instance : ' + Name as title
+            from       AssetType where [object]='ArtifactType' and [Class] = 1   
+            union 
+            select      'Artifact|' + cast(ObjectId as varchar(15)) as value,
+                        'Technical Asset Instance : ' + Name as title
+            from       AssetType where [object]='ArtifactType' and [Class] = 8  
             union
             select      'Resource|1' as value,
                         'Resource' as title
@@ -6704,10 +6719,10 @@ where    A.RuleID = @id", new { id });
                         switch (report.ObjectType)
                         {
                             case "Artifact":
-                                sql = "select 'Artifact Instance : ' + Name from AssetType where objectid = @id and [Object]='ArtifactType'";
+                                sql = "select case when Class = 1 then 'Business Asset Instance : ' + Name when Class = 8 then 'Technical Asset Instance : ' + Name END, Class from AssetType where objectid = @id and [Object]='ArtifactType'";
                                 break;
                             case "ArtifactType":
-                                sql = "select 'Artifact Type : ' + Name from AssetType where objectid = @id and [Object]='ArtifactType'";
+                                sql = "select case when Class = 1 then 'Business Asset : ' + Name when Class = 8 then 'Technical Asset : ' + Name END, Class from AssetType where objectid = @id and [Object]='ArtifactType'";
                                 break;
                             case "Resource":
                                 sql = "select 'Resource Instance'";
@@ -6843,7 +6858,7 @@ where    A.RuleID = @id", new { id });
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
-                                new ReadOnlyField { Name = "Object Type", FieldName = "SurveyTypeObjectType", FieldDescription = surveyType.GetDescription(i => i.Object), Value = surveyType.Object.ToString() }
+                                new ReadOnlyField { Name = "Object Type", FieldName = "SurveyTypeObjectType", FieldDescription = surveyType.GetDescription(i => i.Object), Value = (dtlSurveyType != null) ? dtlSurveyType.Class.GetDisplayName() : "Invalid class" }
                             },
                             SecondColumnFields = new List<ReadOnlyField>
                             {

@@ -1,10 +1,9 @@
-﻿import { Component, Input, OnInit } from '@angular/core';
+﻿import { Component, Input, OnInit, AfterViewInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SettingsHelper } from '../../models/settings.model';
-import { StringConstants } from '../../static/string-constants';
 
 declare var CompanySettings;
 @Component({
@@ -13,14 +12,9 @@ declare var CompanySettings;
     providers: [SearchService, TypeaheadSearchService],
 })
 
-export class HeroSearchInputComponent extends BaseComponent implements OnInit {
+export class HeroSearchInputComponent extends BaseComponent implements OnInit, AfterViewInit {
     @Input() isExactMatch: boolean = true;
     @Input() searchTypes: string[] = ["BusinessAsset", "Synonym"];
-
-
-    constructor() {
-        super();
-    }
 
     private searchObjectTypes: SelectItem[] = SettingsHelper.getSearchTypesList().map((set) => {
         return {
@@ -28,6 +22,10 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit {
             value: set.value
         };
     });
+
+    constructor() {
+        super();
+    }
 
     ngOnInit() {
         if (CompanySettings) {
@@ -39,6 +37,11 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit {
             }
         }
     }
+
+    ngAfterViewInit(): void {
+        this.setEventTypeLabel();
+    }
+
     setEventTypeLabel() {
         let label = (document.getElementById('searchMultiSelect')
             .getElementsByClassName('ui-multiselect-label-container')[0]

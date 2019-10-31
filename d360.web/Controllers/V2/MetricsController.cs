@@ -328,7 +328,7 @@ namespace d360.web.Controllers.V2
 
                 models = JsonConvert.DeserializeObject<List<MetricFieldTypeViewModel>>(string.Join("", fragments));
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models ?? new List<MetricFieldTypeViewModel>()));
             }
             catch (Exception ex)
             {

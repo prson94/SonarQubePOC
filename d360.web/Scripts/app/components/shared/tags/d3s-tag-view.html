@@ -19,23 +19,23 @@
             </div>
         </a>
     </ng-container>
-    <ng-container *ngIf="allowAddTag" >
-        <span (click)="show($event,searchPanel,target)">
-            <a class="link-button"  #target>
-                <div class="tooltip-wrapper">
-                    <div class="no-display"></div>
-                </div>
-                <input #tagInput [(ngModel)]="searchValue" (blur)="resetStyle()" (keyup)="search($event,searchValue)" type="text" placeholder="Click to add..">
-                <span *ngIf="tagsLoading"><i class="fa fa-spinner fa-spin"></i></span>
-            </a>
-            <p-overlayPanel [ngClass]="'search-results'" #searchPanel>
-                <div *ngIf="!tagsLoading" class="breadcrumb-search">
-                    <div *ngFor="let sr of searchResults;">
-                        <div (click)="addTag($event,sr)" class="breadcrumb-search-result-tag">{{sr.name}}</div>
-                    </div>
-                </div>
-            </p-overlayPanel>
-        </span>
+    <ng-container *ngIf="allowAddTag">
+        <p-autoComplete [(ngModel)]="inputValue"
+                        (onBlur)="resetValue()"
+                        class="autoInputBox"
+                        scrollHeight="400px"
+                        value="inputValue"
+                        inputStyleClass="inputBox"
+                        placeholder="Click to add..."
+                        [suggestions]="searchResults"
+                        (onKeyUp)="checkKey($event,inputValue)"
+                        (onSelect)="saveTag($event)"
+                        field="name"
+                        (completeMethod)="search($event,$event.query)">
+            <ng-template let-elm pTemplate="item">
+                <span [innerHTML]=" highlight(elm.name,inputValue) | safeHtml"></span>
+            </ng-template>
+        </p-autoComplete>
     </ng-container>
     <ng-container *ngIf="tags && tags.length > 10">
         <a (click)="showAllToggle($event);" class="show-all-tags">

@@ -986,6 +986,7 @@ namespace d360.web.Controllers
                         appendTitle = FormInfo.PolicyType;
                         parentPredicateType = PredicateType.IntraTypeHierarchy;
                         break;
+                    case AssetTypeClass.Reference:
                     case AssetTypeClass.ReferenceItemType:
                         ot = SystemObjects.ReferenceItemType;
                         appendTitle = "Reference List";                        
@@ -1063,9 +1064,12 @@ namespace d360.web.Controllers
                             model.AssetType.Description = assetType.Description;
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
+                        case AssetTypeClass.Reference:
                         case AssetTypeClass.ReferenceItemType:
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Notes = assetType.Notes;
+                            model.AssetType.Description = assetType.Description;
+                            model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             if (model.Tokens != null) model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                             break;
                     }
@@ -1073,7 +1077,7 @@ namespace d360.web.Controllers
                     model.FormName = string.Format(FormInfo.Add_Asset_Type_Title, appendTitle);
                     model.FormDescription = string.Format(FormInfo.Add_Asset_Type_Directions, appendTitle.ToLower());
 
-                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.BusinessAsset || @class == AssetTypeClass.TechnicalAsset || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType)
+                    if (@class == AssetTypeClass.FusionAttribute || @class == AssetTypeClass.BusinessAsset || @class == AssetTypeClass.TechnicalAsset || @class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference)
                     {
                         var intersectType = Company.Filter<IntersectType>(i =>
                             i.Object == assetType.Object &&
@@ -1082,14 +1086,24 @@ namespace d360.web.Controllers
                         ).FirstOrDefault();
 
 
-                        if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.ReferenceItemType) //If model or policy you must always have a predicate to load.
+                        if (@class == AssetTypeClass.Model || @class == AssetTypeClass.Policy || @class == AssetTypeClass.Reference) //If model or policy you must always have a predicate to load.
                             loadPredicates = true;
 
                         if (intersectType != null)
                         {
                             loadPredicates = true;
 
-                            model.AssetType.ParentUid = Company.Filter<AssetType>(a => a.Object == intersectType.Subject && a.ObjectID == intersectType.SubjectID).FirstOrDefault()?.uid;
+                            if (intersectType.SubjectUid.HasValue)
+                            {
+                                model.AssetType.ParentUid = intersectType.SubjectUid;
+                            }
+                            else
+                            {
+                                var parentAssetType = Company.AssetTypes.FirstOrDefault(x => x.Object == intersectType.Subject && x.ObjectID == intersectType.SubjectID);
+                                model.AssetType.ParentUid = parentAssetType.uid;
+                            }
+
+
                             model.AssetType.Hierarchy.PredicateUid = intersectType.Predicate.UID;
                         }
                     }
@@ -1124,7 +1138,7 @@ namespace d360.web.Controllers
 
 
 
-                    if (@class == AssetTypeClass.ReferenceItemType)
+                    if (@class == AssetTypeClass.Reference)
                     {
                         model.AssetType.DisplayFormat = "{Code}";
                         model.Tokens.Clear(); // remove the name token for reference item type it isnt created by default.
@@ -1151,7 +1165,7 @@ namespace d360.web.Controllers
                     }
                     else
                     {
-                        var parents = Company.Query<PrimeSelectItem>("select uid as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
+                        var parents = Company.Query<PrimeSelectItem>("select LOWER(CAST(uid AS char(36))) as value, Name as label from assettype where [object] = 'ReferenceItemType' order by Name").ToList();
                         model.Parents = parents;
                     }
                     model.Parents?.Insert(0, new PrimeSelectItem() { label = "", value = "" });
@@ -1590,6 +1604,8 @@ namespace d360.web.Controllers
         public JsonResult AttributeTypeRelation_EditFields(int at, string ot, int oid)
         {
             var list = new List<EditableField>();
+            if (ot == "Business Asset" || ot == "Technical Asset")
+                ot = "ArtifactType";
             var sType = ot.ToString();
             var a = Company.Filter<AttributeTypeRelationDetail>(i => i.AttributeTypeID == at && i.ObjectID == oid && i.ObjectType == sType).SingleOrDefault();
 
@@ -3078,7 +3094,7 @@ namespace d360.web.Controllers
                 .OrderBy(ft => ft.FriendlyName)
                 .Select(ft => new { ft.FriendlyName, ft.Name, ft.ID })
                 .ToList()
-                .Select(ft => new { title = $"{ft.FriendlyName} ({ft.Name})", value = ft.ID.ToString() })
+                .Select(ft => new { title = $"{ft.FriendlyName} ({ft.Name})", value = ft.ID })
                 .ToList();
 
             #endregion
@@ -3320,6 +3336,13 @@ offset 0 rows fetch next 25 rows only
             if (nameUpper == "PARENTID" || nameUpper == "DATABASE")  throw new Exception("Use of a field type with the name " + name + " is prohibited.");
         }
 
+        private bool IsFieldNameAllowed(string fieldApiName)
+        {
+            if (string.IsNullOrEmpty(fieldApiName)) return false;
+            List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon" };
+            return !disallowedFieldNames.Contains(fieldApiName.ToLower());
+        }
+
         [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFieldType")]
         public JsonResult AddFieldType(FieldTypeEditorModel model)
         {
@@ -3349,9 +3372,9 @@ offset 0 rows fetch next 25 rows only
                     throw new ConflictException("Error Occurred!", $"{FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
 
-                if (!string.IsNullOrEmpty(model.FieldType.Name) && (model.FieldType.Name.ToUpper().Equals("ID") || model.FieldType.Name.ToUpper().Equals("UID")))
+                if (!IsFieldNameAllowed(model.FieldType.Name))
                 {
-                    throw new ConflictException("Error Occurred!", "You can not add field with API Name [ID] or [UID].");
+                    throw new ConflictException("Error Occurred!", $"You can not add field with API Name [{model.FieldType.Name.ToUpper()}].");
                 }
 
                 if (model.FieldType.MinimumLength.HasValue && model.FieldType.MaximumLength.HasValue)
@@ -3776,9 +3799,10 @@ offset 0 rows fetch next 25 rows only
                 {
                     throw new ConflictException("Error Occurred!", $"{FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
-                if (new string[2]{"id", "uid" }.Contains(model.FieldType.Name.Trim().ToLower()))
+
+                if (!IsFieldNameAllowed(model.FieldType.Name))
                 {
-                    throw new ConflictException("Error Occurred!", $"{FieldInfo.ApiName_Name} cannot be ID or UID!");
+                    throw new ConflictException("Error Occurred!", $"You can not add field with API Name [{model.FieldType.Name.ToUpper()}].");
                 }
 
 
@@ -12367,7 +12391,7 @@ order by	case
 
             var items = new List<SelectListItem>();
             //artifacts
-            items.AddRange(Company.AssetTypes.Where(x=>x.Object == SystemObjects.ArtifactType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Artifact Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.ArtifactType.ToString(), i.ID) }));
+           items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.ArtifactType.ToString()).OrderBy(i => i.Class).ThenBy(i => i.Name).Select(i => new { i.Object, i.ObjectID, i.Name, i.Class }).ToList().Select(i => new SelectListItem { Text = $"{i.Class.GetDisplayName()} :: {i.Name}" , Value = $"{i.Object}|{i.ObjectID}" }));
 
             //models
             items.AddRange(Company.AssetTypes.Where(x => x.Object == SystemObjects.TaxonomyType.ToString()).OrderBy(i => i.Name).Select(i => new { ID = i.ObjectID, i.Name }).ToList().Select(i => new SelectListItem { Text = string.Format("Model Type :: {0}", i.Name), Value = string.Format("{0}|{1}", SystemObjects.TaxonomyType.ToString(), i.ID) }));
@@ -12853,9 +12877,9 @@ order by	case
                                         inner join AssetType T on T.ID = A.AssetTypeID and T.Object = 'TaxonomyType' and T.ObjectID = @t
 		                                cross apply dbo.GetAssetTextPathById(A.ID, '/') P
                                         cross apply dbo.GetAssetLevelById(A.ID) LV
-                                where (coalesce(LV.[Level], 1) + @currentLevel) <= @maxLevel
+                                where coalesce(LV.[Level], 1) <= @currentLevel 
                                 option (maxrecursion 100)",
-    new { t = taxonomy.TaxonomyTypeID, currentLevel = taxonomy.Level ?? 1, maxLevel = taxonomy.MaximumDepth ?? 1 }).Select(i => new { i.Uid, i.Name }).ToList();
+    new { t = taxonomy.TaxonomyTypeID, currentLevel = taxonomy.Level ?? 1 }).Select(i => new { i.Uid, i.Name }).ToList();
 
                 var thisEntry = parents.FirstOrDefault(i => i.Uid == taxonomy.Uid);
 
@@ -12868,10 +12892,10 @@ order by	case
                     Value = $"{i.Uid}",
                     Selected = (parent != null ? (i.Uid == parent.uid) : false)
                 }).ToList();
-                parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = "", Selected = (parent == null) });
+                parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = Guid.Empty.ToString(), Selected = (parent == null) });
 
                 list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = taxonomy.Uid.ToString() });
-                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentUid", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.uid.ToString() : "0") });
+                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentUid", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.uid.ToString() : Guid.Empty.ToString()) });
                 list = (
                      loadDynamicFields(
                          SystemObjects.Taxonomy.ToString(),

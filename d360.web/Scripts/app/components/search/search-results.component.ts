@@ -1,7 +1,9 @@
-﻿import { Component, OnInit, Input, EventEmitter, Output, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef} from '@angular/core';
+﻿import { Component, Input, EventEmitter, Output, ChangeDetectionStrategy, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef} from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
 import { SearchService } from '../../services/search.service';
-import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../models/search-result.model';
+import { SearchResultsObject } from '../../models/search-result.model';
+import { CheckTreeNode } from '../shared/small-widgets/check-tree/checktreenode';
+import { SearchStateService } from './search-state.service';
 
 @Component({
     selector: 'd3s-search-results',
@@ -15,17 +17,19 @@ import { SearchResultsObject, SearchResultInfo, SearchCategories } from '../../m
 
 export class SearchResultsComponent extends BaseComponent implements AfterViewInit {
     @Input() results: SearchResultsObject;
-    @Input() categories: SearchCategories[] = [];    
     @Input() itemsPerPage: number = 5;
     @Input() from: number = 0;
     @Input() loading: boolean = false;
-    @Input() useSubscription: boolean = false;
-        
-    @Output() paginateClick = new EventEmitter();    
-    @Input() selectedCategory: SearchCategories;
+
     @Output() selectedCategoryChange = new EventEmitter();
 
     @ViewChild('searchContainer', { static: false }) container: ElementRef;
+    @Output() advFilterChanged = new EventEmitter();
+
+    newFilterOptions: any[] = [];
+
+    ngOnInit() {
+    }
 
     ngOnChanges(changes: any) {
         if (changes['results'] && !changes['results'].firstChange) {
@@ -33,12 +37,19 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
         }
     }
 
-    constructor(private searchService: SearchService, private ref: ChangeDetectorRef) {
+    constructor(private searchStateService: SearchStateService, private ref: ChangeDetectorRef) {
         super();
     }
 
     ngAfterViewInit(): void {
         this.setResultsHeight();
+        this.newFilterOptions.push({ field: "Name", value: 'any' });
+        this.newFilterOptions.push({ field: "Description", value: 'any' });
+        this.newFilterOptions.push({ field: "Tags", value: 'any' });
+    }
+
+    filterChanged(options) {
+        this.advFilterChanged.emit(options);
     }
 
     setResultsHeight() {
@@ -50,10 +61,8 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
         }, 50);
     }
 
-    private selectCategory(category) {
-        this.selectedCategory = category;
-
-        this.selectedCategoryChange.emit(this.selectedCategory);
+    private nodeSelectDeselect(event) {
+        this.selectedCategoryChange.emit(this.searchStateService.selectedFilters);
     }
 
     private paginate(data) {
@@ -63,7 +72,7 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
             event.rows: Number of rows to display in new page            
             event.pageCount: Total number of pages
         */
-        this.paginateClick.emit({page: data.page, size: data.size, first: data.first});
+        this.searchStateService.page(data.first, data.size);
     }
 
     private pageNumber() {

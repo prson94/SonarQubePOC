@@ -61,18 +61,27 @@
         font-weight: 600;
     }
     .asset-browser-window-tabs-content-score-low {
-        background-color: #FC7C24; 
-        border: 1px solid #FC7C24; 
+        margin-left: 25px;
+        padding: 3px;
+        color: #ffffff;
+        background-color: #FF7155; 
+        border: 1px solid #FF7155; 
         border-radius: 3px;
     }
     .asset-browser-window-tabs-content-score-medium {
-        background-color: #FCBE33; 
-        border: 1px solid #FCBE33; 
+        margin-left: 25px;
+        padding: 3px;
+        color: #ffffff;
+        background-color: #FFB000; 
+        border: 1px solid #FFB000; 
         border-radius: 3px;
     }
     .asset-browser-window-tabs-content-score-high {
-        background-color: #A1D330; 
-        border: 1px solid #A1D330; 
+        margin-left: 25px;
+        padding: 3px;
+        color: #ffffff;
+        background-color: #00853E; 
+        border: 1px solid #00853E; 
         border-radius: 3px;
     }
     button.asset-browser-button {
@@ -88,6 +97,9 @@
     }
     button.asset-browser-button:active {
         background-color: #ccc;
+    }
+    button.asset-browser-button:hover {
+        background-color: #ddd;
     }
     .asset-browser-button-group {
         background-color: #F2F2F2;
@@ -106,6 +118,9 @@
     }
     .asset-browser-button-group button:active {
         background-color: #ccc;
+    }
+    .asset-browser-button-group button:hover {
+        background-color: #ddd;
     }
     .asset-browser-button-group button.selected {
         background-color: #DDDDDD;
@@ -160,7 +175,7 @@
                                                 {{selectedDiagramAsset?.DisplayValue}}
                                                 <span style="font-size: 75%"><a [routerLink]="selectedDiagramAsset?.Url">[<span class="fa fa-link"></span>]</a></span>
                                             </div>
-                                            <div class="asset-browser-window-header-class">{{selectedDiagramAsset?.AssetTypeClass}}</div>
+                                            <div class="asset-browser-window-header-class">{{selectedDiagramAsset?.AssetTypeClassDisplayName}}</div>
                                             <div class="clearfix"></div>
                                         </div>
                                         <p-tabView *ngIf="showWindowTabs" styleClass="asset-browser-window-tabs">
@@ -203,14 +218,20 @@
                                                     <p-table #dt [value]="selectedDiagramAsset?.Owners" [metaKeySelection]="true" [style]="{'width':'450px'}">
                                                         <ng-template pTemplate="header">
                                                             <tr>
-                                                                <th style="width: 150px">Responsibility</th>
-                                                                <th style="width: 150px">Resource</th>
+                                                                <th style="width: 50%">Responsibility</th>
+                                                                <th style="width: 45%">Resource</th>
+                                                                <th style="width: 5%"></th>
                                                             </tr>
                                                         </ng-template>
                                                         <ng-template pTemplate="body" let-item>
                                                             <tr (dblclick)="onDoubleClick(item)" [pSelectableRow]="item">
-                                                                <td>{{item.ResponsibilityTypeName}}</td>
-                                                                <td><i [class]="ownerRowClass(item.Icon)"></i>&#160;{{item.SecurityAssetName}}</td>
+                                                                <td>
+                                                                    <d3s-preview-tooltip objectType="ResponsibilityType" [objectId]="item.ResponsibilityTypeID">{{item.ResponsibilityTypeName}}</d3s-preview-tooltip>
+                                                                </td>
+                                                                <td>
+                                                                    <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID">{{item.ResourceName}}</d3s-preview-tooltip>
+                                                                </td>
+                                                                <td><i [class]="ownerRowClass(item.Icon)" [title]="item.SecurityAssetName"></i></td>
                                                             </tr>
                                                         </ng-template>
                                                     </p-table>
