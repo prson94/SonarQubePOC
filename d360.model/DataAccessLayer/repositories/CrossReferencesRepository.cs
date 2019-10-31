@@ -249,9 +249,9 @@ namespace d360.model.DataAccessLayer
                 var resultsJson = StorageProvider.GetFileContentsAsString(executionInfo.StorageFolder, executionInfo.ResponseFileName);
                 bulkResult.Results = JsonConvert.DeserializeObject<List<AssetCrossReferenceResult>>(resultsJson);
             }
-            catch (Exception)
+            catch (Exception e)
             {
-                bulkResult.Error = 1;
+               
             }
            
 
