@@ -348,4 +348,5 @@
   <include file="scripts/GOV-6650.xml"/><!-- script to delete dbo.policytypelevel-retired table -->
   <include file="scripts/GOV-8494.xml"/> <!-- script to create index for [dbo].AssetDataProfile on AssetID -->
 
+  <include file="scripts/GOV-7550.xml"/> 
 </databaseChangeLog>
