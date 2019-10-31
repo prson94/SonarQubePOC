@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace igx.jobs.assetgraphprocessor
@@ -24,60 +23,60 @@ namespace igx.jobs.assetgraphprocessor
             if (info.Type != AssetEventType.Node)
                 return;
 
+#if DEBUG
             CoreFunction.AITrackJobStart(functionName);
             log.WriteLine($"GraphNodeSubscriber triggered for uid: {info.Uid}");
             CoreFunction.AITrackEvent(functionName, "GraphNodeSubscriber triggered", new Dictionary<string, string> { { "uid", info.Uid.ToString() } });
+#endif
+
 
             using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(info.CompanyID))
             {
-                string lineageVersion = CompanyConnectionUtils.GetCompanySettings(info.CompanyID).FirstOrDefault(s => s.SettingID == 68)?.Value ?? "";
-
-                if (lineageVersion == "3")
+                try
                 {
-
                     companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    
+                    bool updatePath = false;
 
-                    try
+                    if (info.ChangedFieldNames?.Any() ?? false)
                     {
-                        bool updatePath = false;
+                        DynamicParameters dbArgs = new DynamicParameters();
+                        string fieldList = "";
 
-                        if (info.ChangedFieldNames?.Any() ?? false)
+                        for (int i = 0; i < info.ChangedFieldNames.Count; i++)
                         {
-                            DynamicParameters dbArgs = new DynamicParameters();
-                            string fieldList = "";
-
-                            for (int i = 0; i < info.ChangedFieldNames.Count; i++)
-                            {
-                                dbArgs.Add($"@field{i}", info.ChangedFieldNames[i]);
-                            }
-
-                            fieldList = string.Join(",", dbArgs.ParameterNames.Select(p => $"@{p}"));
-                            dbArgs.Add("@uid", info.Uid);
-
-                            int keyFieldCount = (await companyConnection.QueryAsync<int>($@"
-                                        select  count(*) 
-                                        from    FieldType FT
-                                                inner join Asset A on A.[uid] = @uid and FT.AssetTypeID = A.AssetTypeID
-                                        where   FT.Name in ({fieldList})", dbArgs, commandTimeout: timeout)).FirstOrDefault();
-
-                            if (keyFieldCount > 0)
-                            {
-                                updatePath = true;
-                            }
+                            dbArgs.Add($"@field{i}", info.ChangedFieldNames[i]);
                         }
 
-                        await companyConnection.ExecuteAsync(@"graph.UpdateAssetNode @uid, @updatePath", new { uid = info.Uid, updatePath }, commandTimeout: timeout);
+                        fieldList = string.Join(",", dbArgs.ParameterNames.Select(p => $"@{p}"));
+                        dbArgs.Add("@uid", info.Uid);
+
+                        int keyFieldCount = (await companyConnection.QueryAsync<int>($@"
+                                    select  count(*) 
+                                    from    FieldType FT
+                                            inner join Asset A on A.[uid] = @uid and FT.AssetTypeID = A.AssetTypeID
+                                    where   FT.Name in ({fieldList})", dbArgs, commandTimeout: timeout)).FirstOrDefault();
+
+                        if (keyFieldCount > 0)
+                        {
+                            updatePath = true;
+                        }
                     }
-                    catch (Exception ex)
-                    {
-                        string fieldNameList = info.ChangedFieldNames == null ? "" : string.Join(", ", info.ChangedFieldNames);
-                        CoreFunction.AITrackException(functionName, ex, info.CompanyID, new Dictionary<string, string>() { { "uid", info.Uid.ToString() }, { "fields", fieldNameList } });
-                    }
+
+                    await companyConnection.ExecuteAsync(@"graph.UpdateAssetNode @uid, @updatePath", new { uid = info.Uid, updatePath }, commandTimeout: timeout);
+                }
+                catch (Exception ex)
+                {
+                    string fieldNameList = info.ChangedFieldNames == null ? "" : string.Join(", ", info.ChangedFieldNames);
+                    CoreFunction.AITrackException(functionName, ex, info.CompanyID, new Dictionary<string, string>() { { "uid", info.Uid.ToString() }, { "fields", fieldNameList } });
                 }
             }
 
+#if DEBUG
             CoreFunction.AITrackJobCompletedNoErrors(functionName);
             CoreFunction.AIFlush();
+#endif
+
         }
     }
 }
