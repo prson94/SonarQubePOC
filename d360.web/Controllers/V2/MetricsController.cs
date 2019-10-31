@@ -406,8 +406,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateStart", "Effective start date", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateEnd", "Effective end date", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_assetUid", "The specific Uid of the asset you want the score for.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("CustomField ", "Any custom non-computed field defined on the asset type.", DataType = "string", ParameterType = "query", Required = false)
+            SwaggerParameter("_assetUid", "The specific Uid of the asset you want the score for.", DataType = "string", ParameterType = "query", Required = false)
         ]
         public async Task<IHttpActionResult> GetMetricScores(string assetTypeUid)
         {
@@ -426,8 +425,14 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid of {atUid.ToString()} not found.");
                 }
+
                 var queryParams = Request.GetQueryNameValuePairs();
-                var result = MetricsRepository.GetMetricScore(assetType, queryParams);
+                (var result, string errorMessage) = MetricsRepository.GetMetricScore(assetType, queryParams);
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", errorMessage);
+                }
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
             }
