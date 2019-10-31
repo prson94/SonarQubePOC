@@ -1031,6 +1031,16 @@ namespace d360.model.DataAccessLayer
                     ");
                     dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
                 }
+                else if (f.Type == "Tag")
+                {
+                    fieldJoins.Add($@"outer apply(
+                        select FormattedValue = STUFF((
+                            select '|' + T.Value from AssetTag AT
+                                inner join Tag T on AT.TagID = T.ID
+                                where AT.AssetID = A.ID
+                            for xml path ('')), 1, 1, '')
+                         ){tableAlias}(FormattedValue) ");
+                }
                 else
                 {
                     fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]");
