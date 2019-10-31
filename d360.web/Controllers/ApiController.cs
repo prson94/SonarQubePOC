@@ -5425,8 +5425,8 @@ where    A.RuleID = @id", new { id });
             return status;
         }
 
-        [Route("{id:int}/style")]
-        public AssetTypeStyle GetObjectStyle(int assetTypeId)
+        [Route("{assetTypeId:int}/style")]
+        public AssetTypeStyle GetAssetTypeStyle(int assetTypeId)
         {
             return Company.GetAssetTypeStyle(assetTypeId);
         }

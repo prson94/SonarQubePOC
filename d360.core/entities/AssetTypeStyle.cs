@@ -12,7 +12,7 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class AssetTypeStyle : BaseObject
     {
-        [DataMember, Key, Column(Order = 1)]
+        [DataMember, Key]
         public int ID { get; set; }
 
         [DataMember, Column(TypeName = "varchar"), StringLength(7)]
@@ -26,5 +26,12 @@ namespace d360.core.entities
 
         [DataMember, Column(TypeName = "varchar"), StringLength(50)]
         public string Icon { get; set; }
+
+        #region Navigation Properties
+
+        [IgnoreDataMember, ForeignKey("ID")]
+        public virtual AssetType AssetType { get; set; }
+
+        #endregion
     }
 }

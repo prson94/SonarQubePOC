@@ -2186,6 +2186,7 @@ where	I.ID is null";
             modelBuilder.Entity<FieldTypeFusionLookupDisplayField>().HasRequired(t => t.FieldTypeFusionLookupDefinition).WithMany(t => t.FieldTypeFusionLookupDisplayFields).HasForeignKey(k => k.FieldTypeFusionLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeLookup>().HasRequired(t => t.FieldType).WithOptional(t => t.FieldTypeLookup).WillCascadeOnDelete(true);
 
+            modelBuilder.Entity<AssetTypeStyle>().HasRequired(t => t.AssetType).WithOptional(t => t.AssetTypeStyle).WillCascadeOnDelete(true);
 
             modelBuilder.Entity<FieldType>().Property(x => x.MinimumLength).HasPrecision(38, 18);
             modelBuilder.Entity<FieldType>().Property(x => x.MaximumLength).HasPrecision(38, 18);
