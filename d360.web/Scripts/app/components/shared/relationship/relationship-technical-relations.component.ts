@@ -110,7 +110,7 @@ export class RelationshipTechnicalRelationsComponent extends BaseComponent imple
     @Input() addTechnicalRelationship: boolean;
     @Output() addTechnicalRelationshipChange = new EventEmitter();
     
-    @ViewChild(FusionAttributeItemDetailsComponent) private fusionAttributeItemDetailsComponent: FusionAttributeItemDetailsComponent;
+    @ViewChild(FusionAttributeItemDetailsComponent, {static:false}) private fusionAttributeItemDetailsComponent: FusionAttributeItemDetailsComponent;
 
     @Input() hasEdit: boolean = true;
     @Input() hasDelete: boolean = true;

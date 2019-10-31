@@ -56,7 +56,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     @Input() artifactType: ArtifactType;
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
-    @ViewChild('dt') dt: Table;
+    @ViewChild('dt', { static: false }) dt: Table;
 
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;

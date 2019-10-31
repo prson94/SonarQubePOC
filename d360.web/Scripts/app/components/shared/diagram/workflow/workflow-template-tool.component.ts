@@ -15,8 +15,8 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
     @Input() objectId: number;
     @Output() onItemClick = new EventEmitter();
     @Input() issueObject: string;
-    @ViewChild('sel') select;
-    @ViewChild('cont') container;
+    @ViewChild('sel', { static: false }) select;
+    @ViewChild('cont', { static: false }) container;
 
     private fields = [];
 

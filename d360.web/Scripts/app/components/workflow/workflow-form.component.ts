@@ -63,7 +63,7 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     @Input() hasCloseButton: boolean = true;
     private isSetValidatior: boolean = false;
 
-    @ViewChild('workflowForm') workflowFormGroup: FormGroup;
+    @ViewChild('workflowForm', { static: false }) workflowFormGroup: FormGroup;
 
     constructor(private route: ActivatedRoute,
         private location: Location,

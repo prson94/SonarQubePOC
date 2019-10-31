@@ -5,9 +5,7 @@ import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { TagType, TagItem } from '../../../models/tag.model';
 import { RightSidebarService } from '../../../services/right-sidebar.service';
-import { forEach } from '@angular/router/src/utils/collection';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { Node } from '@angular/compiler/src/render3/r3_ast';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Array } from 'core-js';
@@ -39,7 +37,7 @@ export class AdminTagsComponent extends AdminBaseComponent {
     public theDeleteCallback: Function;
     public theConsolidateCallback: Function;
 
-    @ViewChild('dt') tableEl: any;
+    @ViewChild('dt', { static: false }) tableEl: any;
     private lastSelectedElement: TagType;
 
     constructor(private router: Router, private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title, rightSidebarService: RightSidebarService, ) {

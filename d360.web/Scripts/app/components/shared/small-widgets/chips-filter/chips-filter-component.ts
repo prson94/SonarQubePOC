@@ -72,9 +72,6 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
 })
 
 export class ChipsFilterComponent {
-    @ViewChild('searchInput') searchInputElement: ElementRef;
-    @Input() filterOption: any[] = [];
-    @Output() applyFlter = new EventEmitter();
     private openMenu: boolean = false;
     private changeWait: any;
     private filterText: string = '';
@@ -82,8 +79,13 @@ export class ChipsFilterComponent {
     private currentFilter: AdvancedSearchFilter;
     private isInputOpen: boolean = false;
     private isEditOpen: boolean = false;
-    @ViewChild('popup') popup: ElementRef;
+
+    @Input() filterOption: any[] = [];
+    @Output() applyFlter = new EventEmitter();
+    @ViewChild('searchInput', { static: false }) searchInputElement: ElementRef;
+    @ViewChild('popup', { static: false }) popup: ElementRef;
     @ViewChildren('editor') allEditors: QueryList<ElementRef>;
+
     constructor(
         private ref: ChangeDetectorRef,
         private router: Router

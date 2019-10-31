@@ -22,8 +22,9 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
     @Input() loading: boolean = false;
 
     @Output() selectedCategoryChange = new EventEmitter();
+
+    @ViewChild('searchContainer', { static: false }) container: ElementRef;
     @Output() advFilterChanged = new EventEmitter();
-    @ViewChild('searchContainer') container: ElementRef;
 
     newFilterOptions: any[] = [];
 

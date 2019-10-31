@@ -32,7 +32,7 @@ export class LineageEditorPreviewComponent extends DiagramBaseComponent implemen
     @Input() height: number = 300;
     @Input() header: string = "Preview Lineage Changes";
     @Output() viewChange = new EventEmitter();
-    @ViewChild('diagram') diagramRef;
+    @ViewChild('diagram', { static: false }) diagramRef;
 
     private initialLinks: go.Link[] = [];
     private initialNodes: go.Node[] = [];
