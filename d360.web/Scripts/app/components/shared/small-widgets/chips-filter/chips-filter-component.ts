@@ -101,7 +101,6 @@ export class ChipsFilterComponent {
         this.ref.markForCheck();
     }
     private openEdit(editor: HTMLElement) {
-        return;
         this.closeMenu();
         editor.classList.add('popup-open');
         setTimeout(() => { this.isEditOpen = true; }, 150);
