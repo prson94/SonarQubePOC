@@ -5377,10 +5377,24 @@ from    [Intersect] T
             CurrentExecutionLocationModel currentLocation = null;
 
             var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
+            var nameDupes = import.GroupBy(i => i.Name).Where(i => i.Count() > 1).Select(i => new { Name = i.Key, Count = i.Count() }).ToList();
             if (uidDupes.Any() && execution.Method == "PUT")
             {
                 execution.ErrorMessage = $"Duplicate Asset Uids: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
                 results.AddRange(import.Select(i => new ResponsibilityTypeUpsertResult { Uid = i.Uid.Value, Message = execution.ErrorMessage, Success = false }));
+            }
+            else if (nameDupes.Any())
+            {
+                for(int idx = 0; idx < import.Count; idx++)
+                {
+                    var dupe = nameDupes.FirstOrDefault(x => x.Name == import[idx].Name);
+                    results.Add(new ResponsibilityTypeUpsertResult()
+                    {
+                        ItemNumber = idx,
+                        Success = false,
+                        Message = dupe == null ? "Names must be unique within a batch." : $"Duplicate Name '{dupe.Name}'. Names must be unique within a batch."
+                    });
+                }
             }
             else
             {
@@ -5428,7 +5442,7 @@ from    [Intersect] T
                             row["ExecutionID"] = execution.ExecutionID;
                             row["ExecutionItemUid"] = Guid.NewGuid();
                             row["ItemNumber"] = i;
-                            row["Name"] = model.Name;
+                            row["Name"] = model.Name.Trim();
                             row["Description"] = model.Description;
                             if (model.Uid.HasValue)
                                 row["Uid"] = model.Uid;
@@ -5491,7 +5505,12 @@ from    [Intersect] T
     from api.ExecutionResponsibilityType ERT
     left join [ResponsibilityType] RT on RT.Uid = ERT.Uid
     where	ExecutionID = @ExecutionID and ERT.Uid is not null and RT.Uid is null;
-;";
+
+    update	api.ExecutionResponsibilityType 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Name field cannot be empty'
+    where	ExecutionID = @ExecutionID and (Name is null or Name = '');
+   ";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
 
