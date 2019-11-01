@@ -105,7 +105,7 @@ namespace d360.web.Controllers.V2
 										WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
 										ELSE fa.Value
 	                                 END as NewValue, 
-                                     99 as Class,
+                                     11 as Class,
 	                                 fa.[Version] as 'Version',	    
 	                                CASE 
 	                                     WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
