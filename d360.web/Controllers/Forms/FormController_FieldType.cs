@@ -22,7 +22,7 @@ namespace d360.web.Controllers
         #region FieldType
 
         #region Supporting Json Feeds
-
+        
         /// <summary>
         /// Used to get the child types of a specific parent type.
         /// </summary>
@@ -438,7 +438,7 @@ namespace d360.web.Controllers
 
             return new JsonNetResult
             {
-                Data = list.Select(i => new { title = i.Key, value = $"{i.Value}" }),
+                Data = list.Select(i => new { title = i.Key, value = i.Value }),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -788,7 +788,7 @@ namespace d360.web.Controllers
                     title = ((i.Subject == sType && i.SubjectID == id) ?
                         $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
                         $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
-                    value = $"{i.ID}"
+                    value = i.ID
                 });
 
             var Field_CardinalRelationships = cardinalRelationships
@@ -797,7 +797,7 @@ namespace d360.web.Controllers
                     title = ((i.Subject == sType && i.SubjectID == id) ?
                         $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
                         $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
-                    value = $"{i.ID}"
+                    value = i.ID
                 });
 
             var Field_CardinalReferenceRelationships = cardinalRelationships
