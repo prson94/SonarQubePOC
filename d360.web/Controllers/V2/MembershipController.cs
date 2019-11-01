@@ -245,7 +245,7 @@ namespace d360.web.Controllers.V2
                     dbArgs.Add($"@field{customField.ID}", paramval);
                 }
             }
-            finalSql = selectSql + @"from[reporting].[Global_Resource] gr inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID 
+            finalSql = selectSql + @" from[reporting].[Global_Resource] gr inner join [dbo].[ResourceGroup] rg on rg.ResourceID = gr.ResourceID 
                                       inner join[dbo].[Group] g on g.ID = rg.GroupID
                                       inner join[dbo].[Asset] AB on AB.uid = '"
                                       + groupUid + "'" + joinsSql + " where g.ID = AB.ObjectID" + whereSql;
