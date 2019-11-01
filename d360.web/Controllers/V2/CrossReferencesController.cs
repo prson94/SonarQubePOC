@@ -542,5 +542,29 @@ namespace d360.web.Controllers.V2
 
         }
 
+        /// <summary>
+        /// GETs the status of an execution record, including the results for the execution.
+        /// </summary>
+        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("temporary/rules/{id}"),
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of Asset Cross References.", typeof(BulkAssetCrossReferenceResult)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Execution unique identifier not found.", typeof(ErrorResponse)),
+            ]
+        public async Task<HttpResponseMessage> GetUidfromRuleID(int id)
+        {
+            var ruleUid = assetRepository.GetRuleUIDFromRuleID(id);
+            if(ruleUid == Guid.Empty)
+                return Request.CreateResponse(HttpStatusCode.NotFound);
+
+            return  Request.CreateResponse("uid: " + ruleUid); ;
+        }
+
+
     }
 }

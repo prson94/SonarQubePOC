@@ -35,6 +35,8 @@ namespace d360.model.DataAccessLayer
         bool DoesAssetExists(Guid uid);
         bool IsReachedTransformationLimit(AssetTypeInsert model);
 
+        Guid GetRuleUIDFromRuleID(int id);
+
 
     }
 }
