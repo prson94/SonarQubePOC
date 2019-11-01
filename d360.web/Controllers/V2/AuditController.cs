@@ -140,7 +140,7 @@ namespace d360.web.Controllers.V2
                                     end as ResourceName, 
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
-                                     AT.Class,
+                                     9 as Class,
                                      fa.[Version] as 'Version',	                            
                                   ( select			
                                 top 1 fa_sub.value as 'value'			                            
@@ -151,8 +151,7 @@ namespace d360.web.Controllers.V2
                             from reporting.global_audit ga 
         left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
                                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'Fusion' 
-                                and ga.ObjectID in ( Select  Id from Fusion where fusiontypeid= @objId)
-                                left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID";
+                                and ga.ObjectID in ( Select  Id from Fusion where fusiontypeid= @objId)";
                 }
 
                 if (type == SystemObjects.ReferenceItemType)
@@ -170,7 +169,7 @@ namespace d360.web.Controllers.V2
                                     end as ResourceName,
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
-                                     AT.Class,
+                                     9 as Class,
                                      fa.[Version] as 'Version',	                            
                                   ( select			
                                 top 1 fa_sub.value as 'value'			                            
@@ -180,8 +179,7 @@ namespace d360.web.Controllers.V2
 
                             from reporting.global_audit ga 
         left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
-                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'ReferenceItem' and ga.ObjectID IN @ReferenceIDs
-                                left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID";
+                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'ReferenceItem' and ga.ObjectID IN @ReferenceIDs";
                     dbArgs.Add("ReferenceIDs", referenceItemTypeIDs);
 
                 }
