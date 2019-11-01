@@ -2297,106 +2297,118 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
                 results.AddRange(import.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
-            else
-            {
-                #region Build data tables for bulk load.
-                var table = new DataTable();
-                table.Columns.Add("ExecutionID", typeof(Guid));
-                table.Columns.Add("ExecutionItemUid", typeof(Guid));
-                table.Columns.Add("ItemNumber", typeof(int));
-                table.Columns.Add("SubjectUid", typeof(Guid));
-                table.Columns.Add("Subject", typeof(string));
-                table.Columns.Add("SubjectID", typeof(int));
-                table.Columns.Add("SubjectCardinality", typeof(int));
-                table.Columns.Add("ObjectUid", typeof(Guid));
-                table.Columns.Add("Object", typeof(string));
-                table.Columns.Add("ObjectID", typeof(int));
-                table.Columns.Add("ObjectCardinality", typeof(int));
-                table.Columns.Add("PredicateUid", typeof(Guid));
-                table.Columns.Add("PredicateID", typeof(int));
-                table.Columns.Add("Message", typeof(string));
-                table.Columns.Add("Success", typeof(bool));
-                table.Columns.Add("IsNew", typeof(bool));
-                table.Columns.Add("uid", typeof(Guid));
+            else { 
 
-                int i = 0;
-                foreach (var item in import)
+                var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
+                if (uidDupes.Any())
                 {
-                    var row = table.NewRow();
-
-                    row["ExecutionID"] = execution.ExecutionID;
-                    row["ItemNumber"] = i++;
-                    if (item.ExecutionItemUid.HasValue)
-                        row["ExecutionItemUid"] = item.ExecutionItemUid.Value;
-                    row["SubjectCardinality"] = (int)item.SubjectCardinality;
-                    row["ObjectCardinality"] = (int)item.ObjectCardinality;
-                    row["PredicateUid"] = item.PredicateUid;
-                    row["uid"] = item.Uid;
-                    row["IsNew"] = false;
-
-                    table.Rows.Add(row);
+                    var  dupesResult= uidDupes.Join(import,
+                                        x=>x.Uid,
+                                        y=>y.Uid,
+                                        (d, i) => new { ExecutionItemUid = i.ExecutionItemUid,Uid = i.Uid,Count = d.Count }).ToList();
+                    results.AddRange(dupesResult.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid=i.Uid, Message = $"Duplicate UID with a Count {i.Count}", Success = false }));
                 }
-
-                #endregion
-                try
+                else
                 {
-                    if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    #region Build data tables for bulk load.
+                    var table = new DataTable();
+                    table.Columns.Add("ExecutionID", typeof(Guid));
+                    table.Columns.Add("ExecutionItemUid", typeof(Guid));
+                    table.Columns.Add("ItemNumber", typeof(int));
+                    table.Columns.Add("SubjectUid", typeof(Guid));
+                    table.Columns.Add("Subject", typeof(string));
+                    table.Columns.Add("SubjectID", typeof(int));
+                    table.Columns.Add("SubjectCardinality", typeof(int));
+                    table.Columns.Add("ObjectUid", typeof(Guid));
+                    table.Columns.Add("Object", typeof(string));
+                    table.Columns.Add("ObjectID", typeof(int));
+                    table.Columns.Add("ObjectCardinality", typeof(int));
+                    table.Columns.Add("PredicateUid", typeof(Guid));
+                    table.Columns.Add("PredicateID", typeof(int));
+                    table.Columns.Add("Message", typeof(string));
+                    table.Columns.Add("Success", typeof(bool));
+                    table.Columns.Add("IsNew", typeof(bool));
+                    table.Columns.Add("uid", typeof(Guid));
 
-                    #region Bulk Copy
-                    var bulkCopy = new SqlBulkCopy(Connection)
+                    int i = 0;
+                    foreach (var item in import)
                     {
-                        BatchSize = table.Rows.Count,
-                        DestinationTableName = "api.ExecutionRelationshipType",
-                        BulkCopyTimeout = timeout
-                    };
+                        var row = table.NewRow();
 
-                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
-                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                        row["ExecutionID"] = execution.ExecutionID;
+                        row["ItemNumber"] = i++;
+                        if (item.ExecutionItemUid.HasValue)
+                            row["ExecutionItemUid"] = item.ExecutionItemUid.Value;
+                        row["SubjectCardinality"] = (int)item.SubjectCardinality;
+                        row["ObjectCardinality"] = (int)item.ObjectCardinality;
+                        row["PredicateUid"] = item.PredicateUid;
+                        row["uid"] = item.Uid;
+                        row["IsNew"] = false;
 
-                    bulkCopy.ColumnMappings.Add("SubjectCardinality", "SubjectCardinality");
-                    bulkCopy.ColumnMappings.Add("ObjectCardinality", "ObjectCardinality");
-                    bulkCopy.ColumnMappings.Add("PredicateUid", "PredicateUid");
-                    bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
-                    bulkCopy.ColumnMappings.Add("uid", "uid");
+                        table.Rows.Add(row);
+                    }
 
-                    bulkCopy.WriteToServer(table);
-
-                    bulkCopy = null;
                     #endregion
+                    try
+                    {
+                        if (Database.Connection.State != ConnectionState.Open)
+                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                    this.ValidateUpdateRelationshipsType(execution, timeout);
+                        #region Bulk Copy
+                        var bulkCopy = new SqlBulkCopy(Connection)
+                        {
+                            BatchSize = table.Rows.Count,
+                            DestinationTableName = "api.ExecutionRelationshipType",
+                            BulkCopyTimeout = timeout
+                        };
 
-                    Connection.Execute(@"
-                            Update IT
-                            Set PredicateID=ER.PredicateID,
-                                SubjectCardinality=ER.SubjectCardinality, 
-                                ObjectCardinality=ER.ObjectCardinality,
-                                UpdatedBy=@resourceId,
-                                UpdatedOn=@utcNow
-                            from [intersecttype] IT
-                            inner join [api].[ExecutionRelationshipType] ER on IT.UID = ER.UID
-                            where  ER.ExecutionID=@executionID and
-                            ER.Success is null
+                        bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                        bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                        bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+
+                        bulkCopy.ColumnMappings.Add("SubjectCardinality", "SubjectCardinality");
+                        bulkCopy.ColumnMappings.Add("ObjectCardinality", "ObjectCardinality");
+                        bulkCopy.ColumnMappings.Add("PredicateUid", "PredicateUid");
+                        bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
+                        bulkCopy.ColumnMappings.Add("uid", "uid");
+
+                        bulkCopy.WriteToServer(table);
+
+                        bulkCopy = null;
+                        #endregion
+
+                        this.ValidateUpdateRelationshipsType(execution, timeout);
+
+                        Connection.Execute(@"
+                                Update IT
+                                Set PredicateID=ER.PredicateID,
+                                    SubjectCardinality=ER.SubjectCardinality, 
+                                    ObjectCardinality=ER.ObjectCardinality,
+                                    UpdatedBy=@resourceId,
+                                    UpdatedOn=@utcNow
+                                from [intersecttype] IT
+                                inner join [api].[ExecutionRelationshipType] ER on IT.UID = ER.UID
+                                where  ER.ExecutionID=@executionID and
+                                ER.Success is null
 
                            
-                             Update api.ExecutionRelationshipType
-                            Set Success =1,
-                            Message ='Updated Successfully'
-                            Where ExecutionID=@executionID and Success is null; ",
-                            new { executionID = execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow }, commandTimeout: timeout);
+                                 Update api.ExecutionRelationshipType
+                                Set Success =1,
+                                Message ='Updated Successfully'
+                                Where ExecutionID=@executionID and Success is null; ",
+                                new { executionID = execution.ExecutionID, resourceId = CurrentResourceID, utcNow = DateTime.UtcNow }, commandTimeout: timeout);
 
-                    results = Query<RelationshipTypeResult>(
-                                        $"select ExecutionItemUid,Uid,Message,Success from api.ExecutionRelationshipType where ExecutionID = @ExecutionID",
-                                        new { ExecutionID = execution.ExecutionID }).ToList();
-                }
-                finally
-                {
-                    if (Database.Connection.State == ConnectionState.Open)
-                        Connection.Close();
-                }
+                        results = Query<RelationshipTypeResult>(
+                                            $"select ExecutionItemUid,Uid,Message,Success from api.ExecutionRelationshipType where ExecutionID = @ExecutionID",
+                                            new { ExecutionID = execution.ExecutionID }).ToList();
+                    }
+                    finally
+                    {
+                        if (Database.Connection.State == ConnectionState.Open)
+                            Connection.Close();
+                    }
 
+                }
             }
             return results;
         }
