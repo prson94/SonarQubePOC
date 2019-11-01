@@ -21,33 +21,26 @@ namespace igx.jobs.assetgraphprocessor
         public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
 #if DEBUG
-            var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 4).ToList();
+            var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 1).ToList();
 #else
-                var companies = CoreFunction.GetCompaniesByCurrentSlot();
+            var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
 
             var populatePaths = DateTime.UtcNow.DayOfWeek == DayOfWeek.Saturday;
 
-            foreach (var company in companies)
-            {
-                string lineageVersion = CompanyConnectionUtils.GetCompanySettings(company.CompanyID).FirstOrDefault(s => s.SettingID == 68)?.Value ?? "";
-
-                if (lineageVersion != "3")
-                    continue;
-
+            companies.AsParallel().WithDegreeOfParallelism(5).ForAll(async company => {
                 try
                 {
                     var conn = CompanyConnectionUtils.GetCompanyConnection(company.CompanyID, company.Server, company.Username, company.Password);
 
                     using (conn)
                     {
-                        const int timeout = 1000 * 60 * 10;
-
-                        conn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        const int timeout = 60 * 180; //3 hours
 
                         try
                         {
-                                await conn.ExecuteAsync("graph.SynchronizeTables @populatePaths", new { populatePaths }, commandTimeout: timeout);
+                            conn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            await conn.ExecuteAsync("graph.SynchronizeTables @populatePaths", new { populatePaths }, commandTimeout: timeout);
                         }
                         catch (Exception ex)
                         {
@@ -60,10 +53,14 @@ namespace igx.jobs.assetgraphprocessor
                 {
                     CoreFunction.AITrackException(functionName, ex, company.CompanyID);
                 }
-            }
+            });
 
+
+#if DEBUG  
             CoreFunction.AITrackJobCompletedNoErrors(functionName);
             CoreFunction.AIFlush();
+#endif
+
         }
     }
 }
