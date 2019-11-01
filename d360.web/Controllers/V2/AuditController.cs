@@ -105,7 +105,7 @@ namespace d360.web.Controllers.V2
 										WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
 										ELSE fa.Value
 	                                 END as NewValue, 
-                                     AT.Class,
+                                     99 as Class,
 	                                 fa.[Version] as 'Version',	    
 	                                CASE 
 	                                     WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
@@ -123,8 +123,7 @@ namespace d360.web.Controllers.V2
 	                                from reporting.global_audit ga 
                                        left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) and ga.Action != 'Removed'
                                        inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
-	                               where ga.[Object] = @objType
-                                   left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID";
+	                               where ga.[Object] = @objType";
                 }
 
 
