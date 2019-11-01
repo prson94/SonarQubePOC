@@ -504,7 +504,7 @@ namespace d360.web.Controllers.V2
                 {
                     fieldJsonPropertyLoadLimitToTopLevel = Community.GetCompanySettingByKey<bool>("FieldJsonPropertyLoadLimitToTopLevel");
                 }
-                catch (Exception ex)
+                catch
                 {
                 }
                 
@@ -582,7 +582,7 @@ namespace d360.web.Controllers.V2
                 {
                     fieldJsonPropertyLoadLimitToTopLevel = bool.Parse(Community.GetCompanySettings().Single(i => i.Key == "FieldJsonPropertyLoadLimitToTopLevel").Value);
                 }
-                catch (Exception ex)
+                catch
                 {
                 }
 

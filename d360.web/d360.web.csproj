@@ -290,6 +290,22 @@
     <Compile Include="App_Start\IpRestrictionMiddleware.cs" />
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Forms\FormController_Artifact.cs" />
+    <Compile Include="Controllers\Forms\FormController_Attribute.cs" />
+    <Compile Include="Controllers\Forms\FormController_CustomAPI.cs" />
+    <Compile Include="Controllers\Forms\FormController_FieldType.cs" />
+    <Compile Include="Controllers\Forms\FormController_Fusion.cs" />
+    <Compile Include="Controllers\Forms\FormController_Issue.cs" />
+    <Compile Include="Controllers\Forms\FormController_Lookup.cs" />
+    <Compile Include="Controllers\Forms\FormController_Organization.cs" />
+    <Compile Include="Controllers\Forms\FormController_Policy.cs" />
+    <Compile Include="Controllers\Forms\FormController_Relationship.cs" />
+    <Compile Include="Controllers\Forms\FormController_Report.cs" />
+    <Compile Include="Controllers\Forms\FormController_Resource.cs" />
+    <Compile Include="Controllers\Forms\FormController_Responsibility.cs" />
+    <Compile Include="Controllers\Forms\FormController_Rule.cs" />
+    <Compile Include="Controllers\Forms\FormController_Survey.cs" />
+    <Compile Include="Controllers\Forms\FormController_Taxonomy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\Obsolete\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
@@ -331,7 +347,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controllers\BaseController.cs" />
-    <Compile Include="Controllers\FormController.cs" />
+    <Compile Include="Controllers\Forms\FormController.cs" />
     <Compile Include="Controllers\FieldsController.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1766,6 +1782,7 @@
     <OutputPath>bin\</OutputPath>
     <Optimize>true</Optimize>
     <DocumentationFile>App_Data\Documentation.XML</DocumentationFile>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <OutputPath>bin\</OutputPath>

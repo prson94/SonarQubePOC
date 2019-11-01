@@ -81,30 +81,6 @@ namespace d360.web.Controllers
             return new RedirectResult($"https://secure.gravatar.com/avatar/{sBuilder.ToString()}?s={size}&d=mm");
         }
 
-        [HttpGet, Route("image/me")]
-        public ActionResult ResourceImage(int size = 150)
-        {
-            var resource = Community.GetById<Resource>(Company.CurrentResourceID);
-
-            MD5 md5Hasher = MD5.Create();
-
-            // Convert the input string to a byte array and compute the hash.  
-            byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes(resource.Email));
-
-            // Create a new Stringbuilder to collect the bytes  
-            // and create a string.  
-            StringBuilder sBuilder = new StringBuilder();
-
-            // Loop through each byte of the hashed data  
-            // and format each one as a hexadecimal string.  
-            for (int i = 0; i < data.Length; i++)
-            {
-                sBuilder.Append(data[i].ToString("x2"));
-            }
-
-            return Redirect(string.Format("https://secure.gravatar.com/avatar/{0}?s={1}", sBuilder.ToString(), size));
-        }
-
         #endregion
 
         #region Exports
@@ -548,12 +524,6 @@ from	FollowDetail F
 
         #endregion
         #region Partials
-
-        string buttonHtml(string buttonType, string context, string uri, string icon, string title, string method = "")
-        {
-            string methodAttribute = string.IsNullOrEmpty(method) ? "" : string.Format(" data-method='{0}'", method);
-            return string.Format("<button type='button' data-{0} data-context='{1}' data-uri='{2}'{5} class='btn btn-default' title='{4}'><i class='fa fa-{3}'></i></button>", buttonType, context, uri, icon, title, methodAttribute);
-        }
 
         [HttpGet, Route("complexvalue/{id:int}/{attribute:int}/templates/tooltip/preview")]
         public ContentResult RenderComplexValueTooltip(int id, int attribute)

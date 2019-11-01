@@ -362,7 +362,7 @@ namespace igx.IntegrationTests.ApiTests
 
         }
 
-        public async void GetRelationshipsAfterBatchPost()
+        private async void GetRelationshipsAfterBatchPost()
         {
             string endpointUrl = $"{URIHelper.RelationshipsUri}";
 
