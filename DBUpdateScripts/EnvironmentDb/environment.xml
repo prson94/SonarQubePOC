@@ -349,4 +349,5 @@
   <include file="scripts/GOV-8494.xml"/> <!-- script to create index for [dbo].AssetDataProfile on AssetID -->
 
   <include file="scripts/GOV-7550.xml"/> 
+  <include file="scripts/GOV-8632.xml"/> 
 </databaseChangeLog>
