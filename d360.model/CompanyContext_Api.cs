@@ -3600,7 +3600,7 @@ select [uid] from #ParentChildRelationships",
             return results;
         }
 
-        public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false)
+        public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false)
         {
             var swBegin = Stopwatch.StartNew();
             TelemetryClient client = new TelemetryClient();
@@ -3738,7 +3738,15 @@ select [uid] from #ParentChildRelationships",
                     this.AITrackTrace(client, execution, METHOD_NAME, " Bulk Copy", sw.ElapsedMilliseconds, isLog);
                     #endregion
                     sw.Restart();
-                    ResolveFieldLookupValues(execution.ExecutionID, timeout);
+                    if (lookupFieldsPassedByValue)
+                    {
+                        CopyFieldLookupValuesAsIs(execution.ExecutionID, timeout);
+                    }
+                    else
+                    {
+                        ResolveFieldLookupValues(execution.ExecutionID, timeout);
+
+                    }
                     this.AITrackTrace(client, execution, METHOD_NAME, " ResolveFieldLookupValues", sw.ElapsedMilliseconds, isLog);
                     sw.Restart();
                     LogFieldLookupErrors(execution.ExecutionID, "IntersectType", rt.ID, "Relationship", timeout);

@@ -42,8 +42,8 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
     @Input() objectID: number = 0;
     @Input() objectType: string;
     @Input() readonly: boolean = true;
-    @ViewChild('diagram') diagramRef;
-    @ViewChild('gb') globalFilterRef;
+    @ViewChild('diagram', { static: false }) diagramRef;
+    @ViewChild('gb', { static: false }) globalFilterRef;
 
     DiagramObjectType = DiagramObjectType;
 

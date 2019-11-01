@@ -21,7 +21,7 @@ export class ImpactComponent extends DiagramBaseComponent implements OnInit, Aft
     @Input() objectType: string;
     @Input() objectName: string;
     @Input() readonly: boolean = true;
-    @ViewChild('diagram') diagramRef;
+    @ViewChild('diagram', { static: false }) diagramRef;
 
     private originalObject: string;
     private originalObjectID: number;

@@ -539,9 +539,12 @@ order by	ColumnIndex", new { id });
 
                 int subjectId = getItemIdFromKeyFields(rowData, subjectAssetIDFieldIndex, subjectTypeName, intersectType.SubjectID);
                 int objectId = getItemIdFromKeyFields(rowData, objectAssetIDFieldIndex, objectTypeName, intersectType.ObjectID);
-                string errorMsg;
+                string errorMsg = string.Empty;
                 int intersectId = 0;
-                if (IsValidCardinality(intersectType, objectId, subjectId, objectTypeName, subjectTypeName, out errorMsg))
+
+                bool isValidCardinality = operation == BulkRelationshipOperation.Unrelate ? true : IsValidCardinality(intersectType, objectId, subjectId, objectTypeName, subjectTypeName, out errorMsg);
+
+                if (isValidCardinality)
                 {
                     intersectId = (operation == BulkRelationshipOperation.Relate) ?
                        RelateObjects(rowData, objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID, customFieldTypes, customFieldTypeMap) :

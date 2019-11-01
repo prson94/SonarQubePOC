@@ -26,9 +26,9 @@ body {
     right: 0;
     bottom: 0;
     left: 0;
-    background: linear-gradient(to bottom, rgba(240, 240, 240, 0) 0%, #e9e9e9 100%);
+    background: linear-gradient(to bottom, rgba(240, 240, 240, 0) 0%, #e9e9e9 75%);
     z-index: -9999;
-    height: 500px;
+    height: 100%;
 }
 
 select,
@@ -4031,6 +4031,7 @@ button.tab-scroller {
 
             .field {
                 display: inline;
+
                 input {
                     &:focus {
                         outline: none;
@@ -4119,6 +4120,8 @@ button.tab-scroller {
                 display: inline-flex;
                 flex-direction: column;
                 flex-shrink: 0;
+                min-width: 200px;
+                max-width: 400px;
 
                 .scrollpane {
                     flex-grow: 1;
@@ -4148,6 +4151,21 @@ button.tab-scroller {
                                 .lv2 {
                                     width: 40px;
                                 }
+
+                                .ui-chkbox {
+                                    margin-right: 8px;
+                                    .ui-chkbox-box {
+                                        border-radius: 3px !important;
+                                        background-color: white;
+                                    }
+                                }
+
+                                .check-tree-label {
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                    margin-right: 20px;
+                                }
                             }
                         }
 
@@ -4169,6 +4187,8 @@ button.tab-scroller {
                             margin-left: auto;
                             background: #dcdfe2;
                             color: #202020;
+                            position: relative;
+                            top: -3px;
                         }
                     }
                 }
@@ -4584,13 +4604,19 @@ a.mid-blue {
         margin: 2px;
         background: #f7f7f7;
         line-height: 26px;
-        padding: 0px 4px;
+        padding: 0px 8px;
         display: inline-flex;
 
         i {
-            padding-left: 4px;
+            margin-left: 8px;
             line-height: 26px;
             cursor: pointer;
+        }
+
+        &.input {
+            color: black;
+            border: none;
+            margin: 0px;
         }
 
         &.clickable {
@@ -4606,16 +4632,26 @@ a.mid-blue {
             display: inline-block;
             position: absolute;
             z-index: 1;
-            margin-top: 26px;
+            margin-top: 28px;
             color: black;
+            margin-left: -9px;
 
             .chips-input-list {
                 cursor: default;
+                padding: 14px;
+                width: 222px;
+                margin: 14px;
 
                 .checkbox {
                     display: flex;
                     align-self: center;
                     flex-shrink: 0;
+                    line-height: 20px;
+                    margin: 10px 0px;
+
+                    &:focus-within {
+                        box-shadow: rgba(9, 113, 185, 0.67) 0 0 1px 1px;
+                    }
 
                     input {
                         width: 17px;

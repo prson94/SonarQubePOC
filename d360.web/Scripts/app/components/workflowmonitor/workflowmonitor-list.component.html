@@ -56,7 +56,7 @@
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-item>
-                <tr [pSelectableRow]="item">
+                <tr [pSelectableRow]="item" style="word-wrap: break-word">
                     <td class="break-wrap">{{item.WorkflowName}}</td>
                     <td>{{item.Type}}</td>
                     <td>{{item.TypeName}}</td>

@@ -30,7 +30,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     public hasAdd: boolean;
     public hasFilterMode: boolean=true;
 
-    @ViewChild(DynamicRelationshipGridComponent) private relGrid: DynamicRelationshipGridComponent;
+    @ViewChild(DynamicRelationshipGridComponent, {static:false}) private relGrid: DynamicRelationshipGridComponent;
 
     constructor(protected relationshipsService: RelationshipsService) {
         super();

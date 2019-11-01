@@ -16,7 +16,7 @@ declare var window: any;
 
 export class ModelDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, OnDestroy {
     @Input() id: number = 0;
-    @ViewChild('diagram') diagramRef;
+    @ViewChild('diagram', { static: false }) diagramRef;
 
     private items: HierarchyDiagramModel[] = [];
     public selectedNode: any = null;

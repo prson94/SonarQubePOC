@@ -21,7 +21,9 @@ export class SearchStateService extends BaseObservableService {
     }
 
     private _categories: BehaviorSubject<CheckTreeNode[]> = new BehaviorSubject([]);
-    
+    get currentCategories() {
+        return this._categories.value;
+    }
     get categories() {
         return new Observable(fn => this._categories.subscribe(fn));
     }
@@ -37,6 +39,12 @@ export class SearchStateService extends BaseObservableService {
     get loading() {
         return new Observable(fn => this._loading.subscribe(fn));
     }
+    private _treeLoading: BehaviorSubject<boolean> = new BehaviorSubject(false);
+    get treeLoading() {
+        return new Observable(fn => this._treeLoading.subscribe(fn));
+    }
+
+    public selectedFilters: CheckTreeNode[];
 
     private _query: SearchQuery;
     private _searchTypes: string[];
@@ -185,14 +193,16 @@ export class SearchStateService extends BaseObservableService {
         this._query.Aggregations = (this._needAggregation || this._categories.value.length == 0) ? ['category'] : [];
         if (this._query.Aggregations.length > 0) {
             this._categories.next([]);
+            this._treeLoading.next(true);
         }
         this.setAggregationFilter('d3sGroup', this._searchTypes, false);
-        console.log('doSearch', this._query);
+//        console.log('doSearch', this._query);
         this.searchService.getSearchResultsByQuery(this._query).pipe(
             debounceTime(1000)).subscribe(res => {
             if (res.Categories.length != 0) {
                 var filterTree = res.Categories.map((val) => {
                     return {
+                        "key": val.Name,
                         "label": this.getDisplayLookup(val.Name),
                         "type": "category",
                         "expanded": true,
@@ -200,6 +210,7 @@ export class SearchStateService extends BaseObservableService {
                         "count": val.ResultCount,
                         "children": val.Categories.map((cat) => {
                             return {
+                                "key": val.Name+'___'+cat.Name,
                                 "label": cat.Name,
                                 "type": "subCategory",
                                 "data": cat.Name,
@@ -213,6 +224,7 @@ export class SearchStateService extends BaseObservableService {
             }
             this._resultCount.next(res.Result.Matches);
             this._results.next(res.Result.Results);
+            this._treeLoading.next(false);
             this._loading.next(false);
         });
     }

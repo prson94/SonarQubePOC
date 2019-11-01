@@ -60,6 +60,10 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         if (this.searchSub) this.searchSub.unsubscribe();
     }
 
+    syncSearchText(event) {
+        this.searchText = event.srcElement.value;
+    }
+
     search(event) {
         this.searchText = event.query;
         let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
@@ -77,13 +81,15 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     }
 
     openSearch() {
-        this.searchText = (typeof this.result === 'string') ? this.result : this.result.Name;
+        if (this.result)
+            this.searchText = (typeof this.result === 'string') ? this.result : this.result.Name;
         let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&types=${options ? options.join(',') : ''}`);
     }
 
     selectItem(ac) {
         if (this.result.Type == this.endSearchAllTypeToken) {
+            this.result.Name = this.searchText
             this.openSearch()
         } else {
             this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));

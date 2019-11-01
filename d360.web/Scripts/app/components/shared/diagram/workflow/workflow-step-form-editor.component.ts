@@ -31,8 +31,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
     @Input() objectType: string;
     @Input() issueObject: string;
     @Output() stepChange = new EventEmitter();
-    @ViewChild('ed') ed: Editor;
-    @ViewChild('fed') fed: Editor;
+    @ViewChild('ed', { static: false }) ed: Editor;
+    @ViewChild('fed', { static: false }) fed: Editor;
     private quill;
 
     private model: WorkflowForm = new WorkflowForm();

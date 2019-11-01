@@ -758,7 +758,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         return this.fieldsService.getLookupDefaultValueOptions(objectId, objectType).pipe(
-            map(r => this.lookupDefaultValueOptions = r)
+            map(r => {
+                this.lookupDefaultValueOptions = r;
+                this.lookupDefaultValueOptions.forEach(x => x.value = x.value ? x.value.toString() : x.value);
+            })
         ).subscribe();
     }
 

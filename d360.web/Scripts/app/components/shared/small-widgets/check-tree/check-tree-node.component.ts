@@ -140,6 +140,8 @@ export class UICheckTreeNode implements OnInit {
                 event.preventDefault();
                 break;
 
+            //space
+            case 32:
             //enter
             case 13:
                 this.tree.onNodeClick(event, this.node);

@@ -1470,7 +1470,9 @@ button.ui-button:disabled {
 p-multiselect .ui-multiselect {
     z-index: 1;
 }
-
+p-multiselect .ui-multiselect.ui-multiselect-open {
+  z-index: 2;
+}
 /*Dropdown default z index for IE issue*/
 p-dropdown .ui-dropdown-panel {
     z-index: 10;

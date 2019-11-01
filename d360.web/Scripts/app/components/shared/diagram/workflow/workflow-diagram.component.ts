@@ -40,8 +40,6 @@ import {
 import { FieldType } from '../../../../models/fields.model';
 import { map, concatMap } from 'rxjs/operators';
 import { Observable,of, ConnectableObservable } from 'rxjs';
-import { forEach } from '@angular/router/src/utils/collection';
-import { Field } from '../../../../models/fields-observable.model';
  
 declare var window: any;
 
@@ -72,8 +70,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     @Output() onCloseClick = new EventEmitter();
     @Output() onBackClick = new EventEmitter();
     @Output() selectionChange = new EventEmitter();
-    @ViewChild('workflowDiagram') diagramRef;
-    @ViewChild('workflowPalette') paletteRef;
+    @ViewChild('workflowDiagram', { static: false }) diagramRef;
+    @ViewChild('workflowPalette', { static: false }) paletteRef;
 
     private activityTypes: ActivityTypeInfo[] = [];
     DiagramObjectType = DiagramObjectType;

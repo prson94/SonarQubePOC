@@ -16,7 +16,7 @@ export class D3SModal implements OnChanges {
     @Output() onClose = new EventEmitter();
     @Output() onConfirm = new EventEmitter();
 
-    @ViewChild('popupBox') modalDiv: ElementRef; 
+    @ViewChild('popupBox', { static: false }) modalDiv: ElementRef; 
 
     private display: boolean = false;
 

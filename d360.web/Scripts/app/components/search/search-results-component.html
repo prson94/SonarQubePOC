@@ -4,7 +4,13 @@
             <div class="categories">
                 <div class="scrollpane">
                     <h2>Filter by Category</h2>
-                    <d3s-check-tree [value]="searchStateService.categories | async" [(selection)]="selectedFilters" (onNodeSelect)="nodeSelectDeselect($event)" (onNodeUnselect)="nodeSelectDeselect($event)">
+                    <d3s-loading [isLoading]="(searchStateService.treeLoading | async)"></d3s-loading>
+                    <d3s-check-tree *ngIf="!(searchStateService.treeLoading | async)"
+                                    [value]="searchStateService.categories | async"
+                                    [(selection)]="searchStateService.selectedFilters"
+                                    (onNodeSelect)="nodeSelectDeselect($event)"
+                                    (onNodeUnselect)="nodeSelectDeselect($event)"
+                                    [emptyMessage]="'No categories found'">
                     </d3s-check-tree>
                 </div>
             </div>

@@ -107,14 +107,13 @@ namespace d360.web.Models
     public class AssetBrowserLineageApiItemRelationCountModel
     {
         public string Predicate { get; set; }
+        public Guid PredicateUid { get; set; }
         public GetAssetLineagePostModelDirection Direction { get; set; }
         public int Count { get; set; }
-        public List<AssetBrowserLineageApiItemRelationCountAssetModel> Assets { get; set; }
     }
 
     public interface IAssetBrowserLineageApiItemModel
     {
-        long id { get; set; }
         int hop { get; set; }
         Guid assetUid { get; set; }
         string displayValue { get; set; }
@@ -127,8 +126,6 @@ namespace d360.web.Models
     [DataContract]
     public class AssetBrowserLineageApiItemModel : IAssetBrowserLineageApiItemModel
     {
-        [IgnoreDataMember]
-        public long id { get; set; }
         [DataMember]
         public int hop { get; set; }
         [DataMember]
