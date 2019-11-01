@@ -396,7 +396,7 @@ namespace d360.web.Controllers.V2
         /// <returns>Calculated scores.</returns>
         [
             HttpGet,
-            Route("{assetTypeUid}/scores"),
+            Route("{assetTypeUid:Guid}/scores"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding calculated scores.", typeof(MetricScoreApiModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset type was not found.", typeof(ErrorResponse)),
@@ -408,22 +408,16 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_effectiveDateEnd", "Effective end date", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "The specific Uid of the asset you want the score for.", DataType = "string", ParameterType = "query", Required = false)
         ]
-        public async Task<IHttpActionResult> GetMetricScores(string assetTypeUid)
+        public async Task<IHttpActionResult> GetMetricScores(Guid assetTypeUid)
         {
             var prefix = "Metrics.GetMetricScores => ";
             
             try
             {
-                Guid atUid = Guid.Parse(assetTypeUid);
-
-                if (atUid == null || atUid == Guid.Empty)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Invalid asset type uid '{assetTypeUid}'.");
-                }
-                AssetType assetType = AssetRepository.GetAssetTypeByUID(atUid);
+                AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
                 if (assetType == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid of {atUid.ToString()} not found.");
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid of {assetTypeUid.ToString()} not found.");
                 }
 
                 var queryParams = Request.GetQueryNameValuePairs();
