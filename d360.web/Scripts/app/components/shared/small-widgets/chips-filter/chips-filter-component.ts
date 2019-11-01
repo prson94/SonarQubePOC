@@ -180,7 +180,6 @@ export class ChipsFilterComponent {
 
     private setFocus() {
         setTimeout(() => {
-            console.log(this.searchInputElement);
             if (this.searchInputElement.length)
                 this.searchInputElement.last.nativeElement.focus();
         }, 150);
