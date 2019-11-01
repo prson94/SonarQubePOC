@@ -1,6 +1,6 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
-import {AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, SimpleChanges } from '@angular/core';
 import {
     DiagramObjectType,
     AssetBrowserLineageApiRequestModel,
@@ -16,18 +16,20 @@ import {
     AssetBrowserImpactApiAssetRequestModel,
     AssetBrowserLineageApiItemModel
 } from '../../../../models/lineage.model';
-import {PermissionsService} from '../../../../services/permissions.service';
-import {BrowserService} from '../../../../services/browser.service';
-import {DiagramBaseComponent} from '../diagram-base.component';
+import { PermissionsService } from '../../../../services/permissions.service';
+import { BrowserService } from '../../../../services/browser.service';
+import { DiagramBaseComponent } from '../diagram-base.component';
 import { AssetBrowserLayout } from './assetbrowserlayout.component';
 import { MenuItem } from 'primeng/api';
+import { ConnectableObservable } from 'rxjs';
 
 declare var window: any;
 
 @Component({
     selector: 'd3s-assetbrowser',
     templateUrl: './browser.component.html',
-    providers: [PermissionsService, BrowserService]
+    providers: [PermissionsService, BrowserService],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit {
     @Input() readonly: boolean = true;
@@ -54,7 +56,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     constructor(
         private myElement: ElementRef,
         protected permissionsService: PermissionsService,
-        private browserService: BrowserService
+        private browserService: BrowserService,
+        private cdRef: ChangeDetectorRef
     ) {
         super();
     }
@@ -71,11 +74,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             { icon: 'fa fa-refresh', title: 'Refresh' }
         );
         this.initializeDiagram();
-    
+
     }
 
     public ngAfterViewInit() {
         this.resizeDiagram();
+        this.cdRef.markForCheck();
     }
 
     public ngOnDestroy() {
@@ -109,7 +113,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let image_data = this.diagram.makeImageData({
             scale: 1,
             returnType: "blob",
-            callback: (image_data) => this.savePngButtonClickCallback(image_data,this.assetUid)
+            callback: (image_data) => this.savePngButtonClickCallback(image_data, this.assetUid)
         });
     }
     private alertButtonClick(e) {
@@ -167,22 +171,28 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         else if (+value > 60 && +value < 75) {
             css += "medium";
         }
-        else { 
+        else {
             css += "high";
-        } 
+        }
         return css;
-    } 
+    }
 
     private GetJSON(value: string) {
         try {
             return JSON.parse(value);
-        } catch  (err){
+        } catch (err) {
             return "Error";
         }
     }
 
     private highlightPath(e: go.InputEvent, obj: go.Part) {
         //Set all to not highlighted.
+        console.log("highlighting");
+
+        if (this.searchValue != '') {
+            console.warn("Highlighting does not work if there is active search!");
+        }
+
         obj.diagram.nodes.each(n => {
             n.isHighlighted = false;
         });
@@ -244,7 +254,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
         });
-        
+
     }
 
     private initializeDiagram() {
@@ -273,7 +283,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.diagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
-        
+
 
         this.populateDiagram();
     }
@@ -340,7 +350,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             childAssets.push(g.data.assetUid);
             children.each(c => {
-                
+
                 let data = c.data;
                 childAssets.push(data.assetUid);
 
@@ -513,7 +523,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == n.key);
                             let r = this.diagramModelAsGraph().linkDataArray.filter(r => r.to == n.key);
                             nextLinks = nextLinks.concat(l);
-                            
+
                             if (!(excludeStart && n.key == startKey)) {
                                 subgraph.nodes.push(n);
                                 reverseLinks = reverseLinks.concat(r);
@@ -722,7 +732,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.diagram.remove(group);
                 } else { //hide upstream or downstream
                     let subgraph = this.findSubGraph(group.key, direction);
-                    
+
                     if (subgraph == null || subgraph.nodes.length < 1)
                         return; //nothing to hide
                     if (subgraph.nodes.length == 1 && subgraph.nodes[0].template == "HiddenData")
@@ -859,13 +869,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private initializeCustomShapes() {
         go.Shape.defineFigureGenerator("RoundedRectLeft", (shape, w, h) => {
-            let p1 = 5;  
+            let p1 = 5;
             if (shape !== null) {
                 var param1 = shape.parameter1;
-                if (!isNaN(param1) && param1 >= 0) p1 = param1; 
+                if (!isNaN(param1) && param1 >= 0) p1 = param1;
             }
             p1 = Math.min(p1, w / 2);
-            p1 = Math.min(p1, h / 2); 
+            p1 = Math.min(p1, h / 2);
             let geo = new go.Geometry();
 
             geo.add(new go.PathFigure(0, p1)
@@ -881,13 +891,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
 
         go.Shape.defineFigureGenerator("RoundedRectRight", (shape, w, h) => {
-            let p1 = 5; 
+            let p1 = 5;
             if (shape !== null) {
                 var param1 = shape.parameter1;
-                if (!isNaN(param1) && param1 >= 0) p1 = param1; 
+                if (!isNaN(param1) && param1 >= 0) p1 = param1;
             }
             p1 = Math.min(p1, w / 2);
-            p1 = Math.min(p1, h / 2); 
+            p1 = Math.min(p1, h / 2);
             let geo = new go.Geometry();
 
 
@@ -912,10 +922,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             padding: 0,
             cursor: "pointer",
             click: (e, obj) => this.clickBadge(e, obj),
-            },
-            this.g(go.Panel, "Horizontal", {alignment: go.Spot.Center},
+        },
+            this.g(go.Panel, "Horizontal", { alignment: go.Spot.Center },
                 this.g(go.Panel, "Auto",
-                    this.g(go.Shape, 
+                    this.g(go.Shape,
                         { figure: "RoundedRectLeft", parameter1: 2, fill: "white", stroke: "#404040", strokeWidth: 1 },
                     ),
                     this.g(
@@ -1051,7 +1061,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             },
             this.g(
                 go.Panel,
-                "Vertical", 
+                "Vertical",
                 this.g(go.Panel, "Table",
                     new go.Binding("itemArray", "relations"),
                     {
@@ -1328,15 +1338,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 click: (e, obj) => this.highlightPath(e, obj as any)
             }, // the whole link panel
             this.g(go.Shape, {
-                    stroke: "gray", strokeWidth: 2
-                },
+                stroke: "gray", strokeWidth: 2
+            },
                 new go.Binding("strokeWidth", "hasProperties", function (h) {
                     return h ? 3 : 2;
                 }),
                 new go.Binding("stroke", "hasProperties", function (h) {
                     return h ? "black" : "gray"
                 })), // the link shape
-            this.g(go.Shape, {toArrow: "standard", fill: "gray", stroke: "gray"}), // the arrowhead
+            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(
                     go.Shape,
@@ -1357,8 +1367,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     })
                 ), // the link shape
                 this.g(go.TextBlock, {
-                        textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
-                    },
+                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                },
                     // the label
                     new go.Binding("text", "text").makeTwoWay()
                 )
@@ -1367,4 +1377,107 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     //#endregion
+
+    private searchResults: go.Node[] = [];
+    private searchableProps: string[] = ["text"];
+    private searchCurrentItem: number = 0;
+    private zoomMultiplier: number = 0;
+    private searchValue: string = '';
+
+    searchDiagram(event) {
+        console.log(event);
+        this.searchValue = event.target.value.toLowerCase();
+
+        if (event.keyCode == 40) {
+            this.goToNext();
+            return;
+        }
+        if (event.keyCode == 38) {
+            this.goToPrevious();
+            return;
+        }
+        this.searchResults = [];
+ 
+        this.searchCurrentItem = 0;
+        this.diagram.zoomToFit();
+        var self = this;
+        this.diagram.nodes.each(function (node) {
+            if (node instanceof go.Node) {
+                var nodeData = node.data;
+                var isFound = false;
+
+                if (nodeData.isGroup) {
+                    //This is grouping, do nothing with it (AssetType grouping)
+                }
+                else if (this.searchValue != '') {
+                    self.searchableProps.forEach(prop => {
+                        if (node.data[prop] && node.data[prop].toLowerCase().indexOf(this.searchValue) > -1) {
+                            self.searchResults.push(node);
+                            isFound = true;
+                        }
+                    });
+                }
+                if (!isFound) {
+                    node.isHighlighted = false;
+                }
+            }
+        });
+        this.searchResults.forEach(node => {
+            node.isHighlighted = true;
+            this.expandGroups(node.data.group);
+        });
+
+        this.goToNext();
+
+        this.cdRef.markForCheck();
+
+    }
+
+    goToPrevious() {
+        this.searchCurrentItem--;
+        if (this.searchCurrentItem <= 0) {
+            if (this.searchResults.length > 0) {
+                this.searchCurrentItem = 1;
+            }
+            else {
+                this.searchCurrentItem = 0;
+            }
+        }
+        this.focusCurrentNode();
+    }
+
+    goToNext() {
+        this.searchCurrentItem++;
+        if (this.searchCurrentItem > this.searchResults.length)
+            this.searchCurrentItem--;
+        this.focusCurrentNode();
+
+    }
+
+    expandGroups(groupName) {
+        if (groupName) {
+            var group = this.diagram.findPartForKey(groupName) as go.Group;
+            group.expandSubGraph();
+            this.expandGroups(group.data.group);
+        }
+    }
+
+    focusCurrentNode() {
+        var node = this.searchResults[this.searchCurrentItem - 1];
+        if (node) {
+            this.diagram.centerRect(node.actualBounds);
+            this.diagram.select(node);
+
+            if (this.zoomMultiplier > 0) {
+
+                var rect = new go.Rect();
+                rect = node.actualBounds.copy();
+                rect.setSize(new go.Size(rect.height * this.zoomMultiplier, rect.width * this.zoomMultiplier));
+
+                rect.centerX = (rect.x + rect.width) / 2;
+                rect.centerY = (rect.y + rect.height) / 2;
+                this.diagram.zoomToRect(rect);
+            }
+        }
+    }
 }
