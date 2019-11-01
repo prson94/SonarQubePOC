@@ -143,7 +143,6 @@
     <Compile Include="validators\AssetTypeValidator.cs" />
     <Compile Include="validators\FieldApiModelValidator.cs" />
     <Compile Include="validators\IWorkflowApiModelValidator.cs" />
-    <Compile Include="validators\MetricModelValidator.cs" />
     <Compile Include="validators\TagValidator.cs" />
     <Compile Include="validators\WorkflowApiModelValidator.cs" />
     <Compile Include="validators\WorkHttpStatus.cs" />
