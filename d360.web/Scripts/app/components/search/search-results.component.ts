@@ -75,7 +75,4 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
         this.searchStateService.page(data.first, data.size);
     }
 
-    private pageNumber() {
-        return Math.floor(this.from / this.itemsPerPage);
-    }
 };

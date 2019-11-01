@@ -55,7 +55,8 @@ export class PaginatorComponent implements OnChanges, OnInit {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        
+        if ((changes['page'] != undefined && !changes['page'].firstChange) || (changes['totalRecords'] != undefined && !changes['totalRecords'].firstChange))
+            this.CheckVisableNumbers();
     }
 
     ngOnInit(): void {
