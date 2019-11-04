@@ -260,7 +260,7 @@ namespace d360.web.Controllers
                     if (assetType == null)
                         return jsonNetException($"No asset type found for the ID {id.Value}", HttpStatusCode.NotFound);
 
-                    var style = Company.Filter<ObjectStyle>(i => i.ObjectType == assetType.Object && i.ObjectID == assetType.ObjectID).FirstOrDefault();
+                    var style = assetType.AssetTypeStyle;
 
                     model = new AssetTypeEditorModel()
                     {

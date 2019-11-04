@@ -37,6 +37,7 @@ namespace d360.model
         DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
         DbSet<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
         DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
+        DbSet<AssetTypeStyle> AssetTypeStyles { get; set; }
         DbSet<AssetType> AssetTypes { get; set; }
         DbSet<AttributeDetail> AttributeDetails { get; set; }
         DbSet<core.entities.Attribute> Attributes { get; set; }
@@ -117,7 +118,6 @@ namespace d360.model
         DbSet<MetricAssetVersion> MetricAssetVersions { get; set; }
         DbSet<NymRelation> NymRelations { get; set; }
         DbSet<Nym> Nyms { get; set; }
-        DbSet<ObjectStyle> ObjectStyles { get; set; }
         DbSet<OrganizationDetail> OrganizationDetails { get; set; }
         DbSet<OrganizationDomain> OrganizationDomains { get; set; }
         DbSet<OrganizationInvitationDetail> OrganizationInvitationDetails { get; set; }
@@ -244,8 +244,8 @@ namespace d360.model
         string GetNoReadSqlStatement(Permission permission, string identifier = null);
         ObjectDetail GetObjectDetail(string type, long id);
         ObjectStatisticTileModel GetObjectStatistics(SystemObjects type, int id);
-        ObjectStyle GetObjectStyle(string type, int id);
-        ObjectStyle GetObjectStyle(SystemObjects type, int id);
+        AssetTypeStyle GetAssetTypeStyle(int assetTypeId);
+        AssetTypeStyle GetAssetTypeStyle(string type, int id);
         string GetObjectTypePath(string type, long id);
         JObject GetPageInformation(SystemObjects o, int oid);
         AssetDetail GetParentObject(int id, SystemObjects obj);

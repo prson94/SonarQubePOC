@@ -80,6 +80,7 @@
     <Compile Include="entities\AssetTypeExportTemplate.cs" />
     <Compile Include="entities\AssetTypeExportTemplateStyle.cs" />
     <Compile Include="entities\AssetTypeLevel.cs" />
+    <Compile Include="entities\AssetTypeStyle.cs" />
     <Compile Include="entities\Community\Client.cs" />
     <Compile Include="entities\Community\CompanyHelpResource.cs" />
     <Compile Include="entities\Community\GenericCommand.cs" />
@@ -222,7 +223,6 @@
     <Compile Include="entities\Community\Plugins\PackageContent.cs" />
     <Compile Include="entities\Community\CompanyResource.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelation.cs" />
-    <Compile Include="entities\ObjectStyle.cs" />
     <Compile Include="entities\Contracts\ICreatedObject.cs" />
     <Compile Include="entities\Contracts\IUpdatedObject.cs" />
     <Compile Include="entities\Transitive\FusionConfigurationScheduleRequestModel.cs" />
