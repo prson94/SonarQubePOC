@@ -296,38 +296,10 @@ from	{targetTable} T
 
         private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
         {
-            string targetTable = "api.ExecutionRelationship";
-            if (obj != "IntersectType") targetTable = "api.ExecutionAsset";
+            string targetTable = (obj != "IntersectType") ? "api.ExecutionAsset" : "api.ExecutionRelationship";
+            string assetJoin = lookupFieldsPassedByValue ? "AD.ObjectID = cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
 
-            if (!lookupFieldsPassedByValue)
-            {
-                Connection.Execute($@"
-                    update	T
-                    set		T.Success = 0,
-		                    T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid relationship values: [' + S.Names + ']'
-                    from	{targetTable} T
-		                    inner join	(
-					                    select		A.ExecutionID,
-                                                    A.ItemNumber,
-								                    STRING_AGG(FT.Name+'='+F.FieldValue, ', ') as Names
-					                    from		{targetTable} A
-                                                    inner join FieldType FT on FT.Object = @obj
-								                        and FT.ObjectID = @objID
-									                    and FT.[Type] = 'Relationship' and FT.LookupObjectType ='IntersectType'
-								                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
-								                    cross apply string_split(F.FieldValue,',') V
-                                                    inner join IntersectType IT on IT.ID = FT.LookupObjectID
-								                    left join AssetDetail AD on AD.DisplayValue = V.[value]
-									                    and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
-									                    or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
-                                        where       A.ExecutionID = @executionID and AD.ID IS NULL
-					                    group by	A.ExecutionID, A.ItemNumber
-					                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
-                    ", new { executionID, obj, objID }, commandTimeout: timeout);
-            }
-            else
-            {
-                Connection.Execute($@"
+            Connection.Execute($@"
                     update	T
                     set		T.Success = 0,
 		                    T.[Message] = coalesce(T.[Message] + '; ', '') + '{errorPrefix} contains one or more fields with invalid relationship values: [' + S.Names + ']'
@@ -343,14 +315,31 @@ from	{targetTable} T
 								                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID and F.LookupValue is null and (F.FieldValue != '' or FT.IsRequired = 1)
                                                     cross apply string_split(F.FieldValue, ',') V								                    
                                                     inner join IntersectType IT on IT.ID = FT.LookupObjectID
-								                    left join AssetDetail AD on AD.ObjectID = cast(V.[value] as int)
-									                    and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
-									                    or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
+													left join (
+														select	S.ID,
+                                                                S.DisplayValue,
+                                                                S.[Object], 
+																S.ObjectID, 
+																S.[Type], 
+																S.TypeID 
+														from	AssetDetail S 
+														union all
+														select	T.ID,
+                                                                T.[Name] as DisplayValue,
+                                                                T.[Object],
+																T.ObjectID,
+																T.[Object] as [Type],
+																0 as TypeID 
+														from	AssetType T
+														where	T.[Object] = 'ReferenceItemType'
+													) AD on {assetJoin} 
+														and ((AD.[Type] = IT.[Object] AND AD.TypeID = IT.ObjectID) 
+														or (AD.[Type] = IT.[Subject] AND AD.TypeID = IT.SubjectID))
                                         where       A.ExecutionID = @executionID and AD.ID IS NULL
 					                    group by	A.ExecutionID, A.ItemNumber
 					                    ) S on S.ExecutionID = T.ExecutionID and S.ItemNumber = T.ItemNumber;
                     ", new { executionID, obj, objID }, commandTimeout: timeout);
-            }
+
         }
 
         private void LogLoopExecutionError(Guid executionID, int beginItemNumber, int endItemNumber, string targetTable, string msg, int timeout = 3600)
@@ -456,7 +445,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
         private void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
         {
 
-            string assetJoin = resolveRelationshipOnObjectId ? "AD.ObjectID = cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
+            string assetJoin = resolveRelationshipOnObjectId ? "S.ObjectID = cast(V.[value] as int)" : "S.DisplayValue = V.[value]";
 
 
                 Connection.Execute($@"
@@ -474,13 +463,13 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                     ;with R
                         as (
                             select  distinct 
-                                    A.Object,
+                                    A.[Object],
                                     A.ObjectID,
-                                    FT.LookupObjectId as IntersectTypeId,
-                                    AD.Object as Subject,
-                                    AD.ObjectId as SubjectId,
+                                    FT.LookupObjectId as IntersectTypeID,
+                                    S.[Object] as [Subject],
+                                    S.ObjectID as SubjectID,
                                     case 
-                                    when AD.Type = IT.Object AND AD.TypeID = IT.ObjectID then 1
+                                    when S.[Type] = IT.[Object] AND S.TypeID = IT.ObjectID then 1
                                     else 0
                                     end as switchObject
                             from    {tableName} A
@@ -492,9 +481,24 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                     cross apply string_split(F.FieldValue, ',') V                                    
                                     inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
                                     inner join IntersectType IT on IT.ID = FT.LookupObjectId
-                                    inner join AssetDetail AD on {assetJoin}
-                                            and ((AD.Type = IT.Object AND AD.TypeID = IT.ObjectID) 
-                                                or (AD.Type = IT.Subject AND AD.TypeID = IT.SubjectId))
+                                    inner join (
+										select	AD.DisplayValue,
+                                                AD.[Object], 
+												AD.ObjectID, 
+												AD.[Type], 
+												AD.TypeID 
+										from	AssetDetail AD 
+										union all
+										select	T.[Name] as DisplayValue,
+                                                T.[Object],
+												T.ObjectID,
+												T.[Object] as [Type],
+												0 as TypeID 
+										from	AssetType T
+										where	T.[Object] = 'ReferenceItemType'
+									) S on {assetJoin}
+										and ((S.[Type] = IT.[Object] AND S.TypeID = IT.ObjectID) 
+                                        or (S.[Type] = IT.[Subject] AND S.TypeID = IT.SubjectID))
                             where   A.ExecutionID = @executionID
                                     and A.ItemNumber between @beginItemNumber and @endItemNumber 
                                     and (F.Ignore = 0 or F.Ignore is null)
