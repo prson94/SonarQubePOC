@@ -107,6 +107,7 @@ namespace d360.web.Controllers.V2
 										WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
 										ELSE fa.Value
 	                                 END as NewValue, 
+                                     11 as AssetTypeClass,
 	                                 fa.[Version] as 'Version',	    
 	                                CASE 
 	                                     WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
@@ -140,6 +141,7 @@ namespace d360.web.Controllers.V2
                                     end as ResourceName, 
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
+                                     3 as AssetTypeClass,
                                      fa.[Version] as 'Version',	                            
                                   ( select			
                                 top 1 fa_sub.value as 'value'			                            
@@ -168,6 +170,7 @@ namespace d360.web.Controllers.V2
                                     end as ResourceName,
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
+                                     9 as AssetTypeClass,
                                      fa.[Version] as 'Version',	                            
                                   ( select			
                                 top 1 fa_sub.value as 'value'			                            
