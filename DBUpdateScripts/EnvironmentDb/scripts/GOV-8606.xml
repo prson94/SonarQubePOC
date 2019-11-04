@@ -30,7 +30,7 @@ truncate table AssetTypeStyle
 	</rollback>
   </changeSet>
   
-  <changeSet author="MDonato" id="GOV-8606-procs">
+  <changeSet author="MDonato" id="GOV-8606-procs-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -960,7 +960,17 @@ begin
   
   delete IssueTypeRelation  
   where AssetTypeID in (select ID from [dbo].[AssetType] where [Object] = @Object and ObjectId = @ObjectID)  
-      
+  
+  if @IsType = 1      
+  begin      
+	   delete AttributeTypeRelation   where ObjectType = @Obj AND ObjectID in (select ObjectID from @ht)      
+	   delete IntersectType     where (Object = @Obj and ObjectID in (select ObjectID from @ht)) OR (Subject = @Obj and SubjectID in (select ObjectID from @ht)) 
+	   delete	S
+	   from		AssetTypeStyle S
+				inner join AssetType T on T.ID = S.ID
+	   where	T.[Object] = @Obj and T.ObjectID in (select ObjectID from @ht)  
+  end   
+  
   if @Object = 'Artifact'      
   begin      
    set @ClearAttributes = 1      
@@ -1578,18 +1588,7 @@ begin
      where   T.AssetID in (select ID from @h)      
     END      
   END      
-      
-  if @IsType = 1      
-  begin      
-   delete AttributeTypeRelation   where ObjectType = @Obj AND ObjectID in (select ObjectID from @ht)      
-   delete IntersectType     where (Object = @Obj and ObjectID in (select ObjectID from @ht)) OR (Subject = @Obj and SubjectID in (select ObjectID from @ht)) 
-   delete	S
-   from		AssetTypeStyle S
-			inner join AssetType T on T.ID = S.ID
-   where	T.[Object] = @Obj and T.ObjectID in (select ObjectID from @ht)  
  
-  end      
-      
   if exists(Select 1 from @workflowItem)      
   begin      
       
