@@ -249,14 +249,14 @@ namespace igx.UnitTests
             mock.Setup(x => x.DeleteCrossReferenceByUid(It.IsAny<Guid>()))
                 .Returns((Guid guid) => guid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
 
-            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>()))
-              .Returns((string ds) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
+            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>(), It.IsAny<int>()))
+              .Returns((string ds,int tout) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
 
-            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>(), It.IsAny<string>()))
-             .Returns((string ds, string type) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
+            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+             .Returns((string ds, string type, int tout) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
 
-            mock.Setup(x => x.DeleteCrossReferenceByType(It.IsAny<string>()))
-              .Returns((string t) => t == DataConstants.ValidType ? Task.FromResult(1) : Task.FromResult(0));
+            mock.Setup(x => x.DeleteCrossReferenceByType(It.IsAny<string>(), It.IsAny<int>()))
+              .Returns((string t, int tout) => t == DataConstants.ValidType ? Task.FromResult(1) : Task.FromResult(0));
 
             return mock.Object;
         }

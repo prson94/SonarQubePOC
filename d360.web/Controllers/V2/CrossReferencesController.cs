@@ -27,7 +27,7 @@ namespace d360.web.Controllers.V2
     ]
     public class CrossReferencesController : BaseV2ApiController
     {
-
+        const int DEFAULT_DELETE_TIMEOUT = 90;
         private ICrossReferencesRepository crossReferencesRepository;
         private IAssetRepository assetRepository;
         #region DI
@@ -371,8 +371,9 @@ namespace d360.web.Controllers.V2
             if (string.IsNullOrEmpty(dataSource) || string.IsNullOrEmpty(type))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameters datasource and type."));
 
+            
             //deletes the new record
-            int res = await crossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource, type);
+            int res = await crossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource, type, GetTimeoutFromQueryString());
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
 
@@ -401,8 +402,9 @@ namespace d360.web.Controllers.V2
             if (string.IsNullOrEmpty(type))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter type."));
 
+
             //deletes the new record
-            int res = await crossReferencesRepository.DeleteCrossReferenceByType(type);
+            int res = await crossReferencesRepository.DeleteCrossReferenceByType(type, GetTimeoutFromQueryString());
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
 
@@ -432,7 +434,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotAcceptable, "Request does not contain required parameter dataSource."));
 
             //deletes the new record
-            int res = await crossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource);
+            int res = await crossReferencesRepository.DeleteCrossReferenceByDataSource(dataSource, GetTimeoutFromQueryString());
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
 
@@ -539,6 +541,34 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
+
+        }
+
+        private int GetTimeoutFromQueryString()
+        {
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            var timeout = DEFAULT_DELETE_TIMEOUT;
+
+            queryParams.ToList().ForEach(q =>
+            {
+                var key = q.Key.ToLower();
+
+                if (key.StartsWith("_"))
+                {
+                    switch (key)
+                    {
+                        case "_timeout":
+                            if (int.TryParse(q.Value, out timeout))
+                            {
+                                if (timeout < 1) timeout = 30; // min timeout
+                            }
+                            break;
+                    }
+                }
+            });
+
+            return timeout;
 
         }
 
