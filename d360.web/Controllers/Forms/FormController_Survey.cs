@@ -40,6 +40,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "Object", Name = "Assign Survey To", FieldType = DataType.Lookup.ToString(), Items = items });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "ValidForDays", Name = "# of Days before user can retake", FieldType = DataType.Number.ToString() });
+            list.Add(new EditableField { Row = 3, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString() });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -52,8 +53,9 @@ namespace d360.web.Controllers
             var a = Company.GetById<SurveyType>(id);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });            
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ValidForDays", Name = "# of Days before user can retake", FieldType = DataType.Number.ToString(), Value = a.ValidForDays.ToString() });
+            list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldType = DataType.Html.ToString(), Value = a.Description });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -81,7 +83,8 @@ namespace d360.web.Controllers
                     Name = parseTextField(form, "Name"),
                     Object = ot.ToString(),
                     ObjectID = oid,
-                    ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1)
+                    ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1),
+                    Description = parseTextField(form,"Description")
                 };
                 Company.Add(model);
 
@@ -146,6 +149,7 @@ namespace d360.web.Controllers
 
                 model.Name = parseTextField(form, "Name");
                 model.ValidForDays = parseNullableIntField(form, "ValidForDays", 1).GetValueOrDefault(1);
+                model.Description = parseTextField(form, "Description");
 
                 Company.Update(model);
 
