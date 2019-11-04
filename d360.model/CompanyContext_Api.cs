@@ -1767,9 +1767,6 @@ from	IntersectType I
                                                 case "FusionAttributeType":
                                                     legacyTable = "FusionAttribute";
                                                     break;
-                                                case "ReferenceItemType":
-                                                    legacyTable = "ReferenceItem";
-                                                    break;
                                                 case "RuleType":
                                                     legacyTable = "[Rule]";
                                                     break;
