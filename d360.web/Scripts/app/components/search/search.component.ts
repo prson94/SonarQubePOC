@@ -23,6 +23,7 @@ declare var CompanySettings;
                             <d3s-search-input
                                 (search)="inputSearch($event)"
                                 [(isExactMatch)]="isExactMatch"
+                                (isExactMatchChange)="exactMatchChance(isExactMatch)"
                                 [(searchTypes)]="searchTypes"
                                 [(searchText)]="searchText"
                                 [style.width]="'100%'"
@@ -53,7 +54,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public fromNumber: number = 0;
     public sub: any;
 
-    @ViewChild('title') title: ElementRef;
+    @ViewChild('title', { static: false }) title: ElementRef;
 
     constructor(private route: ActivatedRoute,
         protected titleService: Title,
@@ -107,6 +108,11 @@ export class SearchComponent extends BaseComponent implements OnInit {
         if (this.searchText.length > 0) {
             this.doSearch();
         }
+    }
+
+    private exactMatchChance(isExactMatch) {
+        this.isExactMatch = isExactMatch;
+        this.doSearch();
     }
 
     public doSearch() {

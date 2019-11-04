@@ -132,7 +132,6 @@ namespace igx.jobs.reportlayer
                             var selectSql = "";
                             var viewSql = "";
                             var objectName = "";
-                            var objectType = "Artifact";
                             var prefix = "Glossary";
                             string objectID;
 
