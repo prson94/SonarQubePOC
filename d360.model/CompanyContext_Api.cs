@@ -2921,7 +2921,9 @@ from    api.ExecutionAsset T
 
 update  A
 set     A.ProposedKey = utility.GetHash(
-                            FC.FieldValue + '|' + COALESCE(
+                            cast(@ID as nvarchar) + '|' + 
+                            FC.FieldValue + '|' + 
+                            COALESCE(
                                 FS.FieldValue, 
                                 COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + FN.FieldValue + coalesce('|'+DF.DynamicProposedKey,'')
                             )
@@ -2942,7 +2944,9 @@ where	A.ExecutionID = @ExecutionID;
 insert into #Keys
     select	A.ID,
             utility.GetHash(
-                cast(O.FusionID as nvarchar) + '|' + COALESCE(
+                cast(@ID as nvarchar) + '|' + 
+                cast(O.FusionID as nvarchar) + '|' + 
+                COALESCE(
                     O.SourceID, 
                     COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'')
                 )
@@ -2972,7 +2976,7 @@ insert into #Keys
                         {
                             Connection.Execute($@"
 update  T
-set     T.ProposedKey = utility.GetHash(S.ProposedKey) 
+set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
 from    api.ExecutionAsset T
 		inner join	(
 					select		A.ItemNumber,
@@ -2986,7 +2990,7 @@ from    api.ExecutionAsset T
 
 insert into #Keys
     select		A.ID,
-                utility.GetHash(A.Code) as ActiveKey
+                utility.GetHash(cast(@ID as nvarchar) + '|' + A.Code) as ActiveKey
     from		Asset A 
     where	    A.AssetTypeID = @ID;
 
@@ -2999,7 +3003,7 @@ insert into #Keys
                         {
                             var activeKeySql = $@"
 select		A.ID,
-			utility.GetHash(STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
+			utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
 from		Asset A 
 			inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 			left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
@@ -3010,7 +3014,7 @@ group by    A.ID;";
                             {
                                 activeKeySql = $@"
 select		A.ID,
-			utility.GetHash(COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+			utility.GetHash(cast(@ID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
 from		Asset A 
 			inner join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 			inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
@@ -3022,7 +3026,7 @@ group by	A.ID, P.Uid";
 
                             Connection.Execute($@"
 update  T
-set     T.ProposedKey = utility.GetHash(S.ProposedKey) 
+set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
 from    api.ExecutionAsset T
 		inner join	(
 					select		A.ItemNumber,
