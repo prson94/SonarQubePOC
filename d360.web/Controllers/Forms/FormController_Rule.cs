@@ -489,7 +489,7 @@ namespace d360.web.Controllers
 
             var list = new List<EditableField>();
             var a = Company.GetById<RuleType>(id);
-            var style = Company.GetObjectStyle(SystemObjects.RuleType, id);
+            var style = Company.GetAssetTypeStyle(SystemObjects.RuleType.ToString(), id);
 
             list.Add(new EditableField { FieldName = "ID", FieldType = DataType.Hidden.ToString(), Value = a.ID.ToString() });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = FieldInfo.Name_Name, FieldDescription = "", FieldType = DataType.Text.ToString(), Value = a.Name, Validations = checkAndAddValidation("Text", "Name", true, "", 1, 250) });
@@ -540,7 +540,7 @@ namespace d360.web.Controllers
                     IsPartOfKey = true
                 });
 
-                upsertObjectStyle(SystemObjects.RuleType, a.ID, form, a.Name);
+                upsertAssetStyle(SystemObjects.RuleType, a.ID, form, a.Name);
 
                 return jsonSuccess(a.Name + " successfully created.", a.ID.ToString(), "add", HttpStatusCode.Created);
             }
@@ -604,7 +604,7 @@ namespace d360.web.Controllers
 
                 Company.Update(model);
 
-                upsertObjectStyle(SystemObjects.RuleType, model.ID, form, model.Name);
+                upsertAssetStyle(SystemObjects.RuleType, model.ID, form, model.Name);
 
                 Company.CreateOrUpdateTypeDisplayValuesAsync(id, "RuleType");
 

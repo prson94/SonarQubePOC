@@ -52,7 +52,7 @@ namespace d360.web.Controllers
 
         #region Field Loading For Type Forms Below
 
-        void loadIconFields(List<EditableField> list, int row, ObjectStyle style = null)
+        void loadIconFields(List<EditableField> list, int row, AssetTypeStyle style = null)
         {
             var b = "#000000";
             var f = "#ffffff";
@@ -67,29 +67,29 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = row, Column = 2, Required = true, FieldName = "IconForeColor", Name = "Text Color", FieldDescription = "The icon's text color", FieldType = DataType.Color.ToString(), Value = f });
         }
 
-        void upsertObjectStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx")
+        void upsertAssetStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx")
         {
-            var style = Company.GetObjectStyle(type, id);
+            var assetType = Company.Filter<AssetType>(i => i.Object == type && i.ObjectID == id).FirstOrDefault();
+            var style = Company.GetAssetTypeStyle(assetType.ID);
             bool add = (style == null);
 
             if (add)
             {
-                style = new ObjectStyle
+                style = new AssetTypeStyle
                 {
-                    ObjectType = type,
-                    ObjectID = id,
+                    ID = assetType.ID,
                     IconBackColor = backColor,
                     IconForeColor = foreColor,
                     IconText = getIconText(objectName)
                 };
-                Company.Add<ObjectStyle>(style);
+                Company.Add(style);
             }
             else
             {
                 style.IconBackColor = backColor;
                 style.IconForeColor = foreColor;
                 style.IconText = getIconText(objectName);
-                Company.Update<ObjectStyle>(style);
+                Company.Update(style);
             }
         }
 
@@ -142,14 +142,15 @@ namespace d360.web.Controllers
 
         }
 
-        void upsertObjectStyle(SystemObjects type, int id, string foreColor, string backColor, string objectName = "Tx")
+        void upsertAssetStyle(SystemObjects type, int id, string foreColor, string backColor, string objectName = "Tx")
         {
-            upsertObjectStyle(type.ToString(), id, foreColor, backColor, objectName);
+            upsertAssetStyle(type.ToString(), id, foreColor, backColor, objectName);
         }
 
-        void upsertObjectStyle(SystemObjects type, int id, FormCollection form, string objectName = "Tx")
+        void upsertAssetStyle(SystemObjects type, int id, FormCollection form, string objectName = "Tx")
         {
-            var style = Company.GetObjectStyle(type, id);
+            var assetType = Company.Filter<AssetType>(i => i.Object == type.ToString() && i.ObjectID == id).FirstOrDefault();
+            var style = Company.GetAssetTypeStyle(assetType.ID);
             bool add = (style == null);
 
             string iconText = "Tx";
@@ -166,22 +167,21 @@ namespace d360.web.Controllers
 
             if (add)
             {
-                style = new ObjectStyle
+                style = new AssetTypeStyle
                 {
-                    ObjectType = type.ToString(),
-                    ObjectID = id,
+                    ID = assetType.ID,
                     IconBackColor = form["IconBackColor"],
                     IconForeColor = form["IconForeColor"],
                     IconText = iconText
                 };
-                Company.Add<ObjectStyle>(style);
+                Company.Add(style);
             }
             else
             {
                 style.IconBackColor = form["IconBackColor"];
                 style.IconForeColor = form["IconForeColor"];
                 style.IconText = iconText;
-                Company.Update<ObjectStyle>(style);
+                Company.Update(style);
             }
         }
 
