@@ -1632,6 +1632,1914 @@ begin
 end
 GO
 
+ALTER FUNCTION [utility].[ObjectDetail]
+(
+	@type varchar(50), 
+	@id int
+)
+RETURNS @tbl TABLE 
+(
+	ID int,
+	AssetID bigint,
+	UID uniqueidentifier,
+	AssetTypeID int,
+	AssetTypeUid uniqueidentifier,
+	Name nvarchar(max),
+	TextPath nvarchar(2500),
+	Description nvarchar(max),
+	ParentID int null,
+	ParentType nvarchar(250),
+	Url nvarchar(2500),
+	TypeID int,
+	[Type] varchar(25),
+	[TypeName] nvarchar(250),
+	[Class] int,
+	IconBackColor varchar(15),
+	IconForeColor varchar(15),
+	IconText varchar(15),
+	Status nvarchar(25) null
+) 
+AS
+BEGIN
+	if @type in 
+	(
+		'Artifact',
+		'Attribute',
+		'Fusion',
+		'FusionAttribute',
+		'Policy',
+		'ReferenceItem',
+		'Rule',
+		'Taxonomy',
+		'Group',
+		'FusionQueryAttribute',
+		'Resource'
+	)
+	begin
+		insert into @tbl (	ID,		UID,	AssetID,	AssetTypeID, AssetTypeUid, Name,			TextPath,		[Description],	ParentID,	ParentType, Url,											TypeID,	[Type],	TypeName, [Class], Status)
+			SELECT			ObjectID,	UID, ID, 		AssetTypeID, AssetTypeUid, DisplayValue,	DisplayValue,	NULL,			null,		null,		dbo.GenerateAssetUrl(ID),	TypeID,	Type,	TypeName, AssetTypeClass, NULL
+			FROM	AssetDetail
+			where	Object = @type 
+					and ObjectID = @id
+	end
+
+	if @type in
+	(
+		'ArtifactType',
+		'AttributeType',
+		'FusionType',
+		'FusionAttributeType',
+		'FusionQueryAttributeType',
+		'PolicyType',
+		'ReferenceItemType',
+		'RuleType',
+		'TaxonomyType'
+	)
+	begin
+		insert into @tbl (	ID,		AssetTypeUid, [Uid], Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class])
+			SELECT			ObjectID, O.[Uid], O.[Uid],		Name,	Name,		Description,	NULL,		NULL,		turl.[url] as Url,	ObjectID,		@type,	'Asset Type', O.[Class]
+			FROM	AssetType O
+			cross apply [dbo].GetAssetTypeUrlById(o.id) turl
+			WHERE	Object = @type
+					and ObjectID = @id
+	end
+
+	if @type = 'Intersect'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName, [Class])
+			SELECT			O.ID,	IName.Name,	IName.Name,		'',				NULL,		@type,		null,	O.IntersectTypeID,	'IntersectType', ITN.Name, 0	
+			FROM	[Intersect] O
+					INNER JOIN IntersectType T ON O.IntersectTypeID = T.ID and O.ID = @id
+					CROSS APPLY dbo.GetIntersectNames(O.ID) IName	
+					CROSS APPLY dbo.GetIntersectTypeNames(T.ID) ITN
+	end
+
+	if @type = 'IntersectType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class],[UID])
+			SELECT			ID,		T.Name,	T.Name,		'',				NULL,		NULL,		null,	ID,		@type,	'Intersect Type', 0, uid
+			FROM	IntersectType 
+			CROSS APPLY dbo.GetIntersectTypeNames(@id) T	
+			WHERE	ID = @id
+	end
+
+	if @type = 'Issue'
+	begin
+		insert into @tbl (	ID,	UID,	Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName, [Class])
+			SELECT			O.ID,O.Uid,	'',	'',		'',				NULL,		NULL,		null,	O.IssueTypeID,	'IssueType',	T.Name, 0
+			FROM	Issue O
+					INNER JOIN IssueType T ON O.IssueTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'IssueType'
+	begin
+		insert into @tbl (	ID,		UID,Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName, [Class])
+			SELECT			O.ID,	O.uid,O.Name,	O.Name,		O.Description,				NULL,		@type,		NULL,	O.ID,	'IssueType',	'Issue Type', 0
+			FROM	IssueType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Lookup'
+	begin
+		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName, [Class])
+			SELECT			O.ID,	T.Name + ' Item',	T.Name,		'',				NULL,		NULL,		dbo.GenerateUrlByTypeName(@type, O.LookupTypeID, O.ID),	O.LookupTypeID,	'LookupType',	T.Name, 0
+			FROM	[Lookup] O
+					INNER JOIN LookupType T ON O.LookupTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'LookupType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class])
+			SELECT			ID,		Name,	Name,		'',				0,			@type,		dbo.GenerateUrlByTypeName(@type, ID, 0),	ID,		@type,	'Lookup Type', 0
+			FROM	LookupType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Report'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, [Class])
+			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		'#',	0,	'Report',	'Report', 0
+			FROM	Report O
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ResponsibilityType'
+	begin
+		insert into @tbl (	ID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class])
+			SELECT			ID,	O.Name,	NULL,		Description,	NULL,		NULL,		null,	ID,		@type,	'Responsibility Type', 0
+			FROM	ResponsibilityType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'ResourceType'
+	begin
+		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName, [Class])
+		values			(@id, 'Resource Type', '#/resources/administration', @id, @type, 'Resource Type',11)
+	end
+
+	if @type = 'RuleImplementation'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status, [Class])
+			SELECT			O.ID,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)) ,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)),	null,	T.ID,		'Rule',		null,	T.RuleTypeID,	'RuleType',	T.DisplayValue, 'Active', 7
+			FROM	[RuleImplementation] O
+					inner join [Rule] T on T.ID = O.RuleID
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ShoppingCart'
+	begin
+			insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class])
+			SELECT			O.ID,		Name,	Name,		NULL,	NULL,		NULL,		dbo.GenerateUrlByTypeName('ShoppingCartType', O.ShoppingCartTypeID, O.ID),	O.ID,		@type,	T.Name, 0
+			FROM	ShoppingCart O
+			inner join ShoppingCartType T on O.ShoppingCartTypeID = T.ID
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'Tag'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, [Class])
+			SELECT			T.ID,	T.Value,	T.Value,	NULL,	NULL,		@type,		'tag/' + CAST(T.Uid AS varchar(50)),	0,	'Tag',	'Tag', 0
+			FROM	Tag T
+			WHERE	T.ID = @id
+	end
+
+	update	T
+	set		T.IconBackColor = coalesce(S.IconBackColor, '#000000'),
+			T.IconForeColor = coalesce(S.IconForeColor, '#ffffff'),
+			T.IconText = COALESCE(S.IconText, 'leaf') 
+	from	@tbl T
+			left join AssetType A on A.[Object] = T.[Type] and A.ObjectID = T.TypeID
+			left join AssetTypeStyle S on S.ID = A.ID
+
+	RETURN
+END
+GO
+
+ALTER PROCEDURE [dbo].[GetCommentDetailByID]
+	@id int
+AS
+BEGIN
+	with i (ResourceID) 
+	as
+	(
+		select	r.ResourceID
+		from	ResponsibilityDetail r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
+	),
+	P (ID, ParentID)
+	AS
+	(
+		SELECT		C.ID,
+					C.ParentID
+		FROM		Comment C
+		WHERE		ID = @id
+	)
+
+	SELECT		C.*,
+				C.CreatingResourceID,
+				O.DisplayValue as ObjectName,				
+				AUrl.Url as ObjectUrl,
+				case
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectType
+					ELSE 'Resource'
+				end as ObjectType,
+				O.DisplayValue as ResourceName,
+				case 
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectID
+					ELSE C.CreatingResourceID
+				end as ObjectID,
+				(
+				select	CRD.Object,
+						CRD.ObjectID,
+						CRD.TextPath,
+						CRD.ObjectTypeName,
+						CRD.Url,
+						CRD.ForeColor as IconForeColor,
+						CRD.BackColor as IconBackColor,
+						CRD.NgUrl
+				from	CommentRelation CR
+				inner join (
+					select Object, ObjectID, ForeColor, BackColor, TypeName as ObjectTypeName, AUrl.Url as Url, AUrl.Url as NgUrl, DisplayValue as TextPath from AssetDetail A
+					cross apply [dbo].[GetAssetUrlById](A.ID) AUrl
+					union all
+					select T.Object, T.ObjectID, OS.IconForeColor as ForeColor, OS.IconBackColor as BackColor, null as ObjectTypeName, TUrl.Url as Url, TUrl.Url as NgUrl, Name as TextPath from AssetType T
+					cross apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
+					left join AssetTypeStyle OS on OS.ID = T.ID
+				) CRD on CR.CommentID = C.ID 
+					and CR.ObjectType = CRD.[Object] 
+					and CR.ObjectID = CRD.ObjectID
+				where Object != 'Resource'
+					and TextPath != 'FirstNameLastName'
+				for xml path('tag'), root('tags'), type
+				) as TagsXml,
+				(
+				select CommentID,
+						ResourceID,
+						vote as VoteValue
+				from commentvote
+				where commentid = p.ID
+					for xml path('vote'), root('votes'), type
+			) as VotesXML,
+			CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			ELSE
+				cast(0 as bit)
+			END as CreatorIsOwner
+	FROM		Comment C
+				left join AssetDetail O on O.[Object] = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID
+				outer apply [dbo].[GetAssetUrlById](O.ID) AUrl
+				INNER JOIN P ON C.ID = P.ID
+	ORDER BY	C.ParentID, C.DateCreated DESC
+END
+GO
+
+ALTER PROCEDURE [dbo].[GetCommentDetailsByFollower]
+
+	@resourceID int,
+	@skip int,
+	@take int,
+	@dateStart datetime = null,
+	@dateEnd datetime = null,
+	@commentTypeID int = 0,
+	@searchPhrase varchar(100) = ''
+
+
+
+AS
+BEGIN
+	set nocount on;
+
+	drop table if exists #commentIds;
+	create table #commentIds (id int);
+
+	insert into #commentIds
+		select	CommentID as ID
+		from	FollowDetail f
+				inner join CommentRelation cr on cr.ObjectID = f.ObjectID and cr.ObjectType = f.ObjectType
+		where	f.ResourceID = @resourceId
+		union all
+		select	ID 
+		from	Comment 
+		where	CreatingResourceID = @resourceid
+		union all
+		select	ID 
+		from	comment c2
+				inner join	ResponsibilityDetail o on o.ResourceID = @resourceID and o.Object = c2.OwnerObjectType and o.ObjectID = c2.OwnerObjectID;
+
+	with p as
+	(
+	select	c.*,
+			case 
+				when c.CreatingResourceID = @resourceID then 1
+				when c.VisibilityID = 2 then 1
+				when c.VisibilityID = 3 then 1
+				when coalesce(c.VisibilityID, 4) = 4  then 1
+				else 0
+			end as IsVisible
+	from	Comment c
+	inner join #commentIds S on S.ID = C.ID
+	where   C.isdeleted = 0
+			AND (
+					coalesce(@commentTypeID,0) = 0 OR (C.CommentTypeID = @commentTypeID)
+				) 
+			AND (
+					(C.DateCreated between @dateStart and @dateEnd and @dateStart is not null and @dateEnd is not null) or
+					(@dateStart is null and @dateEnd is null)
+				)
+			AND C.ParentID is null
+			AND (
+				coalesce(ltrim(rtrim(@searchPhrase)),'')='' or 
+				lower(Body) like lower('%'+@searchPhrase+'%')
+				)
+	order by c.datecreated DESC
+	OFFSET		@skip ROWS 
+	FETCH NEXT	@take ROWS ONLY
+	)
+
+	select	a.*,
+			a.OwnerObjectType as ObjectType,
+			a.OwnerObjectId as ObjectId,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			R.Email as ResourceEmail,
+			D.DisplayValue as ObjectName,
+			AUrl.Url as ObjectUrl,
+			(
+			select	CRD.Object,
+					CRD.ObjectID,
+					CRD.TextPath,
+					CRD.ObjectTypeName,
+					CRD.Url,
+					CRD.BackColor as IconBackColor,
+					CRD.ForeColor as IconForeColor,
+					CRD.NgUrl
+			from	CommentRelation CR
+				inner join (
+					select Object, ObjectID, ForeColor, BackColor, TypeName as ObjectTypeName, AUrl.Url as Url, AUrl.Url as NgUrl, DisplayValue as TextPath from AssetDetail A
+					cross apply [dbo].[GetAssetUrlById](A.ID) AUrl
+					union all
+					select T.Object, T.ObjectID, OS.IconForeColor as ForeColor, OS.IconBackColor as BackColor, null as ObjectTypeName, TUrl.Url as Url, TUrl.Url as NgUrl, Name as TextPath from AssetType T
+					cross apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
+					left join AssetTypeStyle OS on OS.ID = T.ID
+				) CRD on CR.CommentID = a.ID and a.ParentID is null and CR.ObjectType = CRD.[Object] and CR.ObjectID = CRD.ObjectID
+			for xml path('tag'), root('tags'), type
+			) as TagsXml,
+			(
+			select	CommentID,
+					ResourceID,
+					vote as VoteValue
+			from	commentvote
+			where	commentid = a.ID
+			for		xml path('vote'), root('votes'), type
+			) as VotesXML,
+			0 as CreatorIsOwner
+	from	(
+			select	* 
+			from	p
+			union all
+			select	r.*,
+					1 as IsVisible 
+			from	Comment r
+					inner join p on r.ParentID = p.ID
+			) a
+			left join reporting.Global_Resource R on R.ResourceID = a.CreatingResourceID
+			left join AssetDetail D on D.[Object] = a.OwnerObjectType and D.ObjectID = a.OwnerObjectID
+			outer apply [dbo].[GetAssetUrlById](D.ID) AUrl
+	where	IsVisible = 1;
+END
+GO
+
+ALTER PROCEDURE [dbo].[GetCommentDetailsByType]
+
+	@type varchar(50), 
+	@id int,
+	@skip int,
+	@take int,
+	@dateStart datetime = null,
+	@dateEnd datetime = null,
+	@commentTypeID int = 0,
+	@searchPhrase varchar(100) = ''
+
+
+
+
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	with i (ResourceID) 
+	as
+	(
+		select	r.ResourceID
+		from	ResponsibilityDetail r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
+	),
+	 P
+	AS
+	(
+		SELECT		C.*,
+					CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+						1
+					WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+						1
+					ELSE
+						0
+					END as CreatorIsOwner,
+					coalesce(C.OwnerObjectType, CR.ObjectType) as ObjectType,
+					coalesce(C.OwnerObjectID, CR.ObjectID) as ObjectID,
+					(
+					select	a.[Object],
+							a.ObjectID,
+							utility.getassetdisplayvalue(a.id) as TextPath,
+							ast.Name as ObjectTypeName,							
+							os.IconForeColor,
+							os.IconBackColor,
+							dbo.generateAsseturl(a.ID) as Url
+					from	CommentRelation CR
+							inner join asset a on (CR.CommentID = C.ID and a.[object] = CR.[ObjectType] and a.objectid = CR.ObjectID)
+							inner join assettype ast on ( a.assettypeid = ast.id)
+							inner join assettypestyle os on os.id = ast.id							
+					for xml path('tag'), root('tags'), type
+					) as TagsXml
+		FROM		Comment C
+					INNER JOIN CommentRelation CR	ON C.ID = CR.CommentID
+													AND (
+														coalesce(@commentTypeID,0) = 0 OR (C.CommentTypeID = @commentTypeID)
+														) 
+													AND CR.ObjectType = @type 
+													AND CR.ObjectID = @id
+													AND (
+														(C.DateCreated between @dateStart and @dateEnd and @dateStart is not null and @dateEnd is not null) or
+														(@dateStart is null and @dateEnd is null)
+														)
+													AND C.ParentID IS NULL	
+													and c.isdeleted = 0			
+		WHERE
+			coalesce(ltrim(rtrim(@searchPhrase)),'')='' or (lower(Body) like lower('%'+@searchPhrase+'%')) 
+		ORDER BY	C.DateCreated DESC
+		OFFSET  @skip ROWS 
+		FETCH NEXT @take ROWS ONLY 
+
+		UNION ALL
+
+		SELECT	C.*,
+				0 as CreatorIsOwner, 
+				cast('Resource' as varchar(50)) as ObjectType,
+				C.CreatingResourceID as ObjectID,
+				NULL as TagsXml
+		FROM	P
+				INNER JOIN Comment C ON C.ParentID = P.ID
+	)
+
+	select	P.*,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			R.Email as ResourceEmail,
+			utility.getassetdisplayvalue(a.id),
+			dbo.generateasseturl(a.id) as ObjectUrl,
+			(
+				select CommentID,
+						ResourceID,
+						vote as VoteValue
+				from commentvote
+				where commentid = p.ID
+					for xml path('vote'), root('votes'), type
+			) as VotesXML
+	from	P
+			left join reporting.Global_Resource R on R.ResourceID = P.CreatingResourceID			
+			left join asset a on a.[object] = p.objecttype and a.objectid = p.objectid
+			left join assettype ast on a.assettypeid = ast.id
+	where
+		isdeleted = 0;
+END
+GO
+
+ALTER procedure [dbo].[GetLineage]
+	@type varchar(50),
+	@id int,
+	@view int = 0,
+	@usageOnly bit = 0,
+	@verboseLineage bit = 0,
+	@rows LineageTable readonly,
+	@technicalRows LineageTechnicalTable readonly
+as
+begin
+	declare @links table ([from] varchar(250), [to] varchar(250), category varchar(50))
+	declare @nodes table (
+		id int identity,
+		assetId int,
+		[key] varchar(250), 
+		obj varchar(50), [objid] int, [type] varchar(50), typeName nvarchar(250), name nvarchar(500), shortname nvarchar(500),
+		back varchar(7), fore varchar(7), template varchar(50), other varchar(500),
+
+		HasSourceRules bit
+		)
+	declare @objects table (Type varchar(50), ID int)
+	declare @currentDepth int = 0;
+	declare @maxDepth int = 15;
+	declare @maxItems int = 500;
+	declare @itemCount int = 0;
+	
+	if @view in (0, 1, 2)
+	begin
+		insert into @objects values (@type, @id)
+
+		if not exists(
+			select	MI.ID
+			from	MapItem MI
+					inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+					inner join [Intersect] TI ON TI.ID = MI.TargetIntersectID
+			where 	( (SI.Subject = @type and SI.SubjectID = @id) OR (SI.Object = @type and SI.ObjectID = @id)  )
+					OR ( (TI.Subject = @type and TI.SubjectID = @id) OR (TI.Object = @type and TI.ObjectID = @id)  )
+		)
+		begin
+			insert into @objects
+				select	case 
+							when I.Subject = @type and I.SubjectID = @id then I.Object
+							else I.Subject
+						end,
+						case 
+							when I.Subject = @type and I.SubjectID = @id then I.ObjectID 
+							else I.SubjectID 
+						end
+				from	[Intersect] I
+						inner join IntersectType T on T.ID = I.IntersectTypeID 
+						inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+				where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)
+		end
+
+		IF OBJECT_ID('tempdb..#points') IS NOT NULL DROP TABLE #points;
+		create table #points ( ID int, SourceIntersectID int, TargetIntersectID int, Depth int );
+		
+		insert into #points
+			select	top (@maxItems)
+					MI.ID, MI.SourceIntersectID, MI.TargetIntersectID, 0
+			from	MapItem MI
+					inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+					inner join [Intersect] TI ON TI.ID = MI.TargetIntersectID
+					inner join @objects O on	( (SI.Subject = O.Type and SI.SubjectID = O.ID) OR (SI.Object = O.Type and SI.ObjectID = O.ID)  ) OR 
+												( (TI.Subject = O.Type and TI.SubjectID = O.ID) OR (TI.Object = O.Type and TI.ObjectID = O.ID)  )
+			where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = MI.ID)
+
+		set @maxItems = @maxItems - (select count(*) from #points);
+
+		if (@maxItems > 0)
+		begin
+			insert into #points
+				select	top (@maxItems)
+						MI.ID, MI.SourceIntersectID, MI.TargetIntersectID, 0
+				from	MapItem MI
+						inner join	(
+									select	ID.MapItemID
+									from	MapItemMap DM
+											inner join #points D on D.ID = DM.MapItemID
+											inner join MapItemMap ID on ID.MapID = DM.MapID and ID.MapItemID not in (
+																													select ID from #points
+																													)
+									) O on O.MapItemID = MI.ID
+				where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = MI.ID);
+
+				set @maxItems = @maxItems - (select count(*) from #points);
+		end
+
+		if exists(select 1 from @rows)
+		begin
+			insert into #points
+				select	R.ID,
+						D1.ID as SourceIntersectID,
+						D2.ID as TargetIntersectID,
+						0
+				from	@rows R
+						inner join [Intersect] D1 on 
+							R.SourceSubject = D1.[Subject] AND 
+							R.SourceObject = D1.[Object] AND 
+							R.SourceSubjectID = D1.SubjectID AND 
+							R.SourceObjectID = D1.ObjectID
+						inner join [Intersect] D2 on 
+							R.TargetSubject = D2.[Subject] AND 
+							R.TargetObject = D2.[Object] AND 
+							R.TargetSubjectID = D2.SubjectID AND 
+							R.TargetObjectID = D2.ObjectID
+				where	R.Adding = 1 and not exists (select 1 from #points P where P.SourceIntersectID = D1.ID and P.TargetIntersectID = D2.ID)
+		end;
+
+		if @verboseLineage = 1
+		begin
+			set @currentDepth = 0;
+
+			while( exists(select 1 from #points ps where ps.depth = @currentDepth) and (@currentDepth < @maxDepth) and (@maxItems > 0))
+			begin
+
+				set @itemCount = (select count(*) from #points);
+
+				insert into #points
+					select	top (@maxItems) 
+						S.ID,
+						S.SourceIntersectID,
+						S.TargetIntersectID,
+						@currentDepth+1
+					from	MapItem S
+							inner join #points T on T.TargetIntersectID = S.SourceIntersectID and S.ID <> T.ID and T.Depth = @currentDepth
+					where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID) and not exists (select ID from #points where ID = S.ID)
+
+				set @maxItems = @maxItems - ((select count(*) from #points) - @itemCount);
+				set @itemCount = (select count(*) from #points);
+
+				if (@maxItems > 0)
+				begin
+					insert into #points
+						select	top (@maxItems)
+							S.ID,
+							S.SourceIntersectID,
+							S.TargetIntersectID,
+							@currentDepth+1
+						from	MapItem S
+								inner join #points T on T.SourceIntersectID = S.TargetIntersectID and S.ID <> T.ID and T.Depth = @currentDepth
+						where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID)
+							and not exists (select ID from #points where ID = S.ID)
+					set @maxItems = @maxItems - ((select count(*) from #points) - @itemCount);
+				end
+
+				set @currentDepth = @currentDepth + 1;
+			end
+		end
+		else
+		begin
+			set @currentDepth = 0;	
+			if exists(select 1 from #points where [Depth] = @currentDepth)
+			begin
+				while ( (@currentDepth < @maxDepth) and (@currentDepth = 0) )
+				begin
+					insert into #points
+						select	top (@maxItems) 
+								S.ID,
+								S.SourceIntersectID,
+								S.TargetIntersectID,
+								@currentDepth+1
+						from	MapItem S
+								inner join #points T on T.TargetIntersectID = S.SourceIntersectID and S.ID <> T.ID and T.Depth = @currentDepth
+						where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID) 
+								and not exists (select ID from #points where ID = S.ID)
+
+					select @itemCount = count(*) from #points where [Depth] = @currentDepth;
+
+					set @currentDepth = @currentDepth + 1;
+				end
+			end
+
+			update #points set [Depth] = [Depth] * -1
+
+			set @currentDepth = 0;	
+			if exists(select 1 from #points where [Depth] = @currentDepth)
+			begin
+				while ( (@currentDepth < @maxDepth) and (@currentDepth = 0) )
+				begin
+					insert into #points
+						select	top (@maxItems)
+								S.ID,
+								S.SourceIntersectID,
+								S.TargetIntersectID,
+								@currentDepth+1
+						from	MapItem S
+								inner join #points T on T.SourceIntersectID = S.TargetIntersectID and S.ID <> T.ID and T.Depth = @currentDepth
+						where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID)
+								and not exists (select ID from #points where ID = S.ID)
+
+					select @itemCount = count(*) from #points where [Depth] = @currentDepth;
+					set @currentDepth = @currentDepth + 1;
+				end
+			end
+		end
+
+		IF @view in (0,2)
+		BEGIN
+
+			IF OBJECT_ID('tempdb..#items') IS NOT NULL DROP TABLE #items;
+			create table #items (
+				ID int,
+				SourceIntersectID int, 
+				SourceSubjectTypeName nvarchar(500), SourceSubjectName nvarchar(500), SourceSubjectShortName nvarchar(500), SourceSubject varchar(50), SourceSubjectID int, SourceSubjectIconBackColor varchar(7), SourceSubjectIconForeColor varchar(7), 
+				SourceObjectTypeName nvarchar(500), SourceObjectName nvarchar(500), SourceObjectShortName nvarchar(500), SourceObject varchar(50), SourceObjectID int, SourceObjectIconBackColor varchar(7), SourceObjectIconForeColor varchar(7),
+			
+				TargetIntersectID int, 
+				TargetSubjectTypeName nvarchar(500), TargetSubjectName nvarchar(500), TargetSubjectShortName nvarchar(500), TargetSubject varchar(50), TargetSubjectID int, TargetSubjectIconBackColor varchar(7), TargetSubjectIconForeColor varchar(7), 
+				TargetObjectTypeName nvarchar(500), TargetObjectName nvarchar(500), TargetObjectShortName nvarchar(500), TargetObject varchar(50), TargetObjectID int, TargetObjectIconBackColor varchar(7), TargetObjectIconForeColor varchar(7),
+
+				SourceHasSourceRules bit, TargetHasSourceRules bit
+			);
+
+			CREATE CLUSTERED INDEX IX_TempItems ON #items (id, sourceintersectid, targetintersectid); 
+
+			insert into #items
+				select	O.ID,				
+						O.SourceIntersectID,
+						SS.TypeName as SubjectTypeName,
+						SSD.DisplayValue as SubjectName,
+						SSD.DisplayValue as SubjectShortName,
+						SI.[Subject],
+						SI.SubjectID,
+						SS.BackColor as SubjectIconBackColor,
+						SS.ForeColor as SubjectIconForeColor,
+						SO.TypeName as ObjectTypeName,
+						SOD.DisplayValue as ObjectName,
+						SOD.DisplayValue as ObjectShortName,
+						SI.[Object],
+						SI.ObjectID,
+						SO.BackColor as ObjectIconBackColor,
+						SO.ForeColor as ObjectIconForeColor,
+						O.TargetIntersectID,
+						TS.TypeName as SubjectTypeName,
+						TSD.DisplayValue as SubjectName,
+						TSD.DisplayValue as SubjectShortName,
+						TI.Subject,
+						TI.SubjectID,
+						TS.BackColor,
+						TS.ForeColor,
+						TB.TypeName as ObjectTypeName,
+						TBD.DisplayValue as ObjectName,
+						TBD.DisplayValue as ObjectShortName,
+						TI.Object,
+						TI.ObjectID,
+						TB.BackColor,
+						TB.ForeColor,
+						case 
+							when SHSR.C > 0 then cast(1 as bit)
+							else cast(0 as bit)
+						end as SourceHasSourceRules,
+											case 
+							when THSR.C > 0 then cast(1 as bit)
+							else cast(0 as bit)
+						end as TargetHasSourceRules
+				from	#points O
+					inner join [Intersect] SI on SI.ID = O.SourceIntersectID
+					inner join [Intersect] TI on TI.ID = O.TargetIntersectID
+					inner join AssetWithType SS on SS.[Object] = SI.[Subject] and SS.ObjectID = SI.SubjectID 
+					inner join AssetWithType SO on SO.[Object] = SI.[Object] and SO.ObjectID = SI.ObjectID
+					inner join AssetWithType TS on TS.[Object] = TI.[Subject] and TS.ObjectID = TI.SubjectID
+					inner join AssetWithType TB on TB.[Object] = TI.[Object] and TB.ObjectID = TI.ObjectID
+					cross apply dbo.GetAssetDisplayValueById(SS.ID) SSD
+					cross apply dbo.GetAssetDisplayValueById(SO.ID) SOD
+					cross apply dbo.GetAssetDisplayValueById(TS.ID) TSD
+					cross apply dbo.GetAssetDisplayValueById(TB.ID) TBD
+						cross apply (
+									select	count(1) as C
+									from	MapItem MI 
+											inner join MapSequence MS on MS.MapItemID = MI.ID
+									where MI.ID = O.ID and (
+										(@type = SI.[subject] and @id = SI.subjectid and
+											(
+												MI.SourceIntersectID in 
+												(select id from [intersect] i where 
+													(i.[object] = @type and i.objectid = @id) or
+													(i.[subject] = @type and i.subjectid = @id)
+													)
+											)
+										)
+										or
+										(MI.SourceIntersectID in 
+											(select id from [intersect] i where
+													(i.[object] = @type and i.objectid = @id and i.[subject] = si.[subject] and i.subjectid = si.subjectid) or
+													(i.[subject] = @type and i.subjectid = @id and i.[object] = si.[subject] and i.objectid = si.subjectid)
+											)
+										)
+
+										)
+									
+									) SHSR
+									cross apply (
+									select	count(1) as C
+									from	MapItem MI 
+											inner join MapSequence MS on MS.MapItemID = MI.ID
+									where MI.ID = O.ID and (
+										(@type = TI.[subject] and @id = TI.subjectid and
+											(
+												MI.TargetIntersectID in 
+												(select id from [intersect] i where 
+													(i.[object] = @type and i.objectid = @id) or
+													(i.[subject] = @type and i.subjectid = @id)
+													)
+											)
+										)
+										or
+										(MI.TargetIntersectID in 
+											(select id from [intersect] i where
+													(i.[object] = @type and i.objectid = @id and i.[subject] = ti.[subject] and i.subjectid = ti.subjectid) or
+													(i.[subject] = @type and i.subjectid = @id and i.[object] = ti.[subject] and i.objectid = ti.subjectid)
+											)
+										)
+
+										)
+									
+									) THSR
+
+
+			
+			if EXISTS (SELECT 1 FROM @rows)
+			begin
+				
+				delete I
+				from #items I
+				inner join @rows R on
+					R.SourceSubjectID = I.SourceSubjectID 
+					AND R.SourceObjectID = I.SourceObjectID
+					AND R.TargetSubjectID = I.TargetSubjectID
+					AND R.TargetObjectID = I.TargetObjectID;
+
+				
+				insert into #items
+				select
+					R.ID,
+					R.SourceIntersectID,
+					SS.TypeName as SourceSubjectTypeName,
+					SSD.TextPath as SourceSubjectName,
+					SS.DisplayValue as SourceSubjectShortName,
+					R.SourceSubject,
+					R.SourceSubjectID,
+					SS.BackColor as SourceSubjectIconBackColor,
+					SS.ForeColor as SourceSubjectIconForeColor,
+					SO.TypeName as SourceObjectTypeName,
+					SOD.TextPath as SourceObjectName,
+					SO.DisplayValue as SourceObjectShortName,
+					R.SourceObject,
+					R.SourceObjectID,
+					SO.BackColor as SourceObjectIconBackColor,
+					SO.ForeColor as SourceObjectIconForeColor,
+					R.TargetIntersectID,
+					TS.TypeName as TargetSubjectTypeName,
+					TSD.TextPath as TargetSubjectName,
+					TS.DisplayValue as TargetSubjectShortName,
+					R.TargetSubject,
+					R.TargetSubjectID,
+					TS.BackColor as TargetSubjectIconBackColor,
+					TS.ForeColor as TargetSubjectIconForeColor,
+					TB.TypeName as TargetObjectTypeName,
+					TBD.TextPath  as TargetObjectName,
+					TB.DisplayValue as TargetObjectShortName,
+					R.TargetObject,
+					R.TargetObjectID,
+					TB.BackColor as TargetObjectIconBackColor,
+					TB.ForeColor as TargetObjectIconForeColor,
+					0 as SourceHasSourceRules,
+					0 as TargetHasSourceRules
+				from @rows R 
+				inner join AssetDetail SS on SS.[Object] = R.SourceSubject AND SS.ObjectID = R.SourceSubjectID
+				inner join AssetDetail SO on SO.[Object] = R.SourceObject AND SO.ObjectID = R.SourceObjectID
+				inner join AssetDetail TS on TS.[Object] = R.TargetSubject AND TS.ObjectID = R.TargetSubjectID
+				inner join AssetDetail TB on TB.[Object] = R.TargetObject AND TB.ObjectID = R.TargetObjectID
+				cross apply dbo.GetAssetTextPathById(SS.ID, '.') SSD
+				cross apply dbo.GetAssetTextPathById(SO.ID, '.') SOD
+				cross apply dbo.GetAssetTextPathById(TS.ID, '.') TSD
+				cross apply dbo.GetAssetTextPathById(TB.ID, '.') TBD
+
+				where R.Adding = 1
+				and not exists (select 1 from #items i where i.SourceIntersectID = r.SourceIntersectID and i.TargetIntersectID = r.TargetIntersectID);
+			end
+		
+		end 
+
+		if @view = 0
+		begin
+			select (
+					select distinct
+					cast(SI.IntersectTypeID as varchar) + '.' 
+					+ cast(I.SourceSubjectID as varchar) + '.'
+					+ cast(I.SourceObjectID as varchar) as [sourcekey],
+					cast(TI.IntersectTypeID as varchar) + '.' 
+					+ cast(I.TargetSubjectID as varchar) + '.'
+					+ cast(I.TargetObjectID as varchar) as [targetkey],
+					
+					I.ID
+					,I.SourceIntersectID
+					,I.SourceSubjectTypeName
+					,coalesce(SST.TextPath,I.SourceSubjectName) as SourceSubjectName
+					,I.SourceSubjectShortName
+					,I.SourceSubject
+					,I.SourceSubjectID
+					,I.SourceSubjectIconBackColor
+					,I.SourceSubjectIconForeColor
+					,I.SourceObjectTypeName
+					,coalesce(SOT.TextPath,I.SourceObjectName) as SourceObjectName
+					,I.SourceObjectShortName
+					,I.SourceObject
+					,I.SourceObjectID
+					,I.SourceObjectIconBackColor
+					,I.SourceObjectIconForeColor
+					,I.TargetIntersectID
+					,I.TargetSubjectTypeName
+					,coalesce(TST.TextPath, I.TargetSubjectName) as TargetSubjectName
+					,I.TargetSubjectShortName
+					,I.TargetSubject
+					,I.TargetSubjectID
+					,I.TargetSubjectIconBackColor
+					,I.TargetSubjectIconForeColor
+					,I.TargetObjectTypeName
+					,coalesce(OTT.TextPath, I.TargetObjectName) as TargetObjectName
+					,I.TargetObjectShortName
+					,I.TargetObject
+					,I.TargetObjectID
+					,I.TargetObjectIconBackColor
+					,I.TargetObjectIconForeColor
+					,I.SourceHasSourceRules 
+					,I.TargetHasSourceRules,
+					SI.IntersectTypeID as SourceIntersectTypeID,
+					utility.DeriveIntersectTypeName(SIT.ID) as SourceIntersectTypeName,
+					TI.IntersectTypeID as TargetIntersectTypeID,
+					utility.DeriveIntersectTypeName(TIT.ID) as TargetIntersectTypeName
+				from #items I
+				inner join [Intersect] SI on SI.ID = I.SourceIntersectID
+				left join Asset SS on SS.Object = SI.Subject and SS.ObjectID = SI.SubjectID
+				outer apply dbo.GetAssetTextPathById(SS.ID, '/') SST
+				left join Asset SO on SO.Object = SI.Object and SO.ObjectID = SI.ObjectID
+				outer apply dbo.GetAssetTextPathById(SO.ID, '/') SOT
+				inner join IntersectType SIT on SIT.ID = SI.IntersectTypeID
+				inner join [Intersect] TI on TI.ID = I.TargetIntersectID
+				left join Asset TS on TS.Object = TI.Subject and TS.ObjectID = TI.SubjectID
+				outer apply dbo.GetAssetTextPathById(TS.ID, '/') TST
+				left join Asset OT on OT.Object = TI.Object and OT.ObjectID = TI.ObjectID
+				outer apply dbo.GetAssetTextPathById(OT.ID, '/') OTT
+				inner join IntersectType TIT on TIT.ID = TI.IntersectTypeID
+				for json path
+			) as 'items'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end
+
+		if @view = 1
+		begin
+
+		IF OBJECT_ID('tempdb..#systemItems') IS NOT NULL DROP TABLE #systemItems;
+		create table #systemItems (
+			ID int,
+			SourceSubjectTypeName nvarchar(500), SourceSubjectName nvarchar(500), SourceSubjectShortName nvarchar(500), SourceSubject varchar(50), SourceSubjectID int, SourceSubjectIconBackColor varchar(7), SourceSubjectIconForeColor varchar(7), 
+			TargetSubjectTypeName nvarchar(500), TargetSubjectName nvarchar(500), TargetSubjectShortName nvarchar(500), TargetSubject varchar(50), TargetSubjectID int, TargetSubjectIconBackColor varchar(7), TargetSubjectIconForeColor varchar(7), 
+			SourceHasSourceRules bit, TargetHasSourceRules bit
+		);
+
+		CREATE CLUSTERED INDEX IX_TempSystemItems ON #systemItems (id, sourcesubject, sourcesubjectid, targetsubject, targetsubjectid); 
+
+		insert into #systemItems (ID, SourceSubjectTypeName, SourceSubjectName, SourceSubjectShortName, SourceSubject, SourceSubjectID, SourceSubjectIconBackColor,SourceSubjectIconForeColor,
+		TargetSubjectTypeName, TargetSubjectName, TargetSubjectShortName,  TargetSubject, TargetSubjectID, TargetSubjectIconBackColor, TargetSubjectIconForeColor, 
+		SourceHasSourceRules, TargetHasSourceRules)
+			select	
+					O.ID as ID,				
+					SS.TypeName as SourceSubjectTypeName,
+					SSD.DisplayValue as SourceSubjectName,
+					SSD.DisplayValue as SourceSubjectShortName,
+					SI.[Subject] as SourceSubject,
+					SI.SubjectID as SourceSubjectID,
+					SS.BackColor as SourceSubjectIconBackColor,
+					SS.ForeColor as SourceSubjectIconForeColor,
+					TS.TypeName as TargetSubjectTypeName,
+					TSD.DisplayValue as TargetSubjectName,
+					TSD.DisplayValue as TargetSubjectShortName,
+					TI.[Subject] as TargetSubject,
+					TI.SubjectID as TargetSubjectID,
+					TS.BackColor as TargetSubjectIconBackColor,
+					TS.ForeColor as TargetSubjectIconForeColor,
+					case 
+						when SHSR.C > 0 then cast(1 as bit)
+						else cast(0 as bit)
+					end as SourceHasSourceRules,
+										case 
+						when THSR.C > 0 then cast(1 as bit)
+						else cast(0 as bit)
+					end as TargetHasSourceRules
+			from	#points O
+				inner join [Intersect] SI on SI.ID = O.SourceIntersectID
+				inner join [Intersect] TI on TI.ID = O.TargetIntersectID
+				inner join AssetWithType SS on SS.[Object] = SI.[Subject] and SS.ObjectID = SI.SubjectID 
+				inner join AssetWithType TS on TS.[Object] = TI.[Subject] and TS.ObjectID = TI.SubjectID
+				cross apply dbo.GetAssetDisplayValueById(SS.ID) SSD
+				cross apply dbo.GetAssetDisplayValueById(TS.ID) TSD
+				cross apply (
+								select	count(1) as C
+								from	MapItem MI 
+										inner join MapSequence MS on MS.MapItemID = MI.ID
+								where MI.ID = O.ID and (
+									(@type = SI.[subject] and @id = SI.subjectid and
+										(
+											MI.SourceIntersectID in 
+											(select id from [intersect] i where 
+												(i.[object] = @type and i.objectid = @id) or
+												(i.[subject] = @type and i.subjectid = @id)
+												)
+										)
+									)
+									or
+									(MI.SourceIntersectID in 
+										(select id from [intersect] i where
+												(i.[object] = @type and i.objectid = @id and i.[subject] = si.[subject] and i.subjectid = si.subjectid) or
+												(i.[subject] = @type and i.subjectid = @id and i.[object] = si.[subject] and i.objectid = si.subjectid)
+										)
+									)
+
+									)
+									
+								) SHSR
+								cross apply (
+								select	count(1) as C
+								from	MapItem MI 
+										inner join MapSequence MS on MS.MapItemID = MI.ID
+								where MI.ID = O.ID and (
+									(@type = TI.[subject] and @id = TI.subjectid and
+										(
+											MI.TargetIntersectID in 
+											(select id from [intersect] i where 
+												(i.[object] = @type and i.objectid = @id) or
+												(i.[subject] = @type and i.subjectid = @id)
+												)
+										)
+									)
+									or
+									(MI.TargetIntersectID in 
+										(select id from [intersect] i where
+												(i.[object] = @type and i.objectid = @id and i.[subject] = ti.[subject] and i.subjectid = ti.subjectid) or
+												(i.[subject] = @type and i.subjectid = @id and i.[object] = ti.[subject] and i.objectid = ti.subjectid)
+										)
+									)
+
+									)
+									
+								) THSR
+
+			insert into @links
+					select	distinct
+							S.SourceSubject + '.' + cast(S.SourceSubjectID as varchar) as [from],
+							S.TargetSubject + '.' + cast(S.TargetSubjectID as varchar) as [to],
+							'' as category
+					from	#systemItems S
+			insert into @nodes
+					select	distinct
+							A.ID as assetId,
+							I.SourceSubject + '.' + cast(I.SourceSubjectID as varchar) as [key],
+							I.SourceSubject as [obj],
+							I.SourceSubjectID as [objid], 
+							I.SourceSubject as [type],
+							I.SourceSubjectTypeName as typeName,
+							I.SourceSubjectName as name,
+							I.SourceSubjectShortName as shortname,
+							I.SourceSubjectIconBackColor as back,
+							I.SourceSubjectIconForeColor as fore,
+							case 
+								when I.SourceSubject = @type and I.SourceSubjectID = @id then 'Focal'
+								else 'Normal'
+							end as template,
+							null as other,
+							0 as hasSourceRules
+					from	#systemItems I
+					left join Asset A on A.[Object] = I.SourceSubject and A.ObjectID = I.SourceSubjectID;;
+
+					
+					update n
+					set n.HasSourceRules = 1
+					from @nodes n
+					inner join #systemItems i on n.[key] = (i.SourceSubject + '.' + cast(i.SourceSubjectID as varchar)) and i.SourceHasSourceRules = 1;
+
+			
+			merge	@nodes as T
+			using	(
+					select	distinct
+							A.ID as assetId,
+							I.TargetSubject + '.' + cast(I.TargetSubjectID as varchar) as [key],
+							I.TargetSubject as [obj],
+							I.TargetSubjectID as [objid], 
+							I.TargetSubject as [type],
+							I.TargetSubjectTypeName as typeName,
+							I.TargetSubjectName as name,
+							I.TargetSubjectShortName as shortname,
+							I.TargetSubjectIconBackColor as back,
+							I.TargetSubjectIconForeColor as fore,
+							case 
+								when I.TargetSubject = @type and I.TargetSubjectID = @id then 'Focal'
+								else 'Normal'
+							end as template,
+							null as other,
+							I.TargetHasSourceRules as HasSourceRules
+					from	#systemItems I
+					left join Asset A on A.[Object] = I.TargetSubject and A.ObjectID = I.TargetSubjectID
+					where	I.TargetSubject + '.' + cast(I.TargetSubjectID as varchar) not in (select [key] from @nodes)
+					) S
+			on		(T.[key] = S.[key])
+			when matched then
+			update	set
+					T.HasSourceRules = S.HasSourceRules
+			when	not matched then
+			insert	(assetId, [key], obj, [objid], [type], typeName, name, shortname, back, fore, template, other, HasSourceRules)
+			values	(S.assetId, S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.shortname, S.back, S.fore, S.template, S.other, S.HasSourceRules);
+					
+
+			if @usageOnly = 1 
+			begin
+				delete	@nodes
+				where	[key] not in 
+					(
+					
+					select	case 
+								when (I.Subject = N.obj and I.SubjectID = N.objid and I.SubjectID <> @id and I.Object = @type and I.ObjectID = @id) then I.Subject + '.' + cast(I.SubjectID as varchar)
+								else I.Object + '.' + cast(I.ObjectID as varchar)
+							end as [key]
+					from	[Intersect] I
+							inner join @nodes N on	(
+													(I.Subject = N.obj and I.SubjectID = N.objid and I.SubjectID <> @id and I.Object = @type and I.ObjectID = @id) OR
+													(I.Object = N.obj and I.ObjectID = N.objid and I.ObjectID <> @id and I.Subject = @type and I.SubjectID = @id)
+													)
+							inner join IntersectType T on T.ID = I.IntersectTypeID and (I.Deleted = 0 or I.Deleted is null)
+							inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 10
+					union
+					
+					select	N.obj + '.' + cast(N.objid as varchar) as [key]
+					from	[Intersect] I1
+							inner join [Intersect] I2 on I1.Subject = @type and I1.SubjectID = @id 
+														and (
+																
+																(I2.Object = I1.Object and I2.ObjectID = I1.ObjectID)
+															)
+														and I1.ID <> I2.ID
+							inner join IntersectType T on T.ID = I2.IntersectTypeID 
+														and (I1.Deleted = 0 or I1.Deleted is null)
+														and (I2.Deleted = 0 or I2.Deleted is null) 
+							inner join @nodes N on (I2.Subject = N.obj and I2.SubjectID = N.objid)
+							inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 10
+					) and [key] <> @type + '.' + cast(@id as varchar)
+			end
+
+
+
+
+			select	(
+					select	*
+					from	@links O
+					for json path			
+					) as 'links',
+					(
+					select	I.*,
+							A.actions
+					from	@nodes I
+							cross apply (
+											select count(1) as actions, max(createdon) as createdon   
+											from Issue U
+											where U.ObjectID = I.objid AND U.Object = I.obj
+										) A
+					for json path			
+					) as 'nodes'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end 
+
+		if @view = 2
+		begin
+			insert into @links
+				select	distinct
+						SourceSubject + '.' + cast(SourceSubjectID as varchar) as 'from',
+						cast(SourceIntersectID as varchar) + '.S' as 'to',
+						'Support' as category
+				from	#items
+				union
+				select	distinct
+						cast(SourceIntersectID as varchar) + '.S' as 'from',
+						TargetSubject + '.' + cast(TargetSubjectID as varchar) as 'to',
+						'' as category
+				from	#items O
+				where	(SourceObject + cast(SourceObjectID as varchar)) = (TargetObject + cast(TargetObjectID as varchar))
+				union
+				select	distinct
+						cast(SourceIntersectID as varchar) + '.S' as 'from',
+						cast(TargetIntersectID as varchar) + '.T' as 'to',
+						'' as category
+				from	#items O
+				where	(SourceObject + cast(SourceObjectID as varchar)) <> (TargetObject + cast(TargetObjectID as varchar))
+				
+				union
+				select	distinct
+						cast(TargetIntersectID as varchar) + '.T' as 'from',
+						TargetSubject + '.' + cast(TargetSubjectID as varchar) as 'to',
+						'Support' as category
+				from	#items
+				where	(SourceObject + cast(SourceObjectID as varchar)) <> (TargetObject + cast(TargetObjectID as varchar))
+
+			insert into @nodes
+				select	distinct
+						A.ID as assetId,
+						SourceSubject + '.' + cast(SourceSubjectID as varchar) as [key],
+						SourceSubject as [obj],
+						SourceSubjectID as [objid], 
+						SourceSubject as [type],
+						SourceSubjectTypeName as typeName,
+						SourceSubjectName as name,
+						SourceSubjectShortName as shortname,
+						SourceSubjectIconBackColor as back,
+						SourceSubjectIconForeColor as fore,
+						case 
+							when SourceSubject = @type and SourceSubjectID = @id then 'Focal'
+							else 'Normal'
+						end as template,
+						null as other,
+						0 as HasSourceRules
+				from	#items 
+				left join Asset A on A.[Object] = SourceSubject and A.ObjectID = SourceSubjectID
+
+			insert into @nodes
+				select	distinct
+						A.ID as assetId,
+						cast(SourceIntersectID as varchar) + '.S' as [key],
+						SourceObject as [obj],
+						SourceObjectID as [objid], 
+						SourceObject as [type],
+						SourceObjectTypeName as typeName,
+						SourceObjectName as name,
+						SourceObjectShortName as shortname,
+						SourceObjectIconBackColor as back,
+						SourceObjectIconForeColor as fore,
+						case 
+							when SourceObject = @type and SourceObjectID = @id then 'SupportFocal'
+							else 'SupportNormal'
+						end as template,
+						null as other,
+						0 as HasSourceRules
+				from	#items
+				left join Asset A on A.[Object] = SourceObject and A.ObjectID = SourceObjectID
+
+				update n
+				set n.HasSourceRules = 1
+				from @nodes n
+				inner join #items i on n.[key] = (i.SourceSubject + '.' + cast(i.SourceSubjectID as varchar)) and i.SourceHasSourceRules = 1;
+
+
+			merge	@nodes as T
+			using	(
+					select	distinct
+							A.ID as assetId,
+							cast(TargetIntersectID as varchar) + '.T' as [key],
+							TargetObject as [obj],
+							TargetObjectID as [objid], 
+							TargetObject as [type],
+							TargetObjectTypeName as typeName,
+							TargetObjectName as name,
+							TargetObjectShortName as shortname,
+							TargetObjectIconBackColor as back,
+							TargetObjectIconForeColor as fore,
+							case 
+								when TargetObject = @type and TargetObjectID = @id then 'SupportFocal'
+								else 'SupportNormal'
+							end as template,
+							null as other,
+							TargetHasSourceRules as HasSourceRules
+					from	#items
+					left join Asset A on A.[Object] = TargetObject and A.ObjectID = TargetObjectID
+					where	(SourceObject + cast(SourceObjectID as varchar)) <> (TargetObject + cast(TargetObjectID as varchar))
+					) S
+			on		(T.[key] = S.[key])
+			when	matched then
+			update	set
+					T.HasSourceRules = S.HasSourceRules
+			when	not matched then
+			insert	(assetId, [key], obj, [objid], [type], typeName, name, shortname, back, fore, template, other, HasSourceRules)
+			values	(S.assetId, S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.shortname, S.back, S.fore, S.template, S.other, S.HasSourceRules);
+
+			merge	@nodes as T
+			using	(
+					select	distinct
+							A.ID as assetId,
+							TargetSubject + '.' + cast(TargetSubjectID as varchar) as [key],
+							TargetSubject as [obj],
+							TargetSubjectID as [objid], 
+							TargetSubject as [type],
+							TargetSubjectTypeName as typeName,
+							TargetSubjectName as name,
+							TargetSubjectShortName as shortname,
+							TargetSubjectIconBackColor as back,
+							TargetSubjectIconForeColor as fore,
+							case 
+								when TargetSubject = @type and TargetSubjectID = @id then 'Focal'
+								else 'Normal'
+							end as template,
+							null as other,
+							TargetHasSourceRules as HasSourceRules
+					from	#items
+					left join Asset A on A.[Object] = TargetSubject and A.ObjectID = TargetSubjectID
+					where	TargetSubject + '.' + cast(TargetSubjectID as varchar) not in (select [key] from @nodes)
+					) S
+			on		(T.[key] = S.[key])
+			when	matched then
+			update	set
+					T.HasSourceRules = S.HasSourceRules
+			when	not matched then
+			insert	(assetId, [key], obj, [objid], [type], typeName, name, shortname, back, fore, template, other, HasSourceRules)
+			values	(S.assetId, S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.shortname, S.back, S.fore, S.template, S.other, S.HasSourceRules);
+
+
+
+
+			if @usageOnly = 1 
+			begin
+				declare @usages table ([key] varchar(250))
+
+				insert into @usages
+					
+					select	
+							case 
+								when (I.Subject = N.obj and I.SubjectID = N.objid and I.SubjectID <> @id and I.Object = @type and I.ObjectID = @id) then I.Subject + '.' + cast(I.SubjectID as varchar)
+								else I.Object + '.' + cast(I.ObjectID as varchar)
+							end as [key]
+					from	[Intersect] I
+							inner join @nodes N on	(
+													(I.Subject = N.obj and I.SubjectID = N.objid and I.SubjectID <> @id and I.Object = @type and I.ObjectID = @id) OR
+													(I.Object = N.obj and I.ObjectID = N.objid and I.ObjectID <> @id and I.Subject = @type and I.SubjectID = @id)
+													)
+							inner join IntersectType T on T.ID = I.IntersectTypeID and (I.Deleted = 0 or I.Deleted is null)
+							inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 10
+					union
+					
+					select	N.obj + '.' + cast(N.objid as varchar) as [key]
+					from	[Intersect] I1
+							inner join [Intersect] I2 on I1.Subject = @type and I1.SubjectID = @id 
+														and (
+																
+																(I2.Object = I1.Object and I2.ObjectID = I1.ObjectID)
+															)
+														and I1.ID <> I2.ID
+							inner join IntersectType T on T.ID = I2.IntersectTypeID 
+														and (I1.Deleted = 0 or I1.Deleted is null)
+														and (I2.Deleted = 0 or I2.Deleted is null) 
+							inner join @nodes N on (I2.Subject = N.obj and I2.SubjectID = N.objid)
+							inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 10
+
+				delete	@nodes
+				where	[key] not in 
+					(
+					select	[key]
+					from	@usages
+					) 
+					and [key] <> @type + '.' + cast(@id as varchar)
+					and [template] not like '%Support%'
+
+				delete	@links
+				where	[from] not in (select [key] from @nodes)
+						or [to] not in (select [key] from @nodes)
+				
+				delete	@nodes
+				where	[template] like '%Support%'
+						and [key] not in (
+							select	[key]
+							from	@nodes 
+							where	[template] like '%Support%'
+									and [key] in (select [from] from @links)
+									and [key] in (select [to] from @links)
+						)
+			end
+
+
+
+
+
+			select	(
+					select	*
+					from	@links O
+					for json path			
+					) as 'links',
+					(
+					select	I.*,
+							A.actions
+					from	@nodes I
+							cross apply (
+											select count(1) as actions, max(createdon) as createdon   
+											from Issue U
+											where U.ObjectID = I.objid AND U.Object = I.obj
+										) A
+					for json path			
+					) as 'nodes'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end 
+	end
+
+	if @view in (3,4)
+	begin
+
+		IF OBJECT_ID('tempdb..#tFusionPoints') IS NOT NULL
+			DROP TABLE #tFusionPoints;
+
+		create table #tFusionPoints (ID int, MapItemID int, SourceFusionAttributeID int, TargetFusionAttributeID int, Depth int, Direction char null);
+
+		CREATE CLUSTERED INDEX PK_temptFusionPoints ON #tFusionPoints ([ID] ASC,[SourceFusionAttributeID] ASC,[TargetFusionAttributeID] ASC, [Depth] ASC, [Direction] ASC);
+
+		declare @tItems table (
+			MapItemID int, 
+
+			SourceIntersectID int, 
+			SourceSubjectTypeName nvarchar(500), SourceSubjectName nvarchar(500), SourceSubjectShortName nvarchar(500), SourceSubject varchar(50), SourceSubjectID int,
+			SourceObjectTypeName nvarchar(500), SourceObjectName nvarchar(500), SourceObjectShortName nvarchar(500), SourceObject varchar(50), SourceObjectID int, 
+			
+			TargetIntersectID int, 
+			TargetSubjectTypeName nvarchar(500), TargetSubjectName nvarchar(500), TargetSubjectShortName nvarchar(500), TargetSubject varchar(50), TargetSubjectID int, 
+			TargetObjectTypeName nvarchar(500), TargetObjectName nvarchar(500), TargetObjectShortName nvarchar(500), TargetObject varchar(50), TargetObjectID int
+		)
+	
+		if @type = 'FusionAttribute'
+			begin
+				insert into #tFusionPoints
+					select  top (@maxItems) 
+							I.ID,
+							NULL,
+							I.SourceFusionAttributeID,
+							I.TargetFusionAttributeID, 
+							0,
+							'A'
+					from	MapRuleItem I
+							inner join FusionAttribute SFA on SFA.ID = I.SourceFusionAttributeID and SFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = I.TargetFusionAttributeID and TFA.Deleted = 0
+					where	I.SourceFusionAttributeID = @id 
+
+				set @maxItems = @maxItems - (select count(*) from #tFusionPoints);
+
+				if (@maxItems > 0)
+				begin
+					insert into #tFusionPoints
+					select	top (@maxItems)
+							I.ID,
+							NULL,
+							I.SourceFusionAttributeID,
+							I.TargetFusionAttributeID,
+							0,
+							'A'
+					from	MapRuleItem I
+							inner join FusionAttribute SFA on SFA.ID = I.SourceFusionAttributeID and SFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = I.TargetFusionAttributeID and TFA.Deleted = 0
+					where	I.TargetFusionAttributeID = @id and 
+						not exists (select 1 from #tFusionPoints pt where pt.SourceFusionAttributeID = I.TargetFusionAttributeID and pt.TargetFusionAttributeID = I.SourceFusionAttributeID)
+
+					set @maxItems = @maxItems - (select count(*) from #tFusionPoints);
+				end
+				
+				if EXISTS (SELECT 1 FROM @technicalRows)
+				begin
+					insert into #tFusionPoints
+					select
+						ID,
+						MapItemID,
+						SourceFusionAttributeID,
+						TargetFusionAttributeID,
+						0,
+						'A'
+					from @technicalRows
+					where Adding = 1;
+				end;
+				
+				set @currentDepth = 0;
+
+				while(exists(select 1 from #tFusionPoints ps where ps.depth = @currentDepth) and (@currentDepth < @maxDepth) and (@maxItems > 0))
+				begin
+					set @itemCount = (select count(*) from #tFusionPoints)
+
+					insert into #tFusionPoints
+						select distinct	top (@maxItems)
+								S.ID,
+								NULL,
+								S.SourceFusionAttributeID,
+								S.TargetFusionAttributeID,
+								@currentDepth+1,
+								'F'
+						from	MapRuleItem S
+								inner join #tFusionPoints FP on FP.SourceFusionAttributeID = S.TargetFusionAttributeID and FP.Depth = @currentDepth and FP.Direction in('A','F')
+						where not exists (select ID from #tFusionPoints where ID = S.ID)
+							and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
+
+						set @maxItems = @maxItems - ((select count(*) from #tFusionPoints) - @itemCount);
+						set @itemCount = (select count(*) from #tFusionPoints);
+
+						if @maxItems > 0
+						begin
+							insert into #tFusionPoints
+							select distinct top (@maxItems)	
+									S.ID,
+									NULL,
+									S.SourceFusionAttributeID,
+									S.TargetFusionAttributeID,
+									@currentDepth+1,
+									'B'
+							from	MapRuleItem S
+									inner join #tFusionPoints FP on FP.TargetFusionAttributeID = S.SourceFusionAttributeID and FP.Depth = @currentDepth and FP.Direction in('A','B')
+							where not exists (select ID from #tFusionPoints where ID = S.ID) 
+									and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
+
+							set @maxItems = @maxItems - ((select count(*) from #tFusionPoints) - @itemCount);
+							set @itemCount = (select count(*) from #tFusionPoints);
+						end
+
+
+						set @currentDepth = @currentDepth + 1;
+						print @currentDepth;
+				end
+				
+				if EXISTS (SELECT 1 FROM @technicalRows)
+				begin
+					delete I
+					from #tFusionPoints I
+					inner join @technicalRows R on R.Deleting = 1 AND R.ID = I.ID;
+				end
+
+				insert into @tItems
+				select
+							MI.ID,
+
+							MI.SourceIntersectID,
+							SIS.TypeName as SourceSubjectTypeName,
+							FSIS.TextPath as SourceSubjectName,
+							SIS.DisplayValue as SourceSubjectShortName,
+							SIS.Object as SourceSubject,
+							SIS.ObjectID as SourceSubjectID,
+							SIO.TypeName as SourceObjectTypeName,
+							FSIO.TextPath as SourceObjectName,
+							SIO.DisplayValue as SourceObjectShortName,
+							SIO.Object as SourceObject,
+							SIO.ObjectID as SourceObjectID,
+
+							MI.TargetIntersectID,
+							TIS.TypeName as TargetSubjectTypeName,
+							FTIS.TextPath as TargetSubjectName,
+							TIS.DisplayValue as TargetSubjectShortName,
+							TIS.Object as TargetSubject,
+							TIS.ObjectID as TargetSubjectID,
+							TIO.TypeName as TargetObjectTypeName,
+							FTIO.TextPath as TargetObjectName,
+							TIO.DisplayValue as TargetObjectShortName,
+							TIO.Object as TargetObject,
+							TIO.ObjectID as TargetObjectID
+					from	#tFusionPoints F
+					inner join MapRuleItemMapItem J on J.MapRuleItemID = F.ID
+					inner join MapItem MI on MI.ID = J.MapItemID
+					inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+					inner join [Intersect] TI on TI.ID = MI.TargetIntersectID
+					inner join AssetDetail SIS on SIS.Object = SI.Subject and SIS.ObjectID = SI.SubjectID
+					inner join AssetDetail SIO on SIO.Object = SI.Object and SIO.ObjectID = SI.ObjectID
+					inner join AssetDetail TIS on TIS.Object = TI.Subject and TIS.ObjectID = TI.SubjectID
+					inner join AssetDetail TIO on TIO.Object = TI.Object and TIO.ObjectID = TI.ObjectID
+					inner join FusionAttribute FSIS on SIS.Object = 'FusionAttribute' and FSIS.ID = SIS.ObjectID
+					inner join FusionAttribute FSIO on SIO.Object = 'FusionAttribute' and FSIO.ID = SIO.ObjectID
+					inner join FusionAttribute FTIS on TIS.Object = 'FusionAttribute' and FTIS.ID = TIS.ObjectID
+					inner join FusionAttribute FTIO on TIO.Object = 'FusionAttribute' and FTIO.ID = TIO.ObjectID;
+
+				insert into @tItems
+					select	
+							MI.ID,
+
+							MI.SourceIntersectID,
+							SIS.TypeName as SourceSubjectTypeName,
+							FSIS.TextPath as SourceSubjectName,
+							SIS.DisplayValue as SourceSubjectShortName,
+							SIS.Object as SourceSubject,
+							SIS.ObjectID as SourceSubjectID,
+							SIO.TypeName as SourceObjectTypeName,
+							FSIO.TextPath as SourceObjectName,
+							SIO.DisplayValue as SourceObjectShortName,
+							SIO.Object as SourceObject,
+							SIO.ObjectID as SourceObjectID,
+
+							MI.TargetIntersectID,
+							TIS.TypeName as TargetSubjectTypeName,
+							FTIS.TextPath as TargetSubjectName,
+							TIS.DisplayValue as TargetSubjectShortName,
+							TIS.Object as TargetSubject,
+							TIS.ObjectID as TargetSubjectID,
+							TIO.TypeName as TargetObjectTypeName,
+							FTIO.TextPath as TargetObjectName,
+							TIO.DisplayValue as TargetObjectShortName,
+							TIO.Object as TargetObject,
+							TIO.ObjectID as TargetObjectID
+					from	MapItem MI
+							inner join	(
+										select	ID.MapItemID
+										from	MapItemMap DM
+												inner join @tItems D on D.MapItemID = DM.MapItemID
+												inner join MapItemMap ID on ID.MapID = DM.MapID and ID.MapItemID not in (
+																														select MapItemID from @tItems
+																														)
+										) O on O.MapItemID = MI.ID
+					inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+					inner join [Intersect] TI on TI.ID = MI.TargetIntersectID
+					inner join AssetDetail SIS on SIS.Object = SI.Subject and SIS.ObjectID = SI.SubjectID
+					inner join AssetDetail SIO on SIO.Object = SI.Object and SIO.ObjectID = SI.ObjectID
+					inner join AssetDetail TIS on TIS.Object = TI.Subject and TIS.ObjectID = TI.SubjectID
+					inner join AssetDetail TIO on TIO.Object = TI.Object and TIO.ObjectID = TI.ObjectID
+					inner join FusionAttribute FSIS on SIS.Object = 'FusionAttribute' and FSIS.ID = SIS.ObjectID
+					inner join FusionAttribute FSIO on SIO.Object = 'FusionAttribute' and FSIO.ID = SIO.ObjectID
+					inner join FusionAttribute FTIS on TIS.Object = 'FusionAttribute' and FTIS.ID = TIS.ObjectID
+					inner join FusionAttribute FTIO on TIO.Object = 'FusionAttribute' and FTIO.ID = TIO.ObjectID;
+
+			end
+		else
+			begin
+				declare @tBusinessPoints table ( ID int, SourceIntersectID int, TargetIntersectID int )
+
+				insert into @objects values (@type, @id)
+
+				if not exists(
+					select	MI.ID
+					from	MapItem MI
+							inner join [Intersect] SI on SI.ID = MI.SourceIntersectID 
+							inner join [Intersect] TI ON TI.ID = MI.TargetIntersectID 
+					where 	( (SI.Subject = @type and SI.SubjectID = @id) OR (SI.Object = @type and SI.ObjectID = @id)  )
+							OR ( (TI.Subject = @type and TI.SubjectID = @id) OR (TI.Object = @type and TI.ObjectID = @id)  )
+				)
+				begin
+					insert into @objects
+						select	case 
+									when I.Subject = @type and I.SubjectID = @id then I.Object
+									else I.Subject
+								end,
+								case 
+									when I.Subject = @type and I.SubjectID = @id then I.ObjectID 
+									else I.SubjectID 
+								end
+						from	[Intersect] I
+								inner join IntersectType T on T.ID = I.IntersectTypeID 
+								inner join [Predicate] P on P.ID = T.PredicateID and P.Type = 6
+						where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)
+				end
+				
+				insert into @tBusinessPoints
+					select	MI.ID, MI.SourceIntersectID, MI.TargetIntersectID
+					from	MapItem MI
+							inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+							inner join [Intersect] TI ON TI.ID = MI.TargetIntersectID
+							inner join @objects O on	( (SI.Subject = O.Type and SI.SubjectID = O.ID) OR (SI.Object = O.Type and SI.ObjectID = O.ID)  ) OR 
+														( (TI.Subject = O.Type and TI.SubjectID = O.ID) OR (TI.Object = O.Type and TI.ObjectID = O.ID)  )
+				
+				insert into @tBusinessPoints
+					select	MI.ID, MI.SourceIntersectID, MI.TargetIntersectID
+					from	MapItem MI
+							inner join	(
+										select	ID.MapItemID
+										from	MapItemMap DM
+												inner join @tBusinessPoints D on D.ID = DM.MapItemID
+												inner join MapItemMap ID on ID.MapID = DM.MapID and ID.MapItemID not in (
+																														select ID from @tBusinessPoints
+																														)
+										) O on O.MapItemID = MI.ID;
+
+				with cte as (
+					select	ID,
+							SourceIntersectID,
+							TargetIntersectID,
+							1 as [Level]
+					from	@tBusinessPoints
+					union all
+					select	S.ID,
+							S.SourceIntersectID,
+							S.TargetIntersectID,
+							T.[Level] + 1 as [Level]
+					from	MapItem S
+							inner join cte T on T.SourceIntersectID = S.TargetIntersectID and S.ID <> T.ID
+					where	T.[Level] <= 25
+				)
+				insert into @tBusinessPoints
+					select ID, SourceIntersectID, TargetIntersectID from cte where ID not in (select ID from @tBusinessPoints)
+
+				insert into @tItems
+					select	O.ID,
+
+							O.SourceIntersectID,
+							SIS.TypeName as SourceSubjectTypeName,
+							SIS.DisplayValue as SourceSubjectName,
+							SIS.DisplayValue as SourceSubjectShortName,
+							SIS.Object as SourceSubject,
+							SIS.ObjectID as SourceSubjectID,
+							SIO.TypeName as SourceObjectTypeName,
+							SIO.DisplayValue as SourceObjectName,
+							SIO.DisplayValue as SourceObjectShortName,
+							SIO.Object as SourceObject,
+							SIO.ObjectID as SourceObjectID,
+
+							O.TargetIntersectID,
+							TIS.TypeName as TargetSubjectTypeName,
+							TIS.DisplayValue as TargetSubjectName,
+							TIS.DisplayValue as TargetSubjectShortName,
+							TIS.Object as TargetSubject,
+							TIS.ObjectID as TargetSubjectID,
+							TIO.TypeName as TargetObjectTypeName,
+							TIO.DisplayValue as TargetObjectName,
+							TIO.DisplayValue as TargetObjectShortName,
+							TIO.Object as TargetObject,
+							TIO.ObjectID as TargetObjectID
+					from	@tBusinessPoints O
+					inner join [Intersect] SI on SI.ID = O.SourceIntersectID
+					inner join [Intersect] TI on TI.ID = O.TargetIntersectID
+					inner join AssetDetail SIS on SIS.Object = SI.Subject and SIS.ObjectID = SI.SubjectID
+					inner join AssetDetail SIO on SIO.Object = SI.Object and SIO.ObjectID = SI.ObjectID
+					inner join AssetDetail TIS on TIS.Object = TI.Subject and TIS.ObjectID = TI.SubjectID
+					inner join AssetDetail TIO on TIO.Object = TI.Object and TIO.ObjectID = TI.ObjectID
+
+				insert into #tFusionPoints
+					select	top (@maxItems) 
+							J.MapRuleItemID,
+							J.MapItemID,
+							T.SourceFusionAttributeID,
+							T.TargetFusionAttributeID,
+							0,
+							'A'
+					from	@tItems I
+							inner join MapRuleItemMapItem J on J.MapItemID = I.MapItemID
+							inner join MapRuleItem T on T.ID = J.MapRuleItemID
+							inner join FusionAttribute SFA on SFA.ID = T.SourceFusionAttributeID and SFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = T.TargetFusionAttributeID and TFA.Deleted = 0;
+
+				set @maxItems = @maxItems - (select count(*) from #tFusionPoints);
+				
+				if EXISTS (SELECT 1 FROM @technicalRows)
+				begin
+					insert into #tFusionPoints
+					select
+						ID,
+						MapItemID,
+						SourceFusionAttributeID,
+						TargetFusionAttributeID,
+						0,
+						'A'
+					from @technicalRows
+					where Adding = 1;
+				end;
+				
+				set @currentDepth = 0;
+				
+				while( exists(select 1 from #tFusionPoints ps where ps.depth = @currentDepth) and (@currentDepth < @maxDepth) and (@maxItems > 0))
+				begin	
+					set @itemCount = (select count(*) from #tFusionPoints);
+
+					insert into #tFusionPoints
+						select distinct top (@maxItems)	
+							    S.ID,
+								NULL,
+								S.SourceFusionAttributeID,
+								S.TargetFusionAttributeID,
+								@currentDepth+1,
+								'F'
+						from	MapRuleItem S
+								inner join #tFusionPoints FP on FP.SourceFusionAttributeID = S.TargetFusionAttributeID and FP.Depth = @currentDepth and FP.Direction in('A','F')
+						where not exists (select ID from #tFusionPoints where ID = S.ID)
+							and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
+
+					set @maxItems = @maxItems - ((select count(*) from #tFusionPoints) - @itemCount);
+					set @itemCount = (select count(*) from #tFusionPoints);
+
+					if (@maxItems > 0)
+					begin
+						insert into #tFusionPoints
+							select distinct	top (@maxItems) 
+							        S.ID,
+									NULL,
+									S.SourceFusionAttributeID,
+									S.TargetFusionAttributeID,
+									@currentDepth+1,
+									'B'
+							from	MapRuleItem S
+									inner join #tFusionPoints FP on FP.TargetFusionAttributeID = S.SourceFusionAttributeID and FP.Depth = @currentDepth and FP.Direction in('A','B')
+							where not exists (select ID from #tFusionPoints where ID = S.ID) 
+									and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
+
+					set @maxItems = @maxItems - ((select count(*) from #tFusionPoints) - @itemCount);
+					end
+
+					set @currentDepth = @currentDepth + 1;
+					print @currentDepth;
+				end
+
+				if EXISTS (SELECT 1 FROM @technicalRows)
+				begin
+					delete I
+					from #tFusionPoints I
+					inner join @technicalRows R on R.Deleting = 1 AND R.ID = I.ID;
+				end;
+			end
+
+		if @view = 3
+		begin
+			insert into @links
+				select	distinct
+						cast(S.SourceFusionAttributeID as varchar),
+						cast(S.TargetFusionAttributeID as varchar),
+						'' as category
+				from	#tFusionPoints S
+						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
+						left join @tItems B on B.MapItemID = J.MapItemID
+			insert into @nodes
+				select	distinct
+						A.ID as assetId,
+						cast(S.SourceFusionAttributeID as varchar),
+						'FusionAttribute' as [obj],
+						SourceFusionAttributeID as [objid], 
+						'FusionAttribute' as [type],
+						T.Name as typeName,
+						FA.TextPath as name,
+						FA.Name as shortname,
+						COALESCE(ST.IconBackColor, '#000') as back,
+						COALESCE(ST.IconForeColor, '#fff') as fore,
+						'Fusion' as template,
+						B.SourceSubjectTypeName + ' : ' + B.SourceSubjectName as other,
+						null
+				from	#tFusionPoints S
+						inner join FusionAttribute FA on FA.ID = S.SourceFusionAttributeID
+						inner join FusionAttributeType T on T.ID = FA.FusionAttributeTypeID
+						left join AssetType TA on TA.Object = 'FusionAttributeType' and TA.ObjectID = T.ID
+						left join AssetTypeStyle ST on ST.ID = TA.ID
+						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
+						left join @tItems B on B.MapItemID = J.MapItemID
+						left join Asset A on A.[Object] = 'FusionAttribute' and A.ObjectID = SourceFusionAttributeID
+			insert into @nodes
+				select	distinct
+						A.ID as assetId,
+						cast(S.TargetFusionAttributeID as varchar),
+						'FusionAttribute' as [obj],
+						TargetFusionAttributeID as [objid], 
+						'FusionAttribute' as [type],
+						T.Name as typeName,
+						FA.TextPath as name,
+						FA.Name as shortname,
+						COALESCE(ST.IconBackColor, '#000') as back,
+						COALESCE(ST.IconForeColor, '#fff') as fore,
+						'Fusion' as template,
+						B.TargetSubjectTypeName + ' : ' + B.TargetSubjectName as other,
+						null
+				from	#tFusionPoints S
+						inner join FusionAttribute FA on FA.ID = S.TargetFusionAttributeID
+						inner join FusionAttributeType T on T.ID = FA.FusionAttributeTypeID
+						left join AssetType TA on TA.Object = 'FusionAttributeType' and TA.ObjectID = T.ID
+						left join AssetTypeStyle ST on ST.ID = TA.ID
+						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
+						left join @tItems B on B.MapItemID = J.MapItemID
+						left join Asset A on A.[Object] = 'FusionAttribute' and A.ObjectID = TargetFusionAttributeID
+				where	cast(S.TargetFusionAttributeID as varchar) + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') not in (select [key] from @nodes)
+			
+			delete	@nodes 
+			where	other is null 
+					and (obj + cast([objid] as varchar)) in (
+															select	(obj + cast([objid] as varchar))
+															from	@nodes 
+															where	other is not null
+															)
+			
+			;with nd as
+			(
+				select distinct 
+					assetId, 
+					[key],
+					obj,	
+					[objid],	
+					[type],	
+					typeName,
+					[name],
+					shortname,	
+					back,
+					fore,
+					template,
+					other,
+					HasSourceRules 
+				from @nodes
+			)
+			delete from @nodes where id not in (
+				select distinct n.id from nd
+				cross apply (
+					select max(id) as id from @nodes where [key] = nd.[key]
+				) cnt
+				inner join @nodes n on n.id = cnt.id
+			);
+
+			delete	T
+			from	@links T
+					left join @nodes S on S.[key] = T.[from] or S.[key] = T.[to]
+			where	S.[key] is null
+			
+			select	(
+					select	*
+					from	@links O
+					for json path			
+					) as 'links',
+					(
+					select	distinct
+							*
+					from	@nodes
+					for json path			
+					) as 'nodes'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end 
+
+		if @view = 4
+		begin
+			select (
+				select distinct
+					F.ID,
+					I.MapItemID,
+					F.SourceFusionAttributeID,
+					FS.TextPath as SourceFusionAttributeName,
+					F.TargetFusionAttributeID,
+					FT.TextPath as TargetFusionAttributeName 
+				from #tFusionPoints F
+				left join @tItems I on I.MapItemID = F.MapItemID
+				inner join FusionAttribute FS on FS.ID = F.SourceFusionAttributeID
+				inner join FusionAttribute FT on FT.ID = F.TargetFusionAttributeID
+				for json path
+				) as 'items'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end 
+	end
+end
+GO
 
 		]]>
     </sql>
@@ -3204,6 +5112,2259 @@ begin
 end
 GO
 
+ALTER FUNCTION [utility].[ObjectDetail]
+(
+	@type varchar(50), 
+	@id int
+)
+RETURNS @tbl TABLE 
+(
+	ID int,
+	AssetID bigint,
+	UID uniqueidentifier,
+	AssetTypeID int,
+	AssetTypeUid uniqueidentifier,
+	Name nvarchar(max),
+	TextPath nvarchar(2500),
+	Description nvarchar(max),
+	ParentID int null,
+	ParentType nvarchar(250),
+	Url nvarchar(2500),
+	TypeID int,
+	[Type] varchar(25),
+	[TypeName] nvarchar(250),
+	[Class] int,
+	IconBackColor varchar(15),
+	IconForeColor varchar(15),
+	IconText varchar(15),
+	Status nvarchar(25) null
+) 
+AS
+BEGIN
+	if @type in 
+	(
+		'Artifact',
+		'Attribute',
+		'Fusion',
+		'FusionAttribute',
+		'Policy',
+		'ReferenceItem',
+		'Rule',
+		'Taxonomy',
+		'Group',
+		'FusionQueryAttribute',
+		'Resource'
+	)
+	begin
+		insert into @tbl (	ID,		UID,	AssetID,	AssetTypeID, AssetTypeUid, Name,			TextPath,		[Description],	ParentID,	ParentType, Url,											TypeID,	[Type],	TypeName, [Class], Status)
+			SELECT			ObjectID,	UID, ID, 		AssetTypeID, AssetTypeUid, DisplayValue,	DisplayValue,	NULL,			null,		null,		dbo.GenerateAssetUrl(ID),	TypeID,	Type,	TypeName, AssetTypeClass, NULL
+			FROM	AssetDetail
+			where	Object = @type 
+					and ObjectID = @id
+	end
+
+	if @type in
+	(
+		'ArtifactType',
+		'AttributeType',
+		'FusionType',
+		'FusionAttributeType',
+		'FusionQueryAttributeType',
+		'PolicyType',
+		'ReferenceItemType',
+		'RuleType',
+		'TaxonomyType'
+	)
+	begin
+		insert into @tbl (	ID,		AssetTypeUid, [Uid], Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class])
+			SELECT			ObjectID, O.[Uid], O.[Uid],		Name,	Name,		Description,	NULL,		NULL,		turl.[url] as Url,	ObjectID,		@type,	'Asset Type', O.[Class]
+			FROM	AssetType O
+			cross apply [dbo].GetAssetTypeUrlById(o.id) turl
+			WHERE	Object = @type
+					and ObjectID = @id
+	end
+
+	if @type = 'Intersect'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName, [Class])
+			SELECT			O.ID,	IName.Name,	IName.Name,		'',				NULL,		@type,		null,	O.IntersectTypeID,	'IntersectType', ITN.Name, 0	
+			FROM	[Intersect] O
+					INNER JOIN IntersectType T ON O.IntersectTypeID = T.ID and O.ID = @id
+					CROSS APPLY dbo.GetIntersectNames(O.ID) IName	
+					CROSS APPLY dbo.GetIntersectTypeNames(T.ID) ITN
+	end
+
+	if @type = 'IntersectType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class],[UID])
+			SELECT			ID,		T.Name,	T.Name,		'',				NULL,		NULL,		null,	ID,		@type,	'Intersect Type', 0, uid
+			FROM	IntersectType 
+			CROSS APPLY dbo.GetIntersectTypeNames(@id) T	
+			WHERE	ID = @id
+	end
+
+	if @type = 'Issue'
+	begin
+		insert into @tbl (	ID,	UID,	Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName, [Class])
+			SELECT			O.ID,O.Uid,	'',	'',		'',				NULL,		NULL,		null,	O.IssueTypeID,	'IssueType',	T.Name, 0
+			FROM	Issue O
+					INNER JOIN IssueType T ON O.IssueTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'IssueType'
+	begin
+		insert into @tbl (	ID,		UID,Name,	TextPath,	[Description],	ParentID,	ParentType, Url,													TypeID,				[Type],				TypeName, [Class])
+			SELECT			O.ID,	O.uid,O.Name,	O.Name,		O.Description,				NULL,		@type,		NULL,	O.ID,	'IssueType',	'Issue Type', 0
+			FROM	IssueType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Lookup'
+	begin
+		insert into @tbl (	ID,		Name,				TextPath,	[Description],	ParentID,	ParentType, Url,												TypeID,			[Type],			TypeName, [Class])
+			SELECT			O.ID,	T.Name + ' Item',	T.Name,		'',				NULL,		NULL,		dbo.GenerateUrlByTypeName(@type, O.LookupTypeID, O.ID),	O.LookupTypeID,	'LookupType',	T.Name, 0
+			FROM	[Lookup] O
+					INNER JOIN LookupType T ON O.LookupTypeID = T.ID AND O.ID = @id
+	end
+
+	if @type = 'LookupType'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class])
+			SELECT			ID,		Name,	Name,		'',				0,			@type,		dbo.GenerateUrlByTypeName(@type, ID, 0),	ID,		@type,	'Lookup Type', 0
+			FROM	LookupType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'Report'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, [Class])
+			SELECT			O.ID,	O.Name,	O.Name,	O.Description,	NULL,		@type,		'#',	0,	'Report',	'Report', 0
+			FROM	Report O
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ResponsibilityType'
+	begin
+		insert into @tbl (	ID, Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class])
+			SELECT			ID,	O.Name,	NULL,		Description,	NULL,		NULL,		null,	ID,		@type,	'Responsibility Type', 0
+			FROM	ResponsibilityType O
+			WHERE	ID = @id
+	end
+
+	if @type = 'ResourceType'
+	begin
+		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName, [Class])
+		values			(@id, 'Resource Type', '#/resources/administration', @id, @type, 'Resource Type',11)
+	end
+
+	if @type = 'RuleImplementation'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status, [Class])
+			SELECT			O.ID,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)) ,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)),	null,	T.ID,		'Rule',		null,	T.RuleTypeID,	'RuleType',	T.DisplayValue, 'Active', 7
+			FROM	[RuleImplementation] O
+					inner join [Rule] T on T.ID = O.RuleID
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'ShoppingCart'
+	begin
+			insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class])
+			SELECT			O.ID,		Name,	Name,		NULL,	NULL,		NULL,		dbo.GenerateUrlByTypeName('ShoppingCartType', O.ShoppingCartTypeID, O.ID),	O.ID,		@type,	T.Name, 0
+			FROM	ShoppingCart O
+			inner join ShoppingCartType T on O.ShoppingCartTypeID = T.ID
+			WHERE	O.ID = @id
+	end
+
+	if @type = 'Tag'
+	begin
+		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, [Class])
+			SELECT			T.ID,	T.Value,	T.Value,	NULL,	NULL,		@type,		'tag/' + CAST(T.Uid AS varchar(50)),	0,	'Tag',	'Tag', 0
+			FROM	Tag T
+			WHERE	T.ID = @id
+	end
+
+	update	T
+	set		T.IconBackColor = coalesce(S.IconBackColor, '#000000'),
+			T.IconForeColor = coalesce(S.IconForeColor, '#ffffff'),
+			T.IconText = COALESCE(S.IconText, 'leaf') 
+	from	@tbl T
+			left join ObjectStyle S ON S.ObjectType = T.[Type] and S.ObjectID = T.TypeID
+
+	RETURN
+END
+GO
+
+ALTER PROCEDURE [dbo].[GetCommentDetailByID]
+	@id int
+AS
+BEGIN
+	with i (ResourceID) 
+	as
+	(
+		select	r.ResourceID
+		from	ResponsibilityDetail r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
+	),
+	P (ID, ParentID)
+	AS
+	(
+		SELECT		C.ID,
+					C.ParentID
+		FROM		Comment C
+		WHERE		ID = @id
+	)
+
+	SELECT		C.*,
+				C.CreatingResourceID,
+				O.DisplayValue as ObjectName,				
+				AUrl.Url as ObjectUrl,
+				case
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectType
+					ELSE 'Resource'
+				end as ObjectType,
+				O.DisplayValue as ResourceName,
+				case 
+					WHEN C.ParentID IS NULL THEN C.OwnerObjectID
+					ELSE C.CreatingResourceID
+				end as ObjectID,
+				(
+				select	CRD.Object,
+						CRD.ObjectID,
+						CRD.TextPath,
+						CRD.ObjectTypeName,
+						CRD.Url,
+						CRD.ForeColor as IconForeColor,
+						CRD.BackColor as IconBackColor,
+						CRD.NgUrl
+				from	CommentRelation CR
+				inner join (
+					select Object, ObjectID, ForeColor, BackColor, TypeName as ObjectTypeName, AUrl.Url as Url, AUrl.Url as NgUrl, DisplayValue as TextPath from AssetDetail A
+					cross apply [dbo].[GetAssetUrlById](A.ID) AUrl
+					union all
+					select T.Object, T.ObjectID, OS.IconForeColor as ForeColor, OS.IconBackColor as BackColor, null as ObjectTypeName, TUrl.Url as Url, TUrl.Url as NgUrl, Name as TextPath from AssetType T
+					cross apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
+					left join ObjectStyle OS on OS.ObjectType = T.Object and OS.ObjectID = T.ObjectID
+				) CRD on CR.CommentID = C.ID 
+					and CR.ObjectType = CRD.[Object] 
+					and CR.ObjectID = CRD.ObjectID
+				where Object != 'Resource'
+					and TextPath != 'FirstNameLastName'
+				for xml path('tag'), root('tags'), type
+				) as TagsXml,
+				(
+				select CommentID,
+						ResourceID,
+						vote as VoteValue
+				from commentvote
+				where commentid = p.ID
+					for xml path('vote'), root('votes'), type
+			) as VotesXML,
+			CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+				cast(1 as bit)
+			ELSE
+				cast(0 as bit)
+			END as CreatorIsOwner
+	FROM		Comment C
+				left join AssetDetail O on O.[Object] = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID
+				outer apply [dbo].[GetAssetUrlById](O.ID) AUrl
+				INNER JOIN P ON C.ID = P.ID
+	ORDER BY	C.ParentID, C.DateCreated DESC
+END
+GO
+
+ALTER PROCEDURE [dbo].[GetCommentDetailsByFollower]
+
+	@resourceID int,
+	@skip int,
+	@take int,
+	@dateStart datetime = null,
+	@dateEnd datetime = null,
+	@commentTypeID int = 0,
+	@searchPhrase varchar(100) = ''
+
+
+
+AS
+BEGIN
+	set nocount on;
+
+	drop table if exists #commentIds;
+	create table #commentIds (id int);
+
+	insert into #commentIds
+		select	CommentID as ID
+		from	FollowDetail f
+				inner join CommentRelation cr on cr.ObjectID = f.ObjectID and cr.ObjectType = f.ObjectType
+		where	f.ResourceID = @resourceId
+		union all
+		select	ID 
+		from	Comment 
+		where	CreatingResourceID = @resourceid
+		union all
+		select	ID 
+		from	comment c2
+				inner join	ResponsibilityDetail o on o.ResourceID = @resourceID and o.Object = c2.OwnerObjectType and o.ObjectID = c2.OwnerObjectID;
+
+	with p as
+	(
+	select	c.*,
+			case 
+				when c.CreatingResourceID = @resourceID then 1
+				when c.VisibilityID = 2 then 1
+				when c.VisibilityID = 3 then 1
+				when coalesce(c.VisibilityID, 4) = 4  then 1
+				else 0
+			end as IsVisible
+	from	Comment c
+	inner join #commentIds S on S.ID = C.ID
+	where   C.isdeleted = 0
+			AND (
+					coalesce(@commentTypeID,0) = 0 OR (C.CommentTypeID = @commentTypeID)
+				) 
+			AND (
+					(C.DateCreated between @dateStart and @dateEnd and @dateStart is not null and @dateEnd is not null) or
+					(@dateStart is null and @dateEnd is null)
+				)
+			AND C.ParentID is null
+			AND (
+				coalesce(ltrim(rtrim(@searchPhrase)),'')='' or 
+				lower(Body) like lower('%'+@searchPhrase+'%')
+				)
+	order by c.datecreated DESC
+	OFFSET		@skip ROWS 
+	FETCH NEXT	@take ROWS ONLY
+	)
+
+	select	a.*,
+			a.OwnerObjectType as ObjectType,
+			a.OwnerObjectId as ObjectId,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			R.Email as ResourceEmail,
+			D.DisplayValue as ObjectName,
+			AUrl.Url as ObjectUrl,
+			(
+			select	CRD.Object,
+					CRD.ObjectID,
+					CRD.TextPath,
+					CRD.ObjectTypeName,
+					CRD.Url,
+					CRD.BackColor as IconBackColor,
+					CRD.ForeColor as IconForeColor,
+					CRD.NgUrl
+			from	CommentRelation CR
+				inner join (
+					select Object, ObjectID, ForeColor, BackColor, TypeName as ObjectTypeName, AUrl.Url as Url, AUrl.Url as NgUrl, DisplayValue as TextPath from AssetDetail A
+					cross apply [dbo].[GetAssetUrlById](A.ID) AUrl
+					union all
+					select T.Object, T.ObjectID, OS.IconForeColor as ForeColor, OS.IconBackColor as BackColor, null as ObjectTypeName, TUrl.Url as Url, TUrl.Url as NgUrl, Name as TextPath from AssetType T
+					cross apply [dbo].[GetAssetTypeUrlById](T.ID) TUrl
+					left join ObjectStyle OS on OS.ObjectType = T.Object and OS.ObjectID = T.ObjectID
+				) CRD on CR.CommentID = a.ID and a.ParentID is null and CR.ObjectType = CRD.[Object] and CR.ObjectID = CRD.ObjectID
+			for xml path('tag'), root('tags'), type
+			) as TagsXml,
+			(
+			select	CommentID,
+					ResourceID,
+					vote as VoteValue
+			from	commentvote
+			where	commentid = a.ID
+			for		xml path('vote'), root('votes'), type
+			) as VotesXML,
+			0 as CreatorIsOwner
+	from	(
+			select	* 
+			from	p
+			union all
+			select	r.*,
+					1 as IsVisible 
+			from	Comment r
+					inner join p on r.ParentID = p.ID
+			) a
+			left join reporting.Global_Resource R on R.ResourceID = a.CreatingResourceID
+			left join AssetDetail D on D.[Object] = a.OwnerObjectType and D.ObjectID = a.OwnerObjectID
+			outer apply [dbo].[GetAssetUrlById](D.ID) AUrl
+	where	IsVisible = 1;
+END
+GO
+
+ALTER PROCEDURE [dbo].[GetCommentDetailsByType]
+
+	@type varchar(50), 
+	@id int,
+	@skip int,
+	@take int,
+	@dateStart datetime = null,
+	@dateEnd datetime = null,
+	@commentTypeID int = 0,
+	@searchPhrase varchar(100) = ''
+
+
+
+
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	with i (ResourceID) 
+	as
+	(
+		select	r.ResourceID
+		from	ResponsibilityDetail r
+				inner join Comment c on c.OwnerObjectType = r.Object and c.OwnerObjectID = r.ObjectID and c.ID = @id
+	),
+	 P
+	AS
+	(
+		SELECT		C.*,
+					CASE WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+						1
+					WHEN (select count(*) from i where ResourceID = C.CreatingResourceID) > 0  THEN
+						1
+					ELSE
+						0
+					END as CreatorIsOwner,
+					coalesce(C.OwnerObjectType, CR.ObjectType) as ObjectType,
+					coalesce(C.OwnerObjectID, CR.ObjectID) as ObjectID,
+					(
+					select	a.[Object],
+							a.ObjectID,
+							utility.getassetdisplayvalue(a.id) as TextPath,
+							ast.Name as ObjectTypeName,							
+							os.IconForeColor,
+							os.IconBackColor,
+							dbo.generateAsseturl(a.ID) as Url
+					from	CommentRelation CR
+							inner join asset a on (CR.CommentID = C.ID and a.[object] = CR.[ObjectType] and a.objectid = CR.ObjectID)
+							inner join assettype ast on ( a.assettypeid = ast.id)
+							inner join objectstyle os on (ast.[object] = os.[objecttype] and ast.[objectid] = os.[objectid])							
+					for xml path('tag'), root('tags'), type
+					) as TagsXml
+		FROM		Comment C
+					INNER JOIN CommentRelation CR	ON C.ID = CR.CommentID
+													AND (
+														coalesce(@commentTypeID,0) = 0 OR (C.CommentTypeID = @commentTypeID)
+														) 
+													AND CR.ObjectType = @type 
+													AND CR.ObjectID = @id
+													AND (
+														(C.DateCreated between @dateStart and @dateEnd and @dateStart is not null and @dateEnd is not null) or
+														(@dateStart is null and @dateEnd is null)
+														)
+													AND C.ParentID IS NULL	
+													and c.isdeleted = 0			
+		WHERE
+			coalesce(ltrim(rtrim(@searchPhrase)),'')='' or (lower(Body) like lower('%'+@searchPhrase+'%')) 
+		ORDER BY	C.DateCreated DESC
+		OFFSET  @skip ROWS 
+		FETCH NEXT @take ROWS ONLY 
+
+		UNION ALL
+
+		SELECT	C.*,
+				0 as CreatorIsOwner, 
+				cast('Resource' as varchar(50)) as ObjectType,
+				C.CreatingResourceID as ObjectID,
+				NULL as TagsXml
+		FROM	P
+				INNER JOIN Comment C ON C.ParentID = P.ID
+	)
+
+	select	P.*,
+			R.FirstName + ' ' + R.LastName as ResourceName,
+			R.Email as ResourceEmail,
+			utility.getassetdisplayvalue(a.id),
+			dbo.generateasseturl(a.id) as ObjectUrl,
+			(
+				select CommentID,
+						ResourceID,
+						vote as VoteValue
+				from commentvote
+				where commentid = p.ID
+					for xml path('vote'), root('votes'), type
+			) as VotesXML
+	from	P
+			left join reporting.Global_Resource R on R.ResourceID = P.CreatingResourceID			
+			left join asset a on a.[object] = p.objecttype and a.objectid = p.objectid
+			left join assettype ast on a.assettypeid = ast.id
+	where
+		isdeleted = 0;
+END
+GO
+
+ALTER procedure [dbo].[GetLineage]
+	@type varchar(50),
+	@id int,
+	@view int = 0,
+	@usageOnly bit = 0,
+	@verboseLineage bit = 0,
+	@rows LineageTable readonly,
+	@technicalRows LineageTechnicalTable readonly
+as
+begin
+	declare @links table ([from] varchar(250), [to] varchar(250), category varchar(50))
+	declare @nodes table (
+		id int identity,
+		assetId int,
+		[key] varchar(250), 
+		obj varchar(50), [objid] int, [type] varchar(50), typeName nvarchar(250), name nvarchar(500), shortname nvarchar(500),
+		back varchar(7), fore varchar(7), template varchar(50), other varchar(500),
+
+		HasSourceRules bit
+		)
+	declare @objects table (Type varchar(50), ID int)
+	declare @currentDepth int = 0;
+	declare @maxDepth int = 15;
+	declare @maxItems int = 500;
+	declare @itemCount int = 0;
+	
+	if @view in (0, 1, 2)
+	begin
+		insert into @objects values (@type, @id)
+
+		if not exists(
+			select	MI.ID
+			from	MapItem MI
+					inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+					inner join [Intersect] TI ON TI.ID = MI.TargetIntersectID
+			where 	( (SI.Subject = @type and SI.SubjectID = @id) OR (SI.Object = @type and SI.ObjectID = @id)  )
+					OR ( (TI.Subject = @type and TI.SubjectID = @id) OR (TI.Object = @type and TI.ObjectID = @id)  )
+		)
+		begin
+			insert into @objects
+				select	case 
+							when I.Subject = @type and I.SubjectID = @id then I.Object
+							else I.Subject
+						end,
+						case 
+							when I.Subject = @type and I.SubjectID = @id then I.ObjectID 
+							else I.SubjectID 
+						end
+				from	[Intersect] I
+						inner join IntersectType T on T.ID = I.IntersectTypeID 
+						inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
+				where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)
+		end
+
+		IF OBJECT_ID('tempdb..#points') IS NOT NULL DROP TABLE #points;
+		create table #points ( ID int, SourceIntersectID int, TargetIntersectID int, Depth int );
+		
+		insert into #points
+			select	top (@maxItems)
+					MI.ID, MI.SourceIntersectID, MI.TargetIntersectID, 0
+			from	MapItem MI
+					inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+					inner join [Intersect] TI ON TI.ID = MI.TargetIntersectID
+					inner join @objects O on	( (SI.Subject = O.Type and SI.SubjectID = O.ID) OR (SI.Object = O.Type and SI.ObjectID = O.ID)  ) OR 
+												( (TI.Subject = O.Type and TI.SubjectID = O.ID) OR (TI.Object = O.Type and TI.ObjectID = O.ID)  )
+			where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = MI.ID)
+
+		set @maxItems = @maxItems - (select count(*) from #points);
+
+		if (@maxItems > 0)
+		begin
+			insert into #points
+				select	top (@maxItems)
+						MI.ID, MI.SourceIntersectID, MI.TargetIntersectID, 0
+				from	MapItem MI
+						inner join	(
+									select	ID.MapItemID
+									from	MapItemMap DM
+											inner join #points D on D.ID = DM.MapItemID
+											inner join MapItemMap ID on ID.MapID = DM.MapID and ID.MapItemID not in (
+																													select ID from #points
+																													)
+									) O on O.MapItemID = MI.ID
+				where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = MI.ID);
+
+				set @maxItems = @maxItems - (select count(*) from #points);
+		end
+
+		if exists(select 1 from @rows)
+		begin
+			insert into #points
+				select	R.ID,
+						D1.ID as SourceIntersectID,
+						D2.ID as TargetIntersectID,
+						0
+				from	@rows R
+						inner join [Intersect] D1 on 
+							R.SourceSubject = D1.[Subject] AND 
+							R.SourceObject = D1.[Object] AND 
+							R.SourceSubjectID = D1.SubjectID AND 
+							R.SourceObjectID = D1.ObjectID
+						inner join [Intersect] D2 on 
+							R.TargetSubject = D2.[Subject] AND 
+							R.TargetObject = D2.[Object] AND 
+							R.TargetSubjectID = D2.SubjectID AND 
+							R.TargetObjectID = D2.ObjectID
+				where	R.Adding = 1 and not exists (select 1 from #points P where P.SourceIntersectID = D1.ID and P.TargetIntersectID = D2.ID)
+		end;
+
+		if @verboseLineage = 1
+		begin
+			set @currentDepth = 0;
+
+			while( exists(select 1 from #points ps where ps.depth = @currentDepth) and (@currentDepth < @maxDepth) and (@maxItems > 0))
+			begin
+
+				set @itemCount = (select count(*) from #points);
+
+				insert into #points
+					select	top (@maxItems) 
+						S.ID,
+						S.SourceIntersectID,
+						S.TargetIntersectID,
+						@currentDepth+1
+					from	MapItem S
+							inner join #points T on T.TargetIntersectID = S.SourceIntersectID and S.ID <> T.ID and T.Depth = @currentDepth
+					where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID) and not exists (select ID from #points where ID = S.ID)
+
+				set @maxItems = @maxItems - ((select count(*) from #points) - @itemCount);
+				set @itemCount = (select count(*) from #points);
+
+				if (@maxItems > 0)
+				begin
+					insert into #points
+						select	top (@maxItems)
+							S.ID,
+							S.SourceIntersectID,
+							S.TargetIntersectID,
+							@currentDepth+1
+						from	MapItem S
+								inner join #points T on T.SourceIntersectID = S.TargetIntersectID and S.ID <> T.ID and T.Depth = @currentDepth
+						where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID)
+							and not exists (select ID from #points where ID = S.ID)
+					set @maxItems = @maxItems - ((select count(*) from #points) - @itemCount);
+				end
+
+				set @currentDepth = @currentDepth + 1;
+			end
+		end
+		else
+		begin
+			set @currentDepth = 0;	
+			if exists(select 1 from #points where [Depth] = @currentDepth)
+			begin
+				while ( (@currentDepth < @maxDepth) and (@currentDepth = 0) )
+				begin
+					insert into #points
+						select	top (@maxItems) 
+								S.ID,
+								S.SourceIntersectID,
+								S.TargetIntersectID,
+								@currentDepth+1
+						from	MapItem S
+								inner join #points T on T.TargetIntersectID = S.SourceIntersectID and S.ID <> T.ID and T.Depth = @currentDepth
+						where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID) 
+								and not exists (select ID from #points where ID = S.ID)
+
+					select @itemCount = count(*) from #points where [Depth] = @currentDepth;
+
+					set @currentDepth = @currentDepth + 1;
+				end
+			end
+
+			update #points set [Depth] = [Depth] * -1
+
+			set @currentDepth = 0;	
+			if exists(select 1 from #points where [Depth] = @currentDepth)
+			begin
+				while ( (@currentDepth < @maxDepth) and (@currentDepth = 0) )
+				begin
+					insert into #points
+						select	top (@maxItems)
+								S.ID,
+								S.SourceIntersectID,
+								S.TargetIntersectID,
+								@currentDepth+1
+						from	MapItem S
+								inner join #points T on T.SourceIntersectID = S.TargetIntersectID and S.ID <> T.ID and T.Depth = @currentDepth
+						where	not exists (select 1 from @rows R where R.Deleting = 1 and R.ID = S.ID)
+								and not exists (select ID from #points where ID = S.ID)
+
+					select @itemCount = count(*) from #points where [Depth] = @currentDepth;
+					set @currentDepth = @currentDepth + 1;
+				end
+			end
+		end
+
+		IF @view in (0,2)
+		BEGIN
+
+			IF OBJECT_ID('tempdb..#items') IS NOT NULL DROP TABLE #items;
+			create table #items (
+				ID int,
+				SourceIntersectID int, 
+				SourceSubjectTypeName nvarchar(500), SourceSubjectName nvarchar(500), SourceSubjectShortName nvarchar(500), SourceSubject varchar(50), SourceSubjectID int, SourceSubjectIconBackColor varchar(7), SourceSubjectIconForeColor varchar(7), 
+				SourceObjectTypeName nvarchar(500), SourceObjectName nvarchar(500), SourceObjectShortName nvarchar(500), SourceObject varchar(50), SourceObjectID int, SourceObjectIconBackColor varchar(7), SourceObjectIconForeColor varchar(7),
+			
+				TargetIntersectID int, 
+				TargetSubjectTypeName nvarchar(500), TargetSubjectName nvarchar(500), TargetSubjectShortName nvarchar(500), TargetSubject varchar(50), TargetSubjectID int, TargetSubjectIconBackColor varchar(7), TargetSubjectIconForeColor varchar(7), 
+				TargetObjectTypeName nvarchar(500), TargetObjectName nvarchar(500), TargetObjectShortName nvarchar(500), TargetObject varchar(50), TargetObjectID int, TargetObjectIconBackColor varchar(7), TargetObjectIconForeColor varchar(7),
+
+				SourceHasSourceRules bit, TargetHasSourceRules bit
+			);
+
+			CREATE CLUSTERED INDEX IX_TempItems ON #items (id, sourceintersectid, targetintersectid); 
+
+			insert into #items
+				select	O.ID,				
+						O.SourceIntersectID,
+						SS.TypeName as SubjectTypeName,
+						SSD.DisplayValue as SubjectName,
+						SSD.DisplayValue as SubjectShortName,
+						SI.[Subject],
+						SI.SubjectID,
+						SS.BackColor as SubjectIconBackColor,
+						SS.ForeColor as SubjectIconForeColor,
+						SO.TypeName as ObjectTypeName,
+						SOD.DisplayValue as ObjectName,
+						SOD.DisplayValue as ObjectShortName,
+						SI.[Object],
+						SI.ObjectID,
+						SO.BackColor as ObjectIconBackColor,
+						SO.ForeColor as ObjectIconForeColor,
+						O.TargetIntersectID,
+						TS.TypeName as SubjectTypeName,
+						TSD.DisplayValue as SubjectName,
+						TSD.DisplayValue as SubjectShortName,
+						TI.Subject,
+						TI.SubjectID,
+						TS.BackColor,
+						TS.ForeColor,
+						TB.TypeName as ObjectTypeName,
+						TBD.DisplayValue as ObjectName,
+						TBD.DisplayValue as ObjectShortName,
+						TI.Object,
+						TI.ObjectID,
+						TB.BackColor,
+						TB.ForeColor,
+						case 
+							when SHSR.C > 0 then cast(1 as bit)
+							else cast(0 as bit)
+						end as SourceHasSourceRules,
+											case 
+							when THSR.C > 0 then cast(1 as bit)
+							else cast(0 as bit)
+						end as TargetHasSourceRules
+				from	#points O
+					inner join [Intersect] SI on SI.ID = O.SourceIntersectID
+					inner join [Intersect] TI on TI.ID = O.TargetIntersectID
+					inner join AssetWithType SS on SS.[Object] = SI.[Subject] and SS.ObjectID = SI.SubjectID 
+					inner join AssetWithType SO on SO.[Object] = SI.[Object] and SO.ObjectID = SI.ObjectID
+					inner join AssetWithType TS on TS.[Object] = TI.[Subject] and TS.ObjectID = TI.SubjectID
+					inner join AssetWithType TB on TB.[Object] = TI.[Object] and TB.ObjectID = TI.ObjectID
+					cross apply dbo.GetAssetDisplayValueById(SS.ID) SSD
+					cross apply dbo.GetAssetDisplayValueById(SO.ID) SOD
+					cross apply dbo.GetAssetDisplayValueById(TS.ID) TSD
+					cross apply dbo.GetAssetDisplayValueById(TB.ID) TBD
+						cross apply (
+									select	count(1) as C
+									from	MapItem MI 
+											inner join MapSequence MS on MS.MapItemID = MI.ID
+									where MI.ID = O.ID and (
+										(@type = SI.[subject] and @id = SI.subjectid and
+											(
+												MI.SourceIntersectID in 
+												(select id from [intersect] i where 
+													(i.[object] = @type and i.objectid = @id) or
+													(i.[subject] = @type and i.subjectid = @id)
+													)
+											)
+										)
+										or
+										(MI.SourceIntersectID in 
+											(select id from [intersect] i where
+													(i.[object] = @type and i.objectid = @id and i.[subject] = si.[subject] and i.subjectid = si.subjectid) or
+													(i.[subject] = @type and i.subjectid = @id and i.[object] = si.[subject] and i.objectid = si.subjectid)
+											)
+										)
+
+										)
+									
+									) SHSR
+									cross apply (
+									select	count(1) as C
+									from	MapItem MI 
+											inner join MapSequence MS on MS.MapItemID = MI.ID
+									where MI.ID = O.ID and (
+										(@type = TI.[subject] and @id = TI.subjectid and
+											(
+												MI.TargetIntersectID in 
+												(select id from [intersect] i where 
+													(i.[object] = @type and i.objectid = @id) or
+													(i.[subject] = @type and i.subjectid = @id)
+													)
+											)
+										)
+										or
+										(MI.TargetIntersectID in 
+											(select id from [intersect] i where
+													(i.[object] = @type and i.objectid = @id and i.[subject] = ti.[subject] and i.subjectid = ti.subjectid) or
+													(i.[subject] = @type and i.subjectid = @id and i.[object] = ti.[subject] and i.objectid = ti.subjectid)
+											)
+										)
+
+										)
+									
+									) THSR
+
+
+			
+			if EXISTS (SELECT 1 FROM @rows)
+			begin
+				
+				delete I
+				from #items I
+				inner join @rows R on
+					R.SourceSubjectID = I.SourceSubjectID 
+					AND R.SourceObjectID = I.SourceObjectID
+					AND R.TargetSubjectID = I.TargetSubjectID
+					AND R.TargetObjectID = I.TargetObjectID;
+
+				
+				insert into #items
+				select
+					R.ID,
+					R.SourceIntersectID,
+					SS.TypeName as SourceSubjectTypeName,
+					SSD.TextPath as SourceSubjectName,
+					SS.DisplayValue as SourceSubjectShortName,
+					R.SourceSubject,
+					R.SourceSubjectID,
+					SS.BackColor as SourceSubjectIconBackColor,
+					SS.ForeColor as SourceSubjectIconForeColor,
+					SO.TypeName as SourceObjectTypeName,
+					SOD.TextPath as SourceObjectName,
+					SO.DisplayValue as SourceObjectShortName,
+					R.SourceObject,
+					R.SourceObjectID,
+					SO.BackColor as SourceObjectIconBackColor,
+					SO.ForeColor as SourceObjectIconForeColor,
+					R.TargetIntersectID,
+					TS.TypeName as TargetSubjectTypeName,
+					TSD.TextPath as TargetSubjectName,
+					TS.DisplayValue as TargetSubjectShortName,
+					R.TargetSubject,
+					R.TargetSubjectID,
+					TS.BackColor as TargetSubjectIconBackColor,
+					TS.ForeColor as TargetSubjectIconForeColor,
+					TB.TypeName as TargetObjectTypeName,
+					TBD.TextPath  as TargetObjectName,
+					TB.DisplayValue as TargetObjectShortName,
+					R.TargetObject,
+					R.TargetObjectID,
+					TB.BackColor as TargetObjectIconBackColor,
+					TB.ForeColor as TargetObjectIconForeColor,
+					0 as SourceHasSourceRules,
+					0 as TargetHasSourceRules
+				from @rows R 
+				inner join AssetDetail SS on SS.[Object] = R.SourceSubject AND SS.ObjectID = R.SourceSubjectID
+				inner join AssetDetail SO on SO.[Object] = R.SourceObject AND SO.ObjectID = R.SourceObjectID
+				inner join AssetDetail TS on TS.[Object] = R.TargetSubject AND TS.ObjectID = R.TargetSubjectID
+				inner join AssetDetail TB on TB.[Object] = R.TargetObject AND TB.ObjectID = R.TargetObjectID
+				cross apply dbo.GetAssetTextPathById(SS.ID, '.') SSD
+				cross apply dbo.GetAssetTextPathById(SO.ID, '.') SOD
+				cross apply dbo.GetAssetTextPathById(TS.ID, '.') TSD
+				cross apply dbo.GetAssetTextPathById(TB.ID, '.') TBD
+
+				where R.Adding = 1
+				and not exists (select 1 from #items i where i.SourceIntersectID = r.SourceIntersectID and i.TargetIntersectID = r.TargetIntersectID);
+			end
+		
+		end 
+
+		if @view = 0
+		begin
+			select (
+					select distinct
+					cast(SI.IntersectTypeID as varchar) + '.' 
+					+ cast(I.SourceSubjectID as varchar) + '.'
+					+ cast(I.SourceObjectID as varchar) as [sourcekey],
+					cast(TI.IntersectTypeID as varchar) + '.' 
+					+ cast(I.TargetSubjectID as varchar) + '.'
+					+ cast(I.TargetObjectID as varchar) as [targetkey],
+					
+					I.ID
+					,I.SourceIntersectID
+					,I.SourceSubjectTypeName
+					,coalesce(SST.TextPath,I.SourceSubjectName) as SourceSubjectName
+					,I.SourceSubjectShortName
+					,I.SourceSubject
+					,I.SourceSubjectID
+					,I.SourceSubjectIconBackColor
+					,I.SourceSubjectIconForeColor
+					,I.SourceObjectTypeName
+					,coalesce(SOT.TextPath,I.SourceObjectName) as SourceObjectName
+					,I.SourceObjectShortName
+					,I.SourceObject
+					,I.SourceObjectID
+					,I.SourceObjectIconBackColor
+					,I.SourceObjectIconForeColor
+					,I.TargetIntersectID
+					,I.TargetSubjectTypeName
+					,coalesce(TST.TextPath, I.TargetSubjectName) as TargetSubjectName
+					,I.TargetSubjectShortName
+					,I.TargetSubject
+					,I.TargetSubjectID
+					,I.TargetSubjectIconBackColor
+					,I.TargetSubjectIconForeColor
+					,I.TargetObjectTypeName
+					,coalesce(OTT.TextPath, I.TargetObjectName) as TargetObjectName
+					,I.TargetObjectShortName
+					,I.TargetObject
+					,I.TargetObjectID
+					,I.TargetObjectIconBackColor
+					,I.TargetObjectIconForeColor
+					,I.SourceHasSourceRules 
+					,I.TargetHasSourceRules,
+					SI.IntersectTypeID as SourceIntersectTypeID,
+					utility.DeriveIntersectTypeName(SIT.ID) as SourceIntersectTypeName,
+					TI.IntersectTypeID as TargetIntersectTypeID,
+					utility.DeriveIntersectTypeName(TIT.ID) as TargetIntersectTypeName
+				from #items I
+				inner join [Intersect] SI on SI.ID = I.SourceIntersectID
+				left join Asset SS on SS.Object = SI.Subject and SS.ObjectID = SI.SubjectID
+				outer apply dbo.GetAssetTextPathById(SS.ID, '/') SST
+				left join Asset SO on SO.Object = SI.Object and SO.ObjectID = SI.ObjectID
+				outer apply dbo.GetAssetTextPathById(SO.ID, '/') SOT
+				inner join IntersectType SIT on SIT.ID = SI.IntersectTypeID
+				inner join [Intersect] TI on TI.ID = I.TargetIntersectID
+				left join Asset TS on TS.Object = TI.Subject and TS.ObjectID = TI.SubjectID
+				outer apply dbo.GetAssetTextPathById(TS.ID, '/') TST
+				left join Asset OT on OT.Object = TI.Object and OT.ObjectID = TI.ObjectID
+				outer apply dbo.GetAssetTextPathById(OT.ID, '/') OTT
+				inner join IntersectType TIT on TIT.ID = TI.IntersectTypeID
+				for json path
+			) as 'items'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end
+
+		if @view = 1
+		begin
+
+		IF OBJECT_ID('tempdb..#systemItems') IS NOT NULL DROP TABLE #systemItems;
+		create table #systemItems (
+			ID int,
+			SourceSubjectTypeName nvarchar(500), SourceSubjectName nvarchar(500), SourceSubjectShortName nvarchar(500), SourceSubject varchar(50), SourceSubjectID int, SourceSubjectIconBackColor varchar(7), SourceSubjectIconForeColor varchar(7), 
+			TargetSubjectTypeName nvarchar(500), TargetSubjectName nvarchar(500), TargetSubjectShortName nvarchar(500), TargetSubject varchar(50), TargetSubjectID int, TargetSubjectIconBackColor varchar(7), TargetSubjectIconForeColor varchar(7), 
+			SourceHasSourceRules bit, TargetHasSourceRules bit
+		);
+
+		CREATE CLUSTERED INDEX IX_TempSystemItems ON #systemItems (id, sourcesubject, sourcesubjectid, targetsubject, targetsubjectid); 
+
+		insert into #systemItems (ID, SourceSubjectTypeName, SourceSubjectName, SourceSubjectShortName, SourceSubject, SourceSubjectID, SourceSubjectIconBackColor,SourceSubjectIconForeColor,
+		TargetSubjectTypeName, TargetSubjectName, TargetSubjectShortName,  TargetSubject, TargetSubjectID, TargetSubjectIconBackColor, TargetSubjectIconForeColor, 
+		SourceHasSourceRules, TargetHasSourceRules)
+			select	
+					O.ID as ID,				
+					SS.TypeName as SourceSubjectTypeName,
+					SSD.DisplayValue as SourceSubjectName,
+					SSD.DisplayValue as SourceSubjectShortName,
+					SI.[Subject] as SourceSubject,
+					SI.SubjectID as SourceSubjectID,
+					SS.BackColor as SourceSubjectIconBackColor,
+					SS.ForeColor as SourceSubjectIconForeColor,
+					TS.TypeName as TargetSubjectTypeName,
+					TSD.DisplayValue as TargetSubjectName,
+					TSD.DisplayValue as TargetSubjectShortName,
+					TI.[Subject] as TargetSubject,
+					TI.SubjectID as TargetSubjectID,
+					TS.BackColor as TargetSubjectIconBackColor,
+					TS.ForeColor as TargetSubjectIconForeColor,
+					case 
+						when SHSR.C > 0 then cast(1 as bit)
+						else cast(0 as bit)
+					end as SourceHasSourceRules,
+										case 
+						when THSR.C > 0 then cast(1 as bit)
+						else cast(0 as bit)
+					end as TargetHasSourceRules
+			from	#points O
+				inner join [Intersect] SI on SI.ID = O.SourceIntersectID
+				inner join [Intersect] TI on TI.ID = O.TargetIntersectID
+				inner join AssetWithType SS on SS.[Object] = SI.[Subject] and SS.ObjectID = SI.SubjectID 
+				inner join AssetWithType TS on TS.[Object] = TI.[Subject] and TS.ObjectID = TI.SubjectID
+				cross apply dbo.GetAssetDisplayValueById(SS.ID) SSD
+				cross apply dbo.GetAssetDisplayValueById(TS.ID) TSD
+				cross apply (
+								select	count(1) as C
+								from	MapItem MI 
+										inner join MapSequence MS on MS.MapItemID = MI.ID
+								where MI.ID = O.ID and (
+									(@type = SI.[subject] and @id = SI.subjectid and
+										(
+											MI.SourceIntersectID in 
+											(select id from [intersect] i where 
+												(i.[object] = @type and i.objectid = @id) or
+												(i.[subject] = @type and i.subjectid = @id)
+												)
+										)
+									)
+									or
+									(MI.SourceIntersectID in 
+										(select id from [intersect] i where
+												(i.[object] = @type and i.objectid = @id and i.[subject] = si.[subject] and i.subjectid = si.subjectid) or
+												(i.[subject] = @type and i.subjectid = @id and i.[object] = si.[subject] and i.objectid = si.subjectid)
+										)
+									)
+
+									)
+									
+								) SHSR
+								cross apply (
+								select	count(1) as C
+								from	MapItem MI 
+										inner join MapSequence MS on MS.MapItemID = MI.ID
+								where MI.ID = O.ID and (
+									(@type = TI.[subject] and @id = TI.subjectid and
+										(
+											MI.TargetIntersectID in 
+											(select id from [intersect] i where 
+												(i.[object] = @type and i.objectid = @id) or
+												(i.[subject] = @type and i.subjectid = @id)
+												)
+										)
+									)
+									or
+									(MI.TargetIntersectID in 
+										(select id from [intersect] i where
+												(i.[object] = @type and i.objectid = @id and i.[subject] = ti.[subject] and i.subjectid = ti.subjectid) or
+												(i.[subject] = @type and i.subjectid = @id and i.[object] = ti.[subject] and i.objectid = ti.subjectid)
+										)
+									)
+
+									)
+									
+								) THSR
+
+			insert into @links
+					select	distinct
+							S.SourceSubject + '.' + cast(S.SourceSubjectID as varchar) as [from],
+							S.TargetSubject + '.' + cast(S.TargetSubjectID as varchar) as [to],
+							'' as category
+					from	#systemItems S
+			insert into @nodes
+					select	distinct
+							A.ID as assetId,
+							I.SourceSubject + '.' + cast(I.SourceSubjectID as varchar) as [key],
+							I.SourceSubject as [obj],
+							I.SourceSubjectID as [objid], 
+							I.SourceSubject as [type],
+							I.SourceSubjectTypeName as typeName,
+							I.SourceSubjectName as name,
+							I.SourceSubjectShortName as shortname,
+							I.SourceSubjectIconBackColor as back,
+							I.SourceSubjectIconForeColor as fore,
+							case 
+								when I.SourceSubject = @type and I.SourceSubjectID = @id then 'Focal'
+								else 'Normal'
+							end as template,
+							null as other,
+							0 as hasSourceRules
+					from	#systemItems I
+					left join Asset A on A.[Object] = I.SourceSubject and A.ObjectID = I.SourceSubjectID;;
+
+					
+					update n
+					set n.HasSourceRules = 1
+					from @nodes n
+					inner join #systemItems i on n.[key] = (i.SourceSubject + '.' + cast(i.SourceSubjectID as varchar)) and i.SourceHasSourceRules = 1;
+
+			
+			merge	@nodes as T
+			using	(
+					select	distinct
+							A.ID as assetId,
+							I.TargetSubject + '.' + cast(I.TargetSubjectID as varchar) as [key],
+							I.TargetSubject as [obj],
+							I.TargetSubjectID as [objid], 
+							I.TargetSubject as [type],
+							I.TargetSubjectTypeName as typeName,
+							I.TargetSubjectName as name,
+							I.TargetSubjectShortName as shortname,
+							I.TargetSubjectIconBackColor as back,
+							I.TargetSubjectIconForeColor as fore,
+							case 
+								when I.TargetSubject = @type and I.TargetSubjectID = @id then 'Focal'
+								else 'Normal'
+							end as template,
+							null as other,
+							I.TargetHasSourceRules as HasSourceRules
+					from	#systemItems I
+					left join Asset A on A.[Object] = I.TargetSubject and A.ObjectID = I.TargetSubjectID
+					where	I.TargetSubject + '.' + cast(I.TargetSubjectID as varchar) not in (select [key] from @nodes)
+					) S
+			on		(T.[key] = S.[key])
+			when matched then
+			update	set
+					T.HasSourceRules = S.HasSourceRules
+			when	not matched then
+			insert	(assetId, [key], obj, [objid], [type], typeName, name, shortname, back, fore, template, other, HasSourceRules)
+			values	(S.assetId, S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.shortname, S.back, S.fore, S.template, S.other, S.HasSourceRules);
+					
+
+			if @usageOnly = 1 
+			begin
+				delete	@nodes
+				where	[key] not in 
+					(
+					
+					select	case 
+								when (I.Subject = N.obj and I.SubjectID = N.objid and I.SubjectID <> @id and I.Object = @type and I.ObjectID = @id) then I.Subject + '.' + cast(I.SubjectID as varchar)
+								else I.Object + '.' + cast(I.ObjectID as varchar)
+							end as [key]
+					from	[Intersect] I
+							inner join @nodes N on	(
+													(I.Subject = N.obj and I.SubjectID = N.objid and I.SubjectID <> @id and I.Object = @type and I.ObjectID = @id) OR
+													(I.Object = N.obj and I.ObjectID = N.objid and I.ObjectID <> @id and I.Subject = @type and I.SubjectID = @id)
+													)
+							inner join IntersectType T on T.ID = I.IntersectTypeID and (I.Deleted = 0 or I.Deleted is null)
+							inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 10
+					union
+					
+					select	N.obj + '.' + cast(N.objid as varchar) as [key]
+					from	[Intersect] I1
+							inner join [Intersect] I2 on I1.Subject = @type and I1.SubjectID = @id 
+														and (
+																
+																(I2.Object = I1.Object and I2.ObjectID = I1.ObjectID)
+															)
+														and I1.ID <> I2.ID
+							inner join IntersectType T on T.ID = I2.IntersectTypeID 
+														and (I1.Deleted = 0 or I1.Deleted is null)
+														and (I2.Deleted = 0 or I2.Deleted is null) 
+							inner join @nodes N on (I2.Subject = N.obj and I2.SubjectID = N.objid)
+							inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 10
+					) and [key] <> @type + '.' + cast(@id as varchar)
+			end
+
+
+
+
+			select	(
+					select	*
+					from	@links O
+					for json path			
+					) as 'links',
+					(
+					select	I.*,
+							A.actions
+					from	@nodes I
+							cross apply (
+											select count(1) as actions, max(createdon) as createdon   
+											from Issue U
+											where U.ObjectID = I.objid AND U.Object = I.obj
+										) A
+					for json path			
+					) as 'nodes'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end 
+
+		if @view = 2
+		begin
+			insert into @links
+				select	distinct
+						SourceSubject + '.' + cast(SourceSubjectID as varchar) as 'from',
+						cast(SourceIntersectID as varchar) + '.S' as 'to',
+						'Support' as category
+				from	#items
+				union
+				select	distinct
+						cast(SourceIntersectID as varchar) + '.S' as 'from',
+						TargetSubject + '.' + cast(TargetSubjectID as varchar) as 'to',
+						'' as category
+				from	#items O
+				where	(SourceObject + cast(SourceObjectID as varchar)) = (TargetObject + cast(TargetObjectID as varchar))
+				union
+				select	distinct
+						cast(SourceIntersectID as varchar) + '.S' as 'from',
+						cast(TargetIntersectID as varchar) + '.T' as 'to',
+						'' as category
+				from	#items O
+				where	(SourceObject + cast(SourceObjectID as varchar)) <> (TargetObject + cast(TargetObjectID as varchar))
+				
+				union
+				select	distinct
+						cast(TargetIntersectID as varchar) + '.T' as 'from',
+						TargetSubject + '.' + cast(TargetSubjectID as varchar) as 'to',
+						'Support' as category
+				from	#items
+				where	(SourceObject + cast(SourceObjectID as varchar)) <> (TargetObject + cast(TargetObjectID as varchar))
+
+			insert into @nodes
+				select	distinct
+						A.ID as assetId,
+						SourceSubject + '.' + cast(SourceSubjectID as varchar) as [key],
+						SourceSubject as [obj],
+						SourceSubjectID as [objid], 
+						SourceSubject as [type],
+						SourceSubjectTypeName as typeName,
+						SourceSubjectName as name,
+						SourceSubjectShortName as shortname,
+						SourceSubjectIconBackColor as back,
+						SourceSubjectIconForeColor as fore,
+						case 
+							when SourceSubject = @type and SourceSubjectID = @id then 'Focal'
+							else 'Normal'
+						end as template,
+						null as other,
+						0 as HasSourceRules
+				from	#items 
+				left join Asset A on A.[Object] = SourceSubject and A.ObjectID = SourceSubjectID
+
+			insert into @nodes
+				select	distinct
+						A.ID as assetId,
+						cast(SourceIntersectID as varchar) + '.S' as [key],
+						SourceObject as [obj],
+						SourceObjectID as [objid], 
+						SourceObject as [type],
+						SourceObjectTypeName as typeName,
+						SourceObjectName as name,
+						SourceObjectShortName as shortname,
+						SourceObjectIconBackColor as back,
+						SourceObjectIconForeColor as fore,
+						case 
+							when SourceObject = @type and SourceObjectID = @id then 'SupportFocal'
+							else 'SupportNormal'
+						end as template,
+						null as other,
+						0 as HasSourceRules
+				from	#items
+				left join Asset A on A.[Object] = SourceObject and A.ObjectID = SourceObjectID
+
+				update n
+				set n.HasSourceRules = 1
+				from @nodes n
+				inner join #items i on n.[key] = (i.SourceSubject + '.' + cast(i.SourceSubjectID as varchar)) and i.SourceHasSourceRules = 1;
+
+
+			merge	@nodes as T
+			using	(
+					select	distinct
+							A.ID as assetId,
+							cast(TargetIntersectID as varchar) + '.T' as [key],
+							TargetObject as [obj],
+							TargetObjectID as [objid], 
+							TargetObject as [type],
+							TargetObjectTypeName as typeName,
+							TargetObjectName as name,
+							TargetObjectShortName as shortname,
+							TargetObjectIconBackColor as back,
+							TargetObjectIconForeColor as fore,
+							case 
+								when TargetObject = @type and TargetObjectID = @id then 'SupportFocal'
+								else 'SupportNormal'
+							end as template,
+							null as other,
+							TargetHasSourceRules as HasSourceRules
+					from	#items
+					left join Asset A on A.[Object] = TargetObject and A.ObjectID = TargetObjectID
+					where	(SourceObject + cast(SourceObjectID as varchar)) <> (TargetObject + cast(TargetObjectID as varchar))
+					) S
+			on		(T.[key] = S.[key])
+			when	matched then
+			update	set
+					T.HasSourceRules = S.HasSourceRules
+			when	not matched then
+			insert	(assetId, [key], obj, [objid], [type], typeName, name, shortname, back, fore, template, other, HasSourceRules)
+			values	(S.assetId, S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.shortname, S.back, S.fore, S.template, S.other, S.HasSourceRules);
+
+			merge	@nodes as T
+			using	(
+					select	distinct
+							A.ID as assetId,
+							TargetSubject + '.' + cast(TargetSubjectID as varchar) as [key],
+							TargetSubject as [obj],
+							TargetSubjectID as [objid], 
+							TargetSubject as [type],
+							TargetSubjectTypeName as typeName,
+							TargetSubjectName as name,
+							TargetSubjectShortName as shortname,
+							TargetSubjectIconBackColor as back,
+							TargetSubjectIconForeColor as fore,
+							case 
+								when TargetSubject = @type and TargetSubjectID = @id then 'Focal'
+								else 'Normal'
+							end as template,
+							null as other,
+							TargetHasSourceRules as HasSourceRules
+					from	#items
+					left join Asset A on A.[Object] = TargetSubject and A.ObjectID = TargetSubjectID
+					where	TargetSubject + '.' + cast(TargetSubjectID as varchar) not in (select [key] from @nodes)
+					) S
+			on		(T.[key] = S.[key])
+			when	matched then
+			update	set
+					T.HasSourceRules = S.HasSourceRules
+			when	not matched then
+			insert	(assetId, [key], obj, [objid], [type], typeName, name, shortname, back, fore, template, other, HasSourceRules)
+			values	(S.assetId, S.[key], S.obj, S.[objid], S.[type], S.typeName, S.name, S.shortname, S.back, S.fore, S.template, S.other, S.HasSourceRules);
+
+
+
+
+			if @usageOnly = 1 
+			begin
+				declare @usages table ([key] varchar(250))
+
+				insert into @usages
+					
+					select	
+							case 
+								when (I.Subject = N.obj and I.SubjectID = N.objid and I.SubjectID <> @id and I.Object = @type and I.ObjectID = @id) then I.Subject + '.' + cast(I.SubjectID as varchar)
+								else I.Object + '.' + cast(I.ObjectID as varchar)
+							end as [key]
+					from	[Intersect] I
+							inner join @nodes N on	(
+													(I.Subject = N.obj and I.SubjectID = N.objid and I.SubjectID <> @id and I.Object = @type and I.ObjectID = @id) OR
+													(I.Object = N.obj and I.ObjectID = N.objid and I.ObjectID <> @id and I.Subject = @type and I.SubjectID = @id)
+													)
+							inner join IntersectType T on T.ID = I.IntersectTypeID and (I.Deleted = 0 or I.Deleted is null)
+							inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 10
+					union
+					
+					select	N.obj + '.' + cast(N.objid as varchar) as [key]
+					from	[Intersect] I1
+							inner join [Intersect] I2 on I1.Subject = @type and I1.SubjectID = @id 
+														and (
+																
+																(I2.Object = I1.Object and I2.ObjectID = I1.ObjectID)
+															)
+														and I1.ID <> I2.ID
+							inner join IntersectType T on T.ID = I2.IntersectTypeID 
+														and (I1.Deleted = 0 or I1.Deleted is null)
+														and (I2.Deleted = 0 or I2.Deleted is null) 
+							inner join @nodes N on (I2.Subject = N.obj and I2.SubjectID = N.objid)
+							inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = 10
+
+				delete	@nodes
+				where	[key] not in 
+					(
+					select	[key]
+					from	@usages
+					) 
+					and [key] <> @type + '.' + cast(@id as varchar)
+					and [template] not like '%Support%'
+
+				delete	@links
+				where	[from] not in (select [key] from @nodes)
+						or [to] not in (select [key] from @nodes)
+				
+				delete	@nodes
+				where	[template] like '%Support%'
+						and [key] not in (
+							select	[key]
+							from	@nodes 
+							where	[template] like '%Support%'
+									and [key] in (select [from] from @links)
+									and [key] in (select [to] from @links)
+						)
+			end
+
+
+
+
+
+			select	(
+					select	*
+					from	@links O
+					for json path			
+					) as 'links',
+					(
+					select	I.*,
+							A.actions
+					from	@nodes I
+							cross apply (
+											select count(1) as actions, max(createdon) as createdon   
+											from Issue U
+											where U.ObjectID = I.objid AND U.Object = I.obj
+										) A
+					for json path			
+					) as 'nodes'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end 
+	end
+
+	if @view in (3,4)
+	begin
+
+		IF OBJECT_ID('tempdb..#tFusionPoints') IS NOT NULL
+			DROP TABLE #tFusionPoints;
+
+		create table #tFusionPoints (ID int, MapItemID int, SourceFusionAttributeID int, TargetFusionAttributeID int, Depth int, Direction char null);
+
+		CREATE CLUSTERED INDEX PK_temptFusionPoints ON #tFusionPoints ([ID] ASC,[SourceFusionAttributeID] ASC,[TargetFusionAttributeID] ASC, [Depth] ASC, [Direction] ASC);
+
+		declare @tItems table (
+			MapItemID int, 
+
+			SourceIntersectID int, 
+			SourceSubjectTypeName nvarchar(500), SourceSubjectName nvarchar(500), SourceSubjectShortName nvarchar(500), SourceSubject varchar(50), SourceSubjectID int,
+			SourceObjectTypeName nvarchar(500), SourceObjectName nvarchar(500), SourceObjectShortName nvarchar(500), SourceObject varchar(50), SourceObjectID int, 
+			
+			TargetIntersectID int, 
+			TargetSubjectTypeName nvarchar(500), TargetSubjectName nvarchar(500), TargetSubjectShortName nvarchar(500), TargetSubject varchar(50), TargetSubjectID int, 
+			TargetObjectTypeName nvarchar(500), TargetObjectName nvarchar(500), TargetObjectShortName nvarchar(500), TargetObject varchar(50), TargetObjectID int
+		)
+	
+		if @type = 'FusionAttribute'
+			begin
+				insert into #tFusionPoints
+					select  top (@maxItems) 
+							I.ID,
+							NULL,
+							I.SourceFusionAttributeID,
+							I.TargetFusionAttributeID, 
+							0,
+							'A'
+					from	MapRuleItem I
+							inner join FusionAttribute SFA on SFA.ID = I.SourceFusionAttributeID and SFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = I.TargetFusionAttributeID and TFA.Deleted = 0
+					where	I.SourceFusionAttributeID = @id 
+
+				set @maxItems = @maxItems - (select count(*) from #tFusionPoints);
+
+				if (@maxItems > 0)
+				begin
+					insert into #tFusionPoints
+					select	top (@maxItems)
+							I.ID,
+							NULL,
+							I.SourceFusionAttributeID,
+							I.TargetFusionAttributeID,
+							0,
+							'A'
+					from	MapRuleItem I
+							inner join FusionAttribute SFA on SFA.ID = I.SourceFusionAttributeID and SFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = I.TargetFusionAttributeID and TFA.Deleted = 0
+					where	I.TargetFusionAttributeID = @id and 
+						not exists (select 1 from #tFusionPoints pt where pt.SourceFusionAttributeID = I.TargetFusionAttributeID and pt.TargetFusionAttributeID = I.SourceFusionAttributeID)
+
+					set @maxItems = @maxItems - (select count(*) from #tFusionPoints);
+				end
+				
+				if EXISTS (SELECT 1 FROM @technicalRows)
+				begin
+					insert into #tFusionPoints
+					select
+						ID,
+						MapItemID,
+						SourceFusionAttributeID,
+						TargetFusionAttributeID,
+						0,
+						'A'
+					from @technicalRows
+					where Adding = 1;
+				end;
+				
+				set @currentDepth = 0;
+
+				while(exists(select 1 from #tFusionPoints ps where ps.depth = @currentDepth) and (@currentDepth < @maxDepth) and (@maxItems > 0))
+				begin
+					set @itemCount = (select count(*) from #tFusionPoints)
+
+					insert into #tFusionPoints
+						select distinct	top (@maxItems)
+								S.ID,
+								NULL,
+								S.SourceFusionAttributeID,
+								S.TargetFusionAttributeID,
+								@currentDepth+1,
+								'F'
+						from	MapRuleItem S
+								inner join #tFusionPoints FP on FP.SourceFusionAttributeID = S.TargetFusionAttributeID and FP.Depth = @currentDepth and FP.Direction in('A','F')
+						where not exists (select ID from #tFusionPoints where ID = S.ID)
+							and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
+
+						set @maxItems = @maxItems - ((select count(*) from #tFusionPoints) - @itemCount);
+						set @itemCount = (select count(*) from #tFusionPoints);
+
+						if @maxItems > 0
+						begin
+							insert into #tFusionPoints
+							select distinct top (@maxItems)	
+									S.ID,
+									NULL,
+									S.SourceFusionAttributeID,
+									S.TargetFusionAttributeID,
+									@currentDepth+1,
+									'B'
+							from	MapRuleItem S
+									inner join #tFusionPoints FP on FP.TargetFusionAttributeID = S.SourceFusionAttributeID and FP.Depth = @currentDepth and FP.Direction in('A','B')
+							where not exists (select ID from #tFusionPoints where ID = S.ID) 
+									and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
+
+							set @maxItems = @maxItems - ((select count(*) from #tFusionPoints) - @itemCount);
+							set @itemCount = (select count(*) from #tFusionPoints);
+						end
+
+
+						set @currentDepth = @currentDepth + 1;
+						print @currentDepth;
+				end
+				
+				if EXISTS (SELECT 1 FROM @technicalRows)
+				begin
+					delete I
+					from #tFusionPoints I
+					inner join @technicalRows R on R.Deleting = 1 AND R.ID = I.ID;
+				end
+
+				insert into @tItems
+				select
+							MI.ID,
+
+							MI.SourceIntersectID,
+							SIS.TypeName as SourceSubjectTypeName,
+							FSIS.TextPath as SourceSubjectName,
+							SIS.DisplayValue as SourceSubjectShortName,
+							SIS.Object as SourceSubject,
+							SIS.ObjectID as SourceSubjectID,
+							SIO.TypeName as SourceObjectTypeName,
+							FSIO.TextPath as SourceObjectName,
+							SIO.DisplayValue as SourceObjectShortName,
+							SIO.Object as SourceObject,
+							SIO.ObjectID as SourceObjectID,
+
+							MI.TargetIntersectID,
+							TIS.TypeName as TargetSubjectTypeName,
+							FTIS.TextPath as TargetSubjectName,
+							TIS.DisplayValue as TargetSubjectShortName,
+							TIS.Object as TargetSubject,
+							TIS.ObjectID as TargetSubjectID,
+							TIO.TypeName as TargetObjectTypeName,
+							FTIO.TextPath as TargetObjectName,
+							TIO.DisplayValue as TargetObjectShortName,
+							TIO.Object as TargetObject,
+							TIO.ObjectID as TargetObjectID
+					from	#tFusionPoints F
+					inner join MapRuleItemMapItem J on J.MapRuleItemID = F.ID
+					inner join MapItem MI on MI.ID = J.MapItemID
+					inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+					inner join [Intersect] TI on TI.ID = MI.TargetIntersectID
+					inner join AssetDetail SIS on SIS.Object = SI.Subject and SIS.ObjectID = SI.SubjectID
+					inner join AssetDetail SIO on SIO.Object = SI.Object and SIO.ObjectID = SI.ObjectID
+					inner join AssetDetail TIS on TIS.Object = TI.Subject and TIS.ObjectID = TI.SubjectID
+					inner join AssetDetail TIO on TIO.Object = TI.Object and TIO.ObjectID = TI.ObjectID
+					inner join FusionAttribute FSIS on SIS.Object = 'FusionAttribute' and FSIS.ID = SIS.ObjectID
+					inner join FusionAttribute FSIO on SIO.Object = 'FusionAttribute' and FSIO.ID = SIO.ObjectID
+					inner join FusionAttribute FTIS on TIS.Object = 'FusionAttribute' and FTIS.ID = TIS.ObjectID
+					inner join FusionAttribute FTIO on TIO.Object = 'FusionAttribute' and FTIO.ID = TIO.ObjectID;
+
+				insert into @tItems
+					select	
+							MI.ID,
+
+							MI.SourceIntersectID,
+							SIS.TypeName as SourceSubjectTypeName,
+							FSIS.TextPath as SourceSubjectName,
+							SIS.DisplayValue as SourceSubjectShortName,
+							SIS.Object as SourceSubject,
+							SIS.ObjectID as SourceSubjectID,
+							SIO.TypeName as SourceObjectTypeName,
+							FSIO.TextPath as SourceObjectName,
+							SIO.DisplayValue as SourceObjectShortName,
+							SIO.Object as SourceObject,
+							SIO.ObjectID as SourceObjectID,
+
+							MI.TargetIntersectID,
+							TIS.TypeName as TargetSubjectTypeName,
+							FTIS.TextPath as TargetSubjectName,
+							TIS.DisplayValue as TargetSubjectShortName,
+							TIS.Object as TargetSubject,
+							TIS.ObjectID as TargetSubjectID,
+							TIO.TypeName as TargetObjectTypeName,
+							FTIO.TextPath as TargetObjectName,
+							TIO.DisplayValue as TargetObjectShortName,
+							TIO.Object as TargetObject,
+							TIO.ObjectID as TargetObjectID
+					from	MapItem MI
+							inner join	(
+										select	ID.MapItemID
+										from	MapItemMap DM
+												inner join @tItems D on D.MapItemID = DM.MapItemID
+												inner join MapItemMap ID on ID.MapID = DM.MapID and ID.MapItemID not in (
+																														select MapItemID from @tItems
+																														)
+										) O on O.MapItemID = MI.ID
+					inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+					inner join [Intersect] TI on TI.ID = MI.TargetIntersectID
+					inner join AssetDetail SIS on SIS.Object = SI.Subject and SIS.ObjectID = SI.SubjectID
+					inner join AssetDetail SIO on SIO.Object = SI.Object and SIO.ObjectID = SI.ObjectID
+					inner join AssetDetail TIS on TIS.Object = TI.Subject and TIS.ObjectID = TI.SubjectID
+					inner join AssetDetail TIO on TIO.Object = TI.Object and TIO.ObjectID = TI.ObjectID
+					inner join FusionAttribute FSIS on SIS.Object = 'FusionAttribute' and FSIS.ID = SIS.ObjectID
+					inner join FusionAttribute FSIO on SIO.Object = 'FusionAttribute' and FSIO.ID = SIO.ObjectID
+					inner join FusionAttribute FTIS on TIS.Object = 'FusionAttribute' and FTIS.ID = TIS.ObjectID
+					inner join FusionAttribute FTIO on TIO.Object = 'FusionAttribute' and FTIO.ID = TIO.ObjectID;
+
+			end
+		else
+			begin
+				declare @tBusinessPoints table ( ID int, SourceIntersectID int, TargetIntersectID int )
+
+				insert into @objects values (@type, @id)
+
+				if not exists(
+					select	MI.ID
+					from	MapItem MI
+							inner join [Intersect] SI on SI.ID = MI.SourceIntersectID 
+							inner join [Intersect] TI ON TI.ID = MI.TargetIntersectID 
+					where 	( (SI.Subject = @type and SI.SubjectID = @id) OR (SI.Object = @type and SI.ObjectID = @id)  )
+							OR ( (TI.Subject = @type and TI.SubjectID = @id) OR (TI.Object = @type and TI.ObjectID = @id)  )
+				)
+				begin
+					insert into @objects
+						select	case 
+									when I.Subject = @type and I.SubjectID = @id then I.Object
+									else I.Subject
+								end,
+								case 
+									when I.Subject = @type and I.SubjectID = @id then I.ObjectID 
+									else I.SubjectID 
+								end
+						from	[Intersect] I
+								inner join IntersectType T on T.ID = I.IntersectTypeID 
+								inner join [Predicate] P on P.ID = T.PredicateID and P.Type = 6
+						where	(I.Subject = @type and I.SubjectID = @id) or (I.Object = @type and I.ObjectID = @id)
+				end
+				
+				insert into @tBusinessPoints
+					select	MI.ID, MI.SourceIntersectID, MI.TargetIntersectID
+					from	MapItem MI
+							inner join [Intersect] SI on SI.ID = MI.SourceIntersectID
+							inner join [Intersect] TI ON TI.ID = MI.TargetIntersectID
+							inner join @objects O on	( (SI.Subject = O.Type and SI.SubjectID = O.ID) OR (SI.Object = O.Type and SI.ObjectID = O.ID)  ) OR 
+														( (TI.Subject = O.Type and TI.SubjectID = O.ID) OR (TI.Object = O.Type and TI.ObjectID = O.ID)  )
+				
+				insert into @tBusinessPoints
+					select	MI.ID, MI.SourceIntersectID, MI.TargetIntersectID
+					from	MapItem MI
+							inner join	(
+										select	ID.MapItemID
+										from	MapItemMap DM
+												inner join @tBusinessPoints D on D.ID = DM.MapItemID
+												inner join MapItemMap ID on ID.MapID = DM.MapID and ID.MapItemID not in (
+																														select ID from @tBusinessPoints
+																														)
+										) O on O.MapItemID = MI.ID;
+
+				with cte as (
+					select	ID,
+							SourceIntersectID,
+							TargetIntersectID,
+							1 as [Level]
+					from	@tBusinessPoints
+					union all
+					select	S.ID,
+							S.SourceIntersectID,
+							S.TargetIntersectID,
+							T.[Level] + 1 as [Level]
+					from	MapItem S
+							inner join cte T on T.SourceIntersectID = S.TargetIntersectID and S.ID <> T.ID
+					where	T.[Level] <= 25
+				)
+				insert into @tBusinessPoints
+					select ID, SourceIntersectID, TargetIntersectID from cte where ID not in (select ID from @tBusinessPoints)
+
+				insert into @tItems
+					select	O.ID,
+
+							O.SourceIntersectID,
+							SIS.TypeName as SourceSubjectTypeName,
+							SIS.DisplayValue as SourceSubjectName,
+							SIS.DisplayValue as SourceSubjectShortName,
+							SIS.Object as SourceSubject,
+							SIS.ObjectID as SourceSubjectID,
+							SIO.TypeName as SourceObjectTypeName,
+							SIO.DisplayValue as SourceObjectName,
+							SIO.DisplayValue as SourceObjectShortName,
+							SIO.Object as SourceObject,
+							SIO.ObjectID as SourceObjectID,
+
+							O.TargetIntersectID,
+							TIS.TypeName as TargetSubjectTypeName,
+							TIS.DisplayValue as TargetSubjectName,
+							TIS.DisplayValue as TargetSubjectShortName,
+							TIS.Object as TargetSubject,
+							TIS.ObjectID as TargetSubjectID,
+							TIO.TypeName as TargetObjectTypeName,
+							TIO.DisplayValue as TargetObjectName,
+							TIO.DisplayValue as TargetObjectShortName,
+							TIO.Object as TargetObject,
+							TIO.ObjectID as TargetObjectID
+					from	@tBusinessPoints O
+					inner join [Intersect] SI on SI.ID = O.SourceIntersectID
+					inner join [Intersect] TI on TI.ID = O.TargetIntersectID
+					inner join AssetDetail SIS on SIS.Object = SI.Subject and SIS.ObjectID = SI.SubjectID
+					inner join AssetDetail SIO on SIO.Object = SI.Object and SIO.ObjectID = SI.ObjectID
+					inner join AssetDetail TIS on TIS.Object = TI.Subject and TIS.ObjectID = TI.SubjectID
+					inner join AssetDetail TIO on TIO.Object = TI.Object and TIO.ObjectID = TI.ObjectID
+
+				insert into #tFusionPoints
+					select	top (@maxItems) 
+							J.MapRuleItemID,
+							J.MapItemID,
+							T.SourceFusionAttributeID,
+							T.TargetFusionAttributeID,
+							0,
+							'A'
+					from	@tItems I
+							inner join MapRuleItemMapItem J on J.MapItemID = I.MapItemID
+							inner join MapRuleItem T on T.ID = J.MapRuleItemID
+							inner join FusionAttribute SFA on SFA.ID = T.SourceFusionAttributeID and SFA.Deleted = 0
+							inner join FusionAttribute TFA on TFA.ID = T.TargetFusionAttributeID and TFA.Deleted = 0;
+
+				set @maxItems = @maxItems - (select count(*) from #tFusionPoints);
+				
+				if EXISTS (SELECT 1 FROM @technicalRows)
+				begin
+					insert into #tFusionPoints
+					select
+						ID,
+						MapItemID,
+						SourceFusionAttributeID,
+						TargetFusionAttributeID,
+						0,
+						'A'
+					from @technicalRows
+					where Adding = 1;
+				end;
+				
+				set @currentDepth = 0;
+				
+				while( exists(select 1 from #tFusionPoints ps where ps.depth = @currentDepth) and (@currentDepth < @maxDepth) and (@maxItems > 0))
+				begin	
+					set @itemCount = (select count(*) from #tFusionPoints);
+
+					insert into #tFusionPoints
+						select distinct top (@maxItems)	
+							    S.ID,
+								NULL,
+								S.SourceFusionAttributeID,
+								S.TargetFusionAttributeID,
+								@currentDepth+1,
+								'F'
+						from	MapRuleItem S
+								inner join #tFusionPoints FP on FP.SourceFusionAttributeID = S.TargetFusionAttributeID and FP.Depth = @currentDepth and FP.Direction in('A','F')
+						where not exists (select ID from #tFusionPoints where ID = S.ID)
+							and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
+
+					set @maxItems = @maxItems - ((select count(*) from #tFusionPoints) - @itemCount);
+					set @itemCount = (select count(*) from #tFusionPoints);
+
+					if (@maxItems > 0)
+					begin
+						insert into #tFusionPoints
+							select distinct	top (@maxItems) 
+							        S.ID,
+									NULL,
+									S.SourceFusionAttributeID,
+									S.TargetFusionAttributeID,
+									@currentDepth+1,
+									'B'
+							from	MapRuleItem S
+									inner join #tFusionPoints FP on FP.TargetFusionAttributeID = S.SourceFusionAttributeID and FP.Depth = @currentDepth and FP.Direction in('A','B')
+							where not exists (select ID from #tFusionPoints where ID = S.ID) 
+									and not exists (select 1 from @technicalRows R where Deleting = 1 and R.ID = S.ID);
+
+					set @maxItems = @maxItems - ((select count(*) from #tFusionPoints) - @itemCount);
+					end
+
+					set @currentDepth = @currentDepth + 1;
+					print @currentDepth;
+				end
+
+				if EXISTS (SELECT 1 FROM @technicalRows)
+				begin
+					delete I
+					from #tFusionPoints I
+					inner join @technicalRows R on R.Deleting = 1 AND R.ID = I.ID;
+				end;
+			end
+
+		if @view = 3
+		begin
+			insert into @links
+				select	distinct
+						cast(S.SourceFusionAttributeID as varchar),
+						cast(S.TargetFusionAttributeID as varchar),
+						'' as category
+				from	#tFusionPoints S
+						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
+						left join @tItems B on B.MapItemID = J.MapItemID
+			insert into @nodes
+				select	distinct
+						A.ID as assetId,
+						cast(S.SourceFusionAttributeID as varchar),
+						'FusionAttribute' as [obj],
+						SourceFusionAttributeID as [objid], 
+						'FusionAttribute' as [type],
+						T.Name as typeName,
+						FA.TextPath as name,
+						FA.Name as shortname,
+						COALESCE(ST.IconBackColor, '#000') as back,
+						COALESCE(ST.IconForeColor, '#fff') as fore,
+						'Fusion' as template,
+						B.SourceSubjectTypeName + ' : ' + B.SourceSubjectName as other,
+						null
+				from	#tFusionPoints S
+						inner join FusionAttribute FA on FA.ID = S.SourceFusionAttributeID
+						inner join FusionAttributeType T on T.ID = FA.FusionAttributeTypeID
+						left join ObjectStyle ST on ST.ObjectType = 'FusionAttributeType' and ST.ObjectID = T.ID
+						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
+						left join @tItems B on B.MapItemID = J.MapItemID
+						left join Asset A on A.[Object] = 'FusionAttribute' and A.ObjectID = SourceFusionAttributeID
+			insert into @nodes
+				select	distinct
+						A.ID as assetId,
+						cast(S.TargetFusionAttributeID as varchar),
+						'FusionAttribute' as [obj],
+						TargetFusionAttributeID as [objid], 
+						'FusionAttribute' as [type],
+						T.Name as typeName,
+						FA.TextPath as name,
+						FA.Name as shortname,
+						COALESCE(ST.IconBackColor, '#000') as back,
+						COALESCE(ST.IconForeColor, '#fff') as fore,
+						'Fusion' as template,
+						B.TargetSubjectTypeName + ' : ' + B.TargetSubjectName as other,
+						null
+				from	#tFusionPoints S
+						inner join FusionAttribute FA on FA.ID = S.TargetFusionAttributeID
+						inner join FusionAttributeType T on T.ID = FA.FusionAttributeTypeID
+						left join ObjectStyle ST on ST.ObjectType = 'FusionAttributeType' and ST.ObjectID = T.ID
+						left join MapRuleItemMapItem J on J.MapRuleItemID = S.ID
+						left join @tItems B on B.MapItemID = J.MapItemID
+						left join Asset A on A.[Object] = 'FusionAttribute' and A.ObjectID = TargetFusionAttributeID
+				where	cast(S.TargetFusionAttributeID as varchar) + '.' + coalesce(B.TargetSubject, '0') + '.' + coalesce(cast(B.TargetSubjectID as varchar), '0') not in (select [key] from @nodes)
+			
+			delete	@nodes 
+			where	other is null 
+					and (obj + cast([objid] as varchar)) in (
+															select	(obj + cast([objid] as varchar))
+															from	@nodes 
+															where	other is not null
+															)
+			
+			;with nd as
+			(
+				select distinct 
+					assetId, 
+					[key],
+					obj,	
+					[objid],	
+					[type],	
+					typeName,
+					[name],
+					shortname,	
+					back,
+					fore,
+					template,
+					other,
+					HasSourceRules 
+				from @nodes
+			)
+			delete from @nodes where id not in (
+				select distinct n.id from nd
+				cross apply (
+					select max(id) as id from @nodes where [key] = nd.[key]
+				) cnt
+				inner join @nodes n on n.id = cnt.id
+			);
+
+			delete	T
+			from	@links T
+					left join @nodes S on S.[key] = T.[from] or S.[key] = T.[to]
+			where	S.[key] is null
+			
+			select	(
+					select	*
+					from	@links O
+					for json path			
+					) as 'links',
+					(
+					select	distinct
+							*
+					from	@nodes
+					for json path			
+					) as 'nodes'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end 
+
+		if @view = 4
+		begin
+			select (
+				select distinct
+					F.ID,
+					I.MapItemID,
+					F.SourceFusionAttributeID,
+					FS.TextPath as SourceFusionAttributeName,
+					F.TargetFusionAttributeID,
+					FT.TextPath as TargetFusionAttributeName 
+				from #tFusionPoints F
+				left join @tItems I on I.MapItemID = F.MapItemID
+				inner join FusionAttribute FS on FS.ID = F.SourceFusionAttributeID
+				inner join FusionAttribute FT on FT.ID = F.TargetFusionAttributeID
+				for json path
+				) as 'items'
+			for json path, WITHOUT_ARRAY_WRAPPER
+		end 
+	end
+end
+GO
+
+ALTER   procedure [graph].[GetImpactRelationshipsByAssets]
+	@assets dbo.AssetBrowserImpactTable readonly,
+	@predicateUid uniqueidentifier,
+	@StartHop int = 0
+as
+begin
+	set nocount on;
+
+	drop table if exists #assetIds
+	drop table if exists #clean
+	drop table if exists #hierarchies
+	drop table if exists #rawHierarchies
+	drop table if exists #tbl
+
+	create table #assetIds (ID bigint, [Key] varchar(100), Class int)
+	create index ix_TempAssetIds on #assetIds (ID asc)
+
+	create table #clean ([Hop] int, [Key] varchar(100), ID bigint, [Path] nvarchar(2500), Segment xml, Reveal int)
+
+	create table #hierarchies ([Hop] float, ID bigint, [Key] varchar(50), Back varchar(25), Fore varchar(25), HierarchyLevel int, AssetTypeID int, AssetID bigint, AssetUid uniqueidentifier, DisplayValue nvarchar(500), Class int, AssetTypeName nvarchar(250), Reveal int, RelationCounts varchar(max), XmlPosition int, ParentKey varchar(50), ParentID bigint null, IsDupe bit null)
+	create index ix_TempHierarchies on #hierarchies ([Hop] asc, HierarchyLevel asc)
+
+	create table #rawHierarchies ([Hop] int, ID bigint, HierarchyLevel int, AssetTypeID int, AssetID bigint, ParentID bigint, Reveal int);
+	create index IX_TempRawHierarchies on #rawHierarchies (AssetTypeID asc, AssetID asc);
+	create clustered index CIX_TempRawHierarchies on #rawHierarchies (Hop asc, ID asc, HierarchyLevel asc);
+
+	create table #tbl (
+		[Hop] int, Uid uniqueidentifier, 
+		FromReveal bit, FromHop int, FromKey varchar(100), FromID bigint, subjectUid uniqueidentifier, FromPath nvarchar(2500), FromSegment xml, 
+		ToReveal bit, ToHop int, ToKey varchar(100), ToID bigint, objectUid uniqueidentifier, ToPath nvarchar(2500), ToSegment xml, 
+		predicateUid uniqueidentifier, [predicate] nvarchar(250), predicateType int)
+	create index ix_TempTbl on #tbl ([Hop] desc, ToID asc)
+
+	
+	declare @maxHops int = 1 + @StartHop 
+
+	insert into #assetIds
+		select	distinct 
+				A.ID, 
+				O.[Key],
+				T.[Class] 
+		from	Asset A 
+				inner join @assets O on O.Uid = A.Uid
+				inner join AssetType T on T.ID = A.AssetTypeID
+
+	if not exists(select 1 from #assetIds)
+	begin
+		insert into #assetIds values(0, null, 0)
+	end;
+
+	insert into #tbl ([Hop], Uid, FromReveal, FromHop, FromKey, FromID, subjectUid, FromPath, FromSegment, ToReveal, ToHop, ToKey, ToID, objectUid, ToPath, ToSegment, predicateUid, [predicate], predicateType)
+		select	@StartHop as [Hop],
+				E.Uid,
+						
+				0 as FromReveal,
+				@StartHop-1 as FromHop,
+				null,
+				S.ID as FromID,
+				S.Uid as FromUid, 
+				S.[Path] as FromPath,
+				S.Segments as FromSegment,
+
+				0 as ToReveal,
+				@StartHop as ToHop,
+				A.[Key],
+				T.ID as ToID,
+				T.Uid as ToUid, 
+				T.[Path] as ToPath,
+				T.Segments as ToSegment,
+					
+				E.PredicateUid,
+				P.[Inverse],
+				E.PredicateType
+
+		from	graph.AssetNode S,
+				graph.AssetEdge E,
+				graph.AssetNode T,
+				[Predicate] P,
+				#assetIds A
+		where	MATCH(S-(E)->T)
+				and E.PredicateType not in (3,4,12,13)
+				and E.PredicateUid = P.[Uid]
+				and P.[Uid] = @predicateUid
+				and T.ID = A.ID;
+
+	insert into #tbl ([Hop], Uid, FromReveal, FromHop, FromKey, FromID, subjectUid, FromPath, FromSegment, ToReveal, ToHop, ToKey, ToID, objectUid, ToPath, ToSegment, predicateUid, [predicate], predicateType)
+		select	@StartHop as [Hop],
+				E.Uid,
+						
+				0 as FromReveal,
+				@StartHop as FromHop,
+				A.[Key],
+				S.ID as FromID,
+				S.Uid as FromUid, 
+				S.[Path] as FromPath,
+				S.Segments as FromSegment,
+						
+				0 as ToReveal,
+				@StartHop+1 as ToHop,
+				null,
+				T.ID as ToID,
+				T.Uid as ToUid, 
+				T.[Path] as ToPath,
+				T.Segments as ToSegment,
+					
+				E.PredicateUid,
+				P.Name,
+				E.PredicateType
+		from	graph.AssetNode S,
+				graph.AssetEdge E,
+				graph.AssetNode T,
+				[Predicate] P,
+				#assetIds A
+		where	MATCH(S-(E)->T)
+				and E.PredicateType not in (3,4,12,13)
+				and E.PredicateUid = P.[Uid]
+				and P.[Uid] = @predicateUid
+				and S.ID = A.ID;
+
+	-- Get cleaned up version of unique nodes based on Hop and AssetUid.
+	insert into #clean
+		select	FromHop,
+				FromKey,
+				FromID,
+				FromPath,
+				FromSegment,
+				case when FromReveal = 1 then 2 else 0 end
+		from	(
+				select	Row_number() over(partition by FromHop, FromID order by FromHop, FromID) as RowNum,
+						FromHop,
+						FromKey,
+						FromID,
+						FromPath,
+						FromSegment,
+						FromReveal
+				from	#tbl
+				where	FromPath is not null
+				) O where RowNum = 1
+
+	insert into #clean
+		select	ToHop,
+				ToKey,
+				ToID,
+				ToPath,
+				ToSegment,
+				case when ToReveal = 1 then 2 else 0 end
+		from	(
+				select	Row_number() over(partition by ToHop, ToID order by ToHop, ToID) as RowNum,
+						ToHop,
+						ToKey,
+						ToID,
+						ToPath,
+						ToSegment,
+						ToReveal
+				from	#tbl N
+						left join #clean E on E.Hop = N.ToHop and E.ID = N.ToID
+				where	E.ID is null
+						and ToPath is not null
+				) O where RowNum = 1
+
+	-- We only want to create assets that do not have the key column populated, as those Key-populated assets came into the proc, and already exist.
+	insert into #rawHierarchies
+		select	distinct
+				T.[Hop],
+				T.ID,
+				doc.c.value('@level', 'int') as [HierarchyLevel],
+				doc.c.value('@assetTypeId', 'int') as [assetTypeId],
+				doc.c.value('@assetId', 'bigint') as [assetId],
+				null,
+				T.Reveal
+		from	#clean T
+				cross apply T.Segment.nodes('/path/segment') doc(c)
+		where	T.[Key] is null;
+
+	update	T
+	set		T.ParentID = S.AssetID
+	from	#rawHierarchies T
+			inner join #rawHierarchies S on S.Hop = T.Hop and S.ID = T.ID and S.HierarchyLevel = T.HierarchyLevel-1
+
+	insert into #hierarchies
+		select	T.[Hop],
+				
+				T.ID, 
+				utility.GetHash(cast(T.[Hop] as varchar) + '|' + cast(T.AssetID as varchar(50))) as [Key],
+				coalesce(S.[IconBackColor], '#000000'),
+				coalesce(S.[IconForeColor], '#FFFFFF'),
+				T.[HierarchyLevel],
+				T.AssetTypeID,
+				T.AssetID,
+				A.Uid,
+				d.DisplayValue,
+				[AT].Class,
+				[AT].Name as AssetTypeName,
+				T.Reveal,
+				'[]',
+				null,
+				null,
+				T.ParentID,
+				0 as IsDupe
+		from	#rawHierarchies T
+				inner join AssetDisplayValue d on d.AssetID = T.AssetID
+				inner join AssetType [AT] on [AT].ID = T.AssetTypeID
+				left join ObjectStyle S on S.ObjectType = [AT].Object and S.ObjectID = [AT].ObjectID
+				inner join Asset A on A.ID = d.AssetID;
+
+	--Add Type as parent to those nodes that have a single-level hierarchy.
+	drop table if exists #singles
+	create table #singles (Hop int, ID bigint)
+	insert into #singles
+		select	Hop, ID
+		from	#hierarchies
+		group by Hop, ID
+		having count(1) = 1;
+
+	update	T
+	set		T.HierarchyLevel = 2,
+			T.XmlPosition = 2
+	from	#hierarchies T
+			inner join	#singles S on S.Hop = T.Hop and S.ID = T.ID;
+
+	insert into #hierarchies
+		select	T.Hop,
+				T.ID,
+				utility.GetHash(cast(T.[Hop] as varchar) + '|' + cast(A.Uid as varchar(50))),
+				T.Back,
+				T.Fore,
+				1 as HierarchyLevel,
+				T.AssetTypeID,
+				A.ID as AssetID,
+				A.Uid as AssetUid,
+				A.Name as DisplayValue,
+				A.Class,
+				A.Name as AssetTypeName,
+				0 as Reveal,
+				'[]' as RelationCounts,
+				1 as XmlPosition,
+				null as ParentKey,
+				null as ParentID,
+				0 as IsDupe
+		from	#hierarchies T
+				inner join	#singles S on S.Hop = T.Hop and S.ID = T.ID
+				inner join AssetType A on A.ID = T.AssetTypeID;
+
+		update	T
+		set		T.ID = T.AssetTypeID
+		from	#hierarchies T
+				inner join	#singles S on S.Hop = T.Hop and S.ID = T.ID;
+
+	-- Resolve the parent key.
+	update	C
+	set		C.ParentKey = P.[Key]
+	from	#hierarchies C
+			left join #hierarchies P on P.Hop = C.Hop and P.ID = C.ID and P.XmlPosition = C.XmlPosition-1;
+	
+	update	C
+	set		C.ParentKey = P.[Key]
+	from	#hierarchies C
+			left join #hierarchies P on P.Hop = C.Hop and P.ID = C.ID and P.AssetID = C.ParentID 
+	where	C.ParentID is not null;
+
+	--De-dupe the #hierarchies table
+	--insert into #hierarchies
+	--	select	[Hop], ID, [Key], Back, Fore, HierarchyLevel, AssetTypeID, AssetID, AssetUid, DisplayValue, Class, AssetTypeName, Reveal, RelationCounts, XmlPosition, ParentKey, ParentID, 0 as IsDupe
+	--	from	(
+	--			select	Row_number() over(partition by Hop,ID,[Key] order by Hop,ID,[Key]) as RowNum,
+	--					*
+	--			from	#hierarchies
+	--			) O
+	--	where	O.RowNum = 1
+	--	order by Hop, ID, HierarchyLevel;
+
+	--delete #hierarchies where IsDupe = 1;
+
+	-- Cleanup
+	update #hierarchies set Reveal = 0 where Reveal is null;
+
+
+	-- Determine relationships breakdown by predicate.
+	declare @relItems table (Hop int, AssetID bigint, [Predicate] nvarchar(250), PredicateUid uniqueidentifier, Direction int, AssetUid uniqueidentifier)
+	insert into @relItems
+		select	H.Hop, H.ID, P.Inverse, P.Uid as PredicateUid, 1, T.Uid
+		from	graph.AssetNode S,
+				graph.AssetEdge E,
+				graph.AssetNode T,
+				#clean H,
+				[Predicate] P
+		where	MATCH(S-(E)->T)
+				and S.ID = H.ID
+				and P.ID = E.PredicateID
+				and E.PredicateType not in (3,4,12,13)
+				and H.Hop <> @StartHop
+				and T.ID not in (select ID from #assetIds)
+		union
+		select	H.Hop, H.ID, P.Inverse, P.Uid as PredicateUid, 2, S.Uid
+		from	graph.AssetNode S,
+				graph.AssetEdge E,
+				graph.AssetNode T,
+				#clean H,
+				[Predicate] P
+		where	MATCH(S-(E)->T)
+				and T.ID = H.ID
+				and P.ID = E.PredicateID
+				and E.PredicateType not in (3,4,12,13)
+				and H.Hop <> @StartHop
+				and S.ID not in (select ID from #assetIds);
+
+	update	H
+	set		H.RelationCounts =	(
+								select	O.[Predicate], 
+										O.PredicateUid, 
+										O.Direction,
+										count(1) as [Count]
+								from	@relItems O
+								where	O.Hop = H.Hop and O.AssetID = H.AssetID
+								group by O.[Predicate], O.PredicateUid, O.Direction
+								for json path
+								)
+	from	#hierarchies H;
+	   
+	-- Now return the data sets to caller.
+
+	--select	* from #clean order by Hop;
+
+	select		distinct
+				Hop, ID, [Key], ParentKey, Back, Fore, HierarchyLevel, AssetTypeID, AssetID, AssetUid, DisplayValue, Class, AssetTypeName, Reveal, RelationCounts 
+	from		#hierarchies 
+	order by	Hop, ID, HierarchyLevel;
+	
+	select		[Hop], 
+				Uid, 
+				subjectUid, 
+				coalesce(
+					FromKey, 
+					utility.GetHash(cast([FromHop] as varchar) + '|' + cast(FromID as varchar(50)))
+				) as [subjectKey],
+				FromID as subjectId, 
+				objectUid, 
+				coalesce(
+					ToKey,
+					utility.GetHash(cast([ToHop] as varchar) + '|' + cast(ToID as varchar(50)))
+				) as [objectKey],
+				ToID as objectId, 
+				predicateUid, [predicate], predicateType 
+	from		#tbl 
+	order by	Hop;
+end
+GO
 
 ]]>
 	</rollback>
