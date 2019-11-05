@@ -149,7 +149,7 @@ namespace d360.model.DataAccessLayer
                 var predicateUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value;
                 var intersectJoin = "";
                 var reverseIntersectJoin = "";
-                var relatedAssetSql = "";
+                var relatedAssetSql = " 1=1 ";
                 bool includeBoth = false;
 
 
@@ -159,7 +159,7 @@ namespace d360.model.DataAccessLayer
                     if (Guid.TryParse(relatedAssetUIDString, out relatedAssetUID))
                     {
                         dbArgs.Add("@relatedAssetUid", relatedAssetUID);
-                        relatedAssetSql = $"where {subjectAlias}.[UID] = @relatedAssetUid";
+                        relatedAssetSql = $"{subjectAlias}.[UID] = @relatedAssetUid";
                     }
                     intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and abs(I.SubjectID) = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
 
@@ -170,7 +170,7 @@ namespace d360.model.DataAccessLayer
                     if (Guid.TryParse(relatedAssetUIDString, out relatedAssetUID))
                     {
                         dbArgs.Add("@relatedAssetUid", relatedAssetUID);
-                        relatedAssetSql = $"where {subjectAlias}.[UID] = @relatedAssetUid";
+                        relatedAssetSql = $"{subjectAlias}.[UID] = @relatedAssetUid";
                     }
                     intersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and abs(I.SubjectID) = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
                 }
@@ -194,7 +194,17 @@ namespace d360.model.DataAccessLayer
                             inner join [Intersect] I on {intersectJoin}
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID
                             inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
-                            {relatedAssetSql}";
+                            where {relatedAssetSql}";
+
+                var innerCountSql = $@"
+						select B.ID from Asset B
+						inner join AssetType TB on TB.ID = B.AssetTypeID
+						where {relatedAssetSql}
+						and exists (select 1 from [Intersect] I
+							inner join IntersectType IT on IT.ID = I.IntersectTypeID
+                            inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+							where {intersectJoin})    
+";
 
                 if (includeBoth)
                 {
@@ -211,10 +221,26 @@ namespace d360.model.DataAccessLayer
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID
                             inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid";
 
+                    var reverseInnerCountSql = $@"
+						select B.ID from Asset B
+						inner join AssetType TB on TB.ID = B.AssetTypeID
+						where {relatedAssetSql}
+						and exists (select 1 from [Intersect] I
+							inner join IntersectType IT on IT.ID = I.IntersectTypeID
+                            inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
+							where {reverseIntersectJoin})";  
+
                     innerSql = $@"select * from (
                         {innerSql}
                         union all
                         {reverseInnerSql}) RI";
+
+                    innerCountSql = $@"
+                        select * from (
+                        {innerCountSql}
+                        union all
+                        {reverseInnerCountSql}) RI
+                    ";
                 }
 
                 var joinSql = $@"
@@ -225,17 +251,19 @@ namespace d360.model.DataAccessLayer
                         ) as Relationships
                     ) R";
 
+                var joinCountSql = $@"cross apply ({innerCountSql}) R";
 
                 fieldColumns.Add("R.Relationships");
                 dbArgs.Add("@predicateUid", predicateUID);
 
                 fieldJoins.Add(joinSql);
+                countJoins.Add(joinCountSql);
             }
 
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
-            if (includeRelationships)
-                whereStatements.Add("R.Relationships is not null");
+            //if (includeRelationships)
+            //    whereStatements.Add("R.Relationships is not null");
 
             if (!CompanyContext.CurrentResourceIsAdmin)
             {
@@ -267,7 +295,7 @@ namespace d360.model.DataAccessLayer
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
-                {string.Join("\n", string.IsNullOrWhiteSpace(whereSql) ? countJoins : fieldJoins)}
+                {string.Join("\n", countJoins)}
                 {whereSql}";
 
             var sql = $@"
