@@ -16,11 +16,15 @@
         top: 10px; 
         z-index: 50; 
     }
+    .controls-right span {
+        padding: 8px;
+        cursor: pointer;
+    }
     .asset-browser-controls-bottom {
-        position: absolute; 
-        right: 20px; 
-        bottom: 10px; 
-        z-index: 50; 
+        position: absolute;
+        right: 20px;
+        bottom: 10px;
+        z-index: 50;
     }
     .asset-browser-window {
         position: absolute; 
@@ -134,7 +138,7 @@
         color: #999;
     }
 </style>
-<div class="row">
+<div class="row" [ngClass]="{'full-screen-ab': isFullScreen}">
     <div class="col s12">
         <div class="tile tile-detail" style="padding: 0">
             <div class="row" *ngIf="isLoading">
@@ -159,6 +163,7 @@
                         <button type="button" title="Filter asset browser"><i class="fa fa-filter"></i></button>
                         <button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>
                     </div>
+                    <span *ngIf="isFullScreen" title="Minimize" class="fa fa-times" (click)="fullScreenButtonClick()"></span>
                 </div>
                 </div>
             <div class="row" style="position: relative">
@@ -243,7 +248,7 @@
                                         <div class="asset-browser-button-group">
                                             <button type="button" title="Zoom in" (click)="zoomInButtonClick($event)"><i class="fa fa-search-plus"></i></button>
                                             <button type="button" title="Zoom out" (click)="zoomOutButtonClick($event)"><i class="fa fa-search-minus"></i></button>
-                                            <button type="button" title="Full screen" (click)="fullScreenButtonClick($event)"><i class="fa fa-expand"></i></button>
+                                            <button type="button" title="{{isFullScreen ? 'Minimize':'Full screen'}}" (click)="fullScreenButtonClick($event)"><i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-expand' : !isFullScreen}"></i></button>
                                         </div>
                                     </div>
                                 </td>
