@@ -114,6 +114,7 @@
     <Compile Include="DataAccessLayer\IIssueRepository.cs" />
     <Compile Include="DataAccessLayer\IRelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\IFusionRepository.cs" />
+    <Compile Include="DataAccessLayer\IResourceRepository.cs" />
     <Compile Include="DataAccessLayer\IResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\FusionRepository.cs" />
     <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
@@ -127,6 +128,7 @@
     <Compile Include="DataAccessLayer\ISurveyRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\MetricsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\RelationshipRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\ResourceRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\SurveyRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\TagRepository.cs" />
@@ -142,7 +144,9 @@
     <Compile Include="DbConnectionExtensions.cs" />
     <Compile Include="validators\AssetTypeValidator.cs" />
     <Compile Include="validators\FieldApiModelValidator.cs" />
+    <Compile Include="validators\ISurveyApiModelValidator.cs" />
     <Compile Include="validators\IWorkflowApiModelValidator.cs" />
+    <Compile Include="validators\SurveyApiModelValidator.cs" />
     <Compile Include="validators\TagValidator.cs" />
     <Compile Include="validators\WorkflowApiModelValidator.cs" />
     <Compile Include="validators\WorkHttpStatus.cs" />
