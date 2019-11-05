@@ -1,4 +1,5 @@
 ﻿export class FusionType {
+    AssetTypeID: number;
     ID: number;
     Name: string;
     Description: string;

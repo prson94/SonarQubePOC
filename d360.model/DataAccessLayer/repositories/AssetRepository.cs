@@ -867,12 +867,12 @@ namespace d360.model.DataAccessLayer
             return CompanyContext.Filter<ApiExecution>(i => i.ExecutionID == executionUid).SingleOrDefault();
         }
 
-        public void UpsertObjectStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx")
+        public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string objectName = "Tx")
         {
-            var style = CompanyContext.GetObjectStyle(type, id);
+            var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
             bool add = (style == null);
 
-            string iconText = "Tx";
+            string iconText;
 
             var words = objectName.Trim().Split(' ');
             if (words.Length > 1 && words[1].Length > 0)
@@ -886,22 +886,21 @@ namespace d360.model.DataAccessLayer
 
             if (add)
             {
-                style = new ObjectStyle
+                style = new AssetTypeStyle
                 {
-                    ObjectType = type,
-                    ObjectID = id,
+                    ID = assetTypeId,
                     IconBackColor = backColor,
                     IconForeColor = foreColor,
                     IconText = iconText
                 };
-                CompanyContext.Add<ObjectStyle>(style);
+                CompanyContext.Add(style);
             }
             else
             {
                 style.IconBackColor = backColor;
                 style.IconForeColor = foreColor;
                 style.IconText = iconText;
-                CompanyContext.Update<ObjectStyle>(style);
+                CompanyContext.Update(style);
             }
 
 

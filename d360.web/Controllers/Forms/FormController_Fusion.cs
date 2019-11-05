@@ -319,7 +319,7 @@ namespace d360.web.Controllers
         #region Form Get/Post
 
         [ActionName("FusionType"), HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("FusionType")]
-        public JsonResult PostFusionType(FusionType fusion, ObjectStyle style = null)
+        public JsonResult PostFusionType(FusionType fusion, AssetTypeStyle style = null)
         {
             try
             {
@@ -335,7 +335,7 @@ namespace d360.web.Controllers
                 Company.Add(model);
 
                 if (style != null)
-                    upsertObjectStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
+                    upsertAssetStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
 
                 return jsonSuccess(model.Name + " successfully created.", model.ID.ToString(), "add", HttpStatusCode.Created, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
             }
@@ -390,7 +390,7 @@ namespace d360.web.Controllers
         }
 
         [ActionName("FusionType"), HttpPut, ValidateInput(false), Route("FusionType")]
-        public JsonResult PutFusionType(FusionType fusion, ObjectStyle style = null)
+        public JsonResult PutFusionType(FusionType fusion, AssetTypeStyle style = null)
         {
             try
             {
@@ -405,7 +405,7 @@ namespace d360.web.Controllers
 
                 Company.Update(model);
                 if (style != null)
-                    upsertObjectStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
+                    upsertAssetStyle(SystemObjects.FusionType, model.ID, style.IconForeColor, style.IconBackColor, model.Name);
 
                 return jsonSuccess(model.Name + " successfully updated.", model.ID.ToString(), "edit", HttpStatusCode.OK, new { ParentID = 0, Type = "FusionType", Context = "FusionType", Name = model.Name });
             }
