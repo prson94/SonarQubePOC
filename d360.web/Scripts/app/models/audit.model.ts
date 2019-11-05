@@ -14,7 +14,6 @@
     ResourceName: string;
     Field: string;
     Class: number;
-    AssetTypeClass: number;
     NewValue: string;
     PreviousValue: string;
     Version: string;
