@@ -197,7 +197,7 @@ namespace d360.model.DataAccessLayer
                             where {relatedAssetSql}";
 
                 var innerCountSql = $@"
-						select B.ID from Asset B
+						select B.ID as Relationships  from Asset B
 						inner join AssetType TB on TB.ID = B.AssetTypeID
 						where {relatedAssetSql}
 						and exists (select 1 from [Intersect] I
@@ -222,7 +222,7 @@ namespace d360.model.DataAccessLayer
                             inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid";
 
                     var reverseInnerCountSql = $@"
-						select B.ID from Asset B
+						select B.ID as Relationships from Asset B
 						inner join AssetType TB on TB.ID = B.AssetTypeID
 						where {relatedAssetSql}
 						and exists (select 1 from [Intersect] I
@@ -262,8 +262,8 @@ namespace d360.model.DataAccessLayer
 
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
-            //if (includeRelationships)
-            //    whereStatements.Add("R.Relationships is not null");
+            if (includeRelationships)
+                whereStatements.Add("R.Relationships is not null");
 
             if (!CompanyContext.CurrentResourceIsAdmin)
             {
