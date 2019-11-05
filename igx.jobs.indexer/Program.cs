@@ -121,19 +121,16 @@ namespace igx.jobs.indexer
                         CoreFunction.AITrackException(functionName, ex, c.CompanyID);
                     }
 
-                    if(!fusionEnabled)
-                    {
-                        LogReindexStart("TechnicalAssets", c.CompanyID);
+                    LogReindexStart("TechnicalAssets", c.CompanyID);
 
-                        try
-                        {
-                            models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.TechnicalAsset);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
+                    try
+                    {
+                        models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.TechnicalAsset);
+                        source.AddToIndex(models);
+                    }
+                    catch (Exception ex)
+                    {
+                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
                     }
 
                     LogReindexStart("Attributes", c.CompanyID);
