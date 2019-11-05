@@ -7,6 +7,8 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using System.Xml.Linq;
+using System.Linq;
 
 namespace d360.core.entities
 {
@@ -75,15 +77,95 @@ namespace d360.core.entities
         public virtual ICollection<FieldApiModel> Fields { get; set; }
     }
 
-    public class AssetsApiViewModel
+    public class AssetsApiViewModel: PagedApiBaseViewModel
     {
-        [DataMember]
-        public int pageSize { get; set; } = 25000;
-        [DataMember]
-        public int pageNum { get; set; } = 1;
-        [DataMember]
-        public int total { get; set; } = 0;
         [DataMember]
         public IEnumerable<dynamic> items { get; set; }
     }
+
+
+
+    public class AssetsByPathApiRequestModel : PagedApiBaseRequestModel
+    {
+        [DataMember]
+        public string searchPhrase { get; set; }
+
+        [DataMember]
+        public IEnumerable<AssetsByPathItemApiFilterRequestModel> filters { get; set; }
+    }
+
+    public class AssetsByPathItemApiFilterRequestModel
+    {
+        [DataMember]
+        public Guid? Uid { get; set; }
+
+        [DataMember]
+        public AssetTypeClass? Class { get; set; }
+
+        [DataMember]
+        public bool? UseAsTransformation { get; set; }
+
+        [DataMember]
+        public AssetsByPathItemApiFilterSideOfRelationshipRequestModel AsSideOfRelationship { get; set; }
+    }
+
+    public class AssetsByPathItemApiFilterSideOfRelationshipRequestModel
+    {
+        [DataMember]
+        public PredicateType? PredicateType { get; set; }
+
+        [DataMember]
+        public AssetsByPathItemApiFilterSideOfRelationshipRequestEnum Side { get; set; }
+    }
+
+    public enum AssetsByPathItemApiFilterSideOfRelationshipRequestEnum
+    { 
+        Subject,
+        Object
+    }
+
+    #region AssetsController.GetAssetsByPathAsync Return Types
+
+    public class AssetsByPathApiViewModel: PagedApiBaseViewModel
+    {
+        [DataMember]
+        public IEnumerable<AssetsByPathItemApiViewModel> items { get; set; }
+    }
+
+    public class AssetsByPathItemApiViewModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
+
+        [IgnoreDataMember]
+        public string SegmentsXml { get; set; }
+
+        [DataMember]
+        public IEnumerable<AssetsByPathItemSegmentApiViewModel> Segments 
+        { 
+            get {
+                try
+                {
+                    return
+                        from s in XElement.Parse(SegmentsXml).Elements("segment")
+                        select new AssetsByPathItemSegmentApiViewModel { Value = s.Value };
+                }
+                catch
+                {
+                    return new List<AssetsByPathItemSegmentApiViewModel>();
+                }
+            }
+        }
+    }
+
+    public class AssetsByPathItemSegmentApiViewModel
+    {
+        [DataMember]
+        public string Value { get; set; }
+    }
+
+    #endregion
 }

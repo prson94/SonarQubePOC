@@ -14,6 +14,7 @@ namespace d360.model.DataAccessLayer
         Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(AssetTypeClass? Class, Guid? fusionTypeUid);
         List<AssetTypeClassInfo> GetAssetTypeList();
         Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model);
         dynamic GetFieldTypes(Guid assetTypeUid);
 
         List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
