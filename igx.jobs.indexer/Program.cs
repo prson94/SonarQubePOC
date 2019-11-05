@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using d360.core.entities;
 
 namespace igx.jobs.indexer
 {
@@ -97,6 +98,8 @@ namespace igx.jobs.indexer
                     IEnumerable<AddToIndexModel> models = null;
 
                     company.OpenWithRetry(RetryPolicy.DefaultFixed);
+                    List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
+                    bool fusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
 
                     int SuggestedIndexLimit = SuggestIndexLimit(company);
                     if(SuggestedIndexLimit > 1000)
@@ -118,16 +121,19 @@ namespace igx.jobs.indexer
                         CoreFunction.AITrackException(functionName, ex, c.CompanyID);
                     }
 
-                    LogReindexStart("TechnicalAssets", c.CompanyID);
+                    if(!fusionEnabled)
+                    {
+                        LogReindexStart("TechnicalAssets", c.CompanyID);
 
-                    try
-                    {
-                        models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.TechnicalAsset);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        try
+                        {
+                            models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.TechnicalAsset);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
                     }
 
                     LogReindexStart("Attributes", c.CompanyID);
@@ -166,16 +172,19 @@ namespace igx.jobs.indexer
                         CoreFunction.AITrackException(functionName, ex, c.CompanyID);
                     }
 
-                    LogReindexStart("Fusion Types", c.CompanyID);
+                    if (fusionEnabled)
+                    {
+                        LogReindexStart("Fusion Types", c.CompanyID);
 
-                    try
-                    {
-                        models = LoadFusionTypes(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        try
+                        {
+                            models = LoadFusionTypes(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
                     }
 
                     LogReindexStart("Reference Item Types", c.CompanyID);
@@ -214,16 +223,19 @@ namespace igx.jobs.indexer
                         CoreFunction.AITrackException(functionName, ex, c.CompanyID);
                     }
 
-                    LogReindexStart("FusionAttributes", c.CompanyID);
+                    if (fusionEnabled)
+                    {
+                        LogReindexStart("FusionAttributes", c.CompanyID);
 
-                    try
-                    {
-                        models = LoadFusionAttributes(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        try
+                        {
+                            models = LoadFusionAttributes(company, c.CompanyID, source);
+                            source.AddToIndex(models);
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
                     }
 
                     LogReindexStart("Artifact Synonyms", c.CompanyID);
