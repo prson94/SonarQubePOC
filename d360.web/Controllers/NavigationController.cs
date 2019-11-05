@@ -383,7 +383,7 @@ namespace d360.web.Controllers
                     throw new Exception($"Folder Id ${folder.ID} not found.");
                 string originalImage = siteNav.ImageIconUrl;
 
-                if (!string.IsNullOrEmpty(originalImage))
+                if (!string.IsNullOrEmpty(originalImage) && string.IsNullOrEmpty(folder.ImageIconUrl))
                 {
                     try
                     {
