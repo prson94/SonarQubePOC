@@ -1482,3 +1482,8 @@ p-dropdown .ui-dropdown-panel {
 p-calendar .ui-datepicker {
     z-index: 2000 !important;
 }
+
+/*no outline for any p table headers*/
+.ui-sortable-column:focus {
+    outline: none !important;
+}

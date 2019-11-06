@@ -104,7 +104,7 @@ namespace igx.jobs.reportlayer
         const string functionName = "ReportingLayer_Generate";
 
 #if DEBUG
-        const string timerSettings = "*/5 * * * * *";
+        const string timerSettings = "*/1 * * * * *";
 #else
         const string timerSettings = "0 */5 * * * *";
 #endif
@@ -115,11 +115,15 @@ namespace igx.jobs.reportlayer
             {
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
+#if DEBUG
+                companies = companies.Where(i => i.CompanyID == 1).ToList();
+#endif
 
                 companies.ForEach(c =>
                 {
                     var reservedNames = new List<string>() { "id", "uid", "assetid", "displayvalue", "parentid", "textpath", "level", "levelname", "leveldescription", "parentdisplayvalue", "currentscore", "url" };
 
+                    var synonymNames = new List<string>();
                     var viewNames = new List<string>();
                     string SCHEMA = "reporting";
 
@@ -132,8 +136,8 @@ namespace igx.jobs.reportlayer
                             var selectSql = "";
                             var viewSql = "";
                             var objectName = "";
-                            var objectType = "Artifact";
-                            var prefix = "Glossary";
+                            var assetTypePluralizedName = "";
+                            var legacyPrefix = "Glossary";
                             string objectID;
 
                             var assetTypes = companyConnection.Query<AssetType>($"select * from AssetType where [Class] in ({(int)AssetTypeClass.BusinessAsset}, {(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy})").ToList();
@@ -147,14 +151,14 @@ namespace igx.jobs.reportlayer
                                 if (PluralCultureHelper.IsNeutralCultureEnglish())
                                 {
                                     var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                                    objectName = pluralize.Pluralize(cleanObjectName(o.Name));
+                                    assetTypePluralizedName = pluralize.Pluralize(cleanObjectName(o.Name));
                                 }
 
 
-                                if (objectName.Length > 100)
-                                    objectName = objectName.Substring(0, 100);
+                                if (assetTypePluralizedName.Length > 100)
+                                    assetTypePluralizedName = assetTypePluralizedName.Substring(0, 100);
 
-                                objectName = $"{SCHEMA}.[{o.Class.ToString()}_{objectName}]";
+                                objectName = $"{SCHEMA}.[{o.Class.ToString()}_{assetTypePluralizedName}]";
 
                                 viewNames.Add(objectName);
 
@@ -170,7 +174,7 @@ namespace igx.jobs.reportlayer
 
                                 if (o.Class == AssetTypeClass.BusinessAsset || o.Class == AssetTypeClass.TechnicalAsset)
                                 {
-                                    #region Business
+                                    #region Business/Technical
 
                                     var parentIntersectType = companyConnection.Query<IntersectTypeDetail>($"select * from IntersectTypeDetail where Object = '{o.Object}' and ObjectID = {o.ObjectID} and PredicateType = @pt", new { id = o.ObjectID, pt = (int)PredicateType.InterTypeHierarchy }).FirstOrDefault();
 
@@ -274,6 +278,17 @@ from    h as A
                                 viewSql += $@" VIEW {objectName} AS {selectSql}";
 
                                 executeSqlWithTry(companyConnection, viewSql);
+
+                                if (o.Class == AssetTypeClass.BusinessAsset)
+                                {
+                                    var synonymName = $"{SCHEMA}.{legacyPrefix}_{assetTypePluralizedName}";
+                                    synonymNames.Add(synonymName);
+                                    executeSqlWithTry(companyConnection, $@"
+if not exists(select * from sys.synonyms where name = '{legacyPrefix}_{assetTypePluralizedName}')
+BEGIN
+	CREATE SYNONYM {synonymName} FOR {objectName}
+END");
+                                }
                             });
 
                             assetTypes = null;
@@ -1231,11 +1246,11 @@ from	workflow.ItemStep S
                             #endregion
 
 
-                            prefix = "Global";
+                            legacyPrefix = "Global";
 
                             #region InterRelationships
 
-                            objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, prefix, "ModelInterRelationships");
+                            objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, legacyPrefix, "ModelInterRelationships");
                             viewNames.Add(objectName);
 
                             selectSql = @"
@@ -1387,6 +1402,30 @@ from	integration.ExecutionAssetTypeError E
                                     try
                                     {
                                         companyConnection.Execute(string.Format(@"drop view {0}", cv));
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                                        log.WriteLine(msg);
+                                    }
+                                }
+                            });
+
+                            #endregion
+
+                            #region Remove Old Synonyms
+
+                            var currentSynonyms = companyConnection.Query<string>(@"select name from sys.synonyms where base_object_name like '%reporting%'").ToList();
+
+                            currentSynonyms.ForEach(cv =>
+                            {
+                                cv = $"{SCHEMA}.{cv}";
+
+                                if (!synonymNames.Contains(cv))
+                                {
+                                    try
+                                    {
+                                        companyConnection.Execute(string.Format(@"drop synonym {0}", cv));
                                     }
                                     catch (Exception ex)
                                     {

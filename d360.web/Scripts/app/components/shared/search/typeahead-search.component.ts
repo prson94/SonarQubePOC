@@ -21,6 +21,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     @Input() additionalCssClasses: string = '';
     @Input() showBigButton: boolean = false;
     @Input() defaultValue: string;
+    @Input() isExactMatch: boolean = undefined;
 
     public result: SearchResult;
     public searchText: string;
@@ -83,8 +84,15 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     openSearch() {
         if (this.result)
             this.searchText = (typeof this.result === 'string') ? this.result : this.result.Name;
+        this.navigateQuery(this.searchText);
+    }
+
+    private navigateQuery(q: string) {
         let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${this.searchText ? encodeURIComponent(this.searchText) : ''}&types=${options ? options.join(',') : ''}`);
+        let url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}&types=${options ? options.join(',') : ''}`
+        if (this.isExactMatch !== undefined)
+            url += '&exactMatch=' + (this.isExactMatch ? 1 : 0);
+        this.router.navigateByUrl(url);
     }
 
     selectItem(ac) {
@@ -112,9 +120,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     checkKey(event, ac) {
         if (event.keyCode == 13) {
-            let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
-
-            this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${event.srcElement.value ? encodeURIComponent(event.srcElement.value) : ''}&types=${options ? options.join(',') : ''}`);
+            this.navigateQuery(event.srcElement.value);
             this.removeFocus(ac);
         }
     }

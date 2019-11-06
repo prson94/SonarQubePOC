@@ -169,7 +169,6 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
             var prefix = "Assets.GetAssetsAsync => ";
-            var errorMessage = "";
 
             try
             {
@@ -184,7 +183,7 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix },
                     { "AssetTypeUid", assetTypeUid.ToString() }
@@ -194,6 +193,71 @@ namespace d360.web.Controllers.V2
             }
 
         }
+
+
+        /// <summary>
+        /// Retrieves assets based on a search of its full path. You also have the option of pre-filtering the types of assets you wish 
+        /// to target, based on Uid, Class, or specific properties defined on an asset type.
+        /// </summary>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPost,
+            Route("paths"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsByPathApiViewModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetAssetsByPathAsync(AssetsByPathApiRequestModel model)
+        {
+            var prefix = "Assets.GetAssetsByPathAsync => ";
+
+            try
+            {
+                #region Validation
+
+                if (model == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have passed an empty or invalid set of criteria."));
+                
+                if (string.IsNullOrEmpty(model.searchPhrase))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You must provide a search phrase."));
+
+                if (model.filters == null)
+                {
+                    model.filters = new List<AssetsByPathItemApiFilterRequestModel>();
+                }
+
+                if (model.filters.Count() > 0)
+                {
+                    if (!model.filters.Any(i =>
+                        (i.AsSideOfRelationship != null) ||
+                        i.Class.HasValue ||
+                        i.Uid.HasValue ||
+                        i.UseAsTransformation.HasValue))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have provided pre-filter criteria, but none appear to be valid. You must provide at least one condition."));
+                    }
+                }
+
+                #endregion
+
+                var results = await AssetRepository.GetAssetsByPath(model);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "model", JsonConvert.SerializeObject(model) }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+
+        }
+
+
 
         /// <summary>
         /// Get field types for the given asset type Uid
@@ -297,7 +361,6 @@ namespace d360.web.Controllers.V2
                 if (insertStatus.Item1 != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(insertStatus.Item1, insertStatus.Item2, insertStatus.Item3));
 
-                AssetRepository.UpsertObjectStyle(model.Object, model.ObjectID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.Name);
 
                 if (model.ObjectID > 0)
                 {
@@ -323,6 +386,8 @@ namespace d360.web.Controllers.V2
                 }
 
                 assetType = AssetRepository.GetAssetTypeByModel(model);
+
+                AssetRepository.UpsertAssetStyle(assetType.ID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.Name);
 
                 if (assetType == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type", AssetTypeErrors.NotFoundGeneric));
 
@@ -418,7 +483,7 @@ namespace d360.web.Controllers.V2
                 if (updateStatus.Item1 != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(updateStatus.Item1, updateStatus.Item2, updateStatus.Item3));
 
-                AssetRepository.UpsertObjectStyle(model.Object, model.ObjectID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.Name);
+                AssetRepository.UpsertAssetStyle(assetType.ID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.Name);
 
 
                 //update affected display values
@@ -504,7 +569,7 @@ namespace d360.web.Controllers.V2
                 {
                     fieldJsonPropertyLoadLimitToTopLevel = Community.GetCompanySettingByKey<bool>("FieldJsonPropertyLoadLimitToTopLevel");
                 }
-                catch (Exception ex)
+                catch
                 {
                 }
                 
@@ -582,7 +647,7 @@ namespace d360.web.Controllers.V2
                 {
                     fieldJsonPropertyLoadLimitToTopLevel = bool.Parse(Community.GetCompanySettings().Single(i => i.Key == "FieldJsonPropertyLoadLimitToTopLevel").Value);
                 }
-                catch (Exception ex)
+                catch
                 {
                 }
 

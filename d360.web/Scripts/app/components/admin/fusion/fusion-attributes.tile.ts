@@ -3,7 +3,7 @@ import { TreeNode } from 'primeng/api';
 import { FusionType} from '../../../models/fusion.model';
 import { AssetTypeEditorModel, AssetTypeClass } from "../../../models/asset.model";
 import { FusionService } from '../../../services/fusion.service';
-import { ObjectStyleService } from '../../../services/object-style.service';
+import { AssetStyleService } from '../../../services/asset-style.service';
 import { FormMode } from '../../../models/form.model';
 import * as _ from 'lodash';
 
@@ -29,7 +29,7 @@ export class FusionAttributesTile implements OnChanges {
 
     constructor(
         private fusionService: FusionService,
-        private objectStyleService: ObjectStyleService
+        private objectStyleService: AssetStyleService
     ) {
     }
 

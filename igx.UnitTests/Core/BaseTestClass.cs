@@ -182,7 +182,7 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.AddAssetType(It.IsAny<AssetTypeInsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>(), 0, out outString, out outBool))
                 .Returns(() => new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", ""));
 
-            mockRepo.Setup(x => x.UpsertObjectStyle(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+            mockRepo.Setup(x => x.UpsertAssetStyle(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
 
             mockRepo.Setup(x => x.UpdateAssetType(It.IsAny<AssetTypeInsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>()))
                 .Returns(() => new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", ""));
@@ -249,14 +249,14 @@ namespace igx.UnitTests
             mock.Setup(x => x.DeleteCrossReferenceByUid(It.IsAny<Guid>()))
                 .Returns((Guid guid) => guid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
 
-            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>()))
-              .Returns((string ds) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
+            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>(), It.IsAny<int>()))
+              .Returns((string ds,int tout) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
 
-            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>(), It.IsAny<string>()))
-             .Returns((string ds, string type) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
+            mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
+             .Returns((string ds, string type, int tout) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
 
-            mock.Setup(x => x.DeleteCrossReferenceByType(It.IsAny<string>()))
-              .Returns((string t) => t == DataConstants.ValidType ? Task.FromResult(1) : Task.FromResult(0));
+            mock.Setup(x => x.DeleteCrossReferenceByType(It.IsAny<string>(), It.IsAny<int>()))
+              .Returns((string t, int tout) => t == DataConstants.ValidType ? Task.FromResult(1) : Task.FromResult(0));
 
             return mock.Object;
         }
@@ -390,7 +390,7 @@ namespace igx.UnitTests
                 .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>() { new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel() }));
 
             mock.Setup(x => x.DeleteRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipDeletes>(), 3600, It.IsAny<bool>()))
-                .Returns(Task.FromResult(new List<DatabaseBulkRelationshipResult>()));
+                .Returns(new List<DatabaseBulkRelationshipResult>());
 
             return mock.Object;
         }

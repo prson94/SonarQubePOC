@@ -35,6 +35,10 @@ export class SearchStateService extends BaseObservableService {
     get resultCount() {
         return new Observable(fn => this._resultCount.subscribe(fn));
     }
+    private _pageNumber: BehaviorSubject<number> = new BehaviorSubject(0);
+    get pageNumber() {
+        return new Observable(fn => this._pageNumber.subscribe(fn));
+    }
     private _loading: BehaviorSubject<boolean> = new BehaviorSubject(false);
     get loading() {
         return new Observable(fn => this._loading.subscribe(fn));
@@ -47,6 +51,7 @@ export class SearchStateService extends BaseObservableService {
     public selectedFilters: CheckTreeNode[];
 
     private _query: SearchQuery;
+    private _aggFilters: SearchAggregationFilter[];
     private _searchTypes: string[];
     private _needAggregation: boolean = false;
 
@@ -57,6 +62,7 @@ export class SearchStateService extends BaseObservableService {
         this._resultCount.next(0);
         this._results.next([]);
         this._categories.next([]);
+        this._aggFilters = [];
         this._searchTypes = [];
         this._query = new SearchQuery({
             Term: "",
@@ -96,14 +102,13 @@ export class SearchStateService extends BaseObservableService {
 
     /**
      * Sets search categories that search will be limited to. These will be combined with aggregation filters
-     * If search categories change, aggregation filters will be reset
+     * If search categories change, we'll need new aggregation
      * @param searchCategories
      */
     setSearchCategories(searchCategories: string[]) {
         var cat = searchCategories.sort().filter((x, i, a) => !i || x != a[i - 1]);
         if (this.areDifferent(cat, this._searchTypes)) {
             this._searchTypes = cat;
-            this._query.AggregationFilters = [];
             this._needAggregation = true;
         }
     }
@@ -115,17 +120,36 @@ export class SearchStateService extends BaseObservableService {
      * @param replace
      */
     setAggregationFilter(field: string, values: string[], replace: boolean = true) {
-        var idx = this._query.AggregationFilters.findIndex((f) => f.Field === field);
+        var idx = this._aggFilters.findIndex((f) => f.Field === field);
         if (idx === -1) {
-            this._query.AggregationFilters.push(new SearchAggregationFilter({
+            this._aggFilters.push(new SearchAggregationFilter({
                 Field: field,
                 Values: values.sort().filter((x, i, a) => !i || x != a[i - 1])
             }));
+            this._query.From = 0;
         } else if (replace) {
-            this._query.AggregationFilters[idx].Values = values.sort().filter((x, i, a) => !i || x != a[i - 1]);
+            this._aggFilters[idx].Values = values.sort().filter((x, i, a) => !i || x != a[i - 1]);
+            this._query.From = 0;
         } else {
-            this._query.AggregationFilters[idx].Values = this._query.AggregationFilters[idx].Values.concat(values).sort().filter((x, i, a) => !i || x != a[i - 1]);
+            let precount = this._aggFilters[idx].Values.length;
+            this._aggFilters[idx].Values = this._aggFilters[idx].Values.concat(values).sort().filter((x, i, a) => !i || x != a[i - 1]);
+            let postcount = this._aggFilters[idx].Values.length;
+            if (precount != postcount)
+                this._query.From = 0;
         }
+    }
+
+    private combineAggFilters(one: SearchAggregationFilter[], two: SearchAggregationFilter[]): SearchAggregationFilter[] {
+        let retVal = one.slice();
+        two.forEach(function (item) {
+            let idx = retVal.findIndex((f) => f.Field === item.Field);
+            if (idx === -1) {
+                retVal.push(item);
+            } else {
+                retVal[idx].Values = retVal[idx].Values.concat(item.Values).sort().filter((x, i, a) => !i || x != a[i - 1]);
+            }
+        });
+        return retVal;
     }
 
     /**
@@ -190,41 +214,60 @@ export class SearchStateService extends BaseObservableService {
      */
     private doSearch() {
         this._loading.next(true);
-        this._query.Aggregations = (this._needAggregation || this._categories.value.length == 0) ? ['category'] : [];
-        if (this._query.Aggregations.length > 0) {
-            this._categories.next([]);
+
+        let seachTypeFilter = [new SearchAggregationFilter({
+                Field: "d3sGroup",
+                Values: this._searchTypes.sort().filter((x, i, a) => !i || x != a[i - 1])
+            })];
+
+        if (this._needAggregation || this._categories.value.length == 0) {
             this._treeLoading.next(true);
+            this._categories.next([]);
+
+            //New aggregation, so this should be a new search, jump to first page
+            this._query.From = 0;
+
+            var aggQuery = Object.assign({}, this._query);
+            aggQuery.Aggregations = ['category'];
+            aggQuery.Size = 0;
+            aggQuery.AggregationFilters = seachTypeFilter;
+
+            this.searchService.getSearchResultsByQuery(aggQuery).pipe(
+                debounceTime(1000)
+            ).subscribe(res => {
+                if (res.Categories.length != 0) {
+                    var filterTree = res.Categories.map((val) => {
+                        return {
+                            "key": val.Name,
+                            "label": this.getDisplayLookup(val.Name),
+                            "type": "category",
+                            "expanded": true,
+                            "data": val.Name,
+                            "count": val.ResultCount,
+                            "children": val.Categories.map((cat) => {
+                                return {
+                                    "key": val.Name + '___' + cat.Name,
+                                    "label": cat.Name,
+                                    "type": "subCategory",
+                                    "data": cat.Name,
+                                    "count": cat.ResultCount
+                                };
+                            })
+                        }
+                    });
+                    this._categories.next(filterTree);
+                    this._needAggregation = false;
+                }
+                this._treeLoading.next(false);
+            });
         }
-        this.setAggregationFilter('d3sGroup', this._searchTypes, false);
-//        console.log('doSearch', this._query);
+        this._query.AggregationFilters = this.combineAggFilters(this._aggFilters, seachTypeFilter);
+
         this.searchService.getSearchResultsByQuery(this._query).pipe(
             debounceTime(1000)).subscribe(res => {
-            if (res.Categories.length != 0) {
-                var filterTree = res.Categories.map((val) => {
-                    return {
-                        "key": val.Name,
-                        "label": this.getDisplayLookup(val.Name),
-                        "type": "category",
-                        "expanded": true,
-                        "data": val.Name,
-                        "count": val.ResultCount,
-                        "children": val.Categories.map((cat) => {
-                            return {
-                                "key": val.Name+'___'+cat.Name,
-                                "label": cat.Name,
-                                "type": "subCategory",
-                                "data": cat.Name,
-                                "count": cat.ResultCount
-                            };
-                        })
-                    }
-                });
-                this._categories.next(filterTree);
-                this._needAggregation = false;
-            }
             this._resultCount.next(res.Result.Matches);
+            this._pageNumber.next(this._query.From / this._query.Size);
             this._results.next(res.Result.Results);
-            this._treeLoading.next(false);
             this._loading.next(false);
         });
     }

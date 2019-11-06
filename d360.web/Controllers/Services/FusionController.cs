@@ -49,7 +49,7 @@ namespace d360.web.Controllers.Services
         [Route("")]
         public IQueryable<FusionType> GetTypes()
         {
-            return Company.Table<FusionType>();
+            return Company.Query<FusionType>("select A.ID as AssetTypeID, T.* from FusionType T inner join AssetType A on A.Object = 'FusionType' and A.ObjectID = T.ID").AsQueryable();
         }
 
         [Route("{id:int}/attributetypes")]

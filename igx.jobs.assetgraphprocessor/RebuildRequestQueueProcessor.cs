@@ -21,27 +21,25 @@ namespace igx.jobs.assetgraphprocessor
 
             using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(queueInfo.CompanyID))
             {
-                string lineageVersion = CompanyConnectionUtils.GetCompanySettings(queueInfo.CompanyID).FirstOrDefault(s => s.SettingID == 68)?.Value ?? "";
+                const int timeout = 1000 * 60 * 10;
 
-                if (lineageVersion == "3")
+                companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                try
                 {
-                    const int timeout = 1000 * 60 * 10;
-
-                    companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
-
-                    try
-                    {
-                        await companyConnection.ExecuteAsync("graph.SynchronizeTables @populatePaths", new { populatePaths = true }, commandTimeout: timeout);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, queueInfo.CompanyID);
-                    }
+                    await companyConnection.ExecuteAsync("graph.SynchronizeTables @populatePaths", new { populatePaths = true }, commandTimeout: timeout);
+                }
+                catch (Exception ex)
+                {
+                    CoreFunction.AITrackException(functionName, ex, queueInfo.CompanyID);
                 }
             }
 
+#if DEBUG 
             CoreFunction.AITrackJobCompletedNoErrors(functionName);
             CoreFunction.AIFlush();
+#endif
+
         }
     }
 }
