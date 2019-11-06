@@ -48,7 +48,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     showWindowTabs: boolean = false;
     tab: string = "info";
     selectedDiagramAsset: AssetBrowserDiagramAsset;
-
+    private isFullScreen: boolean = false;
     //#region control properties
 
     constructor(
@@ -136,7 +136,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
     private fullScreenButtonClick(e) {
-        alert('Full screen coming soon');
+        this.isFullScreen = !this.isFullScreen;
+        this.resizeDiagram();
     }
 
     //#endregion
@@ -632,8 +633,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (this.diagramRef.nativeElement.offsetParent) {
             offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
         }
-
-        this.diagramRef.nativeElement.style.height = (height - offset - 275) + 'px';
+        if (this.isFullScreen)
+            this.diagramRef.nativeElement.style.height = (height - 80) + 'px';
+        else 
+            this.diagramRef.nativeElement.style.height = (height - offset - 275) + 'px';
 
         //alert(this.bottomCommandBarRef.nativeElement.offsetParent.offsetTop);
     }
