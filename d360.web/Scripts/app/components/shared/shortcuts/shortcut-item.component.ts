@@ -93,7 +93,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
             </div>
             <div *ngIf="iconType == 'image'" style="padding:10px">
                 <img *ngIf="iconImage != null && iconImage.dataUrl != null" [src]="iconImage.dataUrl" style="max-width: 72px; max-height: 128px;" />
-                <img *ngIf="shortcut.IconPayload == null" [src]="shortcut.FullURL" style="max-width: 72px; max-height: 128px;" />
+                <img *ngIf="shortcut.IconPayload == null && iconImage.dataUrl == null && shortcut.FullURL != null" [src]="shortcut.FullURL" style="max-width: 72px; max-height: 127px;" />
                 <div *ngIf="shortcut.IconPayload != null || shortcut.IconUrl != null">
                     <button pButton type="button" label="Clear" (click)="clearIcon()"></button>
                 </div>
@@ -162,9 +162,10 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
     clearIcon() {
         this.shortcut.IconUrl = null;
         this.shortcut.IconPayload = null;
+        this.iconImage.dataUrl = null;
+        this.shortcut.FullURL = null;
         this.iconImage = new CompanyImage();
         this.onFileChange(null);
-        console.log(this.iconImage);
     }
 
     save() {
@@ -209,8 +210,7 @@ export class ShortcutItemComponent extends BaseComponent implements OnInit {
     }
 
     onFileChange(event): void {
-        if (this.iconImage == null)
-            this.iconImage = new CompanyImage();
+        this.iconImage = new CompanyImage();
 
         if (event == null) {
             this.iconImage.file = null;
