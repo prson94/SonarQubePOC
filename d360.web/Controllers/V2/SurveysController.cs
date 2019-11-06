@@ -257,7 +257,7 @@ namespace d360.web.Controllers.V2
 
         }
         /// <summary>
-        /// Remove Survey Results for a combination of parameters 
+        /// Removes a given set of survey results based on the provided input parameters.
         /// </summary>
         /// <remarks>
         /// An Administrator can remove any survey results.
