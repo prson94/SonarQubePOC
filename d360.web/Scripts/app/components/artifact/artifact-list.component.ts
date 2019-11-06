@@ -33,7 +33,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
         private artifactTypeService: ArtifactTypeService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
-        webAnalyticsService: WebAnalyticsService,        
+        webAnalyticsService: WebAnalyticsService,
         rightSidebarService: RightSidebarService) {
         super(headerBreadcrumbService, rightSidebarService, webAnalyticsService);
     }
@@ -41,7 +41,6 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
-            
             this.isLoading = true;
             this.artifactTypeHierarchy = [];
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
