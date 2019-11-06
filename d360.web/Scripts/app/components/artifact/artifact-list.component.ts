@@ -14,13 +14,11 @@ import { Artifact } from '../../models/artifacts.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { debounce, debounceTime } from 'rxjs/operators';
 import { AssetTypeClass } from '../../models/asset.model';
-import { IconService } from '../../services/icon.service';
-import { IconProperties } from '../../models/icon-properties.model';
 
 @Component({
     selector: 'd3s-artifact-list',
     templateUrl: './artifact-list.component.html',
-    providers: [ArtifactTypeService, IconService],
+    providers: [ArtifactTypeService],
 })
 
 export class ArtifactListComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
@@ -29,15 +27,13 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     private sub: any;
     private currentAreaNameSubscription: any;
     private currentAreaName: string;
-    private icons: IconProperties[];
 
     constructor(private route: ActivatedRoute,
         private router: Router,
         private artifactTypeService: ArtifactTypeService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
-        webAnalyticsService: WebAnalyticsService,
-        private iconService: IconService,
+        webAnalyticsService: WebAnalyticsService,        
         rightSidebarService: RightSidebarService) {
         super(headerBreadcrumbService, rightSidebarService, webAnalyticsService);
     }
@@ -51,19 +47,6 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
             this.logAction('open', 'ArtifactType', artifactTypeId);
             
-            this.iconService.getIconProperties().subscribe(res => {
-                console.log(res);
-            });
-
-            this.iconService.getIconProperties().subscribe(res => {
-                this.icons = res;
-                console.log(res);
-
-                let books = this.icons.filter(x => x.name == 'book');
-
-                console.log(books);
-            });
-
             this
                 .artifactTypeService
                 .getArtifactTypeDetails(artifactTypeId)
