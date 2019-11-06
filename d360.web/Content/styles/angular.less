@@ -4788,7 +4788,6 @@ a.mid-blue {
     }
 }
 
-
 .asset-browser {
     .asset-browser-header {
         position: relative;
@@ -4807,10 +4806,13 @@ a.mid-blue {
             right: 20px;
             top: 10px;
             z-index: 50;
+          
+          span {
+            padding: 8px;
+            cursor: pointer;
+          }
         }
     }
-
-
 
     .asset-browser-controls-bottom {
         position: absolute;
@@ -4988,3 +4990,13 @@ a.mid-blue {
         }
     }
 }
+
+.full-screen-ab {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 99%;
+    height: 99%;
+    z-index: 1000;
+}
+

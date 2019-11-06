@@ -1,4 +1,4 @@
-﻿<div class="row asset-browser">
+﻿<div class="row asset-browser" [ngClass]="{'full-screen-ab': isFullScreen}">
     <div class="col s12">
         <div class="tile tile-detail" style="padding: 0">
             <div class="row" *ngIf="isLoading">
@@ -30,6 +30,7 @@
                         <button type="button" title="Filter asset browser"><i class="fa fa-filter"></i></button>
                         <button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>
                     </div>
+                    <span *ngIf="isFullScreen" title="Minimize" class="fa fa-times" (click)="fullScreenButtonClick()"></span>
                 </div>
             </div>
             <div class="row" style="position: relative">
@@ -88,10 +89,36 @@
                                                 <div class="asset-browser-window-tabs-content">
                                                     <p-table #dt [value]="selectedDiagramAsset?.Owners" [metaKeySelection]="true" [style]="{'width':'450px'}">
                                                         <ng-template pTemplate="header">
-                            <tr>
-                                <th style="width: 50%">Responsibility</th>
-                                <th style="width: 45%">Resource</th>
-                                <th style="width: 5%"></th>
+                                                            <tr>
+                                                                <th style="width: 50%">Responsibility</th>
+                                                                <th style="width: 45%">Resource</th>
+                                                                <th style="width: 5%"></th>
+                                                            </tr>
+                                                        </ng-template>
+                                                        <ng-template pTemplate="body" let-item>
+                                                            <tr (dblclick)="onDoubleClick(item)" [pSelectableRow]="item">
+                                                                <td>
+                                                                    <d3s-preview-tooltip objectType="ResponsibilityType" [objectId]="item.ResponsibilityTypeID">{{item.ResponsibilityTypeName}}</d3s-preview-tooltip>
+                                                                </td>
+                                                                <td>
+                                                                    <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID">{{item.ResourceName}}</d3s-preview-tooltip>
+                                                                </td>
+                                                                <td><i [class]="ownerRowClass(item.Icon)" [title]="item.SecurityAssetName"></i></td>
+                                                            </tr>
+                                                        </ng-template>
+                                                    </p-table>
+                                                </div>
+                                            </p-tabPanel>
+                                        </p-tabView>
+                                    </div>
+                                    <div #bottomCommandBar class="asset-browser-controls-bottom">
+                                        <div class="asset-browser-button-group">
+                                            <button type="button" title="Zoom in" (click)="zoomInButtonClick($event)"><i class="fa fa-search-plus"></i></button>
+                                            <button type="button" title="Zoom out" (click)="zoomOutButtonClick($event)"><i class="fa fa-search-minus"></i></button>
+                                            <button type="button" title="{{isFullScreen ? 'Minimize':'Full screen'}}" (click)="fullScreenButtonClick($event)"><i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-expand' : !isFullScreen}"></i></button>
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
                             </ng-template>
                             <ng-template pTemplate="body" let-item>
