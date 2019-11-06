@@ -15,7 +15,7 @@
 			<span class="text">{{statistics?.Score}}%</span>
 		</span>
 		<ng-template #noScore>
-			<span #noScoreBadge *ngIf="currentObject && !currentObject?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon clickable">
+			<span #noScoreBadge (click)="OpenScoring()" *ngIf="currentObject && !currentObject?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon clickable">
 				<d3s-dynamic-percentage [percentage]="0"></d3s-dynamic-percentage>
 				<span class="text">N/A</span>
 			</span>
