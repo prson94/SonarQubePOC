@@ -9,6 +9,7 @@ using System.IO;
 using Newtonsoft.Json;
 using d360.web.Models;
 using Dapper;
+using d360.core.enums;
 
 namespace d360.web.Controllers
 {
@@ -242,6 +243,8 @@ where   A.RuleImplementationID = @id";
             switch (obj)
             {
                 case "Artifact":
+                case "Business Asset":
+                case "Technical Asset":
                     objType = "ArtifactType";
                     break;
                 case "Policy":
@@ -259,6 +262,9 @@ where   A.RuleImplementationID = @id";
                 case "Reference List":
                     objType = "ReferenceItemType";
                      break;
+                case "Rule":
+                    objType = "RuleType";
+                    break;
                 case "Fusion":
                     objType = "FusionType";
                     break;
@@ -298,11 +304,19 @@ where   A.RuleImplementationID = @id";
                         typeSql += $@"  coalesce(assettype.Name, it.Name,ITypeName.Name)  LIKE @{ff.FieldName}{count} and ";
                         break;
                     case "Type":
-                            switch(ff.RawValue)
-                                {
+                        switch (ff.RawValue)
+                        {
                             case "Action":
                                 dbArgs.Add($"{ff.FieldName}{count}", $"{getAssetType(ff.RawValue)}");
                                 typeSql += $@"( wi.[object] = 'Issue' or assettype.[Object]=@{ff.FieldName}{count} ) and ";
+                                break;
+                            case "Business Asset":
+                                dbArgs.Add($"{ff.FieldName}{count}", $"{getAssetType(ff.RawValue)}");
+                                typeSql += $@"assettype.[Object]= @{ff.FieldName}{count} and assettype.[Class] = {(int)AssetTypeClass.BusinessAsset} and ";
+                                break;
+                            case "Technical Asset":
+                                dbArgs.Add($"{ff.FieldName}{count}", $"{getAssetType(ff.RawValue)}");
+                                typeSql += $@"assettype.[Object]= @{ff.FieldName}{count} and assettype.[Class] = {(int)AssetTypeClass.TechnicalAsset} and ";
                                 break;
                             case "Relationship":
                                 dbArgs.Add($"{ff.FieldName}{count}", $"{getAssetType(ff.RawValue)}");
@@ -310,10 +324,9 @@ where   A.RuleImplementationID = @id";
                                 break;
                             default:
                                 dbArgs.Add($"{ff.FieldName}{count}", $"{getAssetType(ff.RawValue)}");
-                                typeSql +=  $@"assettype.[Object]= @{ff.FieldName}{count} and ";
+                                typeSql += $@"assettype.[Object]= @{ff.FieldName}{count} and ";
                                 break;
                         }
-                        
                         break;
                     case "StartedOn":
                         dbArgs.Add($"{ff.FieldName}{count}", $"{ff.RawValue}");
