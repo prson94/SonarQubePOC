@@ -22,6 +22,7 @@ import { DiagramBaseComponent } from '../diagram-base.component';
 import { AssetBrowserLayout } from './assetbrowserlayout.component';
 import { MenuItem } from 'primeng/api';
 import { ConnectableObservable } from 'rxjs';
+import { setTimeout } from 'core-js';
 
 declare var window: any;
 
@@ -191,6 +192,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         if (this.searchValue != '') {
             console.warn("Highlighting does not work if there is active search!");
+            return;
         }
 
         obj.diagram.nodes.each(n => {
@@ -1256,6 +1258,21 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.g(
                     go.TextBlock,
                     {
+                        editable: false,
+                        font: "bold 12px sans-serif",
+                        opacity: 0.75,
+                        stroke: "#404040",
+                        background: "#F5C2FF",
+                        visible: false,
+
+
+                    },
+                    new go.Binding("text", "highlight").makeTwoWay(),
+                    new go.Binding("visible", "highlight_visible").makeTwoWay()
+                ),
+                this.g(
+                    go.TextBlock,
+                    {
                         editable: true,
                         font: "bold 12px sans-serif",
                         opacity: 0.75,
@@ -1381,57 +1398,98 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private searchResults: go.Node[] = [];
     private searchableProps: string[] = ["text"];
     private searchCurrentItem: number = 0;
-    private zoomMultiplier: number = 0;
     private searchValue: string = '';
+    private searchTimer;
 
     searchDiagram(event) {
-        console.log(event);
-        this.searchValue = event.target.value.toLowerCase();
+        if (event == null) {
+            this.searchValue = '';
+        }
+        else {
+            this.searchValue = event.target.value.toLowerCase();
 
-        if (event.keyCode == 40) {
-            this.goToNext();
-            return;
+            if (event.keyCode == 40) {
+                this.goToNext();
+                return;
+            }
+            if (event.keyCode == 38) {
+                this.goToPrevious();
+                return;
+            }
         }
-        if (event.keyCode == 38) {
-            this.goToPrevious();
-            return;
-        }
+        clearTimeout(this.searchTimer);
+        this.searchTimer = setTimeout(() => {
+            this.doSearch();
+        }, 100);
+
+
+    }
+
+    private doSearch() {
+        //Clear highlights of exisitng search results
+        this.searchResults.forEach(n => {
+            this.removeHighlightFromNode(n);
+        });
+
         this.searchResults = [];
- 
+
         this.searchCurrentItem = 0;
         this.diagram.zoomToFit();
         var self = this;
+
         this.diagram.nodes.each(function (node) {
             if (node instanceof go.Node) {
                 var nodeData = node.data;
-                var isFound = false;
 
                 if (nodeData.isGroup) {
                     //This is grouping, do nothing with it (AssetType grouping)
                 }
-                else if (this.searchValue != '') {
+                else if (self.searchValue != '') {
                     self.searchableProps.forEach(prop => {
-                        if (node.data[prop] && node.data[prop].toLowerCase().indexOf(this.searchValue) > -1) {
+                        if (node.data[prop] && node.data[prop].toLowerCase().indexOf(self.searchValue) == 0) {
                             self.searchResults.push(node);
-                            isFound = true;
+                            self.addHighlightToNode(node);
+                            self.expandGroups(node.data.group);
                         }
                     });
                 }
-                if (!isFound) {
-                    node.isHighlighted = false;
-                }
             }
         });
-        this.searchResults.forEach(node => {
-            node.isHighlighted = true;
-            this.expandGroups(node.data.group);
-        });
+
 
         this.goToNext();
 
         this.cdRef.markForCheck();
-
     }
+
+    removeHighlightFromNode(node: go.Node) {
+        this.diagram.model.commit(function (m) {
+            var data = m.findNodeDataForKey(node.key);
+            var fullText = data.text;
+            if (data.highlight) {
+                fullText = data.highlight + data.text;
+            }
+            m.set(data, 'highlight', '');
+            m.set(data, 'highlight_visible', false);
+            m.set(data, 'text', fullText.replace('\u00AD',''));
+        }, 'update_highlight');
+    }
+
+    addHighlightToNode(node: go.Node) {
+        var self = this;
+        this.diagram.model.commit(function (m) {
+            var data = m.findNodeDataForKey(node.key);
+
+            var idx = self.searchValue.length;
+            var highlight = data.text.substring(0, idx);
+            var text = data.text.substring(idx, data.text.length);
+            console.log(node.width);
+            m.set(data, 'highlight', '\u00AD' + highlight);
+            m.set(data, 'highlight_visible', true);
+            m.set(data, 'text', text);
+        }, 'update_highlight');
+    }
+
 
     goToPrevious() {
         this.searchCurrentItem--;
@@ -1467,17 +1525,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (node) {
             this.diagram.centerRect(node.actualBounds);
             this.diagram.select(node);
-
-            if (this.zoomMultiplier > 0) {
-
-                var rect = new go.Rect();
-                rect = node.actualBounds.copy();
-                rect.setSize(new go.Size(rect.height * this.zoomMultiplier, rect.width * this.zoomMultiplier));
-
-                rect.centerX = (rect.x + rect.width) / 2;
-                rect.centerY = (rect.y + rect.height) / 2;
-                this.diagram.zoomToRect(rect);
-            }
         }
     }
 }

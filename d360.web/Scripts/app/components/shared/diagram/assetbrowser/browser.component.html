@@ -9,16 +9,16 @@
             <div [hidden]="isLoading" class="asset-browser-header">
                 <div class="controls-left">
                     <div class="asset-browser-button-group asset-browser-search">
-                        <input type="text" (keyup)="searchDiagram($event);" pInputText placeholder="Find in diagram...">
+                        <input type="text" (keyup)="searchDiagram($event);" [(ngModel)]="searchValue" pInputText placeholder="Find in diagram...">
                         <div class="input-actions">
                             <span class="search-item-location">
                                 {{searchCurrentItem}}/{{searchResults.length}}
                             </span>
-                            <i class="fa fa-times-circle ng-star-inserted"></i>
+                            <i class="fa fa-times-circle ng-star-inserted" (click)="searchDiagram(null);"></i>
                             <i class="fa fa-search ng-star-inserted"></i>
                         </div>
-                        <button (click)="goToPrevious()" type="button" class="light"><i class="fa fa-chevron-up"></i></button>
-                        <button (click)="goToNext()" type="button" class="light"><i class="fa fa-chevron-down"></i></button>
+                        <button (click)="goToPrevious()" type="button" class="{{searchResults.length == 0 || searchCurrentItem == 1 ? 'light' : ''}}"><i class="fa fa-chevron-up"></i></button>
+                        <button (click)="goToNext()" type="button" class="{{searchResults.length == 0 || searchCurrentItem == searchResults.length ? 'light' : ''}}"><i class="fa fa-chevron-down"></i></button>
                     </div>
                     <!--<button type="button" class="asset-browser-button" title=""><i class="fa fa-mouse-pointer"></i></button>-->
                     <button type="button" class="asset-browser-button" (click)="savePngButtonClick($event)" title="Download to PNG"><i class="fa fa-download"></i></button>
