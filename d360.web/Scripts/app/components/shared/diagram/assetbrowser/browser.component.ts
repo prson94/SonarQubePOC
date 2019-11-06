@@ -188,7 +188,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private highlightPath(e: go.InputEvent, obj: go.Part) {
         //Set all to not highlighted.
-        console.log("highlighting");
 
         if (this.searchValue != '') {
             console.warn("Highlighting does not work if there is active search!");
