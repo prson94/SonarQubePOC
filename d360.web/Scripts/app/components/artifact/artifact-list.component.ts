@@ -28,6 +28,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     private currentAreaNameSubscription: any;
     private currentAreaName: string;
 
+    
     constructor(private route: ActivatedRoute,
         private router: Router,
         private artifactTypeService: ArtifactTypeService,
@@ -41,11 +42,11 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
+            
             this.isLoading = true;
             this.artifactTypeHierarchy = [];
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
             this.logAction('open', 'ArtifactType', artifactTypeId);
-            
             this
                 .artifactTypeService
                 .getArtifactTypeDetails(artifactTypeId)
