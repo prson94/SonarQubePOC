@@ -1475,7 +1475,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     removeHighlightFromNode(node: go.Node) {
         this.diagram.model.commit(function (m) {
             var data = m.findNodeDataForKey(node.key);
-            var fullText = data.text;
+            var fullText = (data) ? data.text : "";
             if (data.highlight) {
                 fullText = data.highlight + data.text;
             }
