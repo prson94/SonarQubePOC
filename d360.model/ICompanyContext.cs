@@ -37,6 +37,7 @@ namespace d360.model
         DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
         DbSet<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
         DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
+        DbSet<AssetTypeStyle> AssetTypeStyles { get; set; }
         DbSet<AssetType> AssetTypes { get; set; }
         DbSet<AttributeDetail> AttributeDetails { get; set; }
         DbSet<core.entities.Attribute> Attributes { get; set; }
@@ -117,7 +118,6 @@ namespace d360.model
         DbSet<MetricAssetVersion> MetricAssetVersions { get; set; }
         DbSet<NymRelation> NymRelations { get; set; }
         DbSet<Nym> Nyms { get; set; }
-        DbSet<ObjectStyle> ObjectStyles { get; set; }
         DbSet<OrganizationDetail> OrganizationDetails { get; set; }
         DbSet<OrganizationDomain> OrganizationDomains { get; set; }
         DbSet<OrganizationInvitationDetail> OrganizationInvitationDetails { get; set; }
@@ -172,7 +172,7 @@ namespace d360.model
         event EventHandler<AssetsPartiallyProcessedEventArgs> AssetsPartiallyProcessed;
         event EventHandler<RelationshipsPartiallyProcessedEventArgs> RelationshipsPartiallyProcessed;
 
-        bool Add<T>(T item) where T : BaseObject;
+        new bool Add<T>(T item) where T : BaseObject;
         IQueryable<CommentDetail> AddComment(Comment comment, ICollection<CommentRelation> relations);
         IntersectDetail AddIntersect(int intersectTypeID, string subject, int subjectID, string @object, int objectID);
         IntersectDetail AddIntersect(int intersectTypeID, SystemObjects subject, int subjectID, SystemObjects @object, int objectID);
@@ -187,8 +187,8 @@ namespace d360.model
         void CreateOrUpdateTypeDisplayValuesAsync(int objectTypeId, string objectType);
         Task<bool> CreateWorkflowItem(int workflowTypeID, EventObjectInfo objectInfo, WorkflowEventRegistration registration, int requestorId, bool isTest = false);
         bool Delete(SystemObjects type, int id);
-        bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
-        bool Delete<T>(T entity) where T : BaseObject;
+        new bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
+        new bool Delete<T>(T entity) where T : BaseObject;
         bool DeleteRelationship(int id);
         IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations);
         void Enqueue(string queueName, List<QueueObject> items);
@@ -244,8 +244,8 @@ namespace d360.model
         string GetNoReadSqlStatement(Permission permission, string identifier = null);
         ObjectDetail GetObjectDetail(string type, long id);
         ObjectStatisticTileModel GetObjectStatistics(SystemObjects type, int id);
-        ObjectStyle GetObjectStyle(string type, int id);
-        ObjectStyle GetObjectStyle(SystemObjects type, int id);
+        AssetTypeStyle GetAssetTypeStyle(int assetTypeId);
+        AssetTypeStyle GetAssetTypeStyle(string type, int id);
         string GetObjectTypePath(string type, long id);
         JObject GetPageInformation(SystemObjects o, int oid);
         AssetDetail GetParentObject(int id, SystemObjects obj);
@@ -298,7 +298,7 @@ namespace d360.model
         Task SendDigestEmails(EnvironmentLevel environmentLevel);
         bool TypeHasChildren(SystemObjects type, int id);
         bool TypeHasParent(SystemObjects type, int id);
-        bool Update<T>(T item) where T : BaseObject;
+        new bool Update<T>(T item) where T : BaseObject;
         bool UpdateFollowStatus(SystemObjects type, int objectID, int? resourceID, bool includeChildren = false);
         bool UpdateObjectParentRelationship(SystemObjects type, int typeId, SystemObjects objectType, int parentID, int objectID, PredicateType predicateType = PredicateType.InterTypeHierarchy);
         IntersectType UpsertIntersectType(IntersectType model, int lineageVersion);

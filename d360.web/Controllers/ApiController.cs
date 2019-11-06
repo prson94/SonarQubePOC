@@ -2501,7 +2501,7 @@ order by    rnk, [Name]";
                 from 
                     asset a
                 inner join assettype t on t.id = a.assettypeid
-				left join objectstyle s on s.objecttype = t.[object] and s.objectid = t.objectid
+                left join AssetTypeStyle S on S.ID = T.ID
                 {1}
                 where  
                     t.id = @id and (@query is null or {2} like '%' + @query + '%')
@@ -5425,10 +5425,10 @@ where    A.RuleID = @id", new { id });
             return status;
         }
 
-        [Route("{type}/{id:int}/style")]
-        public ObjectStyle GetObjectStyle(SystemObjects type, int id)
+        [Route("{assetTypeId:int}/style")]
+        public AssetTypeStyle GetAssetTypeStyle(int assetTypeId)
         {
-            return Company.GetObjectStyle(type, id);
+            return Company.GetAssetTypeStyle(assetTypeId);
         }
 
         [Route("{type}/{uid}/detail")]
@@ -6863,6 +6863,15 @@ where    A.RuleID = @id", new { id });
                             SecondColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = "Object", FieldName = "SurveyTypeObjectID", FieldDescription = surveyType.GetDescription(i => i.ObjectID), Value = (dtlSurveyType != null) ? dtlSurveyType.Name : surveyType.ObjectID.ToString() }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Description", FieldName = "Description", FieldDescription = surveyType.GetDescription(i => i.Description), Value = surveyType.Description, DataType = "HTML" }
                             }
                         });
 

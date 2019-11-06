@@ -946,7 +946,7 @@ where	T.ObjectID = @id and T.Object='TaxonomyType'";
                     from 
 	                    Asset a
 					inner join AssetType t on t.ID = a.AssetTypeID
-					left join ObjectStyle os on os.ObjectType = t.[Object] and os.ObjectID = t.ObjectID
+                    left join AssetTypeStyle os on os.ID = t.ID
 					cross apply dbo.GetAssetDisplayValueById(a.ID) d
 					cross apply dbo.GetAssetUrlById(a.ID) u
                     where 
@@ -1004,7 +1004,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 								else I.SubjectID
 								end
 				left join AssetType DT on DT.ID = D.AssetTypeID
-				left join ObjectStyle S on S.ObjectType = DT.Object and S.ObjectID = DT.ObjectID
+                left join AssetTypeStyle S on S.ID = DT.ID
 				inner join IntersectType T on T.ID = I.IntersectTypeID
 				left join [Predicate] P on P.ID = T.PredicateID
 		where	( 
@@ -1042,7 +1042,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 				1 as isLeaf
 		from	Asset D
 				inner join AssetType DT on DT.ID = D.AssetTypeID
-				left join ObjectStyle S on S.ObjectType = DT.Object and S.ObjectID = DT.ObjectID
+                left join AssetTypeStyle S on S.ID = DT.ID
 		where	D.Object = @type and D.ObjectID = @id
 
 		insert into @nodes
@@ -1064,7 +1064,7 @@ declare @nodes table (assetId int, [key] varchar(250), obj varchar(50), [objid] 
 				null,
 				1 as isLeaf
 		from	AssetType D
-				left join ObjectStyle S on S.ObjectType = D.[Object] and S.ObjectID = D.ObjectID
+                left join AssetTypeStyle S on S.ID = D.ID
 		where	D.Object = @type and D.ObjectID = @id
 
 		--check for downstream relationships to pre-emptively show/hide expander button

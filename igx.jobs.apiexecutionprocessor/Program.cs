@@ -116,7 +116,7 @@ namespace igx.jobs.apiexecutionprocessor
                 //check if this client should / can run an api load
                 if (!(await ShouldRunApiJob(company)))
                 {
-                    int delaySeconds = int.Parse(CoreFunction.GetConfigValueByKey("RunningJobDelay")??"300");
+                    int delaySeconds = int.Parse(CoreFunction.GetConfigValueByKey("RunningJobDelay")??"30");
 
                     TimeSpan delay = new TimeSpan(0, 0, delaySeconds);
 

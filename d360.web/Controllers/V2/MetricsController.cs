@@ -21,6 +21,7 @@ using d360.core;
 using d360.web.Filters;
 using d360.core.exceptions;
 using d360.model.DataAccessLayer;
+using d360.model.validators;
 
 namespace d360.web.Controllers.V2
 {
@@ -385,6 +386,62 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Server Error", errorMessage);
             }
         }
+
+
+
+        /// <summary>
+        /// Gets a calculated score by asset type Uid
+        /// </summary>
+        /// <param name="assetTypeUid">The Uid of the asset type.</param>
+        /// <returns>Calculated scores.</returns>
+        [
+            HttpGet,
+            Route("{assetTypeUid:Guid}/scores"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding calculated scores.", typeof(MetricScoreApiModel)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset type was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this metric score is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse)),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_effectiveDateStart", "Effective start date", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_effectiveDateEnd", "Effective end date", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_assetUid", "The specific Uid of the asset you want the score for.", DataType = "string", ParameterType = "query", Required = false)
+        ]
+        public async Task<IHttpActionResult> GetMetricScores(Guid assetTypeUid)
+        {
+            var prefix = "Metrics.GetMetricScores => ";
+            
+            try
+            {
+                AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+                if (assetType == null)
+                {
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid of {assetTypeUid.ToString()} not found.");
+                }
+
+                var queryParams = Request.GetQueryNameValuePairs();
+                (var result, string errorMessage) = MetricsRepository.GetMetricScore(assetType, queryParams);
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", errorMessage);
+                }
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
+            }
+            catch(Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+
+
+        }
+
+
 
     }
 }

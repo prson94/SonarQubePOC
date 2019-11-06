@@ -9,7 +9,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                     <div 
                             class="chip-option"
                             *ngFor="let item of selectedFilters"
-                            (click)="openEdit(editor)">
+                            (click)="openEdit(editor,searchInput)">
                         {{item.field}}: {{item.value}}  
                         <i class="fa fa-times-circle" (click)="removeFilterOption(item)"></i>
                         <div class="popup-menu" #editor>
@@ -82,8 +82,8 @@ export class ChipsFilterComponent {
 
     @Input() filterOption: any[] = [];
     @Output() applyFlter = new EventEmitter();
-    @ViewChild('searchInput', { static: false }) searchInputElement: ElementRef;
     @ViewChild('popup', { static: false }) popup: ElementRef;
+    @ViewChildren('searchInput') searchInputElement: QueryList<ElementRef>;
     @ViewChildren('editor') allEditors: QueryList<ElementRef>;
 
     constructor(
@@ -100,10 +100,14 @@ export class ChipsFilterComponent {
         this.checkMenuPosistion();
         this.ref.markForCheck();
     }
-    private openEdit(editor: HTMLElement) {
+    private openEdit(editor: HTMLElement, input: HTMLElement) {
         this.closeMenu();
         editor.classList.add('popup-open');
-        setTimeout(() => { this.isEditOpen = true; }, 150);
+
+        setTimeout(() => {
+            this.isEditOpen = true;
+            input.focus();
+        }, 150);
     }
     doNothing(event) {
         event.stopPropagation();
@@ -176,8 +180,8 @@ export class ChipsFilterComponent {
 
     private setFocus() {
         setTimeout(() => {
-            if (this.searchInputElement)
-                this.searchInputElement.nativeElement.focus();
+            if (this.searchInputElement.length)
+                this.searchInputElement.last.nativeElement.focus();
         }, 150);
     }
 };
