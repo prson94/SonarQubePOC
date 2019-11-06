@@ -1026,7 +1026,15 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             }
             return reached;
         }
-        
+
+        public Guid GetRuleUIDFromRuleID(int ruleid)
+        {
+            var asset = CompanyContext.Filter<Asset>(i => i.ObjectID == ruleid && i.Object == "Rule").SingleOrDefault();
+            if (asset == null)
+                return Guid.Empty;
+            return asset.uid;
+        }
+
         #region Private
         private void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns)
         {
