@@ -9,7 +9,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                     <div 
                             class="chip-option"
                             *ngFor="let item of selectedFilters"
-                            (click)="openEdit(editor,searchInput)">
+                            (click)="openEdit(editor,searchInput, item.value)">
                         {{item.field}}: {{item.value}}  
                         <i class="fa fa-times-circle" (click)="removeFilterOption(item)"></i>
                         <div class="popup-menu" #editor>
@@ -101,12 +101,13 @@ export class ChipsFilterComponent {
         this.ref.markForCheck();
     }
 
-    private openEdit(editor: HTMLElement, input: HTMLElement) {
+    private openEdit(editor: HTMLElement, input: HTMLInputElement, inputText: string) {
         this.closeMenu();
         editor.classList.add('popup-open');
         setTimeout(() => {
             this.isEditOpen = true;
             input.focus();
+            input.value = inputText;
         }, 150);
     }
     doNothing(event) {
