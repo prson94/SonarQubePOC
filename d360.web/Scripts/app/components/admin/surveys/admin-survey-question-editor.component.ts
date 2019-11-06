@@ -7,47 +7,49 @@ import * as _ from 'lodash';
 @Component({
     selector: 'd3s-admin-survey-question-editor',
     template: ` 
-                <header>{{action}} Question</header>
+               <header>{{action}} Question</header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
-                    <form (ngSubmit)="onSubmit()" #questionEditorForm="ngForm">                        
+                    <form (ngSubmit)="onSubmit()" #questionEditorForm="ngForm">
                         <div class="col s6">
                             <div class="FieldName">Name</div>
-                            <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="editedQuestion.Name" #name="ngModel" maxlength="250"></div>                            
+                            <div><input required style="width: 100%;" name="name" type="string" [(ngModel)]="editedQuestion.Name" #name="ngModel" maxlength="250"></div>
                             <div [hidden]="name.valid || name.pristine">Name is required</div>
-                        </div>                        
+                        </div>
                         <div class="col s6">
                             <div class="FieldName">Display Style</div>
                             <div>
-                                <select required [(ngModel)]="editedQuestion.DisplayStyle" name="DisplayStyle" #displayStyle="ngModel" style="width:100%;">                                  
-                                  <option *ngFor="let p of displayStyles" [value]="p.value">{{p.title}}</option>
+                                <select required [(ngModel)]="editedQuestion.DisplayStyle" name="DisplayStyle" #displayStyle="ngModel" style="width:100%;">
+                                    <option *ngFor="let p of displayStyles" [value]="p.value">{{p.title}}</option>
                                 </select>
                             </div>
                             <div [hidden]="displayStyle.valid || displayStyle.pristine">Display style is required</div>
-                        </div>                                  
+                        </div>
                         <div class="col l12 s12">
                             <div class="FieldName">Description</div>
-                            <div><p-editor name="Description" [style]="{'height':'150px'}" [ngModel]="editedQuestion?.Description" (ngModelChange)="editedQuestion.Description=$event" ></p-editor></div>                                                        
-                        </div>                        
-                        <div class="col l12 s12">
-                            <div><span class="FieldName">Question Options</span> <span class="right" (click)="addItem();"><i class="fa fa-plus" aria-hidden="true"></i></span></div>
-                            <div>
-                                <div class="row" *ngFor="let option of editedQuestion?.Items; let i = index">
-                                    <div class="col s6">
-                                        <input style="width: 100%;" required [name]="'item_' + i" type="string" [(ngModel)]="option.Name" maxlength="250">
-                                    </div>
-                                    <div class="col s6">
-                                        <input style="width: 100%;" required [name]="'value_' + i" type="number" [(ngModel)]="option.Value">
-                                    </div>
+                            <div><p-editor name="Description" [style]="{'height':'150px'}" [ngModel]="editedQuestion?.Description" (ngModelChange)="editedQuestion.Description=$event"></p-editor></div>
+                        </div>
+                        <div class="row">
+                            <span class="FieldName col l11 s11">Question Options</span>
+                            <span class="right-align col l1 s1" (click)="addItem();"><i class="fa fa-plus" aria-hidden="true"></i></span>
+                        </div>
+                        <div *ngFor="let option of editedQuestion?.Items; let i = index">
+                            <div class="row">
+                                <div class="col s6">
+                                    <input style="width: 100%;margin-bottom:5px;" required [name]="'item_' + i" type="text" [(ngModel)]="option.Name" maxlength="250">
                                 </div>
-                            </div>                                                        
-                        </div> 
-                        <div class="col s12">&nbsp;</div>
+                                <div class="col s6">
+                                    <input style="width: 100%;" required [name]="'value_' + i" type="number" [(ngModel)]="option.Value">
+                                </div>
+                            </div>
+                            <div class="spacer"></div>
+                        </div>
+                        <div class="col l12 s12">&nbsp;</div>
                         <div class="col s12">
-                            <button pButton type="submit" [disabled]="!questionEditorForm.form.valid" label="Save"></button>                            
+                            <button pButton type="submit" [disabled]="!questionEditorForm.form.valid" label="Save"></button>
                             <button pButton type="button" (click)="closeClick.emit();" label="Close"></button>
-                        </div>                    
-                    </form>                           
+                        </div>
+                    </form>
                 </div>
                 `,
     providers: [SurveysService],
