@@ -28,7 +28,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     private currentAreaNameSubscription: any;
     private currentAreaName: string;
 
-    
+
     constructor(private route: ActivatedRoute,
         private router: Router,
         private artifactTypeService: ArtifactTypeService,
