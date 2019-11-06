@@ -5,6 +5,50 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
+  <changeSet author="Pappas" id="GOV-8632-DropCix">
+    <sql dbms="mssql"
+		endDelimiter="\nGO"
+		splitStatements="true"
+		stripComments="false">
+<![CDATA[
+if exists(select 1 from sys.indexes where name = 'CIX_GraphAssetNode_AssetId')
+begin
+	DROP INDEX [CIX_GraphAssetNode_AssetId] ON [graph].[AssetNode] WITH ( ONLINE = OFF );
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+if not exists(select 1 from sys.indexes where name = 'CIX_GraphAssetNode_AssetId')
+begin
+	CREATE UNIQUE CLUSTERED INDEX [CIX_GraphAssetNode_AssetId] ON [graph].[AssetNode] ( [ID] ASC );
+end
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="GOV-8632-PK">
+    <sql dbms="mssql"
+		endDelimiter="\nGO"
+		splitStatements="true"
+		stripComments="false">
+<![CDATA[
+if not exists(select 1 from sys.key_constraints where name = 'PK_GraphAssetNode')
+begin
+	ALTER TABLE graph.AssetNode ADD CONSTRAINT PK_GraphAssetNode PRIMARY KEY CLUSTERED (ID);
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+if exists(select 1 from sys.key_constraints where name = 'PK_GraphAssetNode')
+begin
+	ALTER TABLE [graph].[AssetNode] DROP CONSTRAINT [PK_GraphAssetNode] WITH ( ONLINE = OFF );
+end
+]]>
+    </rollback>
+  </changeSet>
+
   <changeSet author="Pappas" id="GOV-8632-XmlIndices">
     <sql dbms="mssql"
 		endDelimiter="\nGO"
