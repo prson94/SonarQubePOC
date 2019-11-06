@@ -1255,6 +1255,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     go.Shape,
                     { width: 10, height: 0, stroke: "transparent" }
                 ),
+                //This TextBlock is placeholder for highlighted text
                 this.g(
                     go.TextBlock,
                     {
@@ -1269,6 +1270,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     },
                     new go.Binding("text", "highlight").makeTwoWay(),
                     new go.Binding("visible", "highlight_visible").makeTwoWay()
+                ),
+                //This shape block is for ensuring space between highlighted text and rest of the text
+                //We need this as TextBlock trims spaces
+                this.g(
+                    go.Shape,
+                    { width: 2, height: 0, stroke: "transparent", visible: false },
+                    new go.Binding("visible", "spacer_visible").makeTwoWay()
                 ),
                 this.g(
                     go.TextBlock,
@@ -1440,7 +1448,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.nodes.each(function (node) {
             if (node instanceof go.Node) {
                 var nodeData = node.data;
-
+                node.isHighlighted = false;
                 if (nodeData.isGroup) {
                     //This is grouping, do nothing with it (AssetType grouping)
                 }
@@ -1471,7 +1479,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
             m.set(data, 'highlight', '');
             m.set(data, 'highlight_visible', false);
-            m.set(data, 'text', fullText.replace('\u00AD',''));
+            m.set(data, 'spacer_visible', false);
+            m.set(data, 'text', fullText);
         }, 'update_highlight');
     }
 
@@ -1483,8 +1492,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             var idx = self.searchValue.length;
             var highlight = data.text.substring(0, idx);
             var text = data.text.substring(idx, data.text.length);
-            console.log(node.width);
-            m.set(data, 'highlight', '\u00AD' + highlight);
+
+            if (data.text.length > idx && (data.text[idx] == ' ' || self.searchValue[idx-1] == ' ')) {
+                m.set(data, 'spacer_visible', true);
+            }
+            m.set(data, 'highlight', highlight);
             m.set(data, 'highlight_visible', true);
             m.set(data, 'text', text);
         }, 'update_highlight');
