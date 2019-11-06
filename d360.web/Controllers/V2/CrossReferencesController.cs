@@ -598,7 +598,7 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.NotFound,"Not Found", "Rule ID not found");
 
                 return ResponseMessage(
-                                    Request.CreateResponse(HttpStatusCode.OK, "uid: " + ruleUid)
+                                    Request.CreateResponse(HttpStatusCode.OK, new { uid = ruleUid })
                              );
             }catch(Exception ex)
             {
