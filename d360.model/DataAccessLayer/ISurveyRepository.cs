@@ -11,5 +11,6 @@ namespace d360.model.DataAccessLayer
         SurveyTypeApiResponseModel GetSurveyTypes(IEnumerable<KeyValuePair<string, string>> queryParams);
         SurveyResultSummaryApiResponseModel GetSurveyResultSummary(Guid surveyTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         SurveyType GetSurveyTypeByUid(Guid uid);
+        int DeleteSurveyResults(IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }
