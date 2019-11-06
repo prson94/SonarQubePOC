@@ -13,6 +13,7 @@ using d360.core;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System.Data.SqlClient;
 using Dapper;
+using Newtonsoft.Json;
 
 namespace d360.model.DataAccessLayer
 {
@@ -343,7 +344,7 @@ namespace d360.model.DataAccessLayer
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", operatorErrorMessage);
             }
 
-            return new WorkHttpStatus(HttpStatusCode.OK,"","");
+            return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
 
         public MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(Guid assetTypeUid, DateTime? effectiveDate)
@@ -588,5 +589,137 @@ namespace d360.model.DataAccessLayer
         {
             return Company.BulkMetricsImport(model, execution);
         }
+
+        public (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var filterAsset = new Asset();
+            int? filterFieldTypeId = null;
+
+            var result = new MetricScoreApiModel();
+            var parameters = new DynamicParameters();
+
+            List<string> whereClauses = new List<string>();
+            List<string> scoreFilters = new List<string>();
+            List<string> fieldFilters = new List<string>();
+            whereClauses.Add("AT.uid = @assetTypeUid");
+            parameters.Add("@assetTypeUid", at.uid);
+
+            var dateStart = DateTime.MinValue;
+            var dateEnd = DateTime.MinValue;
+            int customFieldsCounter = 0;
+            foreach (var param in queryParams)
+            {
+                switch (param.Key.ToLower())
+                {
+                    case "_pagesize":
+                        int pageSize = 0;
+                        if(!int.TryParse(param.Value, out pageSize) || pageSize <= 0)
+                            return (null,"Invalid '_pagesize' parameter value");
+                        result.pageSize = pageSize;
+                        break;
+                    case "_pagenum":
+                        int pageNum = 0;
+                        if (!int.TryParse(param.Value, out pageNum) || pageNum <= 0)
+                            return (null, "Invalid 'pageNum' parameter value");
+                        result.pageNum = pageNum;
+                        break;
+                    case "_effectivedatestart":
+                        DateTime.TryParse(param.Value, out dateStart);
+                        if (dateStart == DateTime.MinValue)
+                            return (null, "Invalid '_effectiveDateStart' parameter value");
+                        parameters.Add("@dateStart", dateStart);
+                        scoreFilters.Add("MS.EffectiveDate >= @dateStart");
+                        break;
+                    case "_effectivedateend":
+                        DateTime.TryParse(param.Value, out dateEnd);
+                        if (dateEnd == DateTime.MinValue)
+                            return (null, "Invalid '_effectiveDateEnd' parameter value");
+                        parameters.Add("@dateEnd", dateEnd);
+                        scoreFilters.Add("MS.EffectiveDate <= @dateEnd");
+                        break;
+                    case "_assetuid":
+                        Guid assetUid = Guid.Empty;
+                        if (!Guid.TryParse(param.Value, out assetUid))
+                            return (null, "Invalid '_assetUid' parameter value");
+
+                        var assetTypeId = Company.Assets.Where(x => x.uid == assetUid).FirstOrDefault()?.AssetTypeID;
+                        if(assetTypeId != at.ID)
+                            return (null, "Asset of given asset type Uid does not exists");
+
+                        parameters.Add("@assetUid", assetUid);
+                        if (parameters.ParameterNames.Any(x => x.ToLower() == "customfield"))
+                            return (null, "'_assetUid' AND 'customfield' are exclusive filters and may not be combined.");
+
+                        whereClauses.Add("A.Uid = @assetUid");
+                        break;
+                    default:
+                        customFieldsCounter++;
+                        var fieldName = param.Key;
+
+                        filterFieldTypeId = Company.FieldTypes.Where(x => x.AssetTypeID == at.ID && x.Name.ToLower() == param.Key.ToLower()).FirstOrDefault()?.ID;
+                        if (filterFieldTypeId == null)
+                            return (null, $"Invalid custom field parameter. Field type with name '{param.Key}' does not exists");
+
+                        if (parameters.ParameterNames.Any(x => x.ToLower() == "assetuid"))
+                            return (null, "'_assetUid' AND 'customfield' are exclusive filters and may not be combined.");
+
+                        fieldFilters.Add($"inner join Field F{customFieldsCounter} on F{customFieldsCounter}.FieldTypeID = @ftId{customFieldsCounter} and F{customFieldsCounter}.AssetID = A.ID and F{customFieldsCounter}.FormattedValue = @ftValue{customFieldsCounter}");
+                        parameters.Add("@ftId"+customFieldsCounter, filterFieldTypeId);
+                        parameters.Add("@ftValue" + customFieldsCounter, param.Value);
+
+                        break;
+                }
+            }
+
+
+            bool takeOnlyLastScore = false;
+
+            if(dateEnd < dateStart && (dateStart != DateTime.MinValue && dateEnd != DateTime.MinValue))
+            {
+                return (null, "Effective start date should be before effective end date parameter");
+            }
+            if (dateStart == DateTime.MinValue && dateEnd == DateTime.MinValue)
+                takeOnlyLastScore = true;
+
+            parameters.Add("@pageSize", result.pageSize);
+            parameters.Add("@pageNum", result.pageNum);
+
+            string whereSQl = whereClauses.Count == 0 ? "" : "where " + string.Join(" AND ", whereClauses);
+            string scoreWhereSQl = scoreFilters.Count == 0 ? "" : " and " + string.Join(" AND ", scoreFilters);
+
+            var countSql = $@"select
+                         count(distinct a.uid)
+                         from metrics.Score MS
+                            inner join Asset A on A.uid = MS.AssetUid
+                            inner join AssetType AT on A.AssetTypeID = AT.ID
+                            {string.Join(" ", fieldFilters)}
+                            {whereSQl}";
+
+            result.total = Company.Query<int>(countSql,parameters).FirstOrDefault();
+
+            var sql = $@"select LOWER(A.uid) as AssetUid,
+	                    (select {(takeOnlyLastScore ? "top 1" : "")} MS.EffectiveDate, MS.Value as Score 
+		                     from metrics.Score MS
+								where AssetUid = a.uid 
+                                {scoreWhereSQl}
+								order by MS.EffectiveDate desc
+		                     for json path) as Scores
+		                from metrics.Score MS
+		                    inner join Asset A on A.uid = MS.AssetUid
+		                    inner join AssetType AT on A.AssetTypeID = AT.ID
+                            {string.Join(" ", fieldFilters)}
+                        {whereSQl}
+                        group by a.uid
+	                    order by a.uid
+	                    offset (@pageNum-1) rows fetch next @pageSize rows only
+                    for json path
+                    ";
+
+            var itemsJson = string.Join("", Company.Query<string>(sql, parameters).ToList());
+
+            result.items = JsonConvert.DeserializeObject<List<MetricAssetScoreModel>>(itemsJson);
+            return (result,"");
+        }
+
     }
 }

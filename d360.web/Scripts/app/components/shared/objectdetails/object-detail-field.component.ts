@@ -35,7 +35,7 @@ export class ObjectDetailFieldComponent {
     private GetJSON(value: string) {
         try {
             return JSON.parse(value);
-        } catch{
+        } catch (err){
             return "Error";
         }
     }

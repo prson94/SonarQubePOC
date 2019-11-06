@@ -62,7 +62,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     private showTechnical: boolean = false;
 
-    @ViewChild('dt') datatable;
+    @ViewChild('dt', { static: false }) datatable;
 
     constructor(private router: Router, private gridDefinitionService: GridDefinitionService, protected relationshipsService: RelationshipsService, private messagesService: MessagesObservableService) {
         super();

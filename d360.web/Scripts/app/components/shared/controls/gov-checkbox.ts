@@ -29,7 +29,7 @@ export class D3SCheckbox  {
 
     private isModalVisible: boolean = false;
     private changeInProgress: boolean = false;
-    @ViewChild("switch") _el: ElementRef;
+    @ViewChild("switch", {static:false}) _el: ElementRef;
 
     tryChangeValue(val: boolean) {
         this.changeInProgress = false;

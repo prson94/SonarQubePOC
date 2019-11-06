@@ -63,7 +63,9 @@ namespace d360.web.Controllers.V2
         	                ResourceID = @r
         	                and ObjectType not in ('ArtifactType', 'PolicyType', 'ReferenceItemType', 'ResourceType', 'TaxonomyType')
                         group by Type, TypeName, TypeID) T
-                        left join ObjectStyle S on  T.[Type] = S.ObjectType and T.TypeID = S.ObjectID order by TypeName", new { r = id });
+                        left join AssetType A on A.[Object] = T.[Type] and A.ObjectID = T.TypeID
+                        left join AssetTypeStyle S on S.ID = A.ID
+                        order by TypeName", new { r = id });
 
             return Request.CreateResponse(HttpStatusCode.OK, query);
         }

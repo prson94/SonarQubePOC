@@ -9,9 +9,9 @@ namespace d360.model.DataAccessLayer
     public interface ICrossReferencesRepository
     {
         Task<int> CreateNewCrossReference(AssetCrossReference model);
-        Task<int> DeleteCrossReferenceByDataSource(string dataSource);
-        Task<int> DeleteCrossReferenceByDataSource(string dataSource, string type);
-        Task<int> DeleteCrossReferenceByType(string type);
+        Task<int> DeleteCrossReferenceByDataSource(string dataSource, int timeout = 90);
+        Task<int> DeleteCrossReferenceByDataSource(string dataSource, string type, int timeout = 90);
+        Task<int> DeleteCrossReferenceByType(string type, int timeout = 90);
         Task<int> DeleteCrossReferenceByUid(Guid uid);
         Task<IEnumerable<AssetCrossReference>> GetByAssetUid(string assetUid);
         Task<IEnumerable<AssetCrossReference>> GetCrossReferenceByDataSource(string dataSource);

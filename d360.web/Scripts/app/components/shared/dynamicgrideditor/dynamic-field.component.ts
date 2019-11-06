@@ -46,7 +46,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
 
-    @ViewChild('ed') ed: Editor;
+    @ViewChild('ed', { static: false }) ed: Editor;
     private quill;
 
     @Output() listItemChange = new EventEmitter();
@@ -508,7 +508,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private GetJSON(value: string) {
         try {
             return JSON.parse(value);
-        } catch {
+        } catch (err) {
             return "Error";
         }
     }

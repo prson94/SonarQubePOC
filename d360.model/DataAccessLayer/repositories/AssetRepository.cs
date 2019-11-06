@@ -309,6 +309,109 @@ namespace d360.model.DataAccessLayer
 
             return model;
         }
+        public async Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model)
+        {
+            var dbArgs = new DynamicParameters();
+            var returnModel = new AssetsByPathApiViewModel();
+
+            var prefilterSql = "";
+            var countSql = "";
+            var sql = "";
+
+            int i = 1;
+            foreach (var filter in model.filters)
+            {
+                string prefilterRelationshipStatement = string.Empty;
+                string prefilterStatement = string.Empty;
+                if (filter.AsSideOfRelationship != null)
+                {
+                    switch (filter.AsSideOfRelationship.Side)
+                    {
+                        case AssetsByPathItemApiFilterSideOfRelationshipRequestEnum.Object:
+                            prefilterRelationshipStatement += "inner join IntersectType I on I.Object = T.Object and I.ObjectID = T.ObjectID";
+                            break;
+                        case AssetsByPathItemApiFilterSideOfRelationshipRequestEnum.Subject:
+                            prefilterRelationshipStatement += "inner join IntersectType I on I.Subject = T.Object and I.SubjectID = T.ObjectID";
+                            break;
+                    }
+                    if (filter.AsSideOfRelationship.PredicateType.HasValue)
+                    {
+                        prefilterRelationshipStatement += $" inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = @pt{i}";
+                        dbArgs.Add($"@pt{i}", (int)filter.AsSideOfRelationship.PredicateType.Value);
+                    }
+                }
+                if (filter.Class.HasValue)
+                {
+                    prefilterStatement += $"where T.[Class] = @class{i}";
+                    dbArgs.Add($"@class{i}", (int)filter.Class.Value);
+                }
+                if (filter.Uid.HasValue)
+                {
+                    prefilterStatement += (string.IsNullOrEmpty(prefilterStatement) ? "where" : " and ") +
+                        $" T.[Uid] = @uid{i}";
+                    dbArgs.Add($"@uid{i}", filter.Uid.Value);
+                }
+                if (filter.UseAsTransformation.HasValue)
+                {
+                    prefilterStatement += (string.IsNullOrEmpty(prefilterStatement) ? "where" : " and ") +
+                        $" T.[UseAsTransformation] = @uat{i}";
+                    dbArgs.Add($"@uat{i}", filter.UseAsTransformation.Value);
+                }
+
+                if (!string.IsNullOrEmpty(prefilterStatement))
+                {
+                    prefilterSql += (string.IsNullOrEmpty(prefilterSql)) ? "" : " union ";
+                    prefilterSql += $"select T.ID from AssetType T {prefilterRelationshipStatement} {prefilterStatement}";
+                }
+                
+                i++;
+            }
+
+            dbArgs.Add("@phrase", model.searchPhrase.ToSqlFullTextSearchPhrase());
+
+            if (!string.IsNullOrEmpty(prefilterSql))
+            {
+                prefilterSql = $"and N.AssetTypeID in ({prefilterSql})";
+            }
+
+            countSql = $@"
+select	count(1)
+from	graph.AssetNode N
+where	CONTAINS(N.[Path], @phrase) {prefilterSql}
+";
+
+            sql = $@"
+select	N.Uid,
+		N.AssetTypeUid,
+		N.Segments as SegmentsXml
+from	graph.AssetNode N
+where	CONTAINS(N.[Path], @phrase) {prefilterSql}
+order by N.[Path] asc
+OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
+";
+            if (model.pageNum <= 1)
+            {
+                model.pageNum = 1;
+            }
+            if (model.pageSize <= 0 || model.pageSize > 250)
+            {
+                model.pageSize = 250;
+            }
+
+            dbArgs.Add("@pageNum", model.pageNum-1);
+            dbArgs.Add("@pageSize", model.pageSize);
+
+            var count = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
+            var total = count.First();
+            var results = await CompanyContext.QueryAsync<AssetsByPathItemApiViewModel>(sql, dbArgs);
+
+            returnModel.items = results;
+            returnModel.pageNum = model.pageNum;
+            returnModel.pageSize = model.pageSize;
+            returnModel.total = total;
+
+            return returnModel;
+        }
         public dynamic GetFieldTypes(Guid assetTypeUid)
         {
             var assetTypeID = 0;
@@ -867,12 +970,12 @@ namespace d360.model.DataAccessLayer
             return CompanyContext.Filter<ApiExecution>(i => i.ExecutionID == executionUid).SingleOrDefault();
         }
 
-        public void UpsertObjectStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx")
+        public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string objectName = "Tx")
         {
-            var style = CompanyContext.GetObjectStyle(type, id);
+            var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
             bool add = (style == null);
 
-            string iconText = "Tx";
+            string iconText;
 
             var words = objectName.Trim().Split(' ');
             if (words.Length > 1 && words[1].Length > 0)
@@ -886,22 +989,21 @@ namespace d360.model.DataAccessLayer
 
             if (add)
             {
-                style = new ObjectStyle
+                style = new AssetTypeStyle
                 {
-                    ObjectType = type,
-                    ObjectID = id,
+                    ID = assetTypeId,
                     IconBackColor = backColor,
                     IconForeColor = foreColor,
                     IconText = iconText
                 };
-                CompanyContext.Add<ObjectStyle>(style);
+                CompanyContext.Add(style);
             }
             else
             {
                 style.IconBackColor = backColor;
                 style.IconForeColor = foreColor;
                 style.IconText = iconText;
-                CompanyContext.Update<ObjectStyle>(style);
+                CompanyContext.Update(style);
             }
 
 
@@ -1038,6 +1140,16 @@ namespace d360.model.DataAccessLayer
                         {joinPrefix} join FieldJsonProperty FJP{f.ID} on FJP{f.ID}.FieldID = {tableAlias}.ID and FJP{f.ID}.[Path] = @jsonPath{f.ID}
                     ");
                     dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
+                }
+                else if (f.Type == "Tag")
+                {
+                    fieldJoins.Add($@"outer apply(
+                        select FormattedValue = STUFF((
+                            select '|' + T.Value from AssetTag AT
+                                inner join Tag T on AT.TagID = T.ID
+                                where AT.AssetID = A.ID
+                            for xml path ('')), 1, 1, '')
+                         ){tableAlias}(FormattedValue) ");
                 }
                 else
                 {

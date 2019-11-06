@@ -22,8 +22,9 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
     @Input() loading: boolean = false;
 
     @Output() selectedCategoryChange = new EventEmitter();
+
+    @ViewChild('searchContainer', { static: false }) container: ElementRef;
     @Output() advFilterChanged = new EventEmitter();
-    @ViewChild('searchContainer') container: ElementRef;
 
     newFilterOptions: any[] = [];
 
@@ -74,7 +75,4 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
         this.searchStateService.page(data.first, data.size);
     }
 
-    private pageNumber() {
-        return Math.floor(this.from / this.itemsPerPage);
-    }
 };

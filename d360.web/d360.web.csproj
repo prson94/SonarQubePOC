@@ -290,6 +290,22 @@
     <Compile Include="App_Start\IpRestrictionMiddleware.cs" />
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="Controllers\Forms\FormController_Artifact.cs" />
+    <Compile Include="Controllers\Forms\FormController_Attribute.cs" />
+    <Compile Include="Controllers\Forms\FormController_CustomAPI.cs" />
+    <Compile Include="Controllers\Forms\FormController_FieldType.cs" />
+    <Compile Include="Controllers\Forms\FormController_Fusion.cs" />
+    <Compile Include="Controllers\Forms\FormController_Issue.cs" />
+    <Compile Include="Controllers\Forms\FormController_Lookup.cs" />
+    <Compile Include="Controllers\Forms\FormController_Organization.cs" />
+    <Compile Include="Controllers\Forms\FormController_Policy.cs" />
+    <Compile Include="Controllers\Forms\FormController_Relationship.cs" />
+    <Compile Include="Controllers\Forms\FormController_Report.cs" />
+    <Compile Include="Controllers\Forms\FormController_Resource.cs" />
+    <Compile Include="Controllers\Forms\FormController_Responsibility.cs" />
+    <Compile Include="Controllers\Forms\FormController_Rule.cs" />
+    <Compile Include="Controllers\Forms\FormController_Survey.cs" />
+    <Compile Include="Controllers\Forms\FormController_Taxonomy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\Obsolete\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
@@ -301,6 +317,7 @@
     <Compile Include="Controllers\V2\DataQualityController.cs" />
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
+    <Compile Include="Controllers\V2\Filter\ModelValidation.cs" />
     <Compile Include="Controllers\V2\FusionController.cs" />
     <Compile Include="Controllers\V2\ActionsController.cs" />
     <Compile Include="Controllers\V2\BrowserController.cs" />
@@ -330,7 +347,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Controllers\BaseController.cs" />
-    <Compile Include="Controllers\FormController.cs" />
+    <Compile Include="Controllers\Forms\FormController.cs" />
     <Compile Include="Controllers\FieldsController.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -569,11 +586,8 @@
     <Content Include="Content\primeng\v7.1.3\theme.min.css">
       <DependentUpon>theme.css</DependentUpon>
     </Content>
-    <Content Include="Content\quill\v1.3.4\quill.min.js" />
-    <Content Include="Content\quill\v1.3.4\quill.snow.css" />
-    <Content Include="Content\quill\v1.3.4\quill.snow.min.css">
-      <DependentUpon>quill.snow.css</DependentUpon>
-    </Content>
+    <Content Include="Content\quill\v1.3.7\quill.min.js" />
+    <Content Include="Content\quill\v1.3.7\quill.snow.css" />
     <Content Include="Content\styles\ang.css" />
     <Content Include="Content\styles\ang.min.css">
       <DependentUpon>ang.css</DependentUpon>
@@ -877,7 +891,6 @@
     <None Include="compilerconfig.json.defaults">
       <DependentUpon>compilerconfig.json</DependentUpon>
     </None>
-    <Content Include="Content\quill\v1.3.4\quill.min.js.map" />
     <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.eot" />
     <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.ttf" />
     <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.woff" />
@@ -888,6 +901,7 @@
     <Content Include="Content\primeng\v7.1.3\fonts\roboto-v15-latin-regular.ttf" />
     <Content Include="Content\primeng\v7.1.3\fonts\roboto-v15-latin-regular.woff" />
     <Content Include="Content\primeng\v7.1.3\fonts\roboto-v15-latin-regular.woff2" />
+    <Content Include="Content\quill\v1.3.7\quill.min.js.map" />
     <None Include="Content\redactor\redactor-iframe.css">
       <DependentUpon>redactor-iframe.less</DependentUpon>
     </None>
@@ -1036,7 +1050,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Content\themes\base\images\" />
     <Folder Include="Views\Profiles\" />
   </ItemGroup>
   <ItemGroup>
@@ -1439,6 +1452,7 @@
     <TypeScriptCompile Include="Scripts\app\http-interceptors\error-notify-interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\http-interceptors\govern-request.interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\models\apiresult.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\asset-type-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\cascade.model.ts" />
@@ -1625,7 +1639,6 @@
     <TypeScriptCompile Include="Scripts\app\models\message-bar-item.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\model.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\object-statistics.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\object-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\reference.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\report.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
@@ -1724,7 +1737,7 @@
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\lookup.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\object-style.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\asset-style.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\rules.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\tag.service.ts" />
@@ -1765,6 +1778,7 @@
     <OutputPath>bin\</OutputPath>
     <Optimize>true</Optimize>
     <DocumentationFile>App_Data\Documentation.XML</DocumentationFile>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <OutputPath>bin\</OutputPath>

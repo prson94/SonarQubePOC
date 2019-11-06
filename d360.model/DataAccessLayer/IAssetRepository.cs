@@ -14,6 +14,7 @@ namespace d360.model.DataAccessLayer
         Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(AssetTypeClass? Class, Guid? fusionTypeUid);
         List<AssetTypeClassInfo> GetAssetTypeList();
         Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model);
         dynamic GetFieldTypes(Guid assetTypeUid);
 
         List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
@@ -31,7 +32,7 @@ namespace d360.model.DataAccessLayer
         AssetType GetAssetTypeByUidAndClass(Guid assetTypeUid, AssetTypeClass @class);
         AssetType GetAssetTypeByModel(AssetTypeInsert model);
         ApiExecution GetExecutionItemByUid(Guid executionUid);
-        void UpsertObjectStyle(string type, int id, string foreColor, string backColor, string objectName = "Tx");
+        void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string objectName = "Tx");
         bool DoesAssetExists(Guid uid);
         bool IsReachedTransformationLimit(AssetTypeInsert model);
 

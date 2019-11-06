@@ -169,19 +169,19 @@ namespace d360.model.DataAccessLayer
             return await CompanyContext.Database.Connection.ExecuteAsync("delete assetcrossreference where uid = @uid", new { uid = uid });
         }
 
-        public async Task<int> DeleteCrossReferenceByDataSource(string dataSource, string type)
+        public async Task<int> DeleteCrossReferenceByDataSource(string dataSource, string type, int timeout = 90)
         {
-            return await CompanyContext.Database.Connection.ExecuteAsync("delete assetcrossreference where datasource = @d and [type] = @t", new { d = dataSource, t = type });
+            return await CompanyContext.Database.Connection.ExecuteAsync("delete assetcrossreference where datasource = @d and [type] = @t", new { d = dataSource, t = type }, commandTimeout: timeout);
         }
 
-        public async Task<int> DeleteCrossReferenceByDataSource(string dataSource)
+        public async Task<int> DeleteCrossReferenceByDataSource(string dataSource, int timeout = 90)
         {
-            return await CompanyContext.Database.Connection.ExecuteAsync("delete assetcrossreference where [datasource] = @d", new { d = dataSource });
+            return await CompanyContext.Database.Connection.ExecuteAsync("delete assetcrossreference where [datasource] = @d", new { d = dataSource }, commandTimeout: timeout);
         }
 
-        public async Task<int> DeleteCrossReferenceByType(string type)
+        public async Task<int> DeleteCrossReferenceByType(string type, int timeout = 90)
         {
-            return await CompanyContext.Database.Connection.ExecuteAsync("delete assetcrossreference where [type] = @t", new { t = type });
+            return await CompanyContext.Database.Connection.ExecuteAsync("delete assetcrossreference where [type] = @t", new { t = type },commandTimeout:timeout);
         }
 
 

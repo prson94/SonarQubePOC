@@ -75,7 +75,7 @@ namespace d360.web.Controllers.V2
 										WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
 										ELSE fa.Value
 	                                 END as NewValue, 
-									 AT.Class,
+									coalesce(AT.Class, AD.AssetTypeClass) as Class,
                                      fa.[Version] as 'Version',	                            
                                  									 CASE 
 									      WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
@@ -89,7 +89,8 @@ namespace d360.web.Controllers.V2
                             from reporting.global_audit ga 
         left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
                                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId
-								left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID ";
+								left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
+                                left join AssetDetail AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID";
                 //get all auditing by type (introduced in tagging)
                 if(id == 0)
                 {
@@ -105,6 +106,7 @@ namespace d360.web.Controllers.V2
 										WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
 										ELSE fa.Value
 	                                 END as NewValue, 
+                                     11 as Class,
 	                                 fa.[Version] as 'Version',	    
 	                                CASE 
 	                                     WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
@@ -138,6 +140,7 @@ namespace d360.web.Controllers.V2
                                     end as ResourceName, 
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
+                                     3 as Class,
                                      fa.[Version] as 'Version',	                            
                                   ( select			
                                 top 1 fa_sub.value as 'value'			                            
@@ -166,6 +169,7 @@ namespace d360.web.Controllers.V2
                                     end as ResourceName,
                                      fa.FieldName as Field, 
                                      fa.Value as NewValue, 
+                                     9 as Class,
                                      fa.[Version] as 'Version',	                            
                                   ( select			
                                 top 1 fa_sub.value as 'value'			                            

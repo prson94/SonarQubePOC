@@ -33,8 +33,8 @@ export class HeaderBreadcrumbComponent {
     breadcrumbs: Breadcrumb[];
     showLastOnly: boolean = false;
     showThisManyCrumbs: number = 0;
-    @ViewChild('bread') breadcrumbUIElement;
-    @ViewChild('collapseIcon') collapseIcon;
+    @ViewChild('bread', { static: false }) breadcrumbUIElement;
+    @ViewChild('collapseIcon', { static: false }) collapseIcon;
     private resizeTimer: any;
     private maxSpaceForCrumbs: number = 800;
     private maxWidthOfSmallPanel: number = window.innerWidth - 200;
