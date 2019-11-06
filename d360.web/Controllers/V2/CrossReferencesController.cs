@@ -18,6 +18,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Resources;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
@@ -543,9 +544,9 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// GETs the status of an execution record, including the results for the execution.
+        /// GETs the rule uid from the provided rule id provided.
         /// </summary>
-        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+        /// <param name="id">The rule ID for which uid is required.</param>
         /// <returns></returns>
         [
             HttpGet,
@@ -553,16 +554,31 @@ namespace d360.web.Controllers.V2
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json", "application/xml"),
             SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of Asset Cross References.", typeof(BulkAssetCrossReferenceResult)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Execution unique identifier not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Rule ID not found.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true),
             ]
-        public async Task<HttpResponseMessage> GetUidfromRuleID(int id)
+        public IHttpActionResult GetUidfromRuleID(int id)
         {
-            var ruleUid = assetRepository.GetRuleUIDFromRuleID(id);
-            if(ruleUid == Guid.Empty)
-                return Request.CreateResponse(HttpStatusCode.NotFound);
+            var prefix = "CrossReference.GetUidfromRuleID => ";
+            var errorMessage = "";
+            try
+            {
+                var ruleUid = assetRepository.GetRuleUIDFromRuleID(id);
+                if (ruleUid == Guid.Empty)
+                    return errorMessageResponse(HttpStatusCode.NotFound,"Not Found", "Rule ID not found");
 
-            return  Request.CreateResponse("uid: " + ruleUid); ;
+                return ResponseMessage(
+                                    Request.CreateResponse(HttpStatusCode.OK, "uid: " + ruleUid)
+                             );
+            }catch(Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return errorMessageResponse(HttpStatusCode.InternalServerError,"Bad Request", errorMessage);
+            }
         }
 
 
