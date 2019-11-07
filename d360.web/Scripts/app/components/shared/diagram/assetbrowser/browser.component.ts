@@ -54,6 +54,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private isFullScreen: boolean = false;
     //#region control properties
 
+    // Constants
+    private readonly fontContextMenu: string = "12px 'Source Sans Pro'";
+    private readonly fontContextMenuShowDetails: string = "bold 12px 'Source Sans Pro'";
+    private readonly fontRelationBadge: string = "8pt 'Source Sans Pro'";
+    private readonly fontLabelIcon: string = "12px FontAwesome";
+    private readonly fontLabel: string = "12px 'Source Sans Pro'";
+    private readonly fontLink: string = "9pt 'Source Sans Pro'";
+
     constructor(
         private myElement: ElementRef,
         protected permissionsService: PermissionsService,
@@ -935,7 +943,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: 2,
                             alignment: go.Spot.Left,
                             editable: false,
-                            font: "8pt helvetica, arial, sans-serif",
+                            font: this.fontRelationBadge,
                             stroke: "#404040"
                         },
                         new go.Binding("text", "predicate")
@@ -952,7 +960,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: 2,
                             alignment: go.Spot.Center,
                             editable: false,
-                            font: "8pt helvetica, arial, sans-serif",
+                            font: this.fontRelationBadge,
                             stroke: "white"
                         },
                         new go.Binding("text", "count")
@@ -968,7 +976,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             { areaBackground: "#ffffff", background: "#ffffff" },
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "bold 12px sans-serif" }),
+                this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenuShowDetails }),
                 {
                     click: (e, obj) => {
                         this.isWindowLoading = true;
@@ -984,22 +992,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             ),
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Hide", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
+                this.g(go.TextBlock, { text: "Hide", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 { click: (e, obj) => this.hide(e, obj) }
             ),
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Hide Upstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
+                this.g(go.TextBlock, { text: "Hide Upstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Backward) }
             ),
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
+                this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Forward) }
             ),
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Isolate", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
+                this.g(go.TextBlock, { text: "Isolate", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 { click: function (e, obj) { alert("Not yet implemented") } }
             )
         );
@@ -1099,7 +1107,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     margin: 0,
                                     alignment: go.Spot.Center,
                                     editable: false,
-                                    font: "12px FontAwesome",
+                                    font: this.fontLabelIcon,
                                     stroke: "#404040"
                                 },
                                 new go.Binding("text", "icon")
@@ -1110,8 +1118,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     alignment: go.Spot.Left,
                                     editable: false,
                                     margin: 5,
-                                    font: "bold 12px sans-serif",
-                                    opacity: 0.75,
+                                    font: this.fontLabel,                                    
                                     stroke: "#404040"
                                 },
                                 new go.Binding("text", "text").makeTwoWay()
@@ -1195,7 +1202,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: 0,
                             alignment: go.Spot.Center,
                             editable: false,
-                            font: "12px FontAwesome",
+                            font: this.fontLabelIcon,
                             stroke: "#404040"
                         },
                         new go.Binding("text", "icon")
@@ -1206,8 +1213,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Left,
                             editable: false,
                             margin: 5,
-                            font: "bold 12px sans-serif",
-                            opacity: 0.75,
+                            font: this.fontLabel,                            
                             stroke: "#404040"
                         },
                         new go.Binding("text", "text").makeTwoWay()
@@ -1244,7 +1250,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         row: 0,
                         alignment: go.Spot.Center,
                         editable: false,
-                        font: "12px FontAwesome",
+                        font: this.fontLabelIcon,
                         stroke: "#404040"
                     },
                     new go.Binding("text", "icon")
@@ -1258,8 +1264,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     go.TextBlock,
                     {
                         editable: false,
-                        font: "bold 12px sans-serif",
-                        opacity: 0.75,
+                        font: this.fontLabel,                        
                         stroke: "#404040",
                         background: "#F5C2FF",
                         visible: false,
@@ -1280,8 +1285,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     go.TextBlock,
                     {
                         editable: false,
-                        font: "bold 12px sans-serif",
-                        opacity: 0.75,
+                        font: this.fontLabel,                        
                         stroke: "#404040"
                     },
                     new go.Binding("text", "text").makeTwoWay()
@@ -1311,7 +1315,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         row: 0,
                         alignment: go.Spot.Center,
                         editable: false,
-                        font: "12px FontAwesome",
+                        font: this.fontLabelIcon,
                         stroke: "#404040",
                         text: "\uf067"
                     }
@@ -1341,7 +1345,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         row: 0,
                         alignment: go.Spot.Center,
                         editable: false,
-                        font: "12px FontAwesome",
+                        font: this.fontLabelIcon,
                         stroke: "#404040",
                         text: "\uf067"
                     }
@@ -1390,7 +1394,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     })
                 ), // the link shape
                 this.g(go.TextBlock, {
-                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                    textAlign: "center", font: this.fontLink , stroke: "#000", margin: 4
                 },
                     // the label
                     new go.Binding("text", "text").makeTwoWay()
