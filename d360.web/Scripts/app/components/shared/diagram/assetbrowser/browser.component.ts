@@ -316,9 +316,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.responseModel = data;
                 let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
                 this.parseData(translationModel);
-            });
 
+                this.resizeDiagram();
+                this.diagram.zoomToFit();
+
+            });
         this.isLoading = false;
+
     }
 
     private parseData(data: AssetBrowserTranslation, append: boolean = false) {
