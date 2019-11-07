@@ -49,7 +49,9 @@ namespace d360.web.Controllers
             }
             else
             {
-                nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
+                var techAssets = Company.Query<int>($"select count(*) from AssetWithType where AssetTypeClass = {(int)AssetTypeClass.TechnicalAsset}").First();
+                if (techAssets == 0)
+                    nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
             }
 
             if (nodes != null)
