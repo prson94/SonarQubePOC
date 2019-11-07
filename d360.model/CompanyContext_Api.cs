@@ -270,6 +270,25 @@ where	E.ExecutionID = @executionID;",
             new { executionID }, commandTimeout: timeout);
         }
 
+        private void LogInvalidFusionIDFields(Guid executionID, int timeout = 3600)
+        {
+            Connection.Execute(@"
+update	E
+set		E.Message = 'Invalid FusionID value for this Asset type',
+		E.Success = 0
+from	api.ExecutionAsset E
+	where E.ExecutionID = @executionID and not exists(select F.ID from api.ExecutionField EF
+	inner join api.ExecutionAsset EA on EF.ExecutionID = EA.ExecutionID
+	inner join FusionAttributeType FAT on FAT.ID = EA.ObjectTypeID
+	inner join FusionType FT on FT.ID = FAT.FusionTypeID
+	inner join Fusion F on F.FusionTypeID = FT.ID
+	where EA.ObjectType = 'FusionAttributeType' 
+	and EF.ExecutionID = @executionID
+	and EF.FieldName = 'fusionid'
+	and F.ID = EF.FieldValue)",
+            new { executionID }, commandTimeout: timeout);
+        }
+
         private void LogFieldLookupErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600)
         {
             string targetTable = "api.ExecutionRelationship";
@@ -2916,6 +2935,8 @@ from    api.ExecutionAsset T
                         if (at.Object == "FusionAttributeType")
                         {
                             LogErrorsWhereChildFusionConfigDifferentFromParent(execution.ExecutionID);
+
+                            LogInvalidFusionIDFields(execution.ExecutionID);
 
                             Connection.Execute($@"
 {keyTableTempCreation}
