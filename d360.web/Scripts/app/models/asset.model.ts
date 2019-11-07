@@ -77,6 +77,7 @@ export class AssetType {
 export class IconStyle {
     ForeColor: string;
     BackColor: string;
+    Icon: string;
 }
 
 export class Hierarchy {

@@ -387,7 +387,7 @@ namespace d360.web.Controllers.V2
 
                 assetType = AssetRepository.GetAssetTypeByModel(model);
 
-                AssetRepository.UpsertAssetStyle(assetType.ID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.Name);
+                AssetRepository.UpsertAssetStyle(assetType.ID, model.IconStyle.ForeColor, model.IconStyle.BackColor,model.IconStyle.Icon, model.Name);
 
                 if (assetType == null) return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type", AssetTypeErrors.NotFoundGeneric));
 
@@ -483,7 +483,7 @@ namespace d360.web.Controllers.V2
                 if (updateStatus.Item1 != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(updateStatus.Item1, updateStatus.Item2, updateStatus.Item3));
 
-                AssetRepository.UpsertAssetStyle(assetType.ID, model.IconStyle.ForeColor, model.IconStyle.BackColor, model.Name);
+                AssetRepository.UpsertAssetStyle(assetType.ID, model.IconStyle.ForeColor, model.IconStyle.BackColor,model.IconStyle.Icon, model.Name);
 
 
                 //update affected display values
