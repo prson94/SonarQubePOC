@@ -40,6 +40,11 @@ namespace d360.core.entities.SurveyModels
         public List<SurveyApiModel> items { get; set; } = new List<SurveyApiModel>();
     }
 
+    public class SurveyAPIDeleteResultsResponseModel
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; }
+    }
 
 
     public class QuestionDescriptive

@@ -287,6 +287,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
 
 
+
         this.populateDiagram();
     }
 
@@ -668,15 +669,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private ObjectDoubleClicked(e: any) {
-        var obj = e.diagram.selection.first().data;
-
-        if (obj != null) {
-            if (obj.diagramObjectType == DiagramObjectType.Node) {
-                //this.assetUid = obj.;
-
-                this.populateDiagram();
-            }
-        }
     }
 
     //#endregion
@@ -1112,7 +1104,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 go.TextBlock,
                                 {
                                     alignment: go.Spot.Left,
-                                    editable: true,
+                                    editable: false,
                                     margin: 5,
                                     font: "bold 12px sans-serif",
                                     opacity: 0.75,
@@ -1208,7 +1200,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.TextBlock,
                         {
                             alignment: go.Spot.Left,
-                            editable: true,
+                            editable: false,
                             margin: 5,
                             font: "bold 12px sans-serif",
                             opacity: 0.75,
@@ -1283,7 +1275,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.g(
                     go.TextBlock,
                     {
-                        editable: true,
+                        editable: false,
                         font: "bold 12px sans-serif",
                         opacity: 0.75,
                         stroke: "#404040"
