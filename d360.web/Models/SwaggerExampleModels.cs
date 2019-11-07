@@ -43,7 +43,8 @@ namespace d360.web.Models
                     IconStyle = new IconStyleInsert
                     {
                         BackColor= "#000",
-                        ForeColor= "#FFF"
+                        ForeColor= "#FFF",
+                        Icon= String.Empty
                     },
                     ParentUid = Guid.Empty,
                     Notes = String.Empty

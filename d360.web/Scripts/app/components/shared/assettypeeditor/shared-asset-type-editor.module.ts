@@ -19,6 +19,7 @@ import { TilesModule } from '../tiles/tiles.module';
 import { AssetTypeEditorComponent } from './asset-type-editor.component';
 import { SimpleAccordionModule } from '../simple-accordion.part';
 import { AssetTypeEditorUseAsTransformationComponent } from './asset-type-editor-use-as-transformation.component';
+import { IconPickerModule } from '../icon-picker.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -31,7 +32,7 @@ import { AssetTypeEditorUseAsTransformationComponent } from './asset-type-editor
         CoreModule,                
         TilesModule,
         SimpleAccordionModule,        
-
+        IconPickerModule,
         //prime        
         ButtonModule,
         ColorPickerModule,
