@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace d360.core.queue
 {
@@ -20,6 +21,13 @@ namespace d360.core.queue
         /// This value contains the asset type class
         /// </summary>
         public string Group { get; set; }
+
+        /// <summary>
+        /// Asset UID
+        /// </summary>
+        public Guid? Uid { get; set; }
+
+        public Guid? AssetTypeUid { get; set; }
 
         public Dictionary<string, string> Fields { get; set; }
 

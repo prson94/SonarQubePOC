@@ -95,205 +95,208 @@ namespace igx.jobs.indexer
                 var source = new ElasticSearchSource();
                 using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
                 {
-                    IEnumerable<AddToIndexModel> models = null;
-
-                    company.OpenWithRetry(RetryPolicy.DefaultFixed);
-                    List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
-                    bool fusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
-
-                    int SuggestedIndexLimit = SuggestIndexLimit(company);
-                    if(SuggestedIndexLimit > 1000)
-                    {
-                        source.IndexFieldLimit = SuggestedIndexLimit;
-                    }
-
-                    source.ClearIndex(c.CompanyID);
-
-                    LogReindexStart("BusinessAssets", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.BusinessAsset);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("TechnicalAssets", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.TechnicalAsset);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Attributes", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadAttributes(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Models", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadModels(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Policies", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadPolicies(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    if (fusionEnabled)
-                    {
-                        LogReindexStart("Fusion Types", c.CompanyID);
-
-                        try
-                        {
-                            models = LoadFusionTypes(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
-                    }
-
-                    LogReindexStart("Reference Item Types", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadReferenceItemTypes(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Groups", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadGroups(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Rules", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadRules(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    if (fusionEnabled)
-                    {
-                        LogReindexStart("FusionAttributes", c.CompanyID);
-
-                        try
-                        {
-                            models = LoadFusionAttributes(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
-                    }
-
-                    LogReindexStart("Artifact Synonyms", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadArtifactSynonyms(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Custom Synonyms", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadCustomSynonyms(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Users", c.CompanyID);
-
-                    var users = new List<AddToIndexModel>();
-
-                    #region Company Users
-
-                    var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
-
-                    users = company.Query(sql).ToList().Select(u => new AddToIndexModel
-                    {
-                        Group = "Resource",
-                        CompanyID = c.CompanyID,
-                        Type = "User",
-                        ID = u.ResourceID,
-                        RelativeUrl = $"#/resources/{u.ResourceID}",
-                        Fields = new Dictionary<string, string>() {
-                                    { "Name", $"{u.FirstName} {u.LastName}" },
-                                    { "Type", "User" },
-                                    { "Email", u.Email },
-                                    { "Username", u.Username }
-                                }
-                    }).ToList();
-
-                    source.AddToIndex(users);
-
-                    #endregion
-
-                    LogCompanyReindexComplete(c.CompanyID);
-
+                    ProcessCompany(source, company, c);
                 }
             }
             catch (Exception ex)
             {
                 CoreFunction.AITrackException(functionName, ex, c.CompanyID);
             }
+        }
+
+        public static void ProcessCompany(ElasticSearchSource source, SqlConnection company, ReindexModel c)
+        {
+            IEnumerable<AddToIndexModel> models = null;
+
+            company.OpenWithRetry(RetryPolicy.DefaultFixed);
+            List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
+            bool fusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
+
+            int SuggestedIndexLimit = SuggestIndexLimit(company);
+            if (SuggestedIndexLimit > 1000)
+            {
+                source.IndexFieldLimit = SuggestedIndexLimit;
+            }
+
+            source.ClearIndex(c.CompanyID);
+
+            LogReindexStart("BusinessAssets", c.CompanyID);
+
+            try
+            {
+                models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.BusinessAsset);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("TechnicalAssets", c.CompanyID);
+
+            try
+            {
+                models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.TechnicalAsset);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Attributes", c.CompanyID);
+
+            try
+            {
+                models = LoadAttributes(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Models", c.CompanyID);
+
+            try
+            {
+                models = LoadModels(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Policies", c.CompanyID);
+
+            try
+            {
+                models = LoadPolicies(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            if (fusionEnabled)
+            {
+                LogReindexStart("Fusion Types", c.CompanyID);
+
+                try
+                {
+                    models = LoadFusionTypes(company, c.CompanyID, source);
+                    source.AddToIndex(models);
+                }
+                catch (Exception ex)
+                {
+                    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                }
+            }
+
+            LogReindexStart("Reference Item Types", c.CompanyID);
+
+            try
+            {
+                models = LoadReferenceItemTypes(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Groups", c.CompanyID);
+
+            try
+            {
+                models = LoadGroups(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Rules", c.CompanyID);
+
+            try
+            {
+                models = LoadRules(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            if (fusionEnabled)
+            {
+                LogReindexStart("FusionAttributes", c.CompanyID);
+
+                try
+                {
+                    models = LoadFusionAttributes(company, c.CompanyID, source);
+                    source.AddToIndex(models);
+                }
+                catch (Exception ex)
+                {
+                    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                }
+            }
+
+            LogReindexStart("Artifact Synonyms", c.CompanyID);
+
+            try
+            {
+                models = LoadArtifactSynonyms(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Custom Synonyms", c.CompanyID);
+
+            try
+            {
+                models = LoadCustomSynonyms(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Users", c.CompanyID);
+
+            var users = new List<AddToIndexModel>();
+
+            #region Company Users
+
+            var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
+
+            users = company.Query(sql).ToList().Select(u => new AddToIndexModel
+            {
+                Group = "Resource",
+                CompanyID = c.CompanyID,
+                Type = "User",
+                ID = u.ResourceID,
+                RelativeUrl = $"#/resources/{u.ResourceID}",
+                Fields = new Dictionary<string, string>() {
+                                    { "Name", $"{u.FirstName} {u.LastName}" },
+                                    { "Email", u.Email },
+                                    { "Username", u.Username }
+                                }
+            }).ToList();
+
+            source.AddToIndex(users);
+
+            #endregion
+
+            LogCompanyReindexComplete(c.CompanyID);
         }
 
         private static void LogCompanyReindexComplete(int companyID)
@@ -435,12 +438,11 @@ from
             {
                 var item = new AddToIndexModel { Group = "FusionAttributes",
                     CompanyID = companyID,
-                    Type = a.FusionAttributeTypeName,
+                    Type = $"{a.FusionName} {a.FusionAttributeTypeName}",
                     ID = a.ID,                    
                     RelativeUrl = $"/fusion/details/FusionAttribute/{a.ID}/{Uri.EscapeDataString(a.Name)}",
                     Fields = new Dictionary<string, string>() {
-                        { "Name", a.Name },
-                        { "Type", $"{a.FusionName} {a.FusionAttributeTypeName}" }
+                        { "Name", a.Name }
                     }
                 };                
 
@@ -473,14 +475,13 @@ from
                     Group = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = "Rule",
+                    Type = o.RuleType,
                     RelativeUrl = o.Url,
+                    Uid = o.Uid,
+                    AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
-                        { "Type", o.RuleType },
-                        { "Description", o.Description },
-                        { "Uid", o.Uid.ToString() },
-                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
+                        { "Description", o.Description }
                     }
                 };
             });
@@ -502,7 +503,6 @@ from
                     RelativeUrl = $"/groups/{o.ID}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
-                        { "Type", sType },
                         { "Description", o.Description }
                     }
                 };
@@ -530,12 +530,10 @@ from
                     ID = o.ID,
                     Type = "Reference List",
                     RelativeUrl = $"/reference/{o.ID}",
+                    AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
-                        { "Type", "Reference List" },
-                        { "Description", o.Description },
-                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
-
+                        { "Description", o.Description }
                     }
                 };
             });
@@ -569,12 +567,11 @@ from
                     ID = o.ID,
                     Type = o.PolicyType,
                     RelativeUrl = o.Url,
+                    Uid = o.Uid,
+                    AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
-                        { "Type", o.PolicyType },
-                        { "TextPath", o.TextPath ?? "" },
-                        { "Uid", o.Uid.ToString() },
-                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
+                        { "TextPath", o.TextPath ?? "" }
                     }
                 };
             });
@@ -611,14 +608,13 @@ where
                     ItemUniqueID = o.ItemUniqueID,
                     Type = o.TypeName,
                     RelativeUrl = $"/artifact/{o.TypeID}/{o.ID}",
+                    Uid = o.Uid,
+                    AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.DisplayValue },
-                        { "Type", o.TypeName },
-                        { "Uid", o.Uid.ToString() },
                         { "Description", "" },
                         { "Status", "Active" },
-                        { "Taxonomy", "" },
-                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
+                        { "Taxonomy", "" }
                     }
                 };
             });
@@ -643,8 +639,7 @@ from	AttributeDetail AD
                     Type = o.Name,
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
-                        { "Name", o.FormattedValue },
-                        { "Type", o.Name }
+                        { "Name", o.FormattedValue }
                     }
                 };
             });
@@ -677,13 +672,12 @@ WHERE	T.Object = 'TaxonomyType'
                     ID = o.ID,
                     Type = o.TypeName,
                     RelativeUrl = $"/model/{o.TypeID};hierarchyId={o.ID}",
+                    Uid = o.Uid,
+                    AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.DisplayValue },
-                        { "Type", o.TypeName },
-                        { "Uid", o.Uid.ToString() },
                         { "Description", "" },
-                        { "TextPath", o.DisplayValue ?? "" },
-                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
+                        { "TextPath", o.DisplayValue ?? "" }
                     }
                 };
             });
@@ -713,7 +707,6 @@ from    fusion f
                     RelativeUrl = $"/fusion/{o.ID}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.FusionName },
-                        { "Type", o.FusionTypeName },
                         { "Description", o.FusionDescription }
                     }
                 };
@@ -748,9 +741,9 @@ from    fusion f
                 {
                     item.Fields[f.Name] = f.FormattedValue;
                 }
-                if(item.Fields.ContainsKey("Uid"))
+                if(item.Uid.HasValue && item.Uid != Guid.Empty)
                 {
-                    item.Tags = tags.Where(i => i.AssetUID == Guid.Parse(item.Fields["Uid"])).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
+                    item.Tags = tags.Where(i => i.AssetUID == item.Uid).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
                 }
 
                 yield return item;

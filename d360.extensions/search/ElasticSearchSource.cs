@@ -295,7 +295,21 @@ namespace d360.extensions.search
                     sb.Append(",\"d3sGroup\":\"");
                     sb.Append(item.Group);
                     sb.Append("\"");
-
+                    sb.Append(",\"Type\":\"");
+                    sb.Append(item.Type);
+                    sb.Append("\"");
+                    if (item.Uid.HasValue && item.Uid != Guid.Empty)
+                    {
+                        sb.Append(",\"Uid\":\"");
+                        sb.Append(item.Uid.ToString());
+                        sb.Append("\"");
+                    }
+                    if (item.AssetTypeUid.HasValue && item.AssetTypeUid != Guid.Empty)
+                    {
+                        sb.Append(",\"AssetTypeUid\":\"");
+                        sb.Append(item.AssetTypeUid.ToString());
+                        sb.Append("\"");
+                    }
                     if (item.Fields.Any())
                         sb.Append(",");
 

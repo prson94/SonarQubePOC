@@ -110,10 +110,14 @@ namespace igx.jobs.databasetaskprocessor
                                 // check if this object requires to go into elastic search
                                 if (!ShouldItemBeIndexedForElasticSearch(o)) return string.Empty;
 
-                                var group = AssetTypeClass.Generic.ToString();
                                 ObjectDetail detail = null;
-                                Dictionary<string, string> fields = new Dictionary<string, string>();
-                                Dictionary<string, string> tags = new Dictionary<string, string>();
+                                IndexObjectModel indexObject = new IndexObjectModel {
+                                    CompanyID = c.CompanyID,
+                                    Fields = new Dictionary<string, string>(),
+                                    Group = AssetTypeClass.Generic.ToString(),
+                                    ID = oid,
+                                    Tags = new Dictionary<string, string>()
+                                };
 
                                 #region Load Info for Object
 
@@ -125,10 +129,11 @@ namespace igx.jobs.databasetaskprocessor
                                 );
 
                                 if (fldInfo != null)
-                                    fields = fldInfo.ToDictionary(k => k.Name, v => v.FormattedValue);
+                                    indexObject.Fields = fldInfo.ToDictionary(k => k.Name, v => v.FormattedValue);
 
-                                var itemUrl = detail != null ? detail.Url : "";
-                                var itemTypeName = detail != null ? detail.TypeName : "";
+                                indexObject.RelativeUrl = detail != null ? detail.Url : "";
+                                indexObject.Type = detail != null ? detail.TypeName : "";
+
                                 var itemName = detail != null ? detail.Name : "";
                                 var itemParentType = detail != null ? detail.ParentType : "";
                                 var itemParentId = detail != null ? (detail.ParentID ?? 0) : 0;
@@ -137,40 +142,39 @@ namespace igx.jobs.databasetaskprocessor
 
                                 if (detail != null)
                                 {
-                                    group = detail.Class.ToString();
+                                    indexObject.Group = detail.Class.ToString();
 
-                                    if (fields.ContainsKey("Name")) fields["Name"] = detail.Name;
-                                    else fields.Add("Name", detail.Name);
+                                    if (indexObject.Fields.ContainsKey("Name")) indexObject.Fields["Name"] = detail.Name;
+                                    else indexObject.Fields.Add("Name", detail.Name);
 
                                     if (detail.AssetTypeUid.HasValue) {
-                                        fields.Add("AssetTypeUid", detail.AssetTypeUid.Value.ToString());
+                                        indexObject.AssetTypeUid = detail.AssetTypeUid.Value;
                                     }
 
                                     if (o == "Synonym")
                                     {
-                                        fields.Add("SynonymFor", detail.TextPath);
-                                        fields.Add("SynonymForObject", detail.ParentType);
-                                        fields.Add("SynonymForObjectType", detail.Description);
+                                        indexObject.Fields.Add("SynonymFor", detail.TextPath);
+                                        indexObject.Fields.Add("SynonymForObject", detail.ParentType);
+                                        indexObject.Fields.Add("SynonymForObjectType", detail.Description);
                                     }
                                     else
                                     {
                                         if (!string.IsNullOrEmpty(detail.Description))
                                         {
-                                            if (fields.ContainsKey("Description")) fields["Description"] = detail.Description;
-                                            else fields.Add("Description", detail.Description);
+                                            if (indexObject.Fields.ContainsKey("Description")) indexObject.Fields["Description"] = detail.Description;
+                                            else indexObject.Fields.Add("Description", detail.Description);
                                         }
 
-                                        if (fields.ContainsKey("TextPath")) fields["TextPath"] = detail.TextPath;
-                                        else fields.Add("TextPath", detail.TextPath);
+                                        if (indexObject.Fields.ContainsKey("TextPath")) indexObject.Fields["TextPath"] = detail.TextPath;
+                                        else indexObject.Fields.Add("TextPath", detail.TextPath);
 
-                                        if (fields.ContainsKey("Type")) fields["Type"] = detail.TypeName;
-                                        else fields.Add("Type", detail.TypeName);
-
-                                        if (fields.ContainsKey("Uid")) fields["Uid"] = detail.UID.ToString();
-                                        else fields.Add("Uid", detail.UID.ToString());
+                                        indexObject.Type = detail.TypeName;
+                                        indexObject.Uid = detail.UID;
                                     }
 
-                                    tags = companyConnection.Query<TagSqlModel>("SELECT t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID WHERE at.AssetID = @i", new {i = assetId}).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
+                                    indexObject.Tags = companyConnection
+                                        .Query<TagSqlModel>("SELECT t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID WHERE at.AssetID = @i", new {i = assetId})
+                                        .ToDictionary(x => x.TagUID.ToString(), x => x.Value);
                                 }
                                 else if ((detail == null) && (string.Compare(o, "Synonym", true) == 0))
                                 {
@@ -198,16 +202,15 @@ namespace igx.jobs.databasetaskprocessor
 
                                         var nymDetail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = nymRecord.SynonymForObject, i = nymRecord.SynonymForObjectID }).SingleOrDefault();
 
-
-                                        fields.Add("NymType", nymRecord.PredicateName);
-                                        fields.Add("Name", nymRecord.Synonym);
-                                        fields.Add("SynonymFor", nymRecord.SynonymFor);
-                                        fields.Add("SynonymForObject", nymRecord.SynonymForObject);
-                                        fields.Add("SynonymForObjectType", nymRecord.SynonymForObjectType);
+                                        indexObject.Fields.Add("NymType", nymRecord.PredicateName);
+                                        indexObject.Fields.Add("Name", nymRecord.Synonym);
+                                        indexObject.Fields.Add("SynonymFor", nymRecord.SynonymFor);
+                                        indexObject.Fields.Add("SynonymForObject", nymRecord.SynonymForObject);
+                                        indexObject.Fields.Add("SynonymForObjectType", nymRecord.SynonymForObjectType);
 
                                         itemParentId = nymRecord.SynonymForObjectID;
                                         itemParentType = nymRecord.PredicateName;
-                                        itemUrl = nymDetail.Url;
+                                        indexObject.RelativeUrl = nymDetail.Url;
                                     }
                                 }
 
@@ -216,7 +219,8 @@ namespace igx.jobs.databasetaskprocessor
                                 switch (a)
                                 {
                                     case "A":   //Add
-                                        var add = new AddToIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = group, ID = oid, RelativeUrl = itemUrl, To = QueueAction.AddToIndex, Type = itemTypeName, Tags = tags };
+                                        AddToIndexModel add = new AddToIndexModel(indexObject);
+
                                         if (o == "Synonym")
                                         {
                                             add.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
@@ -228,7 +232,8 @@ namespace igx.jobs.databasetaskprocessor
                                         indexCollectionModel.Adds.Add(add);
                                         break;
                                     case "U":   //Update
-                                        var update = new UpdateInIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = group, ID = oid, RelativeUrl = itemUrl, To = QueueAction.UpdateInIndex, Type = itemTypeName, Tags = tags };
+                                        UpdateInIndexModel update = new UpdateInIndexModel(indexObject);
+
                                         if (o == "Synonym")
                                         {
                                             update.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
@@ -240,7 +245,9 @@ namespace igx.jobs.databasetaskprocessor
                                         indexCollectionModel.Updates.Add(update);
                                         break;
                                     case "D":   //Delete
-                                        var delete = new RemoveFromIndexModel { CompanyID = c.CompanyID, Fields = fields, Group = group, ID = oid, RelativeUrl = "#", To = QueueAction.RemoveFromIndex }; //, Type = detail.TypeName                                
+                                        RemoveFromIndexModel delete = new RemoveFromIndexModel(indexObject);
+                                        indexObject.RelativeUrl = "#";
+
                                         if (o == "Artifact" && givenAssetId > 0) delete.ItemUniqueID = givenAssetId.ToString();
                                         if (o == "Artifact" && assetId > 0) delete.ItemUniqueID = assetId.ToString();
                                         indexCollectionModel.Deletes.Add(delete);
