@@ -275,7 +275,8 @@ namespace d360.web.Controllers
                             IconStyle = new IconStyleInsert()
                             {
                                 ForeColor = ((style != null) ? style.IconForeColor : "#FFF"),
-                                BackColor = ((style != null) ? style.IconBackColor : "#000")
+                                BackColor = ((style != null) ? style.IconBackColor : "#000"),
+                                Icon = ((style != null) ? style.Icon : null)
                             },
                             Hierarchy = new HierarchyInsert()
                             {
@@ -380,7 +381,8 @@ namespace d360.web.Controllers
                             IconStyle = new IconStyleInsert()
                             {
                                 BackColor = "#000",
-                                ForeColor = "#FFF"
+                                ForeColor = "#FFF",
+                                Icon =null
                             },
                             Hierarchy = new HierarchyInsert()
                             {

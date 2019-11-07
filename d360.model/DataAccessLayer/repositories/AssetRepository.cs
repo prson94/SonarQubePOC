@@ -998,7 +998,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return CompanyContext.Filter<ApiExecution>(i => i.ExecutionID == executionUid).SingleOrDefault();
         }
 
-        public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string objectName = "Tx")
+        public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor,string icon, string objectName = "Tx")
         {
             var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
             bool add = (style == null);
@@ -1022,7 +1022,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     ID = assetTypeId,
                     IconBackColor = backColor,
                     IconForeColor = foreColor,
-                    IconText = iconText
+                    IconText = iconText,
+                    Icon = icon
                 };
                 CompanyContext.Add(style);
             }
@@ -1031,6 +1032,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 style.IconBackColor = backColor;
                 style.IconForeColor = foreColor;
                 style.IconText = iconText;
+                style.Icon = icon;
                 CompanyContext.Update(style);
             }
 
