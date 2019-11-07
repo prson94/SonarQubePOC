@@ -93,7 +93,7 @@ namespace d360.model.DataAccessLayer
                         	U.uid as UserUid,
                         	S.CreatedOn,
                         	(select 
-                        			QT.Uid,
+                        			distinct QT.Uid,
                         			Q.Comment, 
                         			(select QTO.Name, QTO.Value from QuestionTypeOption QTO 
                         				inner join QuestionOption QO ON Q.ID = QO.QuestionID
