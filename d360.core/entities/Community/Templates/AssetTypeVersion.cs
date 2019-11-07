@@ -3,10 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.core.entities.Community.Templates
 {
@@ -25,31 +22,31 @@ namespace d360.core.entities.Community.Templates
         public bool AutoDisplayDescription { get; set; }
         public bool UseAsTransformation { get; set; }
 
-        [IgnoreDataMember, Column("Fields")]
-        protected string FieldsJson { get; set; }
+        [IgnoreDataMember]
+        protected string Fields { get; set; }
 
         [DataMember, NotMapped]
-        public List<FieldTypeApiViewModel> Fields
+        public List<FieldTypeApiEditModel> Field_Items
         {
             get
             {
-                return JsonConvert.DeserializeObject<List<FieldTypeApiViewModel>>(string.IsNullOrEmpty(FieldsJson) ? "[]" : FieldsJson);
+                return JsonConvert.DeserializeObject<List<FieldTypeApiEditModel>>(string.IsNullOrEmpty(Fields) ? "[]" : Fields);
             }
             set
             {
-                JsonConvert.SerializeObject(value as List<FieldTypeApiViewModel>);
+                Fields = JsonConvert.SerializeObject(value);
             }
         }
 
-        [IgnoreDataMember, Column("Levels")]
-        protected string LevelsJson { get; set; }
+        [IgnoreDataMember]
+        protected string Levels { get; set; }
 
         [DataMember, NotMapped]
-        public List<AssetTypeVersionLevel> Levels
+        public List<AssetTypeVersionLevel> Level_Items
         {
             get
             {
-                return JsonConvert.DeserializeObject<List<AssetTypeVersionLevel>>(string.IsNullOrEmpty(LevelsJson) ? "[]" : LevelsJson);
+                return JsonConvert.DeserializeObject<List<AssetTypeVersionLevel>>(string.IsNullOrEmpty(Levels) ? "[]" : Levels);
             }
             set
             {

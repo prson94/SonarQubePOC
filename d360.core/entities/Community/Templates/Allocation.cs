@@ -21,35 +21,35 @@ namespace d360.core.entities.Community.Templates
         [DataMember]
         public Guid PackageVersionUid { get; set; }
 
-        [IgnoreDataMember, Column("AssetTypeVersions")]
-        protected string AssetTypeVersionsJson { get; set; }
+        [IgnoreDataMember]
+        protected string AssetTypeVersions { get; set; }
 
         [DataMember, NotMapped]
-        public List<Guid> AssetTypeVersions
+        public List<Guid> AssetTypeVersions_Items
         {
             get
             {
-                return JsonConvert.DeserializeObject<List<Guid>>(string.IsNullOrEmpty(AssetTypeVersionsJson) ? "[]" : AssetTypeVersionsJson);
+                return JsonConvert.DeserializeObject<List<Guid>>(string.IsNullOrEmpty(AssetTypeVersions) ? "[]" : AssetTypeVersions);
             }
             set
             {
-                JsonConvert.SerializeObject(value as List<Guid>);
+                AssetTypeVersions = JsonConvert.SerializeObject(value);
             }
         }
 
-        [IgnoreDataMember, Column("IntersectTypes")]
-        protected string IntersectTypesJson { get; set; }
+        [IgnoreDataMember]
+        protected string IntersectTypes { get; set; }
 
         [DataMember, NotMapped]
-        public List<Guid> IntersectTypes
+        public List<Guid> IntersectTypes_Items
         {
             get
             {
-                return JsonConvert.DeserializeObject<List<Guid>>(string.IsNullOrEmpty(IntersectTypesJson) ? "[]" : IntersectTypesJson);
+                return JsonConvert.DeserializeObject<List<Guid>>(string.IsNullOrEmpty(IntersectTypes) ? "[]" : IntersectTypes);
             }
             set
             {
-                JsonConvert.SerializeObject(value as List<Guid>);
+                IntersectTypes = JsonConvert.SerializeObject(value);
             }
         }
 

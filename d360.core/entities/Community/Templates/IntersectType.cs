@@ -3,10 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace d360.core.entities.Community.Templates
 {
@@ -20,7 +17,13 @@ namespace d360.core.entities.Community.Templates
         public Guid SubjectVersionUid { get; set; }
 
         [DataMember]
+        public Cardinality SubjectCardinality { get; set; }
+
+        [DataMember]
         public Guid ObjectVersionUid { get; set; }
+
+        [DataMember]
+        public Cardinality ObjectCardinality { get; set; }
 
         [DataMember]
         public bool IsSystem { get; set; }
@@ -28,19 +31,19 @@ namespace d360.core.entities.Community.Templates
         [DataMember]
         public State State { get; set; }
 
-        [IgnoreDataMember, Column("Fields")]
-        protected string FieldsJson { get; set; }
+        [IgnoreDataMember]
+        protected string Fields { get; set; }
 
         [DataMember, NotMapped]
-        public List<FieldTypeApiViewModel> Fields
+        public List<FieldTypeApiEditModel> Field_Items
         {
             get
             {
-                return JsonConvert.DeserializeObject<List<FieldTypeApiViewModel>>(string.IsNullOrEmpty(FieldsJson) ? "[]" : FieldsJson);
+                return JsonConvert.DeserializeObject<List<FieldTypeApiEditModel>>(string.IsNullOrEmpty(Fields) ? "[]" : Fields);
             }
             set
             {
-                JsonConvert.SerializeObject(value as List<FieldTypeApiViewModel>);
+                Fields = JsonConvert.SerializeObject(value);
             }
         }
     }
