@@ -58,9 +58,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly fontContextMenu: string = "12px 'Source Sans Pro'";
     private readonly fontContextMenuShowDetails: string = "bold 12px 'Source Sans Pro'";
     private readonly fontRelationBadge: string = "8pt 'Source Sans Pro'";
+    private readonly fontRelationBadgeColor: string = "#404040";
+    private readonly fontRelationBadgeCountColor: string = "white";
     private readonly fontLabelIcon: string = "12px FontAwesome";
     private readonly fontLabel: string = "12px 'Source Sans Pro'";
-    private readonly fontLink: string = "9pt 'Source Sans Pro'";
+    private readonly fontLabelColor: string = "#404040";
+    private readonly fontLink: string = "9pt 'Source Sans Pro'";    
+    private readonly fontLinkColor: string = "#000"
 
     constructor(
         private myElement: ElementRef,
@@ -944,7 +948,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Left,
                             editable: false,
                             font: this.fontRelationBadge,
-                            stroke: "#404040"
+                            stroke: this.fontRelationBadgeColor
                         },
                         new go.Binding("text", "predicate")
                     ),
@@ -961,7 +965,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Center,
                             editable: false,
                             font: this.fontRelationBadge,
-                            stroke: "white"
+                            stroke: this.fontRelationBadgeCountColor
                         },
                         new go.Binding("text", "count")
                     ),
@@ -1108,7 +1112,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     alignment: go.Spot.Center,
                                     editable: false,
                                     font: this.fontLabelIcon,
-                                    stroke: "#404040"
+                                    stroke: this.fontLabelColor
                                 },
                                 new go.Binding("text", "icon")
                             ),
@@ -1119,7 +1123,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     editable: false,
                                     margin: 5,
                                     font: this.fontLabel,                                    
-                                    stroke: "#404040"
+                                    stroke: this.fontLabelColor
                                 },
                                 new go.Binding("text", "text").makeTwoWay()
                             )
@@ -1203,7 +1207,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Center,
                             editable: false,
                             font: this.fontLabelIcon,
-                            stroke: "#404040"
+                            stroke: this.fontLabelColor
                         },
                         new go.Binding("text", "icon")
                     ),
@@ -1213,8 +1217,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Left,
                             editable: false,
                             margin: 5,
-                            font: this.fontLabel,                            
-                            stroke: "#404040"
+                            font: this.fontLabel,
+                            stroke: this.fontLabelColor
                         },
                         new go.Binding("text", "text").makeTwoWay()
                     )
@@ -1251,7 +1255,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         alignment: go.Spot.Center,
                         editable: false,
                         font: this.fontLabelIcon,
-                        stroke: "#404040"
+                        stroke: this.fontLabelColor
                     },
                     new go.Binding("text", "icon")
                 ),
@@ -1264,8 +1268,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     go.TextBlock,
                     {
                         editable: false,
-                        font: this.fontLabel,                        
-                        stroke: "#404040",
+                        font: this.fontLabel,
+                        stroke: this.fontLabelColor,
                         background: "#F5C2FF",
                         visible: false,
 
@@ -1285,8 +1289,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     go.TextBlock,
                     {
                         editable: false,
-                        font: this.fontLabel,                        
-                        stroke: "#404040"
+                        font: this.fontLabel,
+                        stroke: this.fontLabelColor
                     },
                     new go.Binding("text", "text").makeTwoWay()
                 )
@@ -1316,7 +1320,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         alignment: go.Spot.Center,
                         editable: false,
                         font: this.fontLabelIcon,
-                        stroke: "#404040",
+                        stroke: this.fontLabelColor,
                         text: "\uf067"
                     }
                 )
@@ -1346,7 +1350,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         alignment: go.Spot.Center,
                         editable: false,
                         font: this.fontLabelIcon,
-                        stroke: "#404040",
+                        stroke: this.fontLabelColor,
                         text: "\uf067"
                     }
                 )
@@ -1394,7 +1398,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     })
                 ), // the link shape
                 this.g(go.TextBlock, {
-                    textAlign: "center", font: this.fontLink , stroke: "#000", margin: 4
+                    textAlign: "center", font: this.fontLink , stroke: this.fontLinkColor, margin: 4
                 },
                     // the label
                     new go.Binding("text", "text").makeTwoWay()
