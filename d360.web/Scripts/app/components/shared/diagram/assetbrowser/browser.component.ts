@@ -1012,7 +1012,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
             initialPosition: new go.Point(125, 125),
-            layout: this.g(go.LayeredDigraphLayout, { layerSpacing: 150, columnSpacing: 25, setsPortSpots: false }), //direction: 270, 
+            layout: this.g(go.LayeredDigraphLayout, { layerSpacing: 150, columnSpacing: 50, setsPortSpots: false }), //direction: 270, 
             //layout: this.g(AssetBrowserLayout, {}),//layout: this.g(go.LayeredDigraphLayout, {direction: 0, columnSpacing: 50, layerSpacing: 50}),
             "undoManager.isEnabled": true,
             "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" },
@@ -1390,7 +1390,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     })
                 ), // the link shape
                 this.g(go.TextBlock, {
-                    textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
+                    textAlign: "center",
+                    font: "9pt helvetica, arial, sans-serif",
+                    stroke: "#000",
+                    margin: 4,
+                    overflow: go.TextBlock.OverflowEllipsis,
+                    wrap: go.TextBlock.WrapFit,
+                    maxSize: new go.Size(100, 70)
                 },
                     // the label
                     new go.Binding("text", "text").makeTwoWay()
