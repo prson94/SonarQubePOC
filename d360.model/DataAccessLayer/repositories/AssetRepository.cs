@@ -367,10 +367,19 @@ namespace d360.model.DataAccessLayer
                             prefilterRelationshipStatement += "inner join IntersectType I on I.Subject = T.Object and I.SubjectID = T.ObjectID";
                             break;
                     }
-                    if (filter.AsSideOfRelationship.PredicateType.HasValue)
+                    if (filter.AsSideOfRelationship.PredicateType.HasValue || filter.AsSideOfRelationship.PredicateUid.HasValue)
                     {
-                        prefilterRelationshipStatement += $" inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = @pt{i}";
-                        dbArgs.Add($"@pt{i}", (int)filter.AsSideOfRelationship.PredicateType.Value);
+                        prefilterRelationshipStatement += $" inner join [Predicate] P on P.ID = I.PredicateID";
+                        if (filter.AsSideOfRelationship.PredicateType.HasValue)
+                        {
+                            prefilterRelationshipStatement += $" and P.[Type] = @pt{i}";
+                            dbArgs.Add($"@pt{i}", (int)filter.AsSideOfRelationship.PredicateType.Value);
+                        }
+                        if (filter.AsSideOfRelationship.PredicateUid.HasValue)
+                        {
+                            prefilterRelationshipStatement += $" and P.[Uid] = @puid{i}";
+                            dbArgs.Add($"@puid{i}", filter.AsSideOfRelationship.PredicateUid.Value);
+                        }
                     }
                 }
                 if (filter.Class.HasValue)
