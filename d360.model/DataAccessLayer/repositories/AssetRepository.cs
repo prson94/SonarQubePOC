@@ -137,6 +137,7 @@ namespace d360.model.DataAccessLayer
             dbArgs.Add("@uid", uid.ToString());
             fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID and T.UID = @uid");
 
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
             List<string> countJoins = new List<string>(fieldJoins);
 
             if (includeRelationships)
@@ -260,7 +261,6 @@ namespace d360.model.DataAccessLayer
                 countJoins.Add(joinCountSql);
             }
 
-            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
             if (includeRelationships)
                 whereStatements.Add("R.Relationships is not null");
