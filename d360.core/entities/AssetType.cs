@@ -76,24 +76,32 @@ namespace d360.core.entities
         [DataMember]
         public string Name { get; set; }
 
-        [DataMember]
-        public string Description { get; set; }
-
         AssetTypeClass _ClassID;
-        public AssetTypeClass ClassID {
+        public AssetTypeClass ClassID
+        {
             get { return _ClassID; }
-            set {
+            set
+            {
                 _ClassID = value;
                 this.Class = _ClassID.AsInfoModel();
             }
         }
-
         [DataMember]
         public AssetTypeClassInfo Class { get; set; }
-
+        [DataMember]
+        public string Description { get; set; }
+        [DataMember]
+        public bool Hierarchical { get; set; }
+        [DataMember]
+        public int HierarchyMaximumDepth { get; set; }
+        [DataMember]
+        public string DisplayFormat { get; set; }
         [DataMember]
         public string Notes { get; set; }
-
+        [DataMember]
+        public bool AutoDisplayDescription { get; set; }
+        [DataMember]
+        public bool UseAsTransformation { get; set; }
         [DataMember]
         public string Path { get; set; }
     }

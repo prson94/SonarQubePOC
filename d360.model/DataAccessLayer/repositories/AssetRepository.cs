@@ -93,12 +93,17 @@ namespace d360.model.DataAccessLayer
             }
 
             var sql = $@"
-                        SELECT      A.[Name]
-                                    ,A.[Description]
+                        SELECT     A.[Name]
+                                    ,ISNULL(A.[Description],'') as Description
                                     ,A.[Class] as ClassID
-                                    ,A.[Notes]
-                                    ,A.[uid],
-                                    P.[Path]
+                                    ,ISNULL(A.[Notes],'') as Notes
+                                    ,A.[uid]
+									,A.Hierarchical
+									,A.HierarchyMaximumDepth
+									,A.DisplayFormat
+									,A.AutoDisplayDescription
+									,A.UseAsTransformation
+                                    ,P.[Path]
                         FROM        AssetType A
                                     {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
