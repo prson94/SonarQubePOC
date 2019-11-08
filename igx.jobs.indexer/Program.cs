@@ -106,7 +106,7 @@ namespace igx.jobs.indexer
 
         public static void ProcessCompany(ElasticSearchSource source, SqlConnection company, ReindexModel c)
         {
-            IEnumerable<AddToIndexModel> models = null;
+            IEnumerable<IndexObjectModel> models = null;
 
             company.OpenWithRetry(RetryPolicy.DefaultFixed);
             List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
@@ -272,17 +272,17 @@ namespace igx.jobs.indexer
 
             LogReindexStart("Users", c.CompanyID);
 
-            var users = new List<AddToIndexModel>();
+            var users = new List<IndexObjectModel>();
 
             #region Company Users
 
             var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
 
-            users = company.Query(sql).ToList().Select(u => new AddToIndexModel
+            users = company.Query(sql).ToList().Select(u => new IndexObjectModel
             {
-                Group = "Resource",
+                Category = "Resource",
                 CompanyID = c.CompanyID,
-                Type = "User",
+                AssetType = "User",
                 ID = u.ResourceID,
                 RelativeUrl = $"#/resources/{u.ResourceID}",
                 Fields = new Dictionary<string, string>() {
@@ -319,7 +319,7 @@ namespace igx.jobs.indexer
             return Convert.ToInt16(FieldTypeCount * MultiplicationFactor);
         }
 
-        private static IEnumerable<AddToIndexModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"                    	
                 (select	
@@ -363,12 +363,11 @@ namespace igx.jobs.indexer
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = "Synonym",
-                    
+                    Category = "Synonym",
                     CompanyID = companyID,
-                    Type = "Synonym",
+                    AssetType = "Synonym",
                     ItemUniqueID = $"{o.SynonymObjectType}|{o.SynonymObjectID}|{o.SynonymForObjectType}|{o.SynonymForObjectID}",
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
@@ -382,7 +381,7 @@ namespace igx.jobs.indexer
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadCustomSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadCustomSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select 
@@ -403,11 +402,11 @@ from
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = "Synonym",
+                    Category = "Synonym",
                     CompanyID = companyID,
-                    Type = "Synonym",
+                    AssetType = "Synonym",
                     ItemUniqueID = $"custom|{o.PredicateName}|{o.ID}",
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
@@ -421,7 +420,7 @@ from
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadFusionAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadFusionAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"select
 	                        f.ID,
@@ -436,9 +435,11 @@ from
 
             foreach (var a in context.Query(sql, new { compid = companyID }, buffered:false,commandTimeout: _defaultQueryCommandTimeout))
             {
-                var item = new AddToIndexModel { Group = "FusionAttributes",
+                var item = new IndexObjectModel
+                {
+                    Category = "FusionAttributes",
                     CompanyID = companyID,
-                    Type = $"{a.FusionName} {a.FusionAttributeTypeName}",
+                    AssetType = $"{a.FusionName} {a.FusionAttributeTypeName}",
                     ID = a.ID,                    
                     RelativeUrl = $"/fusion/details/FusionAttribute/{a.ID}/{Uri.EscapeDataString(a.Name)}",
                     Fields = new Dictionary<string, string>() {
@@ -450,7 +451,7 @@ from
             }
         }
         
-        private static IEnumerable<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             int assettypeclass = (int)AssetTypeClass.Rule;
             var sql = $@"SELECT
@@ -470,12 +471,12 @@ from
 
             return getData(context, sql, companyID, source, sType, true, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = o.RuleType,
+                    AssetType = o.RuleType,
                     RelativeUrl = o.Url,
                     Uid = o.Uid,
                     AssetTypeUid = o.AssetTypeUid,
@@ -487,19 +488,19 @@ from
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadGroups(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadGroups(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"SELECT [ID],[Name],[Description] FROM [Group]";
 
             var sType = "Group";
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = sType,
+                    AssetType = sType,
                     RelativeUrl = $"/groups/{o.ID}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
@@ -509,7 +510,7 @@ from
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadReferenceItemTypes(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadReferenceItemTypes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             int assettypeclass = (int)AssetTypeClass.Reference;
             var sql = $@"SELECT
@@ -523,12 +524,12 @@ from
             var sType = "Reference";
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = "Reference List",
+                    AssetType = "Reference List",
                     RelativeUrl = $"/reference/{o.ID}",
                     AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
@@ -539,7 +540,7 @@ from
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             int assettypeclass = (int)AssetTypeClass.Policy;
             var sql = $@"SELECT
@@ -560,12 +561,12 @@ from
 
             return getData(context, sql, companyID, source, sType, true, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = o.PolicyType,
+                    AssetType = o.PolicyType,
                     RelativeUrl = o.Url,
                     Uid = o.Uid,
                     AssetTypeUid = o.AssetTypeUid,
@@ -577,7 +578,7 @@ from
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source, AssetTypeClass ArtifactClass)
+        private static IEnumerable<IndexObjectModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source, AssetTypeClass ArtifactClass)
         {
             int assettypeclass = (int)ArtifactClass;
             var sql = $@"
@@ -600,13 +601,13 @@ where
 
             return getData(context, sql, companyID, source, SystemObjects.Artifact.ToString(), true, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
                     ItemUniqueID = o.ItemUniqueID,
-                    Type = o.TypeName,
+                    AssetType = o.TypeName,
                     RelativeUrl = $"/artifact/{o.TypeID}/{o.ID}",
                     Uid = o.Uid,
                     AssetTypeUid = o.AssetTypeUid,
@@ -620,7 +621,7 @@ where
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select	AD.ID, AD.Name, AD.FormattedValue, OD.Url 
@@ -631,12 +632,12 @@ from	AttributeDetail AD
 
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = o.Name,
+                    AssetType = o.Name,
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.FormattedValue }
@@ -645,7 +646,7 @@ from	AttributeDetail AD
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 SELECT	A.ObjectID as ID,
@@ -665,12 +666,12 @@ WHERE	T.Object = 'TaxonomyType'
 
             return getData(context, sql, companyID, source, sType, true, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = o.TypeName,
+                    AssetType = o.TypeName,
                     RelativeUrl = $"/model/{o.TypeID};hierarchyId={o.ID}",
                     Uid = o.Uid,
                     AssetTypeUid = o.AssetTypeUid,
@@ -683,7 +684,7 @@ WHERE	T.Object = 'TaxonomyType'
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadFusionTypes(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadFusionTypes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select  f.id as ID,
@@ -698,12 +699,12 @@ from    fusion f
             var sType = SystemObjects.FusionType.ToString();
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = o.FusionTypeName,
+                    AssetType = o.FusionTypeName,
                     RelativeUrl = $"/fusion/{o.ID}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.FusionName },
@@ -713,7 +714,7 @@ from    fusion f
             });
         }
 
-        private static IEnumerable<AddToIndexModel> getData(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, bool loadFields, Func<dynamic, AddToIndexModel> convertToDictionary)
+        private static IEnumerable<IndexObjectModel> getData(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, bool loadFields, Func<dynamic, IndexObjectModel> convertToDictionary)
         {
             if (loadFields)
             {
@@ -723,12 +724,12 @@ from    fusion f
             return getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);            
         }
 
-        private static IEnumerable<AddToIndexModel> getDataWithoutFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, AddToIndexModel> convertToDictionary)
+        private static IEnumerable<IndexObjectModel> getDataWithoutFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, IndexObjectModel> convertToDictionary)
         {
-            return context.Query(sql, commandTimeout: _defaultQueryCommandTimeout, buffered:false).ToList().Select(a => (AddToIndexModel)convertToDictionary(a));
+            return context.Query(sql, commandTimeout: _defaultQueryCommandTimeout, buffered:false).ToList().Select(a => (IndexObjectModel)convertToDictionary(a));
         }
 
-        private static IEnumerable<AddToIndexModel> getDataWithFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, AddToIndexModel> convertToDictionary)
+        private static IEnumerable<IndexObjectModel> getDataWithFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, IndexObjectModel> convertToDictionary)
         {
             var fields = context.Query<FieldSqlModel>(fieldsSql, new { t = type }, commandTimeout: _defaultQueryCommandTimeout).ToList();
             var tags = context.Query<TagSqlModel>(tagsSql, null, commandTimeout: _defaultQueryCommandTimeout).ToList();

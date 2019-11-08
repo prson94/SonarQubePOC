@@ -114,7 +114,7 @@ namespace igx.jobs.databasetaskprocessor
                                 IndexObjectModel indexObject = new IndexObjectModel {
                                     CompanyID = c.CompanyID,
                                     Fields = new Dictionary<string, string>(),
-                                    Group = AssetTypeClass.Generic.ToString(),
+                                    Category = AssetTypeClass.Generic.ToString(),
                                     ID = oid,
                                     Tags = new Dictionary<string, string>()
                                 };
@@ -132,7 +132,7 @@ namespace igx.jobs.databasetaskprocessor
                                     indexObject.Fields = fldInfo.ToDictionary(k => k.Name, v => v.FormattedValue);
 
                                 indexObject.RelativeUrl = detail != null ? detail.Url : "";
-                                indexObject.Type = detail != null ? detail.TypeName : "";
+                                indexObject.AssetType = detail != null ? detail.TypeName : "";
 
                                 var itemName = detail != null ? detail.Name : "";
                                 var itemParentType = detail != null ? detail.ParentType : "";
@@ -142,7 +142,7 @@ namespace igx.jobs.databasetaskprocessor
 
                                 if (detail != null)
                                 {
-                                    indexObject.Group = (o == SystemObjects.Artifact.ToString()) ? detail.Class.ToString() : o;
+                                    indexObject.Category = (o == SystemObjects.Artifact.ToString()) ? detail.Class.ToString() : o;
 
                                     if (indexObject.Fields.ContainsKey("Name")) indexObject.Fields["Name"] = detail.Name;
                                     else indexObject.Fields.Add("Name", detail.Name);
@@ -168,7 +168,7 @@ namespace igx.jobs.databasetaskprocessor
                                         if (indexObject.Fields.ContainsKey("TextPath")) indexObject.Fields["TextPath"] = detail.TextPath;
                                         else indexObject.Fields.Add("TextPath", detail.TextPath);
 
-                                        indexObject.Type = detail.TypeName;
+                                        indexObject.AssetType = detail.TypeName;
                                         indexObject.Uid = detail.UID;
                                     }
 
@@ -219,38 +219,38 @@ namespace igx.jobs.databasetaskprocessor
                                 switch (a)
                                 {
                                     case "A":   //Add
-                                        AddToIndexModel add = new AddToIndexModel(indexObject);
+                                        indexObject.To = QueueAction.AddToIndex;
 
                                         if (o == "Synonym")
                                         {
-                                            add.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
+                                            indexObject.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
                                         }
                                         else if (o == "Artifact" && assetId > 0)
                                         {
-                                            add.ItemUniqueID = assetId.ToString();
+                                            indexObject.ItemUniqueID = assetId.ToString();
                                         }
-                                        indexCollectionModel.Adds.Add(add);
+                                        indexCollectionModel.Adds.Add(indexObject);
                                         break;
                                     case "U":   //Update
-                                        UpdateInIndexModel update = new UpdateInIndexModel(indexObject);
+                                        indexObject.To = QueueAction.UpdateInIndex;
 
                                         if (o == "Synonym")
                                         {
-                                            update.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
+                                            indexObject.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
                                         }
                                         else if (o == "Artifact" && assetId > 0)
                                         {
-                                            update.ItemUniqueID = assetId.ToString();
+                                            indexObject.ItemUniqueID = assetId.ToString();
                                         }
-                                        indexCollectionModel.Updates.Add(update);
+                                        indexCollectionModel.Updates.Add(indexObject);
                                         break;
                                     case "D":   //Delete
-                                        RemoveFromIndexModel delete = new RemoveFromIndexModel(indexObject);
+                                        indexObject.To = QueueAction.RemoveFromIndex;
                                         indexObject.RelativeUrl = "#";
 
-                                        if (o == "Artifact" && givenAssetId > 0) delete.ItemUniqueID = givenAssetId.ToString();
-                                        if (o == "Artifact" && assetId > 0) delete.ItemUniqueID = assetId.ToString();
-                                        indexCollectionModel.Deletes.Add(delete);
+                                        if (o == "Artifact" && givenAssetId > 0) indexObject.ItemUniqueID = givenAssetId.ToString();
+                                        if (o == "Artifact" && assetId > 0) indexObject.ItemUniqueID = assetId.ToString();
+                                        indexCollectionModel.Deletes.Add(indexObject);
                                         break;
                                 }
 
