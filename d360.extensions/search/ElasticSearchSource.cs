@@ -169,13 +169,17 @@ namespace d360.extensions.search
             "            \"type\": \"keyword\"" +
             "          }," +
             "          \"AssetTypeUid\": {" +
-            "            \"type\": \"keyword\"}" +
+            "            \"type\": \"keyword\"" +
+            "          }," +
+            "          \"Url\": {" +
+            "            \"type\": \"keyword\"," +
+            "            \"index\": false" +
             "          }" +
             "        }" +
             "      }" +
             "    }" +
             "  }" +
-            "}";
+            "}}";
 
         protected string SearchServerUrl { get; set; }
 
@@ -230,6 +234,7 @@ namespace d360.extensions.search
                 var db = community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = companyID }).SingleOrDefault();
 
                 SearchServerUrl = db.SearchServer ?? DEFAULT_SEARCH_SERVER;
+                SearchServerUrl = "192.168.33.16:9200";
             }
 
             if (string.IsNullOrEmpty(SearchServerUrl)) throw new Exception("DEV ERROR - NO SEARCH BASE URL SPECIFIED.");
