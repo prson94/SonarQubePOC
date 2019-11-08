@@ -10,16 +10,16 @@ import { BaseComponent } from '../../../shared/base.component';
                                [(ngModel)]="satisfyAll"
                                (ngModelChange)="connectorChange.emit($event)"
                                [value]="true"
-                               style="width: 15px;" />
-                        <div class="FieldName">
+                               style="width: 15px;height:20px;" />
+                        <div class="FieldName" style="display:inline-block;">
                             Satisfy all&nbsp;&nbsp;&nbsp;&nbsp;
                         </div>
                         <input type="radio" name="isAll"
                                [(ngModel)]="satisfyAll"
                                (ngModelChange)="connectorChange.emit($event)"
                                [value]="false"
-                               style="width: 15px;" />
-                        <div class="FieldName">
+                               style="width: 15px;height:20px;" />
+                        <div class="FieldName" style="display:inline-block;">
                             Satisfy any
                         </div>
                     </div>
@@ -63,6 +63,7 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
     @Input() selection;
     @Input() readonly = false;
     @Input() satisfyAll: boolean = true;
+    @Input() hideAllAnyOption: boolean = false;
     @Output() selectionChange = new EventEmitter();
     @Output() addClick = new EventEmitter();
     @Output() removeClick = new EventEmitter();
@@ -80,7 +81,7 @@ export class WorkflowConditionListComponent extends BaseComponent implements OnC
     }
 
     isAllAnyVisible() {
-        return this.conditions.filter(x => x["@FieldTypeID"]).length > 1;
+        return !this.hideAllAnyOption && this.conditions.filter(x => x["@FieldTypeID"]).length > 1;
     }
 
     constructor() {

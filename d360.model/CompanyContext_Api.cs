@@ -270,6 +270,25 @@ where	E.ExecutionID = @executionID;",
             new { executionID }, commandTimeout: timeout);
         }
 
+        private void LogInvalidFusionIDFields(Guid executionID, int timeout = 3600)
+        {
+            Connection.Execute(@"
+update	E
+set		E.Message = 'Invalid FusionID value for this Asset type',
+		E.Success = 0
+from	api.ExecutionAsset E
+	where E.ExecutionID = @executionID and not exists(select F.ID from api.ExecutionField EF
+	inner join api.ExecutionAsset EA on EF.ExecutionID = EA.ExecutionID
+	inner join FusionAttributeType FAT on FAT.ID = EA.ObjectTypeID
+	inner join FusionType FT on FT.ID = FAT.FusionTypeID
+	inner join Fusion F on F.FusionTypeID = FT.ID
+	where EA.ObjectType = 'FusionAttributeType' 
+	and EF.ExecutionID = @executionID
+	and EF.FieldName = 'fusionid'
+	and F.ID = EF.FieldValue)",
+            new { executionID }, commandTimeout: timeout);
+        }
+
         private void LogFieldLookupErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600)
         {
             string targetTable = "api.ExecutionRelationship";
@@ -2917,6 +2936,8 @@ from    api.ExecutionAsset T
                         {
                             LogErrorsWhereChildFusionConfigDifferentFromParent(execution.ExecutionID);
 
+                            LogInvalidFusionIDFields(execution.ExecutionID);
+
                             Connection.Execute($@"
 {keyTableTempCreation}
 
@@ -4340,6 +4361,37 @@ from    [Field] T
             and S.ItemNumber between @beginItemNumber and @endItemNumber
             and S.Success is null;",
             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                #endregion
+
+                                #region Audit
+
+                                var auditSql = @"
+                                insert into reporting.Global_Audit (Object, ObjectID, ObjectName, ResourceID, Date, Action, ActionObject, ActionObjectID, ActionObjectTypeName, ActionObjectName, ActionDescription)
+	                                select	distinct
+			                                A.Object, 
+			                                A.ObjectID,
+			                                SUBSTRING(A.DisplayValue,1,250), 
+			                                @r, 
+			                                @dt, 
+			                                'Deleted', 
+			                                'Intersect',
+			                                I.ID, 
+			                                TName.[Name], 
+			                                SUBSTRING(IName.[Name],1,250), 
+			                                'This relationship has been removed.' 
+	                                from	[Intersect] I
+                                            inner join AssetDetail A on {0}
+                                            cross apply dbo.getIntersectNames(I.ID) IName
+                                            cross apply dbo.getIntersectTypeNames(I.IntersectTypeID) TName
+			                                inner join api.ExecutionDeletedRelationship S on S.IntersectID = I.ID 
+                                                and S.ExecutionID = @executionID 
+                                                and S.ItemNumber between @beginItemNumber and @endItemNumber 
+                                                and S.Success is null;";
+
+                                Connection.Execute(string.Format(auditSql, "A.[Object] = I.[Subject] and A.ObjectID = I.SubjectID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                Connection.Execute(string.Format(auditSql, "A.[Object] = I.[Object] and A.ObjectID = I.ObjectID"), new { execution.ExecutionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
 
                                 #endregion
 

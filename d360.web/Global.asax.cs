@@ -44,7 +44,9 @@ namespace d360.web
             builder.RegisterType<TagRepository>().As<ITagRepository>().InstancePerRequest();
             builder.RegisterType<FieldsRepository>().As<IFieldsRepository>().InstancePerRequest();
             builder.RegisterType<WorkflowRepository>().As<IWorkflowRepository>().InstancePerRequest();
+            builder.RegisterType<ResourceRepository>().As<IResourceRepository>().InstancePerRequest();
             builder.RegisterType<WorkflowApiModelValidator>().As<IWorkflowApiModelValidator>().InstancePerRequest();
+            builder.RegisterType<SurveyApiModelValidator>().As<ISurveyApiModelValidator>().InstancePerRequest();
             builder.RegisterType<IssueRepository>().As<IIssueRepository>().InstancePerRequest();
             builder.RegisterType<RelationshipRepository>().As<IRelationshipRepository>().InstancePerRequest();
             builder.RegisterType<FusionRepository>().As<IFusionRepository>().InstancePerRequest();

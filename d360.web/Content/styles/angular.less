@@ -12,6 +12,7 @@
     url('/fonts/sanspro/source-sans-pro-v13-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
     url('/fonts/sanspro/source-sans-pro-v13-latin-regular.svg#SourceSansPro') format('svg'); /* Legacy iOS */
 }
+
 body {
     background: linear-gradient(#e0e0e0, #f0f0f0);
     min-height: 100vh;
@@ -19,6 +20,7 @@ body {
     font-size: 14px;
     overflow: hidden;
 }
+
 .background-image:before {
     content: "";
     position: absolute;
@@ -1367,7 +1369,7 @@ a.breadcrumb {
 
     &:focus {
         border: 1px solid #54a4da;
-        cursor:text;
+        cursor: text;
     }
 }
 
@@ -1540,6 +1542,7 @@ a.breadcrumb {
         top: 36px !important;
         max-width: 800px !important;
         transform: translateX(-10px) !important;
+        z-index: 500 !important;
     }
 }
 
@@ -1997,7 +2000,7 @@ li.shortcut .shortcut-desc {
     max-height: 2.28em; /* people on IE need to deal without ...*/
     letter-spacing: normal;
     text-align: center;
-    padding: 0 16px;    
+    padding: 0 16px;
     color: #ffffff;
     margin: auto;
     display: block;
@@ -2676,7 +2679,8 @@ modal-overlay .modal-dialog .content {
         display: flex;
         flex-direction: row;
         align-items: center;
-        padding: 15px;        
+        padding: 15px;
+
         .checkbox {
             white-space: nowrap;
         }
@@ -4046,7 +4050,6 @@ button.tab-scroller {
             }
 
             i {
-                padding: 10px;
                 cursor: pointer;
             }
         }
@@ -4154,6 +4157,7 @@ button.tab-scroller {
 
                                 .ui-chkbox {
                                     margin-right: 8px;
+
                                     .ui-chkbox-box {
                                         border-radius: 3px !important;
                                         background-color: white;
@@ -4520,7 +4524,7 @@ a.mid-blue {
             border: solid 1px #b9c0c5;
             background-image: linear-gradient(to bottom, #ffffff, #f9fafb);
 
-            .ui-chkbox-icon{
+            .ui-chkbox-icon {
                 padding-left: 0px !important;
             }
         }
@@ -4772,6 +4776,9 @@ a.mid-blue {
             .fa {
                 color: rgba(0,0,0,0.87) !important;
             }
+            i.fa {
+                padding: 0px !important;
+            }
         }
     }
 
@@ -4779,7 +4786,217 @@ a.mid-blue {
         top: 30px !important;
     }
 
-    i.fa {
-        padding: 0px !important;
+}
+
+.asset-browser {
+    .asset-browser-header {
+        position: relative;
+        background-color: transparent;
+        height: 50px;
+
+        .controls-left {
+            position: absolute;
+            left: 20px;
+            top: 10px;
+            z-index: 50;
+        }
+
+        .controls-right {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            z-index: 50;
+          
+          span {
+            padding: 8px;
+            cursor: pointer;
+          }
+        }
+    }
+
+    .asset-browser-controls-bottom {
+        position: absolute;
+        right: 20px;
+        bottom: 10px;
+        z-index: 50;
+    }
+
+    .asset-browser-window {
+        position: absolute;
+        right: 20px;
+        top: 10px;
+        min-height: 400px;
+        min-width: 400px;
+        z-index: 100;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        background-color: #fff
+    }
+
+    .asset-browser-window-header {
+        background-color: #F0F0F0
+    }
+
+    .asset-browser-window-header-name {
+        float: left;
+        margin: 10px 0 25px 10px;
+        font-size: 1.2em;
+        line-height: 1.5em
+    }
+
+    .asset-browser-window-header-class {
+        float: right;
+        margin: 10px 10px 25px 0;
+        font-size: .9em;
+        color: #666;
+        line-height: 1.5em;
+    }
+
+    .asset-browser-window-tabs {
+        max-width: 400px
+    }
+
+    .asset-browser-window-tabs-header {
+        background-color: #F0F0F0
+    }
+
+    .asset-browser-window-tabs-content {
+        max-height: 500px;
+        overflow-y: auto
+    }
+
+    .asset-browser-window-tabs-content-field {
+        margin-top: 5px;
+        margin-bottom: 15px
+    }
+
+    .asset-browser-window-tabs-content-field-name {
+        color: #666;
+        font-weight: 600;
+    }
+
+    .asset-browser-window-tabs-content-score-low {
+        margin-left: 25px;
+        padding: 3px;
+        color: #ffffff;
+        background-color: #FF7155;
+        border: 1px solid #FF7155;
+        border-radius: 3px;
+    }
+
+    .asset-browser-window-tabs-content-score-medium {
+        margin-left: 25px;
+        padding: 3px;
+        color: #ffffff;
+        background-color: #FFB000;
+        border: 1px solid #FFB000;
+        border-radius: 3px;
+    }
+
+    .asset-browser-window-tabs-content-score-high {
+        margin-left: 25px;
+        padding: 3px;
+        color: #ffffff;
+        background-color: #00853E;
+        border: 1px solid #00853E;
+        border-radius: 3px;
+    }
+
+    button.asset-browser-button {
+        background-color: #F2F2F2;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        margin: 0 3px 0 3px;
+        height: 30px;
+        width: 30px;
+        line-height: 15px;
+        font-size: 15px;
+        color: #333;
+    }
+
+    button.asset-browser-button:active {
+        background-color: #ccc;
+    }
+
+    button.asset-browser-button:hover {
+        background-color: #ddd;
+    }
+
+    .asset-browser-button-group {
+        background-color: #F2F2F2;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        display: inline-block;
+
+        button {
+            height: 30px;
+            width: 30px;
+            line-height: 15px;
+            font-size: 15px;
+            color: #333;
+            background-color: transparent;
+            border: none;
+        }
+
+        button:active {
+            background-color: #ccc;
+        }
+
+        button:hover {
+            background-color: #ddd;
+        }
+
+        button.selected {
+            background-color: #DDDDDD;
+        }
+
+        input[type="text"] {
+            border: none;
+            height: 25px;
+            padding: 3px;
+        }
+
+        button.light {
+            color: #999;
+        }
+
+        &.asset-browser-search {
+            input {
+                height: 30px;
+                padding: 7px;
+                width: 200px;
+                padding-right: 30px;
+
+                &.has-text{
+                    padding-right:80px;
+                }
+            }
+
+            .input-actions {
+                position: absolute;
+                top: 7px;
+                right: 108px;
+
+                .fa-times-circle {
+                    margin: 0px 8px;
+                    color: #006fc0;
+                    cursor:pointer;
+                }
+
+                .search-item-location {
+                    color: #bbbbbb;
+                }
+            }
+        }
     }
 }
+
+.full-screen-ab {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    width: 99%;
+    height: 99%;
+    z-index: 1000;
+}
+

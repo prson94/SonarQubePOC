@@ -182,7 +182,7 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.AddAssetType(It.IsAny<AssetTypeInsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>(), 0, out outString, out outBool))
                 .Returns(() => new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", ""));
 
-            mockRepo.Setup(x => x.UpsertAssetStyle(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+            mockRepo.Setup(x => x.UpsertAssetStyle(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
 
             mockRepo.Setup(x => x.UpdateAssetType(It.IsAny<AssetTypeInsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>()))
                 .Returns(() => new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", ""));

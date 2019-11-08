@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using d360.core.entities.SurveyModels;
+using d360.model.validators;
 
 namespace d360.web.Controllers.V2
 {
@@ -29,11 +30,14 @@ namespace d360.web.Controllers.V2
     {
         IAssetRepository AssetRepository;
         ISurveyRepository SurveyRepository;
-        public SurveysController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, ISurveyRepository surveyRepository)
+        ISurveyApiModelValidator validator;
+        public SurveysController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository, ISurveyRepository surveyRepository,
+            ISurveyApiModelValidator validator)
             : base(community, company)
         {
             this.AssetRepository = assetRepository;
             this.SurveyRepository = surveyRepository;
+            this.validator = validator;
         }
 
         /// <summary>
@@ -251,6 +255,108 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
 
+        }
+        /// <summary>
+        /// Removes a given set of survey results based on the provided input parameters.
+        /// </summary>
+        /// <remarks>
+        /// An Administrator can remove any survey results.
+        /// At least one of the following Parameter must be provided:
+        /// SurveyTypeUid,
+        /// ResourceUid,
+        /// AssetUid
+        /// </remarks>
+        /// <returns>An HTTP status code and message.</returns>
+        [HttpDelete,
+            MapToApiVersion("2.0"),
+            Route("results"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerParameter("SurveyTypeUid", "Remove results for a specific survey type.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("ResourceUid", "Remove results for a specific user.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("AssetUid", "Remove results for a specific asset.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("StartDateRange", "Remove results that were submitted starting on a specific date.", DataType = "datetime", ParameterType = "query", Required = false),
+            SwaggerParameter("EndDateRange", "Remove results that were submitted ending on a specific date.", DataType = "datetime", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.OK, "Count of survey results deleted.", typeof(SurveyAPIDeleteResultsResponseModel)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to delete survey result is invalid, must populate either SurveyTypeUid / ResourceUid / AssetUid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Survey Type with Uid {uid} not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "User with Uid {uid} not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset with Uid {uid} not found.", typeof(ErrorResponse)),
+            ]
+        public async Task<IHttpActionResult> DeleteSurveyResultsAsync()
+        {
+            var prefix = "Surveys.DeleteSurveyResultsAsync => ";
+            var errorMessage = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                if (!this.validator.IsRequiredGuidExistForDeleteSurveyResult(queryParams))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Either SurveyTypeUid or ResourceUid or AssetUid should populate"));
+                }
+
+                if (!this.validator.IsValidSurveyType(queryParams))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey Type with Uid {GetUidFromQueryParams(queryParams,"SurveyTypeUid")} not found"));
+                }
+
+                if (!this.validator.IsValidAsset(queryParams))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset with Uid {GetUidFromQueryParams(queryParams, "AssetUid")} not found"));
+                }
+
+                if (!this.validator.IsVaidResource(queryParams))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"User with Uid {GetUidFromQueryParams(queryParams, "ResourceUid")} not found"));
+                }
+
+                if (!this.validator.IsValidDate(queryParams, "StartDateRange"))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Not a valid StartDateRange"));
+                }
+
+                if (!this.validator.IsValidDate(queryParams, "EndDateRange"))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Not a valid EndDateRange"));
+                }
+
+                int count = this.SurveyRepository.DeleteSurveyResults(queryParams);
+                var result = new SurveyAPIDeleteResultsResponseModel() { Message = $@"{count} results removed.", Success=true };
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+
+            }
+
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+               
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+
+        }
+
+        private Guid GetUidFromQueryParams(IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName)
+        {
+            Guid uid = Guid.Empty;
+
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == parameterName.ToLower()))
+            {
+                var uidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == parameterName.ToLower()).Value;
+                if (!Guid.TryParse(uidString, out uid))
+                    uid = Guid.Empty;
+
+            }
+            return uid;
         }
 
     }

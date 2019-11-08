@@ -1,6 +1,6 @@
 ﻿import * as go from 'gojs';
 import * as _ from 'lodash';
-import {AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, SimpleChanges } from '@angular/core';
 import {
     DiagramObjectType,
     AssetBrowserLineageApiRequestModel,
@@ -16,18 +16,21 @@ import {
     AssetBrowserImpactApiAssetRequestModel,
     AssetBrowserLineageApiItemModel
 } from '../../../../models/lineage.model';
-import {PermissionsService} from '../../../../services/permissions.service';
-import {BrowserService} from '../../../../services/browser.service';
-import {DiagramBaseComponent} from '../diagram-base.component';
+import { PermissionsService } from '../../../../services/permissions.service';
+import { BrowserService } from '../../../../services/browser.service';
+import { DiagramBaseComponent } from '../diagram-base.component';
 import { AssetBrowserLayout } from './assetbrowserlayout.component';
 import { MenuItem } from 'primeng/api';
+import { ConnectableObservable } from 'rxjs';
+import { setTimeout } from 'core-js';
 
 declare var window: any;
 
 @Component({
     selector: 'd3s-assetbrowser',
     templateUrl: './browser.component.html',
-    providers: [PermissionsService, BrowserService]
+    providers: [PermissionsService, BrowserService],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit {
     @Input() readonly: boolean = true;
@@ -48,13 +51,26 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     showWindowTabs: boolean = false;
     tab: string = "info";
     selectedDiagramAsset: AssetBrowserDiagramAsset;
-
+    private isFullScreen: boolean = false;
     //#region control properties
+
+    // Constants
+    private readonly fontContextMenu: string = "12px 'Source Sans Pro'";
+    private readonly fontContextMenuShowDetails: string = "bold 12px 'Source Sans Pro'";
+    private readonly fontRelationBadge: string = "8pt 'Source Sans Pro'";
+    private readonly fontRelationBadgeColor: string = "#404040";
+    private readonly fontRelationBadgeCountColor: string = "white";
+    private readonly fontLabelIcon: string = "12px FontAwesome";
+    private readonly fontLabel: string = "12px 'Source Sans Pro'";
+    private readonly fontLabelColor: string = "#404040";
+    private readonly fontLink: string = "9pt 'Source Sans Pro'";    
+    private readonly fontLinkColor: string = "#000"
 
     constructor(
         private myElement: ElementRef,
         protected permissionsService: PermissionsService,
-        private browserService: BrowserService
+        private browserService: BrowserService,
+        private cdRef: ChangeDetectorRef
     ) {
         super();
     }
@@ -71,11 +87,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             { icon: 'fa fa-refresh', title: 'Refresh' }
         );
         this.initializeDiagram();
-    
+
     }
 
     public ngAfterViewInit() {
         this.resizeDiagram();
+        this.cdRef.markForCheck();
     }
 
     public ngOnDestroy() {
@@ -109,7 +126,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let image_data = this.diagram.makeImageData({
             scale: 1,
             returnType: "blob",
-            callback: (image_data) => this.savePngButtonClickCallback(image_data,this.assetUid)
+            callback: (image_data) => this.savePngButtonClickCallback(image_data, this.assetUid)
         });
     }
     private alertButtonClick(e) {
@@ -136,7 +153,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
     private fullScreenButtonClick(e) {
-        alert('Full screen coming soon');
+        this.isFullScreen = !this.isFullScreen;
+        this.resizeDiagram();
     }
 
     //#endregion
@@ -167,22 +185,28 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         else if (+value > 60 && +value < 75) {
             css += "medium";
         }
-        else { 
+        else {
             css += "high";
-        } 
+        }
         return css;
-    } 
+    }
 
     private GetJSON(value: string) {
         try {
             return JSON.parse(value);
-        } catch  (err){
+        } catch (err) {
             return "Error";
         }
     }
 
     private highlightPath(e: go.InputEvent, obj: go.Part) {
         //Set all to not highlighted.
+
+        if (this.searchValue != '') {
+            console.warn("Highlighting does not work if there is active search!");
+            return;
+        }
+
         obj.diagram.nodes.each(n => {
             n.isHighlighted = false;
         });
@@ -244,7 +268,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
         });
-        
+
     }
 
     private initializeDiagram() {
@@ -273,7 +297,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.diagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
-        
+
+
 
         this.populateDiagram();
     }
@@ -303,9 +328,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.responseModel = data;
                 let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
                 this.parseData(translationModel);
-            });
 
+                this.resizeDiagram();
+                this.diagram.zoomToFit();
+
+            });
         this.isLoading = false;
+
     }
 
     private parseData(data: AssetBrowserTranslation, append: boolean = false) {
@@ -340,7 +369,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             childAssets.push(g.data.assetUid);
             children.each(c => {
-                
+
                 let data = c.data;
                 childAssets.push(data.assetUid);
 
@@ -513,7 +542,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == n.key);
                             let r = this.diagramModelAsGraph().linkDataArray.filter(r => r.to == n.key);
                             nextLinks = nextLinks.concat(l);
-                            
+
                             if (!(excludeStart && n.key == startKey)) {
                                 subgraph.nodes.push(n);
                                 reverseLinks = reverseLinks.concat(r);
@@ -632,8 +661,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (this.diagramRef.nativeElement.offsetParent) {
             offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
         }
-
-        this.diagramRef.nativeElement.style.height = (height - offset - 275) + 'px';
+        if (this.isFullScreen)
+            this.diagramRef.nativeElement.style.height = (height - 80) + 'px';
+        else 
+            this.diagramRef.nativeElement.style.height = (height - offset - 275) + 'px';
 
         //alert(this.bottomCommandBarRef.nativeElement.offsetParent.offsetTop);
     }
@@ -654,15 +685,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private ObjectDoubleClicked(e: any) {
-        var obj = e.diagram.selection.first().data;
-
-        if (obj != null) {
-            if (obj.diagramObjectType == DiagramObjectType.Node) {
-                //this.assetUid = obj.;
-
-                this.populateDiagram();
-            }
-        }
     }
 
     //#endregion
@@ -722,7 +744,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.diagram.remove(group);
                 } else { //hide upstream or downstream
                     let subgraph = this.findSubGraph(group.key, direction);
-                    
+
                     if (subgraph == null || subgraph.nodes.length < 1)
                         return; //nothing to hide
                     if (subgraph.nodes.length == 1 && subgraph.nodes[0].template == "HiddenData")
@@ -859,13 +881,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private initializeCustomShapes() {
         go.Shape.defineFigureGenerator("RoundedRectLeft", (shape, w, h) => {
-            let p1 = 5;  
+            let p1 = 5;
             if (shape !== null) {
                 var param1 = shape.parameter1;
-                if (!isNaN(param1) && param1 >= 0) p1 = param1; 
+                if (!isNaN(param1) && param1 >= 0) p1 = param1;
             }
             p1 = Math.min(p1, w / 2);
-            p1 = Math.min(p1, h / 2); 
+            p1 = Math.min(p1, h / 2);
             let geo = new go.Geometry();
 
             geo.add(new go.PathFigure(0, p1)
@@ -881,13 +903,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
 
         go.Shape.defineFigureGenerator("RoundedRectRight", (shape, w, h) => {
-            let p1 = 5; 
+            let p1 = 5;
             if (shape !== null) {
                 var param1 = shape.parameter1;
-                if (!isNaN(param1) && param1 >= 0) p1 = param1; 
+                if (!isNaN(param1) && param1 >= 0) p1 = param1;
             }
             p1 = Math.min(p1, w / 2);
-            p1 = Math.min(p1, h / 2); 
+            p1 = Math.min(p1, h / 2);
             let geo = new go.Geometry();
 
 
@@ -912,10 +934,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             padding: 0,
             cursor: "pointer",
             click: (e, obj) => this.clickBadge(e, obj),
-            },
-            this.g(go.Panel, "Horizontal", {alignment: go.Spot.Center},
+        },
+            this.g(go.Panel, "Horizontal", { alignment: go.Spot.Center },
                 this.g(go.Panel, "Auto",
-                    this.g(go.Shape, 
+                    this.g(go.Shape,
                         { figure: "RoundedRectLeft", parameter1: 2, fill: "white", stroke: "#404040", strokeWidth: 1 },
                     ),
                     this.g(
@@ -925,8 +947,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: 2,
                             alignment: go.Spot.Left,
                             editable: false,
-                            font: "8pt helvetica, arial, sans-serif",
-                            stroke: "#404040"
+                            font: this.fontRelationBadge,
+                            stroke: this.fontRelationBadgeColor
                         },
                         new go.Binding("text", "predicate")
                     ),
@@ -942,8 +964,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: 2,
                             alignment: go.Spot.Center,
                             editable: false,
-                            font: "8pt helvetica, arial, sans-serif",
-                            stroke: "white"
+                            font: this.fontRelationBadge,
+                            stroke: this.fontRelationBadgeCountColor
                         },
                         new go.Binding("text", "count")
                     ),
@@ -958,7 +980,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             { areaBackground: "#ffffff", background: "#ffffff" },
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "bold 12px sans-serif" }),
+                this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenuShowDetails }),
                 {
                     click: (e, obj) => {
                         this.isWindowLoading = true;
@@ -974,22 +996,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             ),
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Hide", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
+                this.g(go.TextBlock, { text: "Hide", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 { click: (e, obj) => this.hide(e, obj) }
             ),
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Hide Upstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
+                this.g(go.TextBlock, { text: "Hide Upstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Backward) }
             ),
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
+                this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Forward) }
             ),
             this.g(
                 "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Isolate", background: "transparent", alignment: go.Spot.Left, margin: 8, font: "12px sans-serif" }),
+                this.g(go.TextBlock, { text: "Isolate", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
                 { click: function (e, obj) { alert("Not yet implemented") } }
             )
         );
@@ -1002,7 +1024,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
             initialPosition: new go.Point(125, 125),
-            layout: this.g(go.LayeredDigraphLayout, { layerSpacing: 50, setsPortSpots: false }), //direction: 270, 
+            layout: this.g(go.LayeredDigraphLayout, { layerSpacing: 150, columnSpacing: 50, setsPortSpots: false }), //direction: 270, 
             //layout: this.g(AssetBrowserLayout, {}),//layout: this.g(go.LayeredDigraphLayout, {direction: 0, columnSpacing: 50, layerSpacing: 50}),
             "undoManager.isEnabled": true,
             "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" },
@@ -1051,7 +1073,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             },
             this.g(
                 go.Panel,
-                "Vertical", 
+                "Vertical",
                 this.g(go.Panel, "Table",
                     new go.Binding("itemArray", "relations"),
                     {
@@ -1089,8 +1111,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     margin: 0,
                                     alignment: go.Spot.Center,
                                     editable: false,
-                                    font: "12px FontAwesome",
-                                    stroke: "#404040"
+                                    font: this.fontLabelIcon,
+                                    stroke: this.fontLabelColor
                                 },
                                 new go.Binding("text", "icon")
                             ),
@@ -1098,11 +1120,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 go.TextBlock,
                                 {
                                     alignment: go.Spot.Left,
-                                    editable: true,
+                                    editable: false,
                                     margin: 5,
-                                    font: "bold 12px sans-serif",
-                                    opacity: 0.75,
-                                    stroke: "#404040"
+                                    font: this.fontLabel,                                    
+                                    stroke: this.fontLabelColor
                                 },
                                 new go.Binding("text", "text").makeTwoWay()
                             )
@@ -1185,8 +1206,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: 0,
                             alignment: go.Spot.Center,
                             editable: false,
-                            font: "12px FontAwesome",
-                            stroke: "#404040"
+                            font: this.fontLabelIcon,
+                            stroke: this.fontLabelColor
                         },
                         new go.Binding("text", "icon")
                     ),
@@ -1194,11 +1215,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.TextBlock,
                         {
                             alignment: go.Spot.Left,
-                            editable: true,
+                            editable: false,
                             margin: 5,
-                            font: "bold 12px sans-serif",
-                            opacity: 0.75,
-                            stroke: "#404040"
+                            font: this.fontLabel,
+                            stroke: this.fontLabelColor
                         },
                         new go.Binding("text", "text").makeTwoWay()
                     )
@@ -1234,8 +1254,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         row: 0,
                         alignment: go.Spot.Center,
                         editable: false,
-                        font: "12px FontAwesome",
-                        stroke: "#404040"
+                        font: this.fontLabelIcon,
+                        stroke: this.fontLabelColor
                     },
                     new go.Binding("text", "icon")
                 ),
@@ -1243,13 +1263,34 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     go.Shape,
                     { width: 10, height: 0, stroke: "transparent" }
                 ),
+                //This TextBlock is placeholder for highlighted text
                 this.g(
                     go.TextBlock,
                     {
-                        editable: true,
-                        font: "bold 12px sans-serif",
-                        opacity: 0.75,
-                        stroke: "#404040"
+                        editable: false,
+                        font: this.fontLabel,
+                        stroke: this.fontLabelColor,
+                        background: "#F5C2FF",
+                        visible: false,
+
+
+                    },
+                    new go.Binding("text", "highlight").makeTwoWay(),
+                    new go.Binding("visible", "highlight_visible").makeTwoWay()
+                ),
+                //This shape block is for ensuring space between highlighted text and rest of the text
+                //We need this as TextBlock trims spaces
+                this.g(
+                    go.Shape,
+                    { width: 2, height: 0, stroke: "transparent", visible: false },
+                    new go.Binding("visible", "spacer_visible").makeTwoWay()
+                ),
+                this.g(
+                    go.TextBlock,
+                    {
+                        editable: false,
+                        font: this.fontLabel,
+                        stroke: this.fontLabelColor
                     },
                     new go.Binding("text", "text").makeTwoWay()
                 )
@@ -1278,8 +1319,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         row: 0,
                         alignment: go.Spot.Center,
                         editable: false,
-                        font: "12px FontAwesome",
-                        stroke: "#404040",
+                        font: this.fontLabelIcon,
+                        stroke: this.fontLabelColor,
                         text: "\uf067"
                     }
                 )
@@ -1308,8 +1349,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         row: 0,
                         alignment: go.Spot.Center,
                         editable: false,
-                        font: "12px FontAwesome",
-                        stroke: "#404040",
+                        font: this.fontLabelIcon,
+                        stroke: this.fontLabelColor,
                         text: "\uf067"
                     }
                 )
@@ -1328,15 +1369,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 click: (e, obj) => this.highlightPath(e, obj as any)
             }, // the whole link panel
             this.g(go.Shape, {
-                    stroke: "gray", strokeWidth: 2
-                },
+                stroke: "gray", strokeWidth: 2
+            },
                 new go.Binding("strokeWidth", "hasProperties", function (h) {
                     return h ? 3 : 2;
                 }),
                 new go.Binding("stroke", "hasProperties", function (h) {
                     return h ? "black" : "gray"
                 })), // the link shape
-            this.g(go.Shape, {toArrow: "standard", fill: "gray", stroke: "gray"}), // the arrowhead
+            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
             this.g(go.Panel, "Auto",
                 this.g(
                     go.Shape,
@@ -1357,8 +1398,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     })
                 ), // the link shape
                 this.g(go.TextBlock, {
-                        textAlign: "center", font: "9pt helvetica, arial, sans-serif", stroke: "#000", margin: 4
-                    },
+                    textAlign: "center",
+                    font: this.fontLink,
+                    stroke: this.fontLinkColor,
+                    margin: 4,
+                    overflow: go.TextBlock.OverflowEllipsis,
+                    wrap: go.TextBlock.WrapFit,
+                    maxSize: new go.Size(100, 70)
+                },
                     // the label
                     new go.Binding("text", "text").makeTwoWay()
                 )
@@ -1367,4 +1414,141 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     //#endregion
+
+    private searchResults: go.Node[] = [];
+    private searchableProps: string[] = ["text"];
+    private searchCurrentItem: number = 0;
+    private searchValue: string = '';
+    private searchTimer;
+
+    searchDiagram(event) {
+        if (event == null) {
+            this.searchValue = '';
+        }
+        else {
+            this.searchValue = event.target.value;
+
+            if (event.keyCode == 40) {
+                this.goToNext();
+                return;
+            }
+            if (event.keyCode == 38) {
+                this.goToPrevious();
+                return;
+            }
+        }
+        clearTimeout(this.searchTimer);
+        this.searchTimer = setTimeout(() => {
+            this.doSearch();
+        }, 100);
+
+
+    }
+
+    private doSearch() {
+        //Clear highlights of exisitng search results
+        this.searchResults.forEach(n => {
+            this.removeHighlightFromNode(n);
+        });
+
+        this.searchResults = [];
+
+        this.searchCurrentItem = 0;
+        this.diagram.zoomToFit();
+        var self = this;
+
+        this.diagram.nodes.each(function (node) {
+            if (node instanceof go.Node) {
+                var nodeData = node.data;
+                node.isHighlighted = false;
+                if (nodeData.isGroup) {
+                    //This is grouping, do nothing with it (AssetType grouping)
+                }
+                else if (self.searchValue != '') {
+                    self.searchableProps.forEach(prop => {
+                        if (node.data[prop] && node.data[prop].toLowerCase().indexOf(self.searchValue.toLowerCase()) == 0) {
+                            self.searchResults.push(node);
+                            self.addHighlightToNode(node);
+                            self.expandGroups(node.data.group);
+                        }
+                    });
+                }
+            }
+        });
+
+
+        this.goToNext();
+
+        this.cdRef.markForCheck();
+    }
+
+    removeHighlightFromNode(node: go.Node) {
+        this.diagram.model.commit(function (m) {
+            var data = m.findNodeDataForKey(node.key);
+            var fullText = (data) ? data.text : "";
+            if (data.highlight) {
+                fullText = data.highlight + data.text;
+            }
+            m.set(data, 'highlight', '');
+            m.set(data, 'highlight_visible', false);
+            m.set(data, 'spacer_visible', false);
+            m.set(data, 'text', fullText);
+        }, 'update_highlight');
+    }
+
+    addHighlightToNode(node: go.Node) {
+        var self = this;
+        this.diagram.model.commit(function (m) {
+            var data = m.findNodeDataForKey(node.key);
+
+            var idx = self.searchValue.length;
+            var highlight = data.text.substring(0, idx);
+            var text = data.text.substring(idx, data.text.length);
+
+            if (data.text.length > idx && (data.text[idx] == ' ' || self.searchValue[idx-1] == ' ')) {
+                m.set(data, 'spacer_visible', true);
+            }
+            m.set(data, 'highlight', highlight);
+            m.set(data, 'highlight_visible', true);
+            m.set(data, 'text', text);
+        }, 'update_highlight');
+    }
+
+
+    goToPrevious() {
+        this.searchCurrentItem--;
+        if (this.searchCurrentItem <= 0) {
+            if (this.searchResults.length > 0) {
+                this.searchCurrentItem = 1;
+            }
+            else {
+                this.searchCurrentItem = 0;
+            }
+        }
+        this.focusCurrentNode();
+    }
+
+    goToNext() {
+        this.searchCurrentItem++;
+        if (this.searchCurrentItem > this.searchResults.length)
+            this.searchCurrentItem--;
+        this.focusCurrentNode();
+
+    }
+
+    expandGroups(groupName) {
+        if (groupName) {
+            var group = this.diagram.findPartForKey(groupName) as go.Group;
+            group.expandSubGraph();
+            this.expandGroups(group.data.group);
+        }
+    }
+
+    focusCurrentNode() {
+        var node = this.searchResults[this.searchCurrentItem - 1];
+        if (node) {
+            this.diagram.centerRect(node.actualBounds);
+            this.diagram.select(node);
+        }
+    }
 }

@@ -70,8 +70,8 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     @Output() onCloseClick = new EventEmitter();
     @Output() onBackClick = new EventEmitter();
     @Output() selectionChange = new EventEmitter();
-    @ViewChild('workflowDiagram', { static: false }) diagramRef;
-    @ViewChild('workflowPalette', { static: false }) paletteRef;
+    @ViewChild('workflowDiagram', { static: true }) diagramRef;
+    @ViewChild('workflowPalette', { static: true }) paletteRef;
 
     private activityTypes: ActivityTypeInfo[] = [];
     DiagramObjectType = DiagramObjectType;

@@ -93,7 +93,7 @@ namespace d360.model.DataAccessLayer
                         	U.uid as UserUid,
                         	S.CreatedOn,
                         	(select 
-                        			QT.Uid,
+                        			distinct QT.Uid,
                         			Q.Comment, 
                         			(select QTO.Name, QTO.Value from QuestionTypeOption QTO 
                         				inner join QuestionOption QO ON Q.ID = QO.QuestionID
@@ -364,6 +364,112 @@ namespace d360.model.DataAccessLayer
             return response;
         }
 
+       public int DeleteSurveyResults(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            List<string> joins = new List<string>();
+            List<string> whereStatements = new List<string>();
+            var dbArgs = new DynamicParameters();
 
+
+            if (queryParams != null)
+            {
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "surveytypeuid"))
+                {
+                    Guid surveyTypeUid;
+                    var surveytypeUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "surveytypeuid").Value;
+                    if (Guid.TryParse(surveytypeUIDString, out surveyTypeUid))
+                    {
+                        joins.Add("inner join SurveyType ST on ST.ID = S.SurveyTypeID");
+                        whereStatements.Add("ST.uid=@surveyTypeUid");
+                        dbArgs.Add("surveyTypeUid", surveyTypeUid);
+                    }
+                }
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "assetuid"))
+                {
+                    Guid assetUid;
+                    var assetUIDString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assetuid").Value;
+                    if (Guid.TryParse(assetUIDString, out assetUid))
+                    {
+                        joins.Add("inner join Asset A on A.[Object]=S.[Object] and  A.ObjectID = S.ObjectID");
+                        whereStatements.Add("A.uid=@assetUid");
+                        dbArgs.Add("assetUid", assetUid);
+                    }
+                }
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "resourceuid"))
+                {
+                    Guid resourceUid;
+                    var resourceString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "resourceuid").Value;
+                    if (Guid.TryParse(resourceString, out resourceUid))
+                    {
+                        joins.Add("inner join reporting.Global_Resource R on S.ResourceID = R.ResourceID");
+                        whereStatements.Add("R.uid=@resourceUid");
+                        dbArgs.Add("resourceUid", resourceUid);
+                    }
+                }
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "startdaterange"))
+                {
+                    DateTime startDate;
+                    var startDateString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "startdaterange").Value;
+                    if (DateTime.TryParse(startDateString, out startDate))
+                    {
+                        whereStatements.Add("S.CreatedOn >=@startDate");
+                        dbArgs.Add("startDate", startDate);
+                    }
+                }
+
+               
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "enddaterange"))
+                {
+                    DateTime endDate;
+                    var endDateString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "enddaterange").Value;
+                    if (DateTime.TryParse(endDateString, out endDate))
+                    {
+                        endDate = endDate.AddDays(1);
+                        whereStatements.Add("S.CreatedOn < @endDate");
+                        dbArgs.Add("endDate", endDate);
+                    }
+                }
+
+            }
+           
+            var whereSql = "";
+            if (whereStatements.Any())
+                whereSql = $" where {string.Join("  and  ", whereStatements)}";
+
+            var joinSql = "";
+            if (joins.Any())
+                joinSql = $"\n {string.Join("\n", joins)}";
+
+            string sql = $"Select S.uid from Survey S " +
+                        $" {joinSql}  {whereSql}";
+            var sUids = companyContext.Query<Guid>(sql, dbArgs).ToList();
+
+           int result= companyContext.Connection.Execute($@"
+                    SET NOCOUNT ON; 
+                    drop table if exists #tempSurveryIds;
+                    create table #tempSurveryIds  (id int);
+
+                    drop table if exists #tempQuestionTypeOptionIds;
+                    create table #tempQuestionTypeOptionIds  (id int);
+                    insert into #tempSurveryIds
+                    select Id from dbo.Survey where  uid in @surveyUids;
+                    insert into #tempQuestionTypeOptionIds
+                        select QuestionTypeOptionID from 
+                           dbo.QuestionOption where QuestionID in (select ID from dbo.Question where SurveyID in (Select Id from #tempSurveryIds));
+                    delete from dbo.QuestionOption where QuestionID in (select ID from dbo.Question where SurveyID in (Select Id from #tempSurveryIds));
+                    delete from dbo.QuestionTypeOption where id in (select Id from #tempQuestionTypeOptionIds);
+                    delete from dbo.Question where SurveyID in (Select Id from #tempSurveryIds);
+                    SET NOCOUNT OFF; 
+                    delete from dbo.Survey where  id in  (Select Id from #tempSurveryIds);
+                   
+                ", new { surveyUids = sUids });
+            return result;
+
+
+        }
     }
 }

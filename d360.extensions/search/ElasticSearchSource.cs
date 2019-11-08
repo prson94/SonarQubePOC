@@ -274,7 +274,9 @@ namespace d360.extensions.search
             var companyId = firstItem.CompanyID;
             
             CreateIndexIfNotExists(companyId);
-            
+
+            List<string> postingErrors = new List<string>();
+
             foreach (var batch in items.Batch(BULK_BATCH_SIZE))
             {                
                 var sb = new StringBuilder();
@@ -340,8 +342,24 @@ namespace d360.extensions.search
                 var hasErrors = result.GetValue("errors");
 
                 if (hasErrors.Value<bool>())
-                    throw new Exception(bulkResponse.Body);                
-            }     
+                {
+                    foreach (var resultItem in result.GetValue("items"))
+                    {
+                        var errToken = resultItem.SelectToken("index.error");
+                        if (errToken != null)
+                        {
+                            string fault = errToken.ToString();
+                            string id = (string)resultItem.SelectToken("index._id");
+                            postingErrors.Add(id + ":" + fault);
+                        }
+                    }
+
+                }
+            }
+            if (postingErrors.Count > 0)
+            {
+                throw new Exception("Add to index individual errors: " + string.Join(Environment.NewLine, postingErrors.ToArray()));
+            }
         }
 
         public void ClearIndex(int companyID)
@@ -1326,6 +1344,8 @@ namespace d360.extensions.search
 
             CreateIndexIfNotExists(companyId);
 
+            List<string> postingErrors = new List<string>();
+
             StringBuilder sb = new StringBuilder();
 
             foreach (var item in items)
@@ -1384,7 +1404,22 @@ namespace d360.extensions.search
             var hasErrors = result.GetValue("errors");
 
             if (hasErrors.Value<bool>())
-                throw new Exception(bulkResponse.Body);            
+            {
+                foreach (var resultItem in result.GetValue("items"))
+                {
+                    var errToken = resultItem.SelectToken("index.error");
+                    if (errToken != null)
+                    {
+                        string fault = errToken.ToString();
+                        string id = (string)resultItem.SelectToken("index._id");
+                        postingErrors.Add(id + ":" + fault);
+                    }
+                }
+                if (postingErrors.Count > 0)
+                {
+                    throw new Exception("Update index individual errors: " + string.Join(Environment.NewLine, postingErrors.ToArray()));
+                }
+            }
         }
     }
 }
