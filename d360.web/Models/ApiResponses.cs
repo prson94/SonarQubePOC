@@ -97,6 +97,7 @@ namespace d360.web.Models
         public PredicateType predicateType { get; set; }
         public string backColor { get; set; }
         public string foreColor { get; set; }
+        public string icon { get; set; }
     }
 
     public class AssetBrowserLineageApiItemRelationCountAssetModel
@@ -134,6 +135,8 @@ namespace d360.web.Models
         public string key { get; set; }
         [DataMember]
         public string displayValue { get; set; }
+        [DataMember]
+        public string icon { get; set; }
         [DataMember]
         public GetAssetLineagePostModelDirection reveal { get; set; }
         [DataMember]

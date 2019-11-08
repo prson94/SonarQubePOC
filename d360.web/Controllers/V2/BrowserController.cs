@@ -44,6 +44,7 @@ namespace d360.web.Controllers.V2
             public string ParentKey { get; set; }
             public string Back { get; set; }
             public string Fore { get; set; }
+            public string Icon { get; set; }
             public int HierarchyLevel { get; set; }
             public int AssetTypeID { get; set; }
             public long AssetID { get; set; }
@@ -85,7 +86,7 @@ namespace d360.web.Controllers.V2
                         relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
                     }
                     
-                    var child = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
+                    var child = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, icon = h.Icon, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
 
                     recurse(hierarchies, child);
 
@@ -111,7 +112,7 @@ namespace d360.web.Controllers.V2
                     relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
                 }
 
-                var current = new AssetBrowserLineageApiTopItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
+                var current = new AssetBrowserLineageApiTopItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", icon = h.Icon, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
                 recurse(hierarchies, current);
                 model.assets.Add(current);
             }
@@ -120,6 +121,7 @@ namespace d360.web.Controllers.V2
             {
                 backColor = "",
                 foreColor = "",
+                icon = "",
                 intersectUid = r.Uid,
                 objectUid = r.objectUid,
                 objectKey = r.objectKey,
