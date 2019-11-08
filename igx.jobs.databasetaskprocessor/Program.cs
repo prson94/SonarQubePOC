@@ -142,7 +142,7 @@ namespace igx.jobs.databasetaskprocessor
 
                                 if (detail != null)
                                 {
-                                    indexObject.Group = detail.Class.ToString();
+                                    indexObject.Group = (o == SystemObjects.Artifact.ToString()) ? detail.Class.ToString() : o;
 
                                     if (indexObject.Fields.ContainsKey("Name")) indexObject.Fields["Name"] = detail.Name;
                                     else indexObject.Fields.Add("Name", detail.Name);
