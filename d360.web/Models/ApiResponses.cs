@@ -138,6 +138,8 @@ namespace d360.web.Models
         [DataMember]
         public string icon { get; set; }
         [DataMember]
+        public AssetTypeClass @class { get; set; }
+        [DataMember]
         public GetAssetLineagePostModelDirection reveal { get; set; }
         [DataMember]
         public List<AssetBrowserLineageApiItemRelationCountModel> relationCounts { get; set; }

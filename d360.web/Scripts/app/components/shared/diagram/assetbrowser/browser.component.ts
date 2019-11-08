@@ -1320,9 +1320,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         alignment: go.Spot.Center,
                         editable: false,
                         font: this.fontLabelIcon,
-                        stroke: this.fontLabelColor,
-                        text: "\uf067"
-                    }
+                        stroke: this.fontLabelColor
+                    },
+                    new go.Binding("text", "icon"),
                 )
             )  // end Horizontal Panel
         );
@@ -1351,8 +1351,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         editable: false,
                         font: this.fontLabelIcon,
                         stroke: this.fontLabelColor,
-                        text: "\uf067"
-                    }
+                    },
+                    new go.Binding("text", "icon"),
                 )
             )  // end Horizontal Panel
         );

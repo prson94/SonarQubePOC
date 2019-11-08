@@ -12,6 +12,8 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+
+
 ALTER   procedure [graph].[GetLineageByAsset]
 	@assets dbo.UidTable readonly,
 	@isReveal bit = 0,
@@ -576,6 +578,7 @@ begin
 	order by	Hop;
 end
 GO
+
 ALTER   procedure [graph].[GetImpactRelationshipsByAssets]
 	@assets dbo.AssetBrowserImpactTable readonly,
 	@predicateUid uniqueidentifier,
