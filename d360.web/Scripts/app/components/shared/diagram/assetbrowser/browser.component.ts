@@ -1426,7 +1426,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.searchValue = '';
         }
         else {
-            this.searchValue = event.target.value.toLowerCase();
+            this.searchValue = event.target.value;
 
             if (event.keyCode == 40) {
                 this.goToNext();
@@ -1466,7 +1466,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
                 else if (self.searchValue != '') {
                     self.searchableProps.forEach(prop => {
-                        if (node.data[prop] && node.data[prop].toLowerCase().indexOf(self.searchValue) == 0) {
+                        if (node.data[prop] && node.data[prop].toLowerCase().indexOf(self.searchValue.toLowerCase()) == 0) {
                             self.searchResults.push(node);
                             self.addHighlightToNode(node);
                             self.expandGroups(node.data.group);
