@@ -216,7 +216,7 @@ export class SearchStateService extends BaseObservableService {
         this._loading.next(true);
 
         let seachTypeFilter = [new SearchAggregationFilter({
-                Field: "d3sGroup",
+                Field: "d3sCategory",
                 Values: this._searchTypes.sort().filter((x, i, a) => !i || x != a[i - 1])
             })];
 
