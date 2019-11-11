@@ -16,6 +16,7 @@ using System.Runtime.Serialization;
 using d360.web.Filters;
 using Swashbuckle.Swagger.Annotations;
 using d360.web.Models;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
@@ -133,13 +134,20 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Gets lineage for the specified assets.
+        /// Retrieves lineage relationships for the specified set of assets.
         /// </summary>
         /// <remarks>
-        /// 
+        /// While this endpoint is used primarily by the Govern Asset Browser tool, external callers may find some data within this endpoint useful.
         /// </remarks>
-        /// <param name="postModel"></param>
-        /// <returns>An HTTP status code and message.</returns>
+        /// <param name="criteria">
+        /// An object containing:
+        /// 1. AssetUids: A set of asset Uids you want to retrieve lineage for. 
+        /// 1. IsReveal: A true/false value indicating whether this call is from clicking a Reveal button, or is from an initial call to get starting lineage.
+        /// 2. StartHop: A starting point, which will be used to generate unique key values that are used in the Asset Browser UI.
+        /// 3. Direction: An enumeration value (Backward, Both, Forward) indicating the direction you want to traverse when getting relationships. Backward is upstream, Forward is downstream.
+        /// 4. Hops: The number of hops, or traversals, you want to pull. The more hops, the slower the API response.
+        /// </param>
+        /// <returns>An object containing lineage results, as well as an HTTP status code and message.</returns>
         [
             Route(""),
             HttpPost,
@@ -150,19 +158,19 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetLineage(GetAssetLineagePostModel postModel)
+        public async Task<HttpResponseMessage> GetAssetLineage(GetAssetLineagePostModel criteria)
         {
             try
             {
                 var reader = await Company.QueryMultipleAsync(@"exec graph.GetLineageByAsset @assets, @IsReveal, @StartHop, @direction, @hops", new { 
-                    assets = postModel.AssetUids.AsTableValuedParameter<Guid>(
+                    assets = criteria.AssetUids.AsTableValuedParameter<Guid>(
                         "dbo.UidTable", 
                         new List<string>() {"Uid"}
                         ), 
-                    postModel.IsReveal,
-                    postModel.StartHop,
-                    direction = (int)postModel.Direction, 
-                    hops = (postModel.Hops > 0) ? postModel.Hops : 1 
+                    criteria.IsReveal,
+                    criteria.StartHop,
+                    direction = (int)criteria.Direction, 
+                    hops = (criteria.Hops > 0) ? criteria.Hops : 1 
                 }, timeout: 60);
 
                 var hierarchies = reader.Read<RawResultList2>().ToList();
@@ -177,13 +185,18 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Gets impact relationships for the specified assets.
+        /// Retrieves impact relationships for the specified set of assets.
         /// </summary>
         /// <remarks>
-        /// 
+        /// While this endpoint is used primarily by the Govern Asset Browser tool, external callers may find some data within this endpoint useful.
         /// </remarks>
-        /// <param name="postModel"></param>
-        /// <returns>An HTTP status code and message.</returns>
+        /// <param name="criteria">
+        /// An object containing:
+        /// 1. Assets: A set of assets (Uid and unique Key value) you want to retrieve impacts for. 
+        /// 2. PredicateUid: The Uid of the predicate you are getting impacted relationships for.
+        /// 3. StartHop: A starting point, which will be used to generate unique key values that are used in the Asset Browser UI.
+        /// </param>
+        /// <returns>An object containing impacts results, as well as an HTTP status code and message.</returns>
         [
             Route("impacts"),
             HttpPost,
@@ -194,18 +207,18 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetImpacts(GetAssetImpactsPostModel postModel)
+        public async Task<HttpResponseMessage> GetAssetImpacts(GetAssetImpactsPostModel criteria)
         {
             try
             {
                 var reader = await Company.QueryMultipleAsync(@"exec graph.GetImpactRelationshipsByAssets @assets, @PredicateUid, @StartHop", new
                 {
-                    assets = postModel.Assets.AsTableValuedParameter(
+                    assets = criteria.Assets.AsTableValuedParameter(
                         "dbo.AssetBrowserImpactTable",
                         new List<string>() { "Key", "Uid" }
                         ),
-                    postModel.PredicateUid,
-                    postModel.StartHop
+                    criteria.PredicateUid,
+                    criteria.StartHop
                 }, timeout: 60);
 
                 var hierarchies = reader.Read<RawResultList2>().OrderBy(i => i.Hop).ThenBy(i => i.HierarchyLevel).ToList();
@@ -263,12 +276,13 @@ namespace d360.web.Controllers.V2
         #endregion
 
         /// <summary>
-        /// Gets information regarding a specific diagram asset, beOwner it an asset or a relationship.
+        /// Gets detailed field information regarding a specific asset that a user selects from the Asset Browser UI.
         /// </summary>
-        /// <param name="uid">The uid of the asset that we are getting lineage for.</param>
+        /// <param name="uid">The uid of the asset that we are getting field information for.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             Route("diagramasset/{uid:Guid}"),
+            ApiExplorerSettings(IgnoreApi = true),
             HttpGet,
             MapToApiVersion("2.0"),
             SwaggerProduces("application/json"),

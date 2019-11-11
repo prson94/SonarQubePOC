@@ -107,8 +107,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly fontLabelIcon: string = "12px FontAwesome";
     private readonly fontLabel: string = "12px 'Source Sans Pro'";
     private readonly fontLabelColor: string = "#404040";
-    private readonly fontLink: string = "9pt 'Source Sans Pro'";    
+    private readonly fontLink: string = "9pt 'Source Sans Pro'";
     private readonly fontLinkColor: string = "#000"
+
+    private readonly searchHighlightColour = '#FFDA00';
+    private readonly searchHighlightColourFocused = '#FD7E0E';
 
     constructor(
         private myElement: ElementRef,
@@ -273,12 +276,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private highlightPath(e: go.InputEvent, obj: go.Part) {
         //Set all to not highlighted.
-
-        if (this.searchValue != '') {
-            console.warn("Highlighting does not work if there is active search!");
-            return;
-        }
-
         obj.diagram.nodes.each(n => {
             n.isHighlighted = false;
         });
@@ -1303,7 +1300,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     alignment: go.Spot.Left,
                                     editable: false,
                                     margin: 5,
-                                    font: this.fontLabel,                                    
+                                    font: this.fontLabel,
                                     stroke: this.fontLabelColor
                                 },
                                 new go.Binding("text", "text").makeTwoWay()
@@ -1455,13 +1452,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         editable: false,
                         font: this.fontLabel,
                         stroke: this.fontLabelColor,
-                        background: "#F5C2FF",
                         visible: false,
-
-
                     },
                     new go.Binding("text", "highlight").makeTwoWay(),
-                    new go.Binding("visible", "highlight_visible").makeTwoWay()
+                    new go.Binding("visible", "highlight_visible").makeTwoWay(),
+                    new go.Binding("background", "highlight_background").makeTwoWay()
                 ),
                 //This shape block is for ensuring space between highlighted text and rest of the text
                 //We need this as TextBlock trims spaces
@@ -1610,7 +1605,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.searchValue = '';
         }
         else {
-            this.searchValue = event.target.value.toLowerCase();
+            this.searchValue = event.target.value;
 
             if (event.keyCode == 40) {
                 this.goToNext();
@@ -1650,7 +1645,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
                 else if (self.searchValue != '') {
                     self.searchableProps.forEach(prop => {
-                        if (node.data[prop] && node.data[prop].toLowerCase().indexOf(self.searchValue) == 0) {
+                        if (node.data[prop] && node.data[prop].toLowerCase().indexOf(self.searchValue.toLowerCase()) == 0) {
                             self.searchResults.push(node);
                             self.addHighlightToNode(node);
                             self.expandGroups(node.data.group);
@@ -1689,7 +1684,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             var highlight = data.text.substring(0, idx);
             var text = data.text.substring(idx, data.text.length);
 
-            if (data.text.length > idx && (data.text[idx] == ' ' || self.searchValue[idx-1] == ' ')) {
+            if (data.text.length > idx && (data.text[idx] == ' ' || self.searchValue[idx - 1] == ' ')) {
                 m.set(data, 'spacer_visible', true);
             }
             m.set(data, 'highlight', highlight);
@@ -1732,6 +1727,27 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (node) {
             this.diagram.centerRect(node.actualBounds);
             this.diagram.select(node);
+            this.setFocusedNodeHighlight(node);
         }
+    }
+
+
+
+    setFocusedNodeHighlight(node: go.Node) {
+        var self = this;
+        this.diagram.model.commit(function (m) {
+            self.diagram.nodes.each(function (n) {
+                if (n instanceof go.Node) {
+                    var data = m.findNodeDataForKey(n.key);
+
+                    if (n.key == node.key) {
+                        m.set(data, 'highlight_background', self.searchHighlightColourFocused);
+                    }
+                    else {
+                        m.set(data, 'highlight_background', self.searchHighlightColour);
+                    }
+                }
+            })
+        });
     }
 }

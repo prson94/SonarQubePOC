@@ -115,6 +115,9 @@ namespace d360.core.entities
         public PredicateType? PredicateType { get; set; }
 
         [DataMember]
+        public Guid? PredicateUid { get; set; }
+
+        [DataMember]
         public AssetsByPathItemApiFilterSideOfRelationshipRequestEnum Side { get; set; }
     }
 

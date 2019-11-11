@@ -876,8 +876,8 @@ from	api.ExecutionField T
                 }
             }
 
-            _ = QueueSource.CreateTopicMessagesAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
-
+            if (events.Any())
+                QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);            
         }
 
         #region Validation
@@ -2326,7 +2326,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                                         x=>x.Uid,
                                         y=>y.Uid,
                                         (d, i) => new { ExecutionItemUid = i.ExecutionItemUid,Uid = i.Uid,Count = d.Count }).ToList();
-                    results.AddRange(dupesResult.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid=i.Uid, Message = $"Duplicate UID with a Count {i.Count}", Success = false }));
+                    results.AddRange(dupesResult.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid=i.Uid, Message = $"Duplicate Uid", Success = false }));
                 }
                 else
                 {
