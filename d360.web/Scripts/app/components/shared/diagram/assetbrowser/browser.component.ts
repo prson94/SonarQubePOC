@@ -331,6 +331,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 this.resizeDiagram();
                 this.diagram.zoomToFit();
+                this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
 
             });
         this.isLoading = false;
