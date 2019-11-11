@@ -24,12 +24,7 @@ namespace d360.core.validators
         public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion, bool isFusionEnabled)
         {
             this.CompanyContext = companyContext;
-            if (isFusionEnabled)
-            {
-                PredicateSupportingClasses = PredicateSupportingClasses.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();
-                ParentAssetTypeClass = ParentAssetTypeClass.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();
-                SupportedClasses = SupportedClasses.Where(x => x != AssetTypeClass.TechnicalAsset).ToList();
-            }
+
         }
 
         public WorkHttpStatus ValidateModel(bool isInsert, AssetTypeInsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType = null)
