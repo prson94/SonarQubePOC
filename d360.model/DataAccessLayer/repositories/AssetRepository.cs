@@ -103,6 +103,7 @@ namespace d360.model.DataAccessLayer
 									,A.DisplayFormat
 									,A.AutoDisplayDescription
 									,A.UseAsTransformation
+                                    ,A.CanOwnFusion
                                     ,P.[Path]
                         FROM        AssetType A
                                     {optionalJoin}

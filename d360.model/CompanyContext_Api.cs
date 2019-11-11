@@ -876,8 +876,8 @@ from	api.ExecutionField T
                 }
             }
 
-            _ = QueueSource.CreateTopicMessagesAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
-
+            if (events.Any())
+                QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);            
         }
 
         #region Validation
