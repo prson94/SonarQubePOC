@@ -49,6 +49,7 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part'
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 import { NgxJsonViewModule } from 'ng-json-view';
+import { IconService } from '../../../services/icon.service';
 
 @NgModule({
     imports: [CommonModule,
@@ -114,7 +115,9 @@ import { NgxJsonViewModule } from 'ng-json-view';
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
-            multi: true },
+            multi: true
+        },
+        IconService
     ]
 })
 export class SharedDiagramModule { }

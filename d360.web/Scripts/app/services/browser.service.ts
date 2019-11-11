@@ -1,26 +1,45 @@
-import {Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import { Injectable } from '@angular/core';
+import { HttpClient } from "@angular/common/http";
 import {
     catchError,
     distinctUntilChanged,
     map,
     switchMap
 } from 'rxjs/operators';
-import {Observable} from 'rxjs';
+import { Observable } from 'rxjs';
 
-import { AssetBrowserLineageApiRequestModel, AssetBrowserLineageApiResponseModel, AssetBrowserTranslation, AssetBrowserTranslationNode, AssetBrowserLineageApiItemModel, AssetBrowserTranslationLink, AssetBrowserLineageApiRelationshipModel, AssetBrowserDiagramAsset, AssetBrowserTranslationRelationCount, AssetBrowserDirection, AssetBrowserImpactApiRequestModel } from '../models/lineage.model';
+import {
+    AssetBrowserLineageApiRequestModel,
+    AssetBrowserLineageApiResponseModel,
+    AssetBrowserTranslation,
+    AssetBrowserTranslationNode,
+    AssetBrowserLineageApiItemModel,
+    AssetBrowserTranslationLink,
+    AssetBrowserLineageApiRelationshipModel,
+    AssetBrowserDiagramAsset,
+    AssetBrowserTranslationRelationCount,
+    AssetBrowserDirection,
+    AssetBrowserImpactApiRequestModel
+} from '../models/lineage.model';
 
-import {MessagesObservableService} from './messages-observable.service';
-
-import {BaseObservableService} from "./baseObservable.service";
-
+import { MessagesObservableService } from './messages-observable.service';
+import { BaseObservableService } from "./baseObservable.service";
+import { IconService } from './icon.service';
+import { AssetTypeClass } from '../models/asset.model';
+import { IconProperties } from '../models/icon-properties.model';
 @Injectable()
 export class BrowserService extends BaseObservableService {
+    private iconProperties: IconProperties[] = [];
+
     constructor(
         private http: HttpClient,
+        private iconService: IconService,
         messagesService: MessagesObservableService
     ) {
         super(messagesService);
+        this.iconService.getIconProperties().subscribe(data => {
+            this.iconProperties = data;
+        });
     }
 
     /**
@@ -400,8 +419,9 @@ export class BrowserService extends BaseObservableService {
         n.showReveal = AssetBrowserDirection[a.reveal] as any; //convert string from API to enum value
         n.hop = a.hop;
         n.assetUid = a.assetUid;
-        n.back = this.shadeColor(color, multiplier*15);
-        n.icon = "\uf02d";
+        n.class = AssetTypeClass[a.class] as any; //convert string from API to enum value
+        n.back = this.shadeColor(color, multiplier * 15);
+        n.icon = this.getIconUnicode(a.icon, n.class);
         n.isGroup = (a.items && a.items.length > 0);
         n.key = a.key;
         n.text = a.displayValue;
@@ -417,6 +437,7 @@ export class BrowserService extends BaseObservableService {
         }
 
         return n;
+
     }
 
     /**
@@ -457,5 +478,27 @@ export class BrowserService extends BaseObservableService {
         else if (g < 0) g = 0;
 
         return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16);
+    }
+
+    /**
+     * Accepts an icon string and asset type class
+     * @returns The unicode value of the specified icon, the class default, or null if no match is found
+     */
+    private getIconUnicode(icon, assetClass): string {
+        let id = this.iconService.removeIconPrefix(icon);
+
+        if (icon == null || icon.length == 0) {
+            if (assetClass == null)
+                return null;
+            id = this.iconService.getIconIdByClass(assetClass);
+        }
+
+        if (id != null) {
+            let iconProperties = this.iconProperties.find(d => d.id == id);
+            if (iconProperties != null) {
+                return String.fromCharCode(parseInt(iconProperties.unicodeValue, 16));
+            }
+        }
+        return null;
     }
 }
