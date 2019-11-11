@@ -351,4 +351,5 @@
   <include file="scripts/GOV-7550.xml"/> 
   <include file="scripts/GOV-8632.xml"/>
   <include file="scripts/GOV-8566.xml"/> <!-- script to create index for [[dbo].[FusionStatusLog] -->
+  <include file="scripts/GOV-8730.xml"/> <!-- update DeleteObject procedure for deletion of AssetTypeClass -->
 </databaseChangeLog>
