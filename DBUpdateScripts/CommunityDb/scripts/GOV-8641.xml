@@ -297,7 +297,7 @@ begin
 		[Type] int NOT NULL,
 		[BackColor] varchar(7) NULL,
 		[ForeColor] varchar(7) NULL,
-		[Icon] int NULL,
+		[Icon] varchar(50) NULL,
 		[State] int constraint DF_CommunityPredicate_State default(1) NOT NULL,
 		[CreatedOn] datetime constraint DF_CommunityPredicate_CreatedOn default(getutcdate()) NOT NULL,
 		[UpdatedOn] datetime constraint DF_CommunityPredicate_UpdatedOn default(getutcdate()) NOT NULL,

@@ -1,23 +1,15 @@
 ﻿using d360.core;
 using d360.core.entities.Community.Templates;
-using d360.core.enums;
-using d360.extensions.caching;
-using d360.extensions.info;
-using d360.extensions.queue;
-using d360.model;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace igx.jobs.communitypackagedeployer
 {
@@ -644,7 +636,6 @@ update  set
         T.Description = S.Description,
         T.Class = S.Class,
         T.DisplayFormat = S.DisplayFormat,
-        T.State = S.State,
         T.Hierarchical = S.Hierarchical,
         T.HierarchyMaximumDepth = S.HierarchyMaximumDepth,
         T.CanOwnFusion = S.CanOwnFusion,
@@ -709,7 +700,7 @@ values (S.AssetTypeID, S.BackColor, S.ForeColor, S.Icon);", transaction: trans);
 
                         trans.Commit();
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         trans.Rollback();
                     }
@@ -871,7 +862,7 @@ from    #IntersectTypeFields ATF
 
                         trans.Commit();
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         trans.Rollback();
                     }
@@ -956,7 +947,7 @@ values (S.Uid, S.Name, S.Inverse, S.[Type], 1);", transaction: trans);
 
                         trans.Commit();
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         trans.Rollback();
                     }
@@ -1133,7 +1124,7 @@ values (S.Object, S.ObjectID, S.AssetID, S.FieldTypeID, S.Value);", transaction:
 
                         trans.Commit();
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         trans.Rollback();
                     }
@@ -1304,7 +1295,7 @@ values (S.Object, S.ObjectID, S.FieldTypeID, S.Value);", transaction: trans);
 
                         trans.Commit();
                     }
-                    catch (Exception ex)
+                    catch
                     {
                         trans.Rollback();
                     }

@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
@@ -12,9 +13,13 @@ namespace d360.core.entities.Community.Templates
     {
         public Guid AssetTypeUid { get; set; }
         public string Description { get; set; }
+        [StringLength(250)]
         public string DisplayFormat { get; set; }
+        [StringLength(7)] 
         public string BackColor { get; set; }
+        [StringLength(7)] 
         public string ForeColor { get; set; }
+        [StringLength(50)] 
         public string Icon { get; set; }
         public int HierarchyMaximumDepth { get; set; }
         public State State { get; set; }
