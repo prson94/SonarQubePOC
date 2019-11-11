@@ -8,6 +8,7 @@ import { RouterModule } from '@angular/router';
 
 
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { CheckboxModule } from 'primeng/checkbox';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { ButtonModule } from 'primeng/button';
 import { InputTextareaModule } from 'primeng/inputtextarea';
@@ -18,6 +19,7 @@ import { ListboxModule } from 'primeng/listbox';
 import { DropdownModule } from 'primeng/dropdown';
 import { MenubarModule } from 'primeng/menubar';
 import { TabViewModule } from 'primeng/tabview';
+import { TreeModule } from 'primeng/tree';
 
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage/lineage.component';
@@ -67,6 +69,7 @@ import { IconService } from '../../../services/icon.service';
         SharedObjectDetailsModule,
 
         //prime        
+        CheckboxModule,
         EditorModule,     
         InputSwitchModule, 
         SharedModule,
@@ -78,6 +81,7 @@ import { IconService } from '../../../services/icon.service';
         MenubarModule,
         TableModule,
         TabViewModule,
+        TreeModule,
         //JSON Viewer module
         NgxJsonViewModule,
 
