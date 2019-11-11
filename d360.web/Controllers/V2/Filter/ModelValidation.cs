@@ -23,8 +23,35 @@ namespace d360.web.Controllers.V2
                         .Where(x => x.Exception != null && x.Exception.Source != null)
                         .Any(x => x.Exception.Source == "Newtonsoft.Json");
 
+                    //"   at Newtonsoft.Json.Utilities.EnumUtils.ParseEnum(Type enumType, String value, Boolean disallowNumber)\r\n   at Newtonsoft.Json.Serialization.JsonSerializerInternalReader.EnsureType(JsonReader reader, Object value, CultureInfo culture, JsonContract contract, Type targetType)"
+
                     if (isJsonParsingError)
-                        throw new Exception("You have not provided a valid JSON structure for this request.");
+                    {
+                        var errorMessage = "You have not provided a valid JSON structure for this request.";
+
+                        try
+                        {
+                            var errors = (from ms in actionContext.ModelState
+                                          from ex in ms.Value.Errors
+                                          where ex.Exception != null && ex.Exception.InnerException != null
+                                          select new
+                                          {
+                                              IsEnumError = ex.Exception.InnerException.StackTrace.Contains("Newtonsoft.Json.Utilities.EnumUtils.ParseEnum"),
+                                              ex.Exception.InnerException.Message,
+                                              Field = ms.Key
+                                          }).ToList();
+
+                            if (errors.Count > 0)
+                            {
+                                errorMessage = string.Join("; ", errors.Select(e => $"{e.Field} has error: {e.Message}"));
+                            }
+                        }
+                        catch
+                        {
+                        }
+
+                        throw new Exception(errorMessage);
+                    }
                 }
             }
         }
