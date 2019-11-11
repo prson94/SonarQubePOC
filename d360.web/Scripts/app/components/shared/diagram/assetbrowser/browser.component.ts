@@ -988,6 +988,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             this.isWindowVisible = true;
                             this.isWindowLoading = false;
                             this.showWindowTabs = true;
+                            this.cdRef.markForCheck();
                         });
                     }
                 }
