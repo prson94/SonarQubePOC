@@ -664,7 +664,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (this.isFullScreen)
             this.diagramRef.nativeElement.style.height = (height - 80) + 'px';
         else 
-            this.diagramRef.nativeElement.style.height = (height - offset - 275) + 'px';
+            this.diagramRef.nativeElement.style.height = (height - offset - 240) + 'px';
 
         //alert(this.bottomCommandBarRef.nativeElement.offsetParent.offsetTop);
     }
