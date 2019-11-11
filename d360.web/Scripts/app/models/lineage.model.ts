@@ -456,6 +456,7 @@ export class AssetBrowserTranslationNode {
     template: string;
     back: string;
     icon: string;
+    class: AssetTypeClass;
     subgraph: any;
     showIcon: boolean;
     showReveal: AssetBrowserDirection;
@@ -515,6 +516,8 @@ export class AssetBrowserLineageApiItemModel {
     displayValue: string;
     backColor: string;
     foreColor: string;
+    icon: string;
+    class: AssetTypeClass;
     reveal: AssetBrowserDirection;
     items: AssetBrowserLineageApiItemModel[];
     relationCounts: AssetBrowserLineageApiItemRelationCountModel[];
@@ -531,6 +534,7 @@ export class AssetBrowserLineageApiRelationshipModel {
     predicateType: number;
     backColor: string;
     foreColor: string;
+    icon: string;
 }
 
 export class AssetBrowserLineageApiResponseModel {

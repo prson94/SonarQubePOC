@@ -854,14 +854,14 @@ namespace d360.extensions.search
                 string fieldname;
                 switch (aggFilter.Field)
                 {
-                    case "d3sGroup":
+                    case "d3sCategory":
                         fieldname = D3S_FIELD_PREFIX + "Category";
                         break;
-                    case "type":
+                    case "d3sAssetType":
                         fieldname = D3S_FIELD_PREFIX + "AssetType";
                         break;
                     default:
-                        fieldname = D3S_FIELD_PREFIX + aggFilter.Field;
+                        fieldname = DYNAMIC_FIELD_PREFIX + aggFilter.Field;
                         break;
                 }
                 filterQueries.Add(new TermsQuery
