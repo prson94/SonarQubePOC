@@ -9,7 +9,7 @@ import { ApiResult } from '../models/apiresult.model';
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
 import { AssetEditorModel } from '../models/asset.model';
-import { CommonComponentAssetResult, AssetSearchFilter } from '../models/asset-search.model';
+import { CommonComponentAssetResult, AssetSearchFilter, AssetSearchApiResponse } from '../models/asset-search.model';
 
 @Injectable()
 export class AssetService extends BaseObservableService {
@@ -77,7 +77,7 @@ export class AssetService extends BaseObservableService {
     }
 
 
-    public searchAssetPath(filter: AssetSearchFilter): Observable<CommonComponentAssetResult[]> {
+    public searchAssetPath(filter: AssetSearchFilter): Observable<AssetSearchApiResponse> {
         const httpOptions = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
@@ -86,7 +86,7 @@ export class AssetService extends BaseObservableService {
             .http
             .post(`/api/v2/assets/paths`, filter, httpOptions)
             .pipe(map(response => {
-                return <CommonComponentAssetResult[]>((<any>response).items);
+                return <AssetSearchApiResponse>(response);
             }),
                 catchError(err => this.handleError(err))
             );

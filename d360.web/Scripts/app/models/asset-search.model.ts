@@ -45,3 +45,10 @@ export class AssetSearchFilter {
     PageNum: number;
     Filters: CommonComponentAssetTypeFilter[];
 }
+
+export class AssetSearchApiResponse {
+    items: CommonComponentAssetResult[];
+    total: number;
+    pageSize: number;
+    pageNum: number;
+}

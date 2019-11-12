@@ -7,16 +7,34 @@
                     <span class="value">{{segment.Value}}</span>
                     <i *ngIf="item.Segments.indexOf(segment) != item.Segments.length-1" class="arrow-right fa fa-chevron-right"></i>
                 </div>
-                <i (click)="unselect(i)" class="unselect fa fa-times-circle-o" aria-hidden="true"></i>
+                <i (click)="unselect(i)" class="unselect fa fa-times-circle" aria-hidden="true"></i>
+                <div style="display:block;"></div>
             </div>
 
-            <button type="button" class="add-source-button" (click)="openSearchWindow();">Add source</button>
+            <button *ngIf="multiSelect" type="button" class="add-source-button" (click)="openSearchWindow();">Add source</button>
+            <div *ngIf="!multiSelect" class="single-asset-selector" (click)="openSearchWindow();">
+                <ng-container *ngIf="results[0]">
+                    <div class="selected-item">
+                        <div class="segment" *ngFor="let segment of results[0].item.Segments;">
+                            <span class="value">{{segment.Value}}</span>
+                            <i *ngIf="results[0].item.Segments.indexOf(segment) != results[0].item.Segments.length-1" class="arrow-right fa fa-chevron-right"></i>
+                        </div>
+                        <i (click)="unselect(0)" class="unselect fa fa-times-circle" aria-hidden="true"></i>
+                        <div style="display:block;"></div>
+                    </div>
+                </ng-container>
+                <ng-container *ngIf="!results[0]">
+                    Choose or create a transformation...
+                </ng-container>
+            </div>
             <div *ngIf="isSearchWindowOpened" class="search-results">
-                <p-autoComplete [suggestions]="searchresults"
+                <p-autoComplete #autocomplete
+                                [suggestions]="searchresults"
                                 (completeMethod)="search($event)"
                                 [placeholder]="'Type to search for assets'"
                                 [minLength]="1"
-                                (onSelect)="onSelect($event)">
+                                (onSelect)="onSelect($event)"
+                                (onFocus)="autocomplete.show()">
                     <ng-template let-item pTemplate="item">
                         <div class="ui-helper-clearfix">
                             <div *ngFor="let segment of item.Segments;" class="segment">
@@ -26,6 +44,12 @@
                         </div>
                     </ng-template>
                 </p-autoComplete>
+                <ng-container *ngIf="searchResultsCount/pageSize > 1">
+                    <p-paginator [rows]="pageSize" [totalRecords]="searchResultsCount" (onPageChange)="paginate($event, autocomplete)"></p-paginator>
+                </ng-container>
+                <div class="no-results" *ngIf="searchResultsCount == 0">
+                    No assets by this search
+                </div>
             </div>
         </div>
     </div>

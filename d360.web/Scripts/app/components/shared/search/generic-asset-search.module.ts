@@ -13,6 +13,7 @@ import { SharedModule } from 'primeng/shared';
 
 import { PipesModule } from '../../../pipes/pipes.module';
 import { AssetSearchComponent } from './generic-asset-search.component';
+import { PaginatorModule } from 'primeng/paginator';
 
 
 @NgModule({
@@ -31,6 +32,7 @@ import { AssetSearchComponent } from './generic-asset-search.component';
         SharedModule,
         TreeModule,
         DialogModule,
+        PaginatorModule
     ],
     declarations: [
         AssetSearchComponent
