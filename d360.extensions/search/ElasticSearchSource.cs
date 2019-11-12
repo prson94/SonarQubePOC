@@ -333,18 +333,24 @@ namespace d360.extensions.search
 
         public void AddToIndex(IEnumerable<IndexObjectModel> items)
         {
-            var firstItem = items.FirstOrDefault();
-
-            if (firstItem == null) return;
-
-            var companyId = firstItem.CompanyID;
-
-            CreateIndexIfNotExists(companyId);
+            int companyId = default(int);
+            bool firstRun = true;
 
             List<string> postingErrors = new List<string>();
 
             foreach (var batch in items.Batch(BULK_BATCH_SIZE))
             {
+                //Get FirstOrDefault inside batch loop to not trigger enumeration twice
+                if(firstRun)
+                {
+                    firstRun = false;
+                    var firstItem = batch.FirstOrDefault();
+                    if (firstItem == null) return;
+
+                    companyId = firstItem.CompanyID;
+                    CreateIndexIfNotExists(companyId);
+                }
+
                 var sb = new StringBuilder();
 
                 var indexName = GetCompanyIndexName(companyId);
