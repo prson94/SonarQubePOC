@@ -72,6 +72,7 @@ namespace igx.jobs.apiexecutionprocessor
         const int DEFAULT_MERGE_BLOCK_SIZE = 500;
         const int DEFAULT_SQL_BULK_COPY_BLOCK_SIZE = 5000;
         const int DEFAULT_SQL_BULK_COPY_TIMEOUT = 0;
+        const int DEFAULT_WORKFLOW_BATCH_SIZE = 50;
 
         AzureQueueSource queue;
         CommunityContext community;
@@ -142,6 +143,11 @@ namespace igx.jobs.apiexecutionprocessor
                     if (int.TryParse(CoreFunction.GetConfigValueByKey("V2ApiBatchSqlBulkTimeout"), out int tempsqlBulkCopyTimeout))
                     {
                         company.SqlBulkBatchTimeout = tempsqlBulkCopyTimeout >= 0 ? tempsqlBulkCopyTimeout : DEFAULT_SQL_BULK_COPY_TIMEOUT;
+                    }
+
+                    if (int.TryParse(CoreFunction.GetConfigValueByKey("V2ApiBatchWorkflowBatchSize"), out int tempWorkflowBatchSize))
+                    {
+                        company.WorkflowSendBatchSize = tempWorkflowBatchSize >= 0 ? tempWorkflowBatchSize : DEFAULT_WORKFLOW_BATCH_SIZE;
                     }
 
                     bool fieldJsonPropertyLoadLimitToTopLevel = true;

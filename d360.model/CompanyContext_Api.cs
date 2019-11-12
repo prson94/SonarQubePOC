@@ -40,9 +40,10 @@ namespace d360.model
     {
         internal const int API_V2_RETRY_LIMIT = 10;
         internal const int API_V2_RETRY_INTERVAL = 100; // interval set in ms
-
+        
         public int SqlBulkBatchSize { get; set; } = 5000; // default size to use for sqlbulkcopy operations 0 means one batch
         public int SqlBulkBatchTimeout { get; set; } = 0; // timeout for sqlbulkcopy operations  0 means run until it happens
+        public int WorkflowSendBatchSize { get; set; } = 50; // number of items to send at a time for a batch of service bus messages
 
         #region DbSets
 
@@ -839,7 +840,7 @@ from	api.ExecutionField T
                             }
                         });
 
-                        if (events.Count > 50)
+                        if (events.Count > WorkflowSendBatchSize)
                         {
                             QueueSource.CreateTopicMessages(events);
                             events.Clear();
