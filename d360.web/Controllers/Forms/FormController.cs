@@ -402,6 +402,23 @@ namespace d360.web.Controllers
             throw new Exception("Invalid or non implemented editor type");
         }
 
+        [HttpGet, Route("dynamiceditor/new/{uid}")]
+        public JsonResult DynamicEditorAddFieldsByUid(string uid)
+        {
+            Guid guid = Guid.Empty;
+            if (Guid.TryParse(uid, out guid))
+            {
+                var asset = Company.AssetTypes.FirstOrDefault(x => x.uid == guid);
+                if (asset != null)
+                    return DynamicEditorAddFields(asset.Object.Replace("Type", ""), asset.ObjectID, null, null);
+                else
+                    throw new Exception("No Asset Type found for given Guid");
+
+            }
+            throw new Exception("Invalid Guid");
+
+        }
+
         [HttpGet, Route("dynamiceditor/new/{objectType}/{objectID?}/{parentID?}/{typeID?}")]
         public JsonResult DynamicEditorAddFields(string objectType, int? objectID, int? parentID, int? typeID)
         {

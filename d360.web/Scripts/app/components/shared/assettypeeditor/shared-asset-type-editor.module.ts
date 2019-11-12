@@ -20,6 +20,9 @@ import { AssetTypeEditorComponent } from './asset-type-editor.component';
 import { SimpleAccordionModule } from '../simple-accordion.part';
 import { AssetTypeEditorUseAsTransformationComponent } from './asset-type-editor-use-as-transformation.component';
 import { IconPickerModule } from '../icon-picker.component';
+import { AssetTypeModalEditorComponent } from './asset-type-modal-editor';
+import { SiteModalModule } from '../modal/gov-modal.module';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -28,11 +31,13 @@ import { IconPickerModule } from '../icon-picker.component';
         ReactiveFormsModule,
         FormsModule,
         RouterModule,
+        SharedDynamicGridEditorModule,
         //d3s
         CoreModule,                
         TilesModule,
         SimpleAccordionModule,        
         IconPickerModule,
+        SiteModalModule,
         //prime        
         ButtonModule,
         ColorPickerModule,
@@ -44,10 +49,11 @@ import { IconPickerModule } from '../icon-picker.component';
     ],
     declarations: [
         AssetTypeEditorComponent,
+        AssetTypeModalEditorComponent,
         AssetTypeEditorUseAsTransformationComponent
     ],
     exports: [
-        AssetTypeEditorComponent
+        AssetTypeEditorComponent, AssetTypeModalEditorComponent
     ],
     providers: [
         {

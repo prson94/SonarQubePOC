@@ -57,13 +57,14 @@ export class D3SModal implements OnChanges {
     }
 
     closePopUp() {
-        this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " begin-hide";
-        window.setTimeout(function () {
-            this.modalDiv.nativeElement.className = "modal-overlay";
-            this.onClose.emit(null);
-        }.bind(this), 250);
-        this.display = false;
-      
+        if (this.modalDiv) {
+            this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " begin-hide";
+            window.setTimeout(function () {
+                this.modalDiv.nativeElement.className = "modal-overlay";
+                this.onClose.emit(null);
+            }.bind(this), 250);
+            this.display = false;
+        }
     }
 
     confirm() {

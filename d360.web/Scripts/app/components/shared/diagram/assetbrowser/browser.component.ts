@@ -52,6 +52,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     tab: string = "info";
     selectedDiagramAsset: AssetBrowserDiagramAsset;
     private isFullScreen: boolean = false;
+    private isModalVisable: boolean = false;
     //#region control properties
 
     // Constants
@@ -157,6 +158,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.resizeDiagram();
     }
 
+    addAssetButtonClick(e) {
+        this.isModalVisable = true;
+    }
+    cancel() {
+        this.isModalVisable = false;
+    }
     //#endregion
 
     //#region helper methods

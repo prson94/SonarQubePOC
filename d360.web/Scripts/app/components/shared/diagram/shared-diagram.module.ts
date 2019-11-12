@@ -49,6 +49,7 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part'
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 import { NgxJsonViewModule } from 'ng-json-view';
+import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-type-editor.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -64,6 +65,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
         TilesModule,
         D3SOverlayWindowModule,
         SharedObjectDetailsModule,
+        SharedAssetTypeEditorModule,
 
         //prime        
         EditorModule,     
