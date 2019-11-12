@@ -4787,6 +4787,7 @@ a.mid-blue {
             .fa {
                 color: rgba(0,0,0,0.87) !important;
             }
+
             i.fa {
                 padding: 0px !important;
             }
@@ -4796,7 +4797,6 @@ a.mid-blue {
     .ui-autocomplete-panel {
         top: 30px !important;
     }
-
 }
 
 .asset-browser {
@@ -5035,3 +5035,107 @@ a.mid-blue {
     z-index: 1000;
 }
 
+
+.asset-browser-window {
+    padding: 10px;
+}
+
+.generic-asset-search {
+    padding: 2px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+
+    .search-box {
+        position: relative;
+
+        button.add-source-button {
+            border: 1px solid #cccccc;
+            border-radius: 2px;
+            display: block;
+            clear: both;
+        }
+
+        .search-results {
+            position: absolute;
+            max-width: 420px;
+            padding: 4px 0px;
+            background-color: white;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            box-shadow: 0px 0px 0px 0px black;
+            width: 100%;
+            margin-top: 8px;
+
+
+            input {
+                border: 1px solid #cccccc;
+                border-radius: 4px;
+                width: 98%;
+                padding: 8px;
+                margin: 0px 4px;
+                box-sizing: border-box;
+            }
+
+            .ui-autocomplete {
+                width: 100%;
+            }
+
+            .ui-autocomplete-panel {
+                position: initial;
+                overflow: initial;
+                margin-top: 4px;
+                box-shadow: none;
+
+                ul {
+                    padding: 0px;
+
+                    li {
+                        border: none;
+                        padding: 6px 13px;
+                        font-size: 16px;
+                        color: black;
+
+                        &:nth-child(even) {
+                            background-color: #f2f2f2;
+
+                            &.ui-state-highlight {
+                                background-color: #ffef99;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .selection {
+        position: relative;
+
+        .selected-item {
+            background-color: #f0f0f0;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 14px;
+            position: relative;
+            padding-right: 25px;
+            margin: 2px;
+
+
+            .unselect {
+                position: relative;
+                top: 0px;
+                right: -10px;
+            }
+        }
+    }
+
+    .arrow-right {
+        font-size: 10px;
+        margin: 0px 7px;
+    }
+
+
+    .segment {
+        display: inline-block;
+    }
+}

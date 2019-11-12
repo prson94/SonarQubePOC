@@ -109,6 +109,8 @@
                                         </div>
                                     </div>
                                     <div *ngIf="isWindowVisible" class="asset-browser-window">
+
+                                        <d3s-diagram-relationships></d3s-diagram-relationships>
                                         <div *ngIf="!showWindowTabs" style="padding:10px;">Nothing selected</div>
                                         <div class="asset-browser-window-header">
                                             <div [hidden]="!showWindowTabs && !isWindowLoading" class="asset-browser-window-header-name">
@@ -159,7 +161,7 @@
                                                 <div #ownerPanel class="asset-browser-window-tabs-content">
                                                     <p-table #dt [value]="selectedDiagramAsset?.Owners" [metaKeySelection]="true" [style]="{'width':'450px'}">
                                                         <ng-template pTemplate="header">
-                                                        <tr>
+<tr>
                                                             <th style="width: 50%">Responsibility</th>
                                                             <th style="width: 45%">Resource</th>
                                                             <th style="width: 5%"></th>

@@ -1,0 +1,32 @@
+﻿
+<div class="generic-asset-search">
+    <div class="search-box">
+        <div class="selection">
+            <div class="selected-item" *ngFor="let item of results;let i = index;">
+                <div class="segment" *ngFor="let segment of item.Segments;">
+                    <span class="value">{{segment.Value}}</span>
+                    <i *ngIf="item.Segments.indexOf(segment) != item.Segments.length-1" class="arrow-right fa fa-chevron-right"></i>
+                </div>
+                <i (click)="unselect(i)" class="unselect fa fa-times-circle-o" aria-hidden="true"></i>
+            </div>
+
+            <button type="button" class="add-source-button" (click)="openSearchWindow();">Add source</button>
+            <div *ngIf="isSearchWindowOpened" class="search-results">
+                <p-autoComplete [suggestions]="searchresults"
+                                (completeMethod)="search($event)"
+                                [placeholder]="'Type to search for assets'"
+                                [minLength]="1"
+                                (onSelect)="onSelect($event)">
+                    <ng-template let-item pTemplate="item">
+                        <div class="ui-helper-clearfix">
+                            <div *ngFor="let segment of item.Segments;" class="segment">
+                                <span class="value">{{segment.Value}}</span>
+                                <i *ngIf="item.Segments.indexOf(segment) != item.Segments.length-1" class="arrow-right fa fa-chevron-right"></i>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-autoComplete>
+            </div>
+        </div>
+    </div>
+</div>

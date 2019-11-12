@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -692,6 +692,7 @@
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rules.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-relationships.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\model-diagram.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\tools\relationships.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
@@ -707,6 +708,7 @@
     <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\search\generic-asset-search.component.html" />
     <Content Include="Scripts\app\components\shared\search\typeahead-search.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tags-usage-info.component.html" />
@@ -1133,6 +1135,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\gov-checkbox.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\assetbrowserlayout.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\tools\relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-responsibility-selector.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
@@ -1218,6 +1221,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\lookup-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-multiselect-grid.component.ts" />
     <Content Include="Scripts\app\components\shared\rightsidebar\right-sidebar.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcutdisplay\shortcut-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcutdisplay\shortcut-display.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-item.component.ts" />
@@ -1453,6 +1458,7 @@
     <TypeScriptCompile Include="Scripts\app\http-interceptors\error-notify-interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\http-interceptors\govern-request.interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\models\apiresult.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\asset-search.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset-type-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />

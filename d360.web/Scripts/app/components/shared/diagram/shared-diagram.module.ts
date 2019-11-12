@@ -52,6 +52,8 @@ import { SharedFormMessageModule } from '../form-message.part'
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 import { NgxJsonViewModule } from 'ng-json-view';
 import { IconService } from '../../../services/icon.service';
+import { DiagramAssetRelationshipComponent } from './tools/relationships.component';
+import { AssetSearchModule } from '../search/generic-asset-search.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -84,6 +86,7 @@ import { IconService } from '../../../services/icon.service';
         TreeModule,
         //JSON Viewer module
         NgxJsonViewModule,
+        AssetSearchModule
 
     ],
     declarations: [
@@ -106,6 +109,7 @@ import { IconService } from '../../../services/icon.service';
         ModelDiagramComponent,
 
         LineageDiagramComponent,
+        DiagramAssetRelationshipComponent
     ],
     exports: [
         AssetBrowserComponent,

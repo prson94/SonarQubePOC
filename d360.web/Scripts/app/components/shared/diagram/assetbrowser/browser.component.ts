@@ -14,7 +14,8 @@ import {
     AssetBrowserTranslationRelationCount,
     AssetBrowserImpactApiRequestModel,
     AssetBrowserImpactApiAssetRequestModel,
-    AssetBrowserLineageApiItemModel,    FilterAncestryMode,
+    AssetBrowserLineageApiItemModel,
+    FilterAncestryMode,
     FilterAncestryOption
 } from '../../../../models/lineage.model';
 
