@@ -375,11 +375,14 @@ namespace igx.jobs.communitypackagedeployer
 merge   into FieldType T 
 using   ({sourceSql}) S 
 on      (T.Object = S.Object and T.ObjectID = S.ObjectID and T.[Name] = S.[Name]) 
-when matched then
-update  set {updateColumns}
 when not matched then 
 insert (Object, ObjectID, {insertTargetColumnColumns}{targetExtraColumns}) 
 values (S.Object, S.ObjectID, {insertSourceColumnColumns}{sourceExtraColumns});";
+
+            /*
+when    matched then
+update  set {updateColumns}
+ */
         }
 
         public void SynchronizeAssetTypes(List<AssetType> assetTypes, List<AssetTypeVersion> assetTypeVersions)
@@ -630,7 +633,12 @@ create table #AssetTypeStyles (
 merge   into AssetType T 
 using   #AssetTypes S 
 on      (T.Uid = S.Uid) 
-when matched and S.UpdatedOn > T.UpdatedOn then
+when not matched then 
+insert (Uid, Name, Description, Class, Object, DisplayFormat, State, Hierarchical, HierarchyMaximumDepth, CanOwnFusion, AutoDisplayDescription, UseAsTransformation, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
+values (S.Uid, S.Name, S.Description, S.Class, S.Object, S.DisplayFormat, S.State, S.Hierarchical, S.HierarchyMaximumDepth, S.CanOwnFusion, S.AutoDisplayDescription, S.UseAsTransformation, S.UpdatedOn, 0, S.UpdatedOn, 0);", transaction: trans);
+
+/*
+when    matched and S.UpdatedOn > T.UpdatedOn then
 update  set
         T.Name = S.Name,
         T.Description = S.Description,
@@ -642,10 +650,8 @@ update  set
         T.AutoDisplayDescription = S.AutoDisplayDescription,
         T.UseAsTransformation = S.UseAsTransformation,
         T.UpdatedOn = S.UpdatedOn,
-        T.UpdatedBy = 0
-when not matched then 
-insert (Uid, Name, Description, Class, Object, DisplayFormat, State, Hierarchical, HierarchyMaximumDepth, CanOwnFusion, AutoDisplayDescription, UseAsTransformation, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy) 
-values (S.Uid, S.Name, S.Description, S.Class, S.Object, S.DisplayFormat, S.State, S.Hierarchical, S.HierarchyMaximumDepth, S.CanOwnFusion, S.AutoDisplayDescription, S.UseAsTransformation, S.UpdatedOn, 0, S.UpdatedOn, 0);", transaction: trans);
+        T.UpdatedBy = 0                         
+*/
 
                         connection.Execute(@"
 update  T
@@ -656,19 +662,25 @@ from    #AssetTypeLevels T
 merge   into AssetTypeLevel T 
 using   #AssetTypeLevels S 
 on      (T.AssetTypeID = S.AssetTypeID and T.[Level] = S.[Level]) 
-when matched then
-update  set
-        T.Name = S.Name,
-        T.Description = S.Description
 when not matched then 
 insert (AssetTypeID, Name, Description, [Level]) 
 values (S.AssetTypeID, S.Name, S.Description, S.[Level]);
+", transaction: trans);
+
+/*
+when    matched then
+update  set
+        T.Name = S.Name,
+        T.Description = S.Description
+
+
 
 delete  T
 from    AssetTypeLevel T
         left join #AssetTypeLevels S on S.AssetTypeID = T.AssetTypeID and S.[Level] = T.[Level]
 where   S.AssetTypeID is null
-        and T.AssetTypeID in (select AssetTypeID from #AssetTypeLevels);", transaction: trans);
+        and T.AssetTypeID in (select AssetTypeID from #AssetTypeLevels);
+*/
 
                         var fieldSql = buildFieldMergeSql(@"
 select  ATF.*,
@@ -689,15 +701,16 @@ from    #AssetTypeStyles T
 merge   into AssetTypeStyle T 
 using   #AssetTypeStyles S 
 on      (T.ID = S.AssetTypeID) 
-when matched then
-update  set
-        T.IconBackColor = S.BackColor,
-        T.IconForeColor = S.ForeColor,
-        T.Icon = S.Icon
 when not matched then 
 insert (ID, IconBackColor, IconForeColor, Icon) 
 values (S.AssetTypeID, S.BackColor, S.ForeColor, S.Icon);", transaction: trans);
-
+                        /*
+                        when    matched then
+                        update  set
+                                T.IconBackColor = S.BackColor,
+                                T.IconForeColor = S.ForeColor,
+                                T.Icon = S.Icon 
+                        */
                         trans.Commit();
                     }
                     catch
@@ -836,6 +849,11 @@ using   (
                     inner join [Predicate] P on P.Uid = I.PredicateUid
         ) S
 on (T.Uid = S.Uid)
+when not matched then 
+insert (Uid, Subject, SubjectID, SubjectCardinality, Object, ObjectID, ObjectCardinality, PredicateID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, IsSystem) 
+values (S.Uid, S.Subject, S.SubjectID, S.SubjectCardinality, S.Object, S.ObjectID, S.ObjectCardinality, S.PredicateID, S.UpdatedOn, 0, S.UpdatedOn, 0, 1);", transaction: trans);
+
+                        /*
 when matched and S.UpdatedOn > T.UpdatedOn then
 update  set
         T.Subject = S.Subject,
@@ -845,10 +863,8 @@ update  set
         T.ObjectID = S.ObjectID,
         T.ObjectCardinality = S.ObjectCardinality,
         T.PredicateID = S.PredicateID,
-        T.UpdatedOn = S.UpdatedOn
-when not matched then 
-insert (Uid, Subject, SubjectID, SubjectCardinality, Object, ObjectID, ObjectCardinality, PredicateID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, IsSystem) 
-values (S.Uid, S.Subject, S.SubjectID, S.SubjectCardinality, S.Object, S.ObjectID, S.ObjectCardinality, S.PredicateID, S.UpdatedOn, 0, S.UpdatedOn, 0, 1);", transaction: trans);
+        T.UpdatedOn = S.UpdatedOn                         
+                         */
 
                         var fieldSql = buildFieldMergeSql(@"
 select  ATF.*,
@@ -936,14 +952,16 @@ Inverse nvarchar(100) not null,
 merge   into [Predicate] T
 using   #Predicates S
 on (T.Uid = S.Uid)
-when matched then
-update  set
-        T.Name = S.Name,
-        T.Inverse = S.Inverse,
-        T.[Type] = S.[Type]
 when not matched then 
 insert (Uid, Name, Inverse, [Type], IsSystem) 
 values (S.Uid, S.Name, S.Inverse, S.[Type], 1);", transaction: trans);
+                        /*
+when    matched then
+update  set
+        T.Name = S.Name,
+        T.Inverse = S.Inverse,
+        T.[Type] = S.[Type]                         
+                         */
 
                         trans.Commit();
                     }
@@ -1093,14 +1111,17 @@ using   (
                     inner join AssetType S on S.Uid = I.AssetTypeUid
         ) S
 on (T.Uid = S.Uid)
-when matched and S.UpdatedOn > T.UpdatedOn then
+when not matched then 
+insert (Uid, Object, AssetTypeID, State, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Code) 
+values (S.Uid, S.Object, S.AssetTypeID, S.State, S.UpdatedOn, 0, S.UpdatedOn, 0, S.Code);", transaction: trans);
+
+                        /*
+when    matched and S.UpdatedOn > T.UpdatedOn then
 update  set
         T.State = S.State,
         T.UpdatedOn = S.UpdatedOn,
         T.UpdatedBy = 0
-when not matched then 
-insert (Uid, Object, AssetTypeID, State, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, Code) 
-values (S.Uid, S.Object, S.AssetTypeID, S.State, S.UpdatedOn, 0, S.UpdatedOn, 0, S.Code);", transaction: trans);
+                         */
 
                         connection.Execute(@"
 merge   into Field T 
@@ -1115,12 +1136,15 @@ using   (
                 inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.Name = F.Name
         ) S 
 on      (T.FieldTypeID = S.FieldTypeID and T.AssetID = S.AssetID) 
-when matched then
-update  set
-        T.Value = S.Value
 when not matched then 
 insert (ObjectType, ObjectID, AssetID, FieldTypeID, Value) 
 values (S.Object, S.ObjectID, S.AssetID, S.FieldTypeID, S.Value);", transaction: trans);
+
+                        /*
+when matched then
+update  set
+        T.Value = S.Value
+                        */
 
                         trans.Commit();
                     }
@@ -1262,16 +1286,19 @@ using   (
                     inner join [IntersectType] IT on IT.Uid = I.IntersectTypeUid
         ) S
 on (T.Uid = S.Uid)
-when matched and S.UpdatedOn > T.UpdatedOn then
+when not matched then 
+insert (Uid, IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, State) 
+values (S.Uid, S.IntersectTypeID, S.Subject, S.SubjectID, S.Object, S.ObjectID, S.UpdatedOn, 0, S.UpdatedOn, 0, S.State);", transaction: trans);
+
+                        /*
+when    matched and S.UpdatedOn > T.UpdatedOn then
 update  set
         T.Subject = S.Subject,
         T.SubjectID = S.SubjectID,
         T.Object = S.Object,
         T.ObjectID = S.ObjectID,
-        T.State = S.State
-when not matched then 
-insert (Uid, IntersectTypeID, Subject, SubjectID, Object, ObjectID, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy, State) 
-values (S.Uid, S.IntersectTypeID, S.Subject, S.SubjectID, S.Object, S.ObjectID, S.UpdatedOn, 0, S.UpdatedOn, 0, S.State);", transaction: trans);
+        T.State = S.State                         
+                         */
 
                         connection.Execute(@"
 merge   into Field T 
@@ -1286,12 +1313,15 @@ using   (
                 inner join FieldType FT on FT.Object = 'IntersectType' and FT.ObjectID = IT.ID and FT.Name = F.Name
         ) S 
 on      (T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID) 
-when matched then
-update  set
-        T.Value = S.Value
 when not matched then 
 insert (ObjectType, ObjectID, FieldTypeID, Value) 
 values (S.Object, S.ObjectID, S.FieldTypeID, S.Value);", transaction: trans);
+
+                        /*
+when    matched then
+update  set
+        T.Value = S.Value                         
+                         */
 
                         trans.Commit();
                     }
