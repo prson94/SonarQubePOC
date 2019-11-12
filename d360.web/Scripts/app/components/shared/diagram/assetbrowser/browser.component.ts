@@ -513,12 +513,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (data.relations != null && data.relations.length > 0) {
                     for (let i = 0; i < data.relations.length; i++) {
                         let r = data.relations[i];
-                        r.key = `${data.key}_${r.predicateUid}`;
-                        if (g.data.relations.find(c => c.key == r.key) == null) {
+                        let rel = childRelations.find(c => c.predicateUid == r.predicateUid);
+                        if (rel != null) {
+                            rel.count += r.count;
+                        }
+                        else if (g.data.relations.find(c => c.predicateUid == r.predicateUid) == null) {
                             childRelations.push(r);
                         }
-                        data.relations.splice(i, 1);
                     }
+                    data.relations = [];
                 }
             });
 
