@@ -1,27 +1,19 @@
 ﻿using d360.core.entities;
-using d360.core.exceptions;
 using d360.core.queue;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
 using d360.model;
-using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
-using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Ganss.XSS;
-using System.Text.RegularExpressions;
 using d360.extensions.storage;
 using System.Text;
-using System.Threading;
 using d360.core;
 
 namespace igx.jobs.apiexecutionprocessor
@@ -78,6 +70,9 @@ namespace igx.jobs.apiexecutionprocessor
         const string functionName = "ApiExecution_Process";
 
         const int DEFAULT_MERGE_BLOCK_SIZE = 500;
+        const int DEFAULT_SQL_BULK_COPY_BLOCK_SIZE = 5000;
+        const int DEFAULT_SQL_BULK_COPY_TIMEOUT = 0;
+        const int DEFAULT_WORKFLOW_BATCH_SIZE = 50;
 
         AzureQueueSource queue;
         CommunityContext community;
@@ -130,13 +125,29 @@ namespace igx.jobs.apiexecutionprocessor
                 {
                     AssetType assetType = null;
                     IntersectType intersectType = null;
-                    int mergeBlockSize = DEFAULT_MERGE_BLOCK_SIZE;                    
+                    int mergeBlockSize = DEFAULT_MERGE_BLOCK_SIZE;
+                    
 
                     int dbExecutionTimeout = int.Parse(CoreFunction.GetConfigValueByKey("DBExecuteQueryTimeout"));
                     
                     if (int.TryParse(CoreFunction.GetConfigValueByKey("V2ApiBatchMergeBlockSize"), out int tempBlockSize))
                     {
                         mergeBlockSize = tempBlockSize > 0 ? tempBlockSize : DEFAULT_MERGE_BLOCK_SIZE;
+                    }
+
+                    if (int.TryParse(CoreFunction.GetConfigValueByKey("V2ApiBatchSqlBatchSize"), out int tempsqlBulkCopyBlockSize))
+                    {
+                        company.SqlBulkBatchSize = tempsqlBulkCopyBlockSize >= 0 ? tempsqlBulkCopyBlockSize : DEFAULT_SQL_BULK_COPY_BLOCK_SIZE;
+                    }
+
+                    if (int.TryParse(CoreFunction.GetConfigValueByKey("V2ApiBatchSqlBulkTimeout"), out int tempsqlBulkCopyTimeout))
+                    {
+                        company.SqlBulkBatchTimeout = tempsqlBulkCopyTimeout >= 0 ? tempsqlBulkCopyTimeout : DEFAULT_SQL_BULK_COPY_TIMEOUT;
+                    }
+
+                    if (int.TryParse(CoreFunction.GetConfigValueByKey("V2ApiBatchWorkflowBatchSize"), out int tempWorkflowBatchSize))
+                    {
+                        company.WorkflowSendBatchSize = tempWorkflowBatchSize >= 0 ? tempWorkflowBatchSize : DEFAULT_WORKFLOW_BATCH_SIZE;
                     }
 
                     bool fieldJsonPropertyLoadLimitToTopLevel = true;
