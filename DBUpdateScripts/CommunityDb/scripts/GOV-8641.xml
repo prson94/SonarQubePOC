@@ -395,7 +395,7 @@ end
     </rollback>
   </changeSet> 
 
-  <changeSet author="Pappas" id="GOV-8641-Intersect">
+  <changeSet author="Pappas" id="GOV-8641-GetChanges-Proc">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
