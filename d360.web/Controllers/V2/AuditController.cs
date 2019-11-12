@@ -39,12 +39,12 @@ namespace d360.web.Controllers.V2
     HttpGet,
     Route("{type}/{uid}/auditcombined.json")
 ]
-        public async Task<IHttpActionResult> AuditCombined(SystemObjects type, Guid uid, string sortDataField, string sortOrder, int pagenum, int pagesize)
+        public async Task<IHttpActionResult> AuditCombined(SystemObjects type, Guid uid, string sortDataField)
         {
             try
             {
                 int id = Company.GetObjectId(uid, type);
-                return await AuditCombined(type, id, sortDataField, sortOrder, pagenum, pagesize);
+                return await AuditCombined(type, id, sortDataField);
             }
             catch
             {
@@ -56,7 +56,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("{type}/{id:int}/auditcombined.json")
         ]
-        public async Task<IHttpActionResult> AuditCombined(SystemObjects type, int id, string sortDataField, string sortOrder, int pagenum, int pagesize)
+        public async Task<IHttpActionResult> AuditCombined(SystemObjects type, int id, string sortDataField)
         {
             try
             {
@@ -75,7 +75,7 @@ namespace d360.web.Controllers.V2
 										WHEN ga.Action = 'Tag Consolidate' THEN ga.ObjectName
 										ELSE fa.Value
 	                                 END as NewValue, 
-									 AT.Class,
+									coalesce(AT.Class, AD.AssetTypeClass) as Class,
                                      fa.[Version] as 'Version',	                            
                                  									 CASE 
 									      WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
@@ -89,7 +89,8 @@ namespace d360.web.Controllers.V2
                             from reporting.global_audit ga 
         left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
                                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId
-								left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID ";
+								left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
+                                left join AssetDetail AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID";
                 //get all auditing by type (introduced in tagging)
                 if(id == 0)
                 {
@@ -362,23 +363,6 @@ namespace d360.web.Controllers.V2
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 
             return ResponseMessage(result);
-            /*var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
-            stream.Position = 0;
-            HttpResponseMessage result = null;
-            // serve the file to the client      
-            result = Request.CreateResponse(HttpStatusCode.OK);
-
-            result.Content = new StreamContent(stream);
-            
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-            result.Content.Headers.ContentLength = stream.Length;
-            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = $"Reference Items.xlsx"
-            };
-            return Ok(result);*/
         }
     }
 }

@@ -495,7 +495,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
         public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
         {
             var currentFieldTypes = Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID, i => i.FieldTypeLookup).ToList();
-
+            
             var newFieldTypes = new List<FieldType>();
 
             var fieldTypeNamesToDelete = new List<string>();
@@ -1125,6 +1125,11 @@ from	IntersectType I
                 }
 
             };
+
+            if(model.RelationshipTypeUid != null)
+            {
+                newFieldTypes.ForEach(x => x.IsPartOfKey = false);
+            }
 
             if (model.Action == FieldTypesApiEditAction.Merge)
             {

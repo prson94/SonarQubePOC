@@ -49,7 +49,9 @@ namespace d360.web.Controllers
             }
             else
             {
-                nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
+                var techAssets = Company.Query<int>($"select count(*) from AssetType where Class = {(int)AssetTypeClass.TechnicalAsset}").First();
+                if (techAssets == 0)
+                    nodes = nodes.Where(x => x.MenuID != "#Technical").ToList();
             }
 
             if (nodes != null)
@@ -383,7 +385,7 @@ namespace d360.web.Controllers
                     throw new Exception($"Folder Id ${folder.ID} not found.");
                 string originalImage = siteNav.ImageIconUrl;
 
-                if (!string.IsNullOrEmpty(originalImage))
+                if (!string.IsNullOrEmpty(originalImage) && string.IsNullOrEmpty(folder.ImageIconUrl))
                 {
                     try
                     {

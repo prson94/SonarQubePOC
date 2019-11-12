@@ -8,6 +8,7 @@ import { RouterModule } from '@angular/router';
 
 
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { CheckboxModule } from 'primeng/checkbox';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { ButtonModule } from 'primeng/button';
 import { InputTextareaModule } from 'primeng/inputtextarea';
@@ -18,6 +19,7 @@ import { ListboxModule } from 'primeng/listbox';
 import { DropdownModule } from 'primeng/dropdown';
 import { MenubarModule } from 'primeng/menubar';
 import { TabViewModule } from 'primeng/tabview';
+import { TreeModule } from 'primeng/tree';
 
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage/lineage.component';
@@ -49,6 +51,7 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part'
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 import { NgxJsonViewModule } from 'ng-json-view';
+import { IconService } from '../../../services/icon.service';
 
 @NgModule({
     imports: [CommonModule,
@@ -66,6 +69,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
         SharedObjectDetailsModule,
 
         //prime        
+        CheckboxModule,
         EditorModule,     
         InputSwitchModule, 
         SharedModule,
@@ -77,6 +81,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
         MenubarModule,
         TableModule,
         TabViewModule,
+        TreeModule,
         //JSON Viewer module
         NgxJsonViewModule,
 
@@ -114,7 +119,9 @@ import { NgxJsonViewModule } from 'ng-json-view';
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
-            multi: true },
+            multi: true
+        },
+        IconService
     ]
 })
 export class SharedDiagramModule { }

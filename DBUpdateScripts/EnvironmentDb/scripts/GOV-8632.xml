@@ -1,0 +1,126 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-8632-DropCix">
+    <sql dbms="mssql"
+		endDelimiter="\nGO"
+		splitStatements="true"
+		stripComments="false">
+<![CDATA[
+if exists(select 1 from sys.indexes where name = 'CIX_GraphAssetNode_AssetId')
+begin
+	DROP INDEX [CIX_GraphAssetNode_AssetId] ON [graph].[AssetNode] WITH ( ONLINE = OFF );
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+if not exists(select 1 from sys.indexes where name = 'CIX_GraphAssetNode_AssetId')
+begin
+	CREATE UNIQUE CLUSTERED INDEX [CIX_GraphAssetNode_AssetId] ON [graph].[AssetNode] ( [ID] ASC );
+end
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="GOV-8632-PK">
+    <sql dbms="mssql"
+		endDelimiter="\nGO"
+		splitStatements="true"
+		stripComments="false">
+<![CDATA[
+if not exists(select 1 from sys.key_constraints where name = 'PK_GraphAssetNode')
+begin
+	ALTER TABLE graph.AssetNode ADD CONSTRAINT PK_GraphAssetNode PRIMARY KEY CLUSTERED (ID);
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+if exists(select 1 from sys.key_constraints where name = 'PK_GraphAssetNode')
+begin
+	ALTER TABLE [graph].[AssetNode] DROP CONSTRAINT [PK_GraphAssetNode] WITH ( ONLINE = OFF );
+end
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="GOV-8632-XmlIndices">
+    <sql dbms="mssql"
+		endDelimiter="\nGO"
+		splitStatements="true"
+		stripComments="false">
+<![CDATA[
+if not exists(select 1 from sys.indexes where name = 'IX_XML_GraphAssetNode_Segments_Primary')
+begin
+	CREATE PRIMARY XML INDEX IX_XML_GraphAssetNode_Segments_Primary on graph.AssetNode (Segments); 
+end
+if not exists(select 1 from sys.indexes where name = 'IX_XML_GraphAssetNode_Segments_Path')
+begin
+	CREATE XML INDEX IX_XML_GraphAssetNode_Segments_Path ON graph.AssetNode (Segments) USING XML INDEX IX_XML_GraphAssetNode_Segments_Primary FOR PATH;  
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+if exists(select 1 from sys.indexes where name = 'IX_XML_GraphAssetNode_Segments_Path')
+begin
+	DROP INDEX IX_XML_GraphAssetNode_Segments_Path ON [graph].[AssetNode]
+end
+if exists(select 1 from sys.indexes where name = 'IX_XML_GraphAssetNode_Segments_Primary')
+begin
+	DROP INDEX IX_XML_GraphAssetNode_Segments_Primary ON [graph].[AssetNode] 
+end
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="GOV-8632-GraphFullTextIndex">
+    <sql dbms="mssql"
+		endDelimiter="\nGO"
+		splitStatements="true"
+		stripComments="false">
+<![CDATA[
+IF OBJECTPROPERTY ( object_id('graph.AssetNode'), 'TableHasActiveFulltextIndex') = 0
+begin
+	CREATE FULLTEXT INDEX ON graph.AssetNode (Properties, [Path], Segments) KEY INDEX PK_GraphAssetNode ON FieldCatalog WITH (CHANGE_TRACKING=AUTO)
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+IF OBJECTPROPERTY ( object_id('graph.AssetNode'), 'TableHasActiveFulltextIndex') = 1
+begin
+	DROP FULLTEXT INDEX ON graph.AssetNode 
+end
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="GOV-8632-FieldFullTextIndex">
+    <sql dbms="mssql"
+		endDelimiter="\nGO"
+		splitStatements="true"
+		stripComments="false">
+<![CDATA[
+IF OBJECTPROPERTY ( object_id('dbo.Field'), 'TableHasActiveFulltextIndex') = 0
+begin
+	CREATE FULLTEXT INDEX ON Field ([Value], [FormattedValue]) KEY INDEX UQ_Field_ID ON FieldCatalog WITH (CHANGE_TRACKING=AUTO)
+end
+]]>
+    </sql>
+    <rollback>
+<![CDATA[
+IF OBJECTPROPERTY ( object_id('dbo.Field'), 'TableHasActiveFulltextIndex') = 1
+begin
+	DROP FULLTEXT INDEX ON dbo.Field 
+end
+]]>
+    </rollback>
+  </changeSet>
+
+</databaseChangeLog>

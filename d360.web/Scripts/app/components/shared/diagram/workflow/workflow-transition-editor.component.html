@@ -19,7 +19,8 @@
         <div class="col s12">
             <d3s-workflow-condition-list (addClick)="add()"
                                          (removeClick)="remove($event)"
-                                         [conditions]="transition.condition">
+                                         [conditions]="transition.condition"
+                                         [hideAllAnyOption]="true">
             </d3s-workflow-condition-list>
 
             <d3s-workflow-condition-editor *ngIf="formMode == FormMode.Adding || formMode == FormMode.Editing"

@@ -191,9 +191,9 @@ namespace d360.extensions
         /// Add the indexable item to the index queue for indexing processing.
         /// </summary>
         /// <param name="item">The item to index, containing all relevant information to add to the index.</param>
-        void AddToIndex(AddToIndexModel item);
+        void AddToIndex(IndexObjectModel item);
 
-        void AddToIndex(IEnumerable<AddToIndexModel> items);
+        void AddToIndex(IEnumerable<IndexObjectModel> items);
 
         /// <summary>
         /// Clears out all entries from a company's index.
@@ -240,16 +240,16 @@ namespace d360.extensions
         /// <param name="companyID">The current company ID</param>
         /// <param name="items">The current company ID</param>
         /// <exception cref="TooManyTypesException">Method will throw an exception if more than one type is detected in the list of items.</exception>
-        void ReIndex(int companyID, IEnumerable<AddToIndexModel> items);
+        void ReIndex(int companyID, IEnumerable<IndexObjectModel> items);
 
         /// <summary>
         /// Adds the item to the remove queue for removal from the index.
         /// </summary>
         /// <param name="item">The item to remove from the index.</param>
-        void RemoveFromIndex(RemoveFromIndexModel item);
-        void RemoveFromIndex(IEnumerable<RemoveFromIndexModel> items);
+        void RemoveFromIndex(IndexObjectModel item);
+        void RemoveFromIndex(IEnumerable<IndexObjectModel> items);
 
-        void UpdateInIndex(UpdateInIndexModel item);
-        void UpdateInIndex(IEnumerable<UpdateInIndexModel> items);
+        void UpdateInIndex(IndexObjectModel item);
+        void UpdateInIndex(IEnumerable<IndexObjectModel> items);
     }
 }

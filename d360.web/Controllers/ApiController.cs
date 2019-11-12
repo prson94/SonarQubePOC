@@ -6866,6 +6866,15 @@ where    A.RuleID = @id", new { id });
                             }
                         });
 
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Description", FieldName = "Description", FieldDescription = surveyType.GetDescription(i => i.Description), Value = surveyType.Description, DataType = "HTML" }
+                            }
+                        });
+
                     }
                     surveyType = null;
                     break;

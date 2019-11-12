@@ -65,6 +65,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="constants.cs" />
     <Compile Include="entities\Abstract\BaseObject.cs" />
+    <Compile Include="entities\Abstract\PagedApiBaseViewModel.cs" />
     <Compile Include="entities\Api\ApiExecution.cs" />
     <Compile Include="entities\Api\ApiEntityFieldTypeMultiSelectField.cs" />
     <Compile Include="entities\Api\ApiEntityUri.cs" />
@@ -370,9 +371,6 @@
     <Compile Include="queue\EventInfo.cs" />
     <Compile Include="queue\BulkLoadInfo.cs" />
     <Compile Include="queue\IndexObjectModel.cs" />
-    <Compile Include="queue\UpdateInIndexModel.cs" />
-    <Compile Include="queue\RemoveFromIndexModel.cs" />
-    <Compile Include="queue\AddToIndexModel.cs" />
     <Compile Include="queue\QueueAction.cs" />
     <Compile Include="queue\QueueObject.cs" />
     <Compile Include="resources\AssetTypeErrors.Designer.cs">

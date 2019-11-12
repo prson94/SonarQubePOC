@@ -393,6 +393,8 @@ namespace d360.web.Controllers.V2
         /// Gets a calculated score by asset type Uid
         /// </summary>
         /// <param name="assetTypeUid">The Uid of the asset type.</param>
+        /// <remarks><p>In addition to the below query parameters a field name for the asset type can be specified to filter by exact match. For example MyCustomField=someExactValue.</p>    
+        /// </remarks>
         /// <returns>Calculated scores.</returns>
         [
             HttpGet,

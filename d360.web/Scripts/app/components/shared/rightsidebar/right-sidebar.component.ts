@@ -369,7 +369,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         if (this.currentObject.Uid) {
             let scoreItems = this.items.filter(x => x.title === 'Scoring');
             if (scoreItems.length == 1) {
-                scoreItems[0].active = !scoreItems[0].active;
                 this.itemClicked(scoreItems[0]);
             }
         }

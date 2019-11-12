@@ -104,6 +104,8 @@ namespace d360.core.entities
 
         [DataMember]
         public string BackColor { get; set; }
+        [DataMember]
+        public string Icon { get; set; }
     }
 
     [DataContract(Name = "asset")]
