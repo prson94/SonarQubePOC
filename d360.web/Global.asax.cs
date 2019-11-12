@@ -119,6 +119,8 @@ namespace d360.web
 
             GlobalConfiguration.Configure(WebApiConfig.Register);
             CryptoConfig.AddAlgorithm(typeof(RSAPKCS1SHA256SignatureDescription), "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256");
+            // set the app insights telemetry initializer so that the user id can be passed with app insights info
+            Microsoft.ApplicationInsights.Extensibility.TelemetryConfiguration.Active.TelemetryInitializers.Add(new GovernAppInsightsTelemetryInitializer());
         }
     }
 }
