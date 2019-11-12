@@ -214,7 +214,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                         this.rightSidebarService.setCurrentArea(this.artifact.DisplayValue, res, 'Definition');
                     });
                     let areaName: string = this.currentAreaName ? this.currentAreaName : this.folderTitle;
-                    let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSET_ROOT}`;
+                    let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}`;
                     if (areaName == "Technical Assets") {
                         areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
                     }

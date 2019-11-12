@@ -1120,6 +1120,12 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-action.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets\assets.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets\assets.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets\assets.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\asset\asset.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\asset\asset.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\asset\asset.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.ts" />
