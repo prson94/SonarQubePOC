@@ -245,6 +245,7 @@ namespace d360.model
         ObjectDetail GetObjectDetail(string type, long id);
         ObjectStatisticTileModel GetObjectStatistics(SystemObjects type, int id);
         AssetTypeStyle GetAssetTypeStyle(int assetTypeId);
+        AssetTypeStyle GetAssetTypeStyle(Guid assetTypeUid);
         AssetTypeStyle GetAssetTypeStyle(string type, int id);
         string GetObjectTypePath(string type, long id);
         JObject GetPageInformation(SystemObjects o, int oid);
