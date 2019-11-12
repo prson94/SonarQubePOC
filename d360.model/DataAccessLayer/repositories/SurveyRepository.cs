@@ -453,15 +453,12 @@ namespace d360.model.DataAccessLayer
                     drop table if exists #tempSurveryIds;
                     create table #tempSurveryIds  (id int);
 
-                    drop table if exists #tempQuestionTypeOptionIds;
-                    create table #tempQuestionTypeOptionIds  (id int);
+
                     insert into #tempSurveryIds
                     select Id from dbo.Survey where  uid in @surveyUids;
-                    insert into #tempQuestionTypeOptionIds
-                        select QuestionTypeOptionID from 
-                           dbo.QuestionOption where QuestionID in (select ID from dbo.Question where SurveyID in (Select Id from #tempSurveryIds));
+                   
                     delete from dbo.QuestionOption where QuestionID in (select ID from dbo.Question where SurveyID in (Select Id from #tempSurveryIds));
-                    delete from dbo.QuestionTypeOption where id in (select Id from #tempQuestionTypeOptionIds);
+                 
                     delete from dbo.Question where SurveyID in (Select Id from #tempSurveryIds);
                     SET NOCOUNT OFF; 
                     delete from dbo.Survey where  id in  (Select Id from #tempSurveryIds);

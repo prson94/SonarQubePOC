@@ -199,7 +199,19 @@ namespace d360.web.Controllers.V2
         /// Retrieves assets based on a search of its full path. You also have the option of pre-filtering the types of assets you wish 
         /// to target, based on Uid, Class, or specific properties defined on an asset type.
         /// </summary>
-        /// <returns>An HTTP status code and message.</returns>
+        /// <param name="model">
+        /// An object containing:
+        /// 1. searchPhrase: The text or phrase you want to find within the path of an asset. 
+        /// 2. filters: An array or list of different filters you want to limit the search scope to. There are a complex set of filters you can use such as:
+        ///     1. Uid: The asset type Uid to filter by.
+        ///     2. Class: An enumeration value (BusinessAsset, TechnicalAsset, Model, Policy, etc.) indicating the class of asset you want to limit your search to.
+        ///     3. UseAsTransformation: A true/false value indicating whether you want to limit your search only assets that can be used as a transformation or not.
+        ///     4. AsSideOfRelationship: Limit your asset search only to assets that have the option of participating in a relationship based on whether it is:
+        ///         1. Side: "Subject" or "Object" of a relationship.
+        ///         2. PredicateType: Whether it can participate in a relationship whose predicate functional type is based on one of the available enumeration values.
+        ///         3. PredicateUid: Whether it can participate in a relationship using a specific predicate, based on its Uid.
+        /// </param>
+        /// <returns>A list of search results based on the filter criteria provided, along with an HTTP status code and message.</returns>
         [
             HttpPost,
             Route("paths"),
@@ -217,7 +229,7 @@ namespace d360.web.Controllers.V2
 
                 if (model == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have passed an empty or invalid set of criteria."));
-                
+
                 if (string.IsNullOrEmpty(model.searchPhrase))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You must provide a search phrase."));
 

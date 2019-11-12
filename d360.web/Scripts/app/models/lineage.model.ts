@@ -458,6 +458,7 @@ export class AssetBrowserTranslationNode {
     icon: string;
     class: AssetTypeClass;
     subgraph: any;
+    showIcon: boolean;
     showReveal: AssetBrowserDirection;
     relations: AssetBrowserTranslationRelationCount[] = new Array();
 }
@@ -578,6 +579,21 @@ export class AssetBrowserDiagramAssetOwner {
     ResourceName: string;
     SecurityAssetName: string;
     Context: string;
+}
+
+//#endregion
+
+//#region Asset Browser : FilterPanel Data
+
+export enum FilterAncestryMode {
+    AllAncestors,
+    DirectAncestor,
+    NoAncestor
+}
+
+export class FilterAncestryOption {
+    Mode: FilterAncestryMode;
+    Text: string;
 }
 
 //#endregion

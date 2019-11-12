@@ -4,7 +4,7 @@ import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
 import {JsonResult} from '../models/jsonresult.model';
-import {AssetTypeEditorModel, AssetTypeClass, AssetType} from "../models/asset.model";
+import {AssetTypeEditorModel, AssetTypeClass, AssetType, AssetTypeApiModel} from "../models/asset.model";
 
 
 import {BaseObservableService} from "./baseObservable.service";
@@ -48,6 +48,18 @@ export class AssetTypeService extends BaseObservableService {
     }
 
     //#region v2 endpoints
+
+    public getAssetTypes()
+        : Observable<AssetTypeApiModel[] & ErrorResponse> {
+        return this
+            .http
+            .get('api/v2/assets/types')
+            .pipe(
+                map(response => <AssetTypeApiModel[]  & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
 
     public postAssetType(model: AssetType)
         : Observable<ApiResult & ErrorResponse> {

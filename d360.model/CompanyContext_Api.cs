@@ -422,13 +422,13 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
         private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600)
         {
             return Connection.Query<AssetFieldTypeUpdate>($@"
-select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from api.ExecutionAsset EA 
+select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from {tableName} EA 
 	inner join api.ExecutionField EF on EF.ExecutionID = EA.ExecutionID 
                         and EF.ItemNumber = EA.ItemNumber 
                         and EA.ObjectID is not null 
                         and EF.FieldTypeID is not null
 	inner join Field F on F.FieldTypeId = EF.FieldTypeID and F.ObjectType = EA.Object and F.ObjectId = EA.ObjectID
-where EA.ExecutionID = @executionID and EA.IsNew <> 1 and F.Value <> EF.FieldValue and @sendWorkflowEvents = 1
+where EA.ExecutionID = @executionID and EA.IsNew <> 1 and F.Value <> EF.FieldValue and @sendWorkflowEvents = 1 and EA.ItemNumber between @beginItemNumber and @endItemNumber
 
 merge       Field as T
 using       (
@@ -467,7 +467,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
             string assetJoin = resolveRelationshipOnObjectId ? "S.ObjectID = cast(V.[value] as int)" : "S.DisplayValue = V.[value]";
 
 
-                Connection.Execute($@"
+            Connection.Execute($@"
                 begin
 	                drop table if exists #Relationships;
 	                create table #Relationships
@@ -588,7 +588,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                             where  ID is null;
                 end
 ",
-                new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);          
+            new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
         private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
@@ -809,17 +809,22 @@ from	api.ExecutionField T
             try
             {
                 var events = new List<EventInfo>();
+
+                Dictionary<string, int[]> fieldUpdatePairs = new Dictionary<string, int[]>();
+                foreach (var item in fieldUpdates.GroupBy(x => x.Object + x.ObjectId))
+                {
+                    fieldUpdatePairs.Add(item.Key, item.Select(x => x.Id).ToArray());
+                }
+
+
                 foreach (var result in results)
                 {
                     if (result.Success)
                     {
                         List<int> changedFieldsIDS = new List<int>();
-                        if (fieldUpdates != null)
+                        if (fieldUpdatePairs.ContainsKey(result.Object + result.ObjectID))
                         {
-                            foreach (var ftUpdate in fieldUpdates.Where(x => x.Object == result.Object && x.ObjectId == result.ObjectID))
-                            {
-                                changedFieldsIDS.Add(ftUpdate.Id);
-                            }
+                            changedFieldsIDS = fieldUpdatePairs[result.Object + result.ObjectID].ToList();
                         }
 
                         events.Add(new EventInfo
@@ -877,7 +882,7 @@ from	api.ExecutionField T
             }
 
             if (events.Any())
-                QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);            
+                QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
         }
 
         #region Validation
@@ -1478,7 +1483,7 @@ from	IntersectType I
 			        [Message] ='You have not enabled Cascade, yet there are profiling data for this asset.'
 			from    api.ExecutionDeletedAsset S 
 			        inner join AssetDataProfile ADP on ADP.AssetID = S.AssetID
-			where	S.[ExecutionId] = @ExecutionID and S.[AssetId] is not null and S.[Cascade] = 0", 
+			where	S.[ExecutionId] = @ExecutionID and S.[AssetId] is not null and S.[Cascade] = 0",
             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             // Parent/Child Relationships
@@ -2317,16 +2322,17 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
                 results.AddRange(import.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
-            else { 
+            else
+            {
 
                 var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
                 if (uidDupes.Any())
                 {
-                    var  dupesResult= uidDupes.Join(import,
-                                        x=>x.Uid,
-                                        y=>y.Uid,
-                                        (d, i) => new { ExecutionItemUid = i.ExecutionItemUid,Uid = i.Uid,Count = d.Count }).ToList();
-                    results.AddRange(dupesResult.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid=i.Uid, Message = $"Duplicate Uid", Success = false }));
+                    var dupesResult = uidDupes.Join(import,
+                                        x => x.Uid,
+                                        y => y.Uid,
+                                        (d, i) => new { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Count = d.Count }).ToList();
+                    results.AddRange(dupesResult.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = $"Duplicate Uid", Success = false }));
                 }
                 else
                 {
@@ -2552,7 +2558,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             return results;
         }
 
-        private  void AITrackTrace(TelemetryClient client,ApiExecution execution,string methodName,string logMessage,long ElapsedMilliseconds,bool isLog)
+        private void AITrackTrace(TelemetryClient client, ApiExecution execution, string methodName, string logMessage, long ElapsedMilliseconds, bool isLog)
         {
             if (!isLog) return;
 
@@ -2578,7 +2584,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             }
             else
             {
-                
+
                 var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
                 if (isInsert)
                 {
@@ -3533,9 +3539,8 @@ select [uid] from #ParentChildRelationships",
                                         }
 
                                         #endregion
-                                        fieldTypeUpdates.Clear();
                                         sw.Restart();
-                                        fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+                                        var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         this.AITrackTrace(client, execution, METHOD_NAME, "MergeFields >> 1", sw.ElapsedMilliseconds, isLog);
                                         sw.Restart();
                                         ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
@@ -3568,6 +3573,8 @@ select [uid] from #ParentChildRelationships",
                                         this.AITrackTrace(client, execution, METHOD_NAME, "Update success flag", sw.ElapsedMilliseconds, isLog);
                                         trans.Commit();
 
+                                        //Add items after commit, so we dont have dirty data if trans is rolled back
+                                        fieldTypeUpdates.AddRange(transationFieldUpdates);
                                         runCompleted = true;
                                     }
                                     catch (Exception ex)
@@ -5454,7 +5461,7 @@ from    [Intersect] T
             }
             else if (nameDupes.Any())
             {
-                for(int idx = 0; idx < import.Count; idx++)
+                for (int idx = 0; idx < import.Count; idx++)
                 {
                     var dupe = nameDupes.FirstOrDefault(x => x.Name == import[idx].Name);
                     results.Add(new ResponsibilityTypeUpsertResult()
