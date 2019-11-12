@@ -140,6 +140,52 @@
                                                     </div>
 
                                                     <div class="asset-browser-window-tabs-content-field" *ngFor="let field of selectedDiagramAsset?.Fields">
+
+                                                        <ng-container [ngSwitch]="field.Type">
+                                                            <ng-container *ngSwitchCase="'text'">
+                                                                <div *ngIf="isEmail" class="FieldDisplayContent"><a [href]="'mailto:' + field.Value">{{field.Value}}</a></div>
+                                                                <div *ngIf="!isEmail" title="{{field.Value}}" class="FieldDisplayContent" [ngStyle]="{'font-weight':(isName ? 'bold':'')}">{{field.Value}}</div>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchCase="'date'">
+                                                                <div class="FieldDisplayContent">
+                                                                    <div>{{(field.Value | date:'shortDate')}}</div>
+                                                                </div>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchCase="'datetime'">
+                                                                <div class="FieldDisplayContent">
+                                                                    <div>{{(field.Value | date:'medium')}}</div>
+                                                                </div>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchCase="'bool'">
+                                                                <div class="FieldDisplayContent">
+                                                                    <i *ngIf="(field.Value || '').toUpperCase() == 'TRUE'" class="fa fa-check enabled" title="True"></i>
+                                                                    <i *ngIf="(field.Value || '').toUpperCase() == 'FALSE'" class="fa fa-times disabled" title="False"></i>
+                                                                </div>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchCase="'json'">
+                                                                <div class="FieldDisplayContent">
+                                                                    <div *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</div>
+                                                                    <ng-template #showJSON>
+                                                                        <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
+                                                                    </ng-template>
+                                                                </div>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchCase="'number'">
+                                                                <div class="FieldDisplayContent" [ngStyle]="{'font-weight':(isName ? 'bold':'')}">{{formatAsNumber(field.Value)}}</div>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchCase="'html'">
+                                                                <div class="FieldDisplayContent" [innerHtml]="field.Value  | safeHtml" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchCase="'link'">
+                                                                <div class="FieldDisplayContent" [innerHtml]="field.Value" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchDefault>
+                                                                <div class="FieldDisplayContent" title="{{field.Value}}" [ngStyle]="{'font-weight':(isName ? 'bold':'')}">{{field.Value}}</div>
+                                                            </ng-container>
+                                                        </ng-container>
+
+
+
                                                         <div *ngIf="field.Type == 'Html'">
                                                             <div class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</div>
                                                             <div [innerHtml]="field.Value"></div>
