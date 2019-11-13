@@ -6,6 +6,7 @@ namespace d360.core.queue
     public class IndexObjectModel : QueueObject
     {
         public int ID { get; set; }
+        public long AssetID { get; set; }
 
         public string ItemUniqueID { get; set; }
 

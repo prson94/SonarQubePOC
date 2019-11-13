@@ -1,48 +1,44 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
-import { RouterModule }    from '@angular/router';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
-
-import { ButtonModule } from 'primeng/button';
-import { InputTextModule } from 'primeng/inputtext';
-import { SharedModule } from 'primeng/shared';
-import { TooltipModule } from 'primeng/tooltip';
-import { TableModule } from 'primeng/table';
-
+﻿import { ButtonModule } from 'primeng/button';
+import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { CoreModule } from '../core.module';
-import { SimpleAccordionModule } from '../simple-accordion.part';
-import { TilesModule  } from '../tiles/tiles.module';
-import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
-import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
-
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { InputTextModule } from 'primeng/inputtext';
+import { NgxJsonViewModule } from 'ng-json-view';
+import { NgModule } from '@angular/core';
 import { ObjectDetailComponent } from './object-detail.component';
 import { ObjectDetailFieldComponent } from './object-detail-field.component';
 import { PipesModule } from '../../../pipes/pipes.module';
-import { NgxJsonViewModule } from 'ng-json-view';
-
+import { RouterModule } from '@angular/router';
+import { SharedModule } from 'primeng/shared';
+import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SimpleAccordionModule } from '../simple-accordion.part';
+import { TableModule } from 'primeng/table';
+import { TagViewModule } from '../tags/d3s-tag-view.module';
+import { TilesModule } from '../tiles/tiles.module';
+import { TooltipModule } from 'primeng/tooltip';
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
-        RouterModule,
-        HttpClientModule,
-        //d3s
-        CoreModule,
-        SharedGridPagingInfoModule,
-        SimpleAccordionModule,
-        TilesModule,
-        SharedDynamicGridEditorModule,
-        PipesModule,
-        //prime
+    imports: [
         ButtonModule,
+        CommonModule,
+        CoreModule,
+        DeprecatedI18NPipesModule,
+        HttpClientModule,
         InputTextModule,
-        SharedModule,
-        TooltipModule,
-        TableModule,
-        //JSON Viewer module
         NgxJsonViewModule,
+        PipesModule,
+        RouterModule,
+        SharedDynamicGridEditorModule,
+        SharedGridPagingInfoModule,
+        SharedModule,
+        SimpleAccordionModule,
+        TableModule,
+        TagViewModule,
+        TilesModule,
+        TooltipModule
     ],
     declarations: [
         DynamicLookupGridComponent,
@@ -53,11 +49,10 @@ import { NgxJsonViewModule } from 'ng-json-view';
         ObjectDetailComponent,
         ObjectDetailFieldComponent
     ],
-    providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: GovernRequestInterceptor,
-            multi: true },
-    ]
+    providers: [{
+        provide: HTTP_INTERCEPTORS,
+        useClass: GovernRequestInterceptor,
+        multi: true
+    }]
 })
 export class SharedObjectDetailsModule { }

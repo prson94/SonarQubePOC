@@ -9,7 +9,8 @@ export class SiteUrlHelpers {
     static SITE_URL_FUSION_ROOT = 'fusion';
     static SITE_URL_REFERENCE_ROOT = 'reference';
     static SITE_URL_ARTIFACT_ROOT = 'artifact';
-    static SITE_URL_ASSET_ROOT = 'assets';
+    static SITE_URL_ASSET_ROOT = 'asset';
+    static SITE_URL_ASSETS_ROOT = 'assets';
     static SITE_URL_COMMUNITY_ROOT = 'community';
     static SITE_URL_HELP_ROOT = 'help';
     static SITE_URL_MONITOR_ROOT = 'monitor';
