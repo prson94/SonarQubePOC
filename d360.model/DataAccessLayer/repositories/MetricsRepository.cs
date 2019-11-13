@@ -684,6 +684,12 @@ namespace d360.model.DataAccessLayer
             parameters.Add("@pageSize", result.pageSize);
             parameters.Add("@pageNum", result.pageNum);
 
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                whereClauses.Add($"A.ID not in ({Company.GetNoReadSqlStatement()})");
+            }
+
             string whereSQl = whereClauses.Count == 0 ? "" : "where " + string.Join(" AND ", whereClauses);
             string scoreWhereSQl = scoreFilters.Count == 0 ? "" : " and " + string.Join(" AND ", scoreFilters);
 
