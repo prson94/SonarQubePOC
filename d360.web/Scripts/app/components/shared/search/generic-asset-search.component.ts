@@ -1,30 +1,38 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AssetService } from '../../../services/asset.service';
-import { AssetSearchFilter, CommonComponentAssetResult } from '../../../models/asset-search.model';
+import { AssetSearchFilter, CommonComponentAssetResult, CommonComponentAssetSelection } from '../../../models/asset-search.model';
+import { PredicateType, Predicate } from '../../../models/predicate.model';
+import { RelationshipsService } from '../../../services/relationships.service';
+import { PredicatesService } from '../../../services/predicates.service';
 
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-asset-search',
     templateUrl: 'generic-asset-search.component.html',
-    providers: [AssetService],
+    providers: [AssetService, RelationshipsService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
 export class AssetSearchComponent {
 
     // Holds the selected assets to provide back to parent component. Can be pre-populated as well.
-    @Input() results: CommonComponentAssetResult[] = [];
+    @Input() results: CommonComponentAssetSelection[] = [];
     @Output() resultsChange: EventEmitter<any> = new EventEmitter();
 
     // Allow option to select many items within the control.
     @Input() multiSelect: boolean = false;
-    @Output() multiSelectChange: EventEmitter<any> = new EventEmitter();
 
     // Should we expose the Show/Hide Full Path link in the dropdown
     @Input() showSelectFullpathLink: boolean = true;
-    @Output() showSelectFullpathLinkChange: EventEmitter<any> = new EventEmitter();
+
+    // Allow option to provide a drop-down of predicates based on functional type. Used only when in multi-select mode.
+    @Input() showPredicateSelector: boolean = false;
+
+    // When selector is enabled, filters a list of predicates based on the type below.
+    @Input() predicateSelectorType: PredicateType;;
+    @Output() predicateSelectorTypeChange = new EventEmitter();
 
     private isSearchWindowOpened: boolean = false;
 
@@ -44,7 +52,8 @@ export class AssetSearchComponent {
         private router: Router,
         private ref: ChangeDetectorRef,
         private assetService: AssetService,
-        private eRef: ElementRef
+        private eRef: ElementRef,
+        private predicatesService: PredicatesService
     ) {
 
     }
@@ -120,42 +129,42 @@ export class AssetSearchComponent {
                 this.searchresults = JSON.parse(JSON.stringify(result.items));
 
                 //load test data
-                //this.searchresults = [];
-                //var item1 = new CommonComponentAssetResult();
-                //item1.AssetTypeUid = '';
-                //item1.Uid = '';
-                //item1.Segments = [];
-                //item1.Segments.push({ Value: 'AzureRemoteHost' });
-                //item1.Segments.push({ Value: 'EnrolDB' });
-                //item1.Segments.push({ Value: 'SSMS' });
-                //item1.Segments.push({ Value: 'MEMBER_INFO' });
-                //item1.Segments.push({ Value: 'Name' });
+                this.searchresults = [];
+                var item1 = new CommonComponentAssetResult();
+                item1.AssetTypeUid = '';
+                item1.Uid = '';
+                item1.Segments = [];
+                item1.Segments.push({ Value: 'AzureRemoteHost' });
+                item1.Segments.push({ Value: 'EnrolDB' });
+                item1.Segments.push({ Value: 'SSMS' });
+                item1.Segments.push({ Value: 'MEMBER_INFO' });
+                item1.Segments.push({ Value: 'Name' });
 
-                //this.searchresults.push(item1);
+                this.searchresults.push(item1);
 
-                //var item2 = new CommonComponentAssetResult();
-                //item2.AssetTypeUid = '';
-                //item2.Uid = '';
-                //item2.Segments = [];
-                //item2.Segments.push({ Value: 'OracleHost' });
-                //item2.Segments.push({ Value: 'ClaimsDb' });
-                //item2.Segments.push({ Value: 'dbo' });
-                //item2.Segments.push({ Value: 'MEMBERS' });
-                //item2.Segments.push({ Value: 'MEMBER_NAME' });
+                var item2 = new CommonComponentAssetResult();
+                item2.AssetTypeUid = '';
+                item2.Uid = '';
+                item2.Segments = [];
+                item2.Segments.push({ Value: 'OracleHost' });
+                item2.Segments.push({ Value: 'ClaimsDb' });
+                item2.Segments.push({ Value: 'dbo' });
+                item2.Segments.push({ Value: 'MEMBERS' });
+                item2.Segments.push({ Value: 'MEMBER_NAME' });
 
-                //this.searchresults.push(item2);
+                this.searchresults.push(item2);
 
-                //var item3 = new CommonComponentAssetResult();
-                //item3.AssetTypeUid = '';
-                //item3.Uid = '';
-                //item3.Segments = [];
-                //item3.Segments.push({ Value: 'Data Warehouse' });
-                //item3.Segments.push({ Value: 'DWDB' });
-                //item3.Segments.push({ Value: 'edm' });
-                //item3.Segments.push({ Value: 'MEMBERS' });
-                //item3.Segments.push({ Value: 'MEMBER_NAME' });
+                var item3 = new CommonComponentAssetResult();
+                item3.AssetTypeUid = '';
+                item3.Uid = '';
+                item3.Segments = [];
+                item3.Segments.push({ Value: 'Data Warehouse' });
+                item3.Segments.push({ Value: 'DWDB' });
+                item3.Segments.push({ Value: 'edm' });
+                item3.Segments.push({ Value: 'MEMBERS' });
+                item3.Segments.push({ Value: 'MEMBER_NAME' });
 
-                //this.searchresults.push(item3);
+                this.searchresults.push(item3);
 
                 this.searchResultsCount = result.total;
                 this.numberOfPages = Math.ceil(result.total / result.pageSize);
@@ -171,7 +180,13 @@ export class AssetSearchComponent {
 
     private onSelect(idx: number) {
 
-        var selectedItem = this.searchresults[idx];
+        var item = this.searchresults[idx];
+        var selectedItem = new CommonComponentAssetSelection();
+        selectedItem.AssetTypeUid = item.AssetTypeUid;
+        selectedItem.Uid = item.Uid;
+        selectedItem.Predicate = null;
+        selectedItem.Segments = item.Segments;
+
         this.closeSearch();
 
         if (this.multiSelect)
@@ -186,19 +201,22 @@ export class AssetSearchComponent {
     private unselect(idx: number) {
         var item = this.results[idx];
         this.results.splice(idx, 1);
-        this.resultsChange.emit({ action: 'deleted', item: item });
+        this.resultsChange.emit({ action: 'removed', item: item });
     }
 
-    toggleFullPaths(autocompleteElement) {
+    toggleFullPaths() {
         this.isFullPathVisible = !this.isFullPathVisible;
-        this.reBindData();
-        if (autocompleteElement)
-            autocompleteElement.focusInput();
-        this.ref.markForCheck();
     }
 
     private reBindData() {
         this.results = JSON.parse(JSON.stringify(this.results));
+    }
+
+    private predicateSelected(event: Predicate, idx: number) {
+        var item = this.results[idx];
+        item.Predicate = event;
+
+        this.resultsChange.emit({ action: 'predicate-updated', item: item });
     }
 
 }

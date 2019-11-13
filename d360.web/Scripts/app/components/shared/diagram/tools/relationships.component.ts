@@ -1,5 +1,6 @@
 ﻿import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { CommonComponentAssetResult } from '../../../../models/asset-search.model';
+import { PredicateType } from '../../../../models/predicate.model';
 
 
 declare var CompanySettings;
@@ -12,7 +13,7 @@ declare var CompanySettings;
 
 export class DiagramAssetRelationshipComponent {
     private assetSearchSelection: CommonComponentAssetResult[] = [];
-
+    private predicateType: PredicateType = PredicateType.Simple;
     constructor() { }
 
     onAssetSearchSelection(event: any) {

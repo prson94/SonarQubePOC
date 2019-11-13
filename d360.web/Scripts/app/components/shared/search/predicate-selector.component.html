@@ -1,0 +1,11 @@
+﻿<div class="predicate-selector" (click)="openSelection()">
+    <span class="selected-value">{{selected ? selected.Name : '-select predicate-'}}</span>
+    <i class="fa fa-caret-down"></i>
+    <div class="selector" *ngIf="isSelectionVisible">
+        <ul class="options stripped-list">
+            <li *ngFor="let item of predicates" (click)="selectPredicate(item);">
+                {{item.Name}}
+            </li>
+        </ul>
+    </div>
+</div>

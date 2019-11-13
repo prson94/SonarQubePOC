@@ -1,4 +1,5 @@
 ﻿import { AssetTypeClass } from "./asset.model";
+import { Predicate } from "./predicate.model";
 
 export class CommonComponentAssetTypeFilter {
     Uid: string;
@@ -22,6 +23,13 @@ export class CommonComponentAssetResult {
     Uid: string;
     AssetTypeUid: string;
     Segments: CommonComponentAssetResultSegment[];
+}
+
+export class CommonComponentAssetSelection {
+    Uid: string;
+    AssetTypeUid: string;
+    Segments: CommonComponentAssetResultSegment[];
+    Predicate: Predicate;
 }
 
 export class CommonComponentAssetResultSegment {

@@ -1223,6 +1223,8 @@
     <Content Include="Scripts\app\components\shared\rightsidebar\right-sidebar.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search.module.ts" />
+    <Content Include="Scripts\app\components\shared\search\predicate-selector.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\predicate-selector.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcutdisplay\shortcut-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcutdisplay\shortcut-display.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-item.component.ts" />

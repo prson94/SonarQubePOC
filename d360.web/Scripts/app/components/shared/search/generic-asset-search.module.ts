@@ -14,6 +14,7 @@ import { SharedModule } from 'primeng/shared';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { AssetSearchComponent } from './generic-asset-search.component';
 import { PaginatorModule } from 'primeng/paginator';
+import { PredicateSelectorComponent } from './predicate-selector.component';
 
 
 @NgModule({
@@ -35,10 +36,12 @@ import { PaginatorModule } from 'primeng/paginator';
         PaginatorModule
     ],
     declarations: [
-        AssetSearchComponent
+        AssetSearchComponent,
+        PredicateSelectorComponent
     ],
     exports: [
-        AssetSearchComponent
+        AssetSearchComponent,
+        PredicateSelectorComponent
     ],
     providers: [
         {
