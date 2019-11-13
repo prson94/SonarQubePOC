@@ -6,6 +6,7 @@ import { ApiResult } from '../../../models/apiresult.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Subscription } from 'rxjs';
 import { CATCH_STACK_VAR } from '@angular/compiler/src/output/output_ast';
+import { DynamicEditorComponent } from '../dynamicgrideditor/dynamic-editor.component';
 
 declare var CompanySettings: any;
 
@@ -24,8 +25,10 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
     private editorOpen: boolean = false;
     private isModelLoading: boolean = false;
     private asSub: Subscription;
+    private savingInProgress: boolean = false;
 
     @ViewChild('definition', { static: false }) definition: ElementRef;
+    @ViewChild('dynamicEditor', { static: false }) dynamicEditor: DynamicEditorComponent;
 
     constructor(private assetTypeService: AssetTypeService, private messagesService: MessagesObservableService) {
         super();
@@ -54,6 +57,28 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
             this.definition.nativeElement.style.width = Math.round(window.innerWidth / 2) + "px";
             this.definition.nativeElement.style.maxHeight = Math.round(window.innerHeight / 2) + "px";
         }, 100);
+    }
+
+    confirm() {
+        if (this.dynamicEditor) {
+            this.savingInProgress = true;
+            this.dynamicEditor.onSubmit();
+        }
+    }
+
+    isInvalid() {
+        if (!this.dynamicEditor || this.dynamicEditor.isLoading)
+            return true;
+        if (!this.dynamicEditor.form && !this.dynamicEditor.form.valid)
+            return true;
+    }
+
+    savedItem(event) {
+        this.savingInProgress = false;
+        this.editorOpen = false;
+        this.assetType = null;
+        this.assetTypeClass = null;
+        this.isModelLoading = false;
     }
 
     cancel() {

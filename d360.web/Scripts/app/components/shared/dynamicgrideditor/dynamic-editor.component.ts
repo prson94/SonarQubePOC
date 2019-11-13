@@ -60,7 +60,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() adding: boolean = false;
     @Input() isV2API: boolean = false;
 
-    @Input() uid: string;
+    @Input() useTypeUidForDefinition: boolean = false;
+    @Input() showActions: boolean = true;
 
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
@@ -158,8 +159,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         }
 
         this.isLoading = true;
-        if (this.uid) {
-            this.editorDefinitionService.getEditorDefinitionUid(this.uid).subscribe(result => { this.handleEditor(result); });
+        if (this.useTypeUidForDefinition) {
+            this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid).subscribe(result => { this.handleEditor(result); });
         } else {
             this.editorDefinitionService.getEditorDefinition(
                 id,
@@ -409,7 +410,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     onSubmit() {
 
         this.savingInProgress = true;
-
         let action = (this.selection == null ? "new" : "edit");
         let values: any = {};
         if (this.copy == true) {
@@ -427,7 +427,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                         let simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
                         this.form.value[p] = simpleDate;
-                        console.log(simpleDate);
                     }
                     else {
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
