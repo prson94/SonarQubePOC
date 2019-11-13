@@ -92,9 +92,9 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                 })
             )
             .subscribe(
-                artifact => {
+            artifact => {
                     this.artifact = artifact;
-
+                    
                     let folderName: string = '#Business';
 
                     if (artifact.Class == AssetTypeClass.TechnicalAsset) {
@@ -210,7 +210,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     let currentFolderName = this.currentAreaName ? this.currentAreaName : this.folderTitle;
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.getFolderIcon(currentFolderName).then(res => {
+                    this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType',this.artifactTypeId,currentFolderName).subscribe(res => {
                         this.rightSidebarService.setCurrentArea(this.artifact.DisplayValue, res, 'Definition');
                     });
                     let areaName: string = this.currentAreaName ? this.currentAreaName : this.folderTitle;

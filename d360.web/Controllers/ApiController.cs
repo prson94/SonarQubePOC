@@ -5431,6 +5431,12 @@ where    A.RuleID = @id", new { id });
             return Company.GetAssetTypeStyle(assetTypeId);
         }
 
+        [Route("{type}/{objectId:int}/style")]
+        public AssetTypeStyle GetAssetTypeStyle(SystemObjects type, int objectId)
+        {
+            return Company.GetAssetTypeStyle(type.ToString(),objectId);
+        }
+
         [Route("{type}/{uid}/detail")]
         public DetailReadOnlyModel GetObjectDetailFields(SystemObjects type, Guid uid)
         {

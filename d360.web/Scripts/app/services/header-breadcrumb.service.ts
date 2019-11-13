@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import {Subject, Observable} from 'rxjs';
+import {Subject, Observable, forkJoin, from} from 'rxjs';
 import { Breadcrumb } from '../models/breadcrumb.model';
 import { HttpClient } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
@@ -9,6 +9,8 @@ import { SiteMenuService } from './site-menu.service';
 import { SiteNav } from '../models/site-menu.model';
 import { Promise } from 'core-js';
 import { resolve } from 'url';
+import { AssetStyleService } from './asset-style.service';
+import { AssetTypeStyle } from '../models/asset-type-style.model';
 
 
 @Injectable()
@@ -18,7 +20,8 @@ export class HeaderBreadcrumbService extends BaseObservableService{
     constructor(
         private http: HttpClient,
         messagesService: MessagesObservableService,
-        sitenavservice: SiteMenuService
+        sitenavservice: SiteMenuService,
+        private assetStyleService: AssetStyleService
     ) {
         super(messagesService);
         this.sitenavservice = sitenavservice;
@@ -111,7 +114,28 @@ export class HeaderBreadcrumbService extends BaseObservableService{
         return promise;
     }
 
-    getFolderIcon(menuID: string) {
+    getAssetFolderIcon(objectType: string, objectID: number, menuID: string): Observable<string> {
+         if (!objectID)
+            return this.getFolderIcon(menuID);
+
+
+        var d = forkJoin(this.assetStyleService.getAssetTypeObjectStyle(objectType, objectID), this.getFolderIcon(menuID)).pipe(
+             map(([first, second]) => {
+                 let icon = "fa-folder";;
+                if (first && first.Icon) {
+                    icon = first.Icon;
+                } else {
+                    icon = second;
+                }
+
+                return icon;
+            }));
+
+        return d;   
+       
+
+    }
+    getFolderIcon(menuID: string):Observable<string> {
         let icon = "fa-folder";
         let promise = new Promise<string>((resolve, reject) => {
             if (this.SiteNavItemsCache && this.SiteNavItemsCache.length > 0) {
@@ -143,6 +167,6 @@ export class HeaderBreadcrumbService extends BaseObservableService{
                 });
             }
         });
-        return promise;
+        return from(promise);
     }
 }
