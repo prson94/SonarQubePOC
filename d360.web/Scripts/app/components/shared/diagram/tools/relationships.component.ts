@@ -17,7 +17,7 @@ export class DiagramAssetRelationshipComponent {
 
     onAssetSearchSelection(event: any) {
         console.warn("Search selection event triggered!");
-        console.log(event);
+        console.warn("Event:",event);
     }
 
 }

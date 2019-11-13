@@ -1,5 +1,5 @@
 ﻿
-<d3s-asset-search
-    [results]="assetSearchSelection" 
-    (resultsChange)="onAssetSearchSelection()">
+<d3s-asset-search [multiSelect]="true"
+                  [results]="assetSearchSelection"
+                  (resultsChange)="onAssetSearchSelection($event)">
 </d3s-asset-search>
