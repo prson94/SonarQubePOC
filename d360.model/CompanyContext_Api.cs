@@ -481,7 +481,8 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 		                [Subject] varchar(50),
 		                SubjectID int,
 		                [Object] varchar(50),
-		                ObjectID int
+		                ObjectID int,
+                        SwitchObject bit
 	                )
                     ;with R
                         as (
@@ -527,7 +528,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                     and (F.Ignore = 0 or F.Ignore is null)
                                     and FT.Type = 'Relationship'
                             )
-                            insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+                            insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID, SwitchObject)
                             select
                                 null as ID,
 			                    IntersectTypeId, 
@@ -546,7 +547,8 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 			                    CASE 
 				                    when switchObject = 0 then ObjectId
 				                    else SubjectId
-			                    END AS ObjectID
+			                    END AS ObjectID,
+                                SwitchObject
 			                from R;
 
                             update R
@@ -574,12 +576,12 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 
                             delete I
 			                from [Intersect] I
-			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
+			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID and R.SwitchObject = 0
 			                where not exists (select 1 from #Relationships where [Subject] = I.[Subject] and SubjectID = I.SubjectID);
 
                             delete I
 			                from [Intersect] I
-			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Subject] = I.[Subject] and R.SubjectID = I.SubjectID
+			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Subject] = I.[Subject] and R.SubjectID = I.SubjectID and R.SwitchObject = 1
 			                where not exists (select 1 from #Relationships where [Object] = I.[Object] and ObjectID = I.ObjectID);
 
                             insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
