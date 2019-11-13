@@ -170,34 +170,48 @@ namespace igx.jobs
             return CloudConfigurationManager.GetSetting(name);
         }
 
+        public static d360.core.enums.EnvironmentLevel GetEnvironmentLevelCurrentSlot()
+        {
+
+            try
+            {
+                var environment = GetConfigValueByKey("Environment");
+                d360.core.enums.EnvironmentLevel lvl = d360.core.enums.EnvironmentLevel.Nightly;
+
+                switch (environment)
+                {
+                    case "NIGHTLY":
+                        lvl = d360.core.enums.EnvironmentLevel.Nightly;
+                        break;
+                    case "CLIENTDEV":
+                        lvl = d360.core.enums.EnvironmentLevel.Development;
+                        break;
+                    case "UAT":
+                        lvl = d360.core.enums.EnvironmentLevel.UAT;
+                        break;
+                    case "PROD":
+                        lvl = d360.core.enums.EnvironmentLevel.Production;
+                        break;
+                    case "ALTERNATE":
+                        lvl = d360.core.enums.EnvironmentLevel.Alternate;
+                        break;
+                }
+
+                return lvl;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
         public static List<CompanyWithDatabaseServerSettings> GetCompaniesByCurrentSlot()
         {
 
             try
             {
-                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
-                var environment = GetConfigValueByKey("Environment");
-
-                switch (environment)
-                {
-                    case "NIGHTLY":
-                        companies = companies.Where(i => i.EnvironmentLevel == d360.core.enums.EnvironmentLevel.Nightly).ToList();
-                        break;
-                    case "CLIENTDEV":
-                        companies = companies.Where(i => i.EnvironmentLevel == d360.core.enums.EnvironmentLevel.Development).ToList();
-                        break;
-                    case "UAT":
-                        companies = companies.Where(i => i.EnvironmentLevel == d360.core.enums.EnvironmentLevel.UAT).ToList();
-                        break;
-                    case "PROD":
-                        companies = companies.Where(i => i.EnvironmentLevel == d360.core.enums.EnvironmentLevel.Production).ToList();
-                        break;
-                    case "ALTERNATE":
-                        companies = companies.Where(i => i.EnvironmentLevel == d360.core.enums.EnvironmentLevel.Alternate).ToList();
-                        break;
-                }
-
-                return companies;
+                var lvl = GetEnvironmentLevelCurrentSlot();
+                return CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.EnvironmentLevel == lvl).ToList();
             }
             catch (Exception)
             {
