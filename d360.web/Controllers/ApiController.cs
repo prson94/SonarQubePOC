@@ -1346,6 +1346,28 @@ where   h.ID <> @t order by h.[Level] desc;
 
         #region Navigation
 
+        [Route("legacyuri/{obj}/{uid}")]
+        public HttpResponseMessage GetLegacyUri(string obj, string uid)
+        {
+            var uri = "";
+
+            Guid convertedUid;
+            if (Guid.TryParse(uid, out convertedUid))
+            { 
+                switch (obj)
+                {
+                    case "Asset":
+                        uri = Company.Query<string>("declare @id bigint; select @id = ID from Asset where [Uid] = @convertedUid; select dbo.GenerateAssetUrl(@id);", new { convertedUid }).Single();
+                        break;
+                    case "AssetType":
+                        uri = Company.Query<string>("declare @id int; select @id = ID from AssetType where [Uid] = @convertedUid; select dbo.GenerateAssetTypeUrl(@id);", new { convertedUid }).Single();
+                        break;
+                }            
+            }
+
+            return Request.CreateResponse<string>(uri);
+        }
+
         [Route("authenticationModel")]
         public HttpResponseMessage GetAuthenticationModel()
         {
