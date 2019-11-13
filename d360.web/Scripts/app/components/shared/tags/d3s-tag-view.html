@@ -1,46 +1,46 @@
 ﻿
-<div #container class="tag-list-container">
-    <ng-container *ngFor="let tag of tags;">
-        <a (click)="openTagPage($event,tag)" (mouseenter)="enter(tag, $event.target)" [attr.target]="'_blank'" class="link-button tagging">
-            <div class="tooltip-wrapper">
-                <div class="tag-tooltip">
-                    <i *ngIf="!isTooltipLoaded" class="fa fa-spinner fa-spin fa-2x"></i>
-                    <ng-container *ngIf="isTooltipLoaded">
-                        <span class="span-break">{{tagTooltip.Value}}</span>
-                        <span>Tag added by {{tagTooltip.CreatedBy}} on {{(tagTooltip.CreatedOn | date:'short')}}</span>
-                    </ng-container>
+    <div #container class="tag-list-container">
+        <span *ngFor="let tag of tags;">
+            <a (click)="openTagPage($event,tag)" (mouseenter)="enter(tag, $event.target)" [attr.target]="'_blank'" class="link-button tagging">
+                <div class="tooltip-wrapper">
+                    <div class="tag-tooltip">
+                        <i *ngIf="!isTooltipLoaded" class="fa fa-spinner fa-spin fa-2x"></i>
+                        <ng-container *ngIf="isTooltipLoaded">
+                            <span class="span-break">{{tagTooltip.Value}}</span>
+                            <span>Tag added by {{tagTooltip.CreatedBy}} on {{(tagTooltip.CreatedOn | date:'short')}}</span>
+                        </ng-container>
+                    </div>
                 </div>
-            </div>
-            <div #el class="tag-item-wrapper">
-                {{tag.Value}}
-            </div>
-            <div *ngIf="isEditable" [pTooltip]="'Remove Tag'" tooltipPosition="top"  (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
-                <i style="padding-left:10px" class="fa fa-times-circle"></i>
-            </div>
-        </a>
-    </ng-container>
-    <ng-container *ngIf="allowAddTag">
-        <p-autoComplete [(ngModel)]="inputValue"
-                        (onBlur)="resetValue()"
-                        class="autoInputBox"
-                        scrollHeight="400px"
-                        value="inputValue"
-                        inputStyleClass="inputBox"
-                        placeholder="Click to add..."
-                        [suggestions]="searchResults"
-                        (onKeyUp)="checkKey($event,inputValue)"
-                        (onSelect)="saveTag($event)"
-                        field="name"
-                        (completeMethod)="search($event,$event.query)">
-            <ng-template let-elm pTemplate="item">
-                <span [innerHTML]=" highlight(elm.name,inputValue) | safeHtml"></span>
-            </ng-template>
-        </p-autoComplete>
-    </ng-container>
-    <ng-container *ngIf="tags && tags.length > 10">
-        <a (click)="showAllToggle($event);" class="show-all-tags">
-            <ng-container *ngIf="isShowAll">Show Less</ng-container>
-            <ng-container *ngIf="!isShowAll">Show all {{tags.length}} tags</ng-container>
-        </a>
-    </ng-container>
-</div>
+                <div #el class="tag-item-wrapper">
+                    {{tag.Value}}
+                </div>
+                <div *ngIf="isEditable" [pTooltip]="'Remove Tag'" tooltipPosition="top" (click)="openDeleteModal(tag)" [attr.target]="'_blank'" class="link-button">
+                    <i style="padding-left:10px" class="fa fa-times-circle"></i>
+                </div>
+            </a>
+        </span>
+        <ng-container *ngIf="allowAddTag">
+            <p-autoComplete [(ngModel)]="inputValue"
+                            (onBlur)="resetValue()"
+                            class="autoInputBox"
+                            scrollHeight="400px"
+                            value="inputValue"
+                            inputStyleClass="inputBox"
+                            placeholder="Click to add..."
+                            [suggestions]="searchResults"
+                            (onKeyUp)="checkKey($event,inputValue)"
+                            (onSelect)="saveTag($event)"
+                            field="name"
+                            (completeMethod)="search($event,$event.query)">
+                <ng-template let-elm pTemplate="item">
+                    <span [innerHTML]=" highlight(elm.name,inputValue) | safeHtml"></span>
+                </ng-template>
+            </p-autoComplete>
+        </ng-container>
+        <ng-container *ngIf="tags && tags.length > 10">
+            <a (click)="showAllToggle($event);" class="show-all-tags">
+                <ng-container *ngIf="isShowAll">Show Less</ng-container>
+                <ng-container *ngIf="!isShowAll">Show all {{tags.length}} tags</ng-container>
+            </a>
+        </ng-container>
+    </div>

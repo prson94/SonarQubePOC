@@ -54,10 +54,12 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import {GovernRequestInterceptor} from "../../http-interceptors/govern-request.interceptor";
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
+//import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
 
 
 @NgModule({
-    imports: [CommonModule,
+    imports: [
+        CommonModule,
         DeprecatedI18NPipesModule,
         FormsModule,
         HttpClientModule,
@@ -90,6 +92,7 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
         SharedDynamicGridEditorModule,   
         SharedObjectGovernanceModule,
         SharedAssetEditorsModule,
+        //TagViewModule,
         TilesModule,
         WorkflowModule,        
     ],
