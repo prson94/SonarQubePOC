@@ -1,7 +1,33 @@
 ﻿
-<d3s-asset-search [multiSelect]="true"
-                  [showPredicateSelector]="true"
-                  [predicateSelectorType]="predicateType"
-                  [results]="assetSearchSelection"
-                  (resultsChange)="onAssetSearchSelection($event)">
-</d3s-asset-search>
+<div class="browser-relationship-editor">
+    <span class="title">Source Assets</span>
+    <d3s-asset-search [multiSelect]="true"
+                      [showPredicateSelector]="true"
+                      [predicateSelectorType]="predicateType"
+                      [results]="sourceAssets"
+                      [multiSelectStyle]="'Button'"
+                      [clearResultsAfterSelection]="false"
+                      [multiSelectButtonLabel]="'Add source'"
+                      (resultsChange)="onAssetSearchSelection($event)">
+    </d3s-asset-search>
+
+    <span class="title">Transformation</span>
+    <d3s-asset-search [multiSelect]="false"
+                      [predicateSelectorType]="predicateType"
+                      [results]="transformationAsset"
+                      [clearResultsAfterSelection]="true"
+                      [placeholder]="'Choose or create a transformation...'"
+                      (resultsChange)="onAssetSearchSelection($event)">
+    </d3s-asset-search>
+
+    <span class="title">Target Assets</span>
+    <d3s-asset-search [multiSelect]="true"
+                      [showPredicateSelector]="true"
+                      [predicateSelectorType]="predicateType"
+                      [results]="targetAssets"
+                      [clearResultsAfterSelection]="false"
+                      [multiSelectStyle]="'CheckBox'"
+                      [multiSelectButtonLabel]="'Add source'"
+                      (resultsChange)="onAssetSearchSelection($event)">
+    </d3s-asset-search>
+</div>

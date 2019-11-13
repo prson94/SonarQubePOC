@@ -27,9 +27,18 @@ export class PredicateSelectorComponent implements OnInit {
 
     constructor(
         private predicatesService: PredicatesService,
-        private ref: ChangeDetectorRef
+        private ref: ChangeDetectorRef,
+        private eRef: ElementRef
     ) {
 
+    }
+
+    @HostListener('document:click', ['$event'])
+    onclick(ev: MouseEvent) {
+        // if clicked outside of the component
+        if (!this.eRef.nativeElement.contains(ev.target)) {
+            this.isSelectionVisible = false;
+        }
     }
 
     openSelection() {

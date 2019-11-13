@@ -13,12 +13,12 @@
                         </div>
                     </div>
 
-                    <d3s-predicate-selector (onChange)="predicateSelected($event, i);" [predicateType]="predicateSelectorType"></d3s-predicate-selector>
+                    <d3s-predicate-selector *ngIf="showPredicateSelector" (onChange)="predicateSelected($event, i);" [predicateType]="predicateSelectorType"></d3s-predicate-selector>
 
                     <i (click)="unselect(i)" class="unselect fa fa-times-circle" aria-hidden="true"></i>
                     <div style="display:block;width:100%;"></div>
                 </div>
-                <button *ngIf="multiSelect" type="button" class="add-source-button" (click)="openSearchWindow();">Add source</button>
+                <button *ngIf="multiSelect" type="button" class="add-source-button" (click)="openSearchWindow();">{{multiSelectButtonLabel}}</button>
             </ng-container>
 
             <ng-container *ngIf="!multiSelect">
@@ -36,23 +36,26 @@
                         </div>
                     </ng-container>
                     <ng-container *ngIf="!results[0]">
-                        <span class="text">Choose or create a transformation...</span>
+                        <span class="text">{{placeholder}}</span>
                     </ng-container>
                     <i class="fa fa-caret-down"></i>
                 </div>
             </ng-container>
 
             <div *ngIf="isSearchWindowOpened" class="search-results">
-                <input (keyup)="search($event)" />
+                <input (keyup)="search($event)" placeholder="Type to search for assets" />
 
                 <span class="search-button">
                     <i class="fa fa-search"></i>
                 </span>
                 <ul class="search-result-box  {{isFullPathVisible ? '' : 'hide-full-path'}}">
                     <ng-container *ngFor="let item of searchresults;let i = index">
-                        <li (mouseenter)="currentSearchNavigationIndex = i"
+                        <li #el (mouseenter)="currentSearchNavigationIndex = i"
                             (click)="onSelect(i);"
                             class="result-item {{currentSearchNavigationIndex == i ? 'selected' : ''}}">
+                            <ng-container *ngIf="multiSelectStyle == 'CheckBox' && multiSelect">
+                                <input class="checker" type="checkbox" />
+                            </ng-container>
                             <div class="segments">
                                 <div *ngFor="let segment of item.Segments;" class="segment">
                                     <span class="value">{{segment.Value}}</span>

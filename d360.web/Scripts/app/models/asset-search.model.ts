@@ -43,8 +43,8 @@ export enum CommonComponentDisplayStyle {
 }
 
 export enum CommonComponentSelectStyle {
-    Button,
-    CheckBox
+    Button = 'Button',
+    CheckBox = 'CheckBox'
 }
 
 export class AssetSearchFilter {

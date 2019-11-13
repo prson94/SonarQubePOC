@@ -5038,6 +5038,14 @@ a.mid-blue {
 
 .asset-browser-window {
     padding: 10px;
+
+    .browser-relationship-editor {
+        .title {
+            color: gray;
+            margin: 6px 0px;
+            display: block;
+        }
+    }
 }
 
 .generic-asset-search {
@@ -5047,6 +5055,18 @@ a.mid-blue {
 
     .search-box {
         position: relative;
+
+        input.checker {
+            position: relative;
+            width: 15px !important;
+            display: inline-block;
+            top: 1px;
+            left: -4px;
+        }
+
+        .segments {
+            display: inline-block;
+        }
 
         button.add-source-button {
             border: 1px solid #cccccc;
@@ -5067,6 +5087,7 @@ a.mid-blue {
             box-shadow: 0px 0px 0px 0px black;
             width: 100%;
             margin-top: 8px;
+            z-index:50;
 
             .search-button {
                 background-color: #e0e0e0;
@@ -5249,6 +5270,7 @@ a.mid-blue {
         border: 1px solid #cccccc;
         padding: 0px;
         margin: 0px;
+        z-index: 2;
 
         li {
             padding: 4px 14px;

@@ -1,7 +1,7 @@
 ﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AssetService } from '../../../services/asset.service';
-import { AssetSearchFilter, CommonComponentAssetResult, CommonComponentAssetSelection } from '../../../models/asset-search.model';
+import { AssetSearchFilter, CommonComponentAssetResult, CommonComponentAssetSelection, CommonComponentSelectStyle } from '../../../models/asset-search.model';
 import { PredicateType, Predicate } from '../../../models/predicate.model';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { PredicatesService } from '../../../services/predicates.service';
@@ -33,6 +33,15 @@ export class AssetSearchComponent {
     // When selector is enabled, filters a list of predicates based on the type below.
     @Input() predicateSelectorType: PredicateType;;
     @Output() predicateSelectorTypeChange = new EventEmitter();
+
+    // How should users select the options.
+    @Input() multiSelectStyle: CommonComponentSelectStyle = CommonComponentSelectStyle.Button;
+
+    // What should be the label on the button if multi-select is enabled and the    style is set appropriately.
+    @Input() multiSelectButtonLabel: string = 'No Label';
+    @Input() placeholder: string = 'No placeholder';
+
+    @Input() clearResultsAfterSelection: boolean = false;
 
     private isSearchWindowOpened: boolean = false;
 
@@ -106,7 +115,8 @@ export class AssetSearchComponent {
     private closeSearch() {
         this.isSearchWindowOpened = false;
         this.currentSearchNavigationIndex = 0;
-        this.searchresults = [];
+        if (this.clearResultsAfterSelection)
+            this.searchresults = [];
     }
 
     paginate($event, el) {
@@ -121,6 +131,7 @@ export class AssetSearchComponent {
 
         if (this.searchOption.SearchPhrase == '')
             return;
+
         this.searchOption.PageSize = this.pageSize;
         this.searchOption.PageNum = this.pageNum;
 
@@ -187,7 +198,8 @@ export class AssetSearchComponent {
         selectedItem.Predicate = null;
         selectedItem.Segments = item.Segments;
 
-        this.closeSearch();
+        if (!this.multiSelectStyle || this.multiSelectStyle == CommonComponentSelectStyle.Button)
+            this.closeSearch();
 
         if (this.multiSelect)
             this.results.push(selectedItem);
@@ -195,6 +207,7 @@ export class AssetSearchComponent {
             this.results = [];
             this.results.push(selectedItem);
         }
+
         this.resultsChange.emit({ action: 'added', item: selectedItem });
     }
 
@@ -217,6 +230,10 @@ export class AssetSearchComponent {
         item.Predicate = event;
 
         this.resultsChange.emit({ action: 'predicate-updated', item: item });
+    }
+
+    private isSelected(uid: string) {
+        return this.results.some(x => x.Uid == uid) ? true : false;
     }
 
 }

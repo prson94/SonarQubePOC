@@ -12,7 +12,9 @@ declare var CompanySettings;
 })
 
 export class DiagramAssetRelationshipComponent {
-    private assetSearchSelection: CommonComponentAssetResult[] = [];
+    private sourceAssets: CommonComponentAssetResult[] = [];
+    private transformationAsset: CommonComponentAssetResult[] = [];
+    private targetAssets: CommonComponentAssetResult[] = [];
     private predicateType: PredicateType = PredicateType.Simple;
     constructor() { }
 
