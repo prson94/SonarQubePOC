@@ -14,7 +14,7 @@
 <![CDATA[
 if not exists(select * from sys.schemas where name = 'community')
 begin
-	CREATE SCHEMA [community]
+	EXEC sp_executesql N'CREATE SCHEMA [community]'
 end
 ]]>
     </sql>
@@ -22,7 +22,7 @@ end
 <![CDATA[
 if exists(select * from sys.schemas where name = 'community')
 begin
-	DROP SCHEMA [community]
+	EXEC sp_executesql N'DROP SCHEMA [community]'
 end
 ]]>
     </rollback>
