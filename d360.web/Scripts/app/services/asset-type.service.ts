@@ -95,7 +95,7 @@ export class AssetTypeService extends BaseObservableService {
             );
     }
 
-    public getAssetTypes(): Observable<AssetType[]> {
+    public getAssetTypesDetails(): Observable<AssetType[]> {
         return this.http
             .get('api/v2/assets/types')
             .pipe(
