@@ -183,6 +183,7 @@
       <IsTransformFile>True</IsTransformFile>
     </None>
     <None Include="packages.config" />
+    <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d360.core\d360.core.csproj">

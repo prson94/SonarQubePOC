@@ -51,9 +51,11 @@ export class D3SModal implements OnChanges {
 
     showPopUp() {
         this.display = true;
-        this.modalDiv.nativeElement.className = "modal-overlay";
-        this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " show";
-        this.modalDiv.nativeElement.focus();
+        if (this.modalDiv) {
+            this.modalDiv.nativeElement.className = "modal-overlay";
+            this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " show";
+            this.modalDiv.nativeElement.focus();
+        }
     }
 
     closePopUp() {
@@ -63,8 +65,10 @@ export class D3SModal implements OnChanges {
                 this.modalDiv.nativeElement.className = "modal-overlay";
                 this.onClose.emit(null);
             }.bind(this), 250);
+
             this.display = false;
         }
+
     }
 
     confirm() {

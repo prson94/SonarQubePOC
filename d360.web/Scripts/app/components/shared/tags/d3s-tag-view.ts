@@ -1,24 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { NgModule, Input, Output, Component, EventEmitter, OnInit, ViewChild, ElementRef, ChangeDetectorRef, OnChanges, SimpleChange, ChangeDetectionStrategy } from '@angular/core';
+import { Input, Component, OnInit, ViewChild, ElementRef, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { TagType, TagApiModel, Tag } from '../../../models/tag.model';
+import { TagType, TagApiModel } from '../../../models/tag.model';
 import { TagService } from '../../../services/tag.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { AdminBaseComponent } from '../../admin/admin-base.component';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
-import { Title } from '@angular/platform-browser';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { CoreModule } from '../core.module';
 import { Router } from '@angular/router';
-
-import { TreeModule } from 'primeng/tree';
-import { SharedModule } from 'primeng/shared';
-import { OverlayPanelModule } from 'primeng/overlaypanel';
-import { DialogModule } from 'primeng/dialog';
-import { AutoCompleteModule } from 'primeng/autocomplete';
-
-import { debounceTime } from 'rxjs/operators';
 import { AuthenticationService } from '../../../services/authentication.service';
+import { BaseComponent } from '../base.component';
 
 declare var CurrentResourceID;
 
@@ -30,7 +17,7 @@ declare var CurrentResourceID;
     host: { '(window:resize)': 'manageWidth()' }
 })
 
-export class TagView extends AdminBaseComponent implements OnInit {
+export class TagView extends BaseComponent implements OnInit {
     public theDeleteCallback: Function;
     @ViewChild('tagInput', { static: false }) tagInput: ElementRef;
     @Input() data: any;
@@ -43,7 +30,6 @@ export class TagView extends AdminBaseComponent implements OnInit {
     private inputValue: any;
     private searchResults: any[] = [];
     private tags: any[];
-    private searchTags: any[];
     private resultPanel: any;
     private targetPanel: any;
     private tagsLoading = false;
@@ -51,8 +37,6 @@ export class TagView extends AdminBaseComponent implements OnInit {
     existingTag: boolean = false;
     selected: TagType[] = [];
     private selectedtag: TagType = new TagType();
-    private editPopupTitle: string = 'Edit Tag';
-    private deletePopupTitle: string = 'Delete Tag';
     private isShowAll: boolean = false;
     showDeleteOption: boolean = false;
     @ViewChild("container", {static: false}) container: ElementRef;
@@ -65,12 +49,9 @@ export class TagView extends AdminBaseComponent implements OnInit {
     constructor(private router: Router,
         private tagService: TagService,
         private messagesService: MessagesObservableService,
-        headerBreadcrumbService: HeaderBreadcrumbService,
-        titleService: Title,
-        rightSidebarService: RightSidebarService,
         private ref: ChangeDetectorRef,
         private auth: AuthenticationService) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super();
     }
     
     ngOnInit() {
@@ -406,21 +387,3 @@ export class TagView extends AdminBaseComponent implements OnInit {
         }
     }
 }
-@NgModule({
-    declarations: [
-    ],
-    exports: [
-    ],
-    imports: [
-        CommonModule,
-        CoreModule,
-        AutoCompleteModule,
-        TreeModule,
-        OverlayPanelModule,
-        SharedModule,
-        DialogModule
-    ]
-
-})
-
-export class TagViewModule { }
