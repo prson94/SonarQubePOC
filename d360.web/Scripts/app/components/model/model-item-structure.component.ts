@@ -114,7 +114,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                         this.headerBreadcrumbService.clearBreadcrumbs();
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID), undefined, 'TAXONOMYTYPE', this.model.ID, undefined, undefined, true));
-                        this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
+                        this.headerBreadcrumbService.getAssetFolderIcon('TaxonomyType', this.modelId,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
                             this.rightSidebarService.setCurrentArea(this.model.Name, icon, 'Model');
                             this.rightSidebarService.setCurrentObject('TaxonomyType', this.model.ID, this.model.Name, null, true);
                             this.setCommonRightSideBar(true, false, this.model.HasDashboards);

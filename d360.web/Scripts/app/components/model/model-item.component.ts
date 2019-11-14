@@ -129,7 +129,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
             this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
                 this.crumbs = []; 
-                this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
+                this.headerBreadcrumbService.getAssetFolderIcon('TaxonomyType', this.modelId,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
                     this.lineageShowUsageOnly = true;   
                     this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
                     this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');

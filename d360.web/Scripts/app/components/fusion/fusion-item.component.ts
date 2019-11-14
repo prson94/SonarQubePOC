@@ -130,7 +130,7 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             else if (this.isQueryConfigVisible) {
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Fusion Query Configuration', `/${SiteUrlHelpers.SITE_URL_FUSION_ROOT}/${this.fusionId};showQueryConfig=true`));
             }
-            this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).then(icon => {
+            this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).subscribe(icon => {
                 this.setRightSideBar(this.fusion.HasDashboards, this.fusion.Manual);
                 this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon, 'Configuration');
                 this.rightSidebarService.showHeader(true);

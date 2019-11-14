@@ -56,7 +56,7 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
         this.headerBreadcrumbService.getFolderTitle('#Fusion').then((res) => {
             let areaBreadcrumb = new Breadcrumb(res ? res : 'Fusion', `${SiteUrlHelpers.SITE_URL_FUSION_ROOT}`);
             this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
-            this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).then(icon => {
+            this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).subscribe(icon => {
                 this.clearSidebar();
                 //this.rightSidebarService.showItem(new RightSidebarItem('Technical Mappings','technical'));
 
