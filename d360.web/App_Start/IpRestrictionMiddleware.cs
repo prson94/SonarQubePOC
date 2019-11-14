@@ -128,7 +128,7 @@ from	Company C
                 else
                 {
                     Trace.TraceWarning("Could not locate the company with host address of: {0}", host);
-                    return;
+                   
                 }
             }
             catch (Exception e)
