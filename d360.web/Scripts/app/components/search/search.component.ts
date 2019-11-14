@@ -125,8 +125,8 @@ export class SearchComponent extends BaseComponent implements OnInit {
         if (types.length > 0) {
             categories = categories.concat(this.searchStateService.currentCategories.filter((x) => x.type == "category" && x.partialSelected == true).map((x) => x.data));
         }
-        this.searchStateService.setAggregationFilter("d3sGroup", categories);
-        this.searchStateService.setAggregationFilter("Type", types);
+        this.searchStateService.setAggregationFilter("d3sCategory", categories);
+        this.searchStateService.setAggregationFilter("d3sAssetType", types);
 
         this.doSearch();
     }

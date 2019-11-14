@@ -36,15 +36,21 @@ namespace igx.jobs.indexer
         }
     }
 
-    internal class FieldSqlModel
+    internal interface IPagedQuerySqlModel
     {
-        public int ObjectID { get; set; }
+        long AssetID { get; set; }
+    }
+
+    internal class FieldSqlModel : IPagedQuerySqlModel
+    {
+        public long AssetID { get; set; }
         public string Name { get; set; }
         public string FormattedValue { get; set; }
     }
 
-    internal class TagSqlModel
+    internal class TagSqlModel : IPagedQuerySqlModel
     {
+        public long AssetID { get; set; }
         public Guid AssetUID { get; set; }
         public Guid TagUID { get; set; }
         public string Value { get; set; }
@@ -60,8 +66,11 @@ namespace igx.jobs.indexer
         const string timerSettings = "0 0 17 * * 6";
 #endif
 
-        const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> '' and T.[Type] not in('DateTime','Color','FusionLookup','FilteredLookup','ComplexRelationLookup','OwnershipLookup','Relationship','FieldFromRelationship','RefListRelationship','JSON')";
-        const string tagsSql = @"SELECT a.uid AS AssetUID, t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID INNER JOIN [dbo].[Asset] a ON at.AssetID = a.ID";
+        const string fieldsSql = @"select F.AssetID, T.Name, F.FormattedValue from Field F " +
+            " inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> '' and " +
+            " T.[Type] not in('DateTime','Color','FusionLookup','FilteredLookup','ComplexRelationLookup','OwnershipLookup','Relationship','FieldFromRelationship','RefListRelationship','JSON')";
+        const string tagsSql = @"SELECT a.ID as AssetID, a.uid AS AssetUID, t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at " +
+            "INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID INNER JOIN [dbo].[Asset] a ON at.AssetID = a.ID";
 
         public static void RunViaTimer([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -95,205 +104,208 @@ namespace igx.jobs.indexer
                 var source = new ElasticSearchSource();
                 using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
                 {
-                    IEnumerable<AddToIndexModel> models = null;
-
-                    company.OpenWithRetry(RetryPolicy.DefaultFixed);
-                    List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
-                    bool fusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
-
-                    int SuggestedIndexLimit = SuggestIndexLimit(company);
-                    if(SuggestedIndexLimit > 1000)
-                    {
-                        source.IndexFieldLimit = SuggestedIndexLimit;
-                    }
-
-                    source.ClearIndex(c.CompanyID);
-
-                    LogReindexStart("BusinessAssets", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.BusinessAsset);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("TechnicalAssets", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.TechnicalAsset);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Attributes", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadAttributes(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Models", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadModels(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Policies", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadPolicies(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    if (fusionEnabled)
-                    {
-                        LogReindexStart("Fusion Types", c.CompanyID);
-
-                        try
-                        {
-                            models = LoadFusionTypes(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
-                    }
-
-                    LogReindexStart("Reference Item Types", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadReferenceItemTypes(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Groups", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadGroups(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Rules", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadRules(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    if (fusionEnabled)
-                    {
-                        LogReindexStart("FusionAttributes", c.CompanyID);
-
-                        try
-                        {
-                            models = LoadFusionAttributes(company, c.CompanyID, source);
-                            source.AddToIndex(models);
-                        }
-                        catch (Exception ex)
-                        {
-                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                        }
-                    }
-
-                    LogReindexStart("Artifact Synonyms", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadArtifactSynonyms(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Custom Synonyms", c.CompanyID);
-
-                    try
-                    {
-                        models = LoadCustomSynonyms(company, c.CompanyID, source);
-                        source.AddToIndex(models);
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-                    }
-
-                    LogReindexStart("Users", c.CompanyID);
-
-                    var users = new List<AddToIndexModel>();
-
-                    #region Company Users
-
-                    var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
-
-                    users = company.Query(sql).ToList().Select(u => new AddToIndexModel
-                    {
-                        Group = "Resource",
-                        CompanyID = c.CompanyID,
-                        Type = "User",
-                        ID = u.ResourceID,
-                        RelativeUrl = $"#/resources/{u.ResourceID}",
-                        Fields = new Dictionary<string, string>() {
-                                    { "Name", $"{u.FirstName} {u.LastName}" },
-                                    { "Type", "User" },
-                                    { "Email", u.Email },
-                                    { "Username", u.Username }
-                                }
-                    }).ToList();
-
-                    source.AddToIndex(users);
-
-                    #endregion
-
-                    LogCompanyReindexComplete(c.CompanyID);
-
+                    ProcessCompany(source, company, c);
                 }
             }
             catch (Exception ex)
             {
                 CoreFunction.AITrackException(functionName, ex, c.CompanyID);
             }
+        }
+
+        public static void ProcessCompany(ElasticSearchSource source, SqlConnection company, ReindexModel c)
+        {
+            IEnumerable<IndexObjectModel> models = null;
+
+            company.OpenWithRetry(RetryPolicy.DefaultFixed);
+            List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
+            bool fusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
+
+            int SuggestedIndexLimit = SuggestIndexLimit(company);
+            if (SuggestedIndexLimit > 1000)
+            {
+                source.IndexFieldLimit = SuggestedIndexLimit;
+            }
+
+            source.ClearIndex(c.CompanyID);
+
+            LogReindexStart("BusinessAssets", c.CompanyID);
+
+            try
+            {
+                models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.BusinessAsset);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("TechnicalAssets", c.CompanyID);
+
+            try
+            {
+                models = LoadArtifacts(company, c.CompanyID, source, AssetTypeClass.TechnicalAsset);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Attributes", c.CompanyID);
+
+            try
+            {
+                models = LoadAttributes(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Models", c.CompanyID);
+
+            try
+            {
+                models = LoadModels(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Policies", c.CompanyID);
+
+            try
+            {
+                models = LoadPolicies(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            if (fusionEnabled)
+            {
+                LogReindexStart("Fusion Types", c.CompanyID);
+
+                try
+                {
+                    models = LoadFusionTypes(company, c.CompanyID, source);
+                    source.AddToIndex(models);
+                }
+                catch (Exception ex)
+                {
+                    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                }
+            }
+
+            LogReindexStart("Reference Item Types", c.CompanyID);
+
+            try
+            {
+                models = LoadReferenceItemTypes(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Groups", c.CompanyID);
+
+            try
+            {
+                models = LoadGroups(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Rules", c.CompanyID);
+
+            try
+            {
+                models = LoadRules(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            if (fusionEnabled)
+            {
+                LogReindexStart("FusionAttributes", c.CompanyID);
+
+                try
+                {
+                    models = LoadFusionAttributes(company, c.CompanyID, source);
+                    source.AddToIndex(models);
+                }
+                catch (Exception ex)
+                {
+                    CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                }
+            }
+
+            LogReindexStart("Artifact Synonyms", c.CompanyID);
+
+            try
+            {
+                models = LoadArtifactSynonyms(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Custom Synonyms", c.CompanyID);
+
+            try
+            {
+                models = LoadCustomSynonyms(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
+
+            LogReindexStart("Users", c.CompanyID);
+
+            var users = new List<IndexObjectModel>();
+
+            #region Company Users
+
+            var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
+
+            users = company.Query(sql).ToList().Select(u => new IndexObjectModel
+            {
+                Category = "Resource",
+                CompanyID = c.CompanyID,
+                AssetType = "User",
+                ID = u.ResourceID,
+                RelativeUrl = $"#/resources/{u.ResourceID}",
+                Fields = new Dictionary<string, string>() {
+                                    { "Name", $"{u.FirstName} {u.LastName}" },
+                                    { "Email", u.Email },
+                                    { "Username", u.Username }
+                                }
+            }).ToList();
+
+            source.AddToIndex(users);
+
+            #endregion
+
+            LogCompanyReindexComplete(c.CompanyID);
         }
 
         private static void LogCompanyReindexComplete(int companyID)
@@ -316,7 +328,7 @@ namespace igx.jobs.indexer
             return Convert.ToInt16(FieldTypeCount * MultiplicationFactor);
         }
 
-        private static IEnumerable<AddToIndexModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"                    	
                 (select	
@@ -360,12 +372,11 @@ namespace igx.jobs.indexer
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = "Synonym",
-                    
+                    Category = "Synonym",
                     CompanyID = companyID,
-                    Type = "Synonym",
+                    AssetType = "Synonym",
                     ItemUniqueID = $"{o.SynonymObjectType}|{o.SynonymObjectID}|{o.SynonymForObjectType}|{o.SynonymForObjectID}",
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
@@ -379,7 +390,7 @@ namespace igx.jobs.indexer
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadCustomSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadCustomSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select 
@@ -400,11 +411,11 @@ from
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = "Synonym",
+                    Category = "Synonym",
                     CompanyID = companyID,
-                    Type = "Synonym",
+                    AssetType = "Synonym",
                     ItemUniqueID = $"custom|{o.PredicateName}|{o.ID}",
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
@@ -418,7 +429,7 @@ from
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadFusionAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadFusionAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"select
 	                        f.ID,
@@ -433,14 +444,15 @@ from
 
             foreach (var a in context.Query(sql, new { compid = companyID }, buffered:false,commandTimeout: _defaultQueryCommandTimeout))
             {
-                var item = new AddToIndexModel { Group = "FusionAttributes",
+                var item = new IndexObjectModel
+                {
+                    Category = "FusionAttributes",
                     CompanyID = companyID,
-                    Type = a.FusionAttributeTypeName,
+                    AssetType = $"{a.FusionName} {a.FusionAttributeTypeName}",
                     ID = a.ID,                    
                     RelativeUrl = $"/fusion/details/FusionAttribute/{a.ID}/{Uri.EscapeDataString(a.Name)}",
                     Fields = new Dictionary<string, string>() {
-                        { "Name", a.Name },
-                        { "Type", $"{a.FusionName} {a.FusionAttributeTypeName}" }
+                        { "Name", a.Name }
                     }
                 };                
 
@@ -448,10 +460,11 @@ from
             }
         }
         
-        private static IEnumerable<AddToIndexModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadRules(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             int assettypeclass = (int)AssetTypeClass.Rule;
             var sql = $@"SELECT
+                    A.ID as AssetID,
                     A.ObjectID as ID,
                     D.DisplayValue as Name,
                     T.Name as RuleType,
@@ -462,54 +475,54 @@ from
 				INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
 				INNER JOIN [dbo].AssetDisplayValue D on D.AssetID = A.ID
 	                WHERE T.Class = {assettypeclass.ToString()}
-                AND A.State = 1";
+                AND A.State = 1
+                ORDER BY A.ID";
 
             var sType = SystemObjects.Rule.ToString();
 
             return getData(context, sql, companyID, source, sType, true, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = "Rule",
+                    AssetID = o.AssetID,
+                    AssetType = o.RuleType,
                     RelativeUrl = o.Url,
+                    Uid = o.Uid,
+                    AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
-                        { "Type", o.RuleType },
-                        { "Description", o.Description },
-                        { "Uid", o.Uid.ToString() },
-                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
-                    }
-                };
-            });
-        }
-
-        private static IEnumerable<AddToIndexModel> LoadGroups(SqlConnection context, int companyID, ElasticSearchSource source)
-        {
-            var sql = @"SELECT [ID],[Name],[Description] FROM [Group]";
-
-            var sType = "Group";
-            return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
-            {
-                return new AddToIndexModel
-                {
-                    Group = sType,
-                    CompanyID = companyID,
-                    ID = o.ID,
-                    Type = sType,
-                    RelativeUrl = $"/groups/{o.ID}",
-                    Fields = new Dictionary<string, string>() {
-                        { "Name", o.Name },
-                        { "Type", sType },
                         { "Description", o.Description }
                     }
                 };
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadReferenceItemTypes(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadGroups(SqlConnection context, int companyID, ElasticSearchSource source)
+        {
+            var sql = @"SELECT [ID],[Name],[Description] FROM [Group]";
+
+            var sType = "Group";
+            return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
+            {
+                return new IndexObjectModel
+                {
+                    Category = sType,
+                    CompanyID = companyID,
+                    ID = o.ID,
+                    AssetType = sType,
+                    RelativeUrl = $"/groups/{o.ID}",
+                    Fields = new Dictionary<string, string>() {
+                        { "Name", o.Name },
+                        { "Description", o.Description }
+                    }
+                };
+            });
+        }
+
+        private static IEnumerable<IndexObjectModel> LoadReferenceItemTypes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             int assettypeclass = (int)AssetTypeClass.Reference;
             var sql = $@"SELECT
@@ -523,28 +536,27 @@ from
             var sType = "Reference";
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = "Reference List",
+                    AssetType = "Reference List",
                     RelativeUrl = $"/reference/{o.ID}",
+                    AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
-                        { "Type", "Reference List" },
-                        { "Description", o.Description },
-                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
-
+                        { "Description", o.Description }
                     }
                 };
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadPolicies(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             int assettypeclass = (int)AssetTypeClass.Policy;
             var sql = $@"SELECT
+	                A.ID as AssetID,
 	                A.ObjectID as ID,
 	                D.DisplayValue as [Name],
 	                D.DisplayValue as TextPath,
@@ -556,35 +568,37 @@ from
                 INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
 				INNER JOIN [dbo].AssetDisplayValue D on D.AssetID = A.ID
                 WHERE T.Class = {assettypeclass.ToString()}
-                AND A.State = 1";
+                AND A.State = 1
+                ORDER BY A.ID";
 
             var sType = SystemObjects.Policy.ToString();
 
             return getData(context, sql, companyID, source, sType, true, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = o.PolicyType,
+                    AssetID = o.AssetID,
+                    AssetType = o.PolicyType,
                     RelativeUrl = o.Url,
+                    Uid = o.Uid,
+                    AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
-                        { "Type", o.PolicyType },
-                        { "TextPath", o.TextPath ?? "" },
-                        { "Uid", o.Uid.ToString() },
-                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
+                        { "TextPath", o.TextPath ?? "" }
                     }
                 };
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source, AssetTypeClass ArtifactClass)
+        private static IEnumerable<IndexObjectModel> LoadArtifacts(SqlConnection context, int companyID, ElasticSearchSource source, AssetTypeClass ArtifactClass)
         {
             int assettypeclass = (int)ArtifactClass;
             var sql = $@"
 select
+    A.ID as AssetID,
 	cast(A.ID as varchar) as ItemUniqueID,
 	A.ObjectID as ID,
 	att.ObjectID as TypeID,
@@ -597,34 +611,35 @@ from
 	inner join [dbo].assettype att on a.assettypeid = att.id
 	inner join [dbo].assetdisplayvalue adv on adv.assetid = a.id
 where
-	att.[Object] = 'ArtifactType' and a.[state] = 1 and att.[Class] = {assettypeclass.ToString()}";
+	att.[Object] = 'ArtifactType' and a.[state] = 1 and att.[Class] = {assettypeclass.ToString()}
+ORDER BY A.ID";
 
             var sType = ArtifactClass.ToString();
 
             return getData(context, sql, companyID, source, SystemObjects.Artifact.ToString(), true, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
+                    AssetID = o.AssetID,
                     ItemUniqueID = o.ItemUniqueID,
-                    Type = o.TypeName,
+                    AssetType = o.TypeName,
                     RelativeUrl = $"/artifact/{o.TypeID}/{o.ID}",
+                    Uid = o.Uid,
+                    AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.DisplayValue },
-                        { "Type", o.TypeName },
-                        { "Uid", o.Uid.ToString() },
                         { "Description", "" },
                         { "Status", "Active" },
-                        { "Taxonomy", "" },
-                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
+                        { "Taxonomy", "" }
                     }
                 };
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select	AD.ID, AD.Name, AD.FormattedValue, OD.Url 
@@ -635,25 +650,25 @@ from	AttributeDetail AD
 
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = o.Name,
+                    AssetType = o.Name,
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
-                        { "Name", o.FormattedValue },
-                        { "Type", o.Name }
+                        { "Name", o.FormattedValue }
                     }
                 };
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
-SELECT	A.ObjectID as ID,
+SELECT	A.ID As AssetID,
+        A.ObjectID as ID,
 		T.ObjectID as TypeID,
 		D.DisplayValue,
 		T.Name as TypeName,
@@ -663,33 +678,34 @@ FROM	[dbo].Asset A
 		INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
 		INNER JOIN [dbo].AssetDisplayValue D on D.AssetID = A.ID
 WHERE	T.Object = 'TaxonomyType'
-		and A.State = 1";
+		and A.State = 1
+ORDER BY A.ID";
 
 
             var sType = SystemObjects.Taxonomy.ToString();
 
             return getData(context, sql, companyID, source, sType, true, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = o.TypeName,
+                    AssetID = o.AssetID,
+                    AssetType = o.TypeName,
                     RelativeUrl = $"/model/{o.TypeID};hierarchyId={o.ID}",
+                    Uid = o.Uid,
+                    AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.DisplayValue },
-                        { "Type", o.TypeName },
-                        { "Uid", o.Uid.ToString() },
                         { "Description", "" },
-                        { "TextPath", o.DisplayValue ?? "" },
-                        { "AssetTypeUid", o.AssetTypeUid.ToString() }
+                        { "TextPath", o.DisplayValue ?? "" }
                     }
                 };
             });
         }
 
-        private static IEnumerable<AddToIndexModel> LoadFusionTypes(SqlConnection context, int companyID, ElasticSearchSource source)
+        private static IEnumerable<IndexObjectModel> LoadFusionTypes(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
 select  f.id as ID,
@@ -704,23 +720,22 @@ from    fusion f
             var sType = SystemObjects.FusionType.ToString();
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
             {
-                return new AddToIndexModel
+                return new IndexObjectModel
                 {
-                    Group = sType,
+                    Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
-                    Type = o.FusionTypeName,
+                    AssetType = o.FusionTypeName,
                     RelativeUrl = $"/fusion/{o.ID}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.FusionName },
-                        { "Type", o.FusionTypeName },
                         { "Description", o.FusionDescription }
                     }
                 };
             });
         }
 
-        private static IEnumerable<AddToIndexModel> getData(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, bool loadFields, Func<dynamic, AddToIndexModel> convertToDictionary)
+        private static IEnumerable<IndexObjectModel> getData(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, bool loadFields, Func<dynamic, IndexObjectModel> convertToDictionary)
         {
             if (loadFields)
             {
@@ -730,33 +745,119 @@ from    fusion f
             return getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);            
         }
 
-        private static IEnumerable<AddToIndexModel> getDataWithoutFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, AddToIndexModel> convertToDictionary)
+        private static IEnumerable<IndexObjectModel> getDataWithoutFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, IndexObjectModel> convertToDictionary)
         {
-            return context.Query(sql, commandTimeout: _defaultQueryCommandTimeout, buffered:false).ToList().Select(a => (AddToIndexModel)convertToDictionary(a));
+            return context.Query(sql, commandTimeout: _defaultQueryCommandTimeout, buffered:false).ToList().Select(a => (IndexObjectModel)convertToDictionary(a));
         }
 
-        private static IEnumerable<AddToIndexModel> getDataWithFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, AddToIndexModel> convertToDictionary)
+        private static IEnumerable<IndexObjectModel> getDataWithFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, IndexObjectModel> convertToDictionary)
         {
-            var fields = context.Query<FieldSqlModel>(fieldsSql, new { t = type }, commandTimeout: _defaultQueryCommandTimeout).ToList();
-            var tags = context.Query<TagSqlModel>(tagsSql, null, commandTimeout: _defaultQueryCommandTimeout).ToList();
+            var FieldQuery = new PagedQuery<FieldSqlModel>(context, fieldsSql, new { t = type });
+            var TagsQuery = new PagedQuery<TagSqlModel>(context, tagsSql);
             var list = getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);
-                        
+
             foreach (var item in list)
             {
-                var subset = fields.Where(i => i.ObjectID == item.ID);
+                var subset = FieldQuery.GetByAssetID(item.AssetID);
                 foreach (var f in subset)
                 {
                     item.Fields[f.Name] = f.FormattedValue;
                 }
-                if(item.Fields.ContainsKey("Uid"))
+                if(item.Uid.HasValue && item.Uid != Guid.Empty)
                 {
-                    item.Tags = tags.Where(i => i.AssetUID == Guid.Parse(item.Fields["Uid"])).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
+                    item.Tags = TagsQuery.GetByAssetID(item.AssetID).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
                 }
 
                 yield return item;
-            }            
+            }
         }
 
-#endregion
+        #endregion
+    }
+
+    internal interface IPagedQuery<T>
+    {
+        List<T> GetByAssetID(long AssetID);
+    }
+    internal class PagedQuery<T> : IPagedQuery<T> where T : IPagedQuerySqlModel
+    {
+        private static readonly int PageSize = 50000;
+        private long CurrentHighID = 0;
+        private List<T> _data;
+        private SqlConnection _connection;
+        private readonly string _query;
+        public DynamicParameters _param;
+        private bool LastPage = false;
+        private static readonly int _defaultQueryCommandTimeout = 180;
+
+        /// <summary>
+        /// Performs a paged/chunked query
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="query">Query string</param>
+        /// <param name="param"></param>
+        public PagedQuery(SqlConnection connection, string query, object param = null)
+        {
+            _connection = connection;
+            _query = "SELECT TOP (@PageSize) pagedquery.* FROM (" + query + ") pagedquery WHERE pagedquery.AssetID >= @AssetID ORDER BY pagedquery.AssetID"; ;
+            _param = new DynamicParameters();
+            if(param != null)
+            {
+                foreach(var p in param.GetType().GetProperties())
+                {
+                    _param.Add(p.Name, p.GetValue(param, null));
+                }
+            }
+            _data = new List<T>();
+        }
+
+        /// <summary>
+        /// Fetches the next "page" of data. Starting with the requested AssetID
+        /// No need to get any records with a lower AssetID's
+        /// </summary>
+        /// <param name="AssetID"></param>
+        private void FetchDataPage(long AssetID)
+        {
+            if (LastPage)
+                return;
+
+            _param.Add("AssetID", AssetID);
+            _param.Add("PageSize", PageSize);
+            _data = _connection.Query<T>(_query, _param, commandTimeout: _defaultQueryCommandTimeout).ToList();
+            if (_data.Count() < PageSize)
+            {
+                //If we fetched less than PageSize, this is the last page of data
+                LastPage = true;
+            } else
+            {
+                long MinAssetID = _data.Min(i => i.AssetID);
+                long MaxAssetID = _data.Max(i => i.AssetID);
+                if (MinAssetID == MaxAssetID)
+                {
+                    //If min and max AssetID is the same, the whole "page" is the same asset and it can't be guaranteed that all records for one asset has been fetched
+                    throw new Exception("Search of " + typeof(T) + " got more than " + PageSize + " results for one AssetID");
+                }
+                else
+                {
+                    //The page may have an incomplete set of records for the highest Asset ID, so remove those from the data stored.
+                    _data.RemoveAll(i => i.AssetID == MaxAssetID);
+                    CurrentHighID = _data.Max(i => i.AssetID);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fetches records from the query for the provided Asset ID
+        /// </summary>
+        /// <param name="AssetID"></param>
+        /// <returns></returns>
+        public List<T> GetByAssetID(long AssetID)
+        {
+            //If requested ID is higher than what is current, and last page has not been reached, fetch the next data page
+            if (!LastPage && AssetID > CurrentHighID)
+                FetchDataPage(AssetID);
+
+            return _data.Where(i => i.AssetID == AssetID).ToList();
+        }
     }
 }

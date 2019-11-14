@@ -1041,6 +1041,14 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             return Filter<AssetTypeStyle>(i => i.ID == assetTypeId).FirstOrDefault();
         }
 
+        public AssetTypeStyle GetAssetTypeStyle(Guid assetTypeUid)
+        {
+            var assetType = Filter<AssetType>(i => i.uid==assetTypeUid).FirstOrDefault();
+            if (assetType != null)
+                return GetAssetTypeStyle(assetType.ID);
+            return null;
+        }
+
         public AssetTypeStyle GetAssetTypeStyle(string type, int id)
         {
             var assetType = Filter<AssetType>(i => i.Object == type && i.ObjectID == id).FirstOrDefault();

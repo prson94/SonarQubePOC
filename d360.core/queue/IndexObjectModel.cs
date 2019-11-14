@@ -1,25 +1,34 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace d360.core.queue
 {
     public class IndexObjectModel : QueueObject
     {
         public int ID { get; set; }
+        public long AssetID { get; set; }
 
         public string ItemUniqueID { get; set; }
 
         public string RelativeUrl { get; set; }
 
         /// <summary>
-        /// This is the name of the underlying type, such as:
+        /// This is the name of the underlying asset type, such as:
         /// Business Term, Application, etc.
         /// </summary>
-        public string Type { get; set; }
+        public string AssetType { get; set; }
 
         /// <summary>
         /// This value contains the asset type class
         /// </summary>
-        public string Group { get; set; }
+        public string Category { get; set; }
+
+        /// <summary>
+        /// Asset UID
+        /// </summary>
+        public Guid? Uid { get; set; }
+
+        public Guid? AssetTypeUid { get; set; }
 
         public Dictionary<string, string> Fields { get; set; }
 
@@ -32,8 +41,8 @@ namespace d360.core.queue
         public string getObjectID()
         {
             if (!string.IsNullOrEmpty(ItemUniqueID))
-                return $"{Group}|{ItemUniqueID}";
-            return $"{Group}|{ID}";
+                return $"{Category}|{ItemUniqueID}";
+            return $"{Category}|{ID}";
         }
     }
 

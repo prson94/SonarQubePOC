@@ -71,12 +71,25 @@ export class AssetType {
     CanOwnFusion: boolean;
     IconStyle: IconStyle = new IconStyle();
     Hierarchy: Hierarchy = new Hierarchy();
+}
 
+export class AssetTypeClassApiModel {
+    ID: number;
+    Name: string;
+    Description: string;
+}
+
+export class AssetTypeApiModel {
+    uid: string;
+    Name: string;
+    Path: string;
+    Class: AssetTypeClassApiModel;
 }
 
 export class IconStyle {
     ForeColor: string;
     BackColor: string;
+    Icon: string;
 }
 
 export class Hierarchy {

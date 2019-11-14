@@ -235,4 +235,24 @@ namespace d360.core.entities
 
         private DateTime? updatedon = null;
     }
+
+
+
+
+    [Serializable, DataContract(Namespace = NAMESPACE)]
+    public abstract class BaseTemplateGuidObject : BaseObject
+    {
+        [DataMember, Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Uid { get; set; }
+    }
+
+    [Serializable, DataContract(Namespace = NAMESPACE)]
+    public abstract class BaseTemplateCreatedAndUpdatedGuidObject : BaseTemplateGuidObject
+    {
+        [DataMember]
+        public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
+
+        [DataMember]
+        public DateTime UpdatedOn { get; set; } = DateTime.UtcNow;
+    }
 }

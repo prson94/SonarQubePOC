@@ -613,8 +613,8 @@ namespace d360.model.DataAccessLayer
                 {
                     case "_pagesize":
                         int pageSize = 0;
-                        if(!int.TryParse(param.Value, out pageSize) || pageSize <= 0)
-                            return (null,"Invalid '_pagesize' parameter value");
+                        if (!int.TryParse(param.Value, out pageSize) || pageSize <= 0)
+                            return (null, "Invalid '_pagesize' parameter value");
                         result.pageSize = pageSize;
                         break;
                     case "_pagenum":
@@ -643,7 +643,7 @@ namespace d360.model.DataAccessLayer
                             return (null, "Invalid '_assetUid' parameter value");
 
                         var assetTypeId = Company.Assets.Where(x => x.uid == assetUid).FirstOrDefault()?.AssetTypeID;
-                        if(assetTypeId != at.ID)
+                        if (assetTypeId != at.ID)
                             return (null, "Asset of given asset type Uid does not exists");
 
                         parameters.Add("@assetUid", assetUid);
@@ -664,7 +664,7 @@ namespace d360.model.DataAccessLayer
                             return (null, "'_assetUid' AND 'customfield' are exclusive filters and may not be combined.");
 
                         fieldFilters.Add($"inner join Field F{customFieldsCounter} on F{customFieldsCounter}.FieldTypeID = @ftId{customFieldsCounter} and F{customFieldsCounter}.AssetID = A.ID and F{customFieldsCounter}.FormattedValue = @ftValue{customFieldsCounter}");
-                        parameters.Add("@ftId"+customFieldsCounter, filterFieldTypeId);
+                        parameters.Add("@ftId" + customFieldsCounter, filterFieldTypeId);
                         parameters.Add("@ftValue" + customFieldsCounter, param.Value);
 
                         break;
@@ -674,7 +674,7 @@ namespace d360.model.DataAccessLayer
 
             bool takeOnlyLastScore = false;
 
-            if(dateEnd < dateStart && (dateStart != DateTime.MinValue && dateEnd != DateTime.MinValue))
+            if (dateEnd < dateStart && (dateStart != DateTime.MinValue && dateEnd != DateTime.MinValue))
             {
                 return (null, "Effective start date should be before effective end date parameter");
             }
@@ -683,6 +683,12 @@ namespace d360.model.DataAccessLayer
 
             parameters.Add("@pageSize", result.pageSize);
             parameters.Add("@pageNum", result.pageNum);
+
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                whereClauses.Add($"A.ID not in ({Company.GetNoReadSqlStatement()})");
+            }
 
             string whereSQl = whereClauses.Count == 0 ? "" : "where " + string.Join(" AND ", whereClauses);
             string scoreWhereSQl = scoreFilters.Count == 0 ? "" : " and " + string.Join(" AND ", scoreFilters);
@@ -695,7 +701,7 @@ namespace d360.model.DataAccessLayer
                             {string.Join(" ", fieldFilters)}
                             {whereSQl}";
 
-            result.total = Company.Query<int>(countSql,parameters).FirstOrDefault();
+            result.total = Company.Query<int>(countSql, parameters).FirstOrDefault();
 
             var sql = $@"select LOWER(A.uid) as AssetUid,
 	                    (select {(takeOnlyLastScore ? "top 1" : "")} MS.EffectiveDate, MS.Value as Score 
@@ -711,14 +717,15 @@ namespace d360.model.DataAccessLayer
                         {whereSQl}
                         group by a.uid
 	                    order by a.uid
-	                    offset (@pageNum-1) rows fetch next @pageSize rows only
+	                    offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only
                     for json path
                     ";
 
             var itemsJson = string.Join("", Company.Query<string>(sql, parameters).ToList());
 
             result.items = JsonConvert.DeserializeObject<List<MetricAssetScoreModel>>(itemsJson);
-            return (result,"");
+            if (result.items == null) result.items = new List<MetricAssetScoreModel>();
+            return (result, "");
         }
 
     }

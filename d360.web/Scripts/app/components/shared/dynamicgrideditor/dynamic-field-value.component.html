@@ -1,9 +1,11 @@
 <style>
     a,
     span {
-        word-break: break-all;
+        word-break: normal;
         display: inline-block;
-        /* for IE */
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+        max-width: 100%;
     }
 </style>
 <span [ngSwitch]="fieldType">

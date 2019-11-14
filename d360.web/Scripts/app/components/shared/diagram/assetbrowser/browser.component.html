@@ -1,4 +1,5 @@
-﻿<div class="row asset-browser" [ngClass]="{'full-screen-ab': isFullScreen}">
+﻿<div *ngIf="isFullScreen" class="modal-background"></div>
+<div class="row asset-browser" [ngClass]="{'full-screen-ab': isFullScreen}">
     <div class="col s12">
         <div class="tile tile-detail" style="padding: 0">
             <div class="row" *ngIf="isLoading">
@@ -27,7 +28,7 @@
                     <div class="asset-browser-button-group">
                         <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()"><i class="fa fa-info-circle"></i></button>
                         <button type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
-                        <button type="button" title="Filter asset browser"><i class="fa fa-filter"></i></button>
+                        <button type="button" title="Filter asset browser" (click)="filterButtonClick($event)" [class]="filterButtonSelectedClass()"><i class="fa fa-filter"></i></button>
                         <button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>
                     </div>
                     <span *ngIf="isFullScreen" title="Minimize" class="fa fa-times" (click)="fullScreenButtonClick()"></span>
@@ -40,6 +41,73 @@
                             <tr>
                                 <td style="vertical-align: top; position: relative">
                                     <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
+                                    <div *ngIf="isFilterWindowVisible" class="asset-browser-window">
+                                        <div class="asset-browser-window-header">
+                                            <div class="asset-browser-window-header-name">Filters</div>
+                                            <div class="clearfix"></div>
+                                        </div>
+                                        <div #filterPanel class="asset-browser-window-tabs-content">
+                                            <div class="filter-section">
+                                                <div class="filter-header">Asset Ancestry</div>
+                                                <div>
+                                                    <p-dropdown [options]="filterAncestryOptions" [(ngModel)]="selectedFilterAncestryMode" optionLabel="Text" dataKey="Mode" styleClass="filter-dropdown"></p-dropdown>
+                                                </div>
+                                            </div>
+
+                                            <div class="filter-section">
+                                                <div class="filter-header"># Hops To Load</div>
+                                                <div>
+                                                    <p-dropdown [options]="filterNumberOfHopOptions" [(ngModel)]="filterNumberOfHops" styleClass="filter-dropdown"></p-dropdown>
+                                                </div>
+                                            </div>
+
+                                            <div class="filter-section">
+                                                <div class="filter-header">Display</div>
+                                                <div>
+                                                    <div>
+                                                        <p-checkbox [(ngModel)]="filterBadges" binary="true" label="Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterBadgesChange()"></p-checkbox>
+                                                    </div>
+                                                    <div>
+                                                        <p-checkbox [(ngModel)]="filterDisplayIcons" binary="true" label="Icons" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterDisplayIconsChange()"></p-checkbox>
+                                                    </div>
+                                                    <div>
+                                                        <p-checkbox [(ngModel)]="filterDisplayScores" binary="true" label="Scores" labelStyleClass="filter-checkbox-label"></p-checkbox>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="filter-section">
+                                                <div class="filter-header">Filter By Asset Type</div>
+                                                <d3s-loading [isLoading]="filterAssetTypesLoading"></d3s-loading>
+                                                <p-tree [value]="filterAssetTypes" 
+                                                        [hidden]="filterAssetTypesLoading" 
+                                                        selectionMode="checkbox"
+                                                        styleClass="filter-tree"
+                                                        [(selection)]="filterSelectedAssetTypes"
+                                                        (onNodeExpand)="resizeDiagram()"
+                                                        [propagateSelectionUp]="false"
+                                                        [propagateSelectionDown]="true">
+                                                    <ng-template let-node pTemplate="default">
+                                                        <div style="word-break: break-word; max-width: 300px; text-wrap: normal">{{node.label}}</div>
+                                                    </ng-template>
+                                                </p-tree>
+                                            </div>
+
+                                            <div class="filter-section">
+                                                <div class="filter-header">Filter by Impact Predicates</div>
+                                                <d3s-loading [isLoading]="filterPredicatesLoading"></d3s-loading>
+                                                <p-tree [value]="filterPredicates"
+                                                        [hidden]="filterPredicatesLoading" 
+                                                        selectionMode="checkbox"
+                                                        styleClass="filter-tree"
+                                                        [(selection)]="filterSelectedPredicates"
+                                                        (onNodeExpand)="resizeDiagram()"
+                                                        [propagateSelectionUp]="false"
+                                                        [propagateSelectionDown]="true"></p-tree> 
+                                            </div>
+
+                                        </div>
+                                    </div>
                                     <div *ngIf="isWindowVisible" class="asset-browser-window">
                                         <div *ngIf="!showWindowTabs" style="padding:10px;">Nothing selected</div>
                                         <div class="asset-browser-window-header">
@@ -52,8 +120,8 @@
                                         </div>
                                         <p-tabView *ngIf="showWindowTabs" styleClass="asset-browser-window-tabs">
                                             <p-tabPanel header="Details" headerStyleClass="asset-browser-window-tabs-header">
-                                                <d3s-loading [isLoading]="isWindowLoading"></d3s-loading>
-                                                <div [hidden]="isWindowLoading" class="asset-browser-window-tabs-content">
+                                                <d3s-loading [(isLoading)]="isWindowLoading"></d3s-loading>
+                                                <div #infoPanel [(hidden)]="isWindowLoading" class="asset-browser-window-tabs-content">
                                                     <div class="asset-browser-window-tabs-content-field">
                                                         <div class="asset-browser-window-tabs-content-field-name">Full Path:</div>
                                                         <div style="word-break:break-word">{{selectedDiagramAsset?.Path}}</div>
@@ -64,36 +132,65 @@
                                                         <span>{{selectedDiagramAsset?.TypeName}}</span>
                                                     </div>
 
-                                                    <div class="asset-browser-window-tabs-content-field" *ngFor="let field of selectedDiagramAsset?.Scores">
-                                                        <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}</span>
-                                                        <span [class]="scoreClass(field.Value)">{{field.Value}}%</span>
+                                                    <div *ngIf="filterDisplayScores">
+                                                        <div class="asset-browser-window-tabs-content-field" *ngFor="let field of selectedDiagramAsset?.Scores">
+                                                            <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}</span>
+                                                            <span [class]="scoreClass(field.Value)">{{field.Value}}%</span>
+                                                        </div>
                                                     </div>
 
                                                     <div class="asset-browser-window-tabs-content-field" *ngFor="let field of selectedDiagramAsset?.Fields">
-                                                        <div *ngIf="field.Type == 'Html'">
-                                                            <div class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</div>
-                                                            <div [innerHtml]="field.Value"></div>
-                                                        </div>
-                                                        <div *ngIf="field.Type == 'JSON'">
-                                                            <div class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</div>
-                                                            <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
-                                                        </div>
-                                                        <div *ngIf="field.Type !== 'Html' && field.Type !== 'JSON'">
-                                                            <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:&#160;</span>
-                                                            <span [innerHtml]="field.Value"></span>
-                                                        </div>
+
+                                                        <ng-container [ngSwitch]="field.Type">
+                                                            <ng-container *ngSwitchCase="'date'">
+                                                                <span *ngIf="field.Value !== ''" class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:&#160;</span>
+                                                                <span *ngIf="field.Value !== ''">{{(field.Value | date:'shortDate')}}</span>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchCase="'datetime'">
+                                                                <span *ngIf="field.Value !== ''" class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:&#160;</span>
+                                                                <span *ngIf="field.Value !== ''">{{(field.Value | date:'medium')}}</span>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchCase="'bool'">
+                                                                <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:&#160;</span>
+                                                                <span>
+                                                                    <i *ngIf="(field.Value || '').toUpperCase() == 'TRUE'" class="fa fa-check enabled" title="True"></i>
+                                                                    <i *ngIf="(field.Value || '').toUpperCase() == 'FALSE'" class="fa fa-times disabled" title="False"></i>
+                                                                </span>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchCase="'JSON'">
+                                                                <div class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</div>
+                                                                <div *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</div>
+                                                                <ng-template #showJSON>
+                                                                    <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
+                                                                </ng-template>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchCase="'Html'">
+                                                                <div *ngIf="field.Value !== ''" class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</div>
+                                                                <div *ngIf="field.Value !== ''" [innerHtml]="field.Value"></div>
+                                                            </ng-container>
+                                                            <ng-container *ngSwitchCase="'Tag'">
+                                                                <div class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</div>
+                                                                <div>
+                                                                    <d3s-tag-view [data]="field.Values" [assetUID]="selectedDiagramAsset.Uid" [isEditable]="true" [allowAddTag]="true"></d3s-tag-view>
+                                                                </div>
+                                                            </ng-container>                                                            
+                                                            <ng-container *ngSwitchDefault>
+                                                                <span *ngIf="field.Value !== ''" class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:&#160;</span>
+                                                                <span *ngIf="field.Value !== ''" [innerHtml]="field.Value"></span>
+                                                            </ng-container>
+                                                        </ng-container>
                                                     </div>
                                                 </div>
                                             </p-tabPanel>
                                             <p-tabPanel header="Ownership" headerStyleClass="asset-browser-window-tabs-header" [disabled]="!OwnershipTabEnabled()">
-                                                <div class="asset-browser-window-tabs-content">
+                                                <div #ownerPanel class="asset-browser-window-tabs-content">
                                                     <p-table #dt [value]="selectedDiagramAsset?.Owners" [metaKeySelection]="true" [style]="{'width':'450px'}">
                                                         <ng-template pTemplate="header">
-                                                            <tr>
-                                                                <th style="width: 50%">Responsibility</th>
-                                                                <th style="width: 45%">Resource</th>
-                                                                <th style="width: 5%"></th>
-                                                            </tr>
+                                                        <tr>
+                                                            <th style="width: 50%">Responsibility</th>
+                                                            <th style="width: 45%">Resource</th>
+                                                            <th style="width: 5%"></th>
+                                                        </tr>
                                                         </ng-template>
                                                         <ng-template pTemplate="body" let-item>
                                                             <tr (dblclick)="onDoubleClick(item)" [pSelectableRow]="item">

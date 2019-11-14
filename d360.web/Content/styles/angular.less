@@ -1341,7 +1341,8 @@ a.breadcrumb {
 }
 
 .autoInputBox {
-    position: absolute;
+    position: relative;
+    top: 5px;
     display: inline-block;
 
     .ui-autocomplete-panel {
@@ -1377,11 +1378,13 @@ a.breadcrumb {
     z-index: 10;
     position: absolute;
 
-    .ui-overlaypanel {
-        position: absolute !important;
-        top: 33px !important;
-        left: -131px !important;
-        margin-bottom: 10px;
+    &.tags-results {
+        .ui-overlaypanel {
+            position: absolute !important;
+            top: 33px !important;
+            left: -131px !important;
+            margin-bottom: 10px;
+        }
     }
 
     .ui-overlaypanel-content {
@@ -1542,6 +1545,7 @@ a.breadcrumb {
         top: 36px !important;
         max-width: 800px !important;
         transform: translateX(-10px) !important;
+        z-index: 500 !important;
     }
 }
 
@@ -2567,6 +2571,17 @@ div.home-image-title-text {
 
 .modal-overlay.begin-hide .modal-dialog {
     transform: scale(0.8);
+}
+
+.modal-background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    top: 0px;
+    right: 0px;
+    z-index: 1000;
+    opacity: 0.6;
 }
 
 .about-image {
@@ -4049,7 +4064,6 @@ button.tab-scroller {
             }
 
             i {
-                padding: 10px;
                 cursor: pointer;
             }
         }
@@ -4776,6 +4790,9 @@ a.mid-blue {
             .fa {
                 color: rgba(0,0,0,0.87) !important;
             }
+            i.fa {
+                padding: 0px !important;
+            }
         }
     }
 
@@ -4783,9 +4800,6 @@ a.mid-blue {
         top: 30px !important;
     }
 
-    i.fa {
-        padding: 0px !important;
-    }
 }
 
 .asset-browser {
@@ -4806,11 +4820,11 @@ a.mid-blue {
             right: 20px;
             top: 10px;
             z-index: 50;
-          
-          span {
-            padding: 8px;
-            cursor: pointer;
-          }
+
+            span {
+                padding: 8px;
+                cursor: pointer;
+            }
         }
     }
 
@@ -4853,7 +4867,7 @@ a.mid-blue {
     }
 
     .asset-browser-window-tabs {
-        max-width: 400px
+        max-width: 400px;
     }
 
     .asset-browser-window-tabs-header {
@@ -4861,8 +4875,32 @@ a.mid-blue {
     }
 
     .asset-browser-window-tabs-content {
-        max-height: 500px;
-        overflow-y: auto
+        //max-height: 500px;
+        overflow-y: auto;
+
+        div.filter-section {
+            margin: 5px 0 15px 10px;
+
+            .filter-header {
+                margin-bottom: 7px;
+                color: @igx-grey-light;
+                font-size: 1.2em;
+                font-weight: 600;
+            }
+
+            .filter-dropdown {
+                width: 90%;
+            }
+
+            .filter-tree {
+                width: 90%;
+            }
+
+            .filter-checkbox-label {
+                margin-left: 7px;
+                font-size: 1.1em;
+            }
+        }
     }
 
     .asset-browser-window-tabs-content-field {
@@ -4967,8 +5005,8 @@ a.mid-blue {
                 width: 200px;
                 padding-right: 30px;
 
-                &.has-text{
-                    padding-right:80px;
+                &.has-text {
+                    padding-right: 80px;
                 }
             }
 
@@ -4980,7 +5018,7 @@ a.mid-blue {
                 .fa-times-circle {
                     margin: 0px 8px;
                     color: #006fc0;
-                    cursor:pointer;
+                    cursor: pointer;
                 }
 
                 .search-item-location {
