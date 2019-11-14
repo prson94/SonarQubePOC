@@ -1492,37 +1492,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private createMoreDataNode(): go.Node {
         return this.g(go.Node, "Auto",
             {
-                click: (e, obj) => this.getMoreData(e, obj)
-            },
-            this.g(
-                go.Panel,
-                "Horizontal",
-                { stretch: go.GraphObject.Horizontal, padding: 10, type: go.Panel.Spot },
-                this.g(
-                    "Shape",
-                    { alignment: go.Spot.Center, width: 25, height: 25 },
-                    new go.Binding("fill", "back"),
-                    new go.Binding("stroke", "back", function (v) { return this.shadeColor(v, -15); }),
-                ),
-                this.g(
-                    go.TextBlock,
-                    {
-                        row: 0,
-                        alignment: go.Spot.Center,
-                        editable: false,
-                        font: this.fontLabelIcon,
-                        stroke: this.fontLabelColor
-                    },
-                    new go.Binding("text", "icon"),
-                )
-            )  // end Horizontal Panel
-        );
-    }
-
-    private createHiddenDataNode(): go.Node {
-        return this.g(go.Node, "Auto",
-            {
-                click: (e, obj) => this.unhide(e, obj)
+                click: (e, obj) => this.getMoreData(e, obj),
+                cursor: 'pointer'
             },
             this.g(
                 go.Panel,
@@ -1542,8 +1513,39 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         editable: false,
                         font: this.fontLabelIcon,
                         stroke: this.fontLabelColor,
+                        text: '\uf067'
                     },
-                    new go.Binding("text", "icon"),
+                )
+            )  // end Horizontal Panel
+        );
+    }
+
+    private createHiddenDataNode(): go.Node {
+        return this.g(go.Node, "Auto",
+            {
+                click: (e, obj) => this.unhide(e, obj),
+                cursor: 'pointer'
+            },
+            this.g(
+                go.Panel,
+                "Horizontal",
+                { stretch: go.GraphObject.Horizontal, padding: 10, type: go.Panel.Spot },
+                this.g(
+                    "Shape",
+                    { alignment: go.Spot.Center, width: 25, height: 25 },
+                    new go.Binding("fill", "back"),
+                    new go.Binding("stroke", "back", function (v) { return this.shadeColor(v, -15); }),
+                ),
+                this.g(
+                    go.TextBlock,
+                    {
+                        row: 0,
+                        alignment: go.Spot.Center,
+                        editable: false,
+                        font: this.fontLabelIcon,
+                        stroke: this.fontLabelColor,
+                        text: '\uf067'
+                    },
                 )
             )  // end Horizontal Panel
         );
