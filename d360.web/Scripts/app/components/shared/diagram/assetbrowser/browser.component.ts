@@ -865,7 +865,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#endregion
 
-    //#region context menu actions
+    //#region Context menu actions
 
     private hide(e, obj, direction: AssetBrowserDirection = null) {
         if (obj != null && obj.part != null && obj.part.data != null) {
@@ -1001,13 +1001,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.browserService.getAssetImpacts(requestModel)
                 .subscribe(response => {
 
+                    response.assets.forEach(a => {
+                        this.responseModel.assets.push(a);
+                    });
+                    response.intersects.forEach(i => {
+                        this.responseModel.intersects.push(i);
+                    });
+
                     let nodeToPull = this.findInApiModel(node.key, this.responseModel);
                     if (nodeToPull) {
                         response.assets.push(nodeToPull);
                     }
 
                     let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(response);
-                    //testing console.log(requestModel, response, translationModel);
+
                     this.parseData(translationModel, true);
                 });
         }
@@ -1053,7 +1060,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#endregion
 
-    //#region templates
+    //#region Templates
 
     private initializeCustomShapes() {
         go.Shape.defineFigureGenerator("RoundedRectLeft", (shape, w, h) => {
@@ -1598,6 +1605,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#endregion
 
+    //#region Search
+
     private searchResults: go.Node[] = [];
     private searchableProps: string[] = ["text"];
     private searchCurrentItem: number = 0;
@@ -1735,8 +1744,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-
-
     setFocusedNodeHighlight(node: go.Node) {
         var self = this;
         this.diagram.model.commit(function (m) {
@@ -1754,4 +1761,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             })
         });
     }
+
+    //#endregion
 }
