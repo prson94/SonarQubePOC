@@ -555,9 +555,11 @@ export class AssetBrowserDiagramAsset {
     DisplayValue: string;
     Path: string;
     Url: string;
-    Fields: AssetBrowserDiagramAssetField[];
-    Owners: AssetBrowserDiagramAssetOwner[];
-    Scores: AssetBrowserDiagramAssetScore[];
+    Fields: AssetBrowserDiagramAssetField[] = [];
+    Owners: AssetBrowserDiagramAssetOwner[] = [];
+    Scores: AssetBrowserDiagramAssetScore[] = [];
+
+    Loaded: boolean = false;
 }
 
 export class AssetBrowserDiagramAssetField {
