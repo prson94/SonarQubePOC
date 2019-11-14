@@ -54,6 +54,8 @@ import { NgxJsonViewModule } from 'ng-json-view';
 import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-type-editor.module';
 import { IconService } from '../../../services/icon.service';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
+import { SiteModalModule } from '../modal/gov-modal.module';
+import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal-editor.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -70,7 +72,7 @@ import { TagViewModule } from '../tags/d3s-tag-view.module';
         D3SOverlayWindowModule,
         SharedObjectDetailsModule,
         SharedAssetTypeEditorModule,
-
+        AssetTypeModalEditorModule,
         //prime        
         CheckboxModule,
         EditorModule,     
