@@ -104,6 +104,21 @@ namespace d360.model
             return predicateType;
         }
 
+        /// <summary>
+        /// Used to check if the given object and object id has workflows setup for the specified change type.  If null all change types are checked
+        /// </summary>
+        /// <param name="object">Workflow Object</param>
+        /// <param name="objectID">Workflow Object ID</param>
+        /// <param name="changeType">Workflow change type</param>
+        /// <returns>True if workflows for the specified object / change type false otherwise</returns>
+        private bool TypeHasWorkflows(string @object, int objectID, ChangeType? changeType)
+        {
+            if (changeType.HasValue)
+                return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [object] = @obj and [objectid] = @objId and [state] = 1 and [changetype] = @change), 0)", new { obj = @object, objId = objectID, change = changeType.Value }) > 0;
+
+            return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [object] = @obj and [objectid] = @objId and [state] = 1 ), 0)", new { obj = @object, objId = objectID }) > 0;
+        }
+
         private CurrentExecutionLocationModel GetCurrentExecutionLocation(Guid executionID, string targetTable)
         {
             return Connection.Query<CurrentExecutionLocationModel>($@"
@@ -1225,6 +1240,9 @@ from	IntersectType I
             var dt = DateTime.UtcNow;
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+
+            //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
+            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.Object, at.ObjectID, ChangeType.Delete);
 
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (executionItemDupes.Any())
@@ -2582,6 +2600,8 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             }
             else
             {
+                //check if trigger workflows is set to true and there are actually no workflows
+                sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.Object, at.ObjectID, isInsert ? ChangeType.Add : ChangeType.Update);
 
                 var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
                 if (isInsert)
@@ -3651,6 +3671,10 @@ select [uid] from #ParentChildRelationships",
             var results = new List<DatabaseBulkRelationshipResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+
+            //check if trigger workflows is set to true and there are actually no workflows
+            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), rt.ID, null);
+
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (executionItemDupes.Any())
             {
@@ -4136,6 +4160,9 @@ end",
             var results = new List<DatabaseBulkRelationshipResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+
+            //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
+            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), it.ID, ChangeType.Delete);
 
             try
             {
