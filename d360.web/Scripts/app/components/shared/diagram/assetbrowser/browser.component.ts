@@ -55,11 +55,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private originalAssetUid: string;
     private menuItems: MenuItem[] = [];
 
-    isWindowVisible: boolean = false;
-    isWindowLoading = false;
-    showWindowTabs: boolean = false;
-    tab: string = "info";
-    selectedDiagramAsset: AssetBrowserDiagramAsset;
+    private isInfoWindowVisible: boolean = false;
+    private isInfoTabDisabled: boolean = true;
+    private isWindowLoading = false;
+    private showWindowTabs: boolean = false;
+    private tab: string = "info";
+    private selectedDiagramAsset: AssetBrowserDiagramAsset;
     private isFullScreen: boolean = false;
 
     //#region Filters
@@ -186,7 +187,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private infoButtonClick(e) {
         this.isFilterWindowVisible = false;
-        this.isWindowVisible = !this.isWindowVisible;
+        this.isInfoWindowVisible = !this.isInfoWindowVisible;
+
+        if (this.isInfoWindowVisible && this.selectedDiagramAsset != null && this.selectedDiagramAsset.Loaded == false) {
+            this.showDetails(this.selectedDiagramAsset.Uid);
+        }
         this.resizeDiagram();
         this.cdRef.markForCheck();
     }
@@ -194,7 +199,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private filterButtonClick(e) {
         this.loadFilterAssetTypes();
         this.loadFilterPredicates();
-        this.isWindowVisible = false;
+        this.isInfoWindowVisible = false;
         this.isFilterWindowVisible = !this.isFilterWindowVisible;
         this.resizeDiagram();
         this.cdRef.markForCheck();
@@ -241,7 +246,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private infoButtonSelectedClass() {
-        return this.isWindowVisible ? "selected" : "";
+        return this.isInfoWindowVisible ? "selected" : (this.isInfoTabDisabled ? "disabled" : "");
     }
 
     private filterButtonSelectedClass() {
@@ -356,9 +361,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.diagram.linkTemplateMap.add("", this.createDefaultLink());
 
-        this.diagram.addDiagramListener('ViewportBoundsChanged', () => this.ViewportBoundsChanged());
-        this.diagram.addDiagramListener('ObjectDoubleClicked', e => this.ObjectDoubleClicked(e));
-        //this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
+        this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
 
         this.diagram.grid.visible = false;
         this.diagram.grid.gridCellSize = new go.Size(8, 8);
@@ -841,10 +844,45 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.scale = v;
     }
 
-    private ViewportBoundsChanged() {
-    }
+    private ChangedSelection(e: go.DiagramEvent) {
+        if (e != null && e.subject != null) {
+            if (e.subject instanceof go.Set) {
+                let parts = (e.subject as go.Set<go.Part>);
 
-    private ObjectDoubleClicked(e: any) {
+                if (parts.count == 1) {
+                    let data = parts.first().data;
+
+                    
+                    if (data.assetUid != null) { //selected item is an asset
+                        this.isInfoTabDisabled = false;
+                        if (this.isInfoWindowVisible) {
+                            if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != data.assetUid) {
+                                this.showDetails(data.assetUid);
+                            }
+                        } else {
+                            this.selectedDiagramAsset = new AssetBrowserDiagramAsset();
+                            this.selectedDiagramAsset.Uid = data.assetUid;
+                            this.cdRef.markForCheck();
+                        }
+                    } else {
+                        this.selectedDiagramAsset = null;
+                        this.isInfoTabDisabled = true;
+                        this.isInfoWindowVisible = false;
+                        this.cdRef.markForCheck();
+                    }
+                } else if (parts.count == 0) {
+                    if (this.isInfoWindowVisible) {
+                        this.selectedDiagramAsset = null;
+                        this.isInfoTabDisabled = true;
+                        this.isInfoWindowVisible = false;
+                        this.cdRef.markForCheck();
+                    } else {
+                        this.isInfoTabDisabled = true;
+                        this.cdRef.markForCheck();
+                    }
+                }
+            }
+        }
     }
 
     private filterBadgesChange(): void {
@@ -866,6 +904,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#endregion
 
     //#region Context menu actions
+
+    private showDetails(assetUid: string) {
+        this.isWindowLoading = true;
+        this.browserService.getAssetBrowserDiagramAsset(assetUid).subscribe(response => {
+            this.selectedDiagramAsset = response;
+            this.selectedDiagramAsset.Loaded = true;
+            this.selectedDiagramAsset.Url = "/" + this.selectedDiagramAsset.Url;
+            this.isWindowLoading = false;
+            this.showWindowTabs = true;
+            this.resizeDiagram();
+            this.cdRef.markForCheck();
+        });
+    }
 
     private hide(e, obj, direction: AssetBrowserDirection = null) {
         if (obj != null && obj.part != null && obj.part.data != null) {
@@ -1167,16 +1218,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 {
                     click: (e, obj) => {
                         this.isFilterWindowVisible = false;
-                        this.isWindowVisible = true;
-                        this.isWindowLoading = true;
-                        this.browserService.getAssetBrowserDiagramAsset(obj.part.data.assetUid).subscribe(response => {
-                            this.selectedDiagramAsset = response;
-                            this.selectedDiagramAsset.Url = "/" + this.selectedDiagramAsset.Url;
-                            this.isWindowLoading = false;
-                            this.showWindowTabs = true;
-                            this.resizeDiagram();
-                            this.cdRef.markForCheck();
-                        });
+                        this.isInfoWindowVisible = true;
+                        this.showDetails(obj.part.data.assetUid);
                     }
                 }
             ),

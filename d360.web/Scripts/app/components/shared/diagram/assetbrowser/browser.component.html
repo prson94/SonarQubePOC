@@ -26,7 +26,7 @@
                 </div>
                 <div class="controls-right">
                     <div class="asset-browser-button-group">
-                        <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()"><i class="fa fa-info-circle"></i></button>
+                        <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()" [disabled]="isInfoTabDisabled"><i class="fa fa-info-circle"></i></button>
                         <button type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
                         <button type="button" title="Filter asset browser" (click)="filterButtonClick($event)" [class]="filterButtonSelectedClass()"><i class="fa fa-filter"></i></button>
                         <button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>
@@ -108,7 +108,7 @@
 
                                         </div>
                                     </div>
-                                    <div *ngIf="isWindowVisible" class="asset-browser-window">
+                                    <div *ngIf="isInfoWindowVisible" class="asset-browser-window">
                                         <div *ngIf="!showWindowTabs" style="padding:10px;">Nothing selected</div>
                                         <div class="asset-browser-window-header">
                                             <div [hidden]="!showWindowTabs && !isWindowLoading" class="asset-browser-window-header-name">
@@ -186,11 +186,11 @@
                                                 <div #ownerPanel class="asset-browser-window-tabs-content">
                                                     <p-table #dt [value]="selectedDiagramAsset?.Owners" [metaKeySelection]="true" [style]="{'width':'450px'}">
                                                         <ng-template pTemplate="header">
-                                                        <tr>
-                                                            <th style="width: 50%">Responsibility</th>
-                                                            <th style="width: 45%">Resource</th>
-                                                            <th style="width: 5%"></th>
-                                                        </tr>
+                                                            <tr>
+                                                                <th style="width: 50%">Responsibility</th>
+                                                                <th style="width: 45%">Resource</th>
+                                                                <th style="width: 5%"></th>
+                                                            </tr>
                                                         </ng-template>
                                                         <ng-template pTemplate="body" let-item>
                                                             <tr (dblclick)="onDoubleClick(item)" [pSelectableRow]="item">
