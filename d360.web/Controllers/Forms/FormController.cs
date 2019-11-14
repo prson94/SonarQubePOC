@@ -520,8 +520,6 @@ namespace d360.web.Controllers
                     return EditFusionAttributeTypeCustomQuery(form);
                 case "FUSIONQUERYATTRIBUTE":
                     return EditFusionQueryAttribute(form);
-                case "FUSIONSCHEDULE":
-                    return EditFusionSchedule(form);
                 case "INTERSECT":
                     return EditRelationship(form);
                 case "INTERSECTTYPE":
@@ -598,8 +596,6 @@ namespace d360.web.Controllers
                     return DeleteFusionQueryAttribute(form);
                 case "FUSIONATTRIBUTETYPECUSTOMQUERY":
                     return DeleteFusionAttributeTypeCustomQuery(form);
-                case "FUSIONSCHEDULE":
-                    return DeleteFusionSchedule(form);
                 case "INTERSECTTYPE":
                     return DeleteIntersectType(form);
                 case "ISSUETYPE":
@@ -678,8 +674,6 @@ namespace d360.web.Controllers
                     return AddFusionQueryAttribute(form);
                 case "FUSIONATTRIBUTETYPECUSTOMQUERY":
                     return AddFusionAttributeTypeCustomQuery(form);
-                case "FUSIONSCHEDULE":
-                    return AddFusionSchedule(form);
                 case "INTERSECT":
                     return AddRelationship(form);
                 case "INTERSECTTYPE":
