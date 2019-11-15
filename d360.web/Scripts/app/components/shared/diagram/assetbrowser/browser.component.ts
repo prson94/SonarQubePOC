@@ -1,4 +1,4 @@
-﻿import * as go from 'gojs';
+﻿addimport * as go from 'gojs';
 import * as _ from 'lodash';
 import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, SimpleChanges, EventEmitter, Output } from '@angular/core';
 import {
@@ -226,12 +226,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.cdRef.markForCheck();
     }
 
-    addAssetButtonClick(e) {
-        this.isModalVisable = true;
-    }
-    cancel() {
-        this.isModalVisable = false;
-    }
     //#endregion
 
     //#region helper methods

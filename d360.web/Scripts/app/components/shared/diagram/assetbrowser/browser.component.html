@@ -29,7 +29,6 @@
                         <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()"><i class="fa fa-info-circle"></i></button>
                         <button type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
                         <button type="button" title="Filter asset browser" (click)="filterButtonClick($event)" [class]="filterButtonSelectedClass()"><i class="fa fa-filter"></i></button>
-                        <button type="button" title="Add Asset" (click)="addAssetButtonClick($event)"><i class="fa fa-plus"></i></button>
                         <button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>
                     </div>
                     <span *ngIf="isFullScreen" title="Minimize" class="fa fa-times" (click)="fullScreenButtonClick()"></span>
@@ -225,6 +224,5 @@
         </div>
     </div>
 </div>
-<d3s-asset-type-modal-editor [isModalVisable]="isModalVisable" (closeEvent)="cancel()"></d3s-asset-type-modal-editor>
 
 
