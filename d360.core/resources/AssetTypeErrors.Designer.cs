@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class AssetTypeErrors {
@@ -66,6 +66,24 @@ namespace d360.core.resources {
         public static string AssetsWithAssignedParents {
             get {
                 return ResourceManager.GetString("AssetsWithAssignedParents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Asset Type Already Exists.
+        /// </summary>
+        public static string AssetTypeExistsTitle {
+            get {
+                return ResourceManager.GetString("AssetTypeExistsTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An asset type with the specified Uid already exists..
+        /// </summary>
+        public static string AssetTypeWithUidExists {
+            get {
+                return ResourceManager.GetString("AssetTypeWithUidExists", resourceCulture);
             }
         }
         
