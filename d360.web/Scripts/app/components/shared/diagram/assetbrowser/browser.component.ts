@@ -95,7 +95,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     filterSelectedPredicates: number[] = [201];
 
-    private isModalVisable: boolean = false;
     //#endregion
     //#region control properties
 
