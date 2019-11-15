@@ -5193,7 +5193,7 @@ a.mid-blue {
 
             .unselect {
                 position: absolute;
-                cursor:pointer;
+                cursor: pointer;
                 top: 8px;
                 right: 5px;
                 font-size: 18px;
@@ -5314,6 +5314,25 @@ a.mid-blue {
     .select-style-CheckBox {
         .value-box {
             width: 92%;
+        }
+    }
+
+    .display-style-1 {
+        .hide-full-path {
+            .value-box {
+                .segments {
+                    .segment {
+                        display: none;
+                        &:last-of-type {
+                            display: initial;
+                        }
+                    }
+                }
+
+                .partial-path-elipsis {
+                    display: none;
+                }
+            }
         }
     }
 }

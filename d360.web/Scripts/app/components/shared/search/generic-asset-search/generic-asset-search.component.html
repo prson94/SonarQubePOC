@@ -14,7 +14,7 @@
 </ng-template>
 
 <div class="generic-asset-search">
-    <div class="gas-container">
+    <div class="gas-container {{displayStyle}}">
         <div class="selection">
             <ng-container *ngIf="multiSelect">
                 <div class="selected-item hide-full-path" *ngFor="let item of selected;let i = index;">

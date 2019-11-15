@@ -49,7 +49,8 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     // What should we filter on, based on a combination of criteria. Optional.
     @Input() filters: CommonComponentAssetTypeFilter[];
 
-    @Input() resultDisplayStyle: CommonComponentDisplayStyle;
+    // Based on the selection here, which will also be updated based on the Show Full Path link
+    @Input() resultDisplayStyle: CommonComponentDisplayStyle = CommonComponentDisplayStyle.AbbreviatedPath;
 
     @Input() relationshipSide: CommonComponentAssetTypeFilterRelationshipSide;
 
@@ -67,6 +68,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
     private currentSearchNavigationIndex: number = 0;
     private isLoading: boolean = false;
+    private displayStyle: string = '';
 
     @ViewChild('searchInput', { static: true }) searchInput: ElementRef;
 
@@ -81,6 +83,15 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
     ngOnInit() {
         this.prePopulate();
+        if (this.resultDisplayStyle == CommonComponentDisplayStyle.AbbreviatedPath
+            || this.resultDisplayStyle == CommonComponentDisplayStyle.Name) {
+            this.isFullPathVisible = false;
+        }
+        else {
+            this.isFullPathVisible = true;
+        }
+
+        this.displayStyle = 'display-style-' + this.resultDisplayStyle.toString();
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -122,7 +133,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
         if (event.key === "Enter") {
             if (this.isSearchWindowOpened)
-                this.onSelect(this.currentSearchNavigationIndex,null);
+                this.onSelect(this.currentSearchNavigationIndex, null);
         }
     }
 
@@ -197,11 +208,11 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         if ($event && $event.target.className.indexOf('checker') != -1) {
             return;
         }
-          
+
         var item = this.searchresults[idx];
 
         if (this.selected.some(x => x.Uid == item.Uid)) {
-        
+
             if (this.multiSelectStyle == CommonComponentSelectStyle.CheckBox) {
                 this.unselectByUID(item.Uid);
             }
