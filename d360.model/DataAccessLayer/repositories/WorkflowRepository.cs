@@ -87,6 +87,7 @@ namespace d360.model.DataAccessLayer
 
 
                 string sql = $@"			select 
+                t.uid as 'WorkflowTypeUid',
 				case when e.[Object] = 'IssueType' then is_t.uid
 					ELSE NULL END as ActionTypeUid ,
 				case when e.[Object] = 'ArtifactType' or e.[Object] = 'RuleType' or e.[Object] = 'PolicyType'

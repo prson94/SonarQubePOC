@@ -54,6 +54,8 @@ import { NgxJsonViewModule } from 'ng-json-view';
 import { IconService } from '../../../services/icon.service';
 import { DiagramAssetRelationshipComponent } from './tools/relationships.component';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
+import { SiteModalModule } from '../modal/gov-modal.module';
+import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal-editor.module';
 import { AssetSearchModule } from '../search/generic-asset-search/generic-asset-search.module';
 
 @NgModule({
@@ -70,7 +72,8 @@ import { AssetSearchModule } from '../search/generic-asset-search/generic-asset-
         TilesModule,
         D3SOverlayWindowModule,
         SharedObjectDetailsModule,
-
+        SharedAssetTypeEditorModule,
+        AssetTypeModalEditorModule,
         //prime        
         CheckboxModule,
         EditorModule,     

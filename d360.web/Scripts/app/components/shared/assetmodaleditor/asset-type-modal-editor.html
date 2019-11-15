@@ -1,0 +1,44 @@
+﻿<d3s-modal [title]="'Create Transformation Asset'" [showConfirm]="false" (onClose)="cancel()" [isVisible]="isModalVisable">
+    <div class="filtered-asset-container">
+        <div class="input-row">
+            <div class="col s3">
+                <span class="label">Type</span>
+            </div>
+            <div class="col s9">
+                <p-dropdown placeholder="Select an Asset Type" [class]="'dropdown'" [options]="options" optionLabel="Name" [(ngModel)]="assetType" (onChange)="updateAssetTypeEditor()"></p-dropdown>
+            </div>
+        </div>
+        <div class="col s12 pad12">
+            <span>Definition</span>
+            <div class="separator"></div>
+        </div>
+        <div *ngIf="!editorOpen" class="col s12 definition">
+            <span class="prompt">Please choose an asset type to display availeble properties.</span>
+        </div>
+        <div #definition class="col s12 definition">
+            <d3s-dynamic-editor #dynamicEditor *ngIf="editorOpen && assetType"
+                                [useTypeUidForDefinition]="true"
+                                [showActions]="false"
+                                [objectTypeUid]="assetType.uid"
+                                [title]="assetType?.Name + ' Item'"
+                                (saveClick)="savedItem($event)"
+                                [isV2API]="true"
+                                (closeClick)="cancel()"></d3s-dynamic-editor>
+        </div>
+        <div class="action-bar">
+            <button class="left button"
+                    type="button"
+                    (click)="cancel()"
+                    label="Close">
+                Close
+            </button>
+            <span class="grow"></span>
+            <button class="right button primary {{savingInProgress ? 'loading' : ''}}"
+                    (click)="confirm()"
+                    [disabled]="isInvalid()"
+                    label="Confirm">Confirm
+                <span class="loader"><span class="spinner light"></span></span>
+            </button>
+        </div>
+    </div>
+</d3s-modal>

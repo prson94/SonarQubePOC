@@ -1,4 +1,4 @@
-﻿import * as go from 'gojs';
+import * as go from 'gojs';
 import * as _ from 'lodash';
 import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, SimpleChanges, EventEmitter, Output } from '@angular/core';
 import {
@@ -98,8 +98,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     filterSelectedPredicates: number[] = [201];
 
     //#endregion
-
-    //#region Control Properties
+    //#region control properties
 
     // Constants
     private readonly fontContextMenu: string = "12px 'Source Sans Pro'";
