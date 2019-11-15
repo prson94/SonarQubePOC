@@ -1,12 +1,15 @@
 ﻿
 <div class="browser-relationship-editor">
+
+    <d3s-asset-type-modal-editor [isModalVisable]="isAddTransformationVisible" (onCancel)="isAddTransformationVisible=false" (onSave)="newAssetAdded($event)"></d3s-asset-type-modal-editor>
+
     <div>
         <button (click)="prepopulateSourceAssets()">Populate source assets</button><br />
         <button (click)="prepopulateSearchResult()">Populate source search results</button><br />
         <button (click)="addSourceAssetFilter()">Add filters to source assets</button><br />
     </div>
-    <br/>
-    <br/>
+    <br />
+    <br />
 
     <span class="title">Source Assets</span>
     <d3s-asset-search [multiSelect]="true"
@@ -23,14 +26,16 @@
     </d3s-asset-search>
 
     <span class="title">Transformation</span>
-    <d3s-asset-search [multiSelect]="false"
-                      [predicateSelectorType]="predicateType"
-                      [selected]="transformationAsset"
-                      [clearResultsAfterSelection]="true"
-                      [placeholder]="'Choose or create a transformation...'"
-                      (selectedChange)="onAssetSearchSelection($event)">
-    </d3s-asset-search>
-
+    <div>
+        <d3s-asset-search [multiSelect]="false"
+                          [predicateSelectorType]="predicateType"
+                          [selected]="transformationAsset"
+                          [clearResultsAfterSelection]="true"
+                          [placeholder]="'Choose or create a transformation...'"
+                          (selectedChange)="onAssetSearchSelection($event)">
+        </d3s-asset-search>
+        <button type="button" title="Add Transformation" (click)="isAddTransformationVisible = true"><i class="fa fa-plus"></i></button>
+    </div>
     <span class="title">Target Assets</span>
     <d3s-asset-search [multiSelect]="true"
                       [showPredicateSelector]="true"

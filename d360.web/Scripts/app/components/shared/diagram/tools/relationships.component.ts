@@ -2,6 +2,7 @@
 import { CommonComponentAssetResult, CommonComponentAssetTypeFilter } from '../../../../models/asset-search.model';
 import { PredicateType } from '../../../../models/predicate.model';
 import { AssetTypeClass } from '../../../../models/asset.model';
+import { AssetService } from '../../../../services/asset.service';
 
 
 declare var CompanySettings;
@@ -18,7 +19,9 @@ export class DiagramAssetRelationshipComponent implements OnInit {
     private sourceAssetFilters: CommonComponentAssetTypeFilter[] = [];
 
     private transformationAsset: CommonComponentAssetResult[] = [];
+
     private targetAssets: CommonComponentAssetResult[] = [];
+    private isAddTransformationVisible: boolean = false;
 
     private predicateType: PredicateType = PredicateType.Simple;
     constructor() { }
@@ -47,6 +50,16 @@ export class DiagramAssetRelationshipComponent implements OnInit {
     onAssetSearchSelection(event: any) {
         console.warn("Search selection event triggered!");
         console.warn("Event:", event);
+    }
+
+    newAssetAdded($event) {
+        var item = new CommonComponentAssetResult();
+        item.AssetTypeUid = $event.assetUid;
+        item.AssetTypeUid = $event.assetTypeUid;
+        let arr = [];
+        arr.push(item);
+
+        this.transformationAsset = arr;
     }
 
 }

@@ -98,6 +98,11 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         if (changes.prepopulatedResults && changes.prepopulatedResults.previousValue != changes.prepopulatedResults.currentValue) {
             this.prePopulate();
         }
+
+        if (changes.selected && changes.selected.previousValue != changes.selected.currentValue) {
+            console.log("value updated");
+        }
+
     }
 
     private prePopulate() {
