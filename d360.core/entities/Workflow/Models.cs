@@ -331,7 +331,7 @@ namespace d360.core.entities.Workflow
    
     public class WorkflowTypeApiViewModel
     {
-
+        public Guid? WorkflowTypeUid { get; set; }
         public Guid? ActionTypeUid { get; set; }
         public Guid? AssetTypeUid { get; set; }
         public Guid? RelationshipTypeUid { get; set; }
