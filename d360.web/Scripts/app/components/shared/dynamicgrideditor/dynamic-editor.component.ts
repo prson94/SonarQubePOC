@@ -129,8 +129,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
 
     focusToFirst() {
-        if (this.formElement)
+        if (this.formElement) {
             this.formElement.nativeElement.querySelector("input:not([type='hidden'])").focus();
+        }
     }
 
     private load() {

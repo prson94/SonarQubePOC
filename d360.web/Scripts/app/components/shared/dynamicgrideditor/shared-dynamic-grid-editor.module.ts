@@ -35,8 +35,7 @@ import { DirectivesModule } from '../../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
-import { TagView } from "../../shared/tags/d3s-tag-view";
-
+import { TagViewModule } from '../tags/d3s-tag-view.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -55,6 +54,7 @@ import { TagView } from "../../shared/tags/d3s-tag-view";
         SimpleAccordionModule,
         SimilarItemsModule,
         TagUsageInfoModule,
+        TagViewModule,
 
         //prime        
         CalendarModule,
@@ -70,15 +70,10 @@ import { TagView } from "../../shared/tags/d3s-tag-view";
         SiteModalModule,
         OverlayPanelModule,
 
-        //color picker
         ColorPickerModule,
-
-        //JSON Viewer module
-        NgxJsonViewModule,
-
+        NgxJsonViewModule
     ],
     declarations: [
-        TagView,
         DynamicEditorComponent,
         DynamicFieldComponent,
         DynamicFieldValueComponent,
@@ -86,7 +81,6 @@ import { TagView } from "../../shared/tags/d3s-tag-view";
         MultiSelectGridComponent,
     ],
     exports: [
-        TagView,
         DynamicEditorComponent,
         DynamicFieldValueComponent,
         DynamicGridComponent,

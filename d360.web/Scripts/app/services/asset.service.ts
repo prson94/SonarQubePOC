@@ -4,7 +4,7 @@ import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 
 import { JsonResult } from '../models/jsonresult.model';
-import { ApiResult } from '../models/apiresult.model';
+import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
@@ -20,7 +20,18 @@ export class AssetService extends BaseObservableService {
     ) {
         super(messagesService);
     }
-        
+
+    public getAssetLegacyUri(uid: string)
+        : Observable<string & ErrorResponse> {
+        return this
+            .http
+            .get(`api/legacyuri/Asset/${uid}`)
+            .pipe(
+                map(response => <string & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     public deleteAsset(
         assetTypeUid: string,
         uid: string

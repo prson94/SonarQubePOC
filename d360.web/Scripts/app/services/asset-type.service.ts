@@ -47,6 +47,17 @@ export class AssetTypeService extends BaseObservableService {
             );
     }
 
+    public getAssetTypeLegacyUri(uid: string)
+        : Observable<string & ErrorResponse> {
+        return this
+            .http
+            .get(`api/legacyuri/AssetType/${uid}`)
+            .pipe(
+                map(response => <string & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     //#region v2 endpoints
 
     public getAssetTypes()

@@ -354,4 +354,5 @@
   <include file="scripts/GOV-8566.xml"/> <!-- script to create index for [[dbo].[FusionStatusLog] -->
   <include file="scripts/GOV-8730.xml"/> <!-- update DeleteObject procedure for deletion of AssetTypeClass -->
   <include file="scripts/GOV-8706.xml"/> <!-- Update [dbo].[GetResponsibilityTypeBreakdown] proc for union vs union all -->
+  <include file="scripts/GOV-8679.xml"/> <!-- GetImpactRelationshipsByAssets proc -->
 </databaseChangeLog>

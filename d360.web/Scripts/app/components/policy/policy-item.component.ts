@@ -160,7 +160,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                         this.selected.ID,
                         this.buildTreeNodeArray(this.policies, this.selected.ParentID),
                         this.findSelectedTreeNode(this.selected.ID)));
-                this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).then(icon => {
+                this.headerBreadcrumbService.getAssetFolderIcon('PolicyType', this.policyTypeId,areaBreadcrumb.text).subscribe(icon => {
                     this.setCommonRightSideBar(
                         true,
                         this.hasPermission(Permission.ReadResponsibilities),

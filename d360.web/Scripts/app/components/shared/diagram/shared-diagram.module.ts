@@ -54,6 +54,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
 import { IconService } from '../../../services/icon.service';
 import { DiagramAssetRelationshipComponent } from './tools/relationships.component';
 import { AssetSearchModule } from '../search/generic-asset-search.module';
+import { TagViewModule } from '../tags/d3s-tag-view.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -88,6 +89,7 @@ import { AssetSearchModule } from '../search/generic-asset-search.module';
         NgxJsonViewModule,
         AssetSearchModule
 
+        TagViewModule
     ],
     declarations: [
         AssetBrowserComponent,

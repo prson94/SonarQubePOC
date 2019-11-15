@@ -30,6 +30,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { TypeaheadSearchModule } from '../shared/search/typeahead-search.component';
 import { SearchStateService } from './search-state.service';
+import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -58,6 +59,7 @@ import { SearchStateService } from './search-state.service';
         SharedDynamicGridEditorModule,
         PaginatorModule,
         ChipsFilterModule,
+        TagViewModule,
         TypeaheadSearchModule
     ],
     declarations: [

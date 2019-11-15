@@ -40,6 +40,10 @@ namespace d360.model
     {
         internal const int API_V2_RETRY_LIMIT = 10;
         internal const int API_V2_RETRY_INTERVAL = 100; // interval set in ms
+        
+        public int SqlBulkBatchSize { get; set; } = 5000; // default size to use for sqlbulkcopy operations 0 means one batch
+        public int SqlBulkBatchTimeout { get; set; } = 0; // timeout for sqlbulkcopy operations  0 means run until it happens
+        public int WorkflowSendBatchSize { get; set; } = 50; // number of items to send at a time for a batch of service bus messages
 
         #region DbSets
 
@@ -98,6 +102,21 @@ namespace d360.model
             }
 
             return predicateType;
+        }
+
+        /// <summary>
+        /// Used to check if the given object and object id has workflows setup for the specified change type.  If null all change types are checked
+        /// </summary>
+        /// <param name="object">Workflow Object</param>
+        /// <param name="objectID">Workflow Object ID</param>
+        /// <param name="changeType">Workflow change type</param>
+        /// <returns>True if workflows for the specified object / change type false otherwise</returns>
+        private bool TypeHasWorkflows(string @object, int objectID, ChangeType? changeType)
+        {
+            if (changeType.HasValue)
+                return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [object] = @obj and [objectid] = @objId and [state] = 1 and [changetype] = @change), 0)", new { obj = @object, objId = objectID, change = changeType.Value }) > 0;
+
+            return Database.Connection.QuerySingle<int>("SELECT ISNULL((select count(1) from workflow.EventRegistration where [object] = @obj and [objectid] = @objId and [state] = 1 ), 0)", new { obj = @object, objId = objectID }) > 0;
         }
 
         private CurrentExecutionLocationModel GetCurrentExecutionLocation(Guid executionID, string targetTable)
@@ -422,13 +441,13 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
         private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600)
         {
             return Connection.Query<AssetFieldTypeUpdate>($@"
-select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from api.ExecutionAsset EA 
+select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from {tableName} EA 
 	inner join api.ExecutionField EF on EF.ExecutionID = EA.ExecutionID 
                         and EF.ItemNumber = EA.ItemNumber 
                         and EA.ObjectID is not null 
                         and EF.FieldTypeID is not null
 	inner join Field F on F.FieldTypeId = EF.FieldTypeID and F.ObjectType = EA.Object and F.ObjectId = EA.ObjectID
-where EA.ExecutionID = @executionID and EA.IsNew <> 1 and F.Value <> EF.FieldValue and @sendWorkflowEvents = 1
+where EA.ExecutionID = @executionID and EA.IsNew <> 1 and F.Value <> EF.FieldValue and @sendWorkflowEvents = 1 and EA.ItemNumber between @beginItemNumber and @endItemNumber
 
 merge       Field as T
 using       (
@@ -467,7 +486,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
             string assetJoin = resolveRelationshipOnObjectId ? "S.ObjectID = cast(V.[value] as int)" : "S.DisplayValue = V.[value]";
 
 
-                Connection.Execute($@"
+            Connection.Execute($@"
                 begin
 	                drop table if exists #Relationships;
 	                create table #Relationships
@@ -477,7 +496,8 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 		                [Subject] varchar(50),
 		                SubjectID int,
 		                [Object] varchar(50),
-		                ObjectID int
+		                ObjectID int,
+                        SwitchObject bit
 	                )
                     ;with R
                         as (
@@ -523,7 +543,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                     and (F.Ignore = 0 or F.Ignore is null)
                                     and FT.Type = 'Relationship'
                             )
-                            insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+                            insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID, SwitchObject)
                             select
                                 null as ID,
 			                    IntersectTypeId, 
@@ -542,7 +562,8 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 			                    CASE 
 				                    when switchObject = 0 then ObjectId
 				                    else SubjectId
-			                    END AS ObjectID
+			                    END AS ObjectID,
+                                SwitchObject
 			                from R;
 
                             update R
@@ -570,12 +591,12 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 
                             delete I
 			                from [Intersect] I
-			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
+			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID and R.SwitchObject = 0
 			                where not exists (select 1 from #Relationships where [Subject] = I.[Subject] and SubjectID = I.SubjectID);
 
                             delete I
 			                from [Intersect] I
-			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Subject] = I.[Subject] and R.SubjectID = I.SubjectID
+			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Subject] = I.[Subject] and R.SubjectID = I.SubjectID and R.SwitchObject = 1
 			                where not exists (select 1 from #Relationships where [Object] = I.[Object] and ObjectID = I.ObjectID);
 
                             insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
@@ -588,7 +609,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                             where  ID is null;
                 end
 ",
-                new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);          
+            new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
         private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
@@ -659,9 +680,9 @@ CREATE TABLE #FieldJsonProperty (
 
             var bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection, SqlBulkCopyOptions.Default, trans)
             {
-                BatchSize = table.Rows.Count,
+                BatchSize = SqlBulkBatchSize,
                 DestinationTableName = "#FieldJsonProperty",
-                BulkCopyTimeout = timeout
+                BulkCopyTimeout = SqlBulkBatchTimeout
             };
 
             bulkCopy.ColumnMappings.Add("FieldID", "FieldID");
@@ -673,8 +694,6 @@ CREATE TABLE #FieldJsonProperty (
             bulkCopy.ColumnMappings.Add("Value", "Value");
 
             bulkCopy.WriteToServer(table);
-
-            bulkCopy = null;
 
             #endregion
 
@@ -809,17 +828,22 @@ from	api.ExecutionField T
             try
             {
                 var events = new List<EventInfo>();
+
+                Dictionary<string, int[]> fieldUpdatePairs = new Dictionary<string, int[]>();
+                foreach (var item in fieldUpdates.GroupBy(x => x.Object + x.ObjectId))
+                {
+                    fieldUpdatePairs.Add(item.Key, item.Select(x => x.Id).ToArray());
+                }
+
+
                 foreach (var result in results)
                 {
                     if (result.Success)
                     {
                         List<int> changedFieldsIDS = new List<int>();
-                        if (fieldUpdates != null)
+                        if (fieldUpdatePairs.ContainsKey(result.Object + result.ObjectID))
                         {
-                            foreach (var ftUpdate in fieldUpdates.Where(x => x.Object == result.Object && x.ObjectId == result.ObjectID))
-                            {
-                                changedFieldsIDS.Add(ftUpdate.Id);
-                            }
+                            changedFieldsIDS = fieldUpdatePairs[result.Object + result.ObjectID].ToList();
                         }
 
                         events.Add(new EventInfo
@@ -838,7 +862,7 @@ from	api.ExecutionField T
                             }
                         });
 
-                        if (events.Count > 50)
+                        if (events.Count > WorkflowSendBatchSize)
                         {
                             QueueSource.CreateTopicMessages(events);
                             events.Clear();
@@ -877,7 +901,7 @@ from	api.ExecutionField T
             }
 
             if (events.Any())
-                QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);            
+                QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
         }
 
         #region Validation
@@ -1217,6 +1241,9 @@ from	IntersectType I
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
 
+            //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
+            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.Object, at.ObjectID, ChangeType.Delete);
+
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (executionItemDupes.Any())
             {
@@ -1290,9 +1317,9 @@ from	IntersectType I
 
                         SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
 
-                        bulkCopy.BatchSize = table.Rows.Count;
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
                         bulkCopy.DestinationTableName = "api.ExecutionDeletedAsset";
-                        bulkCopy.BulkCopyTimeout = timeout;
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                         bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                         bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -1301,8 +1328,6 @@ from	IntersectType I
                         bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
 
                         bulkCopy.WriteToServer(table);
-
-                        bulkCopy = null;
 
                         #endregion
 
@@ -1478,7 +1503,7 @@ from	IntersectType I
 			        [Message] ='You have not enabled Cascade, yet there are profiling data for this asset.'
 			from    api.ExecutionDeletedAsset S 
 			        inner join AssetDataProfile ADP on ADP.AssetID = S.AssetID
-			where	S.[ExecutionId] = @ExecutionID and S.[AssetId] is not null and S.[Cascade] = 0", 
+			where	S.[ExecutionId] = @ExecutionID and S.[AssetId] is not null and S.[Cascade] = 0",
             new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             // Parent/Child Relationships
@@ -2049,9 +2074,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                         SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
 
-                        bulkCopy.BatchSize = table.Rows.Count;
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
                         bulkCopy.DestinationTableName = "api.ExecutionDeletedAssetType";
-                        bulkCopy.BulkCopyTimeout = timeout;
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                         bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                         bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -2060,8 +2085,6 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                         bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
 
                         bulkCopy.WriteToServer(table);
-
-                        bulkCopy = null;
 
                         #endregion
 
@@ -2247,9 +2270,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                     #region Bulk Copy
                     var bulkCopy = new SqlBulkCopy(Connection)
                     {
-                        BatchSize = table.Rows.Count,
+                        BatchSize = SqlBulkBatchSize,
                         DestinationTableName = "api.ExecutionRelationshipType",
-                        BulkCopyTimeout = timeout
+                        BulkCopyTimeout = SqlBulkBatchTimeout
                     };
 
                     bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
@@ -2266,7 +2289,6 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                     bulkCopy.WriteToServer(table);
 
-                    bulkCopy = null;
                     #endregion
 
                     this.ValidateRelationshipsType(execution, timeout);
@@ -2317,16 +2339,17 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
                 results.AddRange(import.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, Message = execution.ErrorMessage, Success = false }));
             }
-            else { 
+            else
+            {
 
                 var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
                 if (uidDupes.Any())
                 {
-                    var  dupesResult= uidDupes.Join(import,
-                                        x=>x.Uid,
-                                        y=>y.Uid,
-                                        (d, i) => new { ExecutionItemUid = i.ExecutionItemUid,Uid = i.Uid,Count = d.Count }).ToList();
-                    results.AddRange(dupesResult.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid=i.Uid, Message = $"Duplicate Uid", Success = false }));
+                    var dupesResult = uidDupes.Join(import,
+                                        x => x.Uid,
+                                        y => y.Uid,
+                                        (d, i) => new { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Count = d.Count }).ToList();
+                    results.AddRange(dupesResult.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = $"Duplicate Uid", Success = false }));
                 }
                 else
                 {
@@ -2377,9 +2400,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                         #region Bulk Copy
                         var bulkCopy = new SqlBulkCopy(Connection)
                         {
-                            BatchSize = table.Rows.Count,
+                            BatchSize = SqlBulkBatchSize,
                             DestinationTableName = "api.ExecutionRelationshipType",
-                            BulkCopyTimeout = timeout
+                            BulkCopyTimeout = SqlBulkBatchTimeout
                         };
 
                         bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
@@ -2393,8 +2416,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                         bulkCopy.ColumnMappings.Add("uid", "uid");
 
                         bulkCopy.WriteToServer(table);
-
-                        bulkCopy = null;
+                                                
                         #endregion
 
                         this.ValidateUpdateRelationshipsType(execution, timeout);
@@ -2479,9 +2501,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                     #region Bulk Copy
                     var bulkCopy = new SqlBulkCopy(Connection)
                     {
-                        BatchSize = table.Rows.Count,
+                        BatchSize = SqlBulkBatchSize,
                         DestinationTableName = "api.ExecutionDeletedRelationshipType",
-                        BulkCopyTimeout = timeout
+                        BulkCopyTimeout = SqlBulkBatchTimeout
                     };
 
                     bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
@@ -2493,7 +2515,6 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                     bulkCopy.WriteToServer(table);
 
-                    bulkCopy = null;
                     #endregion
 
                     this.ValidateDeleteReleationshipsType(execution, timeout);
@@ -2552,16 +2573,17 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             return results;
         }
 
-        private  void AITrackTrace(TelemetryClient client,ApiExecution execution,string methodName,string logMessage,long ElapsedMilliseconds,bool isLog)
+        private void AITrackTrace(TelemetryClient client, ApiExecution execution, string methodName, string logMessage, long ElapsedMilliseconds, bool isLog)
         {
             if (!isLog) return;
 
             var propsToSend = new Dictionary<string, string> {
                 { "MethodName", methodName },
+                { "CompanyID", this.CurrentCompanyID.ToString() },
                { logMessage, ElapsedMilliseconds.ToString() },
             };
 
-            client.TrackTrace(execution.ExecutionID.ToString(), propsToSend);
+            client.TrackTrace($"API v2 Execution ID[{execution.ExecutionID.ToString()}", propsToSend);
         }
         public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500)
         {
@@ -2578,7 +2600,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             }
             else
             {
-                
+                //check if trigger workflows is set to true and there are actually no workflows
+                sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.Object, at.ObjectID, isInsert ? ChangeType.Add : ChangeType.Update);
+
                 var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
                 if (isInsert)
                 {
@@ -2815,9 +2839,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                         SqlBulkCopy bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
 
-                        bulkCopy.BatchSize = table.Rows.Count;
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
                         bulkCopy.DestinationTableName = "api.ExecutionAsset";
-                        bulkCopy.BulkCopyTimeout = timeout;
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                         bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                         bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -2839,9 +2863,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                         bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
 
-                        bulkCopy.BatchSize = errorTable.Rows.Count;
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
                         bulkCopy.DestinationTableName = "api.ExecutionAssetError";
-                        bulkCopy.BulkCopyTimeout = timeout;
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                         bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                         bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -2855,9 +2879,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                         bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
 
-                        bulkCopy.BatchSize = fieldTable.Rows.Count;
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
                         bulkCopy.DestinationTableName = "api.ExecutionField";
-                        bulkCopy.BulkCopyTimeout = timeout;
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                         bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                         bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -2867,8 +2891,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                         bulkCopy.WriteToServer(fieldTable);
 
-                        bulkCopy = null;
-
+                        
                         this.AITrackTrace(client, execution, METHOD_NAME, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
                         #endregion
@@ -3533,9 +3556,8 @@ select [uid] from #ParentChildRelationships",
                                         }
 
                                         #endregion
-                                        fieldTypeUpdates.Clear();
                                         sw.Restart();
-                                        fieldTypeUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
+                                        var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout);
                                         this.AITrackTrace(client, execution, METHOD_NAME, "MergeFields >> 1", sw.ElapsedMilliseconds, isLog);
                                         sw.Restart();
                                         ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
@@ -3568,6 +3590,8 @@ select [uid] from #ParentChildRelationships",
                                         this.AITrackTrace(client, execution, METHOD_NAME, "Update success flag", sw.ElapsedMilliseconds, isLog);
                                         trans.Commit();
 
+                                        //Add items after commit, so we dont have dirty data if trans is rolled back
+                                        fieldTypeUpdates.AddRange(transationFieldUpdates);
                                         runCompleted = true;
                                     }
                                     catch (Exception ex)
@@ -3647,6 +3671,10 @@ select [uid] from #ParentChildRelationships",
             var results = new List<DatabaseBulkRelationshipResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+
+            //check if trigger workflows is set to true and there are actually no workflows
+            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), rt.ID, null);
+
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (executionItemDupes.Any())
             {
@@ -3746,9 +3774,9 @@ select [uid] from #ParentChildRelationships",
                     sw.Restart();
                     SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
 
-                    bulkCopy.BatchSize = table.Rows.Count;
+                    bulkCopy.BatchSize = SqlBulkBatchSize;
                     bulkCopy.DestinationTableName = "api.ExecutionRelationship";
-                    bulkCopy.BulkCopyTimeout = timeout;
+                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                     bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                     bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -3760,9 +3788,9 @@ select [uid] from #ParentChildRelationships",
 
                     bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
 
-                    bulkCopy.BatchSize = fieldTable.Rows.Count;
+                    bulkCopy.BatchSize = SqlBulkBatchSize;
                     bulkCopy.DestinationTableName = "api.ExecutionField";
-                    bulkCopy.BulkCopyTimeout = timeout;
+                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                     bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                     bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -3772,7 +3800,6 @@ select [uid] from #ParentChildRelationships",
 
                     bulkCopy.WriteToServer(fieldTable);
 
-                    bulkCopy = null;
                     this.AITrackTrace(client, execution, METHOD_NAME, " Bulk Copy", sw.ElapsedMilliseconds, isLog);
                     #endregion
                     sw.Restart();
@@ -4134,6 +4161,9 @@ end",
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
 
+            //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
+            sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), it.ID, ChangeType.Delete);
+
             try
             {
                 currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionDeletedRelationship");
@@ -4184,9 +4214,9 @@ end",
 
                 SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
 
-                bulkCopy.BatchSize = table.Rows.Count;
+                bulkCopy.BatchSize = SqlBulkBatchSize;
                 bulkCopy.DestinationTableName = "api.ExecutionDeletedRelationship";
-                bulkCopy.BulkCopyTimeout = timeout;
+                bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                 bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                 bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
@@ -4195,8 +4225,6 @@ end",
                 bulkCopy.ColumnMappings.Add("Cascade", "Cascade");
 
                 bulkCopy.WriteToServer(table);
-
-                bulkCopy = null;
 
                 #endregion
 
@@ -4841,9 +4869,9 @@ from    [Intersect] T
                 #region Bulk Copy
                 var bulkCopy = new SqlBulkCopy(Connection)
                 {
-                    BatchSize = table.Rows.Count,
+                    BatchSize = SqlBulkBatchSize,
                     DestinationTableName = "api.ExecutionAssetCrossReference",
-                    BulkCopyTimeout = timeout
+                    BulkCopyTimeout = SqlBulkBatchTimeout
                 };
 
                 bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
@@ -4856,8 +4884,6 @@ from    [Intersect] T
 
 
                 bulkCopy.WriteToServer(table);
-
-                bulkCopy = null;
 
                 #endregion
 
@@ -4967,9 +4993,9 @@ from    [Intersect] T
 
                         SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
 
-                        bulkCopy.BatchSize = table.Rows.Count;
+                        bulkCopy.BatchSize = SqlBulkBatchSize;
                         bulkCopy.DestinationTableName = "api.ExecutionDeletedPredicate";
-                        bulkCopy.BulkCopyTimeout = timeout;
+                        bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                         bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                         bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -4977,8 +5003,6 @@ from    [Intersect] T
                         bulkCopy.ColumnMappings.Add("Uid", "Uid");
 
                         bulkCopy.WriteToServer(table);
-
-                        bulkCopy = null;
 
                         #endregion
 
@@ -5185,9 +5209,9 @@ from    [Intersect] T
 
                     SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
 
-                    bulkCopy.BatchSize = table.Rows.Count;
+                    bulkCopy.BatchSize = SqlBulkBatchSize;
                     bulkCopy.DestinationTableName = "api.ExecutionPredicate";
-                    bulkCopy.BulkCopyTimeout = timeout;
+                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                     bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                     bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -5198,8 +5222,6 @@ from    [Intersect] T
                     bulkCopy.ColumnMappings.Add("uid", "uid");
 
                     bulkCopy.WriteToServer(table);
-
-                    bulkCopy = null;
 
                     #endregion
 
@@ -5454,7 +5476,7 @@ from    [Intersect] T
             }
             else if (nameDupes.Any())
             {
-                for(int idx = 0; idx < import.Count; idx++)
+                for (int idx = 0; idx < import.Count; idx++)
                 {
                     var dupe = nameDupes.FirstOrDefault(x => x.Name == import[idx].Name);
                     results.Add(new ResponsibilityTypeUpsertResult()
@@ -5533,9 +5555,9 @@ from    [Intersect] T
 
                     SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
 
-                    bulkCopy.BatchSize = table.Rows.Count;
+                    bulkCopy.BatchSize = SqlBulkBatchSize;
                     bulkCopy.DestinationTableName = "api.ExecutionResponsibilityType";
-                    bulkCopy.BulkCopyTimeout = timeout;
+                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
 
                     bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                     bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
@@ -5546,8 +5568,6 @@ from    [Intersect] T
                     bulkCopy.ColumnMappings.Add("IsNew", "IsNew");
 
                     bulkCopy.WriteToServer(table);
-
-                    bulkCopy = null;
 
                     #endregion
 

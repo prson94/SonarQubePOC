@@ -23,4 +23,16 @@ export class AssetStyleService extends BaseObservableService {
             catchError(err => this.handleError(err))
         );
     }
+
+    getAssetTypeObjectStyle(
+        objectType: string,
+        objectID: number
+
+    ): Observable<any> {
+        return this.http.get(`api/${objectType}/${objectID}/style`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
 }
