@@ -1,4 +1,4 @@
-﻿addimport * as go from 'gojs';
+import * as go from 'gojs';
 import * as _ from 'lodash';
 import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, SimpleChanges, EventEmitter, Output } from '@angular/core';
 import {
@@ -14,7 +14,8 @@ import {
     AssetBrowserTranslationRelationCount,
     AssetBrowserImpactApiRequestModel,
     AssetBrowserImpactApiAssetRequestModel,
-    AssetBrowserLineageApiItemModel,    FilterAncestryMode,
+    AssetBrowserLineageApiItemModel,
+    FilterAncestryMode,
     FilterAncestryOption
 } from '../../../../models/lineage.model';
 
