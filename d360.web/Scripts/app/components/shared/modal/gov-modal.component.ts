@@ -65,8 +65,10 @@ export class D3SModal implements OnChanges {
                 this.modalDiv.nativeElement.className = "modal-overlay";
                 this.onClose.emit(null);
             }.bind(this), 250);
+
+            this.display = false;
         }
-        this.display = false;
+
     }
 
     confirm() {
