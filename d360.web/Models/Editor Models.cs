@@ -35,7 +35,7 @@ namespace d360.web.Models
 
     public class AssetTypeEditorModel : BaseEditorModel
     {
-        public AssetTypeInsert AssetType { get; set; }
+        public AssetTypeUpsert AssetType { get; set; }
         public int? ParentID { get; set; } = null;
         public Guid? ParentUid { get; set; } = null;
         public List<PrimeSelectItem> Predicates { get; set; } = new List<PrimeSelectItem>();

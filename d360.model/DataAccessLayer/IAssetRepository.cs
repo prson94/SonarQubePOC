@@ -18,10 +18,10 @@ namespace d360.model.DataAccessLayer
         dynamic GetFieldTypes(Guid assetTypeUid);
 
         List<DatabaseBulkAssetResult> PostAssets(List<AssetInsert> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
-        Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeInsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey);
+        Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey);
         List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false);
 
-        Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeInsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate);
+        Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate);
         List<DatabaseBulkAssetResult> DeleteAsset(AssetDeletes assets, AssetType assetType, ApiExecution execution, bool sendWorkflowEvents = true);
         Task<ApiExecutionInfo> DeleteBulkAssetTypes(AssetTypeDeletes assetTypes, ApiExecution execution);
         Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool sendWorkflowEvents = true);
@@ -30,11 +30,11 @@ namespace d360.model.DataAccessLayer
         Predicate GetPredicateByUID(Guid predicateGuid);
         AssetType GetAssetTypeByUID(Guid assetTypeUid);
         AssetType GetAssetTypeByUidAndClass(Guid assetTypeUid, AssetTypeClass @class);
-        AssetType GetAssetTypeByModel(AssetTypeInsert model);
+        AssetType GetAssetTypeByModel(AssetTypeUpsert model);
         ApiExecution GetExecutionItemByUid(Guid executionUid);
         void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor,string icon, string objectName = "Tx");
         bool DoesAssetExists(Guid uid);
-        bool IsReachedTransformationLimit(AssetTypeInsert model);
+        bool IsReachedTransformationLimit(AssetTypeUpsert model);
 
         Guid GetRuleUIDFromRuleID(int id);
 
