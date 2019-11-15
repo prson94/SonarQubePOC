@@ -1,18 +1,16 @@
 ﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef, OnInit, OnChanges, SimpleChange, SimpleChanges } from '@angular/core';
-import { Router } from '@angular/router';
-import { AssetService } from '../../../services/asset.service';
-import { AssetSearchFilter, CommonComponentAssetTypeFilterRelationshipSide, CommonComponentAssetSelection, CommonComponentSelectStyle, CommonComponentAssetResultExt, CommonComponentAssetResult, CommonComponentAssetTypeFilter } from '../../../models/asset-search.model';
-import { PredicateType, Predicate } from '../../../models/predicate.model';
-import { RelationshipsService } from '../../../services/relationships.service';
-import { PredicatesService } from '../../../services/predicates.service';
-import { ConnectableObservable } from 'rxjs';
+import { AssetService } from '../../../../services/asset.service';
+import { AssetSearchFilter, CommonComponentAssetTypeFilterRelationshipSide, CommonComponentAssetSelection, CommonComponentSelectStyle, CommonComponentAssetResultExt, CommonComponentAssetResult, CommonComponentAssetTypeFilter, CommonComponentDisplayStyle } from '../../../../models/asset-search.model';
+import { PredicateType, Predicate } from '../../../../models/predicate.model';
+import { RelationshipsService } from '../../../../services/relationships.service';
+import { ToolTipService } from '../../../../services/tooltip.service';
 
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-asset-search',
     templateUrl: 'generic-asset-search.component.html',
-    providers: [AssetService, RelationshipsService],
+    providers: [AssetService, RelationshipsService, ToolTipService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -51,6 +49,8 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     // What should we filter on, based on a combination of criteria. Optional.
     @Input() filters: CommonComponentAssetTypeFilter[];
 
+    @Input() resultDisplayStyle: CommonComponentDisplayStyle;
+
     @Input() relationshipSide: CommonComponentAssetTypeFilterRelationshipSide;
 
     private isSearchWindowOpened: boolean = false;
@@ -71,11 +71,10 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     @ViewChild('searchInput', { static: true }) searchInput: ElementRef;
 
     constructor(
-        private router: Router,
         private ref: ChangeDetectorRef,
         private assetService: AssetService,
         private eRef: ElementRef,
-        private predicatesService: PredicatesService
+        private tooltipService: ToolTipService
     ) {
 
     }

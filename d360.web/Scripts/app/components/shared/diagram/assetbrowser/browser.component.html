@@ -29,6 +29,7 @@
                         <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()" [disabled]="isInfoTabDisabled"><i class="fa fa-info-circle"></i></button>
                         <button type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
                         <button type="button" title="Filter asset browser" (click)="filterButtonClick($event)" [class]="filterButtonSelectedClass()"><i class="fa fa-filter"></i></button>
+                        <button type="button" title="Add relationships" (click)="addRelationshipsClick($event)"><i class="fa fa-plus"></i></button>
                         <button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>
                     </div>
                     <span *ngIf="isFullScreen" title="Minimize" class="fa fa-times" (click)="fullScreenButtonClick()"></span>
@@ -108,9 +109,14 @@
 
                                         </div>
                                     </div>
-                                    <div *ngIf="isWindowVisible" class="asset-browser-window">
+
+                                    <div *ngIf="isAddRelationshipWindowVisible" class="asset-browser-window">
 
                                         <d3s-diagram-relationships></d3s-diagram-relationships>
+                                    </div>
+
+                                    <div *ngIf="isWindowVisible" class="asset-browser-window">
+
                                         <div *ngIf="!showWindowTabs" style="padding:10px;">Nothing selected</div>
                                         <div class="asset-browser-window-header">
                                             <div [hidden]="!showWindowTabs && !isWindowLoading" class="asset-browser-window-header-name">

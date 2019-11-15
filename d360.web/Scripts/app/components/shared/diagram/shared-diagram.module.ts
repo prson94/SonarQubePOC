@@ -53,8 +53,8 @@ import { SharedObjectDetailsModule } from '../objectdetails/shared-object-detail
 import { NgxJsonViewModule } from 'ng-json-view';
 import { IconService } from '../../../services/icon.service';
 import { DiagramAssetRelationshipComponent } from './tools/relationships.component';
-import { AssetSearchModule } from '../search/generic-asset-search.module';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
+import { AssetSearchModule } from '../search/generic-asset-search/generic-asset-search.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -87,8 +87,7 @@ import { TagViewModule } from '../tags/d3s-tag-view.module';
         TreeModule,
         //JSON Viewer module
         NgxJsonViewModule,
-        AssetSearchModule
-
+        AssetSearchModule,
         TagViewModule
     ],
     declarations: [

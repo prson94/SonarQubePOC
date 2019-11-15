@@ -1,10 +1,9 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { AssetService } from '../../../services/asset.service';
-import { AssetSearchFilter, CommonComponentAssetResult, CommonComponentAssetTypeFilterRelationshipSide } from '../../../models/asset-search.model';
-import { PredicateType, Predicate } from '../../../models/predicate.model';
-import { RelationshipsService } from '../../../services/relationships.service';
-import { PredicatesService } from '../../../services/predicates.service';
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ElementRef, OnInit } from '@angular/core';
+import { AssetService } from '../../../../services/asset.service';
+import { CommonComponentAssetTypeFilterRelationshipSide } from '../../../../models/asset-search.model';
+import { PredicateType, Predicate } from '../../../../models/predicate.model';
+import { RelationshipsService } from '../../../../services/relationships.service';
+import { PredicatesService } from '../../../../services/predicates.service';
 
 
 @Component({

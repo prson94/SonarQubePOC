@@ -2,7 +2,6 @@
 import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
-import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 import { RouterModule } from '@angular/router';
 
 import { AutoCompleteModule } from 'primeng/autocomplete';
@@ -11,10 +10,12 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { DialogModule } from 'primeng/dialog';
 import { SharedModule } from 'primeng/shared';
 
-import { PipesModule } from '../../../pipes/pipes.module';
 import { AssetSearchComponent } from './generic-asset-search.component';
 import { PaginatorModule } from 'primeng/paginator';
 import { PredicateSelectorComponent } from './predicate-selector.component';
+import { PipesModule } from '../../../../pipes/pipes.module';
+import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-request.interceptor';
+import { SegmentsTooltipComponent } from './segments-tooltip.component';
 
 
 @NgModule({
@@ -37,7 +38,8 @@ import { PredicateSelectorComponent } from './predicate-selector.component';
     ],
     declarations: [
         AssetSearchComponent,
-        PredicateSelectorComponent
+        PredicateSelectorComponent,
+        SegmentsTooltipComponent
     ],
     exports: [
         AssetSearchComponent,

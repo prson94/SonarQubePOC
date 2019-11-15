@@ -710,7 +710,7 @@
     <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
-    <Content Include="Scripts\app\components\shared\search\generic-asset-search.component.html" />
+    <Content Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.component.html" />
     <Content Include="Scripts\app\components\shared\search\typeahead-search.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tags-usage-info.component.html" />
@@ -1229,10 +1229,11 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\lookup-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-multiselect-grid.component.ts" />
     <Content Include="Scripts\app\components\shared\rightsidebar\right-sidebar.component.html" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search.module.ts" />
-    <Content Include="Scripts\app\components\shared\search\predicate-selector.component.html" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\search\predicate-selector.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.module.ts" />
+    <Content Include="Scripts\app\components\shared\search\generic-asset-search\predicate-selector.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\predicate-selector.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\segments-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcutdisplay\shortcut-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcutdisplay\shortcut-display.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-item.component.ts" />

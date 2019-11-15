@@ -2,7 +2,7 @@
 import { TooltipInfo, LookupTooltipInfo } from '../models/tooltip-info.model';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 
@@ -18,13 +18,25 @@ export class ToolTipService extends BaseObservableService {
                 catchError(err => this.handleError(err))
             );
     }
+    private tooltipsCache: any[] = [];
 
     getTooltipInfoByUid(uid: string): Observable<TooltipInfo> {
-        return this.http.get(`resources/tooltipdatabyuid/${uid}`)
+        var cachedItem = this.tooltipsCache.find(x => x.uid == uid);
+        if (cachedItem)
+            return cachedItem.obs;
+
+        var obs = this.http.get(`resources/tooltipdatabyuid/${uid}`)
             .pipe(
                 map(response => <TooltipInfo>response),
+                publishReplay(1),
+                refCount(),
                 catchError(err => this.handleError(err))
             );
+
+        var data = { uid: uid, obs: obs };
+        this.tooltipsCache.push(data);
+
+        return obs;
     }
 
     getLookupTooltipInfo(objectType: string, objectID: number): Observable<LookupTooltipInfo> {
