@@ -581,7 +581,7 @@ namespace igx.UnitTests
         {
 
 
-            var insertItem = new AssetTypeInsert() {
+            var insertItem = new AssetTypeUpsert() {
                 IconStyle = new IconStyleInsert()
             };
 
@@ -622,7 +622,7 @@ namespace igx.UnitTests
         public async void PutAssetTypeAsync()
         {
 
-            var insertItem = new AssetTypeInsert()
+            var insertItem = new AssetTypeUpsert()
             {
                 IconStyle = new IconStyleInsert()
             };
@@ -666,7 +666,7 @@ namespace igx.UnitTests
 
         }
 
-        private async Task<HttpResponseMessage> GetResponseForPostAsset(AssetTypeInsert insertItem)
+        private async Task<HttpResponseMessage> GetResponseForPostAsset(AssetTypeUpsert insertItem)
         {
             IHttpActionResult actionResult;
 
@@ -675,7 +675,7 @@ namespace igx.UnitTests
             
         }
 
-        private async Task<HttpResponseMessage> GetResponseForPutAsset(AssetTypeInsert insertItem)
+        private async Task<HttpResponseMessage> GetResponseForPutAsset(AssetTypeUpsert insertItem)
         {
             IHttpActionResult actionResult;
 
