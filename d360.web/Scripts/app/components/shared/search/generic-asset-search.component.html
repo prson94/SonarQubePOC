@@ -3,17 +3,21 @@
     <div class="search-box">
         <div class="selection">
             <ng-container *ngIf="multiSelect">
-                <div class="selected-item hide-full-path" *ngFor="let item of results;let i = index;">
+                <div class="selected-item hide-full-path" *ngFor="let item of selected;let i = index;">
+                    <div class="gas-tooltip">
+                            <span class="span-break">tooltipvalue</span>
+                            <span>balbabal</span>
+                    </div>
                     <div class="segments">
                         <div class="segment" *ngFor="let segment of item.Segments;">
                             <span class="value">{{segment.Value}}</span>
 
-                            <span *ngIf="item.Segments.indexOf(segment) == 0" class="partial-path-elipsis">...</span>
+                            <span *ngIf="item.Segments.length > 2 && item.Segments.indexOf(segment) == 0" class="partial-path-elipsis">...</span>
                             <i *ngIf="item.Segments.indexOf(segment) != item.Segments.length-1" class="arrow-right fa fa-chevron-right"></i>
                         </div>
                     </div>
 
-                    <d3s-predicate-selector *ngIf="showPredicateSelector" (onChange)="predicateSelected($event, i);" [predicateType]="predicateSelectorType"></d3s-predicate-selector>
+                    <d3s-predicate-selector *ngIf="showPredicateSelector" [selected]="item.Predicate" [relationshipSide]="relationshipSide" (onChange)="predicateSelected($event, i);" [predicateType]="predicateSelectorType"></d3s-predicate-selector>
 
                     <i (click)="unselect(i)" class="unselect fa fa-times-circle" aria-hidden="true"></i>
                     <div style="display:block;width:100%;"></div>
@@ -23,19 +27,19 @@
 
             <ng-container *ngIf="!multiSelect">
                 <div class="single-asset-selector hide-full-path" (click)="openSearchWindow();">
-                    <ng-container *ngIf="results[0]">
+                    <ng-container *ngIf="selected[0]">
                         <div class="single-selected-item">
                             <div class="segments">
-                                <div class="segment" *ngFor="let segment of results[0].Segments;">
+                                <div class="segment" *ngFor="let segment of selected[0].Segments;">
                                     <span class="value">{{segment.Value}}</span>
 
-                                    <span *ngIf="results[0].Segments.indexOf(segment) == 0 && !isFullPathVisible" class="partial-path-elipsis">...</span>
-                                    <i *ngIf="results[0].Segments.indexOf(segment) != results[0].Segments.length-1" class="arrow-right fa fa-chevron-right"></i>
+                                    <span *ngIf="selected[0].Segments.length > 2 && selected[0].Segments.indexOf(segment) == 0 && !isFullPathVisible" class="partial-path-elipsis">...</span>
+                                    <i *ngIf="selected[0].Segments.indexOf(segment) != selected[0].Segments.length-1" class="arrow-right fa fa-chevron-right"></i>
                                 </div>
                             </div>
                         </div>
                     </ng-container>
-                    <ng-container *ngIf="!results[0]">
+                    <ng-container *ngIf="!selected[0]">
                         <span class="text">{{placeholder}}</span>
                     </ng-container>
                     <i class="fa fa-caret-down"></i>
@@ -43,27 +47,32 @@
             </ng-container>
 
             <div *ngIf="isSearchWindowOpened" class="search-results">
-                <input (keyup)="search($event)" placeholder="Type to search for assets" />
+                <input #searchInput (keyup)="search($event)" placeholder="Type to search for assets" />
 
                 <span class="search-button">
                     <i class="fa fa-search"></i>
                 </span>
-                <ul class="search-result-box  {{isFullPathVisible ? '' : 'hide-full-path'}}">
+
+                <i *ngIf="isLoading" class="fa fa-spinner fa-spin"></i>
+
+                <ul *ngIf="searchresults.length > 0" class="search-result-box  {{isFullPathVisible ? '' : 'hide-full-path'}}">
                     <ng-container *ngFor="let item of searchresults;let i = index">
                         <li #el (mouseenter)="currentSearchNavigationIndex = i"
-                            (click)="onSelect(i);"
+                            (click)="onSelect(i,$event);"
                             class="result-item {{currentSearchNavigationIndex == i ? 'selected' : ''}}">
-                            <ng-container *ngIf="multiSelectStyle == 'CheckBox' && multiSelect">
-                                <input class="checker" type="checkbox" />
-                            </ng-container>
-                            <div class="segments">
-                                <div *ngFor="let segment of item.Segments;" class="segment">
-                                    <span class="value">{{segment.Value}}</span>
+                            <label>
+                                <ng-container *ngIf="multiSelectStyle == 'CheckBox' && multiSelect">
+                                    <input class="checker" type="checkbox" [checked]="item.IsSelected" />
+                                </ng-container>
+                                <div class="segments">
+                                    <div *ngFor="let segment of item.Segments;" class="segment">
+                                        <span class="value">{{segment.Value}}</span>
 
-                                    <span *ngIf="item.Segments.indexOf(segment) == 0 && !isFullPathVisible" class="partial-path-elipsis">...</span>
-                                    <i *ngIf="item.Segments.indexOf(segment) != item.Segments.length-1" class="arrow-right fa fa-chevron-right"></i>
+                                        <span *ngIf="item.Segments.length > 2 && item.Segments.indexOf(segment) == 0 && !isFullPathVisible" class="partial-path-elipsis">...</span>
+                                        <i *ngIf="item.Segments.indexOf(segment) != item.Segments.length-1" class="arrow-right fa fa-chevron-right"></i>
+                                    </div>
                                 </div>
-                            </div>
+                            </label>
                         </li>
                     </ng-container>
                 </ul>
@@ -73,7 +82,7 @@
                 </ng-container>
 
                 <div class="no-results" *ngIf="searchResultsCount == 0">
-                    No assets by this search
+                    No assets that match criteria
                 </div>
                 <div *ngIf="multiSelect && showSelectFullpathLink && searchresults.length > 0" class="full-path-toggle" (click)="toggleFullPaths()">
                     <span>

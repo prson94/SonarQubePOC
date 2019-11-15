@@ -1,33 +1,45 @@
 ﻿
 <div class="browser-relationship-editor">
+    <div>
+        <button (click)="prepopulateSourceAssets()">Populate source assets</button>
+        <button (click)="prepopulateSearchResult()">Populate source search results</button>
+        <button (click)="addSourceAssetFilter()">Add filters to source assets</button>
+    </div>
+    <br/>
+    <br/>
+
     <span class="title">Source Assets</span>
     <d3s-asset-search [multiSelect]="true"
                       [showPredicateSelector]="true"
                       [predicateSelectorType]="predicateType"
-                      [results]="sourceAssets"
+                      [selected]="sourceAssets"
+                      [prepopulatedResults]="sourcePrePop"
                       [multiSelectStyle]="'Button'"
+                      [relationshipSide]="1"
                       [clearResultsAfterSelection]="false"
                       [multiSelectButtonLabel]="'Add source'"
-                      (resultsChange)="onAssetSearchSelection($event)">
+                      [filters]="sourceAssetFilters"
+                      (selectedChange)="onAssetSearchSelection($event)">
     </d3s-asset-search>
 
     <span class="title">Transformation</span>
     <d3s-asset-search [multiSelect]="false"
                       [predicateSelectorType]="predicateType"
-                      [results]="transformationAsset"
+                      [selected]="transformationAsset"
                       [clearResultsAfterSelection]="true"
                       [placeholder]="'Choose or create a transformation...'"
-                      (resultsChange)="onAssetSearchSelection($event)">
+                      (selectedChange)="onAssetSearchSelection($event)">
     </d3s-asset-search>
 
     <span class="title">Target Assets</span>
     <d3s-asset-search [multiSelect]="true"
                       [showPredicateSelector]="true"
                       [predicateSelectorType]="predicateType"
-                      [results]="targetAssets"
+                      [selected]="targetAssets"
+                      [relationshipSide]="0"
                       [clearResultsAfterSelection]="false"
                       [multiSelectStyle]="'CheckBox'"
-                      [multiSelectButtonLabel]="'Add source'"
-                      (resultsChange)="onAssetSearchSelection($event)">
+                      [multiSelectButtonLabel]="'Add target'"
+                      (selectedChange)="onAssetSearchSelection($event)">
     </d3s-asset-search>
 </div>

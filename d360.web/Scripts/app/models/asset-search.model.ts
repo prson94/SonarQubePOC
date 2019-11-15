@@ -25,6 +25,10 @@ export class CommonComponentAssetResult {
     Segments: CommonComponentAssetResultSegment[];
 }
 
+export class CommonComponentAssetResultExt extends CommonComponentAssetResult {
+    IsSelected: boolean;
+}
+
 export class CommonComponentAssetSelection {
     Uid: string;
     AssetTypeUid: string;

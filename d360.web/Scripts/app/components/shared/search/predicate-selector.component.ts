@@ -1,7 +1,7 @@
 ﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AssetService } from '../../../services/asset.service';
-import { AssetSearchFilter, CommonComponentAssetResult } from '../../../models/asset-search.model';
+import { AssetSearchFilter, CommonComponentAssetResult, CommonComponentAssetTypeFilterRelationshipSide } from '../../../models/asset-search.model';
 import { PredicateType, Predicate } from '../../../models/predicate.model';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { PredicatesService } from '../../../services/predicates.service';
@@ -17,9 +17,9 @@ import { PredicatesService } from '../../../services/predicates.service';
 export class PredicateSelectorComponent implements OnInit {
 
     @Input() predicateType: PredicateType;;
-
+    @Input() relationshipSide: CommonComponentAssetTypeFilterRelationshipSide;
     @Output() onChange: EventEmitter<Predicate> = new EventEmitter();
-    private selected: Predicate;
+    @Input() selected: Predicate;
 
     private predicates: Predicate[] = [];
 
@@ -62,6 +62,17 @@ export class PredicateSelectorComponent implements OnInit {
             console.warn("PredicateSelectorType not set!");
         }
 
+    }
+
+    renderPredicateTitle(p: Predicate) {
+        if (this.relationshipSide == null) {
+            console.warn("Relationship side not set!");
+            return '#';
+        }
+
+        if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Object)
+            return p.Name;
+        else return p.Inverse;
     }
 
 }

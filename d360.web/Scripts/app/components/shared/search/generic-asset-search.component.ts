@@ -1,10 +1,11 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef, OnInit } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef, OnInit, OnChanges, SimpleChange, SimpleChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import { AssetService } from '../../../services/asset.service';
-import { AssetSearchFilter, CommonComponentAssetResult, CommonComponentAssetSelection, CommonComponentSelectStyle } from '../../../models/asset-search.model';
+import { AssetSearchFilter, CommonComponentAssetTypeFilterRelationshipSide, CommonComponentAssetSelection, CommonComponentSelectStyle, CommonComponentAssetResultExt, CommonComponentAssetResult, CommonComponentAssetTypeFilter } from '../../../models/asset-search.model';
 import { PredicateType, Predicate } from '../../../models/predicate.model';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { PredicatesService } from '../../../services/predicates.service';
+import { ConnectableObservable } from 'rxjs';
 
 declare var CompanySettings;
 
@@ -15,11 +16,14 @@ declare var CompanySettings;
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class AssetSearchComponent {
+export class AssetSearchComponent implements OnInit, OnChanges {
 
     // Holds the selected assets to provide back to parent component. Can be pre-populated as well.
-    @Input() results: CommonComponentAssetSelection[] = [];
-    @Output() resultsChange: EventEmitter<any> = new EventEmitter();
+    @Input() selected: CommonComponentAssetSelection[] = [];
+    @Output() selectedChange: EventEmitter<any> = new EventEmitter();
+
+    // An option to pre-load data into the dropdown. Gives the most-likely options that a user would select, before a search is conducted. [Optional]
+    @Input() prepopulatedResults: CommonComponentAssetResult[];
 
     // Allow option to select many items within the control.
     @Input() multiSelect: boolean = false;
@@ -41,12 +45,18 @@ export class AssetSearchComponent {
     @Input() multiSelectButtonLabel: string = 'No Label';
     @Input() placeholder: string = 'No placeholder';
 
+    //If true, search results wont be cleared after selection
     @Input() clearResultsAfterSelection: boolean = false;
+
+    // What should we filter on, based on a combination of criteria. Optional.
+    @Input() filters: CommonComponentAssetTypeFilter[];
+
+    @Input() relationshipSide: CommonComponentAssetTypeFilterRelationshipSide;
 
     private isSearchWindowOpened: boolean = false;
 
     private searchOption = new AssetSearchFilter();
-    private searchresults: CommonComponentAssetResult[] = [];
+    private searchresults: CommonComponentAssetResultExt[] = [];
     private searchResultsCount: number;
 
     private isFullPathVisible: boolean = false;
@@ -56,6 +66,9 @@ export class AssetSearchComponent {
     private numberOfPages: number = 1;
 
     private currentSearchNavigationIndex: number = 0;
+    private isLoading: boolean = false;
+
+    @ViewChild('searchInput', { static: true }) searchInput: ElementRef;
 
     constructor(
         private router: Router,
@@ -67,7 +80,32 @@ export class AssetSearchComponent {
 
     }
 
+    ngOnInit() {
+        this.prePopulate();
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes.prepopulatedResults && changes.prepopulatedResults.previousValue != changes.prepopulatedResults.currentValue) {
+            this.prePopulate();
+        }
+    }
+
+    private prePopulate() {
+        if (this.prepopulatedResults) {
+            this.searchresults = [];
+            this.prepopulatedResults.forEach(pr => {
+                this.searchresults.push({ AssetTypeUid: pr.AssetTypeUid, Uid: pr.Uid, Segments: pr.Segments, IsSelected: false });
+                this.ref.markForCheck();
+            })
+            this.prepopulatedResults = null;
+        }
+    }
+
     @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+        if (!this.eRef.nativeElement.contains(event.target)) {
+            return;
+        }
+
         if (event.key === "Escape") {
             this.closeSearch();
         }
@@ -82,25 +120,10 @@ export class AssetSearchComponent {
             if (this.currentSearchNavigationIndex < 0)
                 this.currentSearchNavigationIndex = 0;
         }
-        if (event.key === "ArrowLeft") {
-            this.pageNum--;
-            if (this.pageNum < 1)
-                this.pageNum = 1;
 
-            this.currentSearchNavigationIndex = 0;
-            this.search(null);
-
-        }
-        if (event.key === "ArrowRight") {
-            this.pageNum++;
-            if (this.pageNum > this.numberOfPages)
-                this.pageNum = this.numberOfPages;
-            this.currentSearchNavigationIndex = 0;
-
-            this.search(null);
-        }
         if (event.key === "Enter") {
-            this.onSelect(this.currentSearchNavigationIndex);
+            if (this.isSearchWindowOpened)
+                this.onSelect(this.currentSearchNavigationIndex,null);
         }
     }
 
@@ -120,67 +143,45 @@ export class AssetSearchComponent {
     }
 
     paginate($event, el) {
-        this.pageNum = $event.page;
+        this.pageNum = $event.page + 1;
         this.search(null);
     }
 
 
     private search($event) {
-        if ($event)
+
+        if ($event) {
+            if (this.searchOption.SearchPhrase == $event.target.value)
+                return;
+
             this.searchOption.SearchPhrase = $event.target.value;
+        }
 
         if (this.searchOption.SearchPhrase == '')
             return;
 
         this.searchOption.PageSize = this.pageSize;
         this.searchOption.PageNum = this.pageNum;
+        this.searchOption.Filters = this.filters;
+
+        this.isLoading = true;
 
         this.assetService.searchAssetPath(this.searchOption)
             .subscribe(result => {
                 this.searchresults = JSON.parse(JSON.stringify(result.items));
 
-                //load test data
-                this.searchresults = [];
-                var item1 = new CommonComponentAssetResult();
-                item1.AssetTypeUid = '';
-                item1.Uid = '';
-                item1.Segments = [];
-                item1.Segments.push({ Value: 'AzureRemoteHost' });
-                item1.Segments.push({ Value: 'EnrolDB' });
-                item1.Segments.push({ Value: 'SSMS' });
-                item1.Segments.push({ Value: 'MEMBER_INFO' });
-                item1.Segments.push({ Value: 'Name' });
-
-                this.searchresults.push(item1);
-
-                var item2 = new CommonComponentAssetResult();
-                item2.AssetTypeUid = '';
-                item2.Uid = '';
-                item2.Segments = [];
-                item2.Segments.push({ Value: 'OracleHost' });
-                item2.Segments.push({ Value: 'ClaimsDb' });
-                item2.Segments.push({ Value: 'dbo' });
-                item2.Segments.push({ Value: 'MEMBERS' });
-                item2.Segments.push({ Value: 'MEMBER_NAME' });
-
-                this.searchresults.push(item2);
-
-                var item3 = new CommonComponentAssetResult();
-                item3.AssetTypeUid = '';
-                item3.Uid = '';
-                item3.Segments = [];
-                item3.Segments.push({ Value: 'Data Warehouse' });
-                item3.Segments.push({ Value: 'DWDB' });
-                item3.Segments.push({ Value: 'edm' });
-                item3.Segments.push({ Value: 'MEMBERS' });
-                item3.Segments.push({ Value: 'MEMBER_NAME' });
-
-                this.searchresults.push(item3);
-
                 this.searchResultsCount = result.total;
                 this.numberOfPages = Math.ceil(result.total / result.pageSize);
 
-                //Dont reset if event is not sent from input
+                this.searchresults.forEach(sr => {
+                    if (this.selected.some(x => x.Uid == sr.Uid)) {
+                        sr.IsSelected = true;
+                    }
+                    else {
+                        sr.IsSelected = false;
+                    }
+                });
+                this.isLoading = false;
                 this.ref.markForCheck();
             });
     }
@@ -189,9 +190,25 @@ export class AssetSearchComponent {
         this.isSearchWindowOpened = true;
     }
 
-    private onSelect(idx: number) {
 
+
+    private onSelect(idx: number, $event: any) {
+
+        //input type=checkbox triggers click 2 times, lets skip it
+        if ($event && $event.target.className.indexOf('checker') != -1) {
+            return;
+        }
+          
         var item = this.searchresults[idx];
+
+        if (this.selected.some(x => x.Uid == item.Uid)) {
+        
+            if (this.multiSelectStyle == CommonComponentSelectStyle.CheckBox) {
+                this.unselectByUID(item.Uid);
+            }
+            return;
+        }
+
         var selectedItem = new CommonComponentAssetSelection();
         selectedItem.AssetTypeUid = item.AssetTypeUid;
         selectedItem.Uid = item.Uid;
@@ -202,38 +219,34 @@ export class AssetSearchComponent {
             this.closeSearch();
 
         if (this.multiSelect)
-            this.results.push(selectedItem);
+            this.selected.push(selectedItem);
         else {
-            this.results = [];
-            this.results.push(selectedItem);
+            this.selected = [];
+            this.selected.push(selectedItem);
         }
 
-        this.resultsChange.emit({ action: 'added', item: selectedItem });
+        this.selectedChange.emit({ action: 'added', item: selectedItem });
     }
 
     private unselect(idx: number) {
-        var item = this.results[idx];
-        this.results.splice(idx, 1);
-        this.resultsChange.emit({ action: 'removed', item: item });
+        var item = this.selected[idx];
+        this.selected.splice(idx, 1);
+        this.selectedChange.emit({ action: 'removed', item: item });
+    }
+
+    private unselectByUID(uid: string) {
+        this.unselect(this.selected.findIndex(x => x.Uid == uid));
     }
 
     toggleFullPaths() {
         this.isFullPathVisible = !this.isFullPathVisible;
     }
 
-    private reBindData() {
-        this.results = JSON.parse(JSON.stringify(this.results));
-    }
-
     private predicateSelected(event: Predicate, idx: number) {
-        var item = this.results[idx];
+        var item = this.selected[idx];
         item.Predicate = event;
 
-        this.resultsChange.emit({ action: 'predicate-updated', item: item });
-    }
-
-    private isSelected(uid: string) {
-        return this.results.some(x => x.Uid == uid) ? true : false;
+        this.selectedChange.emit({ action: 'predicate-updated', item: item });
     }
 
 }

@@ -5059,6 +5059,7 @@ a.mid-blue {
         input.checker {
             position: relative;
             width: 15px !important;
+            height: 15px !important;
             display: inline-block;
             top: 1px;
             left: -4px;
@@ -5086,13 +5087,23 @@ a.mid-blue {
             border-radius: 4px;
             box-shadow: 0px 0px 0px 0px black;
             width: 100%;
-            margin-top: 8px;
-            z-index:50;
+            margin-top: -1px;
+            z-index: 50;
+            left: -5px;
+            width: 103%;
+
+
+            .fa-spinner {
+                position: absolute;
+                top: 15px;
+                right: 44px;
+                font-size: 16px;
+            }
 
             .search-button {
                 background-color: #e0e0e0;
-                height: 24px;
-                width: 24px;
+                height: 26px;
+                width: 26px;
                 border-radius: 2px;
                 position: absolute;
                 top: 9px;
@@ -5115,6 +5126,7 @@ a.mid-blue {
                 padding: 8px;
                 margin: 0px 4px;
                 box-sizing: border-box;
+                height: 36px;
             }
 
 
@@ -5123,10 +5135,15 @@ a.mid-blue {
 
                 li {
                     border: none;
-                    padding: 6px 13px;
                     font-size: 16px;
                     color: black;
                     cursor: pointer;
+
+                    label {
+                        padding: 6px 13px;
+                        display: block;
+                        cursor: pointer;
+                    }
 
                     &:nth-child(even) {
                         background-color: #f2f2f2;
@@ -5227,6 +5244,40 @@ a.mid-blue {
                     display: inline-block;
                 }
             }
+        }
+    }
+
+    .gas-tooltip {
+        display: none;
+        font-size: 12px;
+        text-align: left;
+        padding: 4px 6px;
+        line-height: 13px;
+        max-width: 400px;
+        position: absolute;
+        background-color: #fffedc;
+        border: 1px solid #adadad;
+        z-index: 1000;
+        top: -28px;
+        transform: translateX(-5%);
+
+        span {
+            display: block;
+
+            &.span-break {
+                white-space: normal;
+                word-break: break-word;
+            }
+        }
+
+        .fa {
+            padding: 0px;
+        }
+    }
+
+    .selected-item:hover {
+        .gas-tooltip {
+            display: block;
         }
     }
 }
