@@ -4,7 +4,7 @@
         <div class="tile tile-detail" style="padding: 0">
             <div class="row" *ngIf="isLoading">
                 <div class="col s12">
-                    <d3s-loading isLoading="true"></d3s-loading>
+                    <d3s-loading isLoading="true">{{loadingText}}</d3s-loading>
                 </div>
             </div>
             <div [hidden]="isLoading" class="asset-browser-header">
