@@ -3353,5 +3353,15 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             WHERE A.Uid = @assetUid";
             return Query<dynamic>(sql, new { @assetUid = uid }).FirstOrDefault();
         }
+
+        public int? GetAssetScore(long assetId)
+        {
+            string sql = $@"SELECT top 1
+                            cast(S.Value * 100 as int) as 'Score'                            
+                            from Asset A                            
+                            inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
+                            WHERE A.ID = @assetId order by S.EffectiveDate desc";
+            return Query<int?>(sql, new { assetId }).FirstOrDefault();
+        }
     }
 }
