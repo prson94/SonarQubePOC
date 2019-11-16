@@ -64,6 +64,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private selectedDiagramAsset: AssetBrowserDiagramAsset;
     private isFullScreen: boolean = false;
     private loadingText: string = "";
+    private fromRefresh: boolean = false;
     //#region Filters
 
     isFilterWindowVisible: boolean = false;
@@ -473,6 +474,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
                 this.loadingText = "";
                 this.isLoading = false;
+                this.fromRefresh = false;
                 this.cdRef.markForCheck();
             });
 
@@ -655,7 +657,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private refreshDiagram() {
         this.assetUid = this.originalAssetUid;
-
+        this.fromRefresh = true;
         this.populateDiagram();
     }
 
