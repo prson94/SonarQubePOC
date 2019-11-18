@@ -329,6 +329,11 @@ namespace d360.web.Controllers
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             if (model.Tokens != null) model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                             break;
+                        case AssetTypeClass.Rule:
+                            model.AssetType.Name = assetType.Name;
+                            model.AssetType.Description = assetType.Description;
+                            model.AssetType.DisplayFormat = assetType.DisplayFormat;
+                            break;
                     }
                     model.AssetType.Object = ot.ToString();
                     model.FormName = string.Format(FormInfo.Add_Asset_Type_Title, appendTitle);

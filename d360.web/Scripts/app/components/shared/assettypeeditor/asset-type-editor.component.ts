@@ -91,6 +91,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 this.showAssetStyles = false;
                 this.showNotesField = true;
                 break;
+            case AssetTypeClass.Rule:
+                this.showParentPredicates = false;
+
         }
 
         this
