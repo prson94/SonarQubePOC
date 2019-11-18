@@ -100,9 +100,6 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         }
 
         if (changes.selected && changes.selected.previousValue != changes.selected.currentValue) {
-            this.selected.forEach(item => {
-                item.Segments = null;
-            });
             clearTimeout(this.resolveAssetTimeout);
             this.resolveAssetTimeout = setTimeout(() => this.resolveAssetSegments(), 50);
         }
@@ -120,11 +117,21 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         }, {});
 
         Object.keys(groups).forEach((key) => {
-            var assets: string[] = groups[key];
-            var params = { _assetUid: assets.join(',')};
+            var assets = groups[key].map(x => x.uid);
+            var params = { _assetUid: assets.join(',') };
             this.assetService.getAssets(key, params).subscribe(res => {
-
-                console.log(res);
+                var items = res.items;
+                if (items) {
+                    items.forEach(asset => {
+                        var update = this.selected.find(x => x.Uid == asset.AssetUid && x.AssetTypeUid == asset.AssetTypeUid);
+                        update.Segments = asset.Segments;
+                        if (!asset.Segments) {
+                            update.Segments = [];
+                            update.Segments.push({ Value : asset.Name });
+                        }
+                    });
+                }
+                this.ref.markForCheck();
             });
         });
     }

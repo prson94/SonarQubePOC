@@ -1,7 +1,7 @@
 ﻿
 <div class="browser-relationship-editor">
 
-    <d3s-asset-type-modal-editor [isModalVisable]="isAddTransformationVisible" (onCancel)="isAddTransformationVisible=false" (onSave)="newAssetAdded($event)"></d3s-asset-type-modal-editor>
+    <d3s-asset-type-modal-editor [isModalVisable]="isAddTransformationVisible" (onCancel)="onCancel()" (onSave)="newAssetAdded($event)"></d3s-asset-type-modal-editor>
 
     <div>
         <button (click)="prepopulateSourceAssets()">Populate source assets</button><br />

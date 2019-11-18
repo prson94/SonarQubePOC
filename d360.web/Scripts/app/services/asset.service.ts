@@ -90,7 +90,6 @@ export class AssetService extends BaseObservableService {
 
     public getAssets(assetTypeUid: string, params: any): Observable<any> {
         var qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
-        console.log(qString);
         if (qString)
             qString = '?' + qString;
         return this.

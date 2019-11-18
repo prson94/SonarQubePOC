@@ -54,12 +54,18 @@ export class DiagramAssetRelationshipComponent implements OnInit {
 
     newAssetAdded($event) {
         var item = new CommonComponentAssetResult();
-        item.AssetTypeUid = $event.assetUid;
+        item.Uid = $event.assetUid;
         item.AssetTypeUid = $event.assetTypeUid;
+
         let arr = [];
         arr.push(item);
 
         this.transformationAsset = arr;
+        this.isAddTransformationVisible = false;
+    }
+
+    onCancel() {
+        this.isAddTransformationVisible = false;
     }
 
 }
