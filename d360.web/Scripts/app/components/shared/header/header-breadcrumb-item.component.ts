@@ -30,16 +30,16 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                             <div *ngIf="!isChangableItem()" class="gutter"></div>
                             <i *ngIf="isChangableItem()" class="fa fa-caret-right crumb-arrow right"></i>
                     </a>
-                    <p-overlayPanel [ngClass]="'search-results'" #searchPanel>  
+                    <div [ngClass]="'search-results'" #searchPanel>  
                         <div class="breadcrumb-search">
-                            <span class="header-search-input"><input #standardInput type="text" [(ngModel)]="searchValue" placeholder="Search" (keyup)="search(searchValue)"> <i *ngIf="searchingTypeahed" class="fa fa-spinner fa-spin"></i><i *ngIf="!searchingTypeahed" class="fa fa-search"></i></span> 
+                            <span class="header-search-input"><input #standardInput type="text" [(ngModel)]="searchValue" placeholder="Search" (keyup)="search(searchValue)"> <span *ngIf="searchingTypeahed" class="spinner"></span><i *ngIf="!searchingTypeahed" class="fa fa-search"></i></span> 
                             <div *ngFor="let result of results;" class="breadcrumb-search-results">
                                 <div class="breadcrumb-search-result" [ngClass]="{'current-crumb': breadcrumb.text === result.Name}" (click)="navigateToLink(result.Url,result)">{{result.Name}}</div>
                             </div>
                         </div>
-                    </p-overlayPanel>                
+                    </div>                
                     <div *ngIf="!isLastItem && showSeperator" class="sep breadcrumb"><i class="fa fa-angle-right"></i></div>                
-                    <p-overlayPanel [ngClass]="'search-results'" #treePanel>  
+                    <div [ngClass]="'search-results'" #treePanel>  
                         <div class="breadcrumb-search tree-breadcrumb-panel">    
                             <span class="header-search-input"><input #treeInput type="text" [(ngModel)]="searchTreeValue" placeholder="Search"> <i class="fa fa-search"></i></span> 
                             <p-tree [value]="treeItems | treeSearch: searchTreeValue" selectionMode="single" [(selection)]="breadcrumb.selectedTreeNode" styleClass="breadcrumbTree" [style]="{'max-height':maxOverlayHeight,'overflow':'auto','line-height':'25px'}"
@@ -49,7 +49,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                                 </ng-template>
                             </p-tree>
                         </div>
-                    </p-overlayPanel>
+                    </div>
                 </div>
           `,
 
@@ -111,89 +111,25 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     private in(panel, searchPanel, event) {
         let parent = this.hoverTarget.nativeElement.parentNode;
         let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
+
         if (this.isChangableItem() && !this.isTreeItem()) {
-            this.showSearch = true;            
-            let lineDims = this.hoverTarget.nativeElement.getBoundingClientRect();
+            searchPanel.style.display = "block";
             if (this.hasClass(parent, 'collapsed-crumb')) {
-                searchPanel.show(event, this.hoverTarget.nativeElement.parentNode);
-                
-                window.setTimeout(() => {
-                    searchPanel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
-                    searchPanel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
-                    searchPanel.el.nativeElement.children[0].style.position = "fixed";
-                    let searchDims = searchPanel.el.nativeElement.children[0].getBoundingClientRect(); 
-                    searchPanel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
-                    if (searchDims.right > window.innerWidth) {
-                        let diff = searchDims.right - window.innerWidth;
-                        let left = (lineDims.width + (10 * this.index)) - diff;
-                        searchPanel.el.nativeElement.children[0].style.left = left + "px";
-                    }
-                    parent.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
-                    if (this.standardInput) {
-                        this.standardInput.nativeElement.focus();
-                        if (this.results === undefined && !this.isTreeItem) this.search("");
-                    }
-                }, 150);
-                
-            } else {
-                searchPanel.show(event);
-                window.setTimeout(() => {
-                    searchPanel.el.nativeElement.children[0].style.top = (lineDims.bottom) + "px";
-                    searchPanel.el.nativeElement.children[0].style.left = (lineDims.left) + "px";
-                    searchPanel.el.nativeElement.children[0].style.position = "fixed";
-                    searchPanel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
-                    if (this.standardInput) {
-                        this.standardInput.nativeElement.focus();
-                        if (this.results === undefined && !this.isTreeItem()) this.search("");
-                    }
-                }, 150);
+                searchPanel.style.left = lineDims.width + "px";
             }
         }
         if (this.isTreeItem()) {
-            if (this.hasClass(parent, 'collapsed-crumb')) {
-                panel.show(event, this.hoverTarget.nativeElement.parentNode);
-                window.setTimeout(() => {
-                    panel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
-                    panel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
-                    panel.el.nativeElement.children[0].style.position = "fixed";
-                    parent.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
-                    panel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
-                    let searchDims = panel.el.nativeElement.children[0].getBoundingClientRect(); 
-
-                    if (searchDims.right > window.innerWidth) {
-                        let diff = searchDims.right - window.innerWidth;
-                        let left = (lineDims.width + (10 * this.index)) - diff;
-                        panel.el.nativeElement.children[0].style.left = left + "px";
-                        panel.el.nativeElement.children[0].style.position = "fixed";
-                    }
-
-                    if (this.treeInput) {
-                        window.setTimeout(() => {
-                            this.treeInput.nativeElement.focus();
-                        }, 100);
-                    } 
-                }, 100);
-            }
-
-            else {
-                panel.show(event);
-                window.setTimeout(() => {
-                    panel.el.nativeElement.children[0].style.left = lineDims.left + "px";
-                    panel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
-                    panel.el.nativeElement.children[0].style.position = "fixed";
-                }, 100);
-                if (this.treeInput) { window.setTimeout(() => { this.treeInput.nativeElement.focus(); }, 100); }
-            }
+            panel.style.display = "block";
         }
     }    
 
     out(treePanel, searchPanel, event) {
         if (this.isChangableItem()) {
             this.showSearch = true;
-            searchPanel.hide();
+            searchPanel.style.display = "none";
         }
         if (this.isTreeItem()) {
-            treePanel.hide();
+            treePanel.style.display = "none";
         }
     }
 
@@ -246,7 +182,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     nodeSelect(event, panel) {        
         this.breadcrumb.text = event.node.label;
         this.treeClick.emit({ id: event.node.data.id });      
-        panel.hide();
+        //panel.hide();
     }
 
     setTreeNodeStyles(node) {

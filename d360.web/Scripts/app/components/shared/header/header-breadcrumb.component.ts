@@ -9,13 +9,13 @@ import { clearLine } from 'readline';
 @Component({
     selector: 'd3s-header-breadcrumb',
     template: ` <div #bread class="breadcrumbs" (window:resize)="onResize($event)">
-                <span (mouseleave)="smallPanel.hide()" (click)="smallPanel.hide()" (mouseenter)="FixHeight($event,smallPanel)"> 
+                <span (mouseleave)="hideSmallPanel(smallPanel)" (mouseenter)="fixHeight($event,smallPanel)"> 
                     <i #collapseIcon *ngIf="showLastOnly" class="fa fa-ellipsis-h breadcrumb-collapse" aria-hidden="true"></i>
-                    <p-overlayPanel #smallPanel ngClass="collapsed-overlay">
+                    <div #smallPanel ngClass="collapsed-overlay">
                         <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index" class="collapsed-crumb-container">
                             <d3s-header-breadcrumb-item [ngClass]="'collapsed-crumb'" [ngStyle]="{'padding-left': index *10 + 'px'}" [index]="index" [showSeperator]="false" [breadcrumb]="breadcrumb" [isLastItem]="last" (treeClick)="handleTreeClick($event)"></d3s-header-breadcrumb-item>
                         </div>
-                    </p-overlayPanel>
+                    </div>
                 </span>
                 <div *ngFor="let breadcrumb of breadcrumbs;let last=last;let index=index">
                     <d3s-header-breadcrumb-item *ngIf="(showLastOnly && last) || breadcrumb.show" [breadcrumb]="breadcrumb" [isLastItem]="last" [lastItem]="breadcrumbs[breadcrumbs.length - 1]" (treeClick)="handleTreeClick($event)" [maxLastCrumbWidth]="maxSpaceForCrumbs"></d3s-header-breadcrumb-item>                    
@@ -69,8 +69,13 @@ export class HeaderBreadcrumbComponent {
             })
     }
 
-    private FixHeight($event, smallPanel) {
-        smallPanel.show($event);
+    
+    private hideSmallPanel(item) {
+        item.style.display = "none";
+    }
+
+    private fixHeight($event, smallPanel) {
+        smallPanel.style.display = "block";
         //primeNG overlay panel issue, need to dock the header panels to 40px from the top
         window.setTimeout(() => {
             let left = parseInt(smallPanel.el.nativeElement.children[0].style.left);
