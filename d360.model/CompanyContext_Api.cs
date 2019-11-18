@@ -5355,6 +5355,11 @@ where   ER.ExecutionID = @ExecutionID
                                     var insertSQL = $@"
                                             drop table if exists #mergeResultTable
                                             create table #mergeResultTable (PredicateId int, PredicateUid uniqueidentifier, ExecutionItemUid uniqueidentifier) 
+                                            
+                                            update  api.ExecutionPredicate 
+                                            set     [Uid] = newid() 
+                                            where   [Uid] is null or [Uid] = @emptyUid 
+                                                    and ItemNumber between @beginItemNumber and @endItemNumber; 
 
                                             merge into [Predicate] P
                                             using ( select * 
@@ -5383,7 +5388,7 @@ where   ER.ExecutionID = @ExecutionID
                                             where EP.ExecutionID = @ExecutionID";
 
                                     Connection.Execute(insertSQL,
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, emptyUid = Guid.Empty }, transaction: trans, commandTimeout: timeout);
 
                                     Connection.Execute(
                                         $"update P set P.Success = 1 from api.ExecutionPredicate P where	{querySuffix} and P.PredicateID is not null;",
