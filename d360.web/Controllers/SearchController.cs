@@ -38,6 +38,7 @@ namespace d360.web.Controllers
 
             if (!string.IsNullOrEmpty(queryRequest.Term))
             {
+                queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
                 o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories);
 
                 foreach (IndexResult result in o.Result.Results)

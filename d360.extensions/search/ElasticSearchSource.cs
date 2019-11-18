@@ -753,6 +753,15 @@ namespace d360.extensions.search
             List<QueryContainer> mustQueries = new List<QueryContainer>();
             List<QueryContainer> filterQueries = new List<QueryContainer>();
 
+            List<Nest.Field> mainFields = new List<Nest.Field>
+            {
+                new Nest.Field(DYNAMIC_FIELD_PREFIX + "*"),
+            };
+            foreach(FieldBoost boost in queryRequest.FieldBoosters)
+            {
+                mainFields.Add(new Nest.Field(boost.Field, boost.Boost));
+            }
+
             string phrase = queryRequest.Term;
             if (!string.IsNullOrEmpty(phrase))
             {
@@ -760,9 +769,9 @@ namespace d360.extensions.search
                 if (phrase.StartsWith("'") && phrase.EndsWith("'"))
                 {
                     phrase = EscapeSpecialCharacters(phrase.Trim('\''));
-                    shouldQueries.Add(new MatchPhraseQuery
+                    shouldQueries.Add(new MultiMatchQuery
                     {
-                        Field = fldName,
+                        Fields = mainFields.ToArray(),
                         Query = phrase
                     });
                     tagSearch = phrase;
@@ -773,8 +782,9 @@ namespace d360.extensions.search
                         phrase = phrase.Remove(phrase.Length - 1);
                     phrase = EscapeSpecialCharacters(phrase) + "*";
 
-                    shouldQueries.Add(new QueryStringQuery
+                    shouldQueries.Add(new SimpleQueryStringQuery
                     {
+                        Fields = mainFields.ToArray(),
                         Query = phrase
                     });
                     tagSearch = phrase;
@@ -802,7 +812,7 @@ namespace d360.extensions.search
                 }
                 if (fieldFilter.MatchWords)
                 {
-                    filterQueries.Add(new MatchPhraseQuery
+                    mustQueries.Add(new MatchPhraseQuery
                     {
                         Field = fld,
                         Query = fieldFilter.Phrase
@@ -815,12 +825,11 @@ namespace d360.extensions.search
                         p = p.Remove(p.Length - 1);
                     p = EscapeSpecialCharacters(p) + "*";
 
-                    filterQueries.Add(new QueryStringQuery
+                    mustQueries.Add(new QueryStringQuery
                     {
                         Fields = fld,
                         Query = p
                     });
-
                 }
             }
 
@@ -846,7 +855,7 @@ namespace d360.extensions.search
                     }
                 };
                 if (tagMust)
-                    filterQueries.Add(tagQuery);
+                    mustQueries.Add(tagQuery);
                 else
                     shouldQueries.Add(tagQuery);
             }
@@ -885,7 +894,8 @@ namespace d360.extensions.search
                     Must = new QueryContainer[] {
                         new BoolQuery{
                             Should = shouldQueries,
-                            Must = mustQueries
+                            Must = mustQueries,
+                            MinimumShouldMatch = 1
                         }
                     },
                     Filter = new QueryContainer[] { new BoolQuery {

@@ -23,6 +23,12 @@ namespace d360.extensions
         public bool MatchWords { get; set; } = false;
     }
 
+    public class FieldBoost
+    {
+        public string Field { get; set; }
+        public float Boost { get; set; }
+    }
+
     public class QueryRequest
     {
         public QueryRequest()
@@ -39,6 +45,7 @@ namespace d360.extensions
         public List<string> Aggregations { get; set; }
         SearchConnector SearchConnector { get; set; } = SearchConnector.And;
         public bool Explain { get; set; } = false;
+        public List<FieldBoost> FieldBoosters { get; set; }
     }
 
     public class IndexTypeList
