@@ -1,0 +1,15 @@
+﻿<section class="explain-widget">
+    <section *ngFor="let detail of details">
+        <section (click)="toggle(detail)" class="detail">
+            <i *ngIf="isExpandable(detail)" class="toggler fa" [ngClass]="{
+                'fa-caret-down' : detail.expanded,
+                'fa-caret-right' : !detail.expanded
+               }"></i>
+            <span class="detail-value" [ngClass]="'level'+level">{{ detail.value }}</span>
+            <span *ngIf="detail.expanded || !isExpandable(detail)" class="detail-description" [innerHTML]="detail.description"></span>
+        </section>
+        <section *ngIf="detail.expanded && isExpandable(detail)" class="children">
+            <explain-widget [json]="detail.details" [expanded]="expanded" [level]="level+1"></explain-widget>
+        </section>
+    </section>
+</section>

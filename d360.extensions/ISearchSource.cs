@@ -38,6 +38,7 @@ namespace d360.extensions
         public List<FieldFilter> FieldFilters { get; set; }
         public List<string> Aggregations { get; set; }
         SearchConnector SearchConnector { get; set; } = SearchConnector.And;
+        public bool Explain { get; set; } = false;
     }
 
     public class IndexTypeList
@@ -140,6 +141,7 @@ namespace d360.extensions
         /// score ranging between 1 and 0 adjusted based on max value.
         /// </summary>
         public float NormalizedScore { get; set; }
+        public string Explaination { get; set; }
     }
 
     public enum SearchConnector

@@ -47,7 +47,8 @@ declare var CompanySettings;
                     <span class="description" *ngIf="result?.Description" [innerHtml]="result.Description"></span>
                     <div *ngIf="result?.Tags" class="tags tagsnomanagewidth">
                         <d3s-tag-view [ignoreResizing]="true" [data]="parseTagResult(result?.Tags)"></d3s-tag-view>
-                    </div>      
+                    </div>
+                    <div *ngIf="result?.Explaination"><explain-widget [json]="result?.Explaination"></explain-widget></div>
                 </div>        
                 `,
     changeDetection: ChangeDetectionStrategy.OnPush,

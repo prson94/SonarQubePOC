@@ -121,6 +121,7 @@ namespace d360.extensions.search
         public JObject _source { get; set; }
         public JObject highlight { get; set; }
         public JObject inner_hits { get; set; }
+        public JObject _explanation { get; set; }
     }
 
 
@@ -923,6 +924,9 @@ namespace d360.extensions.search
                 }
             }
 
+            if (queryRequest.Explain)
+                sReq.Explain = true;
+
             var client = new ElasticClient(GetConnectionSettings(companyID));
             //Because the index model is variable, the LowLevel client is used and the request is turned into a JSON string
             string jsonString = client.RequestResponseSerializer.SerializeToString(sReq);
@@ -946,7 +950,8 @@ namespace d360.extensions.search
                 Url = GetHighlightedPropertyValueIfExists(h, D3S_FIELD_PREFIX + "Url"),
                 Uid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "Uid"),
                 AssetTypeUid = GetGuidPropertyIfExists(h, D3S_FIELD_PREFIX + "AssetTypeUid"),
-                Tags = GetTags(h)
+                Tags = GetTags(h),
+                Explaination = queryRequest.Explain ? h._explanation.ToString() : ""
             }).ToList();
 
 
