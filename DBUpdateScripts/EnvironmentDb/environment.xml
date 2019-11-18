@@ -356,4 +356,5 @@
   <include file="scripts/GOV-8706.xml"/> <!-- Update [dbo].[GetResponsibilityTypeBreakdown] proc for union vs union all -->
   <include file="scripts/GOV-8679.xml"/> <!-- GetImpactRelationshipsByAssets proc -->
   <include file="scripts/GOV-8814.xml"/> <!-- IGC - Proc Updates -->
+  <include file="scripts/GOV-8815.xml"/> <!-- graph.GetLineageByAsset - return solitary assets with no lineage -->
 </databaseChangeLog>

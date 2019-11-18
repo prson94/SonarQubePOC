@@ -4233,7 +4233,7 @@ from    [dbo].[ResponsibilityDetail] R
 where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID))";
 
                 gridFields.Add(new GridField { name = "ResponsibilityTypeName", type = "string" });
-                gridFields.Add(new GridField { name = "ResourceName", type = "lookup" });
+                gridFields.Add(new GridField { name = "ResourceName", type = "preview" });
                 gridFields.Add(new GridField { name = "ResourceID", type = "number" });
                 gridFields.Add(new GridField { name = "ResourceObject", type = "string" });
                 gridFields.Add(new GridField { name = "ResourceItemContext", type = "string" });

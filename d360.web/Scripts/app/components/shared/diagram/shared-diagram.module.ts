@@ -56,6 +56,7 @@ import { IconService } from '../../../services/icon.service';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal-editor.module';
+import { PipesModule } from '../../../pipes/pipes.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -65,6 +66,7 @@ import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal
         RouterModule,
         //d3s
         CoreModule,
+        PipesModule,
         SharedDeleteFormModule,
         SharedFormMessageModule,
         SharedGridPagingInfoModule,
