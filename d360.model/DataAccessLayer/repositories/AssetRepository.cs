@@ -16,6 +16,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using d360.core.helpers;
 using d360.core.resources;
+using System.Xml.Linq;
 
 namespace d360.model.DataAccessLayer
 {
@@ -49,7 +50,7 @@ namespace d360.model.DataAccessLayer
             {
                 if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty && (Class == AssetTypeClass.FusionAttribute || Class == AssetTypeClass.FusionQuery))
                 {
-                    if(Class == AssetTypeClass.FusionAttribute)
+                    if (Class == AssetTypeClass.FusionAttribute)
                     {
                         optionalJoin = @"inner join FusionAttributeType FAT on A.[Object] = 'FusionAttributeType' and A.Objectid = FAT.ID 
                                           inner join AssetType ATTFusionType on ATTFusionType.[Object] = 'FusionType' and ATTFusionType.ObjectID = FAT.FusionTypeID";
@@ -57,7 +58,7 @@ namespace d360.model.DataAccessLayer
                         condition += " and ATTFusionType.uid = @fusionTypeUid";
                     }
 
-                    if(Class == AssetTypeClass.FusionQuery)
+                    if (Class == AssetTypeClass.FusionQuery)
                     {
                         optionalJoin = @"inner join FusionQueryAttributeType FQAT ON A.Object = 'FusionQueryAttributeType' AND FQAT.ID = a.ObjectID
                                          inner join Fusion F on F.ID = FQAT.FusionID
@@ -235,7 +236,7 @@ namespace d360.model.DataAccessLayer
 						and exists (select 1 from [Intersect] I
 							inner join IntersectType IT on IT.ID = I.IntersectTypeID
                             inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
-							where {reverseIntersectJoin})";  
+							where {reverseIntersectJoin})";
 
                     innerSql = $@"select * from (
                         {innerSql}
@@ -279,10 +280,30 @@ namespace d360.model.DataAccessLayer
 
             getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
-            if(assetType.Class == AssetTypeClass.FusionAttribute)
+            if (assetType.Class == AssetTypeClass.FusionAttribute)
             {
                 if ((await CompanyContext.Database.Connection.QueryFirstOrDefaultAsync<int>("select ISNULL(parentId,0) from fusionattributetype where id = @id", new { id = assetType.ObjectID })) > 0)
-                    fusionAttributeWithParent = true;                
+                    fusionAttributeWithParent = true;
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_assetuid"))
+            {
+                List<Guid> assetUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_assetuid")
+                    .Value.Split(',').Select(x =>
+                    {
+                        var guid = Guid.Empty;
+                        Guid.TryParse(x, out guid);
+                        return guid;
+                    }).ToList();
+
+                if (assetUids.Any(x => x == Guid.Empty))
+                    throw new Exception("Invalid asset Uid in parameters!");
+
+                if (assetUids.Count > 0)
+                {
+                    whereStatements.Add($"A.uid in ({string.Join(",", assetUids.Select(x => "'" + x + "'"))})");
+                }
+
             }
 
             var whereSql = "";
@@ -312,15 +333,18 @@ namespace d360.model.DataAccessLayer
                     T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
                     A.CreatedOn,
-                    A.Code
+                    A.Code,
+                    Node.Path,
+                    Node.Segments
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
-                    {(fusionAttributeWithParent ? " , ATP.uid as ParentUid": "")}
+                    {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
                 from Asset A
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", fieldJoins)}
+                left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = T.[UID]
                 {whereSql}
                 {string.Join("\n", pagingSql)}
             ";
@@ -335,6 +359,32 @@ namespace d360.model.DataAccessLayer
                 foreach (var result in results)
                 {
                     result.Relationships = JsonConvert.DeserializeObject(result.Relationships);
+                }
+            }
+
+            foreach (var result in results)
+            {
+                try
+                {
+                    var xmlString = result.Segments;
+                    if (xmlString != null)
+                    {
+                        List<AssetsByPathItemSegmentApiViewModel> segments = new List<AssetsByPathItemSegmentApiViewModel>();
+                        var xml = XDocument.Parse(xmlString as string);
+                        foreach (var segment in xml.Descendants("segment"))
+                        {
+                            segments.Add(new AssetsByPathItemSegmentApiViewModel()
+                            {
+                                Value = segment.Value
+                            });
+                        }
+
+                        result.Segments = segments;
+                    }
+                }
+                catch
+                {
+                    result.Segments = null;
                 }
             }
 
@@ -406,7 +456,7 @@ namespace d360.model.DataAccessLayer
                     prefilterSql += (string.IsNullOrEmpty(prefilterSql)) ? "" : " union ";
                     prefilterSql += $"select T.ID from AssetType T {prefilterRelationshipStatement} {prefilterStatement}";
                 }
-                
+
                 i++;
             }
 
@@ -441,7 +491,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 model.pageSize = 250;
             }
 
-            dbArgs.Add("@pageNum", model.pageNum-1);
+            dbArgs.Add("@pageNum", model.pageNum - 1);
             dbArgs.Add("@pageSize", model.pageSize);
 
             var count = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
@@ -697,14 +747,14 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
-        public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true,bool lookupFieldsPassedByValue = false)
+        public List<DatabaseBulkAssetResult> PutAssets(List<AssetUpdate> assets, AssetType assetType, ApiExecution execution, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false)
         {
             CompanyContext.Add(execution);
 
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.ImportAssets(execution, assetType, assets, false, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel, sendWorkflowEvents:sendWorkflowEvents, lookupFieldsPassedByValue:lookupFieldsPassedByValue);
+                results = CompanyContext.ImportAssets(execution, assetType, assets, false, fieldJsonPropertyLoadLimitToTopLevel: fieldJsonPropertyLoadLimitToTopLevel, sendWorkflowEvents: sendWorkflowEvents, lookupFieldsPassedByValue: lookupFieldsPassedByValue);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -897,7 +947,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents:sendWorkflowEvents);
+                results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents: sendWorkflowEvents);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -1037,7 +1087,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return CompanyContext.Filter<ApiExecution>(i => i.ExecutionID == executionUid).SingleOrDefault();
         }
 
-        public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor,string icon, string objectName = "Tx")
+        public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx")
         {
             var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
             bool add = (style == null);
@@ -1359,7 +1409,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                                     whereStatements.Add($"ATP.[uid] = @parentuid");
                                     dbArgs.Add($"@parentuid", q.Value);
                                 }
-                                
+
                             }
                             else if (assetType.Object == "ReferenceItemType" && key == "code")
                             {
