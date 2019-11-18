@@ -100,9 +100,33 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         }
 
         if (changes.selected && changes.selected.previousValue != changes.selected.currentValue) {
-            console.log("value updated");
+            this.selected.forEach(item => {
+                item.Segments = null;
+            });
+            clearTimeout(this.resolveAssetTimeout);
+            this.resolveAssetTimeout = setTimeout(() => this.resolveAssetSegments(), 50);
         }
 
+    }
+    private resolveAssetTimeout = null;
+    private resolveAssetSegments() {
+        var itemsToResolve = [];
+        this.selected.forEach(item => {
+            if (!item.Segments) itemsToResolve.push({ uid: item.Uid, typeUid: item.AssetTypeUid });
+        });
+        let groups = itemsToResolve.reduce((r, a) => {
+            r[a.typeUid] = [...r[a.typeUid] || [], a];
+            return r;
+        }, {});
+
+        Object.keys(groups).forEach((key) => {
+            var assets: string[] = groups[key];
+            var params = { _assetUid: assets.join(',')};
+            this.assetService.getAssets(key, params).subscribe(res => {
+
+                console.log(res);
+            });
+        });
     }
 
     private prePopulate() {

@@ -10,6 +10,7 @@ import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
 import { AssetEditorModel } from '../models/asset.model';
 import { CommonComponentAssetResult, AssetSearchFilter, AssetSearchApiResponse } from '../models/asset-search.model';
+import { URLSearchParams } from 'url';
 
 @Injectable()
 export class AssetService extends BaseObservableService {
@@ -85,6 +86,18 @@ export class AssetService extends BaseObservableService {
                     catchError(err => this.handleError(err))
                 );
         }       
+    }
+
+    public getAssets(assetTypeUid: string, params: any): Observable<any> {
+        var qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+        console.log(qString);
+        if (qString)
+            qString = '?' + qString;
+        return this.
+            http
+            .get(`/api/v2/assets/${assetTypeUid}${qString}`)
+            .pipe(map(res => { return <any>res }),
+                catchError(err => this.handleError(err, true)));
     }
 
 
