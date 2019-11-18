@@ -71,6 +71,7 @@ export class AssetType {
     CanOwnFusion: boolean;
     IconStyle: IconStyle = new IconStyle();
     Hierarchy: Hierarchy = new Hierarchy();
+    FusionID: number;
 }
 
 export class AssetTypeClassApiModel {

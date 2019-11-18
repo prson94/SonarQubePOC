@@ -82,6 +82,8 @@ namespace d360.core.entities
 
         [DataMember]
         public bool? CanOwnFusion { get; set; }
+        [DataMember]
+        public int? FusionID { get; set; }
     }
 
     public class AssetTypeSuccess

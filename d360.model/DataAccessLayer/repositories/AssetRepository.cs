@@ -678,6 +678,30 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                     #endregion
                     break;
+                case AssetTypeClass.FusionAttribute:
+
+                    int? parentId = parentAssetType?.ObjectID;
+                    int fusionTypeId = model.FusionID.Value;
+
+                    var fusionAttrType = new FusionAttributeType
+                    {
+                        Name = model.Name,
+                        ParentID = parentId,
+                        ScanEnabled = true,
+                        FusionTypeID = fusionTypeId
+                    };
+
+                    CompanyContext.Add(fusionAttrType);
+                    model.ObjectID = fusionAttrType.ID;
+                    model.Object = SystemObjects.FusionAttributeType.ToString();
+
+                    var fatAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
+                    if (fatAssetType != null)
+                    {
+                        fatAssetType.Description = model.Description;
+                        CompanyContext.Update(fatAssetType);
+                    }
+                    break;
             }
 
             if (predicate != null)
@@ -801,6 +825,17 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     r.Description = model.Description;
                     CompanyContext.Update(r);
                     #endregion
+                    break;
+                case AssetTypeClass.FusionAttribute:
+                    var fusionAttributeType = CompanyContext.GetById<FusionAttributeType>(model.ObjectID);
+                    if (fusionAttributeType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.FusionAttribute.ToString()}", $"Not valid {AssetTypeClass.FusionAttribute.ToString()} provided. {AssetTypeErrors.CheckRequest}");
+
+                    fusionAttributeType.Name = model.Name;
+                    CompanyContext.Update(fusionAttributeType);
+
+                    assetType.Description = model.Description;
+                    CompanyContext.Update(assetType);
+
                     break;
             }
 

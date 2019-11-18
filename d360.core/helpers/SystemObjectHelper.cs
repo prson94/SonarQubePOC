@@ -26,6 +26,10 @@ namespace d360.core.helpers
                     return SystemObjects.RuleType;
                 case AssetTypeClass.Model:
                     return SystemObjects.TaxonomyType;
+                case AssetTypeClass.FusionAttribute:
+                    return SystemObjects.FusionAttributeType;
+                case AssetTypeClass.FusionQuery:
+                    return SystemObjects.FusionQueryAttributeType;
 
             }
             return SystemObjects.ArtifactType;//default

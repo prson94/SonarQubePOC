@@ -269,6 +269,8 @@ namespace d360.web.Controllers
                             Uid = assetType.uid,
                             ParentUid = parentUid,
                             AutoDisplayDescription = assetType.AutoDisplayDescription,
+                            Description = assetType.Description,
+                            DisplayFormat = assetType.DisplayFormat,
                             Class = @class,
                             UseAsTransformation = assetType.UseAsTransformation,
                             Notes = assetType.Notes,
