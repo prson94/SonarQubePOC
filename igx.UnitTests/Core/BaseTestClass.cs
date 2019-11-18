@@ -174,17 +174,17 @@ namespace igx.UnitTests
                 }
                 : null);
 
-            mockRepo.Setup(x => x.GetAssetTypeByModel(It.IsAny<AssetTypeInsert>()))
+            mockRepo.Setup(x => x.GetAssetTypeByModel(It.IsAny<AssetTypeUpsert>()))
                 .Returns(new AssetType());
 
             string outString;
             bool outBool;
-            mockRepo.Setup(x => x.AddAssetType(It.IsAny<AssetTypeInsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>(), 0, out outString, out outBool))
+            mockRepo.Setup(x => x.AddAssetType(It.IsAny<AssetTypeUpsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>(), 0, out outString, out outBool))
                 .Returns(() => new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", ""));
 
             mockRepo.Setup(x => x.UpsertAssetStyle(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
 
-            mockRepo.Setup(x => x.UpdateAssetType(It.IsAny<AssetTypeInsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>()))
+            mockRepo.Setup(x => x.UpdateAssetType(It.IsAny<AssetTypeUpsert>(), It.IsAny<AssetType>(), It.IsAny<AssetType>(), It.IsAny<Predicate>()))
                 .Returns(() => new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", ""));
 
             mockRepo.Setup(x => x.DoesAssetExists(It.IsAny<Guid>()))

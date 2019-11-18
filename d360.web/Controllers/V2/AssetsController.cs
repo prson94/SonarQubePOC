@@ -308,15 +308,23 @@ namespace d360.web.Controllers.V2
         /// Add an asset type based on Asset Type Class
         /// </summary>
         /// <remarks>
-        /// This endpoint can add the following asset type class
-        /// Business,Technical,Model,Organization,Policy,Reference,Rule
+        /// This endpoint can add the following asset type class:  
+        /// - Business
+        /// - Model
+        /// - Organization
+        /// - Policy
+        /// - Reference
+        /// - Rule
+        /// - Technical  
+        ///   
+        /// You also have the option of providing a Uid for this new asset type. This is particularly useful in a migration scenario where you want to migrate an asset type from one environment to another. The default is to not provide one, in which case a Uid will be automatically generated.
         /// </remarks>
-        /// <param name="model">Asset Type</param>
-        /// <returns>An HTTP status code and message.</returns>
+        /// <param name="model">The asset type model to add.</param>
+        /// <returns>The Uid of the new asset type, a success status, and a message.</returns>
         [
             HttpPost,
             Route(""),
-            SwaggerRequestExample(typeof(AssetTypeInsert), typeof(AssetTypeInsertExample)),
+            SwaggerRequestExample(typeof(AssetTypeUpsert), typeof(AssetTypeInsertExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Newly asset type Uid and success / failure message.", typeof(AssetTypeSuccess)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
@@ -324,7 +332,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Conflict, "You already have an asset type with the specified name", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeInsert model)
+        public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeUpsert model)
         {
             var prefix = "Assets.PostAssetTypeAsync => ";
             
@@ -421,18 +429,24 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Updates an asset type based on the specific asset type unique identifier.
+        /// Updates an asset type based on the specific asset type unique identifier (Uid).
         /// </summary>
         /// <remarks>
-        /// This endpoint can update the following asset type class
-        /// Business,Technical,Model,Organization,Policy,Reference,Rule
+        /// This endpoint can update the following asset type class:  
+        /// - Business
+        /// - Model
+        /// - Organization
+        /// - Policy
+        /// - Reference
+        /// - Rule
+        /// - Technical  
         /// </remarks>
-        /// <param name="model"></param>
+        /// <param name="model">The asset type model to update.</param>
         /// <returns></returns>
         [
             HttpPut,
             Route(""),
-            SwaggerRequestExample(typeof(AssetTypeInsert), typeof(Models.AssetTypeInsertExample)),
+            SwaggerRequestExample(typeof(AssetTypeUpsert), typeof(AssetTypeUpdateExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Update asset type and success / failure message.", typeof(AssetTypeSuccess)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
@@ -443,7 +457,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Conflict, "If attempting to alter certain properties of a child asset type and there is a conflict within your Govern environment. For example, changing the predicate between a parent a child asset type", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PutAssetTypeAsync(AssetTypeInsert model)
+        public async Task<IHttpActionResult> PutAssetTypeAsync(AssetTypeUpsert model)
         {
             var prefix = "Assets.PutAssetTypeAsync => ";
             
@@ -487,9 +501,7 @@ namespace d360.web.Controllers.V2
                     var IsTransformPredicateExists = await this.relationshipRepository.IsTransformPredicateExists(assetType.ID);
                     if (IsTransformPredicateExists)
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Transformation Relationship Exists For AssetType", AssetTypeErrors.RelationshipExistsForAssetType));
-
                 }
-                
 
                 var updateStatus = AssetRepository.UpdateAssetType(model, assetType, parentAssetType, predicate);
                 if (updateStatus.Item1 != HttpStatusCode.OK)
@@ -497,14 +509,12 @@ namespace d360.web.Controllers.V2
 
                 AssetRepository.UpsertAssetStyle(assetType.ID, model.IconStyle.ForeColor, model.IconStyle.BackColor,model.IconStyle.Icon, model.Name);
 
-
                 //update affected display values
                 Company.CreateOrUpdateTypeDisplayValuesAsync(model.ObjectID, model.Object.ToString());
 
                 var result = new AssetTypeSuccess { Uid = model.Uid, Message = $"{model.Name} successfully updated.", Success = true };
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
-
             }
             catch (BaseException ex)
             {

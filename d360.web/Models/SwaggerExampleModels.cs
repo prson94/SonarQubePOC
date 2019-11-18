@@ -1,5 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.entities.Workflow;
+using d360.core.enums;
 using System;
 using System.Collections.Generic;
 
@@ -27,31 +28,45 @@ namespace d360.web.Models
     {
         public object GetExamples()
         {
-            return  new AssetTypeInsert
-                 {
-                    Uid = Guid.Empty,
-                    Name = String.Empty,
-                    Class = core.enums.AssetTypeClass.BusinessAsset,
-                    Description = String.Empty,
-                    AutoDisplayDescription = true,
-                    DisplayFormat = "{Name}",
-                    Hierarchy = new HierarchyInsert
-                    {
-                        MaximumDepth =3,
-                        PredicateUid = Guid.Empty
-                    },
-                    IconStyle = new IconStyleInsert
-                    {
-                        BackColor= "#000",
-                        ForeColor= "#FFF",
-                        Icon= String.Empty
-                    },
-                    ParentUid = Guid.Empty,
-                    Notes = String.Empty
-                };
-
+            return new AssetTypeUpsert
+            {
+                Name = "My asset type name",
+                Class = AssetTypeClass.BusinessAsset,
+                Description = "A meaningful description of what this asset type is.",
+                AutoDisplayDescription = false,
+                DisplayFormat = "{Name}",
+                Hierarchy = new HierarchyInsert { MaximumDepth = 1, PredicateUid = Guid.Empty },
+                IconStyle = new IconStyleInsert { BackColor = "#000", ForeColor = "#FFF", Icon = "fa-database" },
+                ParentUid = Guid.Empty,
+                Notes = "Notes about usage or any other topic.",
+                UseAsTransformation = false,
+                CanOwnFusion = false
+            };
         }
     }
+
+    public class AssetTypeUpdateExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new AssetTypeUpsert
+            {
+                Uid = Guid.NewGuid(),
+                Name = "My asset type name",
+                Class = AssetTypeClass.BusinessAsset,
+                Description = "A meaningful description of what this asset type is.",
+                AutoDisplayDescription = false,
+                DisplayFormat = "{Name}",
+                Hierarchy = new HierarchyInsert { MaximumDepth = 1, PredicateUid = Guid.Empty },
+                IconStyle = new IconStyleInsert { BackColor = "#000", ForeColor = "#FFF", Icon = "fa-database" },
+                ParentUid = Guid.Empty,
+                Notes = "Notes about usage or any other topic.",
+                UseAsTransformation = false,
+                CanOwnFusion = false
+            };
+        }
+    }
+
     public class AssetUpdatesExample : IExamplesProvider
     {
         public object GetExamples()
@@ -127,7 +142,7 @@ namespace d360.web.Models
             return new RelationshipTypeUpdate
             {
                 ExecutionItemUid = Guid.Empty,
-                Uid = Guid.Empty,
+                Uid = Guid.NewGuid(),
                 PredicateUid = Guid.Empty,
                 SubjectCardinality = core.enums.Cardinality.Many,
                 ObjectCardinality = core.enums.Cardinality.Many

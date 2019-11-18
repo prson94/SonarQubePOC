@@ -264,7 +264,7 @@ namespace d360.web.Controllers
 
                     model = new AssetTypeEditorModel()
                     {
-                        AssetType = new AssetTypeInsert()
+                        AssetType = new AssetTypeUpsert()
                         {
                             Uid = assetType.uid,
                             ParentUid = parentUid,
@@ -372,7 +372,7 @@ namespace d360.web.Controllers
                     model = new AssetTypeEditorModel()
                     {
 
-                        AssetType = new AssetTypeInsert()
+                        AssetType = new AssetTypeUpsert()
                         {
                             DisplayFormat = "{Name}",
                             Class = @class,

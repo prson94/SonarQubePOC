@@ -500,7 +500,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return results;
         }
-        public Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeInsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey)
+        public Tuple<HttpStatusCode, string, string> AddAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate, int resourceId, out string nameFriendlyName, out bool isNamePartOfKey)
         {
             var parentType = SystemObjects.ArtifactType;
             nameFriendlyName = "Name";
@@ -509,6 +509,12 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             if (!string.IsNullOrEmpty(model?.Name ?? null))
                 model.Name = model.Name.Trim();
 
+            Guid uid = Guid.NewGuid();
+            if (model.Uid != Guid.Empty)
+            {
+                uid = model.Uid;
+            }
+
             switch (model.Class)
             {
                 case AssetTypeClass.BusinessAsset:
@@ -516,6 +522,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     #region
                     var a = new AssetType
                     {
+                        uid = uid,
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
@@ -553,12 +560,19 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     parentType = SystemObjects.OrganizationType;
                     model.ObjectID = org.ID;
                     model.Object = SystemObjects.OrganizationType.ToString();
+                    var orgAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
+                    if (orgAssetType != null)
+                    {
+                        orgAssetType.uid = uid;
+                        CompanyContext.Update(orgAssetType);
+                    }
                     #endregion
                     break;
                 case AssetTypeClass.Policy:
                     #region                    
                     var p = new AssetType
                     {
+                        uid = uid,
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
@@ -583,6 +597,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     #region
                     var t = new AssetType
                     {
+                        uid = uid,
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
@@ -619,6 +634,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     #region
                     var rt = new AssetType
                     {
+                        uid = uid,
                         Name = model.Name,
                         DisplayFormat = model.DisplayFormat,
                         Description = model.Description,
@@ -652,6 +668,14 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     parentType = SystemObjects.Rule;
                     model.ObjectID = r.ID;
                     model.Object = SystemObjects.RuleType.ToString();
+
+                    var ruleAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
+                    if (ruleAssetType != null)
+                    {
+                        ruleAssetType.uid = uid;
+                        CompanyContext.Update(ruleAssetType);
+                    }
+
                     #endregion
                     break;
             }
@@ -697,7 +721,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return results;
         }
-        public Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeInsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate)
+        public Tuple<HttpStatusCode, string, string> UpdateAssetType(AssetTypeUpsert model, AssetType assetType, AssetType parentAssetType, Predicate predicate)
         {
             List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
 
@@ -1003,7 +1027,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid && i.Class == @class).SingleOrDefault();
         }
 
-        public AssetType GetAssetTypeByModel(AssetTypeInsert model)
+        public AssetType GetAssetTypeByModel(AssetTypeUpsert model)
         {
             return CompanyContext.Filter<AssetType>(x => x.ObjectID == model.ObjectID && x.Object == model.Object).SingleOrDefault();
         }
@@ -1059,7 +1083,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return CompanyContext.Any<Asset>(i => i.uid == uid);
         }
 
-        public bool IsReachedTransformationLimit(AssetTypeInsert model)
+        public bool IsReachedTransformationLimit(AssetTypeUpsert model)
         {
             bool reached = false;
             if (model.Class == AssetTypeClass.BusinessAsset && model.UseAsTransformation == true)

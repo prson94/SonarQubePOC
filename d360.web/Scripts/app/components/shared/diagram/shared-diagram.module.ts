@@ -58,6 +58,7 @@ import { SiteModalModule } from '../modal/gov-modal.module';
 import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal-editor.module';
 import { AssetSearchModule } from '../search/generic-asset-search/generic-asset-search.module';
 import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-type-editor.module';
+import { PipesModule } from '../../../pipes/pipes.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -67,6 +68,7 @@ import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-typ
         RouterModule,
         //d3s
         CoreModule,
+        PipesModule,
         SharedDeleteFormModule,
         SharedFormMessageModule,
         SharedGridPagingInfoModule,
