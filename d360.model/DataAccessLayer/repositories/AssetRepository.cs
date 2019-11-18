@@ -301,7 +301,8 @@ namespace d360.model.DataAccessLayer
 
                 if (assetUids.Count > 0)
                 {
-                    whereStatements.Add($"A.uid in ({string.Join(",", assetUids.Select(x => "'" + x + "'"))})");
+                    dbArgs.Add("assetUids", assetUids);
+                    whereStatements.Add($"A.uid in @assetUids");
                 }
 
             }
