@@ -63,7 +63,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private tab: string = "info";
     private selectedDiagramAsset: AssetBrowserDiagramAsset;
     private isFullScreen: boolean = false;
-
+    private loadingText: string = "";
+    private fromRefresh: boolean = false;
     //#region Filters
 
     isFilterWindowVisible: boolean = false;
@@ -443,7 +444,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private populateDiagram() {
         this.isLoading = true;
-
+        this.loadingText = "Retrieving lineage from Govern..";
         this.responseModel = null;
         this.revealedKeys = [];
 
@@ -464,15 +465,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.browserService.getAssetLineage(this.requestModel)
             .subscribe(data => {
                 this.responseModel = data;
+                this.loadingText = "Determining links and meaning...";
                 let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
                 this.parseData(translationModel);
                 this.resizeDiagram();
                 this.diagram.zoomToFit();
                 this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
+                this.loadingText = "";
+                this.isLoading = false;
+                this.fromRefresh = false;
                 this.cdRef.markForCheck();
-
             });
-        this.isLoading = false;
+
 
     }
 
@@ -652,7 +656,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private refreshDiagram() {
         this.assetUid = this.originalAssetUid;
-
+        this.fromRefresh = true;
         this.populateDiagram();
     }
 
