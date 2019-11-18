@@ -24,17 +24,16 @@
                       [filters]="sourceAssetFilters"
                       (selectedChange)="onAssetSearchSelection($event)">
     </d3s-asset-search>
-
     <span class="title">Transformation</span>
-    <div>
-        <d3s-asset-search [multiSelect]="false"
-                          [predicateSelectorType]="predicateType"
-                          [selected]="transformationAsset"
-                          [clearResultsAfterSelection]="true"
-                          [placeholder]="'Choose or create a transformation...'"
-                          (selectedChange)="onAssetSearchSelection($event)">
-        </d3s-asset-search>
-        <button type="button" title="Add Transformation" (click)="isAddTransformationVisible = true"><i class="fa fa-plus"></i></button>
+    <div class="transformation-block" style="display:flex;">
+            <d3s-asset-search [multiSelect]="false"
+                              [predicateSelectorType]="predicateType"
+                              [selected]="transformationAsset"
+                              [clearResultsAfterSelection]="true"
+                              [placeholder]="'Choose or create a transformation...'"
+                              (selectedChange)="onAssetSearchSelection($event)">
+            </d3s-asset-search>
+            <button type="button" title="Add Transformation" (click)="isAddTransformationVisible = true"><i class="fa fa-plus"></i></button>
     </div>
     <span class="title">Target Assets</span>
     <d3s-asset-search [multiSelect]="true"

@@ -1,4 +1,4 @@
-﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef, OnInit, OnChanges, SimpleChange, SimpleChanges } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, HostListener, Output, EventEmitter, ViewChild, ElementRef, OnInit, OnChanges, SimpleChange, SimpleChanges, AfterContentInit } from '@angular/core';
 import { AssetService } from '../../../../services/asset.service';
 import { AssetSearchFilter, CommonComponentAssetTypeFilterRelationshipSide, CommonComponentAssetSelection, CommonComponentSelectStyle, CommonComponentAssetResultExt, CommonComponentAssetResult, CommonComponentAssetTypeFilter, CommonComponentDisplayStyle } from '../../../../models/asset-search.model';
 import { PredicateType, Predicate } from '../../../../models/predicate.model';
@@ -75,11 +75,45 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     constructor(
         private ref: ChangeDetectorRef,
         private assetService: AssetService,
-        private eRef: ElementRef,
-        private tooltipService: ToolTipService
-    ) {
+        private eRef: ElementRef) {
 
     }
+
+    @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+        if (!this.eRef.nativeElement.contains(event.target)) {
+            return;
+        }
+
+        if (event.key === "Escape") {
+            this.closeSearch();
+        }
+
+        if (event.key === "ArrowDown") {
+            this.currentSearchNavigationIndex++;
+            if (this.currentSearchNavigationIndex > this.pageSize - 1)
+                this.currentSearchNavigationIndex = this.pageSize - 1;
+        }
+        if (event.key === "ArrowUp") {
+            this.currentSearchNavigationIndex--;
+            if (this.currentSearchNavigationIndex < 0)
+                this.currentSearchNavigationIndex = 0;
+        }
+
+        if (event.key === "Enter") {
+            if (this.isSearchWindowOpened)
+                this.onSelect(this.currentSearchNavigationIndex, null);
+        }
+    }
+
+    @HostListener('document:click', ['$event'])
+    onclick(ev: MouseEvent) {
+        var target = <HTMLElement>ev.target;
+        // if clicked outside of the component
+        if (!this.eRef.nativeElement.contains(target)) {
+            this.closeSearch();
+        }
+    }
+
 
     ngOnInit() {
         this.prePopulate();
@@ -127,7 +161,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
                         update.Segments = asset.Segments;
                         if (!asset.Segments) {
                             update.Segments = [];
-                            update.Segments.push({ Value : asset.Name });
+                            update.Segments.push({ Value: asset.Name });
                         }
                     });
                 }
@@ -144,40 +178,6 @@ export class AssetSearchComponent implements OnInit, OnChanges {
                 this.ref.markForCheck();
             })
             this.prepopulatedResults = null;
-        }
-    }
-
-    @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
-        if (!this.eRef.nativeElement.contains(event.target)) {
-            return;
-        }
-
-        if (event.key === "Escape") {
-            this.closeSearch();
-        }
-
-        if (event.key === "ArrowDown") {
-            this.currentSearchNavigationIndex++;
-            if (this.currentSearchNavigationIndex > this.pageSize - 1)
-                this.currentSearchNavigationIndex = this.pageSize - 1;
-        }
-        if (event.key === "ArrowUp") {
-            this.currentSearchNavigationIndex--;
-            if (this.currentSearchNavigationIndex < 0)
-                this.currentSearchNavigationIndex = 0;
-        }
-
-        if (event.key === "Enter") {
-            if (this.isSearchWindowOpened)
-                this.onSelect(this.currentSearchNavigationIndex, null);
-        }
-    }
-
-    @HostListener('document:click', ['$event'])
-    onclick(ev: MouseEvent) {
-        // if clicked outside of the component
-        if (!this.eRef.nativeElement.contains(ev.target)) {
-            this.closeSearch();
         }
     }
 
@@ -234,6 +234,9 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
     private openSearchWindow() {
         this.isSearchWindowOpened = true;
+        setTimeout(() => {
+            this.searchInput.nativeElement.focus();
+        }, 100);
     }
 
 

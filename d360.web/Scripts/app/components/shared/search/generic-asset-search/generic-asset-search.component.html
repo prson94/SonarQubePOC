@@ -42,7 +42,7 @@
             </ng-container>
         </div>
 
-        <div *ngIf="isSearchWindowOpened" class="gas-search">
+        <div class="gas-search {{isSearchWindowOpened ? 'visible':''}}">
             <input #searchInput (keyup)="search($event)" placeholder="Type to search for assets" />
 
             <span class="search-button">
