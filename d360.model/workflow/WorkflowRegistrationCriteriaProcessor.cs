@@ -10,7 +10,7 @@ namespace d360.model.workflow
 {
     public static class WorkflowRegistrationCriteriaProcessor
     {
-        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1, int score = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1)
+        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1)
         {
             if (string.IsNullOrEmpty(criteria)) return true; // null criteria means all objects are applicable
 
@@ -21,7 +21,7 @@ namespace d360.model.workflow
             bool satisfyAll = expression.All(x => x.CriteriaConnector == core.enums.Workflow.CriteriaConnector.AND); 
 
             //load the values for each of the fields for the given object
-            return EvaluateObject(expression, context, @object, objectId, itemId, score, issueObject, issueObjectId, changedFields, satisfyAll);
+            return EvaluateObject(expression, context, @object, objectId, itemId, issueObject, issueObjectId, changedFields, satisfyAll);
         }
 
         public static string ToPlainText(ICompanyContext context, string criteria)
@@ -49,7 +49,7 @@ namespace d360.model.workflow
         /// <param name="context"></param>
         /// <param name="object"></param>
         /// <param name="objectId"></param>
-        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, CompanyContext context, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, bool satisfyAll = true)
+        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, CompanyContext context, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, bool satisfyAll = true)
         {
 
             //If there are no conditions object is eligible for workflow
@@ -67,7 +67,7 @@ namespace d360.model.workflow
 
             foreach (var item in expression)
             {
-                item.IsCriteriaChecked = EvaluateField(context, item, fields, @object, objectId, itemId, score, issueObjectType, issueObjectTypeId, changedFields);
+                item.IsCriteriaChecked = EvaluateField(context, item, fields, @object, objectId, itemId, issueObjectType, issueObjectTypeId, changedFields);
                 if (satisfyAll && item.IsCriteriaChecked == false) return false;
                 if (!satisfyAll && item.IsCriteriaChecked == true) return true;
             }
@@ -75,7 +75,7 @@ namespace d360.model.workflow
             return satisfyAll ? expression.All(x => x.IsCriteriaChecked) : expression.Any(x => x.IsCriteriaChecked);
         }
 
-        private static bool EvaluateField(ICompanyContext context, WorkflowCriteriaExpressionModel item, IQueryable<Field> fields, string @object, int objectId, long itemId, int score = -1, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null)
+        private static bool EvaluateField(ICompanyContext context, WorkflowCriteriaExpressionModel item, IQueryable<Field> fields, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null)
         {
             if (item.FieldTypeId > 0)
             {
@@ -95,11 +95,7 @@ namespace d360.model.workflow
                 {
                     if (!item.IsValueMatch(value.FormattedValue)) return false;
                 }
-            }
-            else if ((item.ContextualFieldID ?? "").ToLower() == "score")
-            {
-                if (!item.IsValueMatch(score.ToString())) return false;
-            }
+            }            
             else if ((item.ContextualFieldID ?? "").ToLower() == "requestedon")
             {
                 var requestedOn = context.GetById<ShoppingCart>(objectId).RequestedOn;
