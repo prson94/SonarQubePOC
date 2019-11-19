@@ -195,7 +195,6 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
     nodeSelect(event, panel) {        
         this.breadcrumb.text = event.node.label;
         this.treeClick.emit({ id: event.node.data.id });      
-        //panel.hide();
     }
 
     setTreeNodeStyles(node) {
