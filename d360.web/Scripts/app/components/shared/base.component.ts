@@ -166,7 +166,7 @@ export class BaseComponent {
                 }
                 else {
                     this.lineageSidebar = new RightSidebarItem(
-                        'Browser',
+                        'Visualization',
                         'lineage',
                         ['fa-random'],
                         `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15

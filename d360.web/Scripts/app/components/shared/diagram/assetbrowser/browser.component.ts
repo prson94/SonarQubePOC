@@ -16,7 +16,8 @@ import {
     AssetBrowserImpactApiAssetRequestModel,
     AssetBrowserLineageApiItemModel,
     FilterAncestryMode,
-    FilterAncestryOption,
+    FilterAncestryOption,
+
     AssetBrowserFilterModel,
     AssetTypeFilter
 } from '../../../../models/lineage.model';
@@ -829,6 +830,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private onResize(event) {
         this.resizeDiagram();
     }
+  
+    @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+        if (event.key === "Escape" || event.key === "Esc") {
+            this.fullScreenButtonClick(null);
+        }
+    }
 
     private resizeDiagram() {
         let offset = this.diagramRef.nativeElement.offsetTop;
@@ -840,14 +847,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         let diagramHeight: string = "";
 
-        if (this.isFullScreen) {
-            diagramHeight = (height - 80) + 'px';
-        }
-        else {
-            diagramHeight = (height - offset - 255) + 'px';
-        }
-
         this.diagramRef.nativeElement.style.height = diagramHeight;
+        if (this.isFullScreen)
+            this.diagramRef.nativeElement.style.height = (height - 32) + 'px';
+        else 
+            this.diagramRef.nativeElement.style.height = (height - 228) + 'px';
 
         if (this.filterPanelRef) {
             let filterPanelHeight: string = (this.diagramRef.nativeElement.clientHeight - 130) + 'px';
@@ -1883,4 +1887,4 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     //#endregion
-}
+} 
