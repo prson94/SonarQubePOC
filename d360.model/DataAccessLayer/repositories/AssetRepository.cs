@@ -41,7 +41,7 @@ namespace d360.model.DataAccessLayer
         {
             return AssetTypeClass.BusinessAsset.GetAsList();
         }
-        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(AssetTypeClass? Class, Guid? fusionTypeUid)
+        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams,AssetTypeClass? Class, Guid? fusionTypeUid)
         {
             var dbArgs = new DynamicParameters();
             string condition = string.Empty;
@@ -93,6 +93,60 @@ namespace d360.model.DataAccessLayer
 
             }
 
+            List<string> whereStatements = new List<string>();
+            if (queryParams != null)
+            {
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "useastransformation"))
+                {
+                    bool useAsTransformation;
+                    var useAsTransformationString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "useastransformation").Value;
+                    if (Boolean.TryParse(useAsTransformationString, out useAsTransformation))
+                    {
+
+                        condition += "and A.UseAsTransformation=@useAsTransformation ";
+                        dbArgs.Add("useAsTransformation", useAsTransformation);
+                    }
+                }
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "hierarchical"))
+                {
+                    bool hierarchical;
+                    var hierarchicalString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "hierarchical").Value;
+                    if (Boolean.TryParse(hierarchicalString, out hierarchical))
+                    {
+
+                        condition += "and A.Hierarchical=@hierarchical ";
+                        dbArgs.Add("hierarchical", hierarchical);
+                    }
+                }
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplaydescription"))
+                {
+                    bool autoDisplayDescription;
+                    var autoDisplayDescriptionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "autodisplaydescription").Value;
+                    if (Boolean.TryParse(autoDisplayDescriptionString, out autoDisplayDescription))
+                    {
+
+                        condition += "and A.AutoDisplayDescription=@autodisplaydescription ";
+                        dbArgs.Add("autoDisplayDescription", autoDisplayDescription);
+                    }
+                }
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "canownfusion"))
+                {
+                    bool canOwnFusion;
+                    var canOwnFusionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "canownfusion").Value;
+                    if (Boolean.TryParse(canOwnFusionString, out canOwnFusion))
+                    {
+
+                        condition += "and A.CanOwnFusion=@canownfusion ";
+                        dbArgs.Add("canownfusion", canOwnFusion);
+                    }
+                }
+
+            }
+
+          
             var sql = $@"
                         SELECT     A.[Name]
                                     ,ISNULL(A.[Description],'') as Description
