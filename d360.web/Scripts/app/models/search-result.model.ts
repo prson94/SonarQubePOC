@@ -29,7 +29,7 @@ export class SearchFullResult extends SearchResult {
     Url: string;
     Icon: string;
     Uid: string;
-    
+    Explanation: string;  
 }
 
 export class SearchCategories {
@@ -75,6 +75,7 @@ export class SearchQuery {
     public constructor(init?: Partial<SearchQuery>) {
         Object.assign(this, init);
     }
+    Explain: boolean;
 }
 
 export class AdvancedSearchFilter {

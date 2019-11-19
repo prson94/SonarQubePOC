@@ -88,6 +88,9 @@ export class SearchComponent extends BaseComponent implements OnInit {
             this.searchStateService.setSearchCategories(this.searchTypes);
             this.searchStateService.setFieldFilters(this.advancedFilters);
             this.searchStateService.selectedFilters = [];
+            if (params['explain'] != undefined) {
+                this.searchStateService.setExplain(params['explain'] == 'please');
+            }
             if (this.searchText.length > 0) {
                 this.doSearch();
             }

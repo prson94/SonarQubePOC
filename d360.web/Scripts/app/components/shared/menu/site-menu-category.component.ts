@@ -1,20 +1,16 @@
 ﻿import { Input, Component, OnInit, ChangeDetectionStrategy, Output, EventEmitter, AfterViewInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
-import { StateService } from '../../../services/state.service';
-import { FavoritesService } from '../../../services/favorites.service';
-import { AuthenticationService } from '../../../services/authentication.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
-import { SiteMenu, SiteMenuItem, SiteNav } from '../../../models/site-menu.model';
+import { SiteMenu, SiteNav } from '../../../models/site-menu.model';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { isString, isArray } from 'util';
-import { createWriteStream } from 'fs';
 import * as _ from 'lodash';
 
 @Component({
     selector: 'd3s-site-menu-category',
     template: ` 
-                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(event, item);" (mouseleave)="hide(item);" [routerLink]="url ? url : []" style="cursor: pointer;" >
+                    <li #item [ngClass]="{'menu-category':true,'menu-parent':menu && (menu.NavigationItems),'menu-active':menu?.isActiveItem}" title="{{title}}" (mouseenter)="show(item); clearSearches(event, item);" (mouseleave)="hide(item);" (click)="navigateToUrl(url)" style="cursor: pointer;" >
                        <div class="menu-category-box">
                             <i *ngIf="rootIconName" [class]="'fa ' + rootIconName"></i>
                             <img *ngIf="imageUrl" [src]="imageUrl" />
@@ -68,6 +64,7 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
     private currentButtonIndex: number = -1;
 
     constructor(private menuService: SiteMenuService,
+        private router: Router,
         private headerActionsService: HeaderActionsService,
         private siteMenuService: SiteMenuService) {
         super();
@@ -106,7 +103,11 @@ export class SiteMenuCategoryComponent extends BaseComponent implements AfterVie
             
         }
     }
-  
+    navigateToUrl(url) {
+        if (url) {
+            this.router.navigateByUrl(url);
+        }
+    }
     ResetColor(allAItems) {
         if (allAItems.length) {
             Array.prototype.forEach.call(allAItems, function (item) {

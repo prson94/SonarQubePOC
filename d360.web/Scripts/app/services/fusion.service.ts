@@ -185,35 +185,8 @@ export class FusionService extends BaseObservableService {
         return this[methodName](this.http, 'fusionattributetypecustomquery', override);
     }
 
-    getFusionConfigurationSchedules(
-        fusionTypeId: number,
-        fusionId: number
-    ): Observable<FusionSchedule[]> {
-        return this
-            .http
-            .get(`services/fusion/${fusionTypeId}/configurations/${fusionId}/schedules?$orderby=Day,Time`)
-            .pipe(
-                map(response => <FusionSchedule[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     deleteFusionConfiguration(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'fusionconfiguration', id);
-    }
-
-    deleteFusionConfigurationSchedule(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'fusionschedule', id);
-    }
-
-    saveFusionConfigurationSchedule(schedule: any): Observable<JsonResult> {
-        let methodName = "putDynamic";
-
-        if (schedule.ID == undefined || !schedule.ID) {
-            methodName = "postDynamic";
-        }
-
-        return this[methodName](this.http, 'fusionschedule', schedule);
     }
 
     getFusionProcessErrorHistory(

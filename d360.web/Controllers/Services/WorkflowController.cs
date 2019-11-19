@@ -881,7 +881,7 @@ order by wi.StartedOn desc";
 
 
             //replace any tokens in hte description            
-            desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), null, Company.CurrentCompanyDomain, itemStep, true);
+            desc = await Company.ProcessMessageTokens(desc, itemStep.Item.ObjectID, (SystemObjects)Enum.Parse(typeof(SystemObjects), itemStep.Item.Object), Company.CurrentCompanyDomain, itemStep, true);
 
             //parse the xml to get the form info
 
