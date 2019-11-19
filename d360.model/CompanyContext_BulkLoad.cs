@@ -12,11 +12,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Data.SqlClient;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Security.Cryptography;
 
 namespace d360.model
 {
@@ -647,7 +645,7 @@ order by	ColumnIndex", new { id });
             var intersectId = 0;
             if (objectId > 0 && subjectId > 0)
             {
-                if (objectId == subjectId)
+                if ( (objectId == subjectId) && (string.Compare(subjectType, objectType, StringComparison.OrdinalIgnoreCase) == 0) )
                 {
                     BulkLoadStatusMsg = "Object cannot be related to itself";
                     return 0;
@@ -731,17 +729,7 @@ order by	ColumnIndex", new { id });
 
             return intersectId;
         }
-
-        private void mapKeyFields(List<FieldType> subjectKeyFields, Dictionary<int, int> columnToFieldTypeIdMap, string objectName, List<LoadColumn> columns)
-        {
-            foreach (var field in subjectKeyFields)
-            {
-                var col = columns.Where(x => string.Compare(x.Name, $"{objectName} {field.Name}", true) == 0).First();
-
-                columnToFieldTypeIdMap[field.ID] = col.ColumnIndex;
-            }
-        }
-
+        
         private int getItemIdFromKeyFields(List<LoadItemColumn> rowData, int assetIdIndex, string @object, int objectTypeId)
         {
             var valItem = rowData.Where(x => x.ColumnIndex == assetIdIndex).FirstOrDefault();
@@ -825,16 +813,6 @@ order by	ColumnIndex", new { id });
                 }
 
                 return asset.ObjectID;
-            }
-        }
-
-        private void validateKeyFields(List<FieldType> keyFieldType, List<LoadColumn> columns, string objectTypeName)
-        {
-            foreach (var field in keyFieldType)
-            {
-                //find the field in the input load columns
-                if (!columns.Any(x => string.Compare(x.Name, $"{objectTypeName} {field.Name}", true) == 0))
-                    throw new Exception($"Bulk Relate cannot find key field {field.Name} id {field.ID} friendly name {field.FriendlyName}");
             }
         }
 
