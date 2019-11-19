@@ -212,7 +212,7 @@ namespace igx.jobs.apiexecutionprocessor
                             var deleteAssets = JsonConvert.DeserializeObject<AssetDeletes>(deleteAssetsJson);
 
                             log.WriteLine($"DELETE Assets (DB Start): Total raw assets: {deleteAssets.Count}. Asset Type Uid: {deleteAssetsFields.AssetTypeUid}.");
-                            var deleteAssetsResults = company.RemoveAssets(dbExecutionItem, assetType, deleteAssets, dbExecutionTimeout);
+                            var deleteAssetsResults = company.RemoveAssets(dbExecutionItem, assetType, deleteAssets, dbExecutionTimeout, Info.SendWorkflowEvents);
                             dbExecutionItem.Processed = deleteAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = deleteAssetsResults.Count(i => !i.Success);
                             log.WriteLine($"DELETE Assets (DB Complete): Total results: {deleteAssetsResults.Count}.");
