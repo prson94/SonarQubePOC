@@ -146,8 +146,6 @@ namespace d360.model
 
         public DbSet<FusionExecution> FusionExecutions { get; set; }
 
-        public DbSet<FusionSchedule> FusionSchedules { get; set; }
-
         public DbSet<Fusion> FusionTypeConfigurations { get; set; }
 
         public DbSet<FusionAttribute> FusionAttributes { get; set; }
