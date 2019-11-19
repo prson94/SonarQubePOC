@@ -50,7 +50,7 @@
                                             <div class="filter-section">
                                                 <div class="filter-header">Asset Ancestry</div>
                                                 <div>
-                                                    <p-dropdown [options]="filterAncestryOptions" [(ngModel)]="selectedFilterAncestryMode" optionLabel="Text" dataKey="Mode" styleClass="filter-dropdown"></p-dropdown>
+                                                    <p-dropdown [options]="filterAncestryOptions" [(ngModel)]="selectedFilterAncestryMode" optionLabel="Text" dataKey="Mode" styleClass="filter-dropdown" (ngModelChange)="filterAncestryModeChange($event)"></p-dropdown>
                                                 </div>
                                             </div>
 
@@ -134,7 +134,7 @@
 
                                                     <div *ngIf="filterDisplayScores">
                                                         <div class="asset-browser-window-tabs-content-field" *ngFor="let field of selectedDiagramAsset?.Scores">
-                                                            <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}</span>
+                                                            <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:&#160;</span>
                                                             <span [class]="scoreClass(field.Value)">{{field.Value}}%</span>
                                                         </div>
                                                     </div>

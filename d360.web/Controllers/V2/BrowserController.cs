@@ -86,7 +86,11 @@ namespace d360.web.Controllers.V2
                         relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
                     }
                     
-                    var child = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, icon = h.Icon, @class = h.Class, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
+                    var child = new AssetBrowserLineageApiItemModel { 
+                        hop = h.Hop, key = h.Key, assetUid = h.AssetUid, 
+                        backColor = h.Back, foreColor = h.Fore, icon = h.Icon, 
+                        @class = h.Class, displayValue = h.DisplayValue, 
+                        reveal = h.Reveal, relationCounts = relationCounts };
 
                     recurse(hierarchies, child);
 
@@ -112,7 +116,7 @@ namespace d360.web.Controllers.V2
                     relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
                 }
 
-                var current = new AssetBrowserLineageApiTopItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", icon = h.Icon, @class = h.Class, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
+                var current = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", icon = h.Icon, @class = h.Class, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
                 recurse(hierarchies, current);
                 model.assets.Add(current);
             }

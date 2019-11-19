@@ -136,6 +136,10 @@ namespace d360.web.Models
         [DataMember]
         public string displayValue { get; set; }
         [DataMember]
+        public string backColor { get; set; }
+        [DataMember]
+        public string foreColor { get; set; }
+        [DataMember]
         public string icon { get; set; }
         [DataMember]
         public AssetTypeClass @class { get; set; }
@@ -147,18 +151,9 @@ namespace d360.web.Models
         public List<AssetBrowserLineageApiItemModel> items { get; set; }
     }
 
-    [DataContract]
-    public class AssetBrowserLineageApiTopItemModel : AssetBrowserLineageApiItemModel, IAssetBrowserLineageApiItemModel
-    {
-        [DataMember]
-        public string backColor { get; set; }
-        [DataMember]
-        public string foreColor { get; set; }
-    }
-
     public class AssetBrowserLineageApiResponseModel
     {
-        public List<AssetBrowserLineageApiTopItemModel> assets { get; set; } = new List<AssetBrowserLineageApiTopItemModel>();
+        public List<AssetBrowserLineageApiItemModel> assets { get; set; } = new List<AssetBrowserLineageApiItemModel>();
         public List<AssetBrowserLineageApiRelationshipModel> intersects { get; set; } = new List<AssetBrowserLineageApiRelationshipModel>();
     }
 

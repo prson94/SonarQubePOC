@@ -65,6 +65,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private isFullScreen: boolean = false;
     private loadingText: string = "";
     private fromRefresh: boolean = false;
+
     //#region Filters
 
     isFilterWindowVisible: boolean = false;
@@ -98,7 +99,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     filterSelectedPredicates: number[] = [201];
 
     //#endregion
-    //#region control properties
+
+    //#region Control Properties
 
     // Constants
     private readonly fontContextMenu: string = "12px 'Source Sans Pro'";
@@ -456,16 +458,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.requestModel.Direction = AssetBrowserDirection.Both;
         this.requestModel.Hops = this.filterNumberOfHops;
 
-        //#region Testing with static data
-        //let translationModel: AssetBrowserTranslation = this.browserService.getStaticDataForTesting();
-        //this.parseData(translationModel);
-        //this.isLoading = false;
-        //#endregion
-
         this.browserService.getAssetLineage(this.requestModel)
             .subscribe(data => {
                 this.responseModel = data;
                 this.loadingText = "Determining links and meaning...";
+                data = this.browserService.convertResponseModel(data, this.selectedFilterAncestryMode);
                 let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
                 this.parseData(translationModel);
                 this.resizeDiagram();
@@ -476,9 +473,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.fromRefresh = false;
                 this.cdRef.markForCheck();
             });
-
-
     }
+
+
 
     private parseData(data: AssetBrowserTranslation, append: boolean = false) {
         this.diagram.startTransaction("load_all_data");
@@ -628,7 +625,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             }
                         });
 
-                        let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(this.responseModel);
+                        let model = this.browserService.convertResponseModel(this.responseModel, this.selectedFilterAncestryMode);
+                        let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(model);
 
                         this.revealedKeys.forEach(n => {
                             let t = translationModel.nodes.find(t => t.key == n);
@@ -889,6 +887,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
+    private filterAncestryModeChange(o): void {
+        this.selectedFilterAncestryMode = o.Mode;
+        this.isLoading = true;
+        this.loadingText = "Determining links and meaning...";
+        let data = this.browserService.convertResponseModel(this.responseModel, this.selectedFilterAncestryMode);
+        let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
+        this.parseData(translationModel);
+        this.resizeDiagram();
+        this.diagram.zoomToFit();
+        this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
+        this.loadingText = "";
+        this.isLoading = false;
+        this.fromRefresh = false;
+        this.cdRef.markForCheck();
+    }
+
     private filterBadgesChange(): void {
         this.diagram.startTransaction();
         this.diagram.findTopLevelGroups().each(g => {
@@ -1068,6 +1082,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         response.assets.push(nodeToPull);
                     }
 
+                    response = this.browserService.convertResponseModel(response, this.selectedFilterAncestryMode);
                     let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(response);
 
                     this.parseData(translationModel, true);

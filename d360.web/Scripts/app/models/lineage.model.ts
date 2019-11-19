@@ -588,9 +588,9 @@ export class AssetBrowserDiagramAssetOwner {
 //#region Asset Browser : FilterPanel Data
 
 export enum FilterAncestryMode {
-    AllAncestors,
-    DirectAncestor,
-    NoAncestor
+    AllAncestors = 1,
+    DirectAncestor = 2,
+    NoAncestor = 3
 }
 
 export class FilterAncestryOption {
