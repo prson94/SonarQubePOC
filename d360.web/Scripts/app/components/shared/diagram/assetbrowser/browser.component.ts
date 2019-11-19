@@ -16,7 +16,10 @@ import {
     AssetBrowserImpactApiAssetRequestModel,
     AssetBrowserLineageApiItemModel,
     FilterAncestryMode,
-    FilterAncestryOption
+    FilterAncestryOption,
+
+    AssetBrowserFilterModel,
+    AssetTypeFilter
 } from '../../../../models/lineage.model';
 
 import { AssetTypeService } from '../../../../services/asset-type.service';
@@ -68,17 +71,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region Filters
 
     isFilterWindowVisible: boolean = false;
+    filterModel: AssetBrowserFilterModel = new AssetBrowserFilterModel();
+    private readonly filterKey = 'asset-browser-filter';
+    private storage = window.sessionStorage;
+
 
     filterAncestryOptions: FilterAncestryOption[] = [
         { Mode: FilterAncestryMode.AllAncestors, Text: 'Show all parents/owners' },
         { Mode: FilterAncestryMode.DirectAncestor, Text: 'Show direct parent/owner' }//,
         //{ Mode: FilterAncestryMode.NoAncestor, Text: 'Show no parents/owners' }
     ];
-    selectedFilterAncestryMode: FilterAncestryMode = FilterAncestryMode.AllAncestors;
-    filterBadges: boolean = true;
-    filterDisplayIcons: boolean = true;
-    filterDisplayScores: boolean = true;
-    filterNumberOfHops: number = 3;
     filterNumberOfHopOptions: SelectItem[] = [
         { label: 'One', value: 1 },
         { label: 'Two', value: 2 },
@@ -89,13 +91,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     filterAssetTypesLoading: boolean = true;
     filterAssetTypes: TreeNode[] = [];
-    filterSelectedAssetTypes: number[] = [];
-
+    selectedFilterAssetTypes: TreeNode[] = [];
 
     filterPredicatesLoading: boolean = true;
     filterPredicates: TreeNode[] = [];
+    selectedFilterPredicates: TreeNode[] = [];
 
-    filterSelectedPredicates: number[] = [201];
 
     //#endregion
     //#region control properties
@@ -369,6 +370,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.diagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
+        this.loadFilter();
         this.populateDiagram();
     }
 
@@ -402,6 +404,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     });
                     assetTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
                     this.filterAssetTypes = assetTypes;
+                    this.selectedFilterAssetTypes = this.getTreeNodeSelectionNodes(this.filterModel.SelectedAssetTypes, this.filterAssetTypes);
                     this.filterAssetTypesLoading = false;
                     this.cdRef.markForCheck();
                 });
@@ -437,6 +440,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     });
                     this.filterPredicates.sort((a, b) => (a.label > b.label) ? 1 : -1);
                     this.filterPredicatesLoading = false;
+                    this.selectedFilterPredicates = this.getTreeNodeSelectionNodes(this.filterModel.SelectedPredicates, this.filterPredicates);
                     this.cdRef.markForCheck();
                 });
         }
@@ -454,7 +458,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.requestModel.IsReveal = false;
         this.requestModel.StartHop = 0;
         this.requestModel.Direction = AssetBrowserDirection.Both;
-        this.requestModel.Hops = this.filterNumberOfHops;
+        this.requestModel.Hops = this.filterModel.NumberOfHops;
 
         //#region Testing with static data
         //let translationModel: AssetBrowserTranslation = this.browserService.getStaticDataForTesting();
@@ -487,7 +491,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //#region add data to diagram model
         if (append === true) {
             data.nodes.forEach(n => {
-                n.showIcon = this.filterDisplayIcons;
+                n.showIcon = this.filterModel.DisplayIcons;
                 let x = dm.findNodeDataForKey(n.key);
                 if (x == null) {
                     dm.addNodeData(n);
@@ -534,7 +538,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             g.data.relations = g.data.relations.concat(childRelations);
             this.diagram.model.setDataProperty(g.data, "relations", g.data.relations.slice());
-            this.diagram.model.setDataProperty(g.data, "showBadges", this.filterBadges);
+            this.diagram.model.setDataProperty(g.data, "showBadges", this.filterModel.DisplayBadges);
 
             if (g.data.showReveal != AssetBrowserDirection.None) {
                 let dir = g.data.showReveal;
@@ -791,13 +795,42 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#endregion
 
+    //#region session storage
+
+    private saveState(key: string, data: any) {
+        let dataString = JSON.stringify(data);
+        this.storage.setItem(key, dataString);
+    }
+
+    private loadState(key: string): any {
+        let dataString = this.storage.getItem(key);
+        if (dataString) {
+            return JSON.parse(dataString);
+        }
+        return null;
+    }
+
+    private saveFilter() {
+        this.saveState(this.filterKey, this.filterModel);
+    }
+
+    private loadFilter() {
+        let m = this.loadState(this.filterKey);
+        if (m == null)
+            this.filterModel = new AssetBrowserFilterModel();
+        else
+            this.filterModel = m;
+    }
+
+    //#endregion
+
     //#region events
 
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
         this.resizeDiagram();
     }
-
+  
     @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
         if (event.key === "Escape" || event.key === "Esc") {
             this.fullScreenButtonClick(null);
@@ -895,17 +928,56 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private filterBadgesChange(): void {
         this.diagram.startTransaction();
         this.diagram.findTopLevelGroups().each(g => {
-            this.diagram.model.setDataProperty(g.data, "showBadges", this.filterBadges);
+            this.diagram.model.setDataProperty(g.data, "showBadges", this.filterModel.DisplayBadges);
         });
+        this.saveFilter();
         this.diagram.commitTransaction();
     }
 
     private filterDisplayIconsChange(): void {
         this.diagram.startTransaction();
         this.diagram.model.nodeDataArray.forEach(d => {
-            this.diagram.model.setDataProperty(d, "showIcon", this.filterDisplayIcons);
+            this.diagram.model.setDataProperty(d, "showIcon", this.filterModel.DisplayIcons);
         });
+        this.saveFilter();
         this.diagram.commitTransaction();
+    }
+
+    private filterAssetTypeChange(e) {
+        this.filterModel.SelectedAssetTypes = this.getTreeNodeSelectionKeys(e);
+        this.saveFilter();
+    }
+
+    private filterPredicateChange(e) {
+        this.filterModel.SelectedPredicates = this.getTreeNodeSelectionKeys(e);
+        this.saveFilter();
+    }
+
+    private getTreeNodeSelectionNodes(keys: string[], source: TreeNode[]) {
+        let nodes: TreeNode[] = [];
+        source.forEach(s => {
+            if (keys.indexOf(s.data) != -1) {
+                nodes.push(s);
+            }
+            if (s.children != null && s.children.length > 0) {
+                let childNodes = this.getTreeNodeSelectionNodes(keys, s.children);
+                if (childNodes != null && childNodes.length > 0) {
+                    nodes = nodes.concat(childNodes);
+                }
+            }
+        });
+
+        return nodes;
+    }
+
+    private getTreeNodeSelectionKeys(selection: TreeNode[]): string[] {
+        let keys: string[] = [];
+
+        selection.forEach(s => {
+            keys.push(s.data);
+        });
+
+        return keys;
     }
 
     //#endregion
@@ -1815,4 +1887,4 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     //#endregion
-}
+} 
