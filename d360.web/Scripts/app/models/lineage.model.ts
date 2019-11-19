@@ -1,4 +1,5 @@
 ﻿import { AssetTypeClass } from "./asset.model";
+import { SelectItem, TreeNode } from "primeng/api";
 
 export class LineageNode {
     key: any;
@@ -599,3 +600,14 @@ export class FilterAncestryOption {
 }
 
 //#endregion
+
+
+export class AssetBrowserFilterModel {
+    AncestryMode: FilterAncestryMode = FilterAncestryMode.AllAncestors;
+    DisplayBadges: boolean = true;
+    DisplayIcons: boolean = true;
+    DisplayScores: boolean = true;
+    NumberOfHops: number = 3;
+    SelectedAssetTypes: string[] = [];
+    SelectedPredicates: string[] = [];
+}

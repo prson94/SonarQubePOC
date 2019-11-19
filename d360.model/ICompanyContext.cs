@@ -266,6 +266,7 @@ namespace d360.model
         bool HasAssetTypePermission(string type, int id, Permission permission);
         bool HasAssetTypePermission(SystemObjects type, int id, Permission permission);
         dynamic GetAssetStatusAndScore(Guid uid);
+        int? GetAssetScore(long assetId);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import,  int timeout = 3600);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600);
         List<RelationshipTypeResult> DeleteRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeDelete> import, int timeout = 3600);
@@ -280,7 +281,7 @@ namespace d360.model
         bool ObjectHasParent(SystemObjects type, int id);
         Task PerformBulkRelationshipOperation(int loadId, BulkRelationshipOperation operation);
         Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true);
-        Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, int? objectScore, string prefix, WorkflowItemStep itemStep, bool supportHtml);
+        Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml);
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
         Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90);

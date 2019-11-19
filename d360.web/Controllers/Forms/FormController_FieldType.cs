@@ -782,7 +782,9 @@ namespace d360.web.Controllers
             ).ToList();
 
             var Field_Relationships = allRelationships
-                .Where(x => x.PredicateType != PredicateType.InterTypeHierarchy)
+                .Where(x => x.PredicateType != PredicateType.InterTypeHierarchy 
+                            && x.Object != SystemObjects.IntersectType.ToString()
+                            && x.Subject != SystemObjects.IntersectType.ToString())
                 .Select(i => new
                 {
                     title = ((i.Subject == sType && i.SubjectID == id) ?

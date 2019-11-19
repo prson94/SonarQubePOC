@@ -82,7 +82,7 @@ namespace d360.model
                 issueObjectId = issueDetail.ObjectTypeID;
             }
 
-            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, (objectInfo.Score.HasValue ? objectInfo.Score.Value : -1), objectInfo.ChangedFieldIds, issueObjectType, issueObjectId))
+            if (!WorkflowRegistrationCriteriaProcessor.Evaluate(this, objectInfo.Object.ToString(), objectInfo.ObjectID, registration.Condition, -1, objectInfo.ChangedFieldIds, issueObjectType, issueObjectId))
             {
                 Console.WriteLine("DEBUG - CURRENT ITEM DOESNT MATCH CRITERIA FOR THE WORKFLOW");
 
@@ -675,7 +675,7 @@ namespace d360.model
                     if (item == null) throw new Exception("ERROR UNABLE TO GET THE DETAILS FOR THIS WORKFLOW INSTANCE.");
                     //evaluate the condition then determine if we move to next step
                     client.TrackEvent($"Condition Transition Evaluating.  Condition [{transition.Condition}], ItemID [{itemID}], VersionStepTransitionID [{versionStepTransitionID}]");
-                    transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, transition.Condition, itemID, -1, objectInfo.ChangedFieldIds);
+                    transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, item.Object, item.ObjectID, transition.Condition, itemID, objectInfo.ChangedFieldIds);
                     client.TrackEvent($"Condition Transition Evaluated.  Condition Result [{transitionPassed}], VersionStepTransitionID [{versionStepTransitionID}]");
                     break;
                 case TransitionType.Timer:
@@ -690,7 +690,7 @@ namespace d360.model
                         {
                             var transItem = WorkflowItems.Where(x => x.ID == itemID).FirstOrDefault();
 
-                            transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, transItem.Object, transItem.ObjectID, root.Element("Condition").Value, itemID, -1, objectInfo.ChangedFieldIds);
+                            transitionPassed = WorkflowRegistrationCriteriaProcessor.Evaluate(this, transItem.Object, transItem.ObjectID, root.Element("Condition").Value, itemID, objectInfo.ChangedFieldIds);
                         }
                     }
 
@@ -1899,10 +1899,10 @@ namespace d360.model
 
         public async Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true)
         {
-            return await ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, objectInfo.Score, prefix, itemStep, supportHtml);
+            return await ProcessMessageTokens(bodyTemplate, objectInfo.ObjectID, objectInfo.Object, prefix, itemStep, supportHtml);
         }
 
-        public async Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, int? objectScore, string prefix, WorkflowItemStep itemStep, bool supportHtml)
+        public async Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml)
         {
             if (string.IsNullOrEmpty(bodyTemplate)) return string.Empty;
 
@@ -2048,9 +2048,27 @@ namespace d360.model
 
             if (result.Contains("[SCORE]"))
             {
-                var score = objectScore.HasValue ? objectScore.Value.ToString() : "(unknown score)";
+                ObjectDetail item = null;
+                if (obj == SystemObjects.Issue)
+                {
+                    var issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
 
-                result = result.Replace("[SCORE]", score);
+                    if (issue != null)
+                    {
+                        item = GetObjectDetail(issue.Object, issue.ObjectID);
+                    }
+                }
+                else
+                {
+                    //get the objects name
+                    item = GetObjectDetail(obj.ToString(), objectID);
+                }
+                int? score = null;
+
+                if(item != null && item.AssetID.HasValue)
+                    score = GetAssetScore(item.AssetID.Value);
+
+                result = result.Replace("[SCORE]", score.HasValue ? score.Value.ToString() : "(unknown score)");
             }
 
             if (Regex.IsMatch(result, "\\[FIELD([0-9.]+)\\]"))
