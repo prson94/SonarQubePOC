@@ -698,6 +698,10 @@ d3s-navbar-item {
 
 .maincontent-open {
     margin-left: 200px;
+
+    .tile {
+        margin-top: 16px;
+    }
 }
 
 main {
@@ -4803,42 +4807,58 @@ a.mid-blue {
 }
 
 .asset-browser {
+    margin-top: -23px;
+    padding: 16px;
+
+
+
+    .asset-browser-header.col, .asset-browser-body.col {
+        padding: 0px;
+    }
+
+    .tile-detail {
+        box-shadow: none;
+        border: 1px solid #cccccc;
+        border-radius: 4px;
+    }
+
     .asset-browser-header {
-        position: relative;
         background-color: transparent;
-        height: 50px;
+        display: flex;
+        flex-direction: row;
+        position: relative;
 
         .controls-left {
-            position: absolute;
-            left: 20px;
-            top: 10px;
             z-index: 50;
         }
 
         .controls-right {
             position: absolute;
-            right: 20px;
-            top: 10px;
             z-index: 50;
+            right: 0px;
 
             span {
                 padding: 8px;
                 cursor: pointer;
+            }
+
+            button {
+                height: 32px;
             }
         }
     }
 
     .asset-browser-controls-bottom {
         position: absolute;
-        right: 20px;
-        bottom: 10px;
+        right: 16px;
+        bottom: 16px;
         z-index: 50;
     }
 
     .asset-browser-window {
         position: absolute;
-        right: 20px;
-        top: 10px;
+        right: 16px;
+        top: 16px;
         min-height: 400px;
         min-width: 400px;
         z-index: 100;
@@ -4949,13 +4969,15 @@ a.mid-blue {
     button.asset-browser-button {
         background-color: #F2F2F2;
         border: 1px solid #ccc;
-        border-radius: 3px;
+        border-radius: 4px;
         margin: 0 3px 0 3px;
-        height: 30px;
-        width: 30px;
+        height: 32px;
+        width: 34px;
         line-height: 15px;
         font-size: 15px;
         color: #333;
+        position: relative;
+        top: 1px;
     }
 
     button.asset-browser-button:active {
@@ -4975,8 +4997,8 @@ a.mid-blue {
         button {
             height: 30px;
             width: 30px;
-            line-height: 15px;
-            font-size: 15px;
+            line-height: 13px;
+            font-size: 13px;
             color: #333;
             background-color: transparent;
             border: none;
@@ -5014,11 +5036,17 @@ a.mid-blue {
         }
 
         &.asset-browser-search {
+            border-radius: 4px;
+            position: relative;
+
             input {
                 height: 30px;
                 padding: 7px;
                 width: 200px;
                 padding-right: 30px;
+                border-top-left-radius: 4px;
+                border-bottom-left-radius: 4px;
+
 
                 &.has-text {
                     padding-right: 80px;
@@ -5027,8 +5055,8 @@ a.mid-blue {
 
             .input-actions {
                 position: absolute;
-                top: 7px;
-                right: 108px;
+                top: 5px;
+                right: 72px;
 
                 .fa-times-circle {
                     margin: 0px 8px;
@@ -5042,15 +5070,53 @@ a.mid-blue {
             }
         }
     }
+
+    .asset-browser-body {
+        .tile {
+            margin-bottom: 0px;
+        }
+    }
 }
 
 .full-screen-ab {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    width: 99%;
-    height: 99%;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
     z-index: 1000;
+
+    &.asset-browser {
+        margin-top: 0px !important;
+    }
+
+    .asset-browser-header {
+        position: absolute;
+        top: 32px;
+
+        .controls-left {
+            z-index: 50;
+            left: 16px;
+            position: absolute;
+        }
+
+        .controls-right {
+            right: 48px !important;
+        }
+    }
+
+    .asset-browser-body {
+        .tile {
+            margin-top: 0px;
+        }
+    }
+
+    .asset-browser-window{
+        top:66px !important;
+    } 
+    .diagram {
+        top: 62px;
+    }
 }
 
 .filtered-asset-container {
