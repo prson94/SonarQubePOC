@@ -10,7 +10,7 @@ namespace d360.core.entities
     [DataContract(Namespace = NAMESPACE)]
     public class AssetType : BaseCreatedAndUpdatedIntObject
     {
-        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [DataMember]
         public Guid uid { get; set; }
 
         [DataMember]

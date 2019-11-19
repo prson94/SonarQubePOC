@@ -1488,3 +1488,7 @@ p-calendar .ui-datepicker {
 .ui-sortable-column:focus {
     outline: none !important;
 }
+
+.ui-overlaypanel {
+    margin-top: 0px; 
+}

@@ -120,6 +120,12 @@
   <data name="AssetsWithAssignedParents" xml:space="preserve">
     <value>Assets already exist with assigned parents. You may not change the parent of this asset type.</value>
   </data>
+  <data name="AssetTypeExistsTitle" xml:space="preserve">
+    <value>Asset Type Already Exists</value>
+  </data>
+  <data name="AssetTypeWithUidExists" xml:space="preserve">
+    <value>An asset type with the specified Uid already exists.</value>
+  </data>
   <data name="BadDisplayFormat" xml:space="preserve">
     <value>Display Format contains invalid field references.</value>
   </data>

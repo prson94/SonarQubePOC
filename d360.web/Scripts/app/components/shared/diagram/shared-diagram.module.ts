@@ -51,8 +51,12 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part'
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 import { NgxJsonViewModule } from 'ng-json-view';
+import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-type-editor.module';
 import { IconService } from '../../../services/icon.service';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
+import { SiteModalModule } from '../modal/gov-modal.module';
+import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal-editor.module';
+import { PipesModule } from '../../../pipes/pipes.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -62,13 +66,15 @@ import { TagViewModule } from '../tags/d3s-tag-view.module';
         RouterModule,
         //d3s
         CoreModule,
+        PipesModule,
         SharedDeleteFormModule,
         SharedFormMessageModule,
         SharedGridPagingInfoModule,
         TilesModule,
         D3SOverlayWindowModule,
         SharedObjectDetailsModule,
-
+        SharedAssetTypeEditorModule,
+        AssetTypeModalEditorModule,
         //prime        
         CheckboxModule,
         EditorModule,     

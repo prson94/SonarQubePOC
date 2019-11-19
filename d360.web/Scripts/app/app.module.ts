@@ -30,6 +30,8 @@ import { CookieService } from './services/cookie.service';
 import { SiteMenuService } from './services/site-menu.service';
 import { DialogModule } from 'primeng/dialog';
 import { D3SModal } from './components/shared/modal/gov-modal.component';
+import { ModalService } from './services/modal-dialog-service';
+import { AssetStyleService } from './services/asset-style.service';
 
 
 export function getLocale() {
@@ -73,6 +75,8 @@ export function getLocale() {
         HeaderBreadcrumbService,
         MessagesObservableService,
         RightSidebarService,
+        ModalService,
+        AssetStyleService,
         WebAnalyticsService,
         TooltipSingletonService,
         StateService,

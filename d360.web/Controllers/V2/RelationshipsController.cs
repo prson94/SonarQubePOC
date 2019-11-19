@@ -415,12 +415,13 @@ namespace d360.web.Controllers.V2
             }
         }
 
-
-
         /// <summary>
         /// Creates relationship types based on the provided subject, object and predicate properties.
         /// </summary>
-        /// <param name="relationshiptypes">List of relationship types</param>
+        /// <remarks>
+        /// You have the option of providing a Uid for each of the new relationship types. This is particularly useful in a migration scenario where you want to migrate an relationship type from one environment to another. The default is to not provide one, in which case a Uid will be automatically generated.
+        /// </remarks>
+        /// <param name="relationshiptypes">A list of relationship types you want to add.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
@@ -467,7 +468,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// This endpoint is used to update an existing relationship types predicate or cardinality properties.
         /// </summary>
-        /// <param name="relationshiptypes"></param>
+        /// <param name="relationshiptypes">A list of relationship types you want to update.</param>
         /// <returns>>An HTTP status code and message.</returns>
         [
            HttpPut,

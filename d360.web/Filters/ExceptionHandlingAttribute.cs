@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.web.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -13,11 +14,23 @@ namespace d360.web.Filters
     {
         public override void OnException(HttpActionExecutedContext context)
         {
-            throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.InternalServerError)
+            if (context.Exception is RestApiException)
             {
-                Content = new StringContent("An error occurred, please try again or contact the administrator."),
-                ReasonPhrase = "Critical Exception"
-            });
+                var restEx = (context.Exception as RestApiException);
+
+                context.Response = context.Request.CreateResponse(
+                   restEx.Status,
+                   new ErrorResponse { title = restEx.Title, message = restEx.Message }
+               );
+            }
+            else 
+            {
+                throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                {
+                    Content = new StringContent("An error occurred, please try again or contact the administrator."),
+                    ReasonPhrase = "Critical Exception"
+                });
+            }
         }
     }
 }

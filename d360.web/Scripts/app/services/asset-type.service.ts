@@ -10,6 +10,7 @@ import {AssetTypeEditorModel, AssetTypeClass, AssetType, AssetTypeApiModel} from
 import {BaseObservableService} from "./baseObservable.service";
 import {MessagesObservableService} from './messages-observable.service';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
+import { Response } from 'powerbi-router';
 
 @Injectable()
 export class AssetTypeService extends BaseObservableService {
@@ -90,6 +91,15 @@ export class AssetTypeService extends BaseObservableService {
             .put('api/v2/assets', model)
             .pipe(
                 map(response => <ApiResult & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public getAssetTypesDetails(): Observable<AssetType[]> {
+        return this.http
+            .get('api/v2/assets/types')
+            .pipe(
+                map(res => <AssetType[] & ErrorResponse>res),
                 catchError(err => this.handleError(err))
             );
     }

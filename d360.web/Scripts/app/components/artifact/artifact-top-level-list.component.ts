@@ -99,7 +99,7 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
                 this.headerBreadcrumbService.clearBreadcrumbs();
                 this.headerBreadcrumbService.clearCurrentObjectInfo();
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.folderTitle ? this.folderTitle : this.area));
-                this.headerBreadcrumbService.getFolderIcon(this.folderTitle ? this.folderTitle : this.area).then(res => {
+                this.headerBreadcrumbService.getFolderIcon(this.folderTitle ? this.folderTitle : this.area).subscribe(res => {
                     this.rightSidebarService.clearCurrentObject();
                     this.rightSidebarService.clearItems();
                     this.rightSidebarService.setCurrentArea(this.folderTitle ? this.folderTitle : this.area, res, null);

@@ -87,6 +87,7 @@ namespace d360.model.DataAccessLayer
 
 
                 string sql = $@"			select 
+                t.uid as 'WorkflowTypeUid',
 				case when e.[Object] = 'IssueType' then is_t.uid
 					ELSE NULL END as ActionTypeUid ,
 				case when e.[Object] = 'ArtifactType' or e.[Object] = 'RuleType' or e.[Object] = 'PolicyType'
@@ -152,8 +153,8 @@ namespace d360.model.DataAccessLayer
 				case when e.[Object] = 'IntersectType' then IT.uid
 					ELSE NULL END as RelationshipTypeUid,
 				t.Uid as WorkflowTypeUid,
-				case when t.PublishedVersionID = V.Id then 0
-					else 1 end as IsPublished,
+				case when t.PublishedVersionID = V.Id then 1
+					else 0 end as IsPublished,
                     v.[version] as VersionNumber,
 					t.CreatedOn,
 					t.UpdatedOn,

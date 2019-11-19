@@ -27,10 +27,8 @@ namespace d360.core.validators
 
         }
 
-        public WorkHttpStatus ValidateModel(bool isInsert, AssetTypeInsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType = null)
+        public WorkHttpStatus ValidateModel(bool isInsert, AssetTypeUpsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType = null)
         {
-
-
             if (!SupportedClasses.Contains(model.Class))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.UnsupportedAssetClass);
 
@@ -70,7 +68,17 @@ namespace d360.core.validators
                 }
             }
 
-            if (!isInsert)
+            if (isInsert)
+            {
+                if (model.Uid != Guid.Empty)
+                {
+                    if (CompanyContext.Any<AssetType>(i => i.uid == model.Uid))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.AssetTypeExistsTitle, AssetTypeErrors.AssetTypeWithUidExists);
+                    }
+                }
+            }
+            else
             {
                 if (model.ParentUid.HasValue && model.ParentUid == model.Uid && !ForceParentToItself)
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");

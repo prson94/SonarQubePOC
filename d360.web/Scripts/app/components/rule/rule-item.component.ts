@@ -113,7 +113,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 'Rule',
                 this.ruleType.ID));
 
-            this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
+            this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
                 this.rightSidebarService.setCurrentArea(this.rule.Name, icon, 'Definition');
                 this.rightSidebarService.setCurrentObject('RuleType', this.ruleType.ID, 'Rule', this.rule.ID, false, this.ruleType.HasWorkflow, this.rule.UID);
                 this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Rule/${this.rule.UID}`, null, 6));
