@@ -22,6 +22,8 @@
                 <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()" [disabled]="isInfoTabDisabled"><i class="fa fa-info-circle"></i></button>
                 <button type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
                 <button type="button" title="Filter asset browser" (click)="filterButtonClick($event)" [class]="filterButtonSelectedClass()"><i class="fa fa-filter"></i></button>
+                <button type="button" title="Add relationships" (click)="addRelationshipsClick($event)"><i class="fa fa-plus"></i></button>
+                
                 <!--<button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>-->
                     <button type="button" title="{{isFullScreen ? 'Minimize':'Full screen'}}" (click)="fullScreenButtonClick($event)"><i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-expand' : !isFullScreen}"></i></button>
             </div>
