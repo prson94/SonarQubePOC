@@ -830,6 +830,9 @@ from	api.ExecutionField T
                 var events = new List<EventInfo>();
 
                 Dictionary<string, int[]> fieldUpdatePairs = new Dictionary<string, int[]>();
+
+                if (fieldUpdates == null) fieldUpdates = new List<AssetFieldTypeUpdate>();
+
                 foreach (var item in fieldUpdates.GroupBy(x => x.Object + x.ObjectId))
                 {
                     fieldUpdatePairs.Add(item.Key, item.Select(x => x.Id).ToArray());
