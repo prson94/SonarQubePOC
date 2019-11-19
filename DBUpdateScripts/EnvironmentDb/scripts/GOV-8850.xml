@@ -274,7 +274,7 @@ begin
 					p.Object as ParentObject,
 					p.ObjectID as ParentObjectID,
 					p.[Level]+1 as [Level],
-					cast(graph.GetXmlSegment(p.Segments, 260, A.ID, p.[Level]+1) as xml) as Segments,
+					cast(graph.GetXmlSegment(p.Segments, @assetTypeID, A.ID, p.[Level]+1) as xml) as Segments,
 					cast(p.Segment+'.'+ graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
 			from	Asset A
 					inner join [IntersectDetail] I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
