@@ -76,15 +76,7 @@ export class HeaderBreadcrumbComponent {
 
     private fixHeight($event, smallPanel) {
         smallPanel.style.display = "block";
-        //primeNG overlay panel issue, need to dock the header panels to 40px from the top
-        window.setTimeout(() => {
-            let left = parseInt(smallPanel.el.nativeElement.children[0].style.left);
-            let parentLeft = this.collapseIcon.nativeElement.getBoundingClientRect();
-            if (left < 0)
-                smallPanel.el.nativeElement.children[0].style.left = parentLeft.left + "px";
-            smallPanel.el.nativeElement.children[0].style.top = "40px";
-            smallPanel.el.nativeElement.children[0].style.maxWidth = this.maxWidthOfSmallPanel + "px";
-        }, 150);
+        smallPanel.style.maxWidth = this.maxWidthOfSmallPanel + "px";
     } 
 
     ngOnDestroy() {

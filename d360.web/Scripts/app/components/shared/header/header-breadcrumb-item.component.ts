@@ -1,22 +1,17 @@
 
-import {debounceTime, debounce} from 'rxjs/operators';
-import { Component, Input, ElementRef, ViewChildren, OnChanges, SimpleChange, Output, EventEmitter, AfterViewInit, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
+import {debounceTime} from 'rxjs/operators';
+import { Component, Input, ElementRef, OnChanges, SimpleChange, Output, EventEmitter, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { TreeNode } from 'primeng/components/common/api';
 import { SubscriptionLike as ISubscription } from 'rxjs';
-import { createWriteStream } from 'fs';
-import { clearLine } from 'readline';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-header-breadcrumb-item',
     providers: [TypeaheadSearchService],    
     host: {
-       // '(document:click)': 'onClick($event)',
         '(window:resize)': 'setMaxHeight()'
     },  
     template: ` <div #hovertarget class="hover-container" (mouseenter)="in(treePanel,searchPanel,$event)" (mouseleave)="out(treePanel,searchPanel,$event)" >
@@ -114,12 +109,21 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
         if (this.isChangableItem() && !this.isTreeItem()) {
             searchPanel.style.display = "block";
+            this.standardInput.nativeElement.focus();
+            searchPanel.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
             if (this.hasClass(parent, 'collapsed-crumb')) {
-                searchPanel.style.left = lineDims.width + "px";
+                searchPanel.style.left = lineDims.right + "px";
+                this.checkIsToofarRight(searchPanel);
             }
         }
         if (this.isTreeItem()) {
             panel.style.display = "block";
+            panel.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
+            if (this.hasClass(parent, 'collapsed-crumb')) {
+                panel.style.left = lineDims.right + "px";
+                this.checkIsToofarRight(searchPanel);
+            }
+            this.treeInput.nativeElement.focus();
         }
     }    
 
@@ -131,6 +135,15 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
         if (this.isTreeItem()) {
             treePanel.style.display = "none";
         }
+    }
+
+    checkIsToofarRight(panel) {
+        let dims = panel.getBoundingClientRect();
+        if (dims.right > window.innerWidth) {
+            panel.style.right = "0px";
+            panel.style.left = "unset";
+        }
+
     }
 
     search(event) {
