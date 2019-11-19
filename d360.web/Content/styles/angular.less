@@ -642,7 +642,7 @@ d3s-navbar-item {
     height: 39px;
     min-width: auto;
     display: inline-flex;
-    flex-shrink: 1;
+    flex-shrink: 0;
     cursor: pointer;
     max-width: @igx-max-logo-width;
 
@@ -1096,6 +1096,16 @@ div.child .empty-count {
 
 /* breadcrumbs*/
 .collapsed-overlay {
+    display: none;
+    position: absolute;
+    background: white;
+    box-shadow: rgba(0, 0, 0, 0.33) 0 1px 3px;
+
+    .search-results {
+        position: fixed;
+        margin-top: -40px;
+    }
+
     .ui-overlaypanel-content {
         padding: 0px;
     }
@@ -1380,7 +1390,11 @@ a.breadcrumb {
 
 .search-results {
     z-index: 10;
-    position: absolute;
+    position: fixed;
+    display: none;
+    background: white;
+    margin-top: -15px;
+    box-shadow: rgba(0, 0, 0, 0.33) 0 1px 3px;
 
     &.tags-results {
         .ui-overlaypanel {
@@ -1397,7 +1411,7 @@ a.breadcrumb {
     }
 
     .header-search-input {
-        margin: 5px;
+        margin: 4px;
         border-radius: 5px;
         width: 95%;
     }
@@ -1442,6 +1456,7 @@ a.breadcrumb {
         padding-right: 40px;
         overflow: hidden;
         text-overflow: ellipsis;
+        color: black;
 
         &:hover, &.hover {
             background-color: @igx-lightblue-xlight;
