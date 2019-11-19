@@ -94,6 +94,7 @@ namespace d360.core.enums
     public class AssetTypeClassInfo
     {
         public AssetTypeClass ID { get; set; }
+        public string Value { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
     }
@@ -123,11 +124,14 @@ namespace d360.core.enums
             {
                 if (tm.GetCustomAttribute(typeof(ObsoleteAttribute)) == null)
                 {
+                    var enumValue = (AssetTypeClass)Enum.Parse(typeof(AssetTypeClass), tm.Name);
+
                     list.Add(new AssetTypeClassInfo
                     {
                         Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
                         Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
-                        ID = (AssetTypeClass)Enum.Parse(typeof(AssetTypeClass), tm.Name)
+                        ID = enumValue,
+                        Value = enumValue.ToString()
                     });
                 }
             }
@@ -144,6 +148,7 @@ namespace d360.core.enums
             info.Description = member.GetCustomAttribute<DescriptionAttribute>().Description;
             info.Name = member.GetCustomAttribute<NameAttribute>().Name;
             info.ID = type;
+            info.Value = type.ToString();
             return info;
         }
     }

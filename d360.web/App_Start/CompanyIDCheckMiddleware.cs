@@ -6,7 +6,6 @@ using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Dapper;
 using System.Linq;
-using System.Web.Caching;
 using d360.extensions.caching;
 using System.Diagnostics;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
@@ -65,7 +64,33 @@ namespace d360.web
                 }
                 else
                 {
-                    context.Response.Write(string.Format("Company [{0}] Not Found", host));
+                    context.Response.ContentType = "text/html";
+                    context.Response.Write(
+                        string.Format(
+                            "<div style='" +
+                                "font-weight: bold; " +
+                                "background: linear-gradient(to bottom, rgb(167, 167, 167) 0%, #e4d6d600 75%);" +
+                                "height:100%;" +
+                                "width:100%;" +
+                                "margin: -8px;" +
+                                "position: absolute;'>" +
+                                "<div style='" +
+                                    "width:600px;" +
+                                    "height:200px;" +
+                                    "margin-left:auto;" +
+                                    "margin-right:auto;" +
+                                    "background: #d2d2d2;" +
+                                    "margin-top: 100px;" +
+                                    "padding: 10px;" +
+                                    "box-shadow: 2px 2px 10px 3px rgba(148,148,148,0.75);" +
+                                    "text-align: center;" +
+                                    "'>" +
+                                    "<h1>Error locating company [{0}]</h1>" +
+                                    "<p>Please check the url is correct or contact your Administrator.</p>" +
+                                "" +
+                                "</div>" +
+                            "</div>"
+                            , host));
                     Trace.TraceWarning("Could not locate the company with host address of: {0}", host);
                     return;
                 }

@@ -5,19 +5,22 @@ import { HttpClient } from "@angular/common/http";
 import { Observable, of } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 import { IconProperties } from '../models/icon-properties.model';
+import { AssetTypeClass } from '../models/asset.model';
 
 @Injectable()
-export class IconService extends BaseObservableService {
+export class IconService extends BaseObservableService   {
     constructor(
-            private http: HttpClient,
-            messagesService: MessagesObservableService
+        private http: HttpClient,
+        messagesService: MessagesObservableService
         )
     {
         super(messagesService);
     }
 
-    data;
-    observable;
+    private readonly prefix: string = 'fa-';
+
+    private data;
+    private observable;
 
     public getIconProperties(): Observable<IconProperties[]> {
         if (this.data) {
@@ -34,9 +37,39 @@ export class IconService extends BaseObservableService {
                     return this.data;
                 }),
                 catchError(err => this.handleError(err))
-            )
+            );
                     
             return this.observable;
         }
-    }    
+    }
+
+    public removeIconPrefix(s: string): string {
+        if (s == null || s.length == 0)
+            return s;
+        return s.replace(this.prefix, '');
+    }
+
+    public getIconIdByClass(c: AssetTypeClass): string {
+        switch (c) {
+            case AssetTypeClass.BusinessAsset:
+                return 'book';
+            case AssetTypeClass.Fusion:
+            case AssetTypeClass.FusionAttribute:
+            case AssetTypeClass.FusionQuery:
+            case AssetTypeClass.TechnicalAsset:
+                return 'database';
+            case AssetTypeClass.Model:
+                return 'sitemap';
+            case AssetTypeClass.Policy:
+                return 'university';
+            case AssetTypeClass.Reference:
+            case AssetTypeClass.ReferenceItemType:
+                return 'list-alt';
+            case AssetTypeClass.Rule:
+                return 'check-square';
+            default:
+                console.warn('No default icon defined for ' + AssetTypeClass[c]);
+                return '';
+        }
+    }
 }
