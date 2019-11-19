@@ -32,7 +32,7 @@ declare var VersionNumber: string;
                                         <li><b>Build Date:</b> {{this.buildDate | date:'short'}}</li>
                                         <li><b>Support:</b> <a href="http://support.infogix.com" target="_blank">http://support.infogix.com</a></li>
                                     </ul>
-                                    <p>© 2005-2019 Infogix. All rights reserved.</p>
+                                    <p>© 2005-{{this.buildDate | date:'yyyy'}} Infogix. All rights reserved.</p>
                                     <p>Confidential - Limited distribution to authorized persons only, pursuant to the terms of Infogix Inc. license agreement. This software is protected as an unpublished work and constitutes a trade secret of Infogix Inc.</p>
                                 </div>
                             </div>

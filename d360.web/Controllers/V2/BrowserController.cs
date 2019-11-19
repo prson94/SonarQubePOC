@@ -44,6 +44,7 @@ namespace d360.web.Controllers.V2
             public string ParentKey { get; set; }
             public string Back { get; set; }
             public string Fore { get; set; }
+            public string Icon { get; set; }
             public int HierarchyLevel { get; set; }
             public int AssetTypeID { get; set; }
             public long AssetID { get; set; }
@@ -85,7 +86,7 @@ namespace d360.web.Controllers.V2
                         relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
                     }
                     
-                    var child = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
+                    var child = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, icon = h.Icon, @class = h.Class, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
 
                     recurse(hierarchies, child);
 
@@ -111,7 +112,7 @@ namespace d360.web.Controllers.V2
                     relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
                 }
 
-                var current = new AssetBrowserLineageApiTopItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
+                var current = new AssetBrowserLineageApiTopItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", icon = h.Icon, @class = h.Class, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
                 recurse(hierarchies, current);
                 model.assets.Add(current);
             }
@@ -120,6 +121,7 @@ namespace d360.web.Controllers.V2
             {
                 backColor = "",
                 foreColor = "",
+                icon = "",
                 intersectUid = r.Uid,
                 objectUid = r.objectUid,
                 objectKey = r.objectKey,
@@ -253,6 +255,7 @@ namespace d360.web.Controllers.V2
         {
             public string Name { get; set; }
             public string Value { get; set; }
+            public string Values { get; set; }
             public string Type { get; set; }
         }
 
@@ -294,6 +297,10 @@ namespace d360.web.Controllers.V2
         {
             try
             {
+                var ignoredFields = this.CalculatedFieldTypes;
+                ignoredFields.Add(DataType.Tag.ToString());
+                ignoredFields.Add(DataType.Relationship.ToString());
+                ignoredFields.Add(DataType.FieldFromRelationship.ToString());
                 var sql = @"
 select	A.TypeName,
 		A.Uid,
@@ -307,13 +314,40 @@ select	A.TypeName,
 		) as [Path],
 		dbo.GenerateAssetUrl(A.ID) as Url,
 		(
-			select	F.FriendlyName as Name,
-					V.FormattedValue as Value,
-					F.Type
-			from	utility.FieldValue V
-					inner join FieldType F on F.ID = V.FieldTypeID and F.[Type] not in @CalculatedFieldTypes
-			where	AssetID = A.ID
-					and F.IsDisplayable = 1
+			select  *
+            from    (
+                    select	F.ColumnOrder,
+							F.FriendlyName as Name,
+					        V.FormattedValue as Value,
+                            '[]' as [Values],
+					        F.Type
+			        from	utility.FieldValue V
+					        inner join FieldType F on F.ID = V.FieldTypeID and F.[Type] not in @ignoredFields
+			        where	AssetID = A.ID
+					        and F.IsDisplayable = 1
+                    union all
+                    select	F.ColumnOrder,
+							F.FriendlyName as Name,
+					        null as Value,
+                            TV.[Values],
+					        F.Type
+			        from	FieldType F 
+                            inner join Asset TA on TA.ID = A.ID and F.AssetTypeID = TA.AssetTypeID and F.[Type] = 'Tag'
+                            cross apply (
+                                select	( 
+										select  T.Value,
+												'tag' as TooltipType,
+												T.ID as TooltipID,
+												T.CreatedBy,
+												'Preview' as TooltipContext,
+												'' as TooltipUrl,
+												T.[uid]
+										from    AssetTag TJ
+												inner join Tag T on T.ID = TJ.TagID and TJ.AssetID = TA.ID
+										for json path
+										) as [Values]
+                            ) TV
+                    ) F
 			order by F.ColumnOrder
 			for json path
 		) as Fields,
@@ -344,7 +378,7 @@ from	AssetDetail A
 where	A.Uid = @uid
 for json path, WITHOUT_ARRAY_WRAPPER";
 
-                var reader = await Company.QueryAsync<string>(sql, new { uid, this.CalculatedFieldTypes }, timeout: 10);
+                var reader = await Company.QueryAsync<string>(sql, new { uid, ignoredFields }, timeout: 10);
                 var json = string.Join("",reader);
 
                 var model = JsonConvert.DeserializeObject<AssetBrowserDiagramAsset>(json);

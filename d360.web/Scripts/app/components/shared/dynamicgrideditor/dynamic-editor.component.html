@@ -54,7 +54,7 @@
                 <div *ngIf="hasIconFields && fore.Value == back.Value"
                      class="col s12 errorMessage">* Foreground and background color cannot be the same</div>
                 <div class="col s12">&nbsp;</div>
-                <div class="col s12">
+                <div *ngIf="showActions" class="col s12">
                     <button pButton
                             type="submit"
                             [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)"

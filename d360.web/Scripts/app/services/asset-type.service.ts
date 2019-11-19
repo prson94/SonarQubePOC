@@ -4,12 +4,13 @@ import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
 
 import {JsonResult} from '../models/jsonresult.model';
-import {AssetTypeEditorModel, AssetTypeClass, AssetType} from "../models/asset.model";
+import {AssetTypeEditorModel, AssetTypeClass, AssetType, AssetTypeApiModel} from "../models/asset.model";
 
 
 import {BaseObservableService} from "./baseObservable.service";
 import {MessagesObservableService} from './messages-observable.service';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
+import { Response } from 'powerbi-router';
 
 @Injectable()
 export class AssetTypeService extends BaseObservableService {
@@ -47,7 +48,30 @@ export class AssetTypeService extends BaseObservableService {
             );
     }
 
+    public getAssetTypeLegacyUri(uid: string)
+        : Observable<string & ErrorResponse> {
+        return this
+            .http
+            .get(`api/legacyuri/AssetType/${uid}`)
+            .pipe(
+                map(response => <string & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     //#region v2 endpoints
+
+    public getAssetTypes()
+        : Observable<AssetTypeApiModel[] & ErrorResponse> {
+        return this
+            .http
+            .get('api/v2/assets/types')
+            .pipe(
+                map(response => <AssetTypeApiModel[]  & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
 
     public postAssetType(model: AssetType)
         : Observable<ApiResult & ErrorResponse> {
@@ -67,6 +91,15 @@ export class AssetTypeService extends BaseObservableService {
             .put('api/v2/assets', model)
             .pipe(
                 map(response => <ApiResult & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public getAssetTypesDetails(): Observable<AssetType[]> {
+        return this.http
+            .get('api/v2/assets/types')
+            .pipe(
+                map(res => <AssetType[] & ErrorResponse>res),
                 catchError(err => this.handleError(err))
             );
     }

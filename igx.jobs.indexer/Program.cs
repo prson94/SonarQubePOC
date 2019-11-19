@@ -36,15 +36,21 @@ namespace igx.jobs.indexer
         }
     }
 
-    internal class FieldSqlModel
+    internal interface IPagedQuerySqlModel
     {
-        public int ObjectID { get; set; }
+        long AssetID { get; set; }
+    }
+
+    internal class FieldSqlModel : IPagedQuerySqlModel
+    {
+        public long AssetID { get; set; }
         public string Name { get; set; }
         public string FormattedValue { get; set; }
     }
 
-    internal class TagSqlModel
+    internal class TagSqlModel : IPagedQuerySqlModel
     {
+        public long AssetID { get; set; }
         public Guid AssetUID { get; set; }
         public Guid TagUID { get; set; }
         public string Value { get; set; }
@@ -60,8 +66,11 @@ namespace igx.jobs.indexer
         const string timerSettings = "0 0 17 * * 6";
 #endif
 
-        const string fieldsSql = @"select F.ObjectID, T.Name, F.FormattedValue from Field F inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> '' and T.[Type] not in('DateTime','Color','FusionLookup','FilteredLookup','ComplexRelationLookup','OwnershipLookup','Relationship','FieldFromRelationship','RefListRelationship','JSON')";
-        const string tagsSql = @"SELECT a.uid AS AssetUID, t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID INNER JOIN [dbo].[Asset] a ON at.AssetID = a.ID";
+        const string fieldsSql = @"select F.AssetID, T.Name, F.FormattedValue from Field F " +
+            " inner join FieldType T on T.ID = F.FieldTypeID and F.ObjectType = @t and F.FormattedValue is not null and F.FormattedValue <> '' and " +
+            " T.[Type] not in('DateTime','Color','FusionLookup','FilteredLookup','ComplexRelationLookup','OwnershipLookup','Relationship','FieldFromRelationship','RefListRelationship','JSON')";
+        const string tagsSql = @"SELECT a.ID as AssetID, a.uid AS AssetUID, t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at " +
+            "INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID INNER JOIN [dbo].[Asset] a ON at.AssetID = a.ID";
 
         public static void RunViaTimer([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -455,6 +464,7 @@ from
         {
             int assettypeclass = (int)AssetTypeClass.Rule;
             var sql = $@"SELECT
+                    A.ID as AssetID,
                     A.ObjectID as ID,
                     D.DisplayValue as Name,
                     T.Name as RuleType,
@@ -465,7 +475,8 @@ from
 				INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
 				INNER JOIN [dbo].AssetDisplayValue D on D.AssetID = A.ID
 	                WHERE T.Class = {assettypeclass.ToString()}
-                AND A.State = 1";
+                AND A.State = 1
+                ORDER BY A.ID";
 
             var sType = SystemObjects.Rule.ToString();
 
@@ -476,6 +487,7 @@ from
                     Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
+                    AssetID = o.AssetID,
                     AssetType = o.RuleType,
                     RelativeUrl = o.Url,
                     Uid = o.Uid,
@@ -544,6 +556,7 @@ from
         {
             int assettypeclass = (int)AssetTypeClass.Policy;
             var sql = $@"SELECT
+	                A.ID as AssetID,
 	                A.ObjectID as ID,
 	                D.DisplayValue as [Name],
 	                D.DisplayValue as TextPath,
@@ -555,7 +568,8 @@ from
                 INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
 				INNER JOIN [dbo].AssetDisplayValue D on D.AssetID = A.ID
                 WHERE T.Class = {assettypeclass.ToString()}
-                AND A.State = 1";
+                AND A.State = 1
+                ORDER BY A.ID";
 
             var sType = SystemObjects.Policy.ToString();
 
@@ -566,6 +580,7 @@ from
                     Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
+                    AssetID = o.AssetID,
                     AssetType = o.PolicyType,
                     RelativeUrl = o.Url,
                     Uid = o.Uid,
@@ -583,6 +598,7 @@ from
             int assettypeclass = (int)ArtifactClass;
             var sql = $@"
 select
+    A.ID as AssetID,
 	cast(A.ID as varchar) as ItemUniqueID,
 	A.ObjectID as ID,
 	att.ObjectID as TypeID,
@@ -595,7 +611,8 @@ from
 	inner join [dbo].assettype att on a.assettypeid = att.id
 	inner join [dbo].assetdisplayvalue adv on adv.assetid = a.id
 where
-	att.[Object] = 'ArtifactType' and a.[state] = 1 and att.[Class] = {assettypeclass.ToString()}";
+	att.[Object] = 'ArtifactType' and a.[state] = 1 and att.[Class] = {assettypeclass.ToString()}
+ORDER BY A.ID";
 
             var sType = ArtifactClass.ToString();
 
@@ -606,6 +623,7 @@ where
                     Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
+                    AssetID = o.AssetID,
                     ItemUniqueID = o.ItemUniqueID,
                     AssetType = o.TypeName,
                     RelativeUrl = $"/artifact/{o.TypeID}/{o.ID}",
@@ -649,7 +667,8 @@ from	AttributeDetail AD
         private static IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
-SELECT	A.ObjectID as ID,
+SELECT	A.ID As AssetID,
+        A.ObjectID as ID,
 		T.ObjectID as TypeID,
 		D.DisplayValue,
 		T.Name as TypeName,
@@ -659,7 +678,8 @@ FROM	[dbo].Asset A
 		INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
 		INNER JOIN [dbo].AssetDisplayValue D on D.AssetID = A.ID
 WHERE	T.Object = 'TaxonomyType'
-		and A.State = 1";
+		and A.State = 1
+ORDER BY A.ID";
 
 
             var sType = SystemObjects.Taxonomy.ToString();
@@ -671,6 +691,7 @@ WHERE	T.Object = 'TaxonomyType'
                     Category = sType,
                     CompanyID = companyID,
                     ID = o.ID,
+                    AssetID = o.AssetID,
                     AssetType = o.TypeName,
                     RelativeUrl = $"/model/{o.TypeID};hierarchyId={o.ID}",
                     Uid = o.Uid,
@@ -731,26 +752,112 @@ from    fusion f
 
         private static IEnumerable<IndexObjectModel> getDataWithFields(SqlConnection context, string sql, int companyID, ElasticSearchSource source, string type, Func<dynamic, IndexObjectModel> convertToDictionary)
         {
-            var fields = context.Query<FieldSqlModel>(fieldsSql, new { t = type }, commandTimeout: _defaultQueryCommandTimeout).ToList();
-            var tags = context.Query<TagSqlModel>(tagsSql, null, commandTimeout: _defaultQueryCommandTimeout).ToList();
+            var FieldQuery = new PagedQuery<FieldSqlModel>(context, fieldsSql, new { t = type });
+            var TagsQuery = new PagedQuery<TagSqlModel>(context, tagsSql);
             var list = getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);
-                        
+
             foreach (var item in list)
             {
-                var subset = fields.Where(i => i.ObjectID == item.ID);
+                var subset = FieldQuery.GetByAssetID(item.AssetID);
                 foreach (var f in subset)
                 {
                     item.Fields[f.Name] = f.FormattedValue;
                 }
                 if(item.Uid.HasValue && item.Uid != Guid.Empty)
                 {
-                    item.Tags = tags.Where(i => i.AssetUID == item.Uid).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
+                    item.Tags = TagsQuery.GetByAssetID(item.AssetID).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
                 }
 
                 yield return item;
-            }            
+            }
         }
 
-#endregion
+        #endregion
+    }
+
+    internal interface IPagedQuery<T>
+    {
+        List<T> GetByAssetID(long AssetID);
+    }
+    internal class PagedQuery<T> : IPagedQuery<T> where T : IPagedQuerySqlModel
+    {
+        private static readonly int PageSize = 50000;
+        private long CurrentHighID = 0;
+        private List<T> _data;
+        private SqlConnection _connection;
+        private readonly string _query;
+        public DynamicParameters _param;
+        private bool LastPage = false;
+        private static readonly int _defaultQueryCommandTimeout = 180;
+
+        /// <summary>
+        /// Performs a paged/chunked query
+        /// </summary>
+        /// <param name="connection"></param>
+        /// <param name="query">Query string</param>
+        /// <param name="param"></param>
+        public PagedQuery(SqlConnection connection, string query, object param = null)
+        {
+            _connection = connection;
+            _query = "SELECT TOP (@PageSize) pagedquery.* FROM (" + query + ") pagedquery WHERE pagedquery.AssetID >= @AssetID ORDER BY pagedquery.AssetID"; ;
+            _param = new DynamicParameters();
+            if(param != null)
+            {
+                foreach(var p in param.GetType().GetProperties())
+                {
+                    _param.Add(p.Name, p.GetValue(param, null));
+                }
+            }
+            _data = new List<T>();
+        }
+
+        /// <summary>
+        /// Fetches the next "page" of data. Starting with the requested AssetID
+        /// No need to get any records with a lower AssetID's
+        /// </summary>
+        /// <param name="AssetID"></param>
+        private void FetchDataPage(long AssetID)
+        {
+            if (LastPage)
+                return;
+
+            _param.Add("AssetID", AssetID);
+            _param.Add("PageSize", PageSize);
+            _data = _connection.Query<T>(_query, _param, commandTimeout: _defaultQueryCommandTimeout).ToList();
+            if (_data.Count() < PageSize)
+            {
+                //If we fetched less than PageSize, this is the last page of data
+                LastPage = true;
+            } else
+            {
+                long MinAssetID = _data.Min(i => i.AssetID);
+                long MaxAssetID = _data.Max(i => i.AssetID);
+                if (MinAssetID == MaxAssetID)
+                {
+                    //If min and max AssetID is the same, the whole "page" is the same asset and it can't be guaranteed that all records for one asset has been fetched
+                    throw new Exception("Search of " + typeof(T) + " got more than " + PageSize + " results for one AssetID");
+                }
+                else
+                {
+                    //The page may have an incomplete set of records for the highest Asset ID, so remove those from the data stored.
+                    _data.RemoveAll(i => i.AssetID == MaxAssetID);
+                    CurrentHighID = _data.Max(i => i.AssetID);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Fetches records from the query for the provided Asset ID
+        /// </summary>
+        /// <param name="AssetID"></param>
+        /// <returns></returns>
+        public List<T> GetByAssetID(long AssetID)
+        {
+            //If requested ID is higher than what is current, and last page has not been reached, fetch the next data page
+            if (!LastPage && AssetID > CurrentHighID)
+                FetchDataPage(AssetID);
+
+            return _data.Where(i => i.AssetID == AssetID).ToList();
+        }
     }
 }

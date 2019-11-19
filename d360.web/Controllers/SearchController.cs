@@ -86,8 +86,21 @@ namespace d360.web.Controllers
             }
         }
 
+        private AssetTypeStyle GetAssetTypeStyle(Guid? AssetTypeUid)
+        {
+            if (AssetTypeUid.HasValue && AssetTypeUid != Guid.Empty)
+            {
+                var style = Company.GetAssetTypeStyle(AssetTypeUid.Value);
+                return style;
+            }
+            return null;
+        }
         private string GetIcon(Guid? AssetTypeUid, string type)
         {
+            var style = this.GetAssetTypeStyle(AssetTypeUid);
+            if (style != null && !string.IsNullOrEmpty(style.Icon))
+                return style.Icon;
+
             TopNavigationItem menuItem = null;
 
             if (AssetTypeUid != null)

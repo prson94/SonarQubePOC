@@ -98,7 +98,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                             undefined,
                             true));
 
-                        this.headerBreadcrumbService.getFolderIcon(this.currentAreaName ? this.currentAreaName : res).then(icon => {
+                        this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
                             this.rightSidebarService.setCurrentArea(this.ruleType.Name, icon, 'Rules');
                             this.rightSidebarService.setCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true);
                             this.setCommonRightSideBar(false, false, this.ruleType.HasDashboards);

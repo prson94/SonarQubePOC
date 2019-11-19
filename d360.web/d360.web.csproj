@@ -283,6 +283,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Validation.resx</DependentUpon>
     </Compile>
+    <Compile Include="App_Start\GovernAppInsightsTelemetryInitializer.cs" />
     <Compile Include="App_Start\CachingHeaderMiddleware.cs" />
     <Compile Include="App_Start\ContractValidationMiddleware.cs" />
     <Compile Include="App_Start\UserIDCheckMiddleware.cs" />
@@ -638,6 +639,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
+    <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
@@ -683,6 +685,7 @@
     <Content Include="Scripts\app\components\search\hero-search-input.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-editor-preview.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-mapping-rules.component.html" />
@@ -1120,6 +1123,12 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags-action.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\admin-tags.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets\assets.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets\assets.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets\assets.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\asset\asset.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\asset\asset.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\asset\asset.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.ts" />
@@ -1129,6 +1138,8 @@
     <TypeScriptCompile Include="Scripts\app\components\search\search-state.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\shared-asset-editor.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor-use-as-transformation.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\gov-checkbox.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\assetbrowserlayout.component.ts" />
@@ -1267,6 +1278,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.ts" />
     <Content Include="Scripts\app\components\shared\take-survey.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\treetable-toggler.component.ts" />

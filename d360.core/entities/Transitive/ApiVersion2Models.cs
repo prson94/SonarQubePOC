@@ -40,10 +40,10 @@ namespace d360.core.entities
         Guid? ExecutionItemUid { get; set; }
     }
 
-    public class AssetTypeInsert
+    public class AssetTypeUpsert
     {
         [DataMember]
-        public Guid Uid { get; set; }
+        public new Guid Uid { get; set; }
 
         [DataMember]
         public string Name { get; set; }
@@ -51,32 +51,37 @@ namespace d360.core.entities
         [DataMember]
         [JsonConverter(typeof(StringEnumConverter))]
         public AssetTypeClass Class { get; set; }
+
         [DataMember]
         public string Description { get; set; }
+
         [DataMember]
         public bool AutoDisplayDescription { get; set; }
+
         [DataMember]
         public string DisplayFormat { get; set; }
+
         public HierarchyInsert Hierarchy { get; set; }
 
         public IconStyleInsert IconStyle { get; set; }
 
         [DataMember]
         public Guid? ParentUid { get; set; }
+
         [DataMember]
         public string Notes { get; set; }
+
         [JsonIgnore]
         public int ObjectID { get; set; }
+
         [JsonIgnore]
         public string Object { get; set; }
 
         [DataMember]
         public bool UseAsTransformation { get; set; }
+
         [DataMember]
         public bool? CanOwnFusion { get; set; }
-
-
-
     }
 
     public class AssetTypeSuccess
@@ -323,6 +328,8 @@ namespace d360.core.entities
     {
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
+        [DataMember]
+        public Guid? Uid { get; set; }
         [DataMember]
         public Guid PredicateUid { get; set; }
         [DataMember]

@@ -234,7 +234,6 @@ namespace d360.extensions.search
                 var db = community.Query<DatabaseServer>(@"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id", new { id = companyID }).SingleOrDefault();
 
                 SearchServerUrl = db.SearchServer ?? DEFAULT_SEARCH_SERVER;
-                SearchServerUrl = "192.168.33.16:9200";
             }
 
             if (string.IsNullOrEmpty(SearchServerUrl)) throw new Exception("DEV ERROR - NO SEARCH BASE URL SPECIFIED.");
@@ -334,18 +333,24 @@ namespace d360.extensions.search
 
         public void AddToIndex(IEnumerable<IndexObjectModel> items)
         {
-            var firstItem = items.FirstOrDefault();
-
-            if (firstItem == null) return;
-
-            var companyId = firstItem.CompanyID;
-
-            CreateIndexIfNotExists(companyId);
+            int companyId = default(int);
+            bool firstRun = true;
 
             List<string> postingErrors = new List<string>();
 
             foreach (var batch in items.Batch(BULK_BATCH_SIZE))
             {
+                //Get FirstOrDefault inside batch loop to not trigger enumeration twice
+                if(firstRun)
+                {
+                    firstRun = false;
+                    var firstItem = batch.FirstOrDefault();
+                    if (firstItem == null) return;
+
+                    companyId = firstItem.CompanyID;
+                    CreateIndexIfNotExists(companyId);
+                }
+
                 var sb = new StringBuilder();
 
                 var indexName = GetCompanyIndexName(companyId);
@@ -855,14 +860,14 @@ namespace d360.extensions.search
                 string fieldname;
                 switch (aggFilter.Field)
                 {
-                    case "d3sGroup":
+                    case "d3sCategory":
                         fieldname = D3S_FIELD_PREFIX + "Category";
                         break;
-                    case "type":
+                    case "d3sAssetType":
                         fieldname = D3S_FIELD_PREFIX + "AssetType";
                         break;
                     default:
-                        fieldname = D3S_FIELD_PREFIX + aggFilter.Field;
+                        fieldname = DYNAMIC_FIELD_PREFIX + aggFilter.Field;
                         break;
                 }
                 filterQueries.Add(new TermsQuery

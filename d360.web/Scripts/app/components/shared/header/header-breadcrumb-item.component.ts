@@ -120,6 +120,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 window.setTimeout(() => {
                     searchPanel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
                     searchPanel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
+                    searchPanel.el.nativeElement.children[0].style.position = "fixed";
                     let searchDims = searchPanel.el.nativeElement.children[0].getBoundingClientRect(); 
                     searchPanel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
                     if (searchDims.right > window.innerWidth) {
@@ -139,7 +140,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 window.setTimeout(() => {
                     searchPanel.el.nativeElement.children[0].style.top = (lineDims.bottom) + "px";
                     searchPanel.el.nativeElement.children[0].style.left = (lineDims.left) + "px";
-
+                    searchPanel.el.nativeElement.children[0].style.position = "fixed";
                     searchPanel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
                     if (this.standardInput) {
                         this.standardInput.nativeElement.focus();
@@ -154,6 +155,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 window.setTimeout(() => {
                     panel.el.nativeElement.children[0].style.top = (lineDims.top - 40) + "px";
                     panel.el.nativeElement.children[0].style.left = (lineDims.width + (10 * this.index)) + "px";
+                    panel.el.nativeElement.children[0].style.position = "fixed";
                     parent.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
                     panel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
                     let searchDims = panel.el.nativeElement.children[0].getBoundingClientRect(); 
@@ -162,6 +164,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                         let diff = searchDims.right - window.innerWidth;
                         let left = (lineDims.width + (10 * this.index)) - diff;
                         panel.el.nativeElement.children[0].style.left = left + "px";
+                        panel.el.nativeElement.children[0].style.position = "fixed";
                     }
 
                     if (this.treeInput) {
@@ -177,6 +180,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
                 window.setTimeout(() => {
                     panel.el.nativeElement.children[0].style.left = lineDims.left + "px";
                     panel.el.nativeElement.children[0].style.maxWidth = (window.innerWidth - lineDims.left) + "px";
+                    panel.el.nativeElement.children[0].style.position = "fixed";
                 }, 100);
                 if (this.treeInput) { window.setTimeout(() => { this.treeInput.nativeElement.focus(); }, 100); }
             }

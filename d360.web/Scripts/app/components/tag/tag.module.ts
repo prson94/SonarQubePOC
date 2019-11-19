@@ -20,8 +20,8 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
 import { TagComponent } from './tag.component';
 import { TagItemComponent } from './tag-item.component';
 import { TagRoutingModule } from './tag.routes';
-import { TagViewModule } from '../shared/tags/d3s-tag-view';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
 
 @NgModule({
     imports: [CommonModule,
@@ -40,8 +40,8 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
         CoreModule,
         D3SSharedModule,
         PipesModule,
-        TilesModule,
         TagViewModule,
+        TilesModule,
         
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,        

@@ -264,7 +264,7 @@ namespace d360.web.Controllers
 
                     model = new AssetTypeEditorModel()
                     {
-                        AssetType = new AssetTypeInsert()
+                        AssetType = new AssetTypeUpsert()
                         {
                             Uid = assetType.uid,
                             ParentUid = parentUid,
@@ -291,7 +291,7 @@ namespace d360.web.Controllers
                     switch (@class)
                     {
                         case AssetTypeClass.FusionAttribute:
-                            var f = Company.GetById<FusionAttributeType>(model.AssetType.ObjectID);
+                            var f = Company.GetById<FusionAttributeType>(assetType.ObjectID);
                             model.AssetType.Name = f.Name;
                             break;
                         case AssetTypeClass.BusinessAsset:
@@ -309,7 +309,7 @@ namespace d360.web.Controllers
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
                         case AssetTypeClass.Organization:
-                            var o = Company.GetById<OrganizationType>(model.AssetType.ObjectID);
+                            var o = Company.GetById<OrganizationType>(assetType.ObjectID);
                             model.AssetType.Hierarchy.MaximumDepth = 1;
                             model.AssetType.Name = o.Name;
                             model.AssetType.Description = o.Description;
@@ -328,6 +328,11 @@ namespace d360.web.Controllers
                             model.AssetType.Description = assetType.Description;
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             if (model.Tokens != null) model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
+                            break;
+                        case AssetTypeClass.Rule:
+                            model.AssetType.Name = assetType.Name;
+                            model.AssetType.Description = assetType.Description;
+                            model.AssetType.DisplayFormat = assetType.DisplayFormat;
                             break;
                     }
                     model.AssetType.Object = ot.ToString();
@@ -372,7 +377,7 @@ namespace d360.web.Controllers
                     model = new AssetTypeEditorModel()
                     {
 
-                        AssetType = new AssetTypeInsert()
+                        AssetType = new AssetTypeUpsert()
                         {
                             DisplayFormat = "{Name}",
                             Class = @class,
