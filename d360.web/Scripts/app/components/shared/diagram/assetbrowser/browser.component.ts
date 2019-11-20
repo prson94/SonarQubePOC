@@ -120,6 +120,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly searchHighlightColour = '#FFDA00';
     private readonly searchHighlightColourFocused = '#FD7E0E';
 
+    private zoomText: string = '100%';
+
     constructor(
         private myElement: ElementRef,
         private assetTypeService: AssetTypeService,
@@ -212,7 +214,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private refreshButtonClick(e) {
+        this.diagram.scale = 1;
         this.refreshDiagram();
+        this.updateZoomText();
     }
 
     private zoomInButtonClick(e) {
@@ -221,6 +225,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (this.diagram.scale > 2.5) {
             this.diagram.scale = 2.5;
         }
+
+        this.updateZoomText();
     }
 
     private zoomOutButtonClick(e) {
@@ -229,6 +235,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (this.diagram.scale < .1) {
             this.diagram.scale = .1;
         }
+        this.updateZoomText();
     }
 
     private fullScreenButtonClick(e) {
@@ -855,9 +862,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.diagramRef.nativeElement.style.height = diagramHeight;
         if (this.isFullScreen)
-            this.diagramRef.nativeElement.style.height = (height - 32) + 'px';
+            this.diagramRef.nativeElement.style.height = (height - 56) + 'px';
         else 
-            this.diagramRef.nativeElement.style.height = (height - 228) + 'px';
+            this.diagramRef.nativeElement.style.height = (height - 238) + 'px';
 
         if (this.filterPanelRef) {
             let filterPanelHeight: string = (this.diagramRef.nativeElement.clientHeight - 130) + 'px';
@@ -876,6 +883,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.ownerPanelRef.nativeElement.style.minHeight = infoPanelHeight;
             this.ownerPanelRef.nativeElement.style.maxHeight = infoPanelHeight;
         }
+    }
+
+    private updateZoomText() {
+        this.zoomText = Math.round(this.diagram.scale * 100) + '%';
+        this.cdRef.markForCheck();
     }
 
     private onMouseEnterNode(e: any, node: go.Node) {
