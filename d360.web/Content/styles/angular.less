@@ -698,10 +698,9 @@ d3s-navbar-item {
 
 .maincontent-open {
     margin-left: 200px;
-
-    .tile {
-        margin-top: 16px;
-    }
+    padding-top: 16px;
+    padding-left: 4px;
+    padding-right: 4px;
 }
 
 main {
@@ -2108,9 +2107,6 @@ div.home-image-title-text {
     }
 }
 /* end tooltip*/
-.homeTileArea {
-    padding-top: 0 !important;
-}
 
 .json-view {
     white-space: pre-wrap;
@@ -4044,7 +4040,9 @@ button.tab-scroller {
 ///new search panel
 .search-page-full {
     background: white;
-    margin-top: -20px;
+    margin-top: -15px;
+    margin-left: -3px;
+    margin-right: -4px;
 
     .title-bar.search {
         margin-right: 0px;
@@ -4809,6 +4807,7 @@ a.mid-blue {
             .fa {
                 color: rgba(0,0,0,0.87) !important;
             }
+
             i.fa {
                 padding: 0px !important;
             }
@@ -4818,17 +4817,12 @@ a.mid-blue {
     .ui-autocomplete-panel {
         top: 30px !important;
     }
-
 }
 
 .asset-browser {
-    margin-top: -23px;
-    padding: 16px;
 
-
-
-    .asset-browser-header.col, .asset-browser-body.col {
-        padding: 0px;
+    .asset-browser-header {
+        padding-bottom: 16px;
     }
 
     .tile-detail {
@@ -4850,7 +4844,7 @@ a.mid-blue {
         .controls-right {
             position: absolute;
             z-index: 50;
-            right: 0px;
+            right: 10px;
 
             span {
                 padding: 8px;
@@ -5103,6 +5097,9 @@ a.mid-blue {
 
     &.asset-browser {
         margin-top: 0px !important;
+        padding: 16px;
+        padding-left: 5px;
+        padding-right: 5px;
     }
 
     .asset-browser-header {
@@ -5111,12 +5108,12 @@ a.mid-blue {
 
         .controls-left {
             z-index: 50;
-            left: 16px;
+            left: 27px;
             position: absolute;
         }
 
         .controls-right {
-            right: 48px !important;
+            right: 36px !important;
         }
     }
 
@@ -5126,9 +5123,10 @@ a.mid-blue {
         }
     }
 
-    .asset-browser-window{
-        top:66px !important;
-    } 
+    .asset-browser-window {
+        top: 66px !important;
+    }
+
     .diagram {
         top: 62px;
     }

@@ -9,7 +9,7 @@ import { BaseComponent } from '../../shared/base.component';
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
-                    <div class="tile tile-detail" style="margin-top: 5px; margin-bottom: 5px;">
+                    <div class="tile tile-detail">
                        <d3s-object-health-details *ngIf="showBoard"
                                        [uid]="uid"
                                        [objectName]="objectName"></d3s-object-health-details>
