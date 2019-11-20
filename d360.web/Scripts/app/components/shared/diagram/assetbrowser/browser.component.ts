@@ -504,6 +504,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             });
 
         } else {
+            data.nodes.forEach(n => {
+                n.showIcon = this.filterModel.DisplayIcons;
+            });
             dm.nodeDataArray = data.nodes;
             dm.linkDataArray = data.links;
         }
