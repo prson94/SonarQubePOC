@@ -101,8 +101,10 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 });
                 this.companySettingsService.getGroups()
                     .subscribe(x => {
-                        this.groups = x;
-                        this.groups.unshift({ label: '[Administrators]', value: '0' });
+                        this.groups = x.map(x => {
+                            return { label: x.label, value: +x.value }
+                        });
+                        this.groups.unshift({ label: '[Administrators]', value: 0 });
                         this.isLoading = false;
                     });
                 this.rightSidebarService.clearButtons();
