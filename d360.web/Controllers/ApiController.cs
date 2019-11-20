@@ -5292,6 +5292,7 @@ select	A.ID as AssetID,
         A.[Uid],
         A.ObjectId as ID,
         R.Threshold,
+        R.DisplayValue,
         dbo.GenerateAssetUrl(A.ID) as Url,
         {0}
         R.RuleTypeID,
