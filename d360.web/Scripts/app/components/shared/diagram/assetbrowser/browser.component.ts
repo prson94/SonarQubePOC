@@ -845,7 +845,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
   
     @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
         if (event.key === "Escape" || event.key === "Esc") {
-            this.fullScreenButtonClick(null);
+            this.isFullScreen = false;
+            this.resizeDiagram();
+            this.cdRef.markForCheck();
         }
     }
 

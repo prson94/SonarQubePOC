@@ -84,10 +84,6 @@ export class AssetSearchComponent implements OnInit, OnChanges {
             return;
         }
 
-        if (event.key === "Escape") {
-            this.closeSearch();
-        }
-
         if (event.key === "ArrowDown") {
             this.currentSearchNavigationIndex++;
             if (this.currentSearchNavigationIndex > this.pageSize - 1)
@@ -197,6 +193,10 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     private search($event) {
 
         if ($event) {
+            if ($event.key === 'Escape' || $event.key === 'Esc') {
+                this.closeSearch();
+            }
+
             if (this.searchOption.SearchPhrase == $event.target.value)
                 return;
 
