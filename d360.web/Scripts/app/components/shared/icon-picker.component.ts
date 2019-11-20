@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
     selector: 'd3s-icon-picker',
     template: `
                 <select name="icon" [ngModel]="ngModel" (ngModelChange)="ngModel=$event;ngModelChange.emit(ngModel);" style="width:100%">
+                    <option value=""></option>
                     <optgroup label="Web Application Icons">
                         <option value="fa-adjust">adjust</option>
                         <option value="fa-asterisk">asterisk</option>
