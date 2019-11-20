@@ -130,7 +130,7 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_FilteredLookup_DisplayFields(string type, int id, string listType, int listID)
         {
             var list = Company.GetFieldTypesByObject(SystemObjects.LookupType, listID)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .OrderBy(i => i.Name)
                 .Select(i => new { i.ID, i.Name, i.FriendlyName, i.LookupObjectType, i.LookupObjectID })
                 .ToList()
@@ -157,7 +157,7 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_FusionLookup_DisplayFields(int id)
         {
             var list = Company.GetFieldTypesByObject(SystemObjects.FusionAttributeType, id)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
             list.Add("Name", 0);
@@ -241,7 +241,6 @@ namespace d360.web.Controllers
                         && i.Type != DataType.Relationship.ToString()
                         && i.Type != DataType.OwnershipLookup.ToString()
                         && i.Type != DataType.RefListRelationship.ToString()
-                        && i.Type != DataType.FusionLookup.ToString()
                         && i.Type != DataType.FilteredLookup.ToString()
                         && i.Type != DataType.ComplexRelationLookup.ToString()
                         && i.Type != DataType.JSON.ToString()
@@ -287,7 +286,7 @@ namespace d360.web.Controllers
             list.Add("TextPath", 0);
 
             var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString())
                 .Select(i => new { i.ID, i.Name }).ToList();
             relList.ForEach(r =>
             {
@@ -427,7 +426,6 @@ namespace d360.web.Controllers
 
             var list = Company.Filter<FieldType>(f => f.Object == targetObjectType && f.ObjectID == targetObjectTypeID)
                 .Where(i => i.Type != DataType.Attribute.ToString() &&
-                        i.Type != DataType.FusionLookup.ToString() &&
                         i.Type != DataType.ComplexRelationLookup.ToString() &&
                         i.Type != DataType.Relationship.ToString() &&
                         i.Type != DataType.JSON.ToString()
@@ -447,7 +445,7 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_Lookup_Tokens(SystemObjects type, int id)
         {
             var list = Company.GetFieldTypesByObject(type, id)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.FusionLookup.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.Name);
 
@@ -900,7 +898,7 @@ namespace d360.web.Controllers
 
             if (id > 0)
             {
-                ft = Company.GetById<FieldType>(id, i => i.FieldTypeFusionLookupDefinitions);
+                ft = Company.GetById<FieldType>(id);
 
                 if (ft.FieldTypeFilteredLookupDefinitions != null)
                 {
@@ -917,27 +915,6 @@ namespace d360.web.Controllers
                                 DisplayFields = (i.FieldTypeFilteredLookupDisplayFields != null) ? i.FieldTypeFilteredLookupDisplayFields.Select(df => new { value = $"{df.FieldTypeID}|{df.FieldTypeName}", Filter = df.Filter, Show = df.Show, SortOrder = df.SortOrder }).ToList() : null,
                                 i.HideHeader,
                                 i.HideFooter
-                            });
-                        }
-                    }
-                }
-
-                if (ft.FieldTypeFusionLookupDefinitions != null)
-                {
-                    if (ft.FieldTypeFusionLookupDefinitions.Count > 0)
-                    {
-                        fusionItems = new List<dynamic>();
-                        foreach (var i in ft.FieldTypeFusionLookupDefinitions)
-                        {
-                            fusionItems.Add(new
-                            {
-                                ID = i.ID,
-                                SourceFusionAttributeType = i.SourceFusionAttributeTypeID,
-                                ReferenceType = i.ReferenceType,
-                                TargetFusionAttributeType = i.TargetFusionAttributeTypeID,
-                                DisplayFields = (i.FieldTypeFusionLookupDisplayFields != null) ? i.FieldTypeFusionLookupDisplayFields.Select(df => new { value = $"{df.FieldTypeID}|{df.FieldTypeName}", FilterValue = df.FilterValue, Show = df.Show, SortOrder = df.SortOrder }).ToList() : null,
-                                HideHeader = i.HideHeader,
-                                HideFooter = i.HideFooter
                             });
                         }
                     }
@@ -1271,56 +1248,6 @@ offset 0 rows fetch next 25 rows only
                         }
                         break;
                     #endregion
-                    case "FusionLookup":
-                        #region
-                        foreach (var fi in model.FusionItems)
-                        {
-                            val = fi.Validation();
-                            if (!val.Valid)
-                            {
-                                throw new ConflictException("Error Occurred!", val.Message);
-                            }
-
-                            var def = new FieldTypeFusionLookupDefinition
-                            {
-                                ReferenceType = fi.ReferenceType,
-                                SourceFusionAttributeTypeID = fi.SourceFusionAttributeType,
-                                TargetFusionAttributeTypeID = fi.TargetFusionAttributeType,
-                                HideHeader = fi.HideHeader,
-                                HideFooter = fi.HideFooter
-                            };
-
-                            if (fi.DisplayFields != null)
-                            {
-                                if (fi.DisplayFields.Count > 0)
-                                {
-                                    def.FieldTypeFusionLookupDisplayFields = new List<FieldTypeFusionLookupDisplayField>();
-
-                                    foreach (var df in fi.DisplayFields)
-                                    {
-                                        var ndf = new FieldTypeFusionLookupDisplayField
-                                        {
-                                            FieldTypeFusionLookupDefinitionID = def.ID,
-                                            FieldTypeName = df.FieldTypeName,
-                                            FieldTypeID = df.FieldTypeID,
-                                            FilterValue = string.IsNullOrEmpty(df.FilterValue) ? null : df.FilterValue,
-                                            SortOrder = df.SortOrder,
-                                            Show = df.Show
-                                        };
-
-                                        if (ndf.Show || !string.IsNullOrEmpty(ndf.FilterValue) || ndf.SortOrder.HasValue)
-                                            def.FieldTypeFusionLookupDisplayFields.Add(ndf);
-                                    }
-                                }
-                            }
-                            model.FieldType.FieldTypeFusionLookupDefinitions = new List<FieldTypeFusionLookupDefinition>() { def };
-                        }
-
-                        model.FieldType.IsDisplayable = true;
-
-                        Company.Add<FieldType>(model.FieldType);
-                        break;
-                    #endregion
                     case "ComplexRelationLookup":
                         #region
                         var relations = new List<FieldLookupRelationItem>();
@@ -1605,7 +1532,6 @@ offset 0 rows fetch next 25 rows only
                 if (
                     (model.FieldType.Type == DataType.ComplexRelationLookup.ToString()) ||
                     (model.FieldType.Type == DataType.FilteredLookup.ToString()) ||
-                    (model.FieldType.Type == DataType.FusionLookup.ToString()) ||
                     (model.FieldType.Type == DataType.OwnershipLookup.ToString())
                     )
                 {
@@ -1707,18 +1633,6 @@ offset 0 rows fetch next 25 rows only
                     ft.LookupObjectType = null;
                     ft.LookupObjectID = null;
                     ft.LookupDisplayFormat = null;
-
-                    if (defs != null && ft.Type != DataType.FusionLookup.ToString())
-                    {
-                        foreach (var i in defs)
-                        {
-                            var d = Company.FieldTypeFusionLookupDisplayFields.Where(j => j.FieldTypeFusionLookupDefinitionID == i.ID).ToList();
-                            if (d != null && d.Count > 0)
-                                Company.FieldTypeFusionLookupDisplayFields.RemoveRange(d);
-                        }
-                        Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
-
-                    }
 
                     if (efli != null && ft.Type != DataType.FilteredLookup.ToString())
                     {
@@ -1869,130 +1783,6 @@ offset 0 rows fetch next 25 rows only
                                 ft.FieldTypeFilteredLookupDefinitions.Remove(efli);
                             }
                         }
-
-                        //Clean up previous stuff
-                        if (defs.Count != 0)
-                            Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
-                        break;
-                    #endregion
-                    case "FusionLookup":
-                        #region
-                        foreach (var fi in model.FusionItems)
-                        {
-                            val = fi.Validation();
-                            if (!val.Valid)
-                            {
-                                throw new ConflictException("Error Occurred!", val.Message);
-                            }
-
-                            isNew = false;
-                            FieldTypeFusionLookupDefinition efi = null;
-
-                            if (fi.ID > 0)
-                            {
-                                efi = defs.SingleOrDefault(i => i.ID == fi.ID);
-                                if (efi == null)
-                                {
-                                    isNew = true;
-                                }
-                            }
-                            else
-                            {
-                                isNew = true;
-                            }
-
-
-                            if (isNew)
-                            {
-                                efi = new FieldTypeFusionLookupDefinition
-                                {
-                                    FieldTypeID = ft.ID,
-                                    ReferenceType = fi.ReferenceType,
-                                    SourceFusionAttributeTypeID = fi.SourceFusionAttributeType,
-                                    TargetFusionAttributeTypeID = fi.TargetFusionAttributeType,
-                                    FieldTypeFusionLookupDisplayFields = new List<FieldTypeFusionLookupDisplayField>(),
-                                    HideHeader = fi.HideHeader,
-                                    HideFooter = fi.HideFooter
-                                };
-                            }
-                            else
-                            {
-                                efi.ReferenceType = fi.ReferenceType;
-                                efi.SourceFusionAttributeTypeID = fi.SourceFusionAttributeType;
-                                efi.TargetFusionAttributeTypeID = fi.TargetFusionAttributeType;
-                                efi.HideHeader = fi.HideHeader;
-                                efi.HideFooter = fi.HideFooter;
-                            }
-
-
-                            var listToRemove = new List<FieldTypeFusionLookupDisplayField>();
-
-                            if (fi.DisplayFields != null)
-                            {
-                                // Add those that do not yet exist.
-                                foreach (var df in fi.DisplayFields)
-                                {
-                                    if (!efi.FieldTypeFusionLookupDisplayFields.Any(i => i.FieldTypeID == df.FieldTypeID && i.FieldTypeName == df.FieldTypeName))
-                                    {
-                                        var ndf = new FieldTypeFusionLookupDisplayField
-                                        {
-                                            FieldTypeFusionLookupDefinitionID = efi.ID,
-                                            FieldTypeID = df.FieldTypeID,
-                                            FieldTypeName = df.FieldTypeName,
-                                            FilterValue = string.IsNullOrEmpty(df.FilterValue) ? null : df.FilterValue,
-                                            SortOrder = df.SortOrder,
-                                            Show = df.Show
-                                        };
-
-                                        if (ndf.Show || !string.IsNullOrEmpty(ndf.FilterValue) || ndf.SortOrder.HasValue)
-                                            efi.FieldTypeFusionLookupDisplayFields.Add(ndf);
-                                    }
-                                    else
-                                    {
-                                        var edf = efi.FieldTypeFusionLookupDisplayFields.Single(i => i.FieldTypeID == df.FieldTypeID && i.FieldTypeName == df.FieldTypeName);
-
-                                        edf.FilterValue = string.IsNullOrEmpty(df.FilterValue) ? null : df.FilterValue;
-                                        edf.SortOrder = df.SortOrder;
-                                        edf.Show = df.Show;
-
-                                        if (!edf.Show && string.IsNullOrEmpty(edf.FilterValue) && !edf.SortOrder.HasValue)
-                                            efi.FieldTypeFusionLookupDisplayFields.Remove(edf);
-                                    }
-                                }
-
-                                // Remove those that no longer exist.
-                                foreach (var edf in efi.FieldTypeFusionLookupDisplayFields)
-                                {
-                                    if (!fi.DisplayFields.Any(i => i.FieldTypeID == edf.FieldTypeID && i.FieldTypeName == edf.FieldTypeName))
-                                    {
-                                        listToRemove.Add(edf);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (efi.FieldTypeFusionLookupDisplayFields != null)
-                                {
-                                    listToRemove.AddRange(efi.FieldTypeFusionLookupDisplayFields);
-                                }
-                            }
-
-                            if (listToRemove.Count > 0)
-                            {
-                                Company.FieldTypeFusionLookupDisplayFields.RemoveRange(listToRemove);
-                            }
-
-                            listToRemove = null;
-
-                            if (isNew)
-                                Company.Add<FieldTypeFusionLookupDefinition>(efi);
-                            else
-                                Company.Update<FieldTypeFusionLookupDefinition>(efi);
-                        }
-
-                        //Clean up previous stuff
-                        if (efli != null)
-                            Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
                         break;
                     #endregion
                     case "Lookup":
@@ -2007,8 +1797,6 @@ offset 0 rows fetch next 25 rows only
                         }
 
                         //Clean up previous stuff
-                        if (defs.Count != 0)
-                            Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
                         if (efli != null)
                             Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
 
@@ -2138,8 +1926,6 @@ offset 0 rows fetch next 25 rows only
                         ft.LookupEditFormat = null;
 
                         //Clean up previous stuff
-                        if (defs.Count != 0)
-                            Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
                         if (efli != null)
                             Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
                         break;
@@ -2153,8 +1939,6 @@ offset 0 rows fetch next 25 rows only
                         ft.LookupEditFormat = null;
 
                         //Clean up previous stuff
-                        if (defs.Count != 0)
-                            Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
                         if (efli != null)
                             Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
                         break;
@@ -2167,8 +1951,6 @@ offset 0 rows fetch next 25 rows only
                         ft.LookupEditFormat = null;
 
                         //Clean up previous stuff
-                        if (defs.Count != 0)
-                            Company.FieldTypeFusionLookupDefinitions.RemoveRange(defs);
                         if (efli != null)
                             Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
                         break;

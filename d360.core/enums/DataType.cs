@@ -40,8 +40,6 @@ namespace d360.core
         UncLink= 1 << 12,
         [Description("Color Picker"), ReadOnly(true)]
         Color= 1 << 13,
-        [Description("Fusion Lookup")]
-        FusionLookup= 1 << 14,
         [Description("Attribute Hierarchy"), ReadOnly(true)]
         Attribute= 1 << 15,
         [Description("Filtered Lookup")]

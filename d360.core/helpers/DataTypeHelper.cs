@@ -17,7 +17,6 @@ namespace d360.core.helpers
                 DataType.DataTableSelect.ToString(),
                 DataType.File.ToString(),
                 DataType.FilteredLookup.ToString(),
-                DataType.FusionLookup.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.RefListRelationship.ToString(),
                 DataType.JsonElement.ToString()
