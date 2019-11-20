@@ -114,6 +114,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly fontLink: string = "9pt 'Source Sans Pro'";
     private readonly fontLinkColor: string = "#000"
 
+    private readonly textMaxSize = new go.Size(200, Infinity);
+    private readonly textMaxLines = 1;
+    private readonly textOverflowStyle = go.TextBlock.OverflowEllipsis;
+
     private readonly searchHighlightColour = '#FFDA00';
     private readonly searchHighlightColourFocused = '#FD7E0E';
 
@@ -1333,6 +1337,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
+    private createTooltip(): go.Adornment {
+        return this.g("ToolTip",
+            this.g(go.TextBlock,
+                {
+                    maxSize: new go.Size(this.textMaxSize.width * 2, Infinity),
+                    wrap: go.TextBlock.WrapFit
+                },
+                new go.Binding("text", "text")
+            )
+        );
+    }
+
     private createDiagram(): go.Diagram {
         let dg = this.g(go.Diagram, 'LineageDiagram', {
             initialContentAlignment: go.Spot.Center,
@@ -1429,8 +1445,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     alignment: go.Spot.Center,
                                     editable: false,
                                     font: this.fontLabelIcon,
-                                    stroke: this.fontLabelColor//,
-                                    //visible: this.filterDisplayIcons
+                                    stroke: this.fontLabelColor
                                 },
                                 new go.Binding("text", "icon"),
                                 new go.Binding("visible", "showIcon")
@@ -1442,7 +1457,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     editable: false,
                                     margin: 5,
                                     font: this.fontLabel,
-                                    stroke: this.fontLabelColor
+                                    stroke: this.fontLabelColor,
+                                    maxLines: this.textMaxLines,
+                                    maxSize: this.textMaxSize,
+                                    overflow: this.textOverflowStyle,
+                                    toolTip: this.createTooltip()
                                 },
                                 new go.Binding("text", "text").makeTwoWay()
                             )
@@ -1526,8 +1545,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Center,
                             editable: false,
                             font: this.fontLabelIcon,
-                            stroke: this.fontLabelColor//,
-                            //visible: this.filterDisplayIcons
+                            stroke: this.fontLabelColor
                         },
                         new go.Binding("text", "icon"),
                         new go.Binding("visible", "showIcon")
@@ -1539,7 +1557,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             editable: false,
                             margin: 5,
                             font: this.fontLabel,
-                            stroke: this.fontLabelColor
+                            stroke: this.fontLabelColor,
+                            maxLines: this.textMaxLines,
+                            maxSize: this.textMaxSize,
+                            overflow: this.textOverflowStyle,
+                            toolTip: this.createTooltip()
                         },
                         new go.Binding("text", "text").makeTwoWay()
                     )
@@ -1576,8 +1598,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         alignment: go.Spot.Center,
                         editable: false,
                         font: this.fontLabelIcon,
-                        stroke: this.fontLabelColor//,
-                        //visible: this.filterDisplayIcons
+                        stroke: this.fontLabelColor
                     },
                     new go.Binding("text", "icon"),
                     new go.Binding("visible", "showIcon")
@@ -1594,6 +1615,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         font: this.fontLabel,
                         stroke: this.fontLabelColor,
                         visible: false,
+                        maxLines: this.textMaxLines,
+                        maxSize: this.textMaxSize,
+                        overflow: this.textOverflowStyle,
+                        toolTip: this.createTooltip()
                     },
                     new go.Binding("text", "highlight").makeTwoWay(),
                     new go.Binding("visible", "highlight_visible").makeTwoWay(),
@@ -1611,7 +1636,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     {
                         editable: false,
                         font: this.fontLabel,
-                        stroke: this.fontLabelColor
+                        stroke: this.fontLabelColor,
+                        maxLines: this.textMaxLines,
+                        maxSize: this.textMaxSize,
+                        overflow: this.textOverflowStyle,
+                        toolTip: this.createTooltip()
                     },
                     new go.Binding("text", "text").makeTwoWay()
                 )

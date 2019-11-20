@@ -9,6 +9,7 @@
             [showDisplayFormat]="false"
             [parentID]="selectedRow?.data.ID" 
             [title]="selectedRow!=null ? 'Add Sub Type' : 'Add Type'" 
+            [fusionId]="fusionType.ID"
             (onCancel)="formMode = FormMode.Default;" 
             (onComplete)="save($event)">
         </d3s-asset-type-editor>

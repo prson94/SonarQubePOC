@@ -10,6 +10,7 @@ import { DynamicPercentageModule } from '../small-widgets/dynamic-percentage/dyn
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { SharedDeleteFormModule } from '../delete.form';
+import { SiteModalModule } from '../modal/gov-modal.module';
 
 
 @NgModule({
@@ -20,7 +21,8 @@ import { SharedDeleteFormModule } from '../delete.form';
         HttpClientModule,
         SharedDynamicGridEditorModule,
         TagUsageInfoModule,
-        SharedDeleteFormModule
+        SharedDeleteFormModule,
+        SiteModalModule,
     ],
     declarations: [
         RightSidebarItemComponent,

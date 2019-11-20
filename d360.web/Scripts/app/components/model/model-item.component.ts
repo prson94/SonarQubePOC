@@ -1,20 +1,20 @@
-﻿import {Input, Component, EventEmitter, Output, OnInit, OnDestroy} from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {BaseComponent} from '../shared/base.component';
-import {Title} from '@angular/platform-browser';
-import {SurveysService} from '../../services/surveys.service';
-import {ModelsService} from '../../services/models.service';
-import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
-import {PermissionsService} from '../../services/permissions.service';
-import {RightSidebarService} from '../../services/right-sidebar.service';
-import {Breadcrumb} from '../../models/breadcrumb.model';
-import {Model, ModelHierarchy} from '../../models/model.model';
-import {TreeNode} from 'primeng/api';
-import {MessageBarItem} from '../../models/message-bar-item.model';
-import {SurveyType} from '../../models/survey.model';
-import {SiteUrlHelpers} from '../../static/site-url-helpers';
-import {StringConstants} from '../../static/string-constants';
-import {Permission} from '../../models/responsibility-type.model';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { BaseComponent } from '../shared/base.component';
+import { Title } from '@angular/platform-browser';
+import { SurveysService } from '../../services/surveys.service';
+import { ModelsService } from '../../services/models.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { PermissionsService } from '../../services/permissions.service';
+import { RightSidebarService } from '../../services/right-sidebar.service';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { Model, ModelHierarchy } from '../../models/model.model';
+import { TreeNode } from 'primeng/api';
+import { MessageBarItem } from '../../models/message-bar-item.model';
+import { SurveyType } from '../../models/survey.model';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
+import { Permission } from '../../models/responsibility-type.model';
 import { RightSidebarItem } from '../../models/rightsidebar.model';
 
 declare var CompanySettings;
@@ -27,18 +27,14 @@ declare var CompanySettings;
         <div *ngIf="!isLoading"
              class="row">
             <div class="col s12">
-                <div class="row">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-object-definition-tile [nymTypes]="model?.NymTypes"
-                                                        [objectPermissions]="permissions"
-                                                        [objectType]="'Taxonomy'"
-                                                        [useV2Api]="true"
-                                                        [objectID]="selected?.ID"
-                                                        [hasAttributes]="model?.AllowAttributes"
-                                                        (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
-                        </div>
-                    </div>
+                <div class="tile tile-detail">
+                    <d3s-object-definition-tile [nymTypes]="model?.NymTypes"
+                                                [objectPermissions]="permissions"
+                                                [objectType]="'Taxonomy'"
+                                                [useV2Api]="true"
+                                                [objectID]="selected?.ID"
+                                                [hasAttributes]="model?.AllowAttributes"
+                                                (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
                 </div>
             </div>
         </div>
@@ -62,13 +58,13 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     private showSocialScoreBar: boolean = true;
 
     constructor(private route: ActivatedRoute,
-                private router: Router,
-                rightSidebarService: RightSidebarService,
-                protected modelsService: ModelsService,
-                protected titleService: Title,
-                protected surveysService: SurveysService,
-                protected headerBreadcrumbService: HeaderBreadcrumbService,
-                protected permissionsService: PermissionsService
+        private router: Router,
+        rightSidebarService: RightSidebarService,
+        protected modelsService: ModelsService,
+        protected titleService: Title,
+        protected surveysService: SurveysService,
+        protected headerBreadcrumbService: HeaderBreadcrumbService,
+        protected permissionsService: PermissionsService
     ) {
         super();
         this.rightSidebarService = rightSidebarService;
@@ -79,14 +75,14 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             id => {
                 this.showHierarchy(id);
             });
-        
+
         this.sub = this.route.params.subscribe(params => {
             let newModelId = +params['modelId'];
             let hierarchyId = +params['id'];// if hierarchyId is passed via alternative route to workaround bug with router escaping ; = and other chars.
 
             this.currentAreaNameSubscription =
                 this.headerBreadcrumbService
-                .getAreaName('TaxonomyType', newModelId)
+                    .getAreaName('TaxonomyType', newModelId)
                     .subscribe(result => { this.currentAreaName = result; if (this.model) this.buildBreadcrumb(); });
 
             if (!hierarchyId)
@@ -128,9 +124,9 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             this.setObjectInfo('Taxonomy', this.selected.ID, this.selected.DisplayValue, this.selected.AssetID, undefined, this.selected.Uid);
 
             this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
-                this.crumbs = []; 
-                this.headerBreadcrumbService.getAssetFolderIcon('TaxonomyType', this.modelId,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
-                    this.lineageShowUsageOnly = true;   
+                this.crumbs = [];
+                this.headerBreadcrumbService.getAssetFolderIcon('TaxonomyType', this.modelId, this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
+                    this.lineageShowUsageOnly = true;
                     this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
                     this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
                     this.rightSidebarService.setCurrentObject('TaxonomyType', this.model.ID, 'Taxonomy', this.selected.ID, false, this.selected.HasWorkflow, this.selected.Uid);
@@ -139,7 +135,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                     this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Taxonomy/${this.selected.ID}`, null, 26));
                 });
                 this.rightSidebarService.showHeader(true);
-            
+
                 this.headerBreadcrumbService.clearBreadcrumbs();
                 let areaBreadcrumb = new Breadcrumb(
                     this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`
@@ -165,7 +161,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                             true,
                             'Taxonomy',
                             this.selected.ID,
-                            this.buildTreeNodeArray(this.modelHierarchy, this.selected.ParentID,false),
+                            this.buildTreeNodeArray(this.modelHierarchy, this.selected.ParentID, false),
                             this.findSelectedTreeNode(this.selected.ID),
                             false));
                 }
@@ -212,28 +208,28 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                     true,
                     'Taxonomy',
                     parent.ID,
-                    this.buildTreeNodeArray(this.modelHierarchy, parent.ParentID,false),
+                    this.buildTreeNodeArray(this.modelHierarchy, parent.ParentID, false),
                     this.findSelectedTreeNode(parent.ID), false)
                 this.crumbs.unshift(crumb);
                 this.checkParent(parent);
-            } 
+            }
         } else {
             this.crumbs.forEach(x => this.headerBreadcrumbService.showBreadcrumb(x));
         }
     }
     private loadModelHierarchy(modelId: number, selectedHierarchyId: number): void {
         this.modelsService.getModelHierarchy(modelId).subscribe(result => {
-                this.modelHierarchy = result;
+            this.modelHierarchy = result;
 
-                this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy);
+            this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy);
 
-                this.selectModelHierarchy(selectedHierarchyId);
-                this.messages = []; //clear any messages for this model
-                this.loadItemSurvey(this.modelId);
+            this.selectModelHierarchy(selectedHierarchyId);
+            this.messages = []; //clear any messages for this model
+            this.loadItemSurvey(this.modelId);
 
-                this.setBrowserTitle(this.titleService, this.model.Name);
-                this.clearSidebar();
-            }
+            this.setBrowserTitle(this.titleService, this.model.Name);
+            this.clearSidebar();
+        }
         );
     }
 
@@ -284,7 +280,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 data: {
                     id: root.ID, hasRelations: root.HasChildren, AssetID: root.AssetID
                 },
-                children: (includeChildren ? this.buildTreeNodeArray(models, root.ID):null) //recursively find its children
+                children: (includeChildren ? this.buildTreeNodeArray(models, root.ID) : null) //recursively find its children
             });
         }
 

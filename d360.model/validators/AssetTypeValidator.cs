@@ -25,6 +25,14 @@ namespace d360.core.validators
         {
             this.CompanyContext = companyContext;
 
+            if (isFusionEnabled)
+            {
+                SupportedClasses.Add(AssetTypeClass.FusionAttribute);
+                SupportedClasses.Add(AssetTypeClass.FusionQuery);
+
+                ParentAssetTypeClass.Add(AssetTypeClass.FusionAttribute);
+            }
+
         }
 
         public WorkHttpStatus ValidateModel(bool isInsert, AssetTypeUpsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType = null)
@@ -131,7 +139,7 @@ namespace d360.core.validators
             var fieldsToIgnore = DataType.Text.GetNonDisplayFormatFields();
 
             List<string> allowedFieldTokens;
-            if (assetTypeId == 0)
+            if (assetTypeId == 0 || assetClass == AssetTypeClass.FusionAttribute)
                 allowedFieldTokens = new List<string> { "name" };
             else
                 allowedFieldTokens = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.Name.ToLower()).ToList();

@@ -1,95 +1,99 @@
-﻿<div class="tile tile-detail">
-    <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <div [ngSwitch]="mode" *ngIf="!isLoading">
-        <div *ngSwitchCase="CartMode.Default">
-            <div *ngIf="cartIsEmpty">
-                <div class="row">
-                    <div class="col s12">
-                        <div style="font-size:1.5em; text-align: center; padding: 25px;">
-                            Your shopping cart is empty
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div *ngIf="!cartIsEmpty">
-                <div class="row">
-                    <div class="col m9 s12" style="padding:20px;">
-
-
-                        <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true" >
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th [pSortableColumn]="'ObjectTypeName'">
-                                        Type
-                                        <d3s-sortIcon [field]="'ObjectTypeName'"></d3s-sortIcon>
-                                    </th>
-                                    <th>Name</th>
-                                    <th style="width: 35px"></th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-item>
-                                <tr [pSelectableRow]="item">
-                                    <td>{{item.ObjectTypeName}}</td>
-                                    <td>
-                                        <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID">
-                                            <a style="cursor:pointer;" (click)="navigate(item)">{{item.Name}}</a>
-                                        </d3s-preview-tooltip>
-                                    </td>
-                                    <td>
-                                        <div class="RowTools">
-                                            <a style="cursor:pointer;" (click)="delete(item)"><i class="fa fa-trash-o"></i></a>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                        </p-table>
-                    </div>
-                    <div class="col m3 s12" style="padding:20px;">
+﻿<div class="row">
+    <div class="col s12">
+        <div class="tile tile-detail">
+            <d3s-loading [isLoading]="isLoading"></d3s-loading>
+            <div [ngSwitch]="mode" *ngIf="!isLoading">
+                <div *ngSwitchCase="CartMode.Default">
+                    <div *ngIf="cartIsEmpty">
                         <div class="row">
                             <div class="col s12">
-                                <textarea [(ngModel)]="cart.Request" style="min-height: 300px;" placeholder="Provide a reason for making this request"></textarea>
+                                <div style="font-size:1.5em; text-align: center; padding: 25px;">
+                                    Your shopping cart is empty
+                                </div>
                             </div>
                         </div>
-                        <div class="row" style="padding-top:10px;">
+                    </div>
+                    <div *ngIf="!cartIsEmpty">
+                        <div class="row">
+                            <div class="col m9 s12" style="padding:20px;">
+
+
+                                <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th [pSortableColumn]="'ObjectTypeName'">
+                                                Type
+                                                <d3s-sortIcon [field]="'ObjectTypeName'"></d3s-sortIcon>
+                                            </th>
+                                            <th>Name</th>
+                                            <th style="width: 35px"></th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-item>
+                                        <tr [pSelectableRow]="item">
+                                            <td>{{item.ObjectTypeName}}</td>
+                                            <td>
+                                                <d3s-preview-tooltip [objectType]="item.Object" [objectId]="item.ObjectID">
+                                                    <a style="cursor:pointer;" (click)="navigate(item)">{{item.Name}}</a>
+                                                </d3s-preview-tooltip>
+                                            </td>
+                                            <td>
+                                                <div class="RowTools">
+                                                    <a style="cursor:pointer;" (click)="delete(item)"><i class="fa fa-trash-o"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </div>
+                            <div class="col m3 s12" style="padding:20px;">
+                                <div class="row">
+                                    <div class="col s12">
+                                        <textarea [(ngModel)]="cart.Request" style="min-height: 300px;" placeholder="Provide a reason for making this request"></textarea>
+                                    </div>
+                                </div>
+                                <div class="row" style="padding-top:10px;">
+                                    <div class="col s12">
+                                        <button pButton label="Request Items" type="button" (click)="mode = CartMode.ConfirmRequest" [disabled]="cart.Request == null || cart.Request.length < 1"></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="row">
                             <div class="col s12">
-                                <button pButton label="Request Items" type="button" (click)="mode = CartMode.ConfirmRequest" [disabled]="cart.Request == null || cart.Request.length < 1"></button>
+                                <button pButton label="Back" (click)="back()" type="button"></button>
+                                <button *ngIf="!cartIsEmpty" pButton label="Clear Shopping Cart" (click)="mode = CartMode.ConfirmDelete"></button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div>
-                <div class="row">
-                    <div class="col s12">
-                        <button pButton label="Back" (click)="back()" type="button"></button>
-                        <button *ngIf="!cartIsEmpty" pButton label="Clear Shopping Cart" (click)="mode = CartMode.ConfirmDelete"></button>
+                <div *ngSwitchCase="CartMode.ConfirmRequest">
+                    <div class="row">
+                        <div class="col s12">
+                            Are you sure you want to submit this request?
+                        </div>
+                    </div>
+                    <div class="row" style="padding-top:25px;">
+                        <div class="col s12">
+                            <button pButton label="Cancel" type="button" (click)="mode = CartMode.Default"></button>
+                            <button pButton label="Submit" type="button" (click)="request()"></button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div *ngSwitchCase="CartMode.ConfirmRequest">
-            <div class="row">
-                <div class="col s12">
-                    Are you sure you want to submit this request?
-                </div>
-            </div>
-            <div class="row" style="padding-top:25px;">
-                <div class="col s12">
-                    <button pButton label="Cancel" type="button" (click)="mode = CartMode.Default"></button>
-                    <button pButton label="Submit" type="button" (click)="request()"></button>
-                </div>
-            </div>
-        </div>
-        <div *ngSwitchCase="CartMode.ConfirmDelete">
-            <div class="row">
-                <div class="col s12">
-                    Are you sure you want to remove all items from your shopping cart?
-                </div>
-            </div>
-            <div class="row" style="padding-top:25px;">
-                <div class="col s12">
-                    <button pButton label="Cancel" (click)="mode = CartMode.Default" type="button"></button>
-                    <button pButton label="Clear" (click)="clear()"></button>
+                <div *ngSwitchCase="CartMode.ConfirmDelete">
+                    <div class="row">
+                        <div class="col s12">
+                            Are you sure you want to remove all items from your shopping cart?
+                        </div>
+                    </div>
+                    <div class="row" style="padding-top:25px;">
+                        <div class="col s12">
+                            <button pButton label="Cancel" (click)="mode = CartMode.Default" type="button"></button>
+                            <button pButton label="Clear" (click)="clear()"></button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

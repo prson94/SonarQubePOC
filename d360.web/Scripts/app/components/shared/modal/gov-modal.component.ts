@@ -1,5 +1,4 @@
 ﻿import { Component, Input, Output, HostListener, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
-import { ModalService } from '../../../services/modal-dialog-service';
 
 
 @Component({

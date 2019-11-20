@@ -41,7 +41,7 @@ namespace d360.model.DataAccessLayer
         {
             return AssetTypeClass.BusinessAsset.GetAsList();
         }
-        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(AssetTypeClass? Class, Guid? fusionTypeUid)
+        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams,AssetTypeClass? Class, Guid? fusionTypeUid)
         {
             var dbArgs = new DynamicParameters();
             string condition = string.Empty;
@@ -93,6 +93,60 @@ namespace d360.model.DataAccessLayer
 
             }
 
+            List<string> whereStatements = new List<string>();
+            if (queryParams != null)
+            {
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "useastransformation"))
+                {
+                    bool useAsTransformation;
+                    var useAsTransformationString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "useastransformation").Value;
+                    if (Boolean.TryParse(useAsTransformationString, out useAsTransformation))
+                    {
+
+                        condition += "and A.UseAsTransformation=@useAsTransformation ";
+                        dbArgs.Add("useAsTransformation", useAsTransformation);
+                    }
+                }
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "hierarchical"))
+                {
+                    bool hierarchical;
+                    var hierarchicalString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "hierarchical").Value;
+                    if (Boolean.TryParse(hierarchicalString, out hierarchical))
+                    {
+
+                        condition += "and A.Hierarchical=@hierarchical ";
+                        dbArgs.Add("hierarchical", hierarchical);
+                    }
+                }
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplaydescription"))
+                {
+                    bool autoDisplayDescription;
+                    var autoDisplayDescriptionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "autodisplaydescription").Value;
+                    if (Boolean.TryParse(autoDisplayDescriptionString, out autoDisplayDescription))
+                    {
+
+                        condition += "and A.AutoDisplayDescription=@autodisplaydescription ";
+                        dbArgs.Add("autoDisplayDescription", autoDisplayDescription);
+                    }
+                }
+
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "canownfusion"))
+                {
+                    bool canOwnFusion;
+                    var canOwnFusionString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "canownfusion").Value;
+                    if (Boolean.TryParse(canOwnFusionString, out canOwnFusion))
+                    {
+
+                        condition += "and A.CanOwnFusion=@canownfusion ";
+                        dbArgs.Add("canownfusion", canOwnFusion);
+                    }
+                }
+
+            }
+
+          
             var sql = $@"
                         SELECT     A.[Name]
                                     ,ISNULL(A.[Description],'') as Description
@@ -729,6 +783,30 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                     #endregion
                     break;
+                case AssetTypeClass.FusionAttribute:
+
+                    int? parentId = parentAssetType?.ObjectID;
+                    int fusionTypeId = model.FusionID.Value;
+
+                    var fusionAttrType = new FusionAttributeType
+                    {
+                        Name = model.Name,
+                        ParentID = parentId,
+                        ScanEnabled = true,
+                        FusionTypeID = fusionTypeId
+                    };
+
+                    CompanyContext.Add(fusionAttrType);
+                    model.ObjectID = fusionAttrType.ID;
+                    model.Object = SystemObjects.FusionAttributeType.ToString();
+
+                    var fatAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
+                    if (fatAssetType != null)
+                    {
+                        fatAssetType.Description = model.Description;
+                        CompanyContext.Update(fatAssetType);
+                    }
+                    break;
             }
 
             if (predicate != null)
@@ -852,6 +930,17 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     r.Description = model.Description;
                     CompanyContext.Update(r);
                     #endregion
+                    break;
+                case AssetTypeClass.FusionAttribute:
+                    var fusionAttributeType = CompanyContext.GetById<FusionAttributeType>(model.ObjectID);
+                    if (fusionAttributeType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.FusionAttribute.ToString()}", $"Not valid {AssetTypeClass.FusionAttribute.ToString()} provided. {AssetTypeErrors.CheckRequest}");
+
+                    fusionAttributeType.Name = model.Name;
+                    CompanyContext.Update(fusionAttributeType);
+
+                    assetType.Description = model.Description;
+                    CompanyContext.Update(assetType);
+
                     break;
             }
 

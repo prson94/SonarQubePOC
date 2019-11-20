@@ -102,14 +102,23 @@ namespace d360.model.DataAccessLayer
 				case when t.PublishedVersionID is not null then v.uid
 					else null end as PublishedVersionUid,
 					t.CreatedOn,
+					dc.DisplayValue as CreatedBy,
 					t.UpdatedOn,
-					t.State as State
+					du.DisplayValue as UpdatedBy,
+					t.State as State,
+					v.Version as PublishedVersion,
+					is_t.name as ActionType,
+					D.Name as AssetType,
+					ITN.name as RelationshipType
 				from workflow.type t
 				inner join workflow.eventregistration e on e.typeid = t.id
 				left join AssetType D on D.Object = E.Object and D.ObjectID = e.ObjectID 
 				left join issuetype is_t on e.object = 'IssueType' and is_t.id = e.objectid
 				left join IntersectType IT on e.Object = 'IntersectType' and e.objectid = IT.ID
+                outer apply dbo.GetIntersectTypeNames(IT.ID) ITN
 				left join workflow.version v on v.id = t.publishedversionid
+				left join AssetDetail DC on DC.[Object] = 'Resource' and DC.ObjectID = t.CreatedBy
+				left join AssetDetail DU on DU.[Object] = 'Resource' and DU.ObjectID = t.UpdatedBy
 				{whereClause}
 				order by t.Name asc";
 
