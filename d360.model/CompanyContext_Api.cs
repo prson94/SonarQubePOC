@@ -4491,7 +4491,7 @@ from    [Intersect] T
                 SendAssetGraphEvents(results);
 
                 if (sendWorkflowEvents)
-                    SendWorkflowEvents("IntersectType", it.ID, results);
+                    SendWorkflowEvents("IntersectType", it.ID, results, ChangeType.Delete);
             }
 
             return results;
