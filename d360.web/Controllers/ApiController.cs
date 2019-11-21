@@ -1354,6 +1354,11 @@ where   h.ID <> @t order by h.[Level] desc;
                 }            
             }
 
+            if (uri == null)
+            {
+                uri = "";
+            }
+
             return Request.CreateResponse<string>(uri);
         }
 
