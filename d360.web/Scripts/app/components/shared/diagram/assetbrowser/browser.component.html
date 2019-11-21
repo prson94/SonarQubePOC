@@ -50,14 +50,14 @@
                                             <div class="filter-section">
                                                 <div class="filter-header">Asset Ancestry</div>
                                                 <div>
-                                                    <p-dropdown [options]="filterAncestryOptions" [ngModel]="filterModel.AncestryMode" (ngModelChange)="filterModel.AncestryMode = $event; saveFilter(); filterAncestryModeChange($event)" optionLabel="Text" dataKey="Mode" styleClass="filter-dropdown"></p-dropdown>
+                                                    <p-dropdown [options]="filterSelectionsModel?.AncestryOptions" [ngModel]="filterModel.AncestryMode" (ngModelChange)="filterModel.AncestryMode = $event; filterAncestryModeChange()" styleClass="filter-dropdown"></p-dropdown>
                                                 </div>
                                             </div>
 
                                             <div class="filter-section">
                                                 <div class="filter-header"># Hops To Load</div>
                                                 <div>
-                                                    <p-dropdown [options]="filterNumberOfHopOptions" [ngModel]="filterModel.NumberOfHops" (ngModelChange)="filterModel.NumberOfHops = $event; saveFilter()" styleClass="filter-dropdown"></p-dropdown>
+                                                    <p-dropdown [options]="filterSelectionsModel?.HopOptions" [ngModel]="filterModel.NumberOfHops" (ngModelChange)="filterModel.NumberOfHops = $event; saveFilter()" styleClass="filter-dropdown"></p-dropdown>
                                                 </div>
                                             </div>
 
@@ -77,10 +77,10 @@
                                             </div>
 
                                             <div class="filter-section">
-                                                <div class="filter-header">Filter By Asset Type</div>
-                                                <d3s-loading [isLoading]="filterAssetTypesLoading"></d3s-loading>
-                                                <p-tree [value]="filterAssetTypes"
-                                                        [hidden]="filterAssetTypesLoading"
+                                                <div class="filter-header">Hide By Asset Type</div>
+                                                <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
+                                                <p-tree [value]="filterSelectionsModel?.FilterAssetTypes"
+                                                        [hidden]="filtersLoading"
                                                         selectionMode="checkbox"
                                                         styleClass="filter-tree"
                                                         [selection]="selectedFilterAssetTypes"
@@ -95,10 +95,10 @@
                                             </div>
 
                                             <div class="filter-section">
-                                                <div class="filter-header">Filter by Impact Predicates</div>
-                                                <d3s-loading [isLoading]="filterPredicatesLoading"></d3s-loading>
-                                                <p-tree [value]="filterPredicates"
-                                                        [hidden]="filterPredicatesLoading"
+                                                <div class="filter-header">Hide by Impact Predicates</div>
+                                                <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
+                                                <p-tree [value]="filterSelectionsModel?.FilterPredicates"
+                                                        [hidden]="filtersLoading"
                                                         selectionMode="checkbox"
                                                         styleClass="filter-tree"
                                                         [selection]="selectedFilterPredicates"

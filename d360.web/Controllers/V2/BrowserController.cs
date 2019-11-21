@@ -66,6 +66,7 @@ namespace d360.web.Controllers.V2
             public Guid objectUid { get; set; }
             public string objectKey { get; set; }
             public long objectId { get; set; }
+            public int predicateId { get; set; }
             public Guid predicateUid { get; set; }
             public string predicate { get; set; }
             public PredicateType predicateType { get; set; }
@@ -87,7 +88,7 @@ namespace d360.web.Controllers.V2
                     }
                     
                     var child = new AssetBrowserLineageApiItemModel { 
-                        hop = h.Hop, key = h.Key, assetUid = h.AssetUid, 
+                        hop = h.Hop, key = h.Key, assetUid = h.AssetUid, assetTypeId = h.AssetTypeID,
                         backColor = h.Back, foreColor = h.Fore, icon = h.Icon, 
                         @class = h.Class, displayValue = h.DisplayValue, 
                         reveal = h.Reveal, relationCounts = relationCounts };
@@ -116,7 +117,7 @@ namespace d360.web.Controllers.V2
                     relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
                 }
 
-                var current = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, backColor = h.Back, foreColor = "", icon = h.Icon, @class = h.Class, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
+                var current = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, assetTypeId = h.AssetTypeID, backColor = h.Back, foreColor = "", icon = h.Icon, @class = h.Class, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts };
                 recurse(hierarchies, current);
                 model.assets.Add(current);
             }
@@ -130,6 +131,7 @@ namespace d360.web.Controllers.V2
                 objectUid = r.objectUid,
                 objectKey = r.objectKey,
                 predicate = r.predicate,
+                predicateId = r.predicateId,
                 predicateUid = r.predicateUid,
                 predicateType = r.predicateType,
                 subjectUid = r.subjectUid,
@@ -388,6 +390,122 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                 var model = JsonConvert.DeserializeObject<AssetBrowserDiagramAsset>(json);
 
                 return Request.CreateResponse(HttpStatusCode.OK, model);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
+        }
+
+        #region Filter Classes
+
+        internal class AssetBrowserAssetTypeFilterItem {
+            public Guid Uid { get; set; }
+            public int AssetTypeId { get; set; }
+            public int ClassId { get; set; }
+            public string Class { get { return ((AssetTypeClass)ClassId).GetDisplayName(); } }
+            public string Name { get; set; }
+            public string Path { get; set; }
+        }
+        internal class AssetBrowserPredicateFilterItem {
+            public int Id { get; set; }
+            public Guid Uid { get; set; }
+            public int TypeId { get; set; }
+            public string Type { get { return ((PredicateType)TypeId).GetDisplayName(); } }
+            public string Name { get; set; }
+            public string Inverse { get; set; }
+        }
+        
+        #endregion
+
+        /// <summary>
+        /// Retrieves lists of filters to be used in the Asset Browser. Hidden from Swagger as this is an internal API.
+        /// </summary>
+        /// <returns>Lists of filters for the asset browser.</returns>
+        [
+            Route("filters"),
+            ApiExplorerSettings(IgnoreApi = true),
+            HttpGet,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetAssetBrowserFilters()
+        {
+            try
+            {
+                #region
+
+                var sql = @"
+with H as	(
+			select	O.Class,
+					O.[uid],
+					O.ID as AssetTypeID,
+					O.Object,
+					O.ObjectID,
+					cast(O.Name as nvarchar(2500)) as [Path],
+					cast(null as int) as ParentAssetTypeID,
+					1 as [Level]
+			from	AssetType O
+					outer apply (
+								select	I.ID 
+								from	IntersectType I 
+										inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4) and I.Object = O.Object and I.ObjectID = O.ObjectID
+								) I
+			where	I.ID is null
+					and O.Class in (1,2,6,7,8)
+			union all
+			select	O.Class,
+					O.[uid],
+					O.ID as AssetTypeID,
+					O.Object,
+					O.ObjectID,
+					cast(H.Path + ' > ' + O.Name as nvarchar(2500)) as [Path],
+					H.AssetTypeID as ParentAssetTypeID,
+					H.[Level]+1 as [Level]
+			from	AssetType O
+					inner join IntersectType I on I.Object = O.Object and I.ObjectID = O.ObjectID
+					inner join H on H.Object = I.Subject and H.ObjectID = I.SubjectID
+					inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4)
+			)
+
+select		[Uid], [Path], AssetTypeID, Class as ClassId
+from		H 
+where		[Level] = 1
+			or AssetTypeID in (
+				select	A.ID
+				from	AssetType A
+						inner join	(
+									select	I.Subject,
+											I.SubjectID
+									from	AssetType O
+											inner join IntersectType I on I.Object = O.Object and I.ObjectID = O.ObjectID
+											inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4)
+											left join IntersectType SI on SI.Subject = O.Object and SI.SubjectID = O.ObjectID and SI.PredicateID = P.ID
+									where	O.Class in (1,2,6,7,8)
+											and SI.ID is null
+									) S on S.Subject = A.Object and S.SubjectID = A.ObjectID			
+			)
+order by	Class, [Path];
+
+select	Id,
+        [Uid],
+		[Type] as TypeId,	
+		[Name],
+		[Inverse]
+from	[Predicate]
+where	[Type] in (6,7,9)
+order by [Type], [Name]";
+                
+                #endregion
+
+                var reader = await Company.QueryMultipleAsync(sql, timeout: 60);
+
+                var assetTypes = reader.Read<AssetBrowserAssetTypeFilterItem>().ToList();
+                var predicates = reader.Read<AssetBrowserPredicateFilterItem>().ToList();
+
+                return Request.CreateResponse(HttpStatusCode.OK, new { AssetTypeOptions = assetTypes, PredicateOptions = predicates });
             }
             catch (Exception ex)
             {

@@ -93,6 +93,7 @@ namespace d360.web.Models
         public Guid objectUid { get; set; }
         public string objectKey { get; set; }
         public string predicate { get; set; }
+        public int predicateId { get; set; }
         public Guid predicateUid { get; set; }
         public PredicateType predicateType { get; set; }
         public string backColor { get; set; }
@@ -108,6 +109,7 @@ namespace d360.web.Models
     public class AssetBrowserLineageApiItemRelationCountModel
     {
         public string Predicate { get; set; }
+        public int PredicateId { get; set; }
         public Guid PredicateUid { get; set; }
         public GetAssetLineagePostModelDirection Direction { get; set; }
         public int Count { get; set; }
@@ -116,6 +118,7 @@ namespace d360.web.Models
     public interface IAssetBrowserLineageApiItemModel
     {
         int hop { get; set; }
+        int assetTypeId { get; set; }
         Guid assetUid { get; set; }
         string displayValue { get; set; }
         GetAssetLineagePostModelDirection reveal { get; set; }
@@ -129,6 +132,8 @@ namespace d360.web.Models
     {
         [DataMember]
         public int hop { get; set; }
+        [DataMember]
+        public int assetTypeId { get; set; }
         [DataMember]
         public Guid assetUid { get; set; }
         [DataMember]

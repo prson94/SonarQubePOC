@@ -66,6 +66,26 @@ namespace d360.core.entities
         public bool UseAsTransformation { get; set; }
     }
 
+    public class AssetTypeBrowserApiViewModel
+    {
+        public Guid uid { get; set; }
+
+        public string Name { get; set; }
+
+        int _ClassID;
+        public int ClassID
+        {
+            get { return _ClassID; }
+            set
+            {
+                _ClassID = value;
+                this.Class = ((AssetTypeClass)_ClassID).AsInfoModel();
+            }
+        }
+        public AssetTypeClassInfo Class { get; set; }
+        public string Path { get; set; }
+    }
+
 
     [DataContract(Namespace = NAMESPACE)]
     public class AssetTypeApiViewModel : BaseObject

@@ -20,7 +20,8 @@ import {
     AssetBrowserTranslationRelationCount,
     AssetBrowserDirection,
     AssetBrowserImpactApiRequestModel,
-    FilterAncestryMode
+    FilterAncestryMode,
+    FilterSelectionsModel
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -132,6 +133,19 @@ export class BrowserService extends BaseObservableService {
     }
 
     /**
+    * Retrieves a set of options to filter by within the Asset Browser, for use in the filter panel.
+    * @returns A set of filter options, as list properties.
+    */
+    public getFilterOptions(): Observable<FilterSelectionsModel> {
+        const url = `api/v2/browser/filters`;
+
+        return this.http.get(url).pipe(
+            map((response: FilterSelectionsModel) => new FilterSelectionsModel(response.AssetTypeOptions, response.PredicateOptions)),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    /**
     * Converts a response from the Govern API into a more appropriate representation for the asset browser diagram.
     * @returns A diagram-specific representation for the nodes and links.
     */
@@ -223,6 +237,10 @@ export class BrowserService extends BaseObservableService {
                 if (linkText.indexOf(intersect.predicate) == -1) {
                     linkText += ((linkText === "") ? "" : ", ") + intersect.predicate;
                 }
+                if (!fl.predicateIds) {
+                    fl.predicateIds = [];
+                }
+                fl.predicateIds.push(intersect.predicateId);
             });
             fl.text = linkText;
 
@@ -334,6 +352,7 @@ export class BrowserService extends BaseObservableService {
             assetBrowserTranslationRelationCount.count = rC.Count;
             assetBrowserTranslationRelationCount.direction = rC.Direction;
             assetBrowserTranslationRelationCount.predicate = rC.Predicate;
+            assetBrowserTranslationRelationCount.predicateId = rC.PredicateId;
             assetBrowserTranslationRelationCount.predicateUid = rC.PredicateUid;
             n.relations.push(assetBrowserTranslationRelationCount);
         });
@@ -341,6 +360,7 @@ export class BrowserService extends BaseObservableService {
         n.showReveal = AssetBrowserDirection[a.reveal] as any; //convert string from API to enum value
         n.hop = a.hop;
         n.assetUid = a.assetUid;
+        n.assetTypeId = a.assetTypeId;
         n.class = AssetTypeClass[a.class] as any; //convert string from API to enum value
         n.back = this.shadeColor(color, multiplier * 15);
         n.icon = this.getIconUnicode(a.icon, n.class);
@@ -359,7 +379,6 @@ export class BrowserService extends BaseObservableService {
         }
 
         return n;
-
     }
 
     /**
