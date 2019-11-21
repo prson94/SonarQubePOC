@@ -46,6 +46,10 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_SCORE_ROOT, loadChildren: () => import('./components/sidebar/score/score.module').then(m => m.ScoreModule) },
     { path: SiteUrlHelpers.SITE_URL_SURVEY_ROOT, loadChildren: () => import('./components/sidebar/survey/survey.module').then(m => m.SurveyModule) },
     { path: SiteUrlHelpers.SITE_URL_ACTIONS_ROOT, loadChildren: () => import('./components/sidebar/actions/actions.module').then(m => m.ActionsModule) },
+    {
+        path: '**',
+        redirectTo: SiteUrlHelpers.getDefaultRoute()
+    },
 ];
 
 @NgModule({
