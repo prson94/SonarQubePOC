@@ -136,8 +136,6 @@ namespace d360.model
 
         public DbSet<FieldTypeFilteredLookupDisplayField> FieldTypeFilteredLookupDisplayFields { get; set; }
 
-        public DbSet<FieldTypeFusionLookupDefinition> FieldTypeFusionLookupDefinitions { get; set; }
-
         public DbSet<FieldTypeFusionLookupDisplayField> FieldTypeFusionLookupDisplayFields { get; set; }
 
         public DbSet<Follow> Follows { get; set; }
@@ -2189,7 +2187,6 @@ where	I.ID is null";
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Entity<FieldTypeFilteredLookupDisplayField>().HasRequired(t => t.FieldTypeFilteredLookupDefinition).WithMany(t => t.FieldTypeFilteredLookupDisplayFields).HasForeignKey(k => k.FieldTypeFilteredLookupDefinitionID).WillCascadeOnDelete(true);
-            modelBuilder.Entity<FieldTypeFusionLookupDisplayField>().HasRequired(t => t.FieldTypeFusionLookupDefinition).WithMany(t => t.FieldTypeFusionLookupDisplayFields).HasForeignKey(k => k.FieldTypeFusionLookupDefinitionID).WillCascadeOnDelete(true);
             modelBuilder.Entity<FieldTypeLookup>().HasRequired(t => t.FieldType).WithOptional(t => t.FieldTypeLookup).WillCascadeOnDelete(true);
 
             modelBuilder.Entity<AssetTypeStyle>().HasRequired(t => t.AssetType).WithOptional(t => t.AssetTypeStyle).WillCascadeOnDelete(true);

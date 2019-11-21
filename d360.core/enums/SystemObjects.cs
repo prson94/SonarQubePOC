@@ -22,7 +22,7 @@ namespace d360.core
         [Description("Attribute"), AllowOwnership(false), EnableAudit(true), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         Attribute,
         [Description("Attribute Group"), EnableAudit(false), IsType(true), 
-         ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup | 
+         ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | 
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup |DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Tag)]
         AttributeType,
         [Description("Email Template"), AllowOwnership(false), EnableAudit(true), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
@@ -32,11 +32,11 @@ namespace d360.core
         [Description("Fusion Attribute"), EnableAudit(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         FusionAttribute,
         [Description("Fusion Attribute Type"), EnableAudit(true), IsType(true), 
-        ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup | DataType.OwnershipLookup | DataType.RefListRelationship | DataType.Tag)]
+        ExcludeDataType(DataType.FilteredLookup  | DataType.OwnershipLookup | DataType.RefListRelationship | DataType.Tag)]
         FusionAttributeType,
         [Description("Fusion Type"), EnableAudit(true), IsType(true), 
             ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup |
-            DataType.FusionLookup | DataType.Link | DataType.Lookup | DataType.OwnershipLookup |
+            DataType.Link | DataType.Lookup | DataType.OwnershipLookup |
             DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Tag)]
         FusionType,
         [Description("Group"), EnableAudit(true), IsType(false),
@@ -45,7 +45,7 @@ namespace d360.core
         [Description("Intersect"), EnableAudit(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         Intersect,
         [Description("Intersect Type"), EnableAudit(true), IsType(true), 
-            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup |
+            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup |
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Tag)]
         IntersectType,
         [Description("Lookup Item"), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
@@ -55,7 +55,7 @@ namespace d360.core
         [Description("Resource"), AllowOwnership(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         Resource,
         [Description("Resource Type"), AllowOwnership(false), AllowSurvey(true), EnableAudit(false), IsType(true),
-            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup |
+            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup |
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.JSON | DataType.JsonElement | DataType.Tag)]
         ResourceType,
         [Description("Survey Type"), AllowSurvey(false), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
@@ -64,7 +64,7 @@ namespace d360.core
         Tag,
         [Description("Taxonomy"), EnableAudit(true), IsType(false), ExcludeDataType(DataType.Tag)]
         Taxonomy,
-        [Description("Taxonomy Type"), AllowSurvey(true), EnableAudit(true), IsType(true), ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
+        [Description("Taxonomy Type"), AllowSurvey(true), EnableAudit(true), IsType(true), ExcludeDataType(DataType.FilteredLookup)]
         TaxonomyType,
         [Description("Tooltip  Template"), AllowOwnership(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         TooltipTemplate,
@@ -94,11 +94,11 @@ namespace d360.core
         AttributeTypeCategory,
         [Description("Policy"), AllowSurvey(false), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement)]
         Policy,
-        [Description("Policy Type"), AllowSurvey(false), EnableAudit(true), IsType(true), ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
+        [Description("Policy Type"), AllowSurvey(false), EnableAudit(true), IsType(true), ExcludeDataType(DataType.FilteredLookup)]
         PolicyType,
         [Description("Rule"), AllowSurvey(false), EnableAudit(true), IsType(false)]
         Rule,
-        [Description("Rule Type"), AllowSurvey(false), EnableAudit(true), IsType(true), ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup)]
+        [Description("Rule Type"), AllowSurvey(false), EnableAudit(true), IsType(true), ExcludeDataType(DataType.FilteredLookup)]
         RuleType,
         [Description("Fusion Execution"), AllowSurvey(false), EnableAudit(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         FusionExecution,
@@ -116,19 +116,19 @@ namespace d360.core
         MapType,
         [Description("Reference Item"), AllowSurvey(false), EnableAudit(true), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         ReferenceItem,
-        [Description("Reference Item Type"), AllowSurvey(false), EnableAudit(true), IsType(true), ExcludeDataType(DataType.FilteredLookup | DataType.FusionLookup | DataType.JSON | DataType.JsonElement | DataType.Tag)]
+        [Description("Reference Item Type"), AllowSurvey(false), EnableAudit(true), IsType(true), ExcludeDataType(DataType.FilteredLookup | DataType.JSON | DataType.JsonElement | DataType.Tag)]
         ReferenceItemType,
         [Description("Fusion Query Attribute"), EnableAudit(false), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         FusionQueryAttribute,
         [Description("Fusion Query Attribute Type"), EnableAudit(true), IsType(true),
-                    ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup |
-                    DataType.FusionLookup | DataType.Link | DataType.Lookup | DataType.OwnershipLookup |
+                    ExcludeDataType(DataType.FieldFromRelationship |
+                    DataType.Link | DataType.Lookup | DataType.OwnershipLookup |
                     DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Tag)]
         FusionQueryAttributeType,
         [Description("Monitor"), AllowSurvey(false), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         Monitor,
         [Description("Issue Type"), EnableAudit(true), IsType(true), 
-            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup |
+            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup |
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Tag)]
         IssueType,
         [Description("Issue"), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
@@ -152,7 +152,7 @@ namespace d360.core
         [Description("Rule Implementation Type"), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         RuleImplementationType,
         [Description("Organization Type"), EnableAudit(true), IsType(true), 
-            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup | DataType.FusionLookup |
+            ExcludeDataType(DataType.FieldFromRelationship | DataType.FilteredLookup |
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Tag)]
         OrganizationType,
         [Description("Export Template"), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]

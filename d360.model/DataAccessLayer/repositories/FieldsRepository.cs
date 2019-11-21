@@ -539,7 +539,6 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Fusion Lookup type on an action type or relationship type for field {f.Name}.");
                     }
 
-                    newFieldType.Type = DataType.FusionLookup.ToString();
                     newFieldType.ColumnOrder = f.Type.ComputedFusionLookup.ColumnOrder;
                     if (f.Type.ComputedFusionLookup.Description != null) newFieldType.DisplayDescription = f.Type.ComputedFusionLookup.Description.Display;
                     newFieldType.IsDisplayable = f.Type.ComputedFusionLookup.IsDisplayable;

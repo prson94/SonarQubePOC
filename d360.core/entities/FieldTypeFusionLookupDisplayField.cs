@@ -24,8 +24,5 @@ namespace d360.core.entities
 
         [DataMember]
         public string FilterValue { get; set; }
-
-        [IgnoreDataMember, ForeignKey("FieldTypeFusionLookupDefinitionID")]
-        public virtual FieldTypeFusionLookupDefinition FieldTypeFusionLookupDefinition { get; set; }
     }
 }

@@ -147,9 +147,6 @@ namespace d360.core.entities
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<FieldTypeFilteredLookupDefinition> FieldTypeFilteredLookupDefinitions { get; set; }
 
-
-        [IgnoreDataMember, ForeignKey("FieldTypeID")]
-        public virtual ICollection<FieldTypeFusionLookupDefinition> FieldTypeFusionLookupDefinitions { get; set; }
     }
 
     #region Definition property models
