@@ -126,7 +126,7 @@ import { FormsModule } from '@angular/forms';
                         <option value="fa-quote-left">quote-left</option>
                         <option value="fa-quote-right">quote-right</option>
                         <option value="fa-random">random</option>
-                        <option value="fa-recylcle">recycle</option>
+                        <option value="fa-recycle">recycle</option>
                         <option value="fa-refresh">refresh</option>
                         <option value="fa-remove">remove</option>                        
                         <option value="fa-reorder">reorder</option>
@@ -155,7 +155,6 @@ import { FormsModule } from '@angular/forms';
                         <option value="fa-tasks">tasks</option>
                         <option value="fa-thumbs-down">thumbs-down</option>
                         <option value="fa-thumbs-up">thumbs-up</option>
-                        <option value="fa-time">time</option>
                         <option value="fa-tint">tint</option>
                         <option value="fa-train">train</option>
                         <option value="fa-trash">trash</option>                        
