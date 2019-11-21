@@ -946,6 +946,7 @@ namespace d360.web.Controllers.V2
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <param name="triggersWorkflow">Optional query string parameter that allows you to enable / disabled workflow events from being triggered as a result of actions taken from this API call.  Defaults to enabled meaning workflow events will be triggered if there are any.</param>
         /// <param name="assets">The payload of your request.</param>
+        /// <param name="clearallassetsfromtype">Optional query string parameter that allows you to remove all assets from the input asset type with cascade set to true;  the assets model should be null or an empty array.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
@@ -956,7 +957,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add assets of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteBulkAssetsAsync(Guid assetTypeUid, AssetDeletes assets, bool triggersWorkflow = true)
+        public async Task<IHttpActionResult> DeleteBulkAssetsAsync(Guid assetTypeUid, AssetDeletes assets, bool clearallassetsfromtype = false, bool triggersWorkflow = true)
         {
             var prefix = "Assets.DeleteBulkAssetsAsync => ";
             var errorMessage = "";
@@ -971,12 +972,13 @@ namespace d360.web.Controllers.V2
                 if (assets == null)
                     assets = readRequestJsonContent<AssetDeletes>(Request).Result;
 
-                if (assets == null)
+                if ((assets == null && !clearallassetsfromtype) || (assets != null && assets.Count == 0 && !clearallassetsfromtype) || (assets != null && assets.Count > 0 && clearallassetsfromtype))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
 
                 var execution = getApiExecution(assets.Count, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid });
 
-                var executionInfo = await AssetRepository.BulkDeleteAssets(assetTypeUid, assets, execution, triggersWorkflow);
+                var executionInfo = await AssetRepository.BulkDeleteAssets(assetTypeUid, assets, execution, clearallassetsfromtype, triggersWorkflow);
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
