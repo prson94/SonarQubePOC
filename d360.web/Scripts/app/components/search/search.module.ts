@@ -19,7 +19,8 @@ import { PaginatorModule } from '../shared/small-widgets/paginator/paginator-bar
 import { CheckTreeModule } from '../shared/small-widgets/check-tree/check-tree.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { ChipsFilterModule } from '../shared/small-widgets/chips-filter/chips-filter-module';
-import { SearchRoutingModule} from './search.routes';
+import { SearchRoutingModule } from './search.routes';
+import { ExplainWidgetModule } from './explain-widget/explain-widget.module';
 
 import { CheckboxModule } from 'primeng/checkbox';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -60,7 +61,8 @@ import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
         PaginatorModule,
         ChipsFilterModule,
         TagViewModule,
-        TypeaheadSearchModule
+        TypeaheadSearchModule,
+        ExplainWidgetModule
     ],
     declarations: [
         HomeSearchComponent,

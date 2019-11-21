@@ -682,6 +682,8 @@
     <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
+    <Content Include="Scripts\app\components\search\explain-widget\explain-widget.component.css" />
+    <Content Include="Scripts\app\components\search\explain-widget\explain-widget.component.html" />
     <Content Include="Scripts\app\components\search\hero-search-input.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
@@ -695,6 +697,7 @@
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-source-rules.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-relationships.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\model-diagram.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\tools\relationships.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
@@ -710,6 +713,7 @@
     <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
+    <Content Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.component.html" />
     <Content Include="Scripts\app\components\shared\search\typeahead-search.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tags-usage-info.component.html" />
@@ -1134,6 +1138,8 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
     <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
+    <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\hero-search-input.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\search-state.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.ts" />
@@ -1144,6 +1150,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\controls\gov-checkbox.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\assetbrowserlayout.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\tools\relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-responsibility-selector.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\grid-selection-info.component.ts" />
@@ -1229,6 +1236,11 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\lookup-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-multiselect-grid.component.ts" />
     <Content Include="Scripts\app\components\shared\rightsidebar\right-sidebar.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.module.ts" />
+    <Content Include="Scripts\app\components\shared\search\generic-asset-search\predicate-selector.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\predicate-selector.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\search\generic-asset-search\segments-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcutdisplay\shortcut-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcutdisplay\shortcut-display.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\shortcuts\shortcut-item.component.ts" />
@@ -1465,6 +1477,7 @@
     <TypeScriptCompile Include="Scripts\app\http-interceptors\error-notify-interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\http-interceptors\govern-request.interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\models\apiresult.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\asset-search.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset-type-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />
@@ -1697,7 +1710,6 @@
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\messages-observable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\metrics.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\modal-dialog-service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shopping-cart.service.ts" />

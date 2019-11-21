@@ -12,7 +12,6 @@ import { SurveyType } from '../../../models/survey.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Artifact } from '../../../models/artifacts.model';
 import { WorkflowService } from '../../../services/workflow.service';
-import { ModalService } from '../../../services/modal-dialog-service';
 import { D3SModal } from '../modal/gov-modal.component';
 import { setInterval } from 'timers';
 import { map } from 'rxjs/operators';
@@ -61,6 +60,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     showHeader: boolean = false;
     showSurvey: boolean = false;
     showScrollButtons: boolean = false;
+    showCertifyModal: boolean = false;
     assetAction: AssetAction;
 
     //keep record of previous url, sometimes we dont need to clear all items (ie. asset -> asset audit page)
@@ -73,8 +73,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         private ref: ChangeDetectorRef,
         private artifactService: ArtifactService,
         private workflowService: WorkflowService,
-        private router: Router,
-        private modalService: ModalService
+        private router: Router
     ) {
         router.events.subscribe(event => {
             if (event instanceof NavigationEnd) {
@@ -304,26 +303,23 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     private requestCertification() {
-        this.modalService.open(
-            { component: D3SModal },
-            'Click Confirm to send a certification request to the term owner',
-            true).subscribe(action => {
-                if (action === 'confirm') {
-                    this.showCertify = false;
-                    this.ref.markForCheck();
-                    this.certify();
-                }
-            });
+        this.showCertifyModal = true;
+        this.showCertify = false;
     }
-
+    closeCertifyModal() {
+        this.showCertifyModal = false;
+    }
     certify() {
+        this.showCertifyModal = false;
         if (this.currentObject && this.currentObject.objectID)
             this.artifactService
                 .requestCertification(this.currentObject.objectID)
                 .subscribe(result => {
                     window.setTimeout(
                         x => {
+                            
                             this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
+
                         }, 5000);
                 });
     }

@@ -51,11 +51,13 @@ import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedFormMessageModule } from '../form-message.part'
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 import { NgxJsonViewModule } from 'ng-json-view';
-import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-type-editor.module';
 import { IconService } from '../../../services/icon.service';
+import { DiagramAssetRelationshipComponent } from './tools/relationships.component';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal-editor.module';
+import { AssetSearchModule } from '../search/generic-asset-search/generic-asset-search.module';
+import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-type-editor.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 
 @NgModule({
@@ -91,6 +93,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         TreeModule,
         //JSON Viewer module
         NgxJsonViewModule,
+        AssetSearchModule,
         TagViewModule
     ],
     declarations: [
@@ -112,7 +115,8 @@ import { PipesModule } from '../../../pipes/pipes.module';
         LineageEditorComponent,
         ModelDiagramComponent,
 
-        LineageDiagramComponent
+        LineageDiagramComponent,
+        DiagramAssetRelationshipComponent
     ],
     exports: [
         AssetBrowserComponent,

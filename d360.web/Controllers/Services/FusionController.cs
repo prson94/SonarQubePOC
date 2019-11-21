@@ -361,23 +361,6 @@ where A.FusionTypeID = @id", columns, joins);
             }
         }
 
-        /// <summary>
-        /// Get all available fusion configurations for a specific type.  These configurations provide required connection and security credentials to connect to the underlying source.
-        /// </summary>
-        /// <returns>A list of available fusion configurations.</returns>
-        [Route("{fusionTypeID:int}/configurations/{fusionID:int}/schedules")]
-        public IQueryable<FusionSchedule> GetConfigurationsByType(int fusionTypeID, int fusionID)
-        {
-            if (Company.CurrentResourceIsAdmin)
-            {                
-                return Company.Filter<FusionSchedule>(i => i.FusionID == fusionID);
-            }
-            else
-            {
-                return null;
-            }
-        }
-
 
         #region History/Errors/Results
 

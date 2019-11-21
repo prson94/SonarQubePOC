@@ -186,6 +186,14 @@ export class SearchStateService extends BaseObservableService {
     }
 
     /**
+     * Sets explain flag on query
+     * @param explain
+     */
+    setExplain(explain: boolean) {
+        this._query.Explain = explain;
+    }
+
+    /**
      * Perform search of <term>
      * @param term
      */

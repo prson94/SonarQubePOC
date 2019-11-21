@@ -68,11 +68,6 @@
                     </td>
                     <td>
                         <div class="RowTools">
-                            <a (click)="selectedRow = item; formMode = FormModeConfig.Scheduling" style="cursor:pointer;"><i class="fa fa-calendar"></i></a>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="RowTools">
                             <a (click)="selectedRow = item; formMode = FormModeConfig.QueryOverrides" style="cursor:pointer;"><i class="fa fa-object-ungroup"></i></a>
                         </div>
                     </td>
@@ -114,12 +109,6 @@
                          [prompt]="'Are you sure you want to delete this fusion configuration?'"
                          (onCancel)="formMode = FormModeConfig.Default;">
         </d3s-delete-form>
-    </div>
-    <div *ngSwitchCase="FormModeConfig.Scheduling">
-        <d3s-fusion-schedule [fusionId]="selectedRow.ID"
-                             [fusionTypeId]="selectedRow.FusionTypeID"
-                             (onClose)="formMode = FormModeConfig.Default;">
-        </d3s-fusion-schedule>
     </div>
     <div *ngSwitchCase="FormModeConfig.QueryOverrides">
         <d3s-fusion-attribute-type-custom-query [fusionId]="selectedRow.ID"

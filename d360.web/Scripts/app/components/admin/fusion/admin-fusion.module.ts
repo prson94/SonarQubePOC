@@ -20,7 +20,6 @@ import { D3SSharedModule } from '../../shared/shared.module';
 import { AdminFusionComponent } from './admin-fusion.component';
 import { FusionAttributesTile } from './fusion-attributes.tile';
 import { FusionConfigurationTile } from './fusion-configuration.tile';
-import { FusionScheduleComponent } from './fusion-schedule.component';
 import { FusionScheduleEditorComponent } from './fusion-schedule-editor.component';
 
 import { FusionAttributeTypeCustomQueryComponent } from './fusion-attribute-type-custom-query.component';
@@ -90,7 +89,6 @@ import { DirectivesModule } from '../../../directives/directives.module';
         AdminFusionComponent,
         FusionAttributesTile,
         FusionConfigurationTile,
-        FusionScheduleComponent,
         FusionScheduleEditorComponent,
         FusionAttributeTypeCustomQueryComponent,
         FusionAttributeTypeCustomQueryEditorComponent
