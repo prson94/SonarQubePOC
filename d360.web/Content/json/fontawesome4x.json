@@ -79,12 +79,6 @@
   },
   {
     "name": "Times",
-    "id": "times",
-    "unicodeValue": "f00d",
-    "categories": [ "Web Application Icons" ]
-  },
-  {
-    "name": "Times",
     "id": "remove",
     "unicodeValue": "f00d",
     "categories": [ "Web Application Icons" ]
@@ -387,12 +381,6 @@
     "name": "tint",
     "id": "tint",
     "unicodeValue": "f043",
-    "categories": [ "Web Application Icons" ]
-  },
-  {
-    "name": "Pencil Square Outlined",
-    "id": "pencil-square-o",
-    "unicodeValue": "f044",
     "categories": [ "Web Application Icons" ]
   },
   {
@@ -1027,21 +1015,9 @@
   },
   {
     "name": "Users",
-    "id": "users",
-    "unicodeValue": "f0c0",
-    "categories": [ "Web Application Icons" ]
-  },
-  {
-    "name": "Users",
     "id": "group",
     "unicodeValue": "f0c0",
     "categories": [ "Web Application Icons" ]
-  },
-  {
-    "name": "Link",
-    "id": "link",
-    "unicodeValue": "f0c1",
-    "categories": [ "Text Editor Icons" ]
   },
   {
     "name": "Link",
@@ -1063,20 +1039,8 @@
   },
   {
     "name": "Scissors",
-    "id": "scissors",
-    "unicodeValue": "f0c4",
-    "categories": [ "Text Editor Icons" ]
-  },
-  {
-    "name": "Scissors",
     "id": "cut",
     "unicodeValue": "f0c4",
-    "categories": [ "Text Editor Icons" ]
-  },
-  {
-    "name": "Files Outlined",
-    "id": "files-o",
-    "unicodeValue": "f0c5",
     "categories": [ "Text Editor Icons" ]
   },
   {
@@ -1093,12 +1057,6 @@
   },
   {
     "name": "Floppy Outlined",
-    "id": "floppy-o",
-    "unicodeValue": "f0c7",
-    "categories": [ "Text Editor Icons" ]
-  },
-  {
-    "name": "Floppy Outlined",
     "id": "save",
     "unicodeValue": "f0c7",
     "categories": [ "Text Editor Icons" ]
@@ -1108,12 +1066,6 @@
     "id": "square",
     "unicodeValue": "f0c8",
     "categories": [ "Web Application Icons", "Form Control Icons" ]
-  },
-  {
-    "name": "Bars",
-    "id": "bars",
-    "unicodeValue": "f0c9",
-    "categories": [ "Web Application Icons" ]
   },
   {
     "name": "Bars",
@@ -1231,20 +1183,8 @@
   },
   {
     "name": "Sort Descending",
-    "id": "sort-desc",
-    "unicodeValue": "f0dd",
-    "categories": [ "Web Application Icons" ]
-  },
-  {
-    "name": "Sort Descending",
     "id": "sort-down",
     "unicodeValue": "f0dd",
-    "categories": [ "Web Application Icons" ]
-  },
-  {
-    "name": "Sort Ascending",
-    "id": "sort-asc",
-    "unicodeValue": "f0de",
     "categories": [ "Web Application Icons" ]
   },
   {
@@ -1273,20 +1213,8 @@
   },
   {
     "name": "Gavel",
-    "id": "gavel",
-    "unicodeValue": "f0e3",
-    "categories": [ "Web Application Icons" ]
-  },
-  {
-    "name": "Gavel",
     "id": "legal",
     "unicodeValue": "f0e3",
-    "categories": [ "Web Application Icons" ]
-  },
-  {
-    "name": "Tachometer",
-    "id": "tachometer",
-    "unicodeValue": "f0e4",
     "categories": [ "Web Application Icons" ]
   },
   {
@@ -1324,12 +1252,6 @@
     "id": "umbrella",
     "unicodeValue": "f0e9",
     "categories": [ "Web Application Icons" ]
-  },
-  {
-    "name": "Clipboard",
-    "id": "clipboard",
-    "unicodeValue": "f0ea",
-    "categories": [ "Text Editor Icons" ]
   },
   {
     "name": "Clipboard",
@@ -1515,12 +1437,6 @@
     "name": "tablet",
     "id": "tablet",
     "unicodeValue": "f10a",
-    "categories": [ "Web Application Icons" ]
-  },
-  {
-    "name": "Mobile Phone",
-    "id": "mobile",
-    "unicodeValue": "f10b",
     "categories": [ "Web Application Icons" ]
   },
   {
@@ -1923,12 +1839,6 @@
     "name": "GBP",
     "id": "gbp",
     "unicodeValue": "f154",
-    "categories": [ "Currency Icons" ]
-  },
-  {
-    "name": "US Dollar",
-    "id": "usd",
-    "unicodeValue": "f155",
     "categories": [ "Currency Icons" ]
   },
   {
@@ -2499,12 +2409,6 @@
     "name": "Car",
     "id": "car",
     "unicodeValue": "f1b9",
-    "categories": [ "Web Application Icons", "Transportation Icons" ]
-  },
-  {
-    "name": "Taxi",
-    "id": "taxi",
-    "unicodeValue": "f1ba",
     "categories": [ "Web Application Icons", "Transportation Icons" ]
   },
   {
