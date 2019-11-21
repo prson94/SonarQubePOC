@@ -232,10 +232,11 @@ namespace d360.web.Controllers
         [ValidateContracts, Authorize]
         public ActionResult NotFound()
         {
+            Response.StatusCode = 404;
             return Json(
                 new {
-                    title = "error",
-                    message = "The requester URL was not found. Please check the URL and all parameters are correct."
+                    title = "Error",
+                    message = "The requested URL was not found. Please check the URL and all parameters are correct."
                 }, 
                 JsonRequestBehavior.AllowGet);
         }
