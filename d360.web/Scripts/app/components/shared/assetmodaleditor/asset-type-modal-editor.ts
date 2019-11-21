@@ -19,6 +19,7 @@ declare var CompanySettings: any;
 export class AssetTypeModalEditorComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() isModalVisable: boolean = false;
     @Output() closeEvent = new EventEmitter;
+    @Output() onSave = new EventEmitter;
     @Input() options: AssetType[] = [];
     private assetType: AssetType = null;
     private assetTypeClass: any;
@@ -79,6 +80,7 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
         this.assetType = null;
         this.assetTypeClass = null;
         this.isModelLoading = false;
+        this.onSave.emit(event);
     }
 
     cancel() {

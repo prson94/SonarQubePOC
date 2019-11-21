@@ -62,6 +62,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private isInfoWindowVisible: boolean = false;
     private isInfoTabDisabled: boolean = true;
     private isWindowLoading = false;
+    private isAddRelationshipWindowVisible: boolean = false;
     private showWindowTabs: boolean = false;
     private tab: string = "info";
     private selectedDiagramAsset: AssetBrowserDiagramAsset;
@@ -275,6 +276,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.resizeDiagram();
             this.cdRef.markForCheck();
         }
+    }
+
+    private addRelationshipsClick(e) {
+        this.isInfoWindowVisible = false;
+        this.isAddRelationshipWindowVisible = !this.isAddRelationshipWindowVisible;
+        this.resizeDiagram();
+        this.cdRef.markForCheck();
     }
 
     private refreshButtonClick(e) {

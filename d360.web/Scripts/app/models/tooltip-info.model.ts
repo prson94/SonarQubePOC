@@ -1,5 +1,6 @@
 ﻿import { Field, FieldType } from './fields.model';
 import { ObjectDetail } from './object-detail.model';
+import { AssetTypeClass } from './asset.model';
 
 export class TooltipFieldValue {
     Name: string;
@@ -21,6 +22,7 @@ export class TooltipInfo {
     Levels: TooltipFieldLevelPath[];
     Description: string;
     ShowTooltip: boolean;
+    Class: AssetTypeClass;
 }
 
 export class LookupTooltipInfo {

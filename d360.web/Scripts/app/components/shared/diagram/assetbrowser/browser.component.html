@@ -25,6 +25,7 @@
                         <div class="button-spacer"></div>
                         <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()" [disabled]="isInfoTabDisabled"><i class="fa fa-info-circle"></i></button>
                         <button class="margin-4" type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
+                        <button type="button" class="asset-browser-button" (click)="addRelationshipsClick($event)" title="Add relationships"><i class="fa fa-plus"></i></button>
                         <button type="button" class="asset-browser-button" (click)="savePngButtonClick($event)" title="Download to PNG"><i class="fa fa-download"></i></button>
                         <div class="button-spacer"></div>
                         <!--<button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>-->
@@ -109,6 +110,11 @@
 
                         </div>
                     </div>
+
+                    <div *ngIf="isAddRelationshipWindowVisible" class="asset-browser-window">
+                        <d3s-diagram-relationships></d3s-diagram-relationships>
+                    </div>
+
                     <div *ngIf="isInfoWindowVisible" class="asset-browser-window">
                         <div *ngIf="!showWindowTabs" style="padding:10px;">Nothing selected</div>
                         <div class="asset-browser-window-header">
