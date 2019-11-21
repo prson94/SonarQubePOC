@@ -84,12 +84,12 @@ export class AssetSearchComponent implements OnInit, OnChanges {
             return;
         }
 
-        if (event.key === "ArrowDown") {
+        if (event.key === "ArrowDown" || event.key === "Down") {
             this.currentSearchNavigationIndex++;
             if (this.currentSearchNavigationIndex > this.pageSize - 1)
                 this.currentSearchNavigationIndex = this.pageSize - 1;
         }
-        if (event.key === "ArrowUp") {
+        if (event.key === "ArrowUp" || event.key === "Up") {
             this.currentSearchNavigationIndex--;
             if (this.currentSearchNavigationIndex < 0)
                 this.currentSearchNavigationIndex = 0;
