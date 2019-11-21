@@ -32,19 +32,15 @@ declare var CompanySettings;
         <div *ngIf="!isLoading"
              class="row">
             <div class="col s12">
-                <div class="row">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-object-definition-tile [nymTypes]="policyType?.NymTypes"
-                                                        [objectPermissions]="permissions"
-                                                        [objectType]="'Policy'"
-                                                        [useV2Api]="true"
-                                                        [objectID]="selected?.ID"
-                                                        [hasAttributes]="policyType.AllowAttributes"
-                                                        (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
-                        </div>
-                    </div>
-                </div>
+               <div class="tile tile-detail">
+                   <d3s-object-definition-tile [nymTypes]="policyType?.NymTypes"
+                                               [objectPermissions]="permissions"
+                                               [objectType]="'Policy'"
+                                               [useV2Api]="true"
+                                               [objectID]="selected?.ID"
+                                               [hasAttributes]="policyType.AllowAttributes"
+                                               (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
+               </div>
             </div>
         </div>
     `,

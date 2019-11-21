@@ -14,7 +14,7 @@ declare var CurrentResourceID;
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
-                    <div *ngIf="showBoard" class="tile tile-detail" style="margin-top: 5px; margin-bottom: 5px;">
+                    <div *ngIf="showBoard" class="tile tile-detail">
                         <d3s-take-survey [surveyType]="surveyType" [objectID]="objectId" [objectType]="objectName" [ShowCloseButton]="true" (surveyBack)="goBack()" (surveyComplete)="handleComplete($event)"></d3s-take-survey>
                     </div>
                 </div>

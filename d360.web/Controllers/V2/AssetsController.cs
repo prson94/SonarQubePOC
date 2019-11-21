@@ -103,6 +103,10 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("types"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+             SwaggerParameter("UseAsTransformation", "Filter by Use As Transformation", DataType = "boolean", ParameterType = "query", Required = false),
+             SwaggerParameter("Hierarchical", "Filter by Hierarchical", DataType = "boolean", ParameterType = "query", Required = false),
+             SwaggerParameter("AutoDisplayDescription", "Filter by Auto Display Description", DataType = "boolean", ParameterType = "query", Required = false),
+             SwaggerParameter("CanOwnFusion", "Filter by Can Own Fusion", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
@@ -126,7 +130,9 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                var assetTypes = await AssetRepository.GetAssetType(Class, fusionTypeGuid);
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                var assetTypes = await AssetRepository.GetAssetType(queryParams,Class, fusionTypeGuid);
 
                 return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
             }

@@ -110,12 +110,6 @@
                          (onCancel)="formMode = FormModeConfig.Default;">
         </d3s-delete-form>
     </div>
-    <div *ngSwitchCase="FormModeConfig.Scheduling">
-        <d3s-fusion-schedule [fusionId]="selectedRow.ID"
-                             [fusionTypeId]="selectedRow.FusionTypeID"
-                             (onClose)="formMode = FormModeConfig.Default;">
-        </d3s-fusion-schedule>
-    </div>
     <div *ngSwitchCase="FormModeConfig.QueryOverrides">
         <d3s-fusion-attribute-type-custom-query [fusionId]="selectedRow.ID"
                                                 [fusionTypeId]="selectedRow.FusionTypeID"

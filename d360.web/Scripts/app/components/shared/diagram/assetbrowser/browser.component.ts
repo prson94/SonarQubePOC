@@ -97,8 +97,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly fontLink: string = "9pt 'Source Sans Pro'";
     private readonly fontLinkColor: string = "#000"
 
+    private readonly textMaxSize = new go.Size(200, Infinity);
+    private readonly textMaxLines = 1;
+    private readonly textOverflowStyle = go.TextBlock.OverflowEllipsis;
+
     private readonly searchHighlightColour = '#FFDA00';
     private readonly searchHighlightColourFocused = '#FD7E0E';
+
+    private zoomText: string = '100%';
 
     constructor(
         private myElement: ElementRef,
@@ -272,7 +278,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private refreshButtonClick(e) {
+        this.diagram.scale = 1;
         this.refreshDiagram();
+        this.updateZoomText();
     }
 
     private zoomInButtonClick(e) {
@@ -281,6 +289,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (this.diagram.scale > 2.5) {
             this.diagram.scale = 2.5;
         }
+
+        this.updateZoomText();
     }
 
     private zoomOutButtonClick(e) {
@@ -289,6 +299,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (this.diagram.scale < .1) {
             this.diagram.scale = .1;
         }
+        this.updateZoomText();
     }
 
     private fullScreenButtonClick(e) {
@@ -629,6 +640,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             });
 
         } else {
+            data.nodes.forEach(n => {
+                n.showIcon = this.filterModel.DisplayIcons;
+            });
             dm.nodeDataArray = data.nodes;
             dm.linkDataArray = data.links;
         }
@@ -963,7 +977,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
   
     @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
         if (event.key === "Escape" || event.key === "Esc") {
-            this.fullScreenButtonClick(null);
+            this.isFullScreen = false;
+            this.resizeDiagram();
+            this.cdRef.markForCheck();
         }
     }
 
@@ -979,9 +995,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.diagramRef.nativeElement.style.height = diagramHeight;
         if (this.isFullScreen)
-            this.diagramRef.nativeElement.style.height = (height - 32) + 'px';
+            this.diagramRef.nativeElement.style.height = (height - 56) + 'px';
         else 
-            this.diagramRef.nativeElement.style.height = (height - 228) + 'px';
+            this.diagramRef.nativeElement.style.height = (height - 238) + 'px';
 
         if (this.filterPanelRef) {
             let filterPanelHeight: string = (this.diagramRef.nativeElement.clientHeight - 130) + 'px';
@@ -1000,6 +1016,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.ownerPanelRef.nativeElement.style.minHeight = infoPanelHeight;
             this.ownerPanelRef.nativeElement.style.maxHeight = infoPanelHeight;
         }
+    }
+
+    private updateZoomText() {
+        this.zoomText = Math.round(this.diagram.scale * 100) + '%';
+        this.cdRef.markForCheck();
     }
 
     private onMouseEnterNode(e: any, node: go.Node) {
@@ -1436,6 +1457,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
+    private createTooltip(): go.Adornment {
+        return this.g("ToolTip",
+            this.g(go.TextBlock,
+                {
+                    maxSize: new go.Size(this.textMaxSize.width * 2, Infinity),
+                    wrap: go.TextBlock.WrapFit
+                },
+                new go.Binding("text", "text")
+            )
+        );
+    }
+
     private createDiagram(): go.Diagram {
         let dg = this.g(go.Diagram, 'LineageDiagram', {
             initialContentAlignment: go.Spot.Center,
@@ -1532,8 +1565,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     alignment: go.Spot.Center,
                                     editable: false,
                                     font: this.fontLabelIcon,
-                                    stroke: this.fontLabelColor//,
-                                    //visible: this.filterDisplayIcons
+                                    stroke: this.fontLabelColor
                                 },
                                 new go.Binding("text", "icon"),
                                 new go.Binding("visible", "showIcon")
@@ -1545,7 +1577,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     editable: false,
                                     margin: 5,
                                     font: this.fontLabel,
-                                    stroke: this.fontLabelColor
+                                    stroke: this.fontLabelColor,
+                                    maxLines: this.textMaxLines,
+                                    maxSize: this.textMaxSize,
+                                    overflow: this.textOverflowStyle,
+                                    toolTip: this.createTooltip()
                                 },
                                 new go.Binding("text", "text").makeTwoWay()
                             )
@@ -1629,8 +1665,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Center,
                             editable: false,
                             font: this.fontLabelIcon,
-                            stroke: this.fontLabelColor//,
-                            //visible: this.filterDisplayIcons
+                            stroke: this.fontLabelColor
                         },
                         new go.Binding("text", "icon"),
                         new go.Binding("visible", "showIcon")
@@ -1642,7 +1677,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             editable: false,
                             margin: 5,
                             font: this.fontLabel,
-                            stroke: this.fontLabelColor
+                            stroke: this.fontLabelColor,
+                            maxLines: this.textMaxLines,
+                            maxSize: this.textMaxSize,
+                            overflow: this.textOverflowStyle,
+                            toolTip: this.createTooltip()
                         },
                         new go.Binding("text", "text").makeTwoWay()
                     )
@@ -1679,8 +1718,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         alignment: go.Spot.Center,
                         editable: false,
                         font: this.fontLabelIcon,
-                        stroke: this.fontLabelColor//,
-                        //visible: this.filterDisplayIcons
+                        stroke: this.fontLabelColor
                     },
                     new go.Binding("text", "icon"),
                     new go.Binding("visible", "showIcon")
@@ -1697,6 +1735,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         font: this.fontLabel,
                         stroke: this.fontLabelColor,
                         visible: false,
+                        maxLines: this.textMaxLines,
+                        maxSize: this.textMaxSize,
+                        overflow: this.textOverflowStyle,
+                        toolTip: this.createTooltip()
                     },
                     new go.Binding("text", "highlight").makeTwoWay(),
                     new go.Binding("visible", "highlight_visible").makeTwoWay(),
@@ -1714,7 +1756,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     {
                         editable: false,
                         font: this.fontLabel,
-                        stroke: this.fontLabelColor
+                        stroke: this.fontLabelColor,
+                        maxLines: this.textMaxLines,
+                        maxSize: this.textMaxSize,
+                        overflow: this.textOverflowStyle,
+                        toolTip: this.createTooltip()
                     },
                     new go.Binding("text", "text").makeTwoWay()
                 )

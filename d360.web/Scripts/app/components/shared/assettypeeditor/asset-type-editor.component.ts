@@ -19,6 +19,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     @Input() parentID: number;
     @Input() assetTypeClass: AssetTypeClass;
     @Input() showDisplayFormat: boolean = true;
+    @Input() fusionId: number;
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
     @Output() onFail = new EventEmitter();
@@ -60,6 +61,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
             this.load();
         }
     }
+
 
     private load(): void {  
         this.isLoading = true;
@@ -139,6 +141,8 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     private save(): void {
         this.isSaving = true;
         this.model.AssetType.Class = this.assetTypeClass;
+        if (this.fusionId)
+            this.model.AssetType.FusionID = this.fusionId;
 
         if (this.model.AssetType.Uid != null && this.model.AssetType.Uid != '00000000-0000-0000-0000-000000000000')
         {

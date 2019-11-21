@@ -66,6 +66,7 @@ namespace d360.web.Controllers.V2
                                     left join[reporting].[Global_Resource] R on R.ResourceID = I.CreatedBy
                                     left join[reporting].[Global_Resource] GR on GR.ResourceID = I.UpdatedBy";
             string selectSql = @"SELECT 
+                                    I.Uid,
                                     A.uid as 'AssetUid',
                                     AT.uid as 'AssetTypeUid',
                                     IT.Name as 'ActionTypeName',

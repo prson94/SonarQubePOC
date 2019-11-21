@@ -10,7 +10,7 @@ declare var CurrentResourceID;
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
-                    <div class="tile tile-detail" style="margin-top: 5px; margin-bottom: 5px;">
+                    <div class="tile tile-detail">
                         <d3s-social-board *ngIf="showBoard" [objectType]="objectType" [objectID]="objectId" [daysToLookBack]="daysToLookBack"></d3s-social-board>
                     </div>
                 </div>
