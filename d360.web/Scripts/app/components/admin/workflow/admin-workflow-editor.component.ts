@@ -19,6 +19,7 @@ import { map, finalize, concatMap} from 'rxjs/operators';
 import * as _ from 'lodash';
 import { State } from '../../../models/asset.model';
 import { Observable, of, Subscription } from 'rxjs';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 declare var CompanySettings;
 
@@ -64,7 +65,8 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     constructor(
         private workflowService: WorkflowService,
         private workflowFieldsService: WorkflowFieldsService,
-        private responsibilityService: ResponsibilityTypeService) {
+        private responsibilityService: ResponsibilityTypeService,
+        private messageService: MessagesObservableService) {
         super();
     }
 
@@ -88,6 +90,22 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.ed = null;
     }
 
+    private close() {
+        this.isLoading = true;
+        if (this.isClone) {
+            this.workflowService.deleteWorkflowType(this.id)
+                .subscribe(r => {
+                    this.isLoading = false;
+                    this.messageService.showInfoMessage("Workflow not saved.", "");
+                    this.onClose.emit();
+                }, err => {
+                    this.messageService.showError("Problem deleting cloned Workflow", err);
+                    this.onClose.emit();
+                });
+        } else {
+            this.onClose.emit();
+        }
+    }
 
 
     load(){
