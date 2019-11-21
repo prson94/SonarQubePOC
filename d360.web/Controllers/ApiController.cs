@@ -5292,13 +5292,13 @@ select	A.ID as AssetID,
         A.[Uid],
         A.ObjectId as ID,
         R.Threshold,
-        R.DisplayValue,
+        A.DisplayValue,
         dbo.GenerateAssetUrl(A.ID) as Url,
         {0}
         R.RuleTypeID,
         {2}
 from	[Rule] R
-        inner join Asset A on A.Object = 'Rule' and A.ObjectID = R.ID 
+        inner join AssetDetail A on A.Object = 'Rule' and A.ObjectID = R.ID 
         {1} 
 where   R.RuleTypeID = @id 
         and A.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
