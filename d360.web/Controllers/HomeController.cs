@@ -225,6 +225,20 @@ namespace d360.web.Controllers
             return RedirectToAction("terms", new { redirectUri = model.RedirectUri });
         }
 
+        /// <summary>
+        /// Fallback for incorrect API URLs
+        /// </summary>
+        /// <returns></returns>
+        [ValidateContracts, Authorize]
+        public ActionResult NotFound()
+        {
+            return Json(
+                new {
+                    title = "error",
+                    message = "The requester URL was not found. Please check the URL and all parameters are correct."
+                }, 
+                JsonRequestBehavior.AllowGet);
+        }
 
         private bool updateContractValidationCache()
         {

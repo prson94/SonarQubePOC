@@ -37,13 +37,21 @@ namespace d360.web
             RouteTable.Routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
             RouteTable.Routes.IgnoreRoute("{resource}.ico");
 
+
             RouteTable.Routes.MapMvcAttributeRoutes();  // MVC Routes
                         
+            RouteTable.Routes.MapRoute(
+                name: "API-Fallback",
+                url: "api/{*url}", // a/{*url}
+                defaults: new { controller = "Home", action = "NotFound" }
+            );
+
             RouteTable.Routes.MapRoute(
                 name: "SPA-Fallback",
                 url: "{*url}", // a/{*url}
                 defaults: new { controller = "Home", action = "App" }
             );
+
 
             #endregion
 
