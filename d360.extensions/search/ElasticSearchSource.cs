@@ -782,7 +782,7 @@ namespace d360.extensions.search
                         phrase = phrase.Remove(phrase.Length - 1);
                     phrase = EscapeSpecialCharacters(phrase) + "*";
 
-                    shouldQueries.Add(new SimpleQueryStringQuery
+                    shouldQueries.Add(new QueryStringQuery
                     {
                         Fields = mainFields.ToArray(),
                         Query = phrase
