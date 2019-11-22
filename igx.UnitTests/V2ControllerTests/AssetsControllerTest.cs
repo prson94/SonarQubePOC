@@ -462,8 +462,10 @@ namespace igx.UnitTests
         [InlineData(DataConstants.InvalidGUID, false)]
         [InlineData(DataConstants.ValidGUID, false)]
         [InlineData(DataConstants.ValidGUID, true)]
-        [InlineData(DataConstants.ValidGUID, true, true)]
-        public async void DeleteBulkAssetsAsync(string uid, bool hasDeleteAsset, bool checkAsSendByJSONContent = false)
+        [InlineData(DataConstants.ValidGUID, true, false,true)]
+        [InlineData(DataConstants.ValidGUID, true,true, false)]
+        [InlineData(DataConstants.ValidGUID, false, true, false)]
+        public async void DeleteBulkAssetsAsync(string uid, bool hasDeleteAsset, bool clearallassetsfromtype = false,bool checkAsSendByJSONContent = false)
         {
             var assetUID = Guid.Parse(uid);
             bool isGoodUID = uid == DataConstants.ValidGUID;
@@ -474,7 +476,8 @@ namespace igx.UnitTests
                 RequestUri = testURI
             };
 
-            var assetDeletes = new AssetDeletes();
+            AssetDeletes assetDeletes = new AssetDeletes();
+            assetDeletes.Add(new AssetDelete());
             if (!hasDeleteAsset)
                 assetDeletes = null;
 
@@ -499,6 +502,28 @@ namespace igx.UnitTests
             if (isGoodUID && hasDeleteAsset)
             {
                 actionResult = await assetsController.DeleteBulkAssetsAsync(assetUID, assetDeletes);
+                responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+                var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
+                var data = JsonConvert.DeserializeObject<JObject>(str);
+
+
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
+                Assert.True(data != null, XMsg.InvalidJSON);
+                Assert.True(data.GetValue("ExecutionID") != null, "ExecutionId field missing from response!");
+                Assert.True(data.GetValue("Message") != null, "Message field missing from response!");
+                Assert.True(data.GetValue("Uri") != null, "Uri field missing from response!");
+            }
+
+            if (isGoodUID && hasDeleteAsset && clearallassetsfromtype)
+            {
+                actionResult = await assetsController.DeleteBulkAssetsAsync(assetUID, assetDeletes,clearallassetsfromtype);
+                responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+            }
+
+            if (isGoodUID && !hasDeleteAsset && clearallassetsfromtype)
+            {
+                actionResult = await assetsController.DeleteBulkAssetsAsync(assetUID, assetDeletes, clearallassetsfromtype);
                 responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
                 var data = JsonConvert.DeserializeObject<JObject>(str);

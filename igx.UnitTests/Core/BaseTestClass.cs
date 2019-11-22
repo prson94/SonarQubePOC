@@ -166,6 +166,9 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.BulkDeleteAssets(It.IsAny<Guid>(), It.IsAny<AssetDeletes>(), It.IsAny<ApiExecution>(),false, true))
                .Returns(Task.FromResult(new ApiExecutionInfo()));
 
+            mockRepo.Setup(x => x.BulkDeleteAssets(It.IsAny<Guid>(), It.IsAny<AssetDeletes>(), It.IsAny<ApiExecution>(), true, true))
+               .Returns(Task.FromResult(new ApiExecutionInfo()));
+
             mockRepo.Setup(x => x.GetExecutionItemByUid(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID)
                 ? new ApiExecution()

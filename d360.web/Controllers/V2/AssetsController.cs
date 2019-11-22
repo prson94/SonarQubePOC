@@ -969,14 +969,14 @@ namespace d360.web.Controllers.V2
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {assetTypeUid} could not be found."));
 
-                if (assets == null)
+                if (assets == null && !clearallassetsfromtype)
                     assets = readRequestJsonContent<AssetDeletes>(Request).Result;
 
                 if ((assets == null && !clearallassetsfromtype) || (assets != null && assets.Count == 0 && !clearallassetsfromtype) || (assets != null && assets.Count > 0 && clearallassetsfromtype))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
 
-                var execution = getApiExecution(assets.Count, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid });
+                var execution = getApiExecution(assets != null ? assets.Count : 0, new ApiExecutionFields_DeleteAssets { AssetTypeUid = assetTypeUid });
 
                 var executionInfo = await AssetRepository.BulkDeleteAssets(assetTypeUid, assets, execution, clearallassetsfromtype, triggersWorkflow);
 

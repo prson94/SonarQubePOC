@@ -1093,7 +1093,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
            
             if ((assets == null || assets.Count == 0) && clearallassetsfromtype)
             {
-                assets.AddRange(CompanyContext.Assets.Include(at => at.AssetType).Where(xx => xx.AssetType.uid == assetTypeUid).Select(xx => new AssetDelete { Uid = xx.uid, Cascade = true }).ToList<AssetDelete>());
+                var assetList = CompanyContext.Assets.Include(at => at.AssetType).Where(xx => xx.AssetType.uid == assetTypeUid).Select(xx => new AssetDelete { Uid = xx.uid, Cascade = true }).ToList<AssetDelete>();
+                assets = new AssetDeletes();
+                if(assetList != null)
+                    assets.AddRange(assetList);
                 execution.Total = assets.Count;
             }
             
