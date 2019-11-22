@@ -32,13 +32,14 @@ import { MenuItem, SelectItem, TreeNode } from 'primeng/api';
 import { setTimeout } from 'core-js';
 import { AssetTypeClass } from '../../../../models/asset.model';
 import { Observable } from 'rxjs';
+import { PredicatesService } from '../../../../services/predicates.service';
 
 declare var window: any;
 
 @Component({
     selector: 'd3s-assetbrowser',
     templateUrl: './browser.component.html',
-    providers: [BrowserService, PermissionsService],
+    providers: [BrowserService, PermissionsService, PredicatesService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit {
@@ -50,6 +51,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('filterPanel', { static: false }) filterPanelRef;
     @ViewChild('infoPanel', { static: false }) infoPanelRef;
     @ViewChild('ownerPanel', { static: false }) ownerPanelRef;
+    @ViewChild('addRelationshipsPanel', { static: false }) addRelationshipsPanelRef;
 
     DiagramObjectType = DiagramObjectType;
 
@@ -176,13 +178,33 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         alert('Alerts coming soon');
     }
 
+    private panelButtonClick(name: string) {
+        switch (name) {
+            case 'add':
+                this.isAddRelationshipWindowVisible = !this.isAddRelationshipWindowVisible;
+                this.isInfoWindowVisible = false;
+                this.isFilterWindowVisible = false;
+                break;
+            case 'filter':
+                this.isAddRelationshipWindowVisible = false;
+                this.isInfoWindowVisible = false;
+                this.isFilterWindowVisible = !this.isFilterWindowVisible;
+                break;
+            case 'info':
+                this.isAddRelationshipWindowVisible = false;
+                this.isFilterWindowVisible = false;
+                this.isInfoWindowVisible = !this.isInfoWindowVisible;
+                break;
+        }
+    }
+
     private infoButtonClick(e) {
-        this.isFilterWindowVisible = false;
-        this.isInfoWindowVisible = !this.isInfoWindowVisible;
+        this.panelButtonClick('info');
 
         if (this.isInfoWindowVisible && this.selectedDiagramAsset != null && this.selectedDiagramAsset.Loaded == false) {
             this.showDetails(this.selectedDiagramAsset.Uid);
         }
+
         this.resizeDiagram();
         this.cdRef.markForCheck();
     }
@@ -255,8 +277,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //#endregion
 
         this.filtersLoading = false;
-        this.isInfoWindowVisible = false;
-        this.isFilterWindowVisible = !this.isFilterWindowVisible;
+        this.panelButtonClick('filter');
         this.resizeDiagram();
         this.cdRef.markForCheck();
     }
@@ -271,16 +292,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
         else {
             this.filtersLoading = false;
-            this.isInfoWindowVisible = false;
-            this.isFilterWindowVisible = !this.isFilterWindowVisible;
+            this.panelButtonClick('filter');
             this.resizeDiagram();
             this.cdRef.markForCheck();
         }
     }
 
     private addRelationshipsClick(e) {
-        this.isInfoWindowVisible = false;
-        this.isAddRelationshipWindowVisible = !this.isAddRelationshipWindowVisible;
+        this.panelButtonClick('add');
         this.resizeDiagram();
         this.cdRef.markForCheck();
     }
@@ -330,12 +349,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return enabled;
     }
 
-    private infoButtonSelectedClass() {
-        return this.isInfoWindowVisible ? "selected" : (this.isInfoTabDisabled ? "disabled" : "");
+    private addButtonSelectedClass() {
+        return this.isAddRelationshipWindowVisible ? "selected" : "";
     }
 
     private filterButtonSelectedClass() {
         return this.isFilterWindowVisible ? "selected" : "";
+    }
+
+    private infoButtonSelectedClass() {
+        return this.isInfoWindowVisible ? "selected" : (this.isInfoTabDisabled ? "disabled" : "");
     }
 
     private ownerRowClass(icon: string) {
@@ -1551,7 +1574,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.Shape,
                         "Rectangle",
                         { fill: null, strokeWidth: 2, isPanelMain: true },
-                        new go.Binding("stroke", "back")
+                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.back, '#ffffff', v.backAmount); })
                     ),
                     this.g(go.Panel, "Vertical",
                         this.g(
@@ -1559,7 +1582,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             "Horizontal",
                             // button next to TextBlock
                             { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
-                            new go.Binding("background", "back"),
+                            new go.Binding("background", "", function (v) { return go.Brush.mix(v.back, '#ffffff', v.backAmount); }),
                             this.g(
                                 "SubGraphExpanderButton",
                                 { alignment: go.Spot.Right, margin: 5 }
@@ -1573,8 +1596,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     alignment: go.Spot.Center,
                                     editable: false,
                                     font: this.fontLabelIcon,
-                                    stroke: this.fontLabelColor
+                                    //stroke: this.fontLabelColor
                                 },
+                                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, '#000000', v.foreAmount); }),
                                 new go.Binding("text", "icon"),
                                 new go.Binding("visible", "showIcon")
                             ),
@@ -1585,12 +1609,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     editable: false,
                                     margin: 5,
                                     font: this.fontLabel,
-                                    stroke: this.fontLabelColor,
+                                    //stroke: this.fontLabelColor,
                                     maxLines: this.textMaxLines,
                                     maxSize: this.textMaxSize,
                                     overflow: this.textOverflowStyle,
                                     toolTip: this.createTooltip()
                                 },
+                                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, '#000000', v.foreAmount); }),
                                 new go.Binding("text", "text").makeTwoWay()
                             )
                         ),  // end Horizontal Panel
@@ -1649,7 +1674,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 go.Shape,
                 "Rectangle",
                 { fill: null, strokeWidth: 2, stretch: go.GraphObject.Horizontal },
-                new go.Binding("stroke", "back"),
+                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.back, '#ffffff', v.backAmount); })
             ),
             this.g(
                 go.Panel,
@@ -1659,7 +1684,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     "Horizontal",
                     // button next to TextBlock
                     { stretch: go.GraphObject.Horizontal },
-                    new go.Binding("background", "back"),
+                    new go.Binding("background", "", function (v) { return go.Brush.mix(v.back, '#ffffff', v.backAmount); }),
                     this.g(
                         "SubGraphExpanderButton",
                         { alignment: go.Spot.Right, margin: 5 }
@@ -1672,9 +1697,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: 0,
                             alignment: go.Spot.Center,
                             editable: false,
-                            font: this.fontLabelIcon,
-                            stroke: this.fontLabelColor
+                            font: this.fontLabelIcon//,
+                            //stroke: this.fontLabelColor
                         },
+                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, '#000000', v.foreAmount); }),
                         new go.Binding("text", "icon"),
                         new go.Binding("visible", "showIcon")
                     ),
@@ -1685,22 +1711,27 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             editable: false,
                             margin: 5,
                             font: this.fontLabel,
-                            stroke: this.fontLabelColor,
+                            //stroke: this.fontLabelColor,
                             maxLines: this.textMaxLines,
                             maxSize: this.textMaxSize,
                             overflow: this.textOverflowStyle,
                             toolTip: this.createTooltip()
                         },
+                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, '#000000', v.foreAmount); }),
                         new go.Binding("text", "text").makeTwoWay()
                     )
                 ),  // end Horizontal Panel
-                this.g(go.Placeholder, { padding: 2, alignment: go.Spot.TopLeft })
+                this.g(
+                    go.Placeholder,
+                    { padding: 2, alignment: go.Spot.TopLeft }//,
+                    //new go.Binding("background", "", function (v) { return go.Brush.mix(v.back, '#ffffff', v.backAmount); })
+                )
             ),
 
             // end Vertical Panel
         );
     }
-
+    //new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.back, '#ffffff', v.backAmount); })
     private createListItemNode(): go.Node {
         return this.g(go.Node, "Auto",
             {
@@ -1711,9 +1742,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 go.Panel,
                 "Horizontal",
                 { stretch: go.GraphObject.Horizontal, padding: 5 },
-                new go.Binding("background", "isHighlighted",
-                    function (h) { return h ? "#F5C2FF" : "#FFFFFF"; }
-                ).ofObject(),
+                new go.Binding("background", "isHighlighted", function (h) { return h ? "#F5C2FF" : "#FFFFFF"; }).ofObject(),
                 this.g(
                     go.Shape,
                     { width: 10, height: 0, stroke: "transparent" }
@@ -1739,6 +1768,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.g(
                     go.TextBlock,
                     {
+                        stretch: go.GraphObject.Fill,
                         editable: false,
                         font: this.fontLabel,
                         stroke: this.fontLabelColor,
@@ -1819,9 +1849,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 { stretch: go.GraphObject.Horizontal, padding: 10, type: go.Panel.Spot },
                 this.g(
                     "Shape",
-                    { alignment: go.Spot.Center, width: 25, height: 25 },
+                    {
+                        alignment: go.Spot.Center,
+                        width: 25,
+                        height: 25//,
+                        //stroke: this.g("Brush", "Solid", new go.Binding("color", "back", function (v) { return this.shadeColor(v, -15); }))
+                    },
                     new go.Binding("fill", "back"),
-                    new go.Binding("stroke", "back", function (v) { return this.shadeColor(v, -15); }),
+                    new go.Binding("stroke", "back", function (v) { return go.Brush.mix(v, '#ffffff', .15); })//this.shadeColor(v, -15); }),
                 ),
                 this.g(
                     go.TextBlock,
