@@ -550,7 +550,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var result = tagRepository.GetTagByName(tag.Name);
+                var result = tagRepository.GetTagByName(tag.Value);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 

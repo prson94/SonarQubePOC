@@ -152,7 +152,8 @@ namespace d360.web.Controllers.V2
         /// Inserts or updates a given set of predicates.
         /// </summary>
         /// <remarks>
-        /// For updating existing predicate, add the predicate Uid to the request.
+        /// You also have the option of providing a Uid for this new predicate, which helps when migrating between environments. 
+        /// When updating an existing predicate, you must include its Uid in the request.
         /// </remarks>
         /// <param name="predicates">The list of predicates for insertion.</param>
         /// <returns>An HTTP status code and message.</returns>

@@ -146,7 +146,7 @@ namespace d360.web.Controllers.V2
         ///         - **bit** : Value representing true/false.
         ///         - **date** : Value representing a date without a time component.
         ///         - **datetime** : Value representing a date with a time component.
-        ///         - **float** : Value representing
+        ///         - **float** : Value representing a variable length decimal number.
         ///         - **int** : Value representing a large 32-bit number less than 2,147,483,647.
         ///         - **nvarchar** : Value representing unicode text.
         /// - `Link` *(Link)*
