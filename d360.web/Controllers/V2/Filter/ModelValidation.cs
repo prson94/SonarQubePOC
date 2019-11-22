@@ -4,7 +4,6 @@ using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 using System.Linq;
 using d360.web.Models;
-using d360.model;
 
 namespace d360.web.Controllers.V2
 {
@@ -12,6 +11,7 @@ namespace d360.web.Controllers.V2
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
+
             //Check model validity on PUT, POST and DELETE method.
             //Throw error only if it is caused by JSON
             if (actionContext.Request.Method == HttpMethod.Post
