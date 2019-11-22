@@ -11,6 +11,7 @@ export class D3SModal implements OnChanges {
     @Input() additionalClasses: string = '';
     @Input() isVisible: false;
     @Input() showConfirm: false;
+    @Input() showTitle: boolean = true;
 
     @Output() onClose = new EventEmitter();
     @Output() onConfirm = new EventEmitter();
