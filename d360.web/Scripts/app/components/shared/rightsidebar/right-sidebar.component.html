@@ -93,9 +93,9 @@
         </div>
     </div>
 </div>
-<d3s-modal [title]="'Request Certification'" additionalClasses="medium-width" (onClose)="closeCertifyModal()" [isVisible]="showCertifyModal">
+<d3s-modal [showTitle]="false" additionalClasses="medium-width request-cert" (onClose)="closeCertifyModal()" [isVisible]="showCertifyModal">
     <div class="content">
-        <div>Click Confirm to send a certification request to the term owner.</div>
+        <div>Click Confirm to request certification of this asset.</div>
     </div>
     <div class="action-bar">
         <button class="button" (click)="closeCertifyModal()">Cancel</button>
