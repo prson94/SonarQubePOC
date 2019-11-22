@@ -12,10 +12,10 @@ namespace d360.model.DataAccessLayer
         Task<TagApiModelWrapper> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams);
         Task<dynamic> GetTagsForExcel(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool DeleteTags(List<TagApiDeleteModel> models);
-        TagApiModel CreateTag(TagApiModel model);
-        TagApiModel UpdateTag(Guid uid, TagApiModel model, Tag tag);
+        TagApiModel CreateTag(TagApiUpsertModel model);
+        TagApiModel UpdateTag(Guid uid, TagApiUpsertModel model, Tag tag);
         bool DoesTagExists(string value);
-        bool DoesTagExists(TagApiModel model);
+        bool DoesTagExists(Guid tagUid, TagApiUpsertModel model);
         Tag GetTagByUid(Guid uid);
         Tag GetTagByName(string name);
         Tag GetTagById(int tagId);

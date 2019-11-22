@@ -110,6 +110,9 @@ export class TagView extends BaseComponent implements OnInit {
                         this.tagsLoading = false;
                         this.ref.markForCheck();
                     }
+
+                    this.searchResults.forEach(x => x.Value = x.name);
+                    
             }, err => this.error = err);
         }, 400);
     }
@@ -133,7 +136,7 @@ export class TagView extends BaseComponent implements OnInit {
 
     checkKey(event,value) {
         if (event.key == "Enter" ) {
-            event.name = value;
+            event.Value = value;
             this.saveTag(event);
         }
     }
@@ -143,16 +146,16 @@ export class TagView extends BaseComponent implements OnInit {
         var tags = Array<TagApiModel>();
         let tag = new TagApiModel();
         tag.AssetUID = this.assetUID;
-        tag.TagName = event.name;
+        tag.TagName = event.Value;
         tags.push(tag);
         this.tags.forEach(x => {
-            if (x.Value == event.name) {
+            if (x.Value == event.Value) {
                 this.existingTag = true;
                 this.showEditor = false;
                 this.messagesService.showError('Error', 'Tag already assigned to Asset');
             }
         })
-        if (event.name.includes("|")) {
+        if (event.Value.includes("|")) {
             this.existingTag = true;
             this.messagesService.showError('Error', "Tag can't contain | character");
         }
@@ -160,7 +163,6 @@ export class TagView extends BaseComponent implements OnInit {
             this.tagService.doesTagExist(event)
                 .subscribe(result => {
                     if (result == null) {
-                        event.Value = event.name;
                         this.tagService.saveTag(event)
                             .subscribe(result => {
                                 let msg: string = '';
@@ -192,11 +194,10 @@ export class TagView extends BaseComponent implements OnInit {
                             .subscribe(result => {
                                 let msg: string = '';
                                 if (result != null) {
-                                    msg = `${event.name} succesfully added to Asset`;
+                                    msg = `${event.Value} succesfully added to Asset`;
                                 }
                                 this.showMessageForResult(this.messagesService, result, msg);
                                 event.uid = result[0].Uid;
-                                event.Value = event.name;
                                 this.tags.push(event);
                                 this.tags = this.tags.sort((a, b) => a.Value.localeCompare(b.Value));
                                 event.UseCount = 0;

@@ -24,9 +24,9 @@
                         <button type="button" title="Filter asset browser" (click)="filterButtonClick($event)" [class]="filterButtonSelectedClass()"><i class="fa fa-filter"></i></button>
                         <div class="button-spacer"></div>
                         <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()" [disabled]="isInfoTabDisabled"><i class="fa fa-info-circle"></i></button>
-                        <button class="margin-4" type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
-                        <button type="button" class="asset-browser-button" (click)="addRelationshipsClick($event)" [class]="addButtonSelectedClass()" title="Add relationships"><i class="fa fa-plus"></i></button>
-                        <button type="button" class="asset-browser-button" (click)="savePngButtonClick($event)" title="Download to PNG"><i class="fa fa-download"></i></button>
+                        <button type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
+                        <button type="button" title="Add relationships" (click)="addRelationshipsClick($event)" [class]="addButtonSelectedClass()"><i class="fa fa-plus"></i></button>
+                        <button type="button" title="Download to PNG" (click)="savePngButtonClick($event)" class="right-margin-4"><i class="fa fa-download"></i></button>
                         <div class="button-spacer"></div>
                         <!--<button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>-->
                         <button type="button" title="{{isFullScreen ? 'Minimize':'Full screen'}}" (click)="fullScreenButtonClick($event)"><i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-arrows-alt' : !isFullScreen}"></i></button>
@@ -228,10 +228,10 @@
                     </div>
 
                     <div #bottomCommandBar class="asset-browser-controls-bottom">
-                        <div class="asset-browser-button-group group-background">
-                            <button type="button" title="Zoom in" (click)="zoomInButtonClick($event)"><i class="fa fa-plus-circle"></i></button>
-                            <span class="diagram-zoom">{{zoomText}}</span>
+                        <div class="asset-browser-button-group zoom-controls">
                             <button type="button" title="Zoom out" (click)="zoomOutButtonClick($event)"><i class="fa fa-minus-circle"></i></button>
+                            <span class="diagram-zoom">{{zoomText}}</span>
+                            <button type="button" title="Zoom in" (click)="zoomInButtonClick($event)"><i class="fa fa-plus-circle"></i></button>
                         </div>
                     </div>
                 

@@ -16,7 +16,7 @@ namespace igx.UnitTests.ValidatorTests
         [Fact]
         public static void PostTest_ValidMode()
         {
-            var model = new TagApiModel() { Value = "valid length name" };
+            var model = new TagApiUpsertModel() { Value = "valid length name" };
 
 
             //implicit "DoesNotThrow" check
@@ -44,7 +44,7 @@ namespace igx.UnitTests.ValidatorTests
         [Fact]
         public static void PostTest_NullValue()
         {
-            Action act = () => TagValidator.ValidateForPost(new TagApiModel() { });
+            Action act = () => TagValidator.ValidateForPost(new TagApiUpsertModel() { });
             var exception = Assert.Throws<Exception>(act);
 
             Assert.True(exception.Message.Contains("[no value]"), XMsg.BadResponseMessage);
@@ -54,7 +54,7 @@ namespace igx.UnitTests.ValidatorTests
         [Fact]
         public static void PostTest_TooLongValue()
         {
-            var model = new TagApiModel()
+            var model = new TagApiUpsertModel()
             {
                 Value = string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127)))
             };
@@ -69,7 +69,7 @@ namespace igx.UnitTests.ValidatorTests
         [Fact]
         public static void PostTest_EdgeValueLength()
         {
-            var model = new TagApiModel()
+            var model = new TagApiUpsertModel()
             {
                 Value = string.Join("", Enumerable.Repeat(0, 250).Select(n => (char)new Random().Next(127)))
             };
@@ -80,9 +80,8 @@ namespace igx.UnitTests.ValidatorTests
         [Fact]
         public static void PutTest_ValidMode()
         {
-            var model = new TagApiModel() { Value = "valid length name" };
+            var model = new TagApiUpsertModel() { Value = "valid length name" };
             var guid = Guid.NewGuid();
-            model.uid = guid;
 
             //implicit "DoesNotThrow" check
             try
@@ -110,7 +109,7 @@ namespace igx.UnitTests.ValidatorTests
         public static void PutTest_NullValue()
         {
             var guid = new Guid();
-            Action act = () => TagValidator.ValidateForPut(guid, new TagApiModel() { uid = guid });
+            Action act = () => TagValidator.ValidateForPut(guid, new TagApiUpsertModel() { });
             var exception = Assert.Throws<Exception>(act);
 
             Assert.True(exception.Message.Contains("[no value]"), XMsg.BadResponseMessage);
@@ -120,12 +119,11 @@ namespace igx.UnitTests.ValidatorTests
         [Fact]
         public static void PutTest_TooLongValue()
         {
-            var model = new TagApiModel()
+            var model = new TagApiUpsertModel()
             {
                 Value = string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127)))
             };
             Guid guid = new Guid();
-            model.uid = guid;
 
             Action act = () => TagValidator.ValidateForPut(guid, model);
             var exception = Assert.Throws<Exception>(act);
@@ -137,12 +135,11 @@ namespace igx.UnitTests.ValidatorTests
         [Fact]
         public static void PutTest_GuidEmpty()
         {
-            var model = new TagApiModel()
+            var model = new TagApiUpsertModel()
             {
                 Value = "valid name"
             };
             Guid guid = Guid.Empty;
-            model.uid = guid;
 
             Action act = () => TagValidator.ValidateForPut(guid, model);
             var exception = Assert.Throws<Exception>(act);
@@ -151,33 +148,14 @@ namespace igx.UnitTests.ValidatorTests
 
         }
 
-        [Fact]
-        public static void PutTest_GuidsDifferent()
-        {
-            var model = new TagApiModel()
-            {
-                Value = "valid name"
-            };
-            Guid guid = Guid.NewGuid();
-            model.uid = Guid.NewGuid();
-
-            Action act = () => TagValidator.ValidateForPut(guid, model);
-            var exception = Assert.Throws<Exception>(act);
-
-            Assert.True(exception.Message.Contains("uid doesnt match model uid"), XMsg.BadResponseMessage);
-
-        }
-
 
         [Fact]
         public static void PutTest_EdgeValueLength()
         {
-            var model = new TagApiModel()
+            var model = new TagApiUpsertModel()
             {
                 Value = string.Join("", Enumerable.Repeat(0, 250).Select(n => (char)new Random().Next(127)))
             };
-            Guid guid = new Guid();
-            model.uid = guid;
             try
             {
                 TagValidator.ValidateForPost(model);
