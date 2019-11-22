@@ -246,30 +246,36 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
 
         }
 
-        public TagApiModel CreateTag(TagApiModel model)
+        public TagApiModel CreateTag(TagApiUpsertModel model)
         {
+            var result = new TagApiModel();
+            result.Value = model.Value;
+
             var tag = new Tag { Value = model.Value };
             companyContext.Add(tag);
             AddTagAudit(tag, "Add");
 
             var user = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == companyContext.CurrentResourceID);
 
-            model.uid = tag.uid;
-            model.UpdatedOn = tag.UpdatedOn.GetValueOrDefault();
-            model.UpdatedByUid = user.Uid;
-            model.CreatedOn = tag.CreatedOn.GetValueOrDefault();
-            model.CreatedByUid = user.Uid;
+            result.uid = tag.uid;
+            result.UpdatedOn = tag.UpdatedOn.GetValueOrDefault();
+            result.UpdatedByUid = user.Uid;
+            result.CreatedOn = tag.CreatedOn.GetValueOrDefault();
+            result.CreatedByUid = user.Uid;
 
-            return model;
+            return result;
         }
 
-        public TagApiModel UpdateTag(Guid uid, TagApiModel model, Tag existingTag)
+        public TagApiModel UpdateTag(Guid uid, TagApiUpsertModel model, Tag existingTag)
         {
+            var result = new TagApiModel();
             existingTag.Value = model.Value;
             companyContext.Update(existingTag);
 
-            model.UpdatedOn = existingTag.UpdatedOn.GetValueOrDefault();
-            model.CreatedOn = existingTag.CreatedOn.GetValueOrDefault();
+            result.Value = model.Value;
+            result.uid = existingTag.uid;
+            result.UpdatedOn = existingTag.UpdatedOn.GetValueOrDefault();
+            result.CreatedOn = existingTag.CreatedOn.GetValueOrDefault();
 
             // Send To Queue.Task Table
             AddTagAudit(existingTag, "Update");
@@ -284,16 +290,16 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
             var createUser = companyContext.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == existingTag.CreatedBy);
             if (createUser != null)
             {
-                model.CreatedByUid = createUser.Uid;
+                result.CreatedByUid = createUser.Uid;
             }
             var updateUser = companyContext.GlobalReportingResources.First(x => x.ResourceID == companyContext.CurrentResourceID);
             if (updateUser != null)
             {
-                model.UpdatedByUid = updateUser.Uid;
+                result.UpdatedByUid = updateUser.Uid;
             }
 
 
-            return model;
+            return result;
         }
 
         public Tag GetTagByUid(Guid uid)
@@ -316,9 +322,9 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
             return companyContext.Tags.Any(x => x.Value == value && x.State == State.Active);
         }
 
-        public bool DoesTagExists(TagApiModel model)
+        public bool DoesTagExists(Guid existingTagUid, TagApiUpsertModel model)
         {
-            return companyContext.Tags.Any(x => x.Value == model.Value && x.uid != model.uid && x.State == State.Active);
+            return companyContext.Tags.Any(x => x.Value == model.Value && x.uid != existingTagUid && x.State == State.Active);
         }
 
         public List<AssetTagList> GetAssetsPathForTag(Guid tagUid)

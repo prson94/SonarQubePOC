@@ -32,6 +32,11 @@ namespace d360.core.entities
         public DateTime UpdatedOn { get; set; }
     }
 
+    public class TagApiUpsertModel
+    {
+        public string Value { get; set; }
+    }
+
     public class AssetTagApiModel
     {
         [DataMember]

@@ -9,7 +9,7 @@ namespace d360.model.validators
 {
     public class TagValidator
     {
-        public static void ValidateForPost(TagApiModel model)
+        public static void ValidateForPost(TagApiUpsertModel model)
         {
             if (model == null)
             {
@@ -27,7 +27,7 @@ namespace d360.model.validators
             }
         }
 
-        public static void ValidateForPut(Guid uid, TagApiModel model)
+        public static void ValidateForPut(Guid uid, TagApiUpsertModel model)
         {
             if (model == null)
             {
@@ -49,10 +49,6 @@ namespace d360.model.validators
                 throw new Exception("Invalid uid specified.");
             }
 
-            if (uid != model.uid)
-            {
-                throw new Exception("Invalid update tag request specified uid doesnt match model uid.");
-            }
         }
 
     }
