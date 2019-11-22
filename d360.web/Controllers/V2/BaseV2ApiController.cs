@@ -10,7 +10,8 @@ using System.Threading.Tasks;
 
 namespace d360.web.Controllers.V2
 {
-    [ApiRequestValidator]
+    [ValidateModel]
+    [ValidateCompanyState]
     public class BaseV2ApiController : BaseApiController
     {
         ICompanyContext _company;

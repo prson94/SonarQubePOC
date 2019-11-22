@@ -8,26 +8,10 @@ using d360.model;
 
 namespace d360.web.Controllers.V2
 {
-    public class ApiRequestValidatorAttribute : ActionFilterAttribute
+    public class ValidateModelAttribute : ActionFilterAttribute
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
-            bool isCompanyActive = true;
-            try
-            {
-                var requestScope = actionContext.Request.GetDependencyScope();
-                var communityContext = requestScope.GetService(typeof(ICommunityContext)) as ICommunityContext;
-                isCompanyActive = communityContext.CurrentCompanySsoModel.IsCompanyActive;
-            }
-            catch
-            {
-            }
-
-            if (!isCompanyActive)
-            {
-                throw new RestApiException(System.Net.HttpStatusCode.Forbidden, "Company Inactive", "The Govern environment you requested is currently inactive. Please contact Infogix support for additional information.");
-            }
-
             //Check model validity on PUT, POST and DELETE method.
             //Throw error only if it is caused by JSON
             if (actionContext.Request.Method == HttpMethod.Post
