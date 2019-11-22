@@ -28,7 +28,7 @@ namespace d360.extensions
 
         void CreateTopicMessages(List<EventInfo> events);
         void CreateTopicMessages(string topicName, List<EventInfo> events);
-        void CreateTopicMessages<T>(string topicName, List<T> events);
+        void CreateTopicMessages<T>(string topicName, List<T> events, DateTime? scheduledEnqueueTime = null);
 
         Task CreateTopicMessagesAsync(List<EventInfo> events);
         Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events);
