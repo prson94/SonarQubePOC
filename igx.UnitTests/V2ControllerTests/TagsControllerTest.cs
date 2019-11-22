@@ -70,7 +70,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public void PostTag()
         {
-            var model = new TagApiModel() { Value = DataConstants.Tags.ValidName };
+            var model = new TagApiUpsertModel() { Value = DataConstants.Tags.ValidName };
 
             var actionResult = tagsController.PostTag(model);
 
@@ -87,7 +87,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public void PostTag_Error()
         {
-            var model = new TagApiModel() { Value = "invalid_name" };
+            var model = new TagApiUpsertModel() { Value = "invalid_name" };
 
             var actionResult = tagsController.PostTag(model);
 
@@ -105,7 +105,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public void PutTag()
         {
-            var model = new TagApiModel() { uid = Guid.Parse(DataConstants.ValidGUID), Value = DataConstants.Tags.ValidName };
+            var model = new TagApiUpsertModel() { Value = DataConstants.Tags.ValidName };
 
             var actionResult = tagsController.Put(Guid.Parse(DataConstants.ValidGUID), model);
 
@@ -122,7 +122,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public void PutTag_ErrorInvalidGuid()
         {
-            var model = new TagApiModel() { uid = Guid.Parse(DataConstants.ValidGUID), Value = DataConstants.Tags.ValidName };
+            var model = new TagApiUpsertModel() { Value = DataConstants.Tags.ValidName };
 
             var actionResult = tagsController.Put(Guid.Parse(DataConstants.InvalidGUID), model);
 
@@ -141,7 +141,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public void PutTag_ErrorInvalidName()
         {
-            var model = new TagApiModel() { uid = Guid.Parse(DataConstants.ValidGUID), Value = "invalid name" };
+            var model = new TagApiUpsertModel() { Value = "invalid name" };
 
             var actionResult = tagsController.Put(Guid.Parse(DataConstants.InvalidGUID), model);
 
