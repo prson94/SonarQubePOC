@@ -77,6 +77,7 @@ export class AssetType {
 export class AssetTypeClassApiModel {
     ID: number;
     Name: string;
+    Value: AssetTypeClass;
     Description: string;
 }
 
