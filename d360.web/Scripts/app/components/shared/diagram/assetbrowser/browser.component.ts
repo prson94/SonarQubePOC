@@ -271,7 +271,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private filterButtonSelectedClass() {
-        return this.isFilterWindowVisible ? "selected" : "";
+        return this.isFilterWindowVisible ? "right-margin-4 selected" : "right-margin-4";
     }
 
     private ownerRowClass(icon: string) {
