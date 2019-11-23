@@ -29,6 +29,7 @@ import { BaseObservableService } from "./baseObservable.service";
 import { IconService } from './icon.service';
 import { AssetTypeClass } from '../models/asset.model';
 import { IconProperties } from '../models/icon-properties.model';
+
 @Injectable()
 export class BrowserService extends BaseObservableService {
     private iconProperties: IconProperties[] = [];
@@ -154,7 +155,7 @@ export class BrowserService extends BaseObservableService {
 
         try {
             model.assets.forEach(a => {
-                this.loadTranslationChildNodes(translationModel, model.intersects, a, null, a.backColor, 1);
+                this.loadTranslationChildNodes(translationModel, model.intersects, a, null, a.backColor, a.foreColor, 0);
             });
         } catch (e) {
             console.log(e);
@@ -315,11 +316,12 @@ export class BrowserService extends BaseObservableService {
         intersects: AssetBrowserLineageApiRelationshipModel[],
         current: AssetBrowserLineageApiItemModel,
         parentKey: string,
-        color: string,
+        backColor: string,
+        foreColor: string, 
         multiplier: number) {
 
         // Create the current node.
-        let currentNode: AssetBrowserTranslationNode = this.createTranslationNode(current, parentKey, color, multiplier);
+        let currentNode: AssetBrowserTranslationNode = this.createTranslationNode(current, parentKey, backColor, foreColor, multiplier);
 
         //Instantiate new multiplier as we do not want to impact the parent's multiplier.
         let newMultiplier: number = multiplier + 1;
@@ -327,7 +329,7 @@ export class BrowserService extends BaseObservableService {
         if (current.items) {
             current.items.forEach(a => {
                 // Recurse
-                this.loadTranslationChildNodes(translationModel, intersects, a, current.key, color, newMultiplier);
+                this.loadTranslationChildNodes(translationModel, intersects, a, current.key, backColor, foreColor, newMultiplier);
             });
         }
 
@@ -343,7 +345,8 @@ export class BrowserService extends BaseObservableService {
     private createTranslationNode(
         a: AssetBrowserLineageApiItemModel,
         parentKey: string,
-        color: string,
+        backColor: string,
+        foreColor: string, 
         multiplier: number): AssetBrowserTranslationNode {
         let n: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
 
@@ -362,7 +365,10 @@ export class BrowserService extends BaseObservableService {
         n.assetUid = a.assetUid;
         n.assetTypeId = a.assetTypeId;
         n.class = AssetTypeClass[a.class] as any; //convert string from API to enum value
-        n.back = this.shadeColor(color, multiplier * 15);
+        n.back = backColor;
+        n.backAmount = ((multiplier <= 4) ? multiplier : 4) * .2;
+        n.fore = (foreColor) ? foreColor : "#404040";
+        n.foreAmount = 0;//((multiplier <= 4) ? multiplier : 4) * .2;
         n.icon = this.getIconUnicode(a.icon, n.class);
         n.isGroup = (a.items && a.items.length > 0);
         n.key = a.key;
@@ -379,38 +385,6 @@ export class BrowserService extends BaseObservableService {
         }
 
         return n;
-    }
-
-    /**
-    * Accepts an rgb color and converts it to a lighter shade based on the number provided.
-    * @returns An RGB color that represents the new lighter color.
-    */
-    private shadeColor(col, amt): string {
-
-        var usePound = false;
-        if (col[0] == "#") {
-            col = col.slice(1);
-            usePound = true;
-        }
-
-        var num = parseInt(col, 16);
-
-        var r = (num >> 16) + amt;
-
-        if (r > 255) r = 255;
-        else if (r < 0) r = 0;
-
-        var b = ((num >> 8) & 0x00FF) + amt;
-
-        if (b > 255) b = 255;
-        else if (b < 0) b = 0;
-
-        var g = (num & 0x0000FF) + amt;
-
-        if (g > 255) g = 255;
-        else if (g < 0) g = 0;
-
-        return (usePound ? "#" : "") + (g | (b << 8) | (r << 16)).toString(16);
     }
 
     /**

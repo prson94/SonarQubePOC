@@ -458,7 +458,10 @@ export class AssetBrowserTranslationNode {
     isGroup: boolean;
     text: string;
     template: string;
+    fore: string;
+    foreAmount: number;
     back: string;
+    backAmount: number;
     icon: string;
     class: AssetTypeClass;
     subgraph: any;
