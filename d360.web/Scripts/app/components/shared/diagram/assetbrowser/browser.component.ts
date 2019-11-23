@@ -86,9 +86,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#endregion
 
-    //#region Control Properties
+    //#region Constants
 
-    // Constants
     private readonly fontContextMenu: string = "12px 'Source Sans Pro'";
     private readonly fontContextMenuShowDetails: string = "bold 12px 'Source Sans Pro'";
     private readonly fontRelationBadge: string = "8pt 'Source Sans Pro'";
@@ -98,16 +97,27 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly fontLabel: string = "12px 'Source Sans Pro'";
     private readonly fontLabelColor: string = "#404040";
     private readonly fontLink: string = "9pt 'Source Sans Pro'";
-    private readonly fontLinkColor: string = "#000"
+    private readonly fontLinkColor: string = "#000";
+    private readonly lightenBoxColor: string = "#fff";
+    private readonly darkenBoxColor: string = "#000";
+    private readonly linkDefaultBackColor: string = '#ccc';
+    private readonly linkDefaultBorderColor: string = '#999';
+    private readonly plusIcon: string = '\uf067';
 
     private readonly textMaxSize = new go.Size(200, Infinity);
     private readonly textMaxLines = 1;
     private readonly textOverflowStyle = go.TextBlock.OverflowEllipsis;
 
-    private readonly searchHighlightColour = '#FFDA00';
-    private readonly searchHighlightColourFocused = '#FD7E0E';
-
+    private readonly searchHighlightColour: string = '#FFDA00';
+    private readonly searchHighlightColourFocused: string = '#FD7E0E';
+    private readonly selectionPathHighlightColor: string = '#F5C2FF';
+    private readonly leafBackColor: string = '#fff';
     private zoomText: string = '100%';
+
+
+    //#endregion
+
+    //#region Control Properties
 
     constructor(
         private myElement: ElementRef,
@@ -1414,7 +1424,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 { alignment: go.Spot.Center },
                 this.g(go.Panel, "Auto",
                     this.g(go.Shape,
-                        { figure: "RoundedRectLeft", parameter1: 2, fill: "white", stroke: "#404040", strokeWidth: 1 },
+                        { figure: "RoundedRectLeft", parameter1: 2, fill: this.fontRelationBadgeCountColor, stroke: this.fontRelationBadgeCountColor, strokeWidth: 1 },
                     ),
                     this.g(
                         go.TextBlock,
@@ -1431,7 +1441,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 ),
                 this.g(go.Panel, "Auto",
                     this.g(go.Shape, "RoundedRectRight",
-                        { parameter1: 2, stroke: "#404040", strokeWidth: 1, fill: "#404040" }
+                        { parameter1: 2, stroke: this.fontRelationBadgeCountColor, strokeWidth: 1, fill: this.fontRelationBadgeCountColor }
                     ),
                     this.g(
                         go.TextBlock,
@@ -1574,7 +1584,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.Shape,
                         "Rectangle",
                         { fill: null, strokeWidth: 2, isPanelMain: true },
-                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.back, '#ffffff', v.backAmount); })
+                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount); })
                     ),
                     this.g(go.Panel, "Vertical",
                         this.g(
@@ -1582,7 +1592,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             "Horizontal",
                             // button next to TextBlock
                             { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
-                            new go.Binding("background", "", function (v) { return go.Brush.mix(v.back, '#ffffff', v.backAmount); }),
+                            new go.Binding("background", "", function (v) { return go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount); }),
                             this.g(
                                 "SubGraphExpanderButton",
                                 { alignment: go.Spot.Right, margin: 5 }
@@ -1598,7 +1608,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     font: this.fontLabelIcon,
                                     //stroke: this.fontLabelColor
                                 },
-                                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, '#000000', v.foreAmount); }),
+                                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount); }),
                                 new go.Binding("text", "icon"),
                                 new go.Binding("visible", "showIcon")
                             ),
@@ -1615,7 +1625,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     overflow: this.textOverflowStyle,
                                     toolTip: this.createTooltip()
                                 },
-                                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, '#000000', v.foreAmount); }),
+                                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount); }),
                                 new go.Binding("text", "text").makeTwoWay()
                             )
                         ),  // end Horizontal Panel
@@ -1674,7 +1684,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 go.Shape,
                 "Rectangle",
                 { fill: null, strokeWidth: 2, stretch: go.GraphObject.Horizontal },
-                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.back, '#ffffff', v.backAmount); })
+                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount); })
             ),
             this.g(
                 go.Panel,
@@ -1684,7 +1694,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     "Horizontal",
                     // button next to TextBlock
                     { stretch: go.GraphObject.Horizontal },
-                    new go.Binding("background", "", function (v) { return go.Brush.mix(v.back, '#ffffff', v.backAmount); }),
+                    new go.Binding("background", "", function (v) { return go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount); }),
                     this.g(
                         "SubGraphExpanderButton",
                         { alignment: go.Spot.Right, margin: 5 }
@@ -1700,7 +1710,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             font: this.fontLabelIcon//,
                             //stroke: this.fontLabelColor
                         },
-                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, '#000000', v.foreAmount); }),
+                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount); }),
                         new go.Binding("text", "icon"),
                         new go.Binding("visible", "showIcon")
                     ),
@@ -1717,21 +1727,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             overflow: this.textOverflowStyle,
                             toolTip: this.createTooltip()
                         },
-                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, '#000000', v.foreAmount); }),
+                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount); }),
                         new go.Binding("text", "text").makeTwoWay()
                     )
                 ),  // end Horizontal Panel
                 this.g(
                     go.Placeholder,
-                    { padding: 2, alignment: go.Spot.TopLeft }//,
-                    //new go.Binding("background", "", function (v) { return go.Brush.mix(v.back, '#ffffff', v.backAmount); })
+                    { padding: 2, alignment: go.Spot.TopLeft }
                 )
             ),
 
             // end Vertical Panel
         );
     }
-    //new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.back, '#ffffff', v.backAmount); })
+
     private createListItemNode(): go.Node {
         return this.g(go.Node, "Auto",
             {
@@ -1742,7 +1751,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 go.Panel,
                 "Horizontal",
                 { stretch: go.GraphObject.Horizontal, padding: 5 },
-                new go.Binding("background", "isHighlighted", function (h) { return h ? "#F5C2FF" : "#FFFFFF"; }).ofObject(),
+                new go.Binding("background", "isHighlighted", function (h) { return h ? this.selectionPathHighlightColor : this.leafBackColor; }).ofObject(),
                 this.g(
                     go.Shape,
                     { width: 10, height: 0, stroke: "transparent" }
@@ -1820,7 +1829,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     "Shape",
                     { alignment: go.Spot.Center, width: 25, height: 25 },
                     new go.Binding("fill", "back"),
-                    new go.Binding("stroke", "back", function (v) { return this.shadeColor(v, -15); }),
+                    new go.Binding("stroke", "back", function (v) { return go.Brush.mix(v, this.lightenBoxColor, .15); }),
                 ),
                 this.g(
                     go.TextBlock,
@@ -1830,7 +1839,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         editable: false,
                         font: this.fontLabelIcon,
                         stroke: this.fontLabelColor,
-                        text: '\uf067'
+                        text: this.plusIcon
                     },
                 )
             )  // end Horizontal Panel
@@ -1852,11 +1861,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     {
                         alignment: go.Spot.Center,
                         width: 25,
-                        height: 25//,
-                        //stroke: this.g("Brush", "Solid", new go.Binding("color", "back", function (v) { return this.shadeColor(v, -15); }))
+                        height: 25
                     },
                     new go.Binding("fill", "back"),
-                    new go.Binding("stroke", "back", function (v) { return go.Brush.mix(v, '#ffffff', .15); })//this.shadeColor(v, -15); }),
+                    new go.Binding("stroke", "back", function (v) { return go.Brush.mix(v, this.lightenBoxColor, .15); })
                 ),
                 this.g(
                     go.TextBlock,
@@ -1866,7 +1874,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         editable: false,
                         font: this.fontLabelIcon,
                         stroke: this.fontLabelColor,
-                        text: '\uf067'
+                        text: this.plusIcon
                     },
                 )
             )  // end Horizontal Panel
@@ -1897,13 +1905,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     go.Shape,
                     {
                         visible: false,
-                        fill: '#ccc',
-                        //fill: this.g(go.Brush, "Radial", {
-                        //    0: "rgb(255, 255, 255)",
-                        //    0.3: "rgb(255, 255, 255)",
-                        //    1: "rgba(255, 255, 255, 0)"
-                        //}),
-                        stroke: '#999',
+                        fill: this.linkDefaultBackColor,
+                        stroke: this.linkDefaultBorderColor,
                         strokeDashArray: [3, 2]
                     },
                     new go.Binding("background", "back"),
