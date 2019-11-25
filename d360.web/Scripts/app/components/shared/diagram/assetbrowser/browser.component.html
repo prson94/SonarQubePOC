@@ -43,99 +43,100 @@
                     
                     <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
                     
-                    <div *ngIf="isFilterWindowVisible" class="asset-browser-window">
-                        <div class="asset-browser-window-header">
-                            <div class="asset-browser-window-header-name">Filters</div>
-                            <div class="clearfix"></div>
+
+                    <div class="asset-browser-window-header" *ngIf="isFilterWindowVisible">
+                        <div class="asset-browser-window-header-name">Filters</div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="asset-browser-window-content asset-browser-window-content-padded" *ngIf="isFilterWindowVisible">
+                        <div class="filter-section">
+                            <div class="filter-header">Asset Ancestry</div>
+                            <div>
+                                <p-dropdown [options]="filterSelectionsModel?.AncestryOptions" [ngModel]="filterModel.AncestryMode" (ngModelChange)="filterModel.AncestryMode = $event; filterAncestryModeChange()" styleClass="filter-dropdown"></p-dropdown>
+                            </div>
                         </div>
-                        <div #filterPanel class="asset-browser-window-tabs-content">
-                            <div class="filter-section">
-                                <div class="filter-header">Asset Ancestry</div>
+
+                        <div class="filter-section">
+                            <div class="filter-header"># Hops To Load</div>
+                            <div>
+                                <p-dropdown [options]="filterSelectionsModel?.HopOptions" [ngModel]="filterModel.NumberOfHops" (ngModelChange)="filterModel.NumberOfHops = $event; filterNumberOfHopsChange()" styleClass="filter-dropdown"></p-dropdown>
+                            </div>
+                        </div>
+
+                        <div class="filter-section">
+                            <div class="filter-header">Display</div>
+                            <div>
                                 <div>
-                                    <p-dropdown [options]="filterSelectionsModel?.AncestryOptions" [ngModel]="filterModel.AncestryMode" (ngModelChange)="filterModel.AncestryMode = $event; filterAncestryModeChange()" styleClass="filter-dropdown"></p-dropdown>
+                                    <p-checkbox [(ngModel)]="filterModel.DisplayBadges" binary="true" label="Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterBadgesChange()"></p-checkbox>
+                                </div>
+                                <div>
+                                    <p-checkbox [(ngModel)]="filterModel.DisplayIcons" binary="true" label="Icons" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterDisplayIconsChange()"></p-checkbox>
+                                </div>
+                                <div>
+                                    <p-checkbox [(ngModel)]="filterModel.DisplayScores" binary="true" label="Scores" labelStyleClass="filter-checkbox-label" (ngModelChange)="saveFilter()"></p-checkbox>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="filter-section">
-                                <div class="filter-header"># Hops To Load</div>
-                                <div>
-                                    <p-dropdown [options]="filterSelectionsModel?.HopOptions" [ngModel]="filterModel.NumberOfHops" (ngModelChange)="filterModel.NumberOfHops = $event; saveFilter()" styleClass="filter-dropdown"></p-dropdown>
-                                </div>
-                            </div>
+                        <div class="filter-section">
+                            <div class="filter-header">Hide By Asset Type</div>
+                            <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
+                            <p-tree [value]="filterSelectionsModel?.FilterAssetTypes"
+                                    [hidden]="filtersLoading"
+                                    selectionMode="checkbox"
+                                    styleClass="filter-tree"
+                                    [selection]="selectedFilterAssetTypes"
+                                    (selectionChange)="selectedFilterAssetTypes = $event; filterAssetTypeChange($event)"
+                                    (onNodeExpand)="resizeDiagram()"
+                                    [propagateSelectionUp]="false"
+                                    [propagateSelectionDown]="true">
+                                <ng-template let-node pTemplate="default">
+                                    <div style="word-break: break-word; max-width: 275px;">{{node.label}}</div>
+                                </ng-template>
+                            </p-tree>
+                        </div>
 
-                            <div class="filter-section">
-                                <div class="filter-header">Display</div>
-                                <div>
-                                    <div>
-                                        <p-checkbox [(ngModel)]="filterModel.DisplayBadges" binary="true" label="Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterBadgesChange()"></p-checkbox>
-                                    </div>
-                                    <div>
-                                        <p-checkbox [(ngModel)]="filterModel.DisplayIcons" binary="true" label="Icons" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterDisplayIconsChange()"></p-checkbox>
-                                    </div>
-                                    <div>
-                                        <p-checkbox [(ngModel)]="filterModel.DisplayScores" binary="true" label="Scores" labelStyleClass="filter-checkbox-label" (ngModelChange)="saveFilter()"></p-checkbox>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="filter-section">
-                                <div class="filter-header">Hide By Asset Type</div>
-                                <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
-                                <p-tree [value]="filterSelectionsModel?.FilterAssetTypes"
-                                        [hidden]="filtersLoading"
-                                        selectionMode="checkbox"
-                                        styleClass="filter-tree"
-                                        [selection]="selectedFilterAssetTypes"
-                                        (selectionChange)="selectedFilterAssetTypes = $event; filterAssetTypeChange($event)"
-                                        (onNodeExpand)="resizeDiagram()"
-                                        [propagateSelectionUp]="false"
-                                        [propagateSelectionDown]="true">
-                                    <ng-template let-node pTemplate="default">
-                                        <div style="word-break: break-word; max-width: 300px; text-wrap: normal">{{node.label}}</div>
-                                    </ng-template>
-                                </p-tree>
-                            </div>
-
-                            <div class="filter-section">
-                                <div class="filter-header">Hide by Impact Predicates</div>
-                                <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
-                                <p-tree [value]="filterSelectionsModel?.FilterPredicates"
-                                        [hidden]="filtersLoading"
-                                        selectionMode="checkbox"
-                                        styleClass="filter-tree"
-                                        [selection]="selectedFilterPredicates"
-                                        (selectionChange)="selectedFilterPredicates = $event; filterPredicateChange($event)"
-                                        (onNodeExpand)="resizeDiagram()"
-                                        [propagateSelectionUp]="false"
-                                        [propagateSelectionDown]="true"></p-tree>
-                            </div>
+                        <div class="filter-section">
+                            <div class="filter-header">Hide by Impact Predicates</div>
+                            <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
+                            <p-tree [value]="filterSelectionsModel?.FilterPredicates"
+                                    [hidden]="filtersLoading"
+                                    selectionMode="checkbox"
+                                    styleClass="filter-tree"
+                                    [selection]="selectedFilterPredicates"
+                                    (selectionChange)="selectedFilterPredicates = $event; filterPredicateChange($event)"
+                                    (onNodeExpand)="resizeDiagram()"
+                                    [propagateSelectionUp]="false"
+                                    [propagateSelectionDown]="true">
+                                <ng-template let-node pTemplate="default">
+                                    <div style="word-break: break-word; max-width: 275px;">{{node.label}}</div>
+                                </ng-template>
+                            </p-tree>
                         </div>
                     </div>
 
-                    <div *ngIf="isAddRelationshipWindowVisible" class="asset-browser-window">
-                        <div class="asset-browser-window-header">
-                            <div class="asset-browser-window-header-name">Add Lineage</div>
-                            <div class="clearfix"></div>
-                        </div>
-                        <div #addRelationshipsPanel class="asset-browser-window-tabs-content">
-                            <d3s-diagram-relationships></d3s-diagram-relationships>
-                        </div>
+
+                    <div class="asset-browser-window-header" *ngIf="isAddRelationshipWindowVisible">
+                        <div class="asset-browser-window-header-name">Add Lineage</div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="asset-browser-window-content asset-browser-window-content-padded" *ngIf="isAddRelationshipWindowVisible">
+                        <d3s-diagram-relationships></d3s-diagram-relationships>
                     </div>
 
-                    <div *ngIf="isInfoWindowVisible" class="asset-browser-window">
-                        <div *ngIf="!showWindowTabs" style="padding:10px;">Nothing selected</div>
-                        <div class="asset-browser-window-header">
-                            <div [hidden]="!showWindowTabs && !isWindowLoading" class="asset-browser-window-header-name">
-                                {{selectedDiagramAsset?.DisplayValue}}
-                                <span style="font-size: 75%"><a [routerLink]="selectedDiagramAsset?.Url">[<span class="fa fa-link"></span>]</a></span>
-                            </div>
-                            <div class="asset-browser-window-header-class">{{selectedDiagramAsset?.AssetTypeClassDisplayName}}</div>
-                            <div class="clearfix"></div>
+
+                    <div *ngIf="isInfoWindowVisible" class="asset-browser-window-header">
+                        <div class="asset-browser-window-header-name" [title]="selectedDiagramAsset?.DisplayValue">
+                            <a [routerLink]="selectedDiagramAsset?.Url">{{selectedDiagramAsset?.DisplayValue}}</a>
                         </div>
-                        <p-tabView *ngIf="showWindowTabs" styleClass="asset-browser-window-tabs">
-                            <p-tabPanel header="Details" headerStyleClass="asset-browser-window-tabs-header">
+                        <div class="asset-browser-window-header-class">{{selectedDiagramAsset?.AssetTypeClassDisplayName}}</div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div *ngIf="isInfoWindowVisible" class="asset-browser-window-content">
+                        <p-tabView>
+                            <p-tabPanel header="Details">
                                 <d3s-loading [(isLoading)]="isWindowLoading"></d3s-loading>
-                                <div #infoPanel [(hidden)]="isWindowLoading" class="asset-browser-window-tabs-content">
+                                <div [(hidden)]="isWindowLoading" class="asset-browser-window-tabs-content">
                                     <div class="asset-browser-window-tabs-content-field">
                                         <div class="asset-browser-window-tabs-content-field-name">Full Path:</div>
                                         <div style="word-break:break-word">{{selectedDiagramAsset?.Path}}</div>
@@ -146,7 +147,7 @@
                                         <span>{{selectedDiagramAsset?.TypeName}}</span>
                                     </div>
 
-                                    <div *ngIf="filterDisplayScores">
+                                    <div *ngIf="filterModel.DisplayScores">
                                         <div class="asset-browser-window-tabs-content-field" *ngFor="let field of selectedDiagramAsset?.Scores">
                                             <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:&#160;</span>
                                             <span [class]="scoreClass(field.Value)">{{field.Value}}%</span>
@@ -201,7 +202,7 @@
                                 </div>
                             </p-tabPanel>
                             <p-tabPanel header="Ownership" headerStyleClass="asset-browser-window-tabs-header" [disabled]="!OwnershipTabEnabled()">
-                                <div #ownerPanel class="asset-browser-window-tabs-content">
+                                <div class="asset-browser-window-tabs-content">
                                     <p-table #dt [value]="selectedDiagramAsset?.Owners" [metaKeySelection]="true" [style]="{'width':'450px'}">
                                         <ng-template pTemplate="header">
                                             <tr>
@@ -227,7 +228,8 @@
                         </p-tabView>
                     </div>
 
-                    <div #bottomCommandBar class="asset-browser-controls-bottom">
+
+                    <div class="asset-browser-controls-bottom">
                         <div class="asset-browser-button-group zoom-controls">
                             <button type="button" title="Zoom out" (click)="zoomOutButtonClick($event)"><i class="fa fa-minus-circle"></i></button>
                             <span class="diagram-zoom">{{zoomText}}</span>
