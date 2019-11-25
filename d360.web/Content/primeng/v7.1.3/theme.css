@@ -1492,3 +1492,7 @@ p-calendar .ui-datepicker {
 .ui-overlaypanel {
     margin-top: 0px; 
 }
+
+.asset-browser-window-tabs .ui-tabview-panels{
+    overflow:auto;
+}
