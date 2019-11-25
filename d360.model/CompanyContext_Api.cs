@@ -1253,7 +1253,7 @@ from	IntersectType I
             //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.Object, at.ObjectID, ChangeType.Delete);
 
-            var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (executionItemDupes.Any())
             {
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";

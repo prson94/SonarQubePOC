@@ -1100,7 +1100,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return executionInfo;
         }
 
-        public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool sendWorkflowEvents = true)
+        public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool clearallassetsfromtype, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
             {
@@ -1112,8 +1112,18 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 SendWorkflowEvents = sendWorkflowEvents
             };
 
-            // Save to storage container.
-            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
+           
+            if ((assets == null || assets.Count == 0) && clearallassetsfromtype)
+            {
+                var assetList = CompanyContext.Assets.Include(at => at.AssetType).Where(xx => xx.AssetType.uid == assetTypeUid).Select(xx => new AssetDelete { Uid = xx.uid, Cascade = true }).ToList<AssetDelete>();
+                assets = new AssetDeletes();
+                if(assetList != null)
+                    assets.AddRange(assetList);
+                execution.Total = assets.Count;
+            }
+            
+                // Save to storage container.
+                StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
             await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
