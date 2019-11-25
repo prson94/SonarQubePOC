@@ -606,13 +606,16 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 			                where not exists (select 1 from #Relationships where [Object] = I.[Object] and ObjectID = I.ObjectID);
 
                             insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
-                            select  IntersectTypeID,
-                                    Subject,
-                                    SubjectID,
-                                    Object,
-                                    ObjectID    
-                            from    #Relationships
-                            where  ID is null;
+                            select  R.IntersectTypeID,
+                                    R.Subject,
+                                    R.SubjectID,
+                                    R.Object,
+                                    R.ObjectID
+                                from    #Relationships R
+							    inner join AssetDetail ADO on ADO.Object = R.Object and ADO.ObjectID = R.ObjectID
+							    inner join AssetDetail ADS on ADS.Object = R.Subject and ADS.ObjectID = R.SubjectID
+							    inner join [IntersectType] IT on IT.ID = IntersectTypeID
+                                where  R.ID is null and ADO.Type = IT.Object AND ADS.Type = IT.Subject;
                 end
 ",
             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
