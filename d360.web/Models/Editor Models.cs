@@ -490,23 +490,6 @@ namespace d360.web.Models
         {
             var valid = new FieldValidity();
 
-            if (FieldType.Type == core.DataType.FusionLookup.ToString())
-            {
-                if (FusionItems == null)
-                {
-                    valid.Valid = false;
-                    valid.Message = "You are missing one or more fusion items.";
-                }
-                else
-                {
-                    if (FusionItems.Count == 0)
-                    {
-                        valid.Valid = false;
-                        valid.Message = "You are missing one or more fusion items.";
-                    }
-                }
-            }
-
             return valid;
         }
     }

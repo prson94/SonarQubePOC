@@ -4,7 +4,7 @@ import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
-import { Predicate } from '../models/predicate.model';
+import { Predicate, PredicateType } from '../models/predicate.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { ApiResult } from '../models/apiresult.model';
 
@@ -26,7 +26,17 @@ export class PredicatesService extends BaseObservableService {
             );
     }
 
-    deletePredicate(uid: number): Observable<ApiResult[]> {    
+    getPredicatesByType(type: PredicateType): Observable<Predicate[]> {
+        return this
+            .http
+            .get('/api/v2/relationships/predicates?Type=' + type)
+            .pipe(
+                map(response => <Predicate[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    deletePredicate(uid: number): Observable<ApiResult[]> {
         var model = [];
         model.push({ Uid: uid });
         const httpHeaders = {

@@ -16,9 +16,6 @@ namespace d360.core.entities
         public Guid uid { get; set; }
         [DataMember, StringLength(250)]
         public string Value { get; set; }
-        [DataMember, StringLength(250)]
-        public string Name { get; set; }
-
         [DataMember]
         public int UseCount { get; set; }
         [DataMember]
@@ -30,6 +27,11 @@ namespace d360.core.entities
         public Guid? UpdatedByUid { get; set; }
         [DataMember]
         public DateTime UpdatedOn { get; set; }
+    }
+
+    public class TagApiUpsertModel
+    {
+        public string Value { get; set; }
     }
 
     public class AssetTagApiModel

@@ -144,7 +144,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
-        public IHttpActionResult PostTag(TagApiModel model)
+        public IHttpActionResult PostTag(TagApiUpsertModel model)
         {
 
             if (model == null)
@@ -190,7 +190,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
-        public IHttpActionResult Put(Guid tagUid, TagApiModel model)
+        public IHttpActionResult Put(Guid tagUid, TagApiUpsertModel model)
         {
             if (!tagRepository.IsAuthorizedToEditTag(tagUid))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
@@ -208,7 +208,7 @@ namespace d360.web.Controllers.V2
                     throw new Exception("Invalid uid no tag exists with the specified uid.");
                 }
 
-                if (tagRepository.DoesTagExists(model))
+                if (tagRepository.DoesTagExists(tagUid, model))
                 {
                     throw new Exception("Invalid tag specified [same tag already exists].");
                 }
@@ -550,7 +550,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var result = tagRepository.GetTagByName(tag.Name);
+                var result = tagRepository.GetTagByName(tag.Value);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 

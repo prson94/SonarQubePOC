@@ -76,6 +76,7 @@
 
             <d3s-asset-delete-editor *ngIf="showDelete"
                                      [uid]="selected?.Uid"
+                                     [displayValue]="(selected?.DisplayValue ? selected?.DisplayValue : 'Rule')"
                                      [assetTypeUid]="ruleType?.AssetTypeUID"
                                      (onCancel)="showDelete = false"
                                      (onDeleted)="onDeleted()">

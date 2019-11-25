@@ -440,15 +440,22 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
 
         private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool shouldCheckExistingFieldValues = true)
         {
-            return Connection.Query<AssetFieldTypeUpdate>($@"
-select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from {tableName} EA 
-	inner join api.ExecutionField EF on EF.ExecutionID = EA.ExecutionID 
-                        and EF.ItemNumber = EA.ItemNumber 
-                        and EA.ObjectID is not null 
-                        and EF.FieldTypeID is not null
-	inner join Field F on F.FieldTypeId = EF.FieldTypeID and F.ObjectType = EA.Object and F.ObjectId = EA.ObjectID
-where EA.ExecutionID = @executionID and EA.IsNew <> 1 {(shouldCheckExistingFieldValues ? "and F.Value <> EF.FieldValue" : "")} and @sendWorkflowEvents = 1 and EA.ItemNumber between @beginItemNumber and @endItemNumber
+            List<AssetFieldTypeUpdate> res = new List<AssetFieldTypeUpdate>();
 
+            if(sendWorkflowEvents)
+            {
+                res = Connection.Query<AssetFieldTypeUpdate>($@"
+                    select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from {tableName} EA 
+	                    inner join api.ExecutionField EF on EF.ExecutionID = EA.ExecutionID 
+                                            and EF.ItemNumber = EA.ItemNumber 
+                                            and EA.ObjectID is not null 
+                                            and EF.FieldTypeID is not null
+	                    inner join Field F on F.FieldTypeId = EF.FieldTypeID and F.ObjectType = EA.Object and F.ObjectId = EA.ObjectID
+                    where EA.ExecutionID = @executionID and EA.IsNew <> 1 {(shouldCheckExistingFieldValues ? "and F.Value <> EF.FieldValue" : "")} and @sendWorkflowEvents = 1 and EA.ItemNumber between @beginItemNumber and @endItemNumber"
+                    ,new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
+            }
+
+            Connection.Execute($@"
 merge       Field as T
 using       (
             select  distinct 
@@ -474,7 +481,9 @@ on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.Ob
 when		not matched by target then
 insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
 values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
-            new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
+            new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+            return res;
         }
 
         private void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
@@ -882,7 +891,7 @@ from	api.ExecutionField T
             }
         }
 
-        private void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null)
+        private void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false)
         {
             List<AssetEventInfo> events = new List<AssetEventInfo>();
 
@@ -901,7 +910,7 @@ from	api.ExecutionField T
             }
 
             if (events.Any())
-                QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
+                QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events, delayedDelivery ? new DateTime?(DateTime.UtcNow.AddSeconds(15)) : null);
         }
 
         #region Validation
@@ -3602,7 +3611,10 @@ select [uid] from #ParentChildRelationships",
                                         trans.Commit();
 
                                         //Add items after commit, so we dont have dirty data if trans is rolled back
-                                        fieldTypeUpdates.AddRange(transationFieldUpdates);
+                                        if (transationFieldUpdates != null && transationFieldUpdates.Count > 0)
+                                        {
+                                            fieldTypeUpdates.AddRange(transationFieldUpdates);
+                                        }
                                         runCompleted = true;
                                     }
                                     catch (Exception ex)
@@ -3653,7 +3665,7 @@ select [uid] from #ParentChildRelationships",
                         {
                             var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
                             sw.Restart();
-                            SendAssetGraphEvents(graphResults, changedFields);
+                            SendAssetGraphEvents(graphResults, changedFields,true);
                             this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
                         }
                         catch { }
@@ -4491,7 +4503,7 @@ from    [Intersect] T
                 SendAssetGraphEvents(results);
 
                 if (sendWorkflowEvents)
-                    SendWorkflowEvents("IntersectType", it.ID, results);
+                    SendWorkflowEvents("IntersectType", it.ID, results, ChangeType.Delete);
             }
 
             return results;

@@ -24,8 +24,9 @@
                         <button type="button" title="Filter asset browser" (click)="filterButtonClick($event)" [class]="filterButtonSelectedClass()"><i class="fa fa-filter"></i></button>
                         <div class="button-spacer"></div>
                         <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()" [disabled]="isInfoTabDisabled"><i class="fa fa-info-circle"></i></button>
-                        <button class="margin-4" type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
-                        <button type="button" class="asset-browser-button" (click)="savePngButtonClick($event)" title="Download to PNG"><i class="fa fa-download"></i></button>
+                        <button type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
+                        <button type="button" title="Add relationships" (click)="addRelationshipsClick($event)" [class]="addButtonSelectedClass()"><i class="fa fa-plus"></i></button>
+                        <button type="button" title="Download to PNG" (click)="savePngButtonClick($event)" class="right-margin-4"><i class="fa fa-download"></i></button>
                         <div class="button-spacer"></div>
                         <!--<button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>-->
                         <button type="button" title="{{isFullScreen ? 'Minimize':'Full screen'}}" (click)="fullScreenButtonClick($event)"><i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-arrows-alt' : !isFullScreen}"></i></button>
@@ -39,7 +40,9 @@
             </div>
             <div class="row" style="position: relative">
                 <div class="col s12" style="padding: 0">
+                    
                     <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
+                    
                     <div *ngIf="isFilterWindowVisible" class="asset-browser-window">
                         <div class="asset-browser-window-header">
                             <div class="asset-browser-window-header-name">Filters</div>
@@ -49,14 +52,14 @@
                             <div class="filter-section">
                                 <div class="filter-header">Asset Ancestry</div>
                                 <div>
-                                    <p-dropdown [options]="filterAncestryOptions" [ngModel]="filterModel.AncestryMode" (ngModelChange)="filterModel.AncestryMode = $event; saveFilter()" optionLabel="Text" dataKey="Mode" styleClass="filter-dropdown"></p-dropdown>
+                                    <p-dropdown [options]="filterSelectionsModel?.AncestryOptions" [ngModel]="filterModel.AncestryMode" (ngModelChange)="filterModel.AncestryMode = $event; filterAncestryModeChange()" styleClass="filter-dropdown"></p-dropdown>
                                 </div>
                             </div>
 
                             <div class="filter-section">
                                 <div class="filter-header"># Hops To Load</div>
                                 <div>
-                                    <p-dropdown [options]="filterNumberOfHopOptions" [ngModel]="filterModel.NumberOfHops" (ngModelChange)="filterModel.NumberOfHops = $event; saveFilter()" styleClass="filter-dropdown"></p-dropdown>
+                                    <p-dropdown [options]="filterSelectionsModel?.HopOptions" [ngModel]="filterModel.NumberOfHops" (ngModelChange)="filterModel.NumberOfHops = $event; saveFilter()" styleClass="filter-dropdown"></p-dropdown>
                                 </div>
                             </div>
 
@@ -76,10 +79,10 @@
                             </div>
 
                             <div class="filter-section">
-                                <div class="filter-header">Filter By Asset Type</div>
-                                <d3s-loading [isLoading]="filterAssetTypesLoading"></d3s-loading>
-                                <p-tree [value]="filterAssetTypes"
-                                        [hidden]="filterAssetTypesLoading"
+                                <div class="filter-header">Hide By Asset Type</div>
+                                <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
+                                <p-tree [value]="filterSelectionsModel?.FilterAssetTypes"
+                                        [hidden]="filtersLoading"
                                         selectionMode="checkbox"
                                         styleClass="filter-tree"
                                         [selection]="selectedFilterAssetTypes"
@@ -94,10 +97,10 @@
                             </div>
 
                             <div class="filter-section">
-                                <div class="filter-header">Filter by Impact Predicates</div>
-                                <d3s-loading [isLoading]="filterPredicatesLoading"></d3s-loading>
-                                <p-tree [value]="filterPredicates"
-                                        [hidden]="filterPredicatesLoading"
+                                <div class="filter-header">Hide by Impact Predicates</div>
+                                <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
+                                <p-tree [value]="filterSelectionsModel?.FilterPredicates"
+                                        [hidden]="filtersLoading"
                                         selectionMode="checkbox"
                                         styleClass="filter-tree"
                                         [selection]="selectedFilterPredicates"
@@ -106,9 +109,19 @@
                                         [propagateSelectionUp]="false"
                                         [propagateSelectionDown]="true"></p-tree>
                             </div>
-
                         </div>
                     </div>
+
+                    <div *ngIf="isAddRelationshipWindowVisible" class="asset-browser-window">
+                        <div class="asset-browser-window-header">
+                            <div class="asset-browser-window-header-name">Add Lineage</div>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div #addRelationshipsPanel class="asset-browser-window-tabs-content">
+                            <d3s-diagram-relationships></d3s-diagram-relationships>
+                        </div>
+                    </div>
+
                     <div *ngIf="isInfoWindowVisible" class="asset-browser-window">
                         <div *ngIf="!showWindowTabs" style="padding:10px;">Nothing selected</div>
                         <div class="asset-browser-window-header">
@@ -135,7 +148,7 @@
 
                                     <div *ngIf="filterDisplayScores">
                                         <div class="asset-browser-window-tabs-content-field" *ngFor="let field of selectedDiagramAsset?.Scores">
-                                            <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}</span>
+                                            <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:&#160;</span>
                                             <span [class]="scoreClass(field.Value)">{{field.Value}}%</span>
                                         </div>
                                     </div>
@@ -213,13 +226,15 @@
                             </p-tabPanel>
                         </p-tabView>
                     </div>
+
                     <div #bottomCommandBar class="asset-browser-controls-bottom">
-                        <div class="asset-browser-button-group group-background">
-                            <button type="button" title="Zoom in" (click)="zoomInButtonClick($event)"><i class="fa fa-plus-circle"></i></button>
-                            <span class="diagram-zoom">{{zoomText}}</span>
+                        <div class="asset-browser-button-group zoom-controls">
                             <button type="button" title="Zoom out" (click)="zoomOutButtonClick($event)"><i class="fa fa-minus-circle"></i></button>
+                            <span class="diagram-zoom">{{zoomText}}</span>
+                            <button type="button" title="Zoom in" (click)="zoomInButtonClick($event)"><i class="fa fa-plus-circle"></i></button>
                         </div>
                     </div>
+                
                 </div>
             </div>
         </div>

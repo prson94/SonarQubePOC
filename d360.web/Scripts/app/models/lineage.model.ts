@@ -432,6 +432,7 @@ export class SourceRuleSource {
 export class AssetBrowserTranslationRelationCount {
     key: string;
     predicate: string;
+    predicateId: number;
     predicateUid: string;
     direction: AssetBrowserDirection;
     count: number;
@@ -444,18 +445,23 @@ export class AssetBrowserTranslationLink {
     toPort: string;
     text: string;
     back: string;
+    predicateIds: number[];
     impacts: string[];
 }
 
 export class AssetBrowserTranslationNode {
     hop: number;
     assetUid: string;
+    assetTypeId: number;
     key: string;
     group: string;
     isGroup: boolean;
     text: string;
     template: string;
+    fore: string;
+    foreAmount: number;
     back: string;
+    backAmount: number;
     icon: string;
     class: AssetTypeClass;
     subgraph: any;
@@ -505,6 +511,7 @@ export class AssetBrowserImpactApiAssetRequestModel {
 
 export class AssetBrowserLineageApiItemRelationCountModel {
     Predicate: string;
+    PredicateId: number;
     PredicateUid: string;
     Direction: AssetBrowserDirection;
     Count: number;
@@ -513,6 +520,7 @@ export class AssetBrowserLineageApiItemRelationCountModel {
 export class AssetBrowserLineageApiItemModel {
     hop: number;
     assetUid: string;
+    assetTypeId: number;
     key: string;
     displayValue: string;
     backColor: string;
@@ -531,6 +539,7 @@ export class AssetBrowserLineageApiRelationshipModel {
     objectUid: string;
     objectKey: string;
     predicate: string;
+    predicateId: number;
     predicateUid: string;
     predicateType: number;
     backColor: string;
@@ -589,9 +598,9 @@ export class AssetBrowserDiagramAssetOwner {
 //#region Asset Browser : FilterPanel Data
 
 export enum FilterAncestryMode {
-    AllAncestors,
-    DirectAncestor,
-    NoAncestor
+    AllAncestors = 1,
+    DirectAncestor = 2,
+    NoAncestor = 3
 }
 
 export class FilterAncestryOption {
@@ -599,8 +608,22 @@ export class FilterAncestryOption {
     Text: string;
 }
 
-//#endregion
+export class AssetBrowserAssetTypeFilterModel {
+    Uid: string;
+    Path: string;
+    AssetTypeId: number;
+    ClassId: number;
+    Class: string;
+}
 
+export class AssetBrowserPredicateFilterModel {
+    Id: number;
+    Uid: number;
+    Name: string;
+    Inverse: string;
+    TypeId: number;
+    Type: string;
+}
 
 export class AssetBrowserFilterModel {
     AncestryMode: FilterAncestryMode = FilterAncestryMode.AllAncestors;
@@ -608,6 +631,35 @@ export class AssetBrowserFilterModel {
     DisplayIcons: boolean = true;
     DisplayScores: boolean = true;
     NumberOfHops: number = 3;
-    SelectedAssetTypes: string[] = [];
-    SelectedPredicates: string[] = [];
+    SelectedAssetTypes: number[] = [];
+    SelectedPredicates: number[] = [];
 }
+
+export class FilterSelectionsModel {
+    AssetTypeOptions: AssetBrowserAssetTypeFilterModel[];
+    PredicateOptions: AssetBrowserPredicateFilterModel[];
+    AncestryOptions: SelectItem[] = [
+        { value: FilterAncestryMode.AllAncestors, label: 'Show all parents/owners' },
+        { value: FilterAncestryMode.DirectAncestor, label: 'Show direct parent/owner' }//,
+        //{ value: FilterAncestryMode.NoAncestor, label: 'Show no parents/owners' }
+    ];
+    HopOptions: SelectItem[] = [
+        { label: 'One', value: 1 },
+        { label: 'Two', value: 2 },
+        { label: 'Three', value: 3 },
+        { label: 'Four', value: 4 },
+        { label: 'Five', value: 5 }
+    ];
+
+    FilterAssetTypes: TreeNode[] = [];
+    FilterPredicates: TreeNode[] = [];
+
+    constructor(assetTypes: AssetBrowserAssetTypeFilterModel[], predicates: AssetBrowserPredicateFilterModel[]) {
+        this.AssetTypeOptions = assetTypes;
+        this.PredicateOptions = predicates;
+    }
+}
+
+//#endregion
+
+

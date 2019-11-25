@@ -14,6 +14,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace d360.extensions.search
 {
@@ -765,29 +766,53 @@ namespace d360.extensions.search
             string phrase = queryRequest.Term;
             if (!string.IsNullOrEmpty(phrase))
             {
-                //Regular search
-                if (phrase.StartsWith("'") && phrase.EndsWith("'"))
+                int isGuid = IsPhraseGuid(phrase);
+                if (isGuid == 1)
                 {
-                    phrase = EscapeSpecialCharacters(phrase.Trim('\''));
-                    shouldQueries.Add(new MultiMatchQuery
+                    shouldQueries.Add(new PrefixQuery
                     {
-                        Fields = mainFields.ToArray(),
-                        Query = phrase
+                        Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                        Value = phrase.ToLower()
                     });
-                    tagSearch = phrase;
+                    fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
+                    tagSearch = phrase.ToLower();
+                }
+                else if (isGuid == 2)
+                {
+                    shouldQueries.Add(new TermQuery
+                    {
+                        Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                        Value = phrase.ToLower()
+                    });
+                    fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
+                    tagSearch = phrase.ToLower();
                 }
                 else
                 {
-                    if (phrase.EndsWith("*")) //If we have trailing *, remove before escaping
-                        phrase = phrase.Remove(phrase.Length - 1);
-                    phrase = EscapeSpecialCharacters(phrase) + "*";
-
-                    shouldQueries.Add(new QueryStringQuery
+                    //Match Whole Words
+                    if (phrase.StartsWith("'") && phrase.EndsWith("'"))
                     {
-                        Fields = mainFields.ToArray(),
-                        Query = phrase
-                    });
-                    tagSearch = phrase;
+                        phrase = EscapeSpecialCharacters(phrase.Trim('\''));
+                        shouldQueries.Add(new MultiMatchQuery
+                        {
+                            Fields = mainFields.ToArray(),
+                            Query = phrase
+                        });
+                        tagSearch = phrase;
+                    }
+                    else
+                    { //Regular search
+                        if (phrase.EndsWith("*")) //If we have trailing *, remove before escaping
+                            phrase = phrase.Remove(phrase.Length - 1);
+                        phrase = EscapeSpecialCharacters(phrase) + "*";
+
+                        shouldQueries.Add(new QueryStringQuery
+                        {
+                            Fields = mainFields.ToArray(),
+                            Query = phrase
+                        });
+                        tagSearch = phrase;
+                    }
                 }
             }
 
@@ -1011,9 +1036,22 @@ namespace d360.extensions.search
                 default:
                     return key;
             }
-
         }
 
+        /// <summary>
+        /// Test if a string fits a GUID pattern
+        /// </summary>
+        /// <param name="phrase"></param>
+        /// <returns>0 - for no GUID match, 1 for partial (begining GUID), 2 for full GUID</returns>
+        private int IsPhraseGuid(string phrase)
+        {
+            var r = new Regex("^[0-9A-F]{8}-([0-9A-F]{4})?(-[0-9A-F]{4})?(-[0-9A-F]{4})?(-[0-9A-F]{12})?", RegexOptions.IgnoreCase);
+            if (r.IsMatch(phrase))
+            {
+                return (phrase.Length == 36) ? 2 : 1;
+            }
+            return 0;
+        }
 
         public IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, int size = 10, string category = "")
         {
@@ -1025,27 +1063,51 @@ namespace d360.extensions.search
             Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
             List<QueryContainer> mustClauses = new List<QueryContainer>();
             BoolQuery filterQuery = null;
+            string tagSearch;
 
-            /* For Typeahead, the search phrase is split into words, all words but the last will be
-             * queried using 'match' and the last word will be 'prefix'
-             * For searching tags, an asterkiks is appended and a regular 'query_string' query is used 
-             */
-            Queue<string> parts = new Queue<string>(phrase.ToLower().Split(' '));
-            string tagSearch = EscapeSpecialCharacters(phrase.ToLower()) + (!phrase.EndsWith("*") ? "*" : "");
-
-            while (parts.Count > 1)
+            int isGuid = IsPhraseGuid(phrase);
+            if(isGuid == 1)
             {
-                mustClauses.Add(new MatchQuery
+                mustClauses.Add(new PrefixQuery
+                {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                    Value = phrase.ToLower()
+                });
+                fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
+                tagSearch = phrase.ToLower();
+            }
+            else if(isGuid == 2) 
+            {
+                mustClauses.Add(new TermQuery {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                    Value = phrase.ToLower()
+                });
+                fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
+                tagSearch = phrase.ToLower();
+            }
+            else
+            {
+                /* For Typeahead, the search phrase is split into words, all words but the last will be
+                 * queried using 'match' and the last word will be 'prefix'
+                 * For searching tags, an asterisk is appended and a regular 'query_string' query is used 
+                 */
+                Queue<string> parts = new Queue<string>(phrase.ToLower().Split(' '));
+                tagSearch = EscapeSpecialCharacters(phrase.ToLower()) + (!phrase.EndsWith("*") ? "*" : "");
+
+                while (parts.Count > 1)
+                {
+                    mustClauses.Add(new MatchQuery
+                    {
+                        Field = fldName,
+                        Query = EscapeSpecialCharacters(parts.Dequeue())
+                    });
+                }
+                mustClauses.Add(new PrefixQuery
                 {
                     Field = fldName,
-                    Query = EscapeSpecialCharacters(parts.Dequeue())
+                    Value = EscapeSpecialCharacters(parts.Dequeue())
                 });
             }
-            mustClauses.Add(new PrefixQuery
-            {
-                Field = fldName,
-                Value = EscapeSpecialCharacters(parts.Dequeue())
-            });
 
             if (!string.IsNullOrEmpty(category))
             {

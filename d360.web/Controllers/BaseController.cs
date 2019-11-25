@@ -596,28 +596,6 @@ namespace d360.web.Controllers
                             fld.Value = f.DefaultValue;
                         }
 
-                        if (f.Type == DataType.FusionLookup.ToString())
-                        {
-                            //need to render drop down of all fusion attributes that have the same type as the current
-                            var IDs = Company.Filter<FieldTypeFusionLookupDefinition>(x => x.FieldTypeID == f.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
-
-                            if (!f.IsRequired)
-                                fld.Items.Add(new SelectListItem { Text = "", Value = "" });
-
-                            fld.Items.AddRange(
-                                Company.Filter<FusionAttribute>(x => IDs.Contains(x.FusionAttributeTypeID), i => i.FusionAttributeType)
-                                .Select(i => new { i.ID, i.TextPath, Type = i.FusionAttributeType.Name })
-                                .ToList()
-                                .Select(i =>
-                                    new SelectListItem
-                                    {
-                                        Group = new SelectListGroup { Name = i.Type },
-                                        Text = i.TextPath,
-                                        Value = i.ID.ToString()
-                                    })
-                            );
-                        }
-
                         if (f.Type == DataType.Lookup.ToString() && !string.IsNullOrEmpty(f.LookupObjectType))
                         {
                             fld.FieldType = DataType.Lookup.ToString();
@@ -820,32 +798,6 @@ namespace d360.web.Controllers
                             Category = ft.Category,
                             FieldTypeID = ft.ID
                         };
-
-                        #region FusionLookup
-
-                        if (ft.Type == DataType.FusionLookup.ToString())
-                        {
-                            var IDs = Company.Filter<FieldTypeFusionLookupDefinition>(x => x.FieldTypeID == ft.ID).Select(i => i.SourceFusionAttributeTypeID).Distinct().ToList();
-
-                            if (!ft.IsRequired)
-                                fld.Items.Add(new SelectListItem { Text = "", Value = "" });
-
-                            fld.Items.AddRange(
-                                Company.Filter<FusionAttribute>(x => IDs.Contains(x.FusionAttributeTypeID), i => i.FusionAttributeType)
-                                    .Select(i => new { i.ID, i.TextPath, Type = i.FusionAttributeType.Name })
-                                    .ToList()
-                                    .Select(i =>
-                                        new SelectListItem
-                                        {
-                                            Group = new SelectListGroup { Name = i.Type },
-                                            Text = i.TextPath,
-                                            Value = i.ID.ToString()
-                                        })
-                                    .OrderBy(x => x.Text)
-                            );
-                        }
-
-                        #endregion FusionLookup
 
                         #region Lookup
 

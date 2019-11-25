@@ -887,6 +887,11 @@ order by A.ID, FT.SortOrder", new { id, attribute });
             var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
             if (asset != null)
                 return GetTooltipData(asset.ObjectID, asset.Object);
+
+            var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == uid);
+            if (assetType != null)
+                return GetTooltipData(assetType.ObjectID, assetType.Object, assetType.Class);
+
             else return Json(
                     new
                     {
@@ -903,7 +908,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
         }
 
         [HttpGet, Route("TooltipData/{objectType}/{objectID:int}")]
-        public JsonResult GetTooltipData(int objectID, string objectType)
+        public JsonResult GetTooltipData(int objectID, string objectType, AssetTypeClass? assetTypeClass = null)
         {
             try
             {
@@ -1131,7 +1136,8 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
                         FieldValues = res,
                         Description = desc,
                         WorkflowTypeUID = workflowTypeUid,
-                        WorkflowVersionUID = workflowVersionUid
+                        WorkflowVersionUID = workflowVersionUid,
+                        Class = assetTypeClass
 
                     },
                     JsonRequestBehavior.AllowGet);

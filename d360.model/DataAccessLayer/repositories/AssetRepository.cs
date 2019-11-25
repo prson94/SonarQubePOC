@@ -854,8 +854,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         {
             List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
 
-            bool shouldRemoveOldRelationshipType = false;
-            bool shouldRemoveExistingParentChildRelationshipType = false;
+            bool shouldRemoveOldRelationshipType = (model.Class == AssetTypeClass.Reference);
 
             if (!string.IsNullOrEmpty(model?.Name ?? null))
                 model.Name = model.Name.Trim();
@@ -867,7 +866,16 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 case AssetTypeClass.Reference:
                 case AssetTypeClass.Model:
                 case AssetTypeClass.TechnicalAsset:
-                    if (assetType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {model.Class.ToString()}", $"Invalid {model.Class.ToString()} provided. {AssetTypeErrors.CheckRequest}");
+                    #region
+
+                    if (assetType == null) 
+                    {
+                        return new Tuple<HttpStatusCode, string, string>(
+                            HttpStatusCode.BadRequest, 
+                            $"Wrong {model.Class.ToString()}", 
+                            $"Invalid {model.Class.ToString()} provided. {AssetTypeErrors.CheckRequest}"
+                        );
+                    }
 
                     assetType.Name = model.Name;
                     assetType.DisplayFormat = model.DisplayFormat;
@@ -903,129 +911,143 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CompanyContext.Delete<AssetTypeLevel>(l => l.Level > assetType.HierarchyMaximumDepth);
                     }
 
-                    CompanyContext.Update(assetType);
-
-                    if (model.Class == AssetTypeClass.Reference)
-                    {
-                        shouldRemoveOldRelationshipType = true;
-                        shouldRemoveExistingParentChildRelationshipType = true;
-                    }
-
+                    #endregion
                     break;
                 case AssetTypeClass.Organization:
+                    #region
+                    
                     var org = CompanyContext.GetById<OrganizationType>(model.ObjectID);
                     if (org == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Organization.ToString()}", $"Invalid {AssetTypeClass.Organization.ToString()} provided. {AssetTypeErrors.CheckRequest}");
                     org.Name = model.Name;
                     org.Description = model.Description;
                     org.DisplayFormat = model.DisplayFormat;
                     CompanyContext.Update(org);
-
+                    
+                    #endregion
                     break;
                 case AssetTypeClass.Rule:
                     #region
+                    
                     var r = CompanyContext.GetById<RuleType>(model.ObjectID);
                     if (r == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Rule.ToString()}", $"Not valid {AssetTypeClass.Rule.ToString()} provided. {AssetTypeErrors.CheckRequest}");
                     r.Name = model.Name;
                     r.DisplayFormat = model.DisplayFormat;
                     r.Description = model.Description;
                     CompanyContext.Update(r);
+                    
                     #endregion
                     break;
                 case AssetTypeClass.FusionAttribute:
+                    #region
+                    
                     var fusionAttributeType = CompanyContext.GetById<FusionAttributeType>(model.ObjectID);
-                    if (fusionAttributeType == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.FusionAttribute.ToString()}", $"Not valid {AssetTypeClass.FusionAttribute.ToString()} provided. {AssetTypeErrors.CheckRequest}");
+                    if (fusionAttributeType == null)
+                    {
+                        return new Tuple<HttpStatusCode, string, string>(
+                            HttpStatusCode.BadRequest, 
+                            $"Wrong {AssetTypeClass.FusionAttribute.ToString()}", 
+                            $"Not valid {AssetTypeClass.FusionAttribute.ToString()} provided. {AssetTypeErrors.CheckRequest}"
+                        );
+                    }
+
+                    assetType.Description = model.Description;
 
                     fusionAttributeType.Name = model.Name;
                     CompanyContext.Update(fusionAttributeType);
-
-                    assetType.Description = model.Description;
-                    CompanyContext.Update(assetType);
-
+                    
+                    #endregion
                     break;
             }
 
             var parentType = SystemObjectHelper.GetSystemObjects(model.Class).ToString();
+            IntersectType intersectType = null;
 
             if (predicateClass.Contains(model.Class) && (parentAssetType != null || predicate != null))
             {
-                var parentPredicateType = PredicateType.InterTypeHierarchy;
+                var parentPredicateType = model.Class.Equals( AssetTypeClass.Model | AssetTypeClass.Policy) ? 
+                    PredicateType.IntraTypeHierarchy : 
+                    PredicateType.InterTypeHierarchy;
 
-                if (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy)
-                {
-                    parentPredicateType = PredicateType.IntraTypeHierarchy;
-                }
+                intersectType = CompanyContext.Filter<IntersectType>(i =>
+                    i.Object == model.Object &&
+                    i.ObjectID == model.ObjectID &&
+                    i.Predicate.Type == parentPredicateType, 
+                    i => i.Predicate
+                ).SingleOrDefault();
 
-                IntersectType intersectType = null;
+                var parentID = (parentAssetType != null ? parentAssetType.ObjectID : model.ObjectID);
 
-                if (shouldRemoveExistingParentChildRelationshipType)
+                if (intersectType != null)
                 {
-                    intersectType = CompanyContext.Filter<IntersectType>(i =>
-                        i.Subject == parentType &&
-                        i.Object == model.Object &&
-                        i.ObjectID == model.ObjectID &&
-                        i.Predicate.Type == parentPredicateType
-                    ).SingleOrDefault();
-                }
-                else
-                {
-                    int subjectId = parentAssetType != null ? parentAssetType.ObjectID : model.ObjectID;
-                    intersectType = CompanyContext.Filter<IntersectType>(i =>
-                        i.Subject == parentType &&
-                        i.SubjectID == subjectId &&
-                        i.Object == model.Object &&
-                        i.ObjectID == model.ObjectID &&
-                        i.Predicate.Type == parentPredicateType
-                    ).SingleOrDefault();
-                }
+                    bool relationshipChangeMade = false;
+                    var anyExistingRelationships = CompanyContext.Any<Intersect>(i => i.IntersectTypeID == intersectType.ID);
 
-                if (predicate != null)
-                {
-                    if (intersectType != null)
+                    if (predicate != null)
                     {
                         if (intersectType.PredicateID != predicate.ID)
                         {
                             intersectType.PredicateID = predicate.ID;
-                            CompanyContext.Update(intersectType);
-                        }
-
-                        var parentID = (parentAssetType != null ? parentAssetType.ObjectID : model.ObjectID);
-
-                        if (intersectType.SubjectID != parentID)
-                        {
-                            intersectType.SubjectID = parentID;
-                            CompanyContext.Update(intersectType);
+                            relationshipChangeMade = true;
                         }
                     }
-                    else
+                    
+                    if (intersectType.SubjectID != parentID)
                     {
-                        intersectType = new IntersectType
+                        if (anyExistingRelationships)
                         {
-                            IsSystem = true,
-                            Subject = parentType,
-                            SubjectID = parentAssetType != null ? parentAssetType.ObjectID : model.ObjectID,
-                            Object = model.Object,
-                            ObjectID = model.ObjectID,
-                            PredicateID = predicate.ID
-                        };
-                        CompanyContext.Add(intersectType);
+                            return new Tuple<HttpStatusCode, string, string>(
+                                HttpStatusCode.Conflict, 
+                                $"Invalid Parent Selected", 
+                                $"There are existing parent/child relationships for assets of this type. You may not alter the parent type until these relationships are removed. {AssetTypeErrors.CheckRequest}"
+                            );
+                        }
+
+                        intersectType.SubjectID = parentID;
+                        relationshipChangeMade = true;
                     }
+
+                    if (relationshipChangeMade)
+                    {
+                        CompanyContext.Update(intersectType);
+                    }
+                }
+                else 
+                {
+                    // We now want to require a parent on an asset type that previously did NOT have any parent.
+                    intersectType = new IntersectType
+                    {
+                        IsSystem = true,
+                        Subject = parentType,
+                        SubjectID = parentID,
+                        Object = model.Object,
+                        ObjectID = model.ObjectID,
+                        PredicateID = predicate.ID
+                    };
+                    CompanyContext.Add(intersectType);
                 }
             }
             else if (shouldRemoveOldRelationshipType)
             {
+                // We are removing the parent completely from this asset type.
+
                 var parentPredicateType = PredicateType.InterTypeHierarchy;
 
-                var intersectType = CompanyContext.Filter<IntersectType>(i =>
+                intersectType = CompanyContext.Filter<IntersectType>(i =>
                     i.Object == model.Object &&
                     i.ObjectID == model.ObjectID &&
-                    i.Predicate.Type == parentPredicateType
-                ).FirstOrDefault();
+                    i.Predicate.Type == parentPredicateType,
+                    i => i.Predicate
+                ).SingleOrDefault();
 
                 if (intersectType != null)
                 {
                     CompanyContext.Delete(SystemObjects.IntersectType, intersectType.ID);
                 }
             }
+
+            // If we made it this far, then we can save the asset type.
+            CompanyContext.Update(assetType);
+
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
@@ -1162,6 +1184,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         {
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
         }
+        
         public AssetType GetAssetTypeByUidAndClass(Guid assetTypeUid, AssetTypeClass @class)
         {
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid && i.Class == @class).SingleOrDefault();

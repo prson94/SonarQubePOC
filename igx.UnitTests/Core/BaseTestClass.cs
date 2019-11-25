@@ -399,7 +399,7 @@ namespace igx.UnitTests
         {
             var mock = new Mock<ITagRepository>();
 
-            mock.Setup(x => x.CreateTag(It.IsAny<TagApiModel>()))
+            mock.Setup(x => x.CreateTag(It.IsAny<TagApiUpsertModel>()))
                 .Returns(new TagApiModel());
 
             mock.Setup(x => x.DoesTagExists(It.IsAny<string>()))
@@ -417,8 +417,8 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetTags(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
                 .Returns(Task.FromResult(new TagApiModelWrapper() { items = new List<TagApiModel>() }));
 
-            mock.Setup(x => x.UpdateTag(It.IsAny<Guid>(), It.IsAny<TagApiModel>(), It.IsAny<Tag>()))
-                .Returns((Guid uid, TagApiModel tam, Tag tag) => (uid == tam.uid && uid == Guid.Parse(DataConstants.ValidGUID)) ? tam : null);
+            mock.Setup(x => x.UpdateTag(It.IsAny<Guid>(), It.IsAny<TagApiUpsertModel>(), It.IsAny<Tag>()))
+                .Returns((Guid uid, TagApiUpsertModel tam, Tag tag) => uid == Guid.Parse(DataConstants.ValidGUID) ? new TagApiModel() { Value = tam.Value, uid = uid } : null);
             mock.Setup(x => x.IsAuthorizedToDeleteAssetTag(It.IsAny<int>(), It.IsAny<long>()))
                 .Returns(true);
             mock.Setup(x => x.CreateAssetTag(It.IsAny<int>(), It.IsAny<long>()))

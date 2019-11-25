@@ -53,8 +53,6 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
-
-
         /// <summary>
         /// Retrieves field types contained within your environment.
         /// </summary>
@@ -110,12 +108,60 @@ namespace d360.web.Controllers.V2
 
         }
 
+
         /// <summary>
         /// Adds or updates field types contained within your environment based on a specified ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.
         /// </summary>
         /// <remarks>
-        /// You may only provide one of the following: ActionTypeUid, AssetTypeUid, or RelationshipTypeUid.<br/>
-        /// If adding JSON Attribute field type, JSON field must be added before!
+        /// You may only provide one of the following: `ActionTypeUid`, `AssetTypeUid`, or `RelationshipTypeUid`.
+        /// 
+        /// There are some general rules about the various field types:
+        /// - `Boolean` *(True/False)*
+        ///     1. Supports adding values through the Govern Application UI and REST API.
+        /// - `ComputedFusionLookup` *(Fusion Lookup)*
+        ///     1. This is a computed field and does not support directly editing values.
+        /// - `ComputedOwnershipLookup` *(Ownership Lookup)*
+        ///     1. This is a computed field and does not support directly editing values.
+        /// - `ComputedRelationshipField` *(Field from Relationship)*
+        ///     1. This is a computed field and does not support directly editing values.
+        /// - `ComputedRelationshipLookup` *(Relation Lookup)*
+        ///     1. This is a computed field and does not support directly editing values.
+        /// - `ComputedRelationshipReferenceList` *(Reference Item List from Relationship)*
+        ///     1. This is a computed field and does not support directly editing values.
+        /// - `Date` *(Date)*
+        ///     1. Supports adding values through the Govern Application UI and REST API.
+        /// - `DateTime` *(Date With Time)*
+        ///     1. Supports adding values through the Govern Application UI and REST API.
+        /// - `Decimal` *(Decimal Number)*
+        ///     1. Supports adding values through the Govern Application UI and REST API.
+        /// - `Html` *(Html/Richtext)*
+        ///     1. Supports adding values through the Govern Application UI and REST API.
+        /// - `Json` *(JSON)*
+        ///     1. Supports adding only through the REST API.
+        /// - `JsonElement` *(JSON Attribute)*
+        ///     1. This is a computed field and does not support directly editing values.
+        ///     2. The corresponding Json field must be added beforehand.
+        ///     3. Valid values for `JsonAttribute.DataType` are: 
+        ///         - **bigint** : Value representing a large 64-bit number greater than 2,147,483,647.
+        ///         - **bit** : Value representing true/false.
+        ///         - **date** : Value representing a date without a time component.
+        ///         - **datetime** : Value representing a date with a time component.
+        ///         - **float** : Value representing a variable length decimal number.
+        ///         - **int** : Value representing a large 32-bit number less than 2,147,483,647.
+        ///         - **nvarchar** : Value representing unicode text.
+        /// - `Link` *(Link)*
+        ///     1. Supports adding values through the Govern Application UI and REST API.
+        ///     2. The expected data format for values is: `Link Name`|`Link Url`
+        /// - `Lookup` *(List)*
+        ///     1. Supports adding values through the Govern Application UI and REST API.
+        /// - `Number` *(Number)*
+        ///     1. Supports adding values through the Govern Application UI and REST API.
+        /// - `Relationship` *(Relationship)*
+        ///     1. This is a computed field and does not support directly editing values.
+        /// - `Tag` *(Tag)*
+        ///     1. This is a computed field and does not support directly editing values.
+        /// - `Text` *(Simple Text)*
+        ///     1. Supports adding values through the Govern Application UI and REST API.
         /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [

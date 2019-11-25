@@ -1,0 +1,83 @@
+﻿<ng-template #segmentedItem let-item>
+    <div class="value-box">
+        <d3s-segments-tooltip *ngIf="item.IsSelected == undefined" [item]="item"></d3s-segments-tooltip>
+        <div class="segments">
+            <span class="segment" *ngFor="let segment of item.Segments;">
+                <span class="value">{{segment.Value}}</span>
+                <i *ngIf="item.Segments.indexOf(segment) != item.Segments.length-1" class="arrow-right fa fa-chevron-right"></i>
+                <span *ngIf="item.Segments.length > 2 && item.Segments.indexOf(segment) == 0" class="partial-path-elipsis">
+                    ...<i class="arrow-right fa fa-chevron-right"></i>
+                </span>
+            </span>
+        </div>
+    </div>
+</ng-template>
+
+<div class="generic-asset-search">
+    <div class="gas-container {{displayStyle}}">
+        <div class="selection">
+            <ng-container *ngIf="multiSelect">
+                <div class="selected-item hide-full-path" *ngFor="let item of selected;let i = index;">
+                    <ng-template *ngTemplateOutlet="segmentedItem; context: {$implicit: item}"></ng-template>
+
+                    <d3s-predicate-selector *ngIf="showPredicateSelector" [selected]="item.Predicate" [relationshipSide]="relationshipSide" (onChange)="predicateSelected($event, i);" [predicateType]="predicateSelectorType"></d3s-predicate-selector>
+                    <i (click)="unselect(i)" class="unselect fa fa-times-circle" aria-hidden="true"></i>
+                    <div style="display:block;width:100%;"></div>
+                </div>
+                <button *ngIf="multiSelect" type="button" class="add-source-button" (click)="openSearchWindow();">{{multiSelectButtonLabel}}</button>
+            </ng-container>
+
+            <ng-container *ngIf="!multiSelect">
+                <div class="single-asset-selector hide-full-path" (click)="openSearchWindow();">
+                    <ng-container *ngIf="selected[0]">
+                        <div class="single-selected-item">
+                            <ng-template *ngTemplateOutlet="segmentedItem; context: {$implicit: selected[0]}"></ng-template>
+                        </div>
+                    </ng-container>
+                    <ng-container *ngIf="!selected[0]">
+                        <span class="text">{{placeholder}}</span>
+                    </ng-container>
+                    <i class="fa fa-caret-down"></i>
+                </div>
+            </ng-container>
+        </div>
+
+        <div class="gas-search {{isSearchWindowOpened ? 'visible':''}}">
+            <input #searchInput (keyup)="search($event)" placeholder="Type to search for assets" />
+
+            <span class="search-button">
+                <i class="fa fa-search"></i>
+            </span>
+
+            <i *ngIf="isLoading" class="fa fa-spinner fa-spin"></i>
+
+            <ul *ngIf="searchresults.length > 0" class="search-result-box  {{isFullPathVisible ? '' : 'hide-full-path'}} select-style-{{multiSelectStyle}}">
+                <ng-container *ngFor="let item of searchresults;let i = index">
+                    <li #el (mouseenter)="currentSearchNavigationIndex = i"
+                        (click)="onSelect(i,$event);"
+                        class="result-item {{currentSearchNavigationIndex == i ? 'selected' : ''}}">
+                        <label>
+                            <ng-container *ngIf="multiSelectStyle == 'CheckBox' && multiSelect">
+                                <input class="checker" type="checkbox" [checked]="item.IsSelected" />
+                            </ng-container>
+                            <ng-template *ngTemplateOutlet="segmentedItem; context: {$implicit: item}"></ng-template>
+                        </label>
+                    </li>
+                </ng-container>
+            </ul>
+
+            <ng-container *ngIf="searchResultsCount/pageSize > 1">
+                <p-paginator [rows]="pageSize" [totalRecords]="searchResultsCount" (onPageChange)="paginate($event)"></p-paginator>
+            </ng-container>
+
+            <div class="no-results" *ngIf="searchResultsCount == 0">
+                No assets that match criteria
+            </div>
+            <div *ngIf="multiSelect && showSelectFullpathLink && searchresults.length > 0" class="full-path-toggle" (click)="toggleFullPaths()">
+                <span>
+                    {{isFullPathVisible ? 'Hide full paths' : 'Show full paths'}}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

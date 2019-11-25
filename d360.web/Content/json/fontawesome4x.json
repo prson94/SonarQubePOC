@@ -79,7 +79,7 @@
   },
   {
     "name": "Times",
-    "id": "times",
+    "id": "remove",
     "unicodeValue": "f00d",
     "categories": [ "Web Application Icons" ]
   },
@@ -385,7 +385,7 @@
   },
   {
     "name": "Pencil Square Outlined",
-    "id": "pencil-square-o",
+    "id": "edit",
     "unicodeValue": "f044",
     "categories": [ "Web Application Icons" ]
   },
@@ -638,6 +638,12 @@
   {
     "name": "Exclamation Triangle",
     "id": "exclamation-triangle",
+    "unicodeValue": "f071",
+    "categories": [ "Web Application Icons" ]
+  },
+  {
+    "name": "Exclamation Triangle",
+    "id": "warning",
     "unicodeValue": "f071",
     "categories": [ "Web Application Icons" ]
   },
@@ -1009,13 +1015,13 @@
   },
   {
     "name": "Users",
-    "id": "users",
+    "id": "group",
     "unicodeValue": "f0c0",
     "categories": [ "Web Application Icons" ]
   },
   {
     "name": "Link",
-    "id": "link",
+    "id": "chain",
     "unicodeValue": "f0c1",
     "categories": [ "Text Editor Icons" ]
   },
@@ -1033,13 +1039,13 @@
   },
   {
     "name": "Scissors",
-    "id": "scissors",
+    "id": "cut",
     "unicodeValue": "f0c4",
     "categories": [ "Text Editor Icons" ]
   },
   {
     "name": "Files Outlined",
-    "id": "files-o",
+    "id": "copy",
     "unicodeValue": "f0c5",
     "categories": [ "Text Editor Icons" ]
   },
@@ -1051,7 +1057,7 @@
   },
   {
     "name": "Floppy Outlined",
-    "id": "floppy-o",
+    "id": "save",
     "unicodeValue": "f0c7",
     "categories": [ "Text Editor Icons" ]
   },
@@ -1063,7 +1069,7 @@
   },
   {
     "name": "Bars",
-    "id": "bars",
+    "id": "reorder",
     "unicodeValue": "f0c9",
     "categories": [ "Web Application Icons" ]
   },
@@ -1177,13 +1183,13 @@
   },
   {
     "name": "Sort Descending",
-    "id": "sort-desc",
+    "id": "sort-down",
     "unicodeValue": "f0dd",
     "categories": [ "Web Application Icons" ]
   },
   {
     "name": "Sort Ascending",
-    "id": "sort-asc",
+    "id": "sort-up",
     "unicodeValue": "f0de",
     "categories": [ "Web Application Icons" ]
   },
@@ -1207,13 +1213,13 @@
   },
   {
     "name": "Gavel",
-    "id": "gavel",
+    "id": "legal",
     "unicodeValue": "f0e3",
     "categories": [ "Web Application Icons" ]
   },
   {
     "name": "Tachometer",
-    "id": "tachometer",
+    "id": "dashboard",
     "unicodeValue": "f0e4",
     "categories": [ "Web Application Icons" ]
   },
@@ -1249,7 +1255,7 @@
   },
   {
     "name": "Clipboard",
-    "id": "clipboard",
+    "id": "paste",
     "unicodeValue": "f0ea",
     "categories": [ "Text Editor Icons" ]
   },
@@ -1435,7 +1441,7 @@
   },
   {
     "name": "Mobile Phone",
-    "id": "mobile",
+    "id": "mobile-phone",
     "unicodeValue": "f10b",
     "categories": [ "Web Application Icons" ]
   },
@@ -1837,7 +1843,7 @@
   },
   {
     "name": "US Dollar",
-    "id": "usd",
+    "id": "dollar",
     "unicodeValue": "f155",
     "categories": [ "Currency Icons" ]
   },
@@ -2407,7 +2413,7 @@
   },
   {
     "name": "Taxi",
-    "id": "taxi",
+    "id": "cab",
     "unicodeValue": "f1ba",
     "categories": [ "Web Application Icons", "Transportation Icons" ]
   },

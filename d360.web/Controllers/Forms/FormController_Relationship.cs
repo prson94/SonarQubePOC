@@ -370,7 +370,7 @@ where		I.ID is null
             and A.[State] = 1 
             and T.ObjectID = @targetTypeID 
             and T.[Object] = @targetType 
-            and A.ObjectID != @id {IntersectCardinalitySql} {PermissionJoins}
+            and not (A.ObjectID = @id and A.Object = @source) {IntersectCardinalitySql} {PermissionJoins}
 ) C";
 
             switch (targetType)
