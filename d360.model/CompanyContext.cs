@@ -794,7 +794,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                 case "TaxonomyType":
                     countSql = @"select count(*) from AssetWithType A with (nolock)
                         cross apply GetAssetTextPathById(A.ID, '/') P 
-                        where A.[Type] = @obj and A.TypeID = @objID and (@query is null or P.TextPath like '%' + @query + '%')";
+                        where A.[Type] = @obj and A.TypeID = @objID and not (A.Object = @fieldObject and A.ObjectID = @fieldObjectID) and (@query is null or P.TextPath like '%' + @query + '%')";
                     sql = @"select distinct A.ObjectID as Value, P.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected 
                             from AssetWithType A with (nolock)
                             cross apply GetAssetTextPathById(A.ID, '/') P 
@@ -802,6 +802,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
 	                            (I.[Object] = A.[Object] and I.ObjectID = A.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
                             where A.[Type] = @obj and A.TypeID = @objID and (@query is null or P.TextPath like '%' + @query + '%')
+                                and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID)
                             order by 3 desc, P.TextPath asc
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     break;
@@ -830,7 +831,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             }
 
             if (offset == 0 || query != null)
-                count = Query<int>(countSql, new { obj, objID, query }).FirstOrDefault();
+                count = Query<int>(countSql, new { obj, objID, query, fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID}).FirstOrDefault();
 
             List<dynamic> selected = null, items = null;
 
