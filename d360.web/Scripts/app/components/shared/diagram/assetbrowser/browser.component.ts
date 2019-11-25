@@ -1584,7 +1584,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.Shape,
                         "Rectangle",
                         { fill: null, strokeWidth: 2, isPanelMain: true },
-                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount); })
+                        new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
                     ),
                     this.g(go.Panel, "Vertical",
                         this.g(
@@ -1592,7 +1592,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             "Horizontal",
                             // button next to TextBlock
                             { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
-                            new go.Binding("background", "", function (v) { return go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount); }),
+                            new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
                             this.g(
                                 "SubGraphExpanderButton",
                                 { alignment: go.Spot.Right, margin: 5 }
@@ -1608,7 +1608,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     font: this.fontLabelIcon,
                                     //stroke: this.fontLabelColor
                                 },
-                                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount); }),
+                                new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
                                 new go.Binding("text", "icon"),
                                 new go.Binding("visible", "showIcon")
                             ),
@@ -1625,7 +1625,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     overflow: this.textOverflowStyle,
                                     toolTip: this.createTooltip()
                                 },
-                                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount); }),
+                                new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
                                 new go.Binding("text", "text").makeTwoWay()
                             )
                         ),  // end Horizontal Panel
@@ -1684,7 +1684,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 go.Shape,
                 "Rectangle",
                 { fill: null, strokeWidth: 2, stretch: go.GraphObject.Horizontal },
-                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount); })
+                new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
             ),
             this.g(
                 go.Panel,
@@ -1694,7 +1694,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     "Horizontal",
                     // button next to TextBlock
                     { stretch: go.GraphObject.Horizontal },
-                    new go.Binding("background", "", function (v) { return go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount); }),
+                    new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
                     this.g(
                         "SubGraphExpanderButton",
                         { alignment: go.Spot.Right, margin: 5 }
@@ -1710,7 +1710,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             font: this.fontLabelIcon//,
                             //stroke: this.fontLabelColor
                         },
-                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount); }),
+                        new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
                         new go.Binding("text", "icon"),
                         new go.Binding("visible", "showIcon")
                     ),
@@ -1727,7 +1727,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             overflow: this.textOverflowStyle,
                             toolTip: this.createTooltip()
                         },
-                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount); }),
+                        new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
                         new go.Binding("text", "text").makeTwoWay()
                     )
                 ),  // end Horizontal Panel
@@ -1829,7 +1829,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     "Shape",
                     { alignment: go.Spot.Center, width: 25, height: 25 },
                     new go.Binding("fill", "back"),
-                    new go.Binding("stroke", "back", function (v) { return go.Brush.mix(v, this.lightenBoxColor, .15); }),
+                    new go.Binding("stroke", "back", (v) => go.Brush.mix(v.back, this.lightenBoxColor, .15)),
                 ),
                 this.g(
                     go.TextBlock,
