@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, SimpleChanges, EventEmitter, Output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, SimpleChanges, EventEmitter, Output, AfterViewChecked } from '@angular/core';
 import {
     DiagramObjectType,
     AssetBrowserLineageApiRequestModel,
@@ -42,7 +42,7 @@ declare var window: any;
     providers: [BrowserService, PermissionsService, PredicatesService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit {
+export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, AfterViewChecked {
     @Input() readonly: boolean = true;
     @Input() assetUid: string;
 
@@ -146,6 +146,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     public ngAfterViewInit() {
         this.resizeDiagram();
         this.cdRef.markForCheck();
+    }
+
+    public ngAfterViewChecked() {
+        var tabViewElements: HTMLElement[] = this.myElement.nativeElement.querySelectorAll('.ui-tabview-panels');
+        (function () {
+            if (typeof NodeList.prototype.forEach === "function") return false;
+            tabViewElements.forEach = Array.prototype.forEach;
+        })();
+        tabViewElements.forEach(el => {
+            var diagramSize = +this.diagramRef.nativeElement.style.height.replace('px', '');
+            el.style.maxHeight = (diagramSize - 156) + 'px';
+        });
+
     }
 
     public ngOnDestroy() {
@@ -650,11 +663,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
                     this.loadingText = "";
                     this.isLoading = false;
-                    
+
                     this.cdRef.markForCheck();
 
                     obs.next(true);
-                    obs.complete();	
+                    obs.complete();
                 });
         });
 
@@ -1015,7 +1028,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private onResize(event) {
         this.resizeDiagram();
     }
-  
+
     @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
         if (event.key === "Escape" || event.key === "Esc") {
             this.isFullScreen = false;
@@ -1037,7 +1050,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagramRef.nativeElement.style.height = diagramHeight;
         if (this.isFullScreen)
             this.diagramRef.nativeElement.style.height = (height - 56) + 'px';
-        else 
+        else
             this.diagramRef.nativeElement.style.height = (height - 238) + 'px';
 
         if (this.filterPanelRef) {
@@ -1084,7 +1097,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (parts.count == 1) {
                     let data = parts.first().data;
 
-                    
+
                     if (data.assetUid != null) { //selected item is an asset
                         this.isInfoTabDisabled = false;
                         if (this.isInfoWindowVisible) {
@@ -1118,7 +1131,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private filterAncestryModeChange(): void {
-        this.saveFilter(); 
+        this.saveFilter();
         this.isLoading = true;
         this.loadingText = "Determining links and meaning...";
         let data = this.browserService.convertResponseModel(this.responseModel, this.filterModel.AncestryMode);
@@ -1257,7 +1270,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                     this.diagram.commitTransaction('hide');
                 }
-                
+
             }
         }
     }
