@@ -198,7 +198,7 @@ namespace d360.extensions.queue
             await client.SendAsync(bm);
         }
 
-        public void CreateTopicMessages<T>(string topicName, List<T> events)
+        public void CreateTopicMessages<T>(string topicName, List<T> events, DateTime? scheduledEnqueueTime = null)
         {
             var list = new List<BrokeredMessage>();
             foreach (var e in events)
@@ -206,6 +206,12 @@ namespace d360.extensions.queue
                 var bm = new BrokeredMessage(e);
 
                 bm.Properties["topic"] = topicName;
+
+                if(scheduledEnqueueTime.HasValue)
+                {
+                    bm.ScheduledEnqueueTimeUtc = scheduledEnqueueTime.Value;
+                }
+
                 list.Add(bm);
             }
 
