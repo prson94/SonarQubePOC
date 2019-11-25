@@ -357,10 +357,10 @@
   <include file="scripts/GOV-8706.xml"/> <!-- Update [dbo].[GetResponsibilityTypeBreakdown] proc for union vs union all -->
   <include file="scripts/GOV-8679.xml"/> <!-- GetImpactRelationshipsByAssets proc -->
   <include file="scripts/GOV-8814.xml"/> <!-- IGC - Proc Updates -->
-  <include file="scripts/GOV-8815.xml"/> <!-- graph.GetLineageByAsset - return solitary assets with no lineage -->
   <include file="scripts/GOV-8573.xml"/>
   <include file="scripts/GOV-8505.xml"/> <!-- create SearchBoost table -->
   <include file="scripts/GOV-8850.xml"/> <!-- graph.PopulatePathsForAssetType remove hardcoded asset type ID -->
   <include file="scripts/GOV-7910.xml"/> <!-- graph.GetLineageByAsset - filtering support -->
   <include file="scripts/GOV-8684.xml"/> <!-- update to procedure [dbo].[GetAllowedIntersectionTypes] to change glossary to business/technical Assets -->
+  <include file="scripts/GOV-8815.xml"/> <!-- graph.GetLineageByAsset - return solitary assets with no lineage - MUST GO AFTER GOV-7910 -->
 </databaseChangeLog>

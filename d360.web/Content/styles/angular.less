@@ -4641,11 +4641,16 @@ a.mid-blue {
     background: white;
     margin: 8px 0px;
 
+    div:first-of-type{
+        margin-left:2px;
+    }
+   
+
     .chip-option {
         min-height: 26px;
         border: 1px solid #e0e0e0;
         border-radius: 2px;
-        margin: 2px;
+        margin: 2px 1px;
         background: #f7f7f7;
         line-height: 26px;
         padding: 0px 8px;
@@ -4765,6 +4770,7 @@ a.mid-blue {
             }
         }
     }
+    
 }
 
 .gov-search {
@@ -4837,7 +4843,6 @@ a.mid-blue {
         border-radius: 4px;
         border-bottom-left-radius: 0px;
         border-bottom-right-radius: 0px;
-        padding-bottom: 8px;
 
         .controls-left {
             z-index: 50;
@@ -4973,47 +4978,80 @@ a.mid-blue {
         border-radius: 3px;
     }
 
-    button.asset-browser-button {
-        background-color: #F2F2F2;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        margin: 0 3px 0 3px;
+    button.asset-browser-button, .asset-browser-button-group > button {
         height: 32px;
-        width: 34px;
-        line-height: 15px;
-        font-size: 15px;
+        width: 32px;
+        line-height: 16px;
+        font-size: 16px;
         color: #333;
+        background-color: transparent;
+        border: none;
         position: relative;
-        top: 1px;
+        border-radius: 4px;
+        margin-left: 4px;
+
+
+
+        &.right-margin-4 {
+            margin-right: 4px;
+        }
     }
 
-    button.asset-browser-button:active {
+    &.btn-small {
+        button {
+            line-height: 12px;
+            font-size: 12px;
+        }
+    }
+
+    button:active {
         background-color: #ccc;
     }
 
-    button.asset-browser-button:hover {
-        background-color: #ddd;
+    button:hover {
+        background-color: rgba(185,192,197,0.5);
     }
 
-    button.margin-4 {
-        margin: 0px 4px;
+    button.selected {
+        background-color: #DDDDDD;
+    }
+
+    button.disabled {
+        color: #888;
+    }
+
+    button.disabled:hover {
+        background-color: transparent;
+    }
+
+    button.light {
+        color: #999;
     }
 
     .asset-browser-button-group {
         display: inline-block;
         height: 32px;
 
-        &.group-background {
+        &.zoom-controls {
             padding: 12px 8px;
             border-radius: 4px;
             background-color: #f1f2f3;
+            height: initial;
+            padding: 4px;
+
+            button {
+                margin: 0px;
+            }
 
             .diagram-zoom {
                 display: inline-block;
                 position: relative;
-                top: -9px;
+                color: #4d565d;
+                font-weight: 600;
                 margin: 0px 4px;
-                font-weight: bold;
+                font-size: 14px;
+                position: relative;
+                top: -1px;
                 -webkit-touch-callout: none; /* iOS Safari */
                 -webkit-user-select: none; /* Safari */
                 -moz-user-select: none; /* Firefox */
@@ -5027,60 +5065,13 @@ a.mid-blue {
             width: 1px;
             height: 32px;
             background-color: #b9c0c5;
-            margin: 0px 8px;
+            position: absolute;
         }
-
-        button {
-            height: 24px;
-            width: 24px;
-            line-height: 16px;
-            font-size: 16px;
-            color: #333;
-            background-color: transparent;
-            border: none;
-            top: -8px;
-            position: relative;
-        }
-
-        &.btn-small {
-            button {
-                height: 24px;
-                width: 24px;
-                line-height: 12px;
-                font-size: 12px;
-                top: -1px;
-            }
-        }
-
-        button:active {
-            background-color: #ccc;
-        }
-
-        button:hover {
-            background-color: #ddd;
-        }
-
-        button.selected {
-            background-color: #DDDDDD;
-        }
-
-        button.disabled {
-            color: #888;
-        }
-
-        button.disabled:hover {
-            background-color: transparent;
-        }
-
 
         input[type="text"] {
             border: none;
             height: 25px;
             padding: 3px;
-        }
-
-        button.light {
-            color: #999;
         }
     }
 
@@ -5088,7 +5079,7 @@ a.mid-blue {
         border-radius: 4px;
         position: relative;
         display: inline-block;
-        margin-right: 8px;
+        margin-right: 4px;
 
         input {
             height: 32px;
@@ -5172,7 +5163,7 @@ a.mid-blue {
         .transformation-block {
             .generic-asset-search {
                 min-width: 300px;
-                margin-right:16px;
+                margin-right: 16px;
             }
 
             button {

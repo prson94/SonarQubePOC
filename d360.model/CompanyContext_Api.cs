@@ -891,7 +891,7 @@ from	api.ExecutionField T
             }
         }
 
-        private void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null)
+        private void SendAssetGraphEvents(IEnumerable<IGraphAsset> results, Dictionary<Guid, List<string>> fields = null, bool delayedDelivery = false)
         {
             List<AssetEventInfo> events = new List<AssetEventInfo>();
 
@@ -910,7 +910,7 @@ from	api.ExecutionField T
             }
 
             if (events.Any())
-                QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events);
+                QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events, delayedDelivery ? new DateTime?(DateTime.UtcNow.AddSeconds(15)) : null);
         }
 
         #region Validation
@@ -3665,7 +3665,7 @@ select [uid] from #ParentChildRelationships",
                         {
                             var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
                             sw.Restart();
-                            SendAssetGraphEvents(graphResults, changedFields);
+                            SendAssetGraphEvents(graphResults, changedFields,true);
                             this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
                         }
                         catch { }

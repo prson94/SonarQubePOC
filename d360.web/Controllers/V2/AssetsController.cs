@@ -315,14 +315,14 @@ namespace d360.web.Controllers.V2
         /// Add an asset type based on Asset Type Class
         /// </summary>
         /// <remarks>
-        /// This endpoint can add the following asset type class:  
-        /// - Business
+        /// This endpoint can add the following asset type classes:  
+        /// - BusinessAsset
         /// - Model
         /// - Organization
         /// - Policy
         /// - Reference
         /// - Rule
-        /// - Technical  
+        /// - TechnicalAsset  
         ///   
         /// You also have the option of providing a Uid for this new asset type. This is particularly useful in a migration scenario where you want to migrate an asset type from one environment to another. The default is to not provide one, in which case a Uid will be automatically generated.
         /// </remarks>
@@ -439,14 +439,14 @@ namespace d360.web.Controllers.V2
         /// Updates an asset type based on the specific asset type unique identifier (Uid).
         /// </summary>
         /// <remarks>
-        /// This endpoint can update the following asset type class:  
-        /// - Business
+        /// This endpoint can update the following asset type classes:  
+        /// - BusinessAsset 
         /// - Model
         /// - Organization
         /// - Policy
         /// - Reference
         /// - Rule
-        /// - Technical  
+        /// - TechnicalAsset 
         /// </remarks>
         /// <param name="model">The asset type model to update.</param>
         /// <returns></returns>

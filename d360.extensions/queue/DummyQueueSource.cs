@@ -93,7 +93,7 @@ namespace d360.extensions.queue
             await client.SendAsync(bm);
         }
 
-        public void CreateTopicMessages<T>(string topicName, List<T> events)
+        public void CreateTopicMessages<T>(string topicName, List<T> events, DateTime? scheduledEnqueueTime = null)
         {
 
         }
