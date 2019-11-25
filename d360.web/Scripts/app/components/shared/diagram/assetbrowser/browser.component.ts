@@ -47,11 +47,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @Input() assetUid: string;
 
     @ViewChild('diagram', { static: false }) diagramRef;
-    @ViewChild('bottomCommandBar', { static: false }) bottomCommandBarRef;
-    @ViewChild('filterPanel', { static: false }) filterPanelRef;
-    @ViewChild('infoPanel', { static: false }) infoPanelRef;
-    @ViewChild('ownerPanel', { static: false }) ownerPanelRef;
-    @ViewChild('addRelationshipsPanel', { static: false }) addRelationshipsPanelRef;
 
     DiagramObjectType = DiagramObjectType;
 
@@ -149,14 +144,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     public ngAfterViewChecked() {
-        var tabViewElements: HTMLElement[] = this.myElement.nativeElement.querySelectorAll('.ui-tabview-panels');
+
+        var panelElements: HTMLElement[] = this.myElement.nativeElement.querySelectorAll('.asset-browser-window-content');  
         (function () {
             if (typeof NodeList.prototype.forEach === "function") return false;
-            tabViewElements.forEach = Array.prototype.forEach;
+            panelElements.forEach = Array.prototype.forEach;
         })();
-        tabViewElements.forEach(el => {
+        panelElements.forEach(el => {
             var diagramSize = +this.diagramRef.nativeElement.style.height.replace('px', '');
-            el.style.maxHeight = (diagramSize - 156) + 'px';
+            el.style.height = (diagramSize - 120) + 'px';
+            el.style.maxHeight = (diagramSize - 120) + 'px';
         });
 
     }
@@ -228,7 +225,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.showDetails(this.selectedDiagramAsset.Uid);
         }
 
-        this.resizeDiagram();
         this.cdRef.markForCheck();
     }
 
@@ -301,7 +297,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.filtersLoading = false;
         this.panelButtonClick('filter');
-        this.resizeDiagram();
         this.cdRef.markForCheck();
     }
 
@@ -316,14 +311,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         else {
             this.filtersLoading = false;
             this.panelButtonClick('filter');
-            this.resizeDiagram();
             this.cdRef.markForCheck();
         }
     }
 
     private addRelationshipsClick(e) {
         this.panelButtonClick('add');
-        this.resizeDiagram();
         this.cdRef.markForCheck();
     }
 
@@ -1038,38 +1031,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private resizeDiagram() {
-        let offset = this.diagramRef.nativeElement.offsetTop;
         let height = window.innerHeight;
-
-        if (this.diagramRef.nativeElement.offsetParent) {
-            offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
-        }
-
-        let diagramHeight: string = "";
-
-        this.diagramRef.nativeElement.style.height = diagramHeight;
         if (this.isFullScreen)
-            this.diagramRef.nativeElement.style.height = (height - 56) + 'px';
+            this.diagramRef.nativeElement.style.height = (height - 55) + 'px';
         else
-            this.diagramRef.nativeElement.style.height = (height - 238) + 'px';
-
-        if (this.filterPanelRef) {
-            let filterPanelHeight: string = (this.diagramRef.nativeElement.clientHeight - 130) + 'px';
-            this.filterPanelRef.nativeElement.style.height = filterPanelHeight;
-            this.filterPanelRef.nativeElement.style.minHeight = filterPanelHeight;
-            this.filterPanelRef.nativeElement.style.maxHeight = filterPanelHeight;
-        }
-        let infoPanelHeight: string = (this.diagramRef.nativeElement.clientHeight - 190) + 'px';
-        if (this.infoPanelRef) {
-            this.infoPanelRef.nativeElement.style.height = infoPanelHeight;
-            this.infoPanelRef.nativeElement.style.minHeight = infoPanelHeight;
-            this.infoPanelRef.nativeElement.style.maxHeight = infoPanelHeight;
-        }
-        if (this.ownerPanelRef) {
-            this.ownerPanelRef.nativeElement.style.height = infoPanelHeight;
-            this.ownerPanelRef.nativeElement.style.minHeight = infoPanelHeight;
-            this.ownerPanelRef.nativeElement.style.maxHeight = infoPanelHeight;
-        }
+            this.diagramRef.nativeElement.style.height = (height - 235) + 'px';
     }
 
     private updateZoomText() {
@@ -1173,6 +1139,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.hideDeselectedAssetTypes();
     }
 
+    private filterNumberOfHopsChange() {
+        this.saveFilter();
+        this.diagram.scale = 1;
+        this.refreshDiagram();
+        this.updateZoomText();
+    }
+
     private filterPredicateChange(e) {
         this.filterModel.SelectedPredicates = this.getTreeNodeSelectionKeys(e);
         this.saveFilter();
@@ -1218,7 +1191,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.selectedDiagramAsset.Url = "/" + this.selectedDiagramAsset.Url;
             this.isWindowLoading = false;
             this.showWindowTabs = true;
-            this.resizeDiagram();
             this.cdRef.markForCheck();
         });
     }
@@ -1437,7 +1409,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 { alignment: go.Spot.Center },
                 this.g(go.Panel, "Auto",
                     this.g(go.Shape,
-                        { figure: "RoundedRectLeft", parameter1: 2, fill: this.fontRelationBadgeCountColor, stroke: this.fontRelationBadgeCountColor, strokeWidth: 1 },
+                        { figure: "RoundedRectLeft", parameter1: 2, fill: this.fontRelationBadgeColor, stroke: this.fontRelationBadgeColor, strokeWidth: 1 },
                     ),
                     this.g(
                         go.TextBlock,
@@ -1447,14 +1419,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Left,
                             editable: false,
                             font: this.fontRelationBadge,
-                            stroke: this.fontRelationBadgeColor
+                            stroke: this.fontRelationBadgeCountColor
                         },
                         new go.Binding("text", "predicate")
                     ),
                 ),
                 this.g(go.Panel, "Auto",
                     this.g(go.Shape, "RoundedRectRight",
-                        { parameter1: 2, stroke: this.fontRelationBadgeCountColor, strokeWidth: 1, fill: this.fontRelationBadgeCountColor }
+                        { parameter1: 2, fill: this.fontRelationBadgeColor, stroke: this.fontRelationBadgeColor, strokeWidth: 1 }
                     ),
                     this.g(
                         go.TextBlock,
