@@ -189,10 +189,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-    <None Include="Properties\PublishProfiles\gov-preview-eng.pubxml" />
-    <None Include="Properties\PublishProfiles\US - Fusion - Production.pubxml" />
-    <None Include="Properties\PublishProfiles\US - Fusion - Uat.pubxml" />
-    <None Include="Properties\PublishProfiles\us-fusion-processor-uat - Web Deploy.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>

@@ -114,13 +114,6 @@
       <IsTransformFile>True</IsTransformFile>
     </None>
     <None Include="packages.config" />
-    <None Include="Properties\PublishProfiles\d3s-us-processor - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-us-processor-ClientDevelopment - Web Deploy %282%29.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-us-processor-ClientDevelopment - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-us-processor-Nightly - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-us-processor-uat - Web Deploy %282%29.pubxml" />
-    <None Include="Properties\PublishProfiles\d3s-us-processor-uat - Web Deploy.pubxml" />
-    <None Include="Properties\PublishProfiles\gov-preview-eng.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
