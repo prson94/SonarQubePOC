@@ -6,6 +6,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 // Webpack Config
 var webpackConfig = {
+    mode: 'production',
     entry: {
         'polyfills': './scripts/app/polyfills.ts',
         'vendor': './scripts/app/vendor.ts',
