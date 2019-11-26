@@ -45,8 +45,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
 
     disableRebuildAssetGraph: boolean = false;
     graphValidationMessage = "";
-    showRebuildAssetBrowserButton: boolean = false;
-
+    
     disableRebuildDisplayValue: boolean = false;
     displayValueValidationMessage = "";
 
@@ -83,8 +82,6 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                 this.homePageImage = new CompanyImage();
 
                 this.companySettings = data;
-
-                this.showRebuildAssetBrowserButton = this.companySettings.LineageVersion === 3;
 
                 this.searchTypes = SettingsHelper.searchTypeStringToList(this.companySettings.DefaultSearchTypes);
 
