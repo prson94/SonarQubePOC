@@ -116,11 +116,6 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Properties\PublishProfiles\gov-preview-eng.pubxml" />
-    <None Include="Properties\PublishProfiles\US - Client Development.pubxml" />
-    <None Include="Properties\PublishProfiles\US - Nightly.pubxml" />
-    <None Include="Properties\PublishProfiles\US - Production.pubxml" />
-    <None Include="Properties\PublishProfiles\US - Uat.pubxml" />
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
