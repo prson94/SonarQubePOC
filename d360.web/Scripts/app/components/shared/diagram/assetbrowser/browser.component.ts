@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, SimpleChanges, EventEmitter, Output } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, SimpleChanges, EventEmitter, Output, AfterViewChecked } from '@angular/core';
 import {
     DiagramObjectType,
     AssetBrowserLineageApiRequestModel,
@@ -42,16 +42,11 @@ declare var window: any;
     providers: [BrowserService, PermissionsService, PredicatesService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit {
+export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, AfterViewChecked {
     @Input() readonly: boolean = true;
     @Input() assetUid: string;
 
     @ViewChild('diagram', { static: false }) diagramRef;
-    @ViewChild('bottomCommandBar', { static: false }) bottomCommandBarRef;
-    @ViewChild('filterPanel', { static: false }) filterPanelRef;
-    @ViewChild('infoPanel', { static: false }) infoPanelRef;
-    @ViewChild('ownerPanel', { static: false }) ownerPanelRef;
-    @ViewChild('addRelationshipsPanel', { static: false }) addRelationshipsPanelRef;
 
     DiagramObjectType = DiagramObjectType;
 
@@ -148,6 +143,21 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.cdRef.markForCheck();
     }
 
+    public ngAfterViewChecked() {
+
+        var panelElements: HTMLElement[] = this.myElement.nativeElement.querySelectorAll('.asset-browser-window-content');  
+        (function () {
+            if (typeof NodeList.prototype.forEach === "function") return false;
+            panelElements.forEach = Array.prototype.forEach;
+        })();
+        panelElements.forEach(el => {
+            var diagramSize = +this.diagramRef.nativeElement.style.height.replace('px', '');
+            el.style.height = (diagramSize - 120) + 'px';
+            el.style.maxHeight = (diagramSize - 120) + 'px';
+        });
+
+    }
+
     public ngOnDestroy() {
         this.diagram.div = null;    // Garbage collection.
     }
@@ -215,7 +225,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.showDetails(this.selectedDiagramAsset.Uid);
         }
 
-        this.resizeDiagram();
         this.cdRef.markForCheck();
     }
 
@@ -288,7 +297,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.filtersLoading = false;
         this.panelButtonClick('filter');
-        this.resizeDiagram();
         this.cdRef.markForCheck();
     }
 
@@ -303,14 +311,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         else {
             this.filtersLoading = false;
             this.panelButtonClick('filter');
-            this.resizeDiagram();
             this.cdRef.markForCheck();
         }
     }
 
     private addRelationshipsClick(e) {
         this.panelButtonClick('add');
-        this.resizeDiagram();
         this.cdRef.markForCheck();
     }
 
@@ -650,11 +656,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
                     this.loadingText = "";
                     this.isLoading = false;
-                    
+
                     this.cdRef.markForCheck();
 
                     obs.next(true);
-                    obs.complete();	
+                    obs.complete();
                 });
         });
 
@@ -1015,7 +1021,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private onResize(event) {
         this.resizeDiagram();
     }
-  
+
     @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
         if (event.key === "Escape" || event.key === "Esc") {
             this.isFullScreen = false;
@@ -1025,38 +1031,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private resizeDiagram() {
-        let offset = this.diagramRef.nativeElement.offsetTop;
         let height = window.innerHeight;
-
-        if (this.diagramRef.nativeElement.offsetParent) {
-            offset += this.diagramRef.nativeElement.offsetParent.offsetTop;
-        }
-
-        let diagramHeight: string = "";
-
-        this.diagramRef.nativeElement.style.height = diagramHeight;
         if (this.isFullScreen)
-            this.diagramRef.nativeElement.style.height = (height - 56) + 'px';
-        else 
-            this.diagramRef.nativeElement.style.height = (height - 238) + 'px';
-
-        if (this.filterPanelRef) {
-            let filterPanelHeight: string = (this.diagramRef.nativeElement.clientHeight - 130) + 'px';
-            this.filterPanelRef.nativeElement.style.height = filterPanelHeight;
-            this.filterPanelRef.nativeElement.style.minHeight = filterPanelHeight;
-            this.filterPanelRef.nativeElement.style.maxHeight = filterPanelHeight;
-        }
-        let infoPanelHeight: string = (this.diagramRef.nativeElement.clientHeight - 190) + 'px';
-        if (this.infoPanelRef) {
-            this.infoPanelRef.nativeElement.style.height = infoPanelHeight;
-            this.infoPanelRef.nativeElement.style.minHeight = infoPanelHeight;
-            this.infoPanelRef.nativeElement.style.maxHeight = infoPanelHeight;
-        }
-        if (this.ownerPanelRef) {
-            this.ownerPanelRef.nativeElement.style.height = infoPanelHeight;
-            this.ownerPanelRef.nativeElement.style.minHeight = infoPanelHeight;
-            this.ownerPanelRef.nativeElement.style.maxHeight = infoPanelHeight;
-        }
+            this.diagramRef.nativeElement.style.height = (height - 55) + 'px';
+        else
+            this.diagramRef.nativeElement.style.height = (height - 235) + 'px';
     }
 
     private updateZoomText() {
@@ -1084,7 +1063,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (parts.count == 1) {
                     let data = parts.first().data;
 
-                    
+
                     if (data.assetUid != null) { //selected item is an asset
                         this.isInfoTabDisabled = false;
                         if (this.isInfoWindowVisible) {
@@ -1118,7 +1097,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private filterAncestryModeChange(): void {
-        this.saveFilter(); 
+        this.saveFilter();
         this.isLoading = true;
         this.loadingText = "Determining links and meaning...";
         let data = this.browserService.convertResponseModel(this.responseModel, this.filterModel.AncestryMode);
@@ -1158,6 +1137,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.filterModel.SelectedAssetTypes = this.getTreeNodeSelectionKeys(e);
         this.saveFilter();
         this.hideDeselectedAssetTypes();
+    }
+
+    private filterNumberOfHopsChange() {
+        this.saveFilter();
+        this.diagram.scale = 1;
+        this.refreshDiagram();
+        this.updateZoomText();
     }
 
     private filterPredicateChange(e) {
@@ -1205,7 +1191,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.selectedDiagramAsset.Url = "/" + this.selectedDiagramAsset.Url;
             this.isWindowLoading = false;
             this.showWindowTabs = true;
-            this.resizeDiagram();
             this.cdRef.markForCheck();
         });
     }
@@ -1257,7 +1242,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                     this.diagram.commitTransaction('hide');
                 }
-                
+
             }
         }
     }
@@ -1424,7 +1409,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 { alignment: go.Spot.Center },
                 this.g(go.Panel, "Auto",
                     this.g(go.Shape,
-                        { figure: "RoundedRectLeft", parameter1: 2, fill: this.fontRelationBadgeCountColor, stroke: this.fontRelationBadgeCountColor, strokeWidth: 1 },
+                        { figure: "RoundedRectLeft", parameter1: 2, fill: this.fontRelationBadgeColor, stroke: this.fontRelationBadgeColor, strokeWidth: 1 },
                     ),
                     this.g(
                         go.TextBlock,
@@ -1434,14 +1419,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             alignment: go.Spot.Left,
                             editable: false,
                             font: this.fontRelationBadge,
-                            stroke: this.fontRelationBadgeColor
+                            stroke: this.fontRelationBadgeCountColor
                         },
                         new go.Binding("text", "predicate")
                     ),
                 ),
                 this.g(go.Panel, "Auto",
                     this.g(go.Shape, "RoundedRectRight",
-                        { parameter1: 2, stroke: this.fontRelationBadgeCountColor, strokeWidth: 1, fill: this.fontRelationBadgeCountColor }
+                        { parameter1: 2, fill: this.fontRelationBadgeColor, stroke: this.fontRelationBadgeColor, strokeWidth: 1 }
                     ),
                     this.g(
                         go.TextBlock,
@@ -1584,7 +1569,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.Shape,
                         "Rectangle",
                         { fill: null, strokeWidth: 2, isPanelMain: true },
-                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount); })
+                        new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
                     ),
                     this.g(go.Panel, "Vertical",
                         this.g(
@@ -1592,7 +1577,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             "Horizontal",
                             // button next to TextBlock
                             { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
-                            new go.Binding("background", "", function (v) { return go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount); }),
+                            new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
                             this.g(
                                 "SubGraphExpanderButton",
                                 { alignment: go.Spot.Right, margin: 5 }
@@ -1608,7 +1593,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     font: this.fontLabelIcon,
                                     //stroke: this.fontLabelColor
                                 },
-                                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount); }),
+                                new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
                                 new go.Binding("text", "icon"),
                                 new go.Binding("visible", "showIcon")
                             ),
@@ -1625,7 +1610,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     overflow: this.textOverflowStyle,
                                     toolTip: this.createTooltip()
                                 },
-                                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount); }),
+                                new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
                                 new go.Binding("text", "text").makeTwoWay()
                             )
                         ),  // end Horizontal Panel
@@ -1684,7 +1669,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 go.Shape,
                 "Rectangle",
                 { fill: null, strokeWidth: 2, stretch: go.GraphObject.Horizontal },
-                new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount); })
+                new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
             ),
             this.g(
                 go.Panel,
@@ -1694,7 +1679,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     "Horizontal",
                     // button next to TextBlock
                     { stretch: go.GraphObject.Horizontal },
-                    new go.Binding("background", "", function (v) { return go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount); }),
+                    new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
                     this.g(
                         "SubGraphExpanderButton",
                         { alignment: go.Spot.Right, margin: 5 }
@@ -1710,7 +1695,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             font: this.fontLabelIcon//,
                             //stroke: this.fontLabelColor
                         },
-                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount); }),
+                        new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
                         new go.Binding("text", "icon"),
                         new go.Binding("visible", "showIcon")
                     ),
@@ -1727,7 +1712,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             overflow: this.textOverflowStyle,
                             toolTip: this.createTooltip()
                         },
-                        new go.Binding("stroke", "", function (v) { return go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount); }),
+                        new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
                         new go.Binding("text", "text").makeTwoWay()
                     )
                 ),  // end Horizontal Panel
@@ -1829,7 +1814,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     "Shape",
                     { alignment: go.Spot.Center, width: 25, height: 25 },
                     new go.Binding("fill", "back"),
-                    new go.Binding("stroke", "back", function (v) { return go.Brush.mix(v, this.lightenBoxColor, .15); }),
+                    new go.Binding("stroke", "back", (v) => go.Brush.mix(v.back, this.lightenBoxColor, .15)),
                 ),
                 this.g(
                     go.TextBlock,
