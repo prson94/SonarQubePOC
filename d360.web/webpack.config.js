@@ -2,7 +2,6 @@
 var webpack = require('webpack');
 var path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 // Webpack Config
 var webpackConfig = {
@@ -26,7 +25,6 @@ var webpackConfig = {
           /@angular(\\|\/)core(\\|\/)fesm5/,
       path.resolve(__dirname, '../src')
     ),
-    //new webpack.optimize.CommonsChunkPlugin({ name: ['main', 'vendor', 'polyfills'], minChunks: Infinity }),
     new webpack.DefinePlugin({
         __BUILD_DATE: JSON.stringify(new Date().toLocaleString()),        
     }),

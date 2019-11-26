@@ -18,37 +18,13 @@ var webpackConfig = {
     },
 
     plugins: [
-      //new webpack.optimize.OccurrenceOrderPlugin(true),
-      //new webpack.optimize.UglifyJsPlugin({compress: { warnings: false }}),
         // Workaround for https://github.com/angular/angular/issues/11580
         new webpack.ContextReplacementPlugin(
             // The (\\|\/) piece accounts for path separators in *nix and Windows
             /@angular(\\|\/)core(\\|\/)fesm5/,
             path.resolve(__dirname, '../src')
         ),
-        new webpack.optimize.UglifyJsPlugin({
-            beautify: false,
-            output: {
-                comments: false
-            },
-            mangle: {
-                screw_ie8: true
-            },
-            compress: {
-                screw_ie8: true,
-                warnings: false,
-                conditionals: true,
-                unused: true,
-                comparisons: true,
-                sequences: true,
-                dead_code: true,
-                evaluate: true,
-                if_return: true,
-                join_vars: true,
-                negate_iife: false
-            }
-        }),
-      new webpack.optimize.CommonsChunkPlugin({ name: ['main', 'vendor', 'polyfills'], minChunks: Infinity }),
+
       new webpack.DefinePlugin({
           __BUILD_DATE: JSON.stringify(new Date().toLocaleString()),
       }),
@@ -56,7 +32,7 @@ var webpackConfig = {
     ],
 
     module: {
-        loaders: [
+        rules: [
           // .ts files for TypeScript
           { test: /\.ts$/, loaders: ['awesome-typescript-loader?configFileName=scripts/app/tsconfig.json', 'angular2-template-loader', 'angular2-router-loader'], exclude: [/\.(spec|e2e)\.ts$/] },
           { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
