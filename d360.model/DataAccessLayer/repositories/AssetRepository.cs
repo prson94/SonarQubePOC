@@ -964,7 +964,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             if (predicateClass.Contains(model.Class) && (parentAssetType != null || predicate != null))
             {
-                var parentPredicateType = model.Class.Equals( AssetTypeClass.Model | AssetTypeClass.Policy) ? 
+                var parentPredicateType = (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy) ? 
                     PredicateType.IntraTypeHierarchy : 
                     PredicateType.InterTypeHierarchy;
 
