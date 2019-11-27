@@ -612,10 +612,14 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                     R.Object,
                                     R.ObjectID
                                 from    #Relationships R
-							    inner join AssetDetail ADO on ADO.Object = R.Object and ADO.ObjectID = R.ObjectID
-							    inner join AssetDetail ADS on ADS.Object = R.Subject and ADS.ObjectID = R.SubjectID
+							    left join AssetDetail ADO on ADO.Object = R.Object and ADO.ObjectID = R.ObjectID
+							    left join AssetDetail ADS on ADS.Object = R.Subject and ADS.ObjectID = R.SubjectID
+							    left join AssetType ATO on ATO.Object = R.Object and ATO.ObjectID = R.ObjectID
+							    left join AssetType ATS on ATS.Object = R.Subject and ATS.ObjectID = R.SubjectID
 							    inner join [IntersectType] IT on IT.ID = IntersectTypeID
-                                where  R.ID is null and ADO.Type = IT.Object AND ADS.Type = IT.Subject;
+                                where  R.ID is null 
+                                        and ISNULL(ADO.Type, ATO.Object) = IT.Object 
+                                        and ISNULL(ADS.Type, ATS.Object) = IT.Subject;;
                 end
 ",
             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
