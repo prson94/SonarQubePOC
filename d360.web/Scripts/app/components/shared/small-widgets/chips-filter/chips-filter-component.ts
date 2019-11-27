@@ -75,12 +75,12 @@ export class ChipsFilterComponent {
     private openMenu: boolean = false;
     private changeWait: any;
     private filterText: string = '';
-    private selectedFilters: AdvancedSearchFilter[] = [];
     private currentFilter: AdvancedSearchFilter;
     private isInputOpen: boolean = false;
     private isEditOpen: boolean = false;
 
     @Input() filterOption: any[] = [];
+    @Input() selectedFilters: AdvancedSearchFilter[];
     @Output() applyFlter = new EventEmitter();
     @ViewChild('popup', { static: false }) popup: ElementRef;
     @ViewChildren('searchInput') searchInputElement: QueryList<ElementRef>;
