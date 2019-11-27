@@ -1515,12 +1515,16 @@ a.breadcrumb {
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: flex-start;
+    margin: -2px;
+    border-bottom: 1px solid #d0d0d0;
+    padding: 4px;
 
     .card-row {
-        margin-left: 10px;
+        margin-left: 4px;
         display: inline-flex;
         padding-bottom: 4px;
         max-width: 98%;
+        margin-top: 2px;
 
         .folder-icon {
             display: inline-block;
@@ -1571,7 +1575,7 @@ a.breadcrumb {
         }
 
         &.tags-row {
-            margin-left: 4px;
+            margin-left: 0px;
 
             .tag-list-container {
                 overflow: hidden;
@@ -1587,6 +1591,9 @@ a.breadcrumb {
 
         &.search-all-row {
             width: 100%;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            padding-bottom: 0px;
 
             .search-all-res {
                 color: @igx-blue-color;
