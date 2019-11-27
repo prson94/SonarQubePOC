@@ -308,6 +308,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
     closeCertifyModal() {
         this.showCertifyModal = false;
+        this.showCertify = true;
     }
     certify() {
         this.showCertifyModal = false;
