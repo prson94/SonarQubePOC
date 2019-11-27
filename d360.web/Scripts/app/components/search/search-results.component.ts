@@ -4,6 +4,7 @@ import { SearchService } from '../../services/search.service';
 import { SearchResultsObject } from '../../models/search-result.model';
 import { CheckTreeNode } from '../shared/small-widgets/check-tree/checktreenode';
 import { SearchStateService } from './search-state.service';
+import { AdvancedSearchFilter } from '../../models/search-result.model';
 
 @Component({
     selector: 'd3s-search-results',
@@ -24,6 +25,7 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
     @Output() selectedCategoryChange = new EventEmitter();
 
     @ViewChild('searchContainer', { static: false }) container: ElementRef;
+    @Input() selectedFilters: AdvancedSearchFilter[] = [];
     @Output() advFilterChanged = new EventEmitter();
 
     newFilterOptions: any[] = [];

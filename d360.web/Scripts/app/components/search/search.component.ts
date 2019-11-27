@@ -33,8 +33,9 @@ declare var CompanySettings;
                 <d3s-search-results [from]="fromNumber" 
                     [loading]="isLoading" [itemsPerPage]="resultsPerPage"
                     [results]="searchResults"
+                    [selectedFilters] = "searchStateService.advancedFilters"
                     (selectedCategoryChange)="filterCheckTree($event);"
-                    (advFilterChanged)="searchFilterChanged($event);">
+                    (advFilterChanged)="advancedFilterChanged($event);">
                 </d3s-search-results>
                 </div>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -77,6 +78,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
         this.rightSidebarService.clearCurrentObject();
         this.rightSidebarService.setCurrentArea('Search Results', 'fa-search', null);
         this.rightSidebarService.showHeader(false);
+        this.searchStateService.advancedFilters = [];
 
         this.sub = this.route.queryParams.subscribe(params => {
             this.searchText = params['query'] ? params['query'] : '';
@@ -84,10 +86,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
             if (params['types'] != undefined) {
                 this.searchTypes = params['types'].split(',').filter((x): x is string => x.length > 0);
             }
-            this.searchStateService.reset();
-            this.searchStateService.setSearchCategories(this.searchTypes);
-            this.searchStateService.setFieldFilters(this.advancedFilters);
-            this.searchStateService.selectedFilters = [];
+            this.searchStateService.loadState(this.isExactMatch ? `'${this.searchText}'` : this.searchText, this.searchTypes);
             if (params['explain'] != undefined) {
                 this.searchStateService.setExplain(params['explain'] == 'please');
             }
@@ -97,9 +96,8 @@ export class SearchComponent extends BaseComponent implements OnInit {
         });
     }
 
-    private searchFilterChanged(options) {
-        this.advancedFilters = options;
-        this.searchStateService.setFieldFilters(this.advancedFilters);
+    private advancedFilterChanged(options) {
+        this.searchStateService.setFieldFilters(options);
         this.doSearch();
     }
 

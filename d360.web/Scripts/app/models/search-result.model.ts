@@ -78,6 +78,19 @@ export class SearchQuery {
     Explain: boolean;
 }
 
+export class SearchState {
+    Term: string;
+    Query: SearchQuery;
+    AggFilters: SearchAggregationFilter[];
+    SearchTypes: string[];
+    CheckTreeKeys: string[];
+    AdvancedFilters: AdvancedSearchFilter[]; 
+    Querytime: Date;
+    public constructor(init?: Partial<SearchState>) {
+        Object.assign(this, init);
+    }
+}
+
 export class AdvancedSearchFilter {
     constructor(field?: string, value?:string) {
         this.field = field;

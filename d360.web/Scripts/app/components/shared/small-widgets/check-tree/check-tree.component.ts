@@ -1,5 +1,5 @@
 ﻿import {
-    Component, Input, AfterContentInit, OnDestroy, Output, EventEmitter, OnInit,
+    Component, Input, AfterContentInit, OnDestroy, Output, EventEmitter, OnInit, OnChanges,
     ContentChildren, QueryList, TemplateRef, ElementRef
 } from '@angular/core';
 import { Optional } from '@angular/core';
@@ -13,7 +13,7 @@ import { ObjectUtils } from 'primeng/components/utils/objectutils';
     selector: 'd3s-check-tree',
     templateUrl: './check-tree.component.html'
 })
-export class CheckTree implements OnInit, AfterContentInit, OnDestroy, BlockableUI {
+export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy, BlockableUI {
 
     @Input() value: CheckTreeNode[];
 
@@ -67,10 +67,20 @@ export class CheckTree implements OnInit, AfterContentInit, OnDestroy, Blockable
 
     public filteredNodes: CheckTreeNode[];
 
+    private timeoutId: number;
+
     constructor(public el: ElementRef, @Optional() public dragDropService: TreeDragDropService) { }
 
     ngOnInit() {
 
+    }
+
+    ngOnChanges(changes: any) {
+        if (changes['value'] !== undefined) {
+            window.setTimeout(() => {
+                this.checkPropagation();
+            }, 50);
+        }
     }
 
     ngAfterContentInit() {
@@ -323,10 +333,23 @@ export class CheckTree implements OnInit, AfterContentInit, OnDestroy, Blockable
         return matched;
     }
 
+    private checkPropagation() {
+        for (let i = 0; i < this.selection.length; i++) {
+            let node = this.getNodeWithKey(this.selection[i].key, this.value);
+            if (node && node.parent) {
+                let parent = node.parent;
+                if (this.findIndexInSelection(parent) == -1) {
+                    this.propagateUp(parent, true);
+                }
+            }
+        }
+    }
+
     getBlockableElement(): HTMLElement {
         return this.el.nativeElement.children[0];
     }
 
     ngOnDestroy() {
+        window.clearTimeout(this.timeoutId);
     }
 }
