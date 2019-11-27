@@ -773,7 +773,8 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                         countSql = @"select count(*) from Asset A with (nolock)
                         inner join AssetType T with (nolock) on T.ID = A.AssetTypeID
 						cross apply dbo.GetAssetDisplayValueById(a.ID) D
-                        where T.[Object] = @obj and T.ObjectID = @objID and (@query is null or D.DisplayValue like '%' + @query + '%')";
+                        where T.[Object] = @obj and T.ObjectID = @objID and (@query is null or D.DisplayValue like '%' + @query + '%')
+                            and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID)";
 
                         sql = @"select  A.ObjectID as [Value], D.DisplayValue as [Text], case when I.ID is not null then 1 else 0 end as Selected
                             from Asset A with (nolock)
@@ -783,6 +784,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
 	                            (I.[Object] = A.[Object] and I.ObjectID = A.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
                             where T.[Object] = @obj and T.ObjectID = @objID and (@query is null or D.DisplayValue like '%' + @query + '%')
+                            and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID)                            
                             order by 3 desc, D.DisplayValue asc
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     }
@@ -818,13 +820,15 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     break;
                 case "ResourceType":
-                    countSql = "select count(*) from reporting.Global_Resource R where (@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')";
+                    countSql = "select count(*) from reporting.Global_Resource R where (@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')" +
+                        " and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)";
                     sql = @"select R.ResourceID as Value, R.LastName + ', ' + R.FirstName as Text, case when I.ID is not null then 1 else 0 end as Selected 
                             from reporting.[Global_Resource] R
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and
-	                            ((I.[Subject] = 'Resource' and I.SubjectID = F.ID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
-	                            (I.[Object] = 'Resource' and I.ObjectID = F.ID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+	                            ((I.[Subject] = 'Resource' and I.SubjectID = R.ResourceID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+	                            (I.[Object] = 'Resource' and I.ObjectID = R.ResourceID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
                             where (@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
+                                and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
                             order by 3 desc, R.LastName + ', ' + R.FirstName asc  
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     break;

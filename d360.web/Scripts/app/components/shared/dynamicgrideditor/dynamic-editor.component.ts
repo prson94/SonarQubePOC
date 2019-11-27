@@ -56,7 +56,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() hasHeader = true;
     @Input() copy: boolean;
     @Input() selectedObject: string;
-    @Input() selectedObjectID: number;
+    @Input() selectedObjectID: any;
     @Input() adding: boolean = false;
     @Input() isV2API: boolean = false;
 
