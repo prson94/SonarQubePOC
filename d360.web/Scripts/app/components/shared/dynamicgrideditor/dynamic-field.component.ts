@@ -565,10 +565,18 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     private lazyLoad(e: any) {
         this.relationItemsLoading = true;
+        var object = this.object;
+        var objectId = this.objectID;
+
+        if (this.selectedObject && this.selectedObjectID) {
+            object = this.selectedObject;
+            objectId = this.selectedObjectID;
+        }
+
         this.relationSource$.next({
             fieldTypeID: this.field.FieldTypeID,
-            object: this.object,
-            objectID: this.objectID,
+            object: object,
+            objectID: objectId,
             event: e
         });
     }
