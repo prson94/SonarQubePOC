@@ -20,7 +20,6 @@ import {
 
     AssetBrowserFilterModel,
     AssetTypeFilter,
-
     FilterSelectionsModel
 } from '../../../../models/lineage.model';
 
