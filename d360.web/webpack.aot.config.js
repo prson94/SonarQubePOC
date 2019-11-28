@@ -16,48 +16,48 @@ var webpackConfig = {
     output: {
         path: __dirname + '/scripts/app/',
     },
-    
+
     plugins: [
-        new ngtools.AngularCompilerPlugin ({
+        new ngtools.AngularCompilerPlugin({
             tsConfigPath: './scripts/app/tsconfig.aot.json',
             entryModule: 'app/app.module#AppModule',
             typeChecking: false
         }),
-      //new webpack.optimize.OccurrenceOrderPlugin(true),
-      //new webpack.optimize.UglifyJsPlugin({compress: { warnings: false }}),
-      // Workaround for https://github.com/angular/angular/issues/11580
-    new webpack.ContextReplacementPlugin(
-      // The (\\|\/) piece accounts for path separators in *nix and Windows
-      /@angular(\\|\/)core(\\|\/)fesm5/,
-      path.resolve(__dirname, '../src')
-    ),
+        //new webpack.optimize.OccurrenceOrderPlugin(true),
+        //new webpack.optimize.UglifyJsPlugin({compress: { warnings: false }}),
+        // Workaround for https://github.com/angular/angular/issues/11580
+        new webpack.ContextReplacementPlugin(
+            // The (\\|\/) piece accounts for path separators in *nix and Windows
+            /@angular(\\|\/)core(\\|\/)fesm5/,
+            path.resolve(__dirname, '../src')
+        ),
         /*new webpack.optimize.UglifyJsPlugin({
             compress: { warnings: false },comments:false
         }),*/
-      new webpack.optimize.CommonsChunkPlugin({ name: ['main', 'vendor', 'polyfills'], minChunks: Infinity }),
+        new webpack.optimize.CommonsChunkPlugin({ name: ['main', 'vendor', 'polyfills'], minChunks: Infinity }),
     ],
 
     module: {
         loaders: [
-          // .ts files for TypeScript
-         // {test:/\.ts$/, loaders:["@ngtools/webpack"]},
-          { test: /\.ts$/, loaders: ['awesome-typescript-loader?configFileName=scripts/app/tsconfig.aot.json', 'angular2-template-loader', 'angular2-router-loader'] },
-          { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
-          { test: /\.html$/, loader: 'raw-loader' }
+            // .ts files for TypeScript
+            // {test:/\.ts$/, loaders:["@ngtools/webpack"]},
+            { test: /\.ts$/, loaders: ['awesome-typescript-loader?configFileName=scripts/app/tsconfig.aot.json', 'angular2-template-loader', 'angular2-router-loader'] },
+            { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
+            { test: /\.html$/, loader: 'raw-loader' }
         ],
         rules: [
-      {
-        test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
-        loader: '@ngtools/webpack'
-      }
-    ]
+            {
+                test: /(?:\.ngfactory\.js|\.ngstyle\.js|\.ts)$/,
+                loader: '@ngtools/webpack'
+            }
+        ]
     }
 
 };
 
 
 // Our Webpack Defaults
-var defaultConfig = {    
+var defaultConfig = {
     cache: true,
     //debug: true,
     output: {
@@ -67,7 +67,7 @@ var defaultConfig = {
     },
 
     resolve: {
-    //    root: [path.join(__dirname, '/scripts/app/')],
+        //    root: [path.join(__dirname, '/scripts/app/')],
         extensions: ['.ts', '.js']
     },
 
@@ -85,6 +85,7 @@ var defaultConfig = {
         setImmediate: false
     }
 };
+
 
 var webpackMerge = require('webpack-merge');
 module.exports = webpackMerge(defaultConfig, webpackConfig);
