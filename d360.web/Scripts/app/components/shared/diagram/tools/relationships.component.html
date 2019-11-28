@@ -1,50 +1,68 @@
 ﻿
-<div class="browser-relationship-editor">
-
-    <d3s-asset-type-modal-editor [isModalVisable]="isAddTransformationVisible" (onCancel)="onCancel()" (onSave)="newAssetAdded($event)"></d3s-asset-type-modal-editor>
-
-    <!--<div>
-        <button (click)="prepopulateSourceAssets()">Populate source assets</button><br />
-        <button (click)="prepopulateSearchResult()">Populate source search results</button><br />
-        <button (click)="addSourceAssetFilter()">Add filters to source assets</button><br />
+<div class="asset-browser-window-header">
+    <div class="asset-browser-window-header-name">Add Relationships</div>
+    <div class="clearfix"></div>
+    <div class="switcher">
+        <button class="{{editorType == 'Lineage' ? 'selected' : ''}}" (click)="changeEditorType('Lineage')">Lineage</button>
+        <button class="{{editorType == 'RelatedAssets' ? 'selected' : ''}}" (click)="changeEditorType('RelatedAssets')">Related Assets</button>
     </div>
-    <br />
-    <br />-->
+</div>
+<div class="asset-browser-window-content asset-browser-window-content-padded">
 
-    <span class="title">Source Assets</span>
-    <d3s-asset-search [multiSelect]="true"
-                      [showPredicateSelector]="true"
-                      [predicateSelectorType]="predicateType"
-                      [selected]="sourceAssets"
-                      [prepopulatedResults]="sourcePrePop"
-                      [multiSelectStyle]="'Button'"
-                      [relationshipSide]="1"
-                      [clearResultsAfterSelection]="false"
-                      [multiSelectButtonLabel]="'Add source'"
-                      [filters]="sourceAssetFilters"
-                      (selectedChange)="onAssetSearchSelection($event)">
-    </d3s-asset-search>
-    <span class="title">Transformation</span>
-    <div class="transformation-block" style="display:flex;">
+    <div class="browser-relationship-editor">
+        <div class="errorMessage" *ngIf="topWarningMessage.length > 0">
+            <i class="warning-icon fa fa-exclamation-triangle"></i>
+            {{topWarningMessage}}
+        </div>
+        <d3s-asset-type-modal-editor [isModalVisable]="isAddTransformationVisible" (onCancel)="onCancel()" (onSave)="newAssetAdded($event)"></d3s-asset-type-modal-editor>
+
+        <span class="title">Source Assets</span>
+        <d3s-asset-search [multiSelect]="true"
+                          [showPredicateSelector]="showPredicateSelector"
+                          [predicateSelectorType]="predicateType"
+                          [selected]="sourceAssets"
+                          [filters]="sourceFilters"
+                          [prepopulatedResults]="sourcePrePop"
+                          [multiSelectStyle]="'Button'"
+                          [relationshipSide]="1"
+                          [clearResultsAfterSelection]="true"
+                          [multiSelectButtonLabel]="'Add source'"
+                          (selectedChange)="onAssetSearchSelection($event)">
+        </d3s-asset-search>
+        <span class="title">Transformation</span>
+        <div class="transformation-block" style="display:flex;">
             <d3s-asset-search [multiSelect]="false"
                               [predicateSelectorType]="predicateType"
                               [selected]="transformationAsset"
                               [clearResultsAfterSelection]="true"
                               [placeholder]="'Choose or create a transformation...'"
+                              [filters]="transformationFilters"
                               (selectedChange)="onAssetSearchSelection($event)">
             </d3s-asset-search>
             <button type="button" title="Add Transformation" (click)="isAddTransformationVisible = true"><i class="fa fa-plus"></i></button>
+        </div>
+        <span class="title">Target Assets</span>
+        <d3s-asset-search [multiSelect]="true"
+                          [showPredicateSelector]="showPredicateSelector"
+                          [predicateSelectorType]="predicateType"
+                          [selected]="targetAssets"
+                          [relationshipSide]="0"
+                          [resultDisplayStyle]="1"
+                          [clearResultsAfterSelection]="false"
+                          [multiSelectStyle]="'Button'"
+                          [multiSelectButtonLabel]="'Add target'"
+                          (selectedChange)="onAssetSearchSelection($event)">
+        </d3s-asset-search>
+
+        <div class="errorMessage" *ngIf="bottomWarningMessage.length > 0">
+            <i class="warning-icon fa fa-exclamation-triangle"></i>
+            {{bottomWarningMessage}}
+        </div>
+        <div class="actions">
+            <button (click)="save()" [disabled]="!IsValid" class="button">Apply</button>
+            <div class="flex-grow"></div>
+            <button [disabled]="!IsValid" class="button">Apply and Continue</button>
+        </div>
     </div>
-    <span class="title">Target Assets</span>
-    <d3s-asset-search [multiSelect]="true"
-                      [showPredicateSelector]="true"
-                      [predicateSelectorType]="predicateType"
-                      [selected]="targetAssets"
-                      [relationshipSide]="0"
-                      [resultDisplayStyle]="1"
-                      [clearResultsAfterSelection]="false"
-                      [multiSelectStyle]="'CheckBox'"
-                      [multiSelectButtonLabel]="'Add target'"
-                      (selectedChange)="onAssetSearchSelection($event)">
-    </d3s-asset-search>
 </div>
+

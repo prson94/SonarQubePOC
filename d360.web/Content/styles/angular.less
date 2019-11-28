@@ -3350,28 +3350,28 @@ button.tab-scroller {
             }
         }
     }
+}
 
-    .warningMessage {
-        background-color: #ffe7b2;
-        border: 1px solid #ffb000;
-        border-radius: 2px;
-        width: 100%;
-        padding: 10px 20px;
-        margin-top: 15px;
-        color: #000;
-        font-weight: normal;
-    }
+.warningMessage {
+    background-color: #ffe7b2;
+    border: 1px solid #ffb000;
+    border-radius: 2px;
+    width: 100%;
+    padding: 10px 20px;
+    margin-top: 15px;
+    color: #000;
+    font-weight: normal;
+}
 
-    .errorMessage {
-        background-color: #ffc6bb;
-        border: 1px solid #c44d36;
-        border-radius: 2px;
-        width: 100%;
-        padding: 10px 20px;
-        margin-top: 15px;
-        color: #000;
-        font-weight: normal;
-    }
+.errorMessage {
+    background-color: #ffc6bb;
+    border: 1px solid #c44d36;
+    border-radius: 2px;
+    width: 100%;
+    padding: 10px 20px;
+    margin-top: 15px;
+    color: #000;
+    font-weight: normal;
 }
 
 .tag-actions {
@@ -4703,10 +4703,10 @@ a.mid-blue {
     background: white;
     margin: 8px 0px;
 
-    div:first-of-type{
-        margin-left:2px;
+    div:first-of-type {
+        margin-left: 2px;
     }
-   
+
 
     .chip-option {
         min-height: 26px;
@@ -4832,7 +4832,6 @@ a.mid-blue {
             }
         }
     }
-    
 }
 
 .gov-search {
@@ -5235,6 +5234,71 @@ a.mid-blue {
             margin-bottom: 0px;
         }
     }
+
+    .relationship-editor {
+        .asset-browser-window-header {
+            height: 85px;
+
+            .asset-browser-window-header-name {
+                margin-bottom: 4px;
+            }
+
+            .switcher {
+                button {
+                    background: none;
+                    border: none;
+                    border-bottom: 4px rgba(255,255,255,0);
+                    color: #006fc0;
+                    padding: 4px 12px;
+
+                    &.selected, &:hover {
+                        border-bottom: 4px solid #006fc0;
+                    }
+                }
+            }
+        }
+
+        .asset-browser-window-content {
+            top: 85px;
+        }
+
+        .errorMessage {
+            position: relative;
+            margin-top: 0px;
+            padding-left: 28px;
+            padding-top: 4px;
+            padding-bottom: 4px;
+
+            .warning-icon {
+                position: absolute;
+                left: 8px;
+                top: 8px;
+            }
+        }
+
+        .actions {
+            padding: 16px 0px;
+            display: flex;
+            flex-direction: row;
+
+            button {
+                border: 1px solid #cccccc;
+                margin-left: 0px;
+
+                &:disabled {
+                    opacity: 0.5;
+
+                    &:hover {
+                        background: #f0f0f0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.flex-grow{
+    flex-grow:1;
 }
 
 .full-screen-ab {

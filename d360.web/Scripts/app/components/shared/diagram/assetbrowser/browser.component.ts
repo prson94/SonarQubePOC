@@ -136,6 +136,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
         this.initializeDiagram();
 
+        console.log(this);
     }
 
     public ngAfterViewInit() {
