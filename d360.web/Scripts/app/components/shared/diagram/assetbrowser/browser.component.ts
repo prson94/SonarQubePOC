@@ -17,7 +17,6 @@ import {
     AssetBrowserLineageApiItemModel,
     FilterAncestryMode,
     FilterAncestryOption,
-
     AssetBrowserFilterModel,
     AssetTypeFilter,
     FilterSelectionsModel
