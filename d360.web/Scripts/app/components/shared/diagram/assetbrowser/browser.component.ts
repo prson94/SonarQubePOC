@@ -17,9 +17,8 @@ import {
     AssetBrowserLineageApiItemModel,
     FilterAncestryMode,
     FilterAncestryOption,
-
     AssetBrowserFilterModel,
-    AssetTypeFilter,
+    AssetTypeFilter,
     FilterSelectionsModel
 } from '../../../../models/lineage.model';
 
@@ -146,7 +145,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     public ngAfterViewChecked() {
 
-        var panelElements: HTMLElement[] = this.myElement.nativeElement.querySelectorAll('.asset-browser-window-content');  
+        var panelElements: HTMLElement[] = this.myElement.nativeElement.querySelectorAll('.asset-browser-window-content');
         (function () {
             if (typeof NodeList.prototype.forEach === "function") return false;
             panelElements.forEach = Array.prototype.forEach;
@@ -1037,6 +1036,29 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.diagramRef.nativeElement.style.height = (height - 55) + 'px';
         else
             this.diagramRef.nativeElement.style.height = (height - 235) + 'px';
+
+        this.disableDragging();
+    }
+
+    private disableDragging() {
+        let unlockedKeys: string[] = [];
+
+        this.diagram.links.each(function (l) {
+            if (!unlockedKeys.some(x => x == l.fromNode.data.key))
+                unlockedKeys.push(l.fromNode.data.key);
+
+            if (!unlockedKeys.some(x => x == l.toNode.data.key))
+                unlockedKeys.push(l.toNode.data.key);
+        });
+
+        this.diagram.nodes.each(function (n) {
+            if (!n.data.isGroup) {
+                n.movable = false;
+            }
+            else if (!unlockedKeys.some(x => x == n.data.key)) {
+                n.movable = false;
+            }
+        });
     }
 
     private updateZoomText() {
