@@ -40,9 +40,9 @@
             </div>
             <div class="row" style="position: relative">
                 <div class="col s12" style="padding: 0">
-                    
+
                     <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>
-                    
+
 
                     <div class="asset-browser-window-header" *ngIf="isFilterWindowVisible">
                         <div class="asset-browser-window-header-name">Filters</div>
@@ -114,17 +114,9 @@
                             </p-tree>
                         </div>
                     </div>
-
-
-                    <div class="asset-browser-window-header" *ngIf="isAddRelationshipWindowVisible">
-                        <div class="asset-browser-window-header-name">Add Lineage</div>
-                        <div class="clearfix"></div>
+                    <div class="asset-browser-tab">
+                        <d3s-diagram-relationships *ngIf="isAddRelationshipWindowVisible && selectedDiagramAsset" [selected]="selectedDiagramAsset"></d3s-diagram-relationships>
                     </div>
-                    <div class="asset-browser-window-content asset-browser-window-content-padded" *ngIf="isAddRelationshipWindowVisible">
-                        <d3s-diagram-relationships></d3s-diagram-relationships>
-                    </div>
-
-
                     <div *ngIf="isInfoWindowVisible" class="asset-browser-window-header">
                         <div class="asset-browser-window-header-name" [title]="selectedDiagramAsset?.DisplayValue">
                             <a [routerLink]="selectedDiagramAsset?.Url">{{selectedDiagramAsset?.DisplayValue}}</a>
@@ -236,7 +228,7 @@
                             <button type="button" title="Zoom in" (click)="zoomInButtonClick($event)"><i class="fa fa-plus-circle"></i></button>
                         </div>
                     </div>
-                
+
                 </div>
             </div>
         </div>

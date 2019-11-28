@@ -270,10 +270,12 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         if (this.multiSelect)
             this.selected.push(selectedItem);
         else {
-            this.selected = [];
+            while (this.selected.length) {
+                this.selected.pop();
+            }
             this.selected.push(selectedItem);
         }
-
+        console.log(this.selected);
         this.selectedChange.emit({ action: 'added', item: selectedItem });
     }
 
