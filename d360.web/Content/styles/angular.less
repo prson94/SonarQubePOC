@@ -5349,6 +5349,22 @@ a.mid-blue {
     border-radius: 4px;
     width: 100%;
 
+    &.disabled {
+        position: relative;
+        pointer-events: none;
+        color: rgba(0,0,0,0.87);
+
+        .disable-overlay {
+            position: absolute;
+            width: 100%;
+            background-color: rgba(239, 239, 239, 0.5);
+            top: 0px;
+            left: 0px;
+            height: 100%;
+            z-index: 10;
+        }
+    }
+
     .gas-container {
         position: relative;
 

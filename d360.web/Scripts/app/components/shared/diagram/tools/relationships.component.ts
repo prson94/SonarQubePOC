@@ -4,6 +4,7 @@ import { PredicateType } from '../../../../models/predicate.model';
 import { AssetTypeClass } from '../../../../models/asset.model';
 import { AssetService } from '../../../../services/asset.service';
 import { RelationshipsService } from '../../../../services/relationships.service';
+import { Observable, forkJoin } from 'rxjs';
 
 declare var CompanySettings;
 export enum RelationshipEditorType {
@@ -51,6 +52,9 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     private topWarningMessage: string = '';
     private bottomWarningMessage: string = '';
 
+    private isTransformationDisabled: boolean = true;
+    private isTargetDisabled: boolean = true;
+
     constructor(
         private relationshipService: RelationshipsService,
         private ref: ChangeDetectorRef
@@ -59,14 +63,32 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     ngOnInit() {
 
         this.loadSettings();
-        console.log(this.selected);
     }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.selected.previousValue != changes.selected.currentValue) {
             this.loadSettings();
         }
+
+        this.checkSelectionValues();
     }
+
+    private checkSelectionValues() {
+        if (this.transformationAsset.length > 0) {
+            var transformationUid = this.transformationAsset[0].AssetTypeUid;
+            var objectUid = this.transformationRelationships.find(x => x.SubjectUid == transformationUid).ObjectUid;
+            var tf = new CommonComponentAssetTypeFilter();
+            tf.Uid = objectUid;
+            this.targetFilters.push(tf);
+            this.isTargetDisabled = false;
+        }
+
+        if (this.sourceAssets.length > 0) {
+            this.isTransformationDisabled = false;
+        }
+
+    }
+
     private loadSettings() {
         this.sourceFilters = [];
         this.transformationFilters = [];
@@ -108,16 +130,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     onAssetSearchSelection(event: any) {
-        console.warn("Search selection event triggered!");
         console.warn("Event:", event);
-        if (this.transformationAsset.length > 0) {
-            var transformationUid = this.transformationAsset[0].AssetTypeUid;
-            var objectUid = this.transformationRelationships.find(x => x.ObjectUid == transformationUid).SubjectUid;
-            var tf = new CommonComponentAssetTypeFilter();
-            tf.Uid = objectUid;
-            this.targetFilters.push(tf);
-            this.ref.markForCheck();
-        }
+        this.checkSelectionValues();
     }
 
     newAssetAdded($event) {
@@ -152,18 +166,47 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     private save() {
         var relationships = this.buildRelationshipsFromSelection();
-    }
 
-    buildRelationshipsFromSelection() {
-        if (this.editorType == RelationshipEditorType.Lineage) {
-            var relationship1 = this.transformationRelationships.find(x => x.SubjectUid == this.sourceAssets[0].AssetTypeUid && x.ObjectUid == this.transformationAsset[0].AssetTypeUid);
-            var relationship2 = this.transformationRelationships.find(x => x.ObjectUid == this.targetAssets[0].AssetTypeUid && x.SubjectUid == this.transformationAsset[0].AssetTypeUid);
-            console.log(this);
-            console.log(relationship1);
-            console.log(relationship2);
-
+        if (relationships.length > 0) {
+            var tasks = [];
+            relationships.forEach(r => {
+                tasks.push(this.relationshipService.saveRelationships(r.IntersectTypeUid, r.Intersects));
+            })
+            var insertObs = forkJoin(tasks);
+            insertObs.subscribe(results => {
+                console.log(results);
+            });
         }
     }
+
+    buildRelationshipsFromSelection(): any[] {
+        var relationships = [];
+        if (this.editorType == RelationshipEditorType.Lineage) {
+            var rel1Uid = this.transformationRelationships.find(x => x.SubjectUid == this.sourceAssets[0].AssetTypeUid && x.ObjectUid == this.transformationAsset[0].AssetTypeUid).IntersectTypeUid;
+            var rel2Uid = this.transformationRelationships.find(x => x.ObjectUid == this.targetAssets[0].AssetTypeUid && x.SubjectUid == this.transformationAsset[0].AssetTypeUid).IntersectTypeUid;
+
+            var transformation = this.transformationAsset[0];
+
+            var rel1: any = {};
+            rel1.IntersectTypeUid = rel1Uid;
+            rel1.Intersects = [];
+            this.sourceAssets.forEach(a => {
+                rel1.Intersects.push({ SubjectAssetUid: a.Uid, ObjectAssetUid: transformation.Uid });
+            });
+
+            var rel2: any = {};
+            rel2.IntersectTypeUid = rel2Uid;
+            rel2.Intersects = [];
+            this.targetAssets.forEach(a => {
+                rel2.Intersects.push({ ObjectAssetUid: a.Uid, SubjectAssetUid: transformation.Uid });
+            });
+
+            relationships.push(rel1);
+            relationships.push(rel2);
+        }
+        return relationships;
+    }
+
 }
 
 
