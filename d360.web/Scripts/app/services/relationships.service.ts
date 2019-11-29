@@ -211,5 +211,13 @@ export class RelationshipsService extends BaseObservableService {
                 catchError(err => this.handleError(err))
             );
     }
+
+    getTransformationRelationship(assetTypeUid: string): Observable<any> {
+        return this.http.get(`api/v2/relationships/transformationrelationships/${assetTypeUid}`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
     
 }
