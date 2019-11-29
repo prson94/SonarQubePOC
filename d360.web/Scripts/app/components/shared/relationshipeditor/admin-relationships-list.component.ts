@@ -64,10 +64,8 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                     <td>
                                         <span>{{item?.Object.Name}}<span style="color: #999;font-size:75%;"> ({{item?.Object.Class}})</span></span>
                                     </td>
-                                    <td>
-                                        <div class="InfoIconTools">
+                                    <td class="RowTools">
                                         <d3s-preview-tooltip objectType="IntersectType" [objectId]="item.Id" icon="info"></d3s-preview-tooltip>
-                                        </div>
                                     </td>
                                     <td>
                                         <div class="RowTools">
