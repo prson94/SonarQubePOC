@@ -13,7 +13,9 @@
     </div>
 </ng-template>
 
-<div class="generic-asset-search">
+<div class="generic-asset-search {{isDisabled ? 'disabled' : ''}}">
+    <div class="disable-overlay"></div>
+   
     <div class="gas-container {{displayStyle}}">
         <div class="selection">
             <ng-container *ngIf="multiSelect">

@@ -32,6 +32,7 @@
         <span class="title">Transformation</span>
         <div class="transformation-block" style="display:flex;">
             <d3s-asset-search [multiSelect]="false"
+                              [isDisabled]="isTransformationDisabled"
                               [predicateSelectorType]="predicateType"
                               [selected]="transformationAsset"
                               [clearResultsAfterSelection]="true"
@@ -43,9 +44,11 @@
         </div>
         <span class="title">Target Assets</span>
         <d3s-asset-search [multiSelect]="true"
+                          [isDisabled]="isTargetDisabled"
                           [showPredicateSelector]="showPredicateSelector"
                           [predicateSelectorType]="predicateType"
                           [selected]="targetAssets"
+                          [filters]="targetFilters"
                           [relationshipSide]="0"
                           [resultDisplayStyle]="1"
                           [clearResultsAfterSelection]="false"

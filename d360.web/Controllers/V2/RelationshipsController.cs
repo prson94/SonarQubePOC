@@ -1091,11 +1091,26 @@ namespace d360.web.Controllers.V2
         [Route("transformationrelationships/{assetTypeUid}"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
         public List<dynamic> GetTransformationRelationships(Guid assetTypeUid)
         {
-            var sql = @"select distinct IT.uid as IntersectTypeUid, AT1.uid AS ObjectUid, AT2.uid as SubjectUid from AssetType AT
- inner join [IntersectType] IT on (IT.Object = AT.Object and IT.objectid = at.objectid) or (it.subject = at.object or it.subjectid = at.objectid)
- inner join AssetType AT1 on AT1.Object = IT.Object and AT1.ObjectID = IT.ObjectID
- inner join AssetType AT2 on AT2.Object = IT.Subject and AT2.ObjectID = IT.SubjectID
-where AT.UseAsTransformation = 1 and (AT1.uid = @assetTypeUid or AT2.uid = @assetTypeUid)";
+            var sql = @"drop table if exists #Results
+create table #Results
+(
+    IntersectTypeUid uniqueidentifier,
+	ObjectUid uniqueidentifier,
+	SubjectUid uniqueidentifier
+)
+
+insert into #Results select distinct IT.uid as IntersectTypeUid, ATO.uid AS ObjectUid, AT.uid as SubjectUid
+ from assettype AT 
+inner join IntersectType IT on IT.Subject = AT.Object and IT.SubjectID = AT.ObjectId
+ inner join AssetType ATO on ATO.Object = IT.Object and ATO.ObjectID = IT.ObjectID
+where AT.Uid = @assetTypeUid and ATO.UseAsTransformation = 1
+
+insert into #Results select IT.uid as IntersectTypeUid, ATO.uid AS ObjectUid, ATS.uid as SubjectUid from IntersectType IT
+ inner join AssetType ATO on ATO.Object = IT.Object and ATO.ObjectID = IT.ObjectID
+ inner join AssetType ATS on ATS.Object = IT.Subject and ATS.ObjectID = IT.SubjectID
+ inner join #Results R on R.ObjectUid = ATS.Uid and ATS.UseAsTransformation = 1
+ 
+select distinct * from #Results";
             return Company.Query<dynamic>(sql, new { assetTypeUid }).ToList();
         }
 
