@@ -227,7 +227,8 @@ namespace d360.web.Controllers.V2
 
                 var types = PredicateType.DataLineage.GetAsList()
                     .Where(i => i.LineageVersionsSupported.Contains(lineageVersion) && !i.Obsolete)
-                    .Select(i => new PredicateTypeApiViewModel {
+                    .Select(i => new PredicateTypeApiViewModel
+                    {
                         Type = i.ID,
                         Name = i.Name,
                         Description = i.Description
@@ -438,7 +439,7 @@ namespace d360.web.Controllers.V2
             var prefix = "Relationships.PostRelationshipTypesAsync => ";
             var errorMessage = "";
             try
-            { 
+            {
 
                 if (!Company.CurrentResourceIsAdmin)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
@@ -457,7 +458,7 @@ namespace d360.web.Controllers.V2
                 var results = RelationshipRepository.PostRelationshipTypes(relationshiptypes, execution);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
-             catch (Exception ex)
+            catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
@@ -1083,6 +1084,19 @@ namespace d360.web.Controllers.V2
             result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
 
             return ResponseMessage(result);
+        }
+
+
+
+        [Route("transformationrelationships/{assetTypeUid}"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
+        public List<dynamic> GetTransformationRelationships(Guid assetTypeUid)
+        {
+            var sql = @"select distinct IT.uid as IntersectTypeUid, AT1.uid AS ObjectUid, AT2.uid as SubjectUid from AssetType AT
+ inner join [IntersectType] IT on (IT.Object = AT.Object and IT.objectid = at.objectid) or (it.subject = at.object or it.subjectid = at.objectid)
+ inner join AssetType AT1 on AT1.Object = IT.Object and AT1.ObjectID = IT.ObjectID
+ inner join AssetType AT2 on AT2.Object = IT.Subject and AT2.ObjectID = IT.SubjectID
+where AT.UseAsTransformation = 1 and (AT1.uid = @assetTypeUid or AT2.uid = @assetTypeUid)";
+            return Company.Query<dynamic>(sql, new { assetTypeUid }).ToList();
         }
 
     }

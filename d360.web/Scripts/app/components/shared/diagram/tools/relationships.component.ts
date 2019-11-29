@@ -1,8 +1,9 @@
-﻿import { Component, ChangeDetectionStrategy, OnInit, HostBinding, Input, OnChanges, SimpleChanges } from '@angular/core';
+﻿import { Component, ChangeDetectionStrategy, OnInit, HostBinding, Input, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonComponentAssetResult, CommonComponentAssetTypeFilter, CommonComponentAssetTypeFilterSideOfRelationship, CommonComponentAssetTypeFilterRelationshipSide } from '../../../../models/asset-search.model';
 import { PredicateType } from '../../../../models/predicate.model';
 import { AssetTypeClass } from '../../../../models/asset.model';
 import { AssetService } from '../../../../services/asset.service';
+import { RelationshipsService } from '../../../../services/relationships.service';
 
 declare var CompanySettings;
 export enum RelationshipEditorType {
@@ -21,6 +22,7 @@ export class RelationshipInsertModel {
 @Component({
     selector: 'd3s-diagram-relationships',
     templateUrl: 'relationships.component.html',
+    providers: [RelationshipsService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
@@ -37,6 +39,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     private sourceFilters: CommonComponentAssetTypeFilter[] = [];
     private targetFilters: CommonComponentAssetTypeFilter[] = [];
 
+    private transformationRelationships: any[] = [];
+
     private sourcePrePop: CommonComponentAssetResult[] = [];
     private isAddTransformationVisible: boolean = false;
 
@@ -47,7 +51,10 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     private topWarningMessage: string = '';
     private bottomWarningMessage: string = '';
 
-    constructor() { }
+    constructor(
+        private relationshipService: RelationshipsService,
+        private ref: ChangeDetectorRef
+    ) { }
 
     ngOnInit() {
 
@@ -61,6 +68,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         }
     }
     private loadSettings() {
+        this.sourceFilters = [];
+        this.transformationFilters = [];
         if (this.editorType == RelationshipEditorType.Lineage) {
             this.predicateType = PredicateType.DataLineage;
         }
@@ -71,9 +80,20 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         sf.Uid = this.selected.Uid;
         this.sourceFilters.push(sf);
 
-        var tf = new CommonComponentAssetTypeFilter();
-        tf.UseAsTransformation = true;
-        this.transformationFilters.push(tf);
+        this.relationshipService.getTransformationRelationship(this.selected.Uid)
+            .subscribe(x => {
+                this.transformationRelationships = x;
+                this.transformationRelationships.forEach(tr => {
+                    if (tr.SubjectUid == this.selected.Uid) {
+                        var tf = new CommonComponentAssetTypeFilter();
+                        tf.UseAsTransformation = true;
+                        tf.Uid = tr.ObjectUid;
+                        this.transformationFilters.push(tf);
+                    }
+                });
+                this.ref.markForCheck();
+            });
+
     }
 
     private changeEditorType(type: RelationshipEditorType) {
@@ -90,7 +110,14 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     onAssetSearchSelection(event: any) {
         console.warn("Search selection event triggered!");
         console.warn("Event:", event);
-        this.resolveAssets();
+        if (this.transformationAsset.length > 0) {
+            var transformationUid = this.transformationAsset[0].AssetTypeUid;
+            var objectUid = this.transformationRelationships.find(x => x.ObjectUid == transformationUid).SubjectUid;
+            var tf = new CommonComponentAssetTypeFilter();
+            tf.Uid = objectUid;
+            this.targetFilters.push(tf);
+            this.ref.markForCheck();
+        }
     }
 
     newAssetAdded($event) {
@@ -124,9 +151,19 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     private save() {
-
+        var relationships = this.buildRelationshipsFromSelection();
     }
 
+    buildRelationshipsFromSelection() {
+        if (this.editorType == RelationshipEditorType.Lineage) {
+            var relationship1 = this.transformationRelationships.find(x => x.SubjectUid == this.sourceAssets[0].AssetTypeUid && x.ObjectUid == this.transformationAsset[0].AssetTypeUid);
+            var relationship2 = this.transformationRelationships.find(x => x.ObjectUid == this.targetAssets[0].AssetTypeUid && x.SubjectUid == this.transformationAsset[0].AssetTypeUid);
+            console.log(this);
+            console.log(relationship1);
+            console.log(relationship2);
+
+        }
+    }
 }
 
 
