@@ -1086,34 +1086,6 @@ namespace d360.web.Controllers.V2
             return ResponseMessage(result);
         }
 
-
-
-        [Route("transformationrelationships/{assetTypeUid}"), HttpGet, ApiExplorerSettings(IgnoreApi = true)]
-        public List<dynamic> GetTransformationRelationships(Guid assetTypeUid)
-        {
-            var sql = @"drop table if exists #Results
-create table #Results
-(
-    IntersectTypeUid uniqueidentifier,
-	ObjectUid uniqueidentifier,
-	SubjectUid uniqueidentifier
-)
-
-insert into #Results select distinct IT.uid as IntersectTypeUid, ATO.uid AS ObjectUid, AT.uid as SubjectUid
- from assettype AT 
-inner join IntersectType IT on IT.Subject = AT.Object and IT.SubjectID = AT.ObjectId
- inner join AssetType ATO on ATO.Object = IT.Object and ATO.ObjectID = IT.ObjectID
-where AT.Uid = @assetTypeUid and ATO.UseAsTransformation = 1
-
-insert into #Results select IT.uid as IntersectTypeUid, ATO.uid AS ObjectUid, ATS.uid as SubjectUid from IntersectType IT
- inner join AssetType ATO on ATO.Object = IT.Object and ATO.ObjectID = IT.ObjectID
- inner join AssetType ATS on ATS.Object = IT.Subject and ATS.ObjectID = IT.SubjectID
- inner join #Results R on R.ObjectUid = ATS.Uid and ATS.UseAsTransformation = 1
- 
-select distinct * from #Results";
-            return Company.Query<dynamic>(sql, new { assetTypeUid }).ToList();
-        }
-
     }
 
 }

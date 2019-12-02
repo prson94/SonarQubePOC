@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
 import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship } from '../models/relationship.model';
@@ -26,7 +26,7 @@ export class RelationshipsService extends BaseObservableService {
     getRelationshipTypesById(id: number, type: string): Observable<RelationshipType[]> {
         return this.http.get(`api/v2/relationships/types/${id}/${type}`)
             .pipe(
-                map(response => <RelationshipType[]> response),
+                map(response => <RelationshipType[]>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -34,6 +34,14 @@ export class RelationshipsService extends BaseObservableService {
     saveRelationships(intersectTypeUid: number, model: any[]): Observable<ApiResult[]> {
         return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true&lookupFieldsPassedByValue=true`, model).pipe(
             map(response => response),
+            catchError(err => this.handleError(err, true))
+        );
+    }
+
+    saveRelationshipsForked(intersectTypeUid: number, model: any[]): Observable<any> {
+        var obj = { intersectTypeUid, model };
+        return this.http.post(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true&lookupFieldsPassedByValue=true`, model).pipe(
+            map(response => { return { obj, response }; }),
             catchError(err => this.handleError(err, true))
         );
     }
@@ -51,8 +59,8 @@ export class RelationshipsService extends BaseObservableService {
         this.http.get(`api/v2/relationships/export/${relType.Uid}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship type items'));
     }
 
-    exportRelationshipTypes() {        
-        this.http.get('api/v2/relationships/export/types', { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship types'));              
+    exportRelationshipTypes() {
+        this.http.get('api/v2/relationships/export/types', { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'relationship types'));
     }
 
     downloadFile(data: Blob, name: string) {
@@ -83,27 +91,27 @@ export class RelationshipsService extends BaseObservableService {
         return this.http.get(`relations/GetPossibleRelationshipsObjectByIntersect?id=${id}`)
             .pipe(
                 map(response => <PossibleTechnicalRelationship[]>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
     getObjectRelations(objectType: string, objectId: number): Observable<ObjectRelationship[]> {
         return this.http.get(`/api/${objectType}/${objectId}/relationshipTypes`)
             .pipe(
-            map(response => <ObjectRelationship[]>response),
-            catchError(err => this.handleError(err))
-                );
+                map(response => <ObjectRelationship[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
     getRelatedObjects(objectType: string, objectId: number, intersectTypeId: number): Observable<RelatedItem[]> {
         return this.http.get(`/api/RelationshipObjectsByType?type=${objectType}&id=${objectId}&intersectTypeId=${intersectTypeId}`)
             .pipe(
                 map(response => <RelatedItem[]>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
-    deleteRelationship(id: number): Observable<JsonResult>{
+    deleteRelationship(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'intersecttype', id);
     }
 
@@ -141,7 +149,7 @@ export class RelationshipsService extends BaseObservableService {
         return this.http.get('form/IntersectType_SubjectOptions')
             .pipe(
                 map(response => <DropdownOption[]>response),
-                catchError(err=> this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -156,41 +164,41 @@ export class RelationshipsService extends BaseObservableService {
 
         return this.http.get(url)
             .pipe(
-            map(response => <DropdownOption[]>response),
-            catchError(err=> this.handleError(err))
-        );
+                map(response => <DropdownOption[]>response),
+                catchError(err => this.handleError(err))
+            );
     }
 
-    getRelationshipCounts(objectType: string, objectId: number): Observable<ObjectRelationshipCount[]> {        
+    getRelationshipCounts(objectType: string, objectId: number): Observable<ObjectRelationshipCount[]> {
         return this.http.get(`/api/${objectType}/${objectId}/relationships/counts`)
             .pipe(
                 map(response => <ObjectRelationshipCount[]>response),
-                catchError(err=> this.handleError(err))
+                catchError(err => this.handleError(err))
             );
-        
+
     }
 
     getObjectRelationships(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, includeInverse: boolean = true): Observable<any> {
         return this.http.get(`/api/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}?includeInverse=${includeInverse}`)
             .pipe(
                 map(response => response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
-    getTechnicalRelationships(objectType: string, objectId: number): Observable<any> {        
+    getTechnicalRelationships(objectType: string, objectId: number): Observable<any> {
         return this.http.get(`/api/${objectType}/${objectId}/relations`)
             .pipe(
                 map(response => response),
-                catchError(err=> this.handleError(err))
+                catchError(err => this.handleError(err))
             );
 
     }
 
-    exportObjectRelationshipsToExcel(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, queryString: string, criticalOnly?: boolean){
+    exportObjectRelationshipsToExcel(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, queryString: string, criticalOnly?: boolean) {
         criticalOnly = (criticalOnly == undefined ? false : criticalOnly);
 
-        window.location.assign(`/api/export/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}/excel.xls?${queryString}`);        
+        window.location.assign(`/api/export/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}/excel.xls?${queryString}`);
     }
 
     deleteRelationshipItem(id: number): Observable<any> {
@@ -207,17 +215,31 @@ export class RelationshipsService extends BaseObservableService {
     IsTransformPredicateExists(id: number): Observable<boolean> {
         return this.http.get(`api/v2/relationships/IsTransformPredicateExists/${id}`)
             .pipe(
-                map(response =><boolean> response),
+                map(response => <boolean>response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    getTransformationRelationship(assetTypeUid: string): Observable<any> {
-        return this.http.get(`api/v2/relationships/transformationrelationships/${assetTypeUid}`)
-            .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
-            );
+
+    private tagTooltipsCache: any[] = [];
+
+    getRelationshipsByAssetTypeUid(assetTypeUid: string): Observable<any> {
+
+        var cachedItem = this.tagTooltipsCache.find(x => x.assetTypeUid == assetTypeUid);
+        if (cachedItem)
+            return cachedItem.obs;
+
+        let url = `api/v2/relationships/types?AssetTypeUid=${assetTypeUid}&State=Active`;
+
+        var obs = this.http.get(url)
+            .pipe(map(response => <any>response),
+                publishReplay(1),
+                refCount(),
+                catchError(err => this.handleError(err)));
+
+        var data = { assetTypeUid: assetTypeUid, obs: obs };
+        this.tagTooltipsCache.push(data);
+
+        return obs;
     }
-    
 }
