@@ -5264,20 +5264,6 @@ a.mid-blue {
             top: 85px;
         }
 
-        .errorMessage {
-            position: relative;
-            margin-top: 0px;
-            padding-left: 28px;
-            padding-top: 4px;
-            padding-bottom: 4px;
-
-            .warning-icon {
-                position: absolute;
-                left: 8px;
-                top: 8px;
-            }
-        }
-
         .actions {
             padding: 16px 0px;
             display: flex;
@@ -5308,7 +5294,7 @@ a.mid-blue {
             font-weight: normal;
         }
 
-        .errorMessage {
+        .err-message {
             background-color: #ffc6bb;
             border: 1px solid #c44d36;
             border-radius: 2px;
@@ -5317,12 +5303,31 @@ a.mid-blue {
             margin-top: 15px;
             color: #000;
             font-weight: normal;
+            position: relative;
+            margin-top: 0px;
+            padding-left: 28px;
+            padding-top: 4px;
+            padding-bottom: 4px;
+            margin: 10px 0px;
+
+            .warning-icon {
+                position: absolute;
+                left: 8px;
+                top: 8px;
+            }
+
+            .segments {
+                .arrow-right {
+                    font-size: 9px;
+                    margin: 0px 5px;
+                }
+            }
         }
     }
 }
 
-.flex-grow{
-    flex-grow:1;
+.flex-grow {
+    flex-grow: 1;
 }
 
 .full-screen-ab {
