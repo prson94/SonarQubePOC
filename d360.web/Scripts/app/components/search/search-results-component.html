@@ -15,7 +15,7 @@
                 </div>
             </div>
             <div class="cardlist">
-                <d3s-chips-filter [filterOption]="newFilterOptions" (applyFlter)="filterChanged($event)"></d3s-chips-filter>
+                <d3s-chips-filter [filterOption]="newFilterOptions" [selectedFilters]="selectedFilters" (applyFlter)="filterChanged($event)"></d3s-chips-filter>
                 <div *ngIf="!(searchStateService.loading | async) && (searchStateService.resultCount | async) == 0">
                     <div class="row">
                         <div class="tile tile-detail search-nodata">

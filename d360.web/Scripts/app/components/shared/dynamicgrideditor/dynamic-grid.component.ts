@@ -1,5 +1,5 @@
 ﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
-import {  GridColumn, GridField } from '../../../models/grid-definition.model';
+import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { UriBasedService } from '../../../services/uri-based.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -82,6 +82,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                 </span>
         <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" [objectType]="objectType"
                             [title]="itemName + ' Item'" [selection]="selected" [rowID]="rowID"
+                            [selectedObject]="selectedObject" [selectedObjectID]="selected?.ID"
                             (saveClick)="saveItem($event)" (closeClick)="closeEditor()"
 [objectTypeUid]="assetTypeUid" [isV2API]="useV2Api"></d3s-dynamic-editor>
         <d3s-delete-form *ngIf="showDelete && !assetTypeUid"
@@ -112,17 +113,18 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     @Input() itemName: string = "";
     @Input() sortField: string;
     @Input() assetTypeUid: string;
-        
+
     @Input() showEditButton: boolean = true;
     @Input() showDeleteButton: boolean = true;
     @Input() showAddButton: boolean = true;
     @Input() showExportButton: boolean = false;
     @Input() useV2Api: boolean = false;
-    
+
 
     @Output() editItemClick = new EventEmitter();
     @Output() exportClick = new EventEmitter();
 
+    private selectedObject: string = '';
     error: any;
     items: any[] = [];
     columns: GridColumn[] = [];
@@ -155,6 +157,10 @@ export class DynamicGridComponent extends BaseComponent implements OnChanges {
     public load() {
         this.getFieldsDefinition();
         this.getData();
+
+        if (this.objectType) {
+            this.selectedObject = this.objectType.replace('Type', '');
+        }
     }
 
     public onDeleted() {

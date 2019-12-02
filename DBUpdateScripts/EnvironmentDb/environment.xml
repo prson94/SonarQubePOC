@@ -364,4 +364,6 @@
   <include file="scripts/GOV-8684.xml"/> <!-- update to procedure [dbo].[GetAllowedIntersectionTypes] to change glossary to business/technical Assets -->
   <include file="scripts/GOV-8815.xml"/> <!-- graph.GetLineageByAsset - return solitary assets with no lineage - MUST GO AFTER GOV-7910 -->
   <include file="scripts/GOV-8898.xml"/> <!-- graph.SynchronizeTables - refresh paths where null -->
+  <include file="scripts/GOV-8927.xml"/> <!-- graph.SynchronizeTables / graph.PopulatePathsForAssetType - throwing error when called via web job -->
+  <include file="scripts/GOV-8514.xml"/>
 </databaseChangeLog>

@@ -15,10 +15,18 @@ namespace igx.jobs.assetgraphprocessor
     {
         const string functionName = "AssetGraphProcessor_RebuildQueueRequest";
 
+#if DEBUG
+        public static async Task Run([TimerTrigger("0 0 1 * * *", RunOnStartup = true)]TimerInfo myTimer, TextWriter log)
+#else
         public static async Task Run([QueueTrigger("%AssetGraphQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
+#endif
         {
-            var queueInfo = JsonConvert.DeserializeObject<RebuildAssetGraphModel>(myQueueItem);
-
+            RebuildAssetGraphModel queueInfo = null;
+#if DEBUG
+            queueInfo = new RebuildAssetGraphModel { CompanyID = 4, To = 0 };
+#else
+            queueInfo = JsonConvert.DeserializeObject<RebuildAssetGraphModel>(myQueueItem);
+#endif
             using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(queueInfo.CompanyID))
             {
                 const int timeout = 1000 * 60 * 10;
@@ -35,7 +43,7 @@ namespace igx.jobs.assetgraphprocessor
                 }
             }
 
-#if DEBUG 
+#if DEBUG
             CoreFunction.AITrackJobCompletedNoErrors(functionName);
             CoreFunction.AIFlush();
 #endif
