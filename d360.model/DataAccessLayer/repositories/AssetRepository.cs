@@ -148,7 +148,7 @@ namespace d360.model.DataAccessLayer
 
             if(assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
             {
-                condition += "and A.uid=@assetTypeUid ";
+                condition += " and A.uid=@assetTypeUid ";
                 dbArgs.Add("assetTypeUid", assetTypeUid.Value);
             }
           
