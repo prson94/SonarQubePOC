@@ -41,6 +41,8 @@ namespace d360.web.Controllers.V2
         /// <param name="IsAdministrator">Is the user an adminstrator or not.</param>
         /// <param name="_pageSize">The number of results to return per page. The default is 5 users per page and max value is 250.</param>
         /// <param name="_pageNum">The page number to return results for.</param>
+        /// <param name="_orderBy">The order field to return results by.</param>
+        /// <param name="_order">The order in which to return results by asc/desc. </param>
         [
             HttpGet,
             MapToApiVersion("2.0"),
@@ -49,13 +51,14 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of Users.", typeof(ResourceApiViewModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, int _pageSize = 5, int _pageNum = 1)
+        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, int _pageSize = 5, int _pageNum = 1, string _orderBy = "ResourceID", string _order = "asc")
         {
             string finalSql = "";
             string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
             string whereSql = "";
             string selectSql = $"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, gr.State";
             string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
+            string orderBySQL = $"";
 
             DynamicParameters dbArgs = new DynamicParameters();
             List<string> queries = new List<string>();
@@ -134,16 +137,26 @@ namespace d360.web.Controllers.V2
                     whereSql += " and ";
                 }
             }
+            List<string> validCols = new List<string> { "uid", "ResourceID", "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State" };
+            validCols.AddRange(fieldTypes.Select(x => x.Name));
+
+            if (validCols.All(x => x.ToLower() != _orderBy.ToLower()))
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid order by passed in the request");
+            if (!new string[] { "asc", "desc" }.Contains(_order.ToLower())) 
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid order passed in the request");
+
+            orderBySQL = $"order by {_orderBy} {_order}";
+
             finalSql = selectSql + " from[reporting].[Global_Resource] gr " + joinsSql + " " + whereSql;
             countSql += joinsSql + " " + whereSql;
-            {
-                if (_pageSize < 1) _pageSize = 1;
-                if (_pageNum < 1) _pageNum = 1;
-                model.pageNum = _pageNum;
-                model.pageSize = _pageSize;
-                string offsetSql = $" Order by ResourceID offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
-                finalSql += offsetSql;
-            }
+
+            if (_pageSize < 1) _pageSize = 1;
+            if (_pageNum < 1) _pageNum = 1;
+            model.pageNum = _pageNum;
+            model.pageSize = _pageSize;
+            string offsetSql = $" {orderBySQL} offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
+            finalSql += offsetSql;
+            
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
             var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
             model.items = results;
