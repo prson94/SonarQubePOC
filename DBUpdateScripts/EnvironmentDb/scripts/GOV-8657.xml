@@ -16,6 +16,7 @@
                  WHERE TABLE_SCHEMA = 'dbo' 
                  AND  TABLE_NAME = 'FieldTypeFusionLookupDefinition_retired'))
 		BEGIN
+      ALTER TABLE [dbo].[FieldTypeFusionLookupDisplayField] DROP CONSTRAINT [FK_FieldTypeFusionLookupDisplayField_FieldTypeFusionLookupDefinitionID]
 			DROP table  [dbo].[FieldTypeFusionLookupDefinition_retired];
 		END  
 ]]>
