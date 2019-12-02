@@ -137,8 +137,8 @@ namespace d360.web.Controllers.V2
                     whereSql += " and ";
                 }
             }
-            string[] validCols = { "gr.uid", "ResourceID", "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "gr.State" };
-            validCols.ToList().AddRange(fieldColumns);
+            List<string> validCols = new List<string> { "uid", "ResourceID", "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State" };
+            validCols.AddRange(fieldTypes.Select(x => x.Name));
 
             if (validCols.All(x => x.ToLower() != _orderBy.ToLower()))
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid order by passed in the request");
