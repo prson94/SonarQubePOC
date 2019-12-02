@@ -3634,6 +3634,10 @@ select [uid] from #ParentChildRelationships",
                                         {
                                             LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionAsset", ex.GetFullExceptionData(false), timeout);
                                         }
+                                        else
+                                        {
+                                            Thread.Sleep(API_V2_RETRY_INTERVAL);
+                                        }
                                     }
                                 }
                             }

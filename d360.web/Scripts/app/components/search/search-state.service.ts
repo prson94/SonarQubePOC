@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { SearchFullResult, AdvancedSearchFilter, SearchQuery, SearchAggregationFilter, SearchFieldFilter } from '../../models/search-result.model';
+import { SearchFullResult, AdvancedSearchFilter, SearchQuery, SearchAggregationFilter, SearchFieldFilter, SearchState } from '../../models/search-result.model';
 import { debounceTime } from 'rxjs/operators';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { BaseObservableService } from '../../services/baseObservable.service';
@@ -12,6 +12,8 @@ import { SettingsHelper } from '../../models/settings.model';
 @Injectable()
 export class SearchStateService extends BaseObservableService {
 
+    private readonly sessionKey:string = 'd3sSearchState';
+    private readonly sessionAgeMinutes: number = 10;
     private searchService: SearchService;
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) {
@@ -49,11 +51,65 @@ export class SearchStateService extends BaseObservableService {
     }
 
     public selectedFilters: CheckTreeNode[];
+    public advancedFilters: AdvancedSearchFilter[]; 
 
+    private _checkTreeKeys: string[];
     private _query: SearchQuery;
     private _aggFilters: SearchAggregationFilter[];
     private _searchTypes: string[];
     private _needAggregation: boolean = false;
+
+    loadState(term: string, searchCategotries: string[]) {
+        this._resultCount.next(0);
+        this._results.next([]);
+        this._categories.next([]);
+        this._query = new SearchQuery({
+            Term: "",
+            From: 0,
+            Size: 10,
+            AggregationFilters: [],
+            FieldFilters: [],
+            Aggregations: []
+        });
+
+        let sess: SearchState[] = JSON.parse(sessionStorage.getItem(this.sessionKey));
+        let limit = new Date().getTime() - (this.sessionAgeMinutes * 60000)
+        if (sess != null && sess.findIndex(q => q.Term == term && new Date(q.Querytime).getTime() > limit) >= 0) {
+            let state = sess.find(q => q.Term == term);
+            this._query = state.Query;
+            this._aggFilters = state.AggFilters;
+            this._searchTypes = state.SearchTypes;
+            this.advancedFilters = state.AdvancedFilters;
+            this._checkTreeKeys = state.CheckTreeKeys;
+        }
+
+        this.setSearchCategories(searchCategotries);
+//        this.setFieldFilters(fieldFilters);
+        this.selectedFilters = [];
+    }
+
+    private saveState() {
+        let sess: SearchState[] = JSON.parse(sessionStorage.getItem(this.sessionKey));
+        if (sess == null) {
+            sess = [];
+        } else {
+            let limit = new Date().getTime() - (this.sessionAgeMinutes * 60000)
+            sess = sess.filter(q => q.Term != this._query.Term && new Date(q.Querytime).getTime() > limit);
+        }
+        let state = new SearchState({
+            Term: this._query.Term,
+            Query: this._query,
+            AggFilters: this._aggFilters,
+            SearchTypes: this._searchTypes,
+            CheckTreeKeys: (this._checkTreeKeys !== undefined) ? this._checkTreeKeys : this.selectedFilters.map(f => f.key),
+            AdvancedFilters: this.advancedFilters,
+            Querytime: new Date()
+        });
+        sess.push(state);
+        sessionStorage.setItem(this.sessionKey, JSON.stringify(sess));
+    }
+
+
 
     /**
      * Resets search state
@@ -222,7 +278,7 @@ export class SearchStateService extends BaseObservableService {
      */
     private doSearch() {
         this._loading.next(true);
-
+        this.saveState();
         let seachTypeFilter = [new SearchAggregationFilter({
                 Field: "d3sCategory",
                 Values: this._searchTypes.sort().filter((x, i, a) => !i || x != a[i - 1])
@@ -233,7 +289,8 @@ export class SearchStateService extends BaseObservableService {
             this._categories.next([]);
 
             //New aggregation, so this should be a new search, jump to first page
-            this._query.From = 0;
+            if (this._needAggregation)
+                this._query.From = 0;
 
             var aggQuery = Object.assign({}, this._query);
             aggQuery.Aggregations = ['category'];
@@ -263,6 +320,17 @@ export class SearchStateService extends BaseObservableService {
                             })
                         }
                     });
+                    if (this._checkTreeKeys != undefined) {
+                        let selectedFilters = [];
+                        for (let key of this._checkTreeKeys) {
+                            let node = this.getNodeWithKey(key, filterTree);
+                            if (node) {
+                                selectedFilters.push(node);
+                            }
+                        }
+                        this.selectedFilters = selectedFilters;
+                        this._checkTreeKeys = undefined;
+                    }
                     this._categories.next(filterTree);
                     this._needAggregation = false;
                 }
@@ -270,7 +338,6 @@ export class SearchStateService extends BaseObservableService {
             });
         }
         this._query.AggregationFilters = this.combineAggFilters(this._aggFilters, seachTypeFilter);
-
         this.searchService.getSearchResultsByQuery(this._query).pipe(
             debounceTime(1000)).subscribe(res => {
             this._resultCount.next(res.Result.Matches);
@@ -278,5 +345,20 @@ export class SearchStateService extends BaseObservableService {
             this._results.next(res.Result.Results);
             this._loading.next(false);
         });
+    }
+
+    getNodeWithKey(key: string, nodes: CheckTreeNode[]) {
+        for (let node of nodes) {
+            if (node.key === key) {
+                return node;
+            }
+
+            if (node.children) {
+                let matchedNode = this.getNodeWithKey(key, node.children);
+                if (matchedNode) {
+                    return matchedNode;
+                }
+            }
+        }
     }
 }

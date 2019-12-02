@@ -111,6 +111,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
                 </span>
         <d3s-dynamic-editor *ngIf="showEditor" [objectID]="objectID" objectType="ResourceType" title="Resource"
                             [selection]="selected" rowID="ResourceID" (saveClick)="saveItem($event)"
+                            [selectedObject]="'Resource'" [selectedObjectID]="selected?.ResourceID"
                             (closeClick)="closeEditor()"></d3s-dynamic-editor>
         <d3s-delete-form *ngIf="showDelete"
                          [callback]="theDeleteCallback"

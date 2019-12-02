@@ -1,0 +1,67 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="SDooley" id="GOV-8514">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+  IF (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'FusionSchedule-retired'))
+		BEGIN
+			DROP table  [dbo].[FusionSchedule-retired];
+		END  
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+  IF NOT (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'FusionSchedule-retired'))
+		BEGIN			
+			CREATE TABLE [dbo].[FusionSchedule-retired](
+	[FusionID] [int] NOT NULL,
+	[Day] [int] NOT NULL,
+	[Time] [time](7) NOT NULL,
+	[FullRefresh] [bit] NOT NULL,
+	[CreatedOn] [datetime] NULL,
+	[CreatedBy] [int] NULL,
+	[UpdatedOn] [datetime] NULL,
+	[UpdatedBy] [int] NULL,
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+ CONSTRAINT [PK_FusionSchedule] PRIMARY KEY CLUSTERED 
+(
+	[ID] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [Con_FusionScheduleUniqueFusionIDDayTime] UNIQUE NONCLUSTERED 
+(
+	[FusionID] ASC,
+	[Day] ASC,
+	[Time] ASC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+ALTER TABLE [dbo].[FusionSchedule-retired] ADD  CONSTRAINT [DF_FusionSchedule_FullRefresh]  DEFAULT ((0)) FOR [FullRefresh]
+
+ALTER TABLE [dbo].[FusionSchedule-retired]  WITH CHECK ADD  CONSTRAINT [FK_FusionSchedule_Fusion] FOREIGN KEY([FusionID])
+REFERENCES [dbo].[Fusion] ([ID])
+ON DELETE CASCADE
+
+ALTER TABLE [dbo].[FusionSchedule-retired] CHECK CONSTRAINT [FK_FusionSchedule_Fusion]
+
+
+
+		END
+]]>
+	</rollback>
+  </changeSet>
+
+  </databaseChangeLog>
