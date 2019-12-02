@@ -595,15 +595,23 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                 and I.ObjectID = R.SubjectID
 					        where R.ID is null;
 
-                            delete I
-			                from [Intersect] I
-			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID and R.SwitchObject = 0
-			                where not exists (select 1 from #Relationships where [Subject] = I.[Subject] and SubjectID = I.SubjectID);
 
-                            delete I
-			                from [Intersect] I
-			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Subject] = I.[Subject] and R.SubjectID = I.SubjectID and R.SwitchObject = 1
-			                where not exists (select 1 from #Relationships where [Object] = I.[Object] and ObjectID = I.ObjectID);
+                            delete from [Intersect] where ID in(
+                             select I.ID  from api.ExecutionAsset A
+                                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                                        and F.ItemNumber = A.ItemNumber 
+                                        and A.ObjectID is not null 
+                                        and F.FieldTypeID is not null
+						                and A.Success is null
+                                    inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
+									inner join IntersectType IT on IT.ID = FT.LookupObjectId
+									inner join [Intersect] I on IT.ID = I.IntersectTypeID
+									left join #Relationships R on R.ID = I.Id
+									where R.ID is null and
+                                            A.ExecutionID = @executionID
+                                            and A.ItemNumber between @beginItemNumber and @endItemNumber 
+                                            and (F.Ignore = 0 or F.Ignore is null)
+                                            and FT.Type = 'Relationship');
 
                             insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
                             select  R.IntersectTypeID,
