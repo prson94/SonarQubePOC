@@ -62,9 +62,11 @@
             {{bottomWarningMessage}}
         </div>
         <div class="actions">
-            <button (click)="save()" [disabled]="!IsValid" class="button">Apply</button>
+            <button *ngIf="!isSaving" (click)="save()" [disabled]="!IsValid" class="button">Apply</button>
+            <button class="button" *ngIf="isSaving"><i style="padding:0px;" class="fa fa-spinner fa-spin ng-star-inserted"></i></button>
             <div class="flex-grow"></div>
-            <button [disabled]="!IsValid" class="button">Apply and Continue</button>
+            <button *ngIf="!isSavingAndContinue" (click)="saveAndContinue()" [disabled]="!IsValid" class="button">Apply and Continue</button>
+            <button class="button" *ngIf="isSavingAndContinue"><i style="padding:0px;" class="fa fa-spinner fa-spin ng-star-inserted"></i></button>
         </div>
     </div>
 </div>
