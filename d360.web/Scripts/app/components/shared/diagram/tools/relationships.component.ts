@@ -5,6 +5,7 @@ import { AssetTypeClass } from '../../../../models/asset.model';
 import { AssetService } from '../../../../services/asset.service';
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { Observable, forkJoin } from 'rxjs';
+import { exec } from 'child_process';
 
 declare var CompanySettings;
 export enum RelationshipEditorType {
@@ -55,6 +56,10 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     private isTransformationDisabled: boolean = true;
     private isTargetDisabled: boolean = true;
 
+    private isSaving: boolean = false;
+    private isSavingAndContinue: boolean = false;
+    private afterSaveEvent: Function;
+
     constructor(
         private relationshipService: RelationshipsService,
         private ref: ChangeDetectorRef
@@ -89,9 +94,15 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     }
 
+    clearArr(arr: any[]) {
+        arr = JSON.parse(JSON.stringify(arr));
+    }
+
     private loadSettings() {
-        this.sourceFilters = [];
-        this.transformationFilters = [];
+        this.clearArr(this.sourceAssets);
+        this.clearArr(this.transformationFilters);
+        this.clearArr(this.targetAssets);
+
         if (this.editorType == RelationshipEditorType.Lineage) {
             this.predicateType = PredicateType.DataLineage;
         }
@@ -151,6 +162,9 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     private get IsValid(): boolean {
+        if (this.isSaving || this.isSavingAndContinue)
+            return false;
+
         if (this.sourceAssets.length > 0 && this.transformationAsset.length > 0 && this.targetAssets.length > 0) {
             return true;
         }
@@ -164,7 +178,25 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         }
     }
 
+    private saveAndContinue() {
+        this.isSavingAndContinue = true;
+        this.afterSaveEvent = function () {
+            this.selected.Uid = this.targetAssets[0].AssetTypeUid;
+            this.loadSettings();
+        };
+        this.executeSave();
+    }
+
     private save() {
+        this.isSaving = true;
+        this.afterSaveEvent = function () {
+            this.loadSettings();
+        };
+        this.executeSave();
+
+    }
+
+    private executeSave() {
         var relationships = this.buildRelationshipsFromSelection();
 
         if (relationships.length > 0) {
@@ -174,9 +206,31 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             })
             var insertObs = forkJoin(tasks);
             insertObs.subscribe(results => {
-                console.log(results);
+                this.processResults(results);
+                this.afterSaveEvent();
             });
         }
+    }
+
+    private processResults(results: any[]) {
+        this.isSaving = this.isSavingAndContinue = false;
+
+        var successfull = results.filter(x => x.Success == true);
+        var failed = results.filter(x => x.Success == false);
+        console.log(results);
+
+        if (failed.length > 0) {
+            this.bottomWarningMessage += "Relationship not created";
+        }
+
+        var existing = successfull.filter(x => x.IsNew == false);
+
+        existing.forEach(x => {
+            this.bottomWarningMessage += x.Id + " relationship already exist.Not created!";
+
+        });
+
+        this.ref.markForCheck();
     }
 
     buildRelationshipsFromSelection(): any[] {
