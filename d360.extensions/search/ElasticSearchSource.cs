@@ -321,8 +321,11 @@ namespace d360.extensions.search
 
         private string EscapeValueForDoc(string input)
         {
-            input = input.Replace("\r", "").Replace("\n", "").Replace("\v", "").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
-            input = HtmlUtilities.RemoveTags(input);
+            if(!string.IsNullOrEmpty(input))
+            {
+                input = input.Replace("\r", "").Replace("\n", "").Replace("\v", "").Replace("\t", "").Replace("\\", "\\\\").Replace("\"", "\\\"");
+                input = HtmlUtilities.RemoveTags(input);
+            }
             return input;
         }
 
