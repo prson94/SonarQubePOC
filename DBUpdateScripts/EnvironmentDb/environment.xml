@@ -369,4 +369,5 @@
   <!-- Sprint 1 2020 Start-->
   <include file="scripts/GOV-8514.xml"/>
   <include file="scripts/GOV-8657.xml"/>
+  <include file="scripts/GOV-8949.xml"/>  <!-- reporting schema static views removed from webjob-->
 </databaseChangeLog>
