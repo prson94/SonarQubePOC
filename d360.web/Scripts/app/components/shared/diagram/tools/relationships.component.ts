@@ -1,5 +1,5 @@
 ﻿import { Component, EventEmitter, ChangeDetectionStrategy, OnInit, HostBinding, Input, OnChanges, SimpleChanges, ChangeDetectorRef, Output } from '@angular/core';
-import { CommonComponentAssetResult, CommonComponentAssetTypeFilter, CommonComponentAssetTypeFilterSideOfRelationship, CommonComponentAssetTypeFilterRelationshipSide } from '../../../../models/asset-search.model';
+import { CommonComponentAssetResult, CommonComponentAssetTypeFilter, CommonComponentAssetTypeFilterSideOfRelationship, CommonComponentAssetTypeFilterRelationshipSide, CommonComponentAssetResultExt, CommonComponentAssetSelection } from '../../../../models/asset-search.model';
 import { PredicateType } from '../../../../models/predicate.model';
 import { AssetTypeClass } from '../../../../models/asset.model';
 import { AssetService } from '../../../../services/asset.service';
@@ -8,6 +8,7 @@ import { Observable, forkJoin } from 'rxjs';
 import { exec } from 'child_process';
 import { createTokenForExternalReference } from '@angular/compiler/src/identifiers';
 import { ApiResult } from '../../../../models/apiresult.model';
+import { Predicate } from '../../../../models/predicate.model';
 
 
 export enum RelationshipEditorType {
@@ -34,20 +35,21 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     @Output() refreshDiagram: EventEmitter<any> = new EventEmitter();
     private editorType: RelationshipEditorType = RelationshipEditorType.Lineage;
-    private sourceAssets: CommonComponentAssetResult[] = [];
-    private targetAssets: CommonComponentAssetResult[] = [];
-    private transformationAsset: CommonComponentAssetResult[] = [];
+    private sourceAssets: CommonComponentAssetSelection[] = [];
+    private targetAssets: CommonComponentAssetSelection[] = [];
+    private transformationAsset: CommonComponentAssetSelection[] = [];
 
     private transformationFilters: CommonComponentAssetTypeFilter[] = [];
     private sourceFilters: CommonComponentAssetTypeFilter[] = [];
     private targetFilters: CommonComponentAssetTypeFilter[] = [];
 
+    private targetAllowedPredicates: Predicate[] = [];
     private transformationRelationships: any[] = [];
 
     private sourcePrePop: CommonComponentAssetResult[] = [];
     private isAddTransformationVisible: boolean = false;
 
-    private predicateType: PredicateType = PredicateType.Simple;
+    private predicateType: PredicateType = PredicateType.Transformation;
     private showPredicateSelector: boolean = false;
 
     private topWarningMessage: string = '';
@@ -61,6 +63,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     private afterSaveEvent: Function;
 
     private existingRelationshipsError: any[] = [];
+    private areRelationshipsValid = false;
 
     constructor(
         private relationshipService: RelationshipsService,
@@ -82,7 +85,18 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     private checkSelectionValues() {
         if (this.transformationAsset.length > 0) {
-            this.isTargetDisabled = false;
+
+            this.relationshipService.getRelationshipsByAssetTypeUid(this.transformationAsset[0].AssetTypeUid)
+                .subscribe(res => {
+                    this.targetAllowedPredicates = [];
+                    res.forEach(rel => {
+                        if (rel.Predicate.Type == PredicateType.Transformation.toString()) {
+                            this.targetAllowedPredicates.push(rel.Predicate);
+                        }
+                    });
+                    this.buildTargetFilters();
+                    this.isTargetDisabled = false;
+                });
         }
 
         if (this.sourceAssets.length > 0) {
@@ -102,28 +116,79 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             this.sourceAssets = tempSource;
 
         if (this.editorType == RelationshipEditorType.Lineage) {
-            this.predicateType = PredicateType.DataLineage;
+            this.predicateType = PredicateType.Transformation;
         }
 
         if (this.editorType == RelationshipEditorType.Lineage) {
+            this.buildSourceFilters();
+            this.buildTransformationFilters();
+            this.buildTargetFilters();
+        }
+    }
+    private buildTargetFilters() {
+        this.targetFilters = [];
+        if (this.targetAllowedPredicates.length == 0) {
+            var targetFilters = new CommonComponentAssetTypeFilter();
+            targetFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+            targetFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object;
+            targetFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
+            this.targetFilters.push(targetFilters);
+        }
+        else {
+            this.targetAllowedPredicates.forEach(tp => {
+                var targetFilters = new CommonComponentAssetTypeFilter();
+                targetFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+                targetFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object;
+                targetFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
+                targetFilters.AsSideOfRelationship.PredicateUid = tp.Uid.toString();
+                this.targetFilters.push(targetFilters);
+            });
+        }
+    }
+
+    private buildSourceFilters() {
+        this.sourceFilters = [];
+        if (this.sourceFilters.length == 0) {
             var sourceFilters = new CommonComponentAssetTypeFilter();
             sourceFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
             sourceFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Subject;
             sourceFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
             this.sourceFilters.push(sourceFilters);
+        }
+        else {
+            this.sourceAssets.forEach(asset => {
+                var sourceFilters = new CommonComponentAssetTypeFilter();
+                sourceFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+                sourceFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Subject;
+                if (asset.Predicate)
+                    sourceFilters.AsSideOfRelationship.PredicateUid = asset.Predicate.Uid.toString();
+                sourceFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
+                this.sourceFilters.push(sourceFilters);
+            });
+        }
+    }
 
+    private buildTransformationFilters() {
+        this.transformationFilters = [];
+        if (this.sourceAssets.length == 0) {
             var transformationFilters = new CommonComponentAssetTypeFilter();
             transformationFilters.UseAsTransformation = true;
             transformationFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
             transformationFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
             transformationFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object
             this.transformationFilters.push(transformationFilters);
-
-            var targetFilters = new CommonComponentAssetTypeFilter();
-            targetFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
-            targetFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object;
-            targetFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
-            this.targetFilters.push(targetFilters);
+        }
+        else {
+            this.sourceAssets.forEach(asset => {
+                var transformationFilters = new CommonComponentAssetTypeFilter();
+                transformationFilters.UseAsTransformation = true;
+                transformationFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+                transformationFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
+                if (asset.Predicate)
+                    transformationFilters.AsSideOfRelationship.PredicateUid = asset.Predicate.Uid.toString();
+                transformationFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object
+                this.transformationFilters.push(transformationFilters);
+            });
         }
     }
 
@@ -140,6 +205,11 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     onAssetSearchSelection(event: any) {
         this.checkSelectionValues();
+        this.buildTransformationFilters();
+        this.buildSourceFilters();
+        this.buildTargetFilters();
+
+        this.validateRelationships();
     }
 
     newAssetAdded($event) {
@@ -159,6 +229,10 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     private get IsValid(): boolean {
+
+        if (!this.areRelationshipsValid)
+            return false;
+
         if (this.isSaving || this.isSavingAndContinue)
             return false;
 
@@ -198,6 +272,36 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         };
         this.executeSave();
 
+    }
+
+    private validateRelationships() {
+        console.log("Validating relationships");
+        var relationships = this.buildRelationshipsFromSelection();
+
+        var resolveRelationshipTasks = [];
+        relationships.forEach(r => {
+            resolveRelationshipTasks.push(this.relationshipService.getRelationshipsByAssetTypeUid(r.SubjectAssetTypeUid));
+        });
+
+        var resolveRelationshipsObservable = forkJoin(resolveRelationshipTasks);
+        resolveRelationshipsObservable.subscribe(results => {
+            var eligibleRelationships = [];
+            results.forEach(res => {
+                res.forEach(r => {
+                    if (r.Predicate.Type == 'Transformation') {
+                        eligibleRelationships.push(r);
+                    }
+                });
+            });
+
+            relationships.forEach(rel => {
+                var intersectType = eligibleRelationships.find(x => x.Object.Uid == rel.ObjectAssetTypeUid && x.Subject.Uid == rel.SubjectAssetTypeUid);
+                rel.IntersectTypeUid = intersectType ? intersectType.Uid : null;
+            });
+
+        });
+
+        console.log(relationships);
     }
 
     private executeSave() {
@@ -317,15 +421,16 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         if (this.editorType == RelationshipEditorType.Lineage) {
             var transformation = this.transformationAsset[0];
 
-            this.sourceAssets.forEach(a => {
-                var rel1: any = {};
-                rel1.Intersects = [];
-                rel1.SubjectAssetTypeUid = a.AssetTypeUid;
-                rel1.ObjectAssetTypeUid = transformation.AssetTypeUid;
-                rel1.Intersects.push({ SubjectAssetUid: a.Uid, ObjectAssetUid: transformation.Uid, type: 'S->T' });
-                relationships.push(rel1);
-            });
-
+            if (this.transformationAsset.length != 0) {
+                this.sourceAssets.forEach(a => {
+                    var rel1: any = {};
+                    rel1.Intersects = [];
+                    rel1.SubjectAssetTypeUid = a.AssetTypeUid;
+                    rel1.ObjectAssetTypeUid = transformation.AssetTypeUid;
+                    rel1.Intersects.push({ SubjectAssetUid: a.Uid, ObjectAssetUid: transformation.Uid, type: 'S->T' });
+                    relationships.push(rel1);
+                });
+            }
 
             this.targetAssets.forEach(a => {
                 var rel2: any = {};

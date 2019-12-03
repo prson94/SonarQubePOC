@@ -5354,6 +5354,29 @@ a.mid-blue {
     border-radius: 4px;
     width: 100%;
 
+    .selection-errors {
+        position: absolute;
+        right: 25px;
+        top: 7px;
+        color: #ffb000;
+        .toggle-warning:hover{
+            .warning-list{
+                display:block;
+            }
+
+        } 
+        
+        .warning-list {
+            display:none;
+            position: absolute;
+            z-index: 200;
+            width: 200px;
+            right: 20px;
+            top: -14px;
+            font-size: 12px;
+        }
+    }
+
     &.disabled {
         position: relative;
         pointer-events: none;
