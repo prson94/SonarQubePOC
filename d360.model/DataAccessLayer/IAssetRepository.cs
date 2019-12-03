@@ -11,7 +11,7 @@ namespace d360.model.DataAccessLayer
     public interface IAssetRepository
     {
         Asset GetAssetByUID(Guid assetUid);
-        Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams,AssetTypeClass? Class, Guid? fusionTypeUid);
+        Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams,AssetTypeClass? Class, Guid? fusionTypeUid,Guid? assetTypeUid);
         List<AssetTypeClassInfo> GetAssetTypeList();
         Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams);
         Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model);
