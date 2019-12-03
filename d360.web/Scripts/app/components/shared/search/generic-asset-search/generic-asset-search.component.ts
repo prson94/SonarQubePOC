@@ -276,7 +276,6 @@ export class AssetSearchComponent implements OnInit, OnChanges {
             }
             this.selected.push(selectedItem);
         }
-        console.log(this.selected);
         this.selectedChange.emit({ action: 'added', item: selectedItem });
     }
 

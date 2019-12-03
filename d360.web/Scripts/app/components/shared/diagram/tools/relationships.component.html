@@ -18,13 +18,13 @@
 
         <span class="title">Source Assets</span>
         <d3s-asset-search [multiSelect]="true"
-                          [showPredicateSelector]="showPredicateSelector"
+                          [showPredicateSelector]="true"
                           [predicateSelectorType]="predicateType"
                           [selected]="sourceAssets"
                           [filters]="sourceFilters"
                           [prepopulatedResults]="sourcePrePop"
                           [multiSelectStyle]="'Button'"
-                          [relationshipSide]="1"
+                          [relationshipSide]="0"
                           [clearResultsAfterSelection]="true"
                           [multiSelectButtonLabel]="'Add source'"
                           (selectedChange)="onAssetSearchSelection($event)">
@@ -48,7 +48,7 @@
         <span class="title">Target Assets</span>
         <d3s-asset-search [multiSelect]="true"
                           [isDisabled]="isTargetDisabled"
-                          [showPredicateSelector]="showPredicateSelector"
+                          [showPredicateSelector]="true"
                           [predicateSelectorType]="predicateType"
                           [selected]="targetAssets"
                           [filters]="targetFilters"

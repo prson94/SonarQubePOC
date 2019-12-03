@@ -20,9 +20,18 @@
         <div class="selection">
             <ng-container *ngIf="multiSelect">
                 <div class="selected-item hide-full-path" *ngFor="let item of selected;let i = index;">
+                    <div class="selection-errors" *ngIf="item.Warnings && item.Warnings.length > 0">
+                        <i class="fa fa-exclamation-triangle toggle-warning">
+                            <div class="warning-list warningMessage">
+                                <span class="warning" *ngFor="let msg of item.Warnings">{{msg}}</span>
+                            </div>
+                        </i>
+                    </div>
+
+
                     <ng-template *ngTemplateOutlet="segmentedItem; context: {$implicit: item}"></ng-template>
 
-                    <d3s-predicate-selector *ngIf="showPredicateSelector" [selected]="item.Predicate" [relationshipSide]="relationshipSide" (onChange)="predicateSelected($event, i);" [predicateType]="predicateSelectorType"></d3s-predicate-selector>
+                    <d3s-predicate-selector *ngIf="showPredicateSelector" [assetTypeUid]="item.AssetTypeUid" [selected]="item.Predicate" [relationshipSide]="relationshipSide" (onChange)="predicateSelected($event, i);" [predicateType]="predicateSelectorType"></d3s-predicate-selector>
                     <i (click)="unselect(i)" class="unselect fa fa-times-circle" aria-hidden="true"></i>
                     <div style="display:block;width:100%;"></div>
                 </div>

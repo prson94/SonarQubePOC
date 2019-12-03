@@ -134,8 +134,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             { icon: 'fa fa-refresh', title: 'Refresh' }
         );
         this.initializeDiagram();
-
-        console.log(this);
     }
 
     public ngAfterViewInit() {
