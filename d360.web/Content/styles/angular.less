@@ -1515,8 +1515,6 @@ a.breadcrumb {
     flex-direction: column;
     flex-wrap: nowrap;
     align-items: flex-start;
-    margin: -2px;
-    border-bottom: 1px solid #d0d0d0;
     padding: 4px;
 
     .card-row {
@@ -1617,11 +1615,13 @@ a.breadcrumb {
 .global-search-typeahead {
     .ui-autocomplete-panel {
         top: 36px !important;
-        max-width: 800px !important;
-        transform: translateX(-10px) !important;
+        width: 576px !important;
+        transform: translateX(-210px) !important;
         z-index: 500 !important;
-        .ui-autocomplete-list{
-            padding:0px;
+
+        .ui-autocomplete-list {
+            padding: 0px;
+            border-bottom: 1px solid #d0d0d0;
         }
     }
 }
@@ -1695,7 +1695,6 @@ a.breadcrumb {
     }
 
     li.ui-autocomplete-list-item {
-        border: 0 none;
 
         &:not(.ui-state-highlight):nth-child(even) {
             background-color: #f7f7f7;
