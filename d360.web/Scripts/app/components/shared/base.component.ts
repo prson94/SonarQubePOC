@@ -442,7 +442,7 @@ export class BaseComponent {
         if (node.children && node.children.length > 0) return true;
 
         nodeProps.forEach(prop => {
-            if (prop.toLowerCase().indexOf("value") != -1 || prop.toLowerCase().indexOf("field") != -1) {
+            if (prop.toLowerCase().indexOf("name") != -1 || prop.toLowerCase().indexOf("value") != -1 || prop.toLowerCase().indexOf("field") != -1) {
                 if (node.data[prop] && node.data[prop].toString().toLowerCase().indexOf(q.toLowerCase()) != -1) hasValue = true;
             }
         });

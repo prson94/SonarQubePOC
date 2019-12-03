@@ -1,4 +1,4 @@
-﻿import { Component, OnDestroy, OnInit } from '@angular/core';
+﻿import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { TreeNode } from 'primeng/api';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -10,6 +10,7 @@ import { AdminBaseComponent } from '../admin-base.component'
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AssetTypeClass } from '../../../models/asset.model';
+import { TreeTable } from 'primeng/treetable';
 
 @Component({
     selector: 'd3s-admin-artifacts',
@@ -23,18 +24,21 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     adminType: string = "Artifacts";
     addClassName: string;
     selectedRow: TreeNode;
-    private sub: any;
+    private sub: any; 
     isAdding = false;
     isEditing = false;
     isDeleting = false;
     isEditingFieldType = false;
     isAddingFieldType = false;
     artifactTypes: TreeNode[];
+    unfilteredAssetTypes: TreeNode[];
     editorModel: any;
     theDeleteCallback: Function;
-    filterFields: string[] = ["Name"];
     assetTypeClass: AssetTypeClass;
     formTitle: string;
+
+    searchValue: string = '';
+    @ViewChild("dt", { static: false }) dt: TreeTable;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -93,7 +97,8 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.isLoading = true;
         this.artifactsService.getArtifactTypeTree(this.assetTypeClass)
             .subscribe(data => {
-                this.artifactTypes = data;                
+                this.artifactTypes = data;  
+                this.unfilteredAssetTypes = data;
                 if (selectionId <= 0) {
                     this.selectedRow = this.artifactTypes[0];
                 } else {                    
@@ -153,5 +158,17 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
             this.load();
             this.stateService.reloadLeftNavMenu();
         })
+    }
+
+    private filterQ: any;
+    filter(event) {
+        if (event) {
+            this.searchValue = event.target.value;
+        }
+        window.clearTimeout(this.filterQ);
+        this.filterQ = setTimeout(() => {
+            this.dt.reset();
+            this.filterTreeTable(this.unfilteredAssetTypes, this.searchValue, this.dt);
+        }, event ? 600 : 0);
     }
 }
