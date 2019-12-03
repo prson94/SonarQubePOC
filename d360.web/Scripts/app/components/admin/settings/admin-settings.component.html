@@ -62,7 +62,7 @@
         <div class="tile tile-detail">
             <header>Search</header>
             <div class="directions">
-                Specify the default value for the initially selected list of object types to search when a user performs a simple search from the Data3Sixty global search functionality.
+                Specify the default value for the initially selected list of object types to search when a user performs a simple search from the Data360 global search functionality.
             </div>
             <ul>
                 <li *ngFor="let searchType of searchTypes;let i=index">
@@ -77,7 +77,7 @@
         <div class="tile tile-detail">
             <header>Default Route</header>
             <div class="directions">
-                Specify the default route users will be redirected to when logging into Data3Sixty (ex: /artifact/1). Leave blank to use the default value.
+                Specify the default route users will be redirected to when logging into Data360 (ex: /artifact/1). Leave blank to use the default value.
             </div>
             <div>
                 <input type="text" [ngModel]="companySettings.DefaultRoute" (ngModelChange)="companySettings.DefaultRoute = $event; validateRoute();" style="width: 95%" />
