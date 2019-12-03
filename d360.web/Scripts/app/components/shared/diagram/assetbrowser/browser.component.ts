@@ -91,10 +91,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly fontLabel: string = "12px 'Source Sans Pro'";
     private readonly fontLabelColor: string = "#404040";
     private readonly fontLink: string = "9pt 'Source Sans Pro'";
-    private readonly fontLinkColor: string = "#000";
+    private readonly fontLinkColor: string = "#fff";
+    private readonly linkBackColor: string = "#808080";
     private readonly lightenBoxColor: string = "#fff";
     private readonly darkenBoxColor: string = "#000";
-    private readonly linkDefaultBackColor: string = '#ccc';
+    private readonly linkDefaultBackColor: string = '#808080';
     private readonly linkDefaultBorderColor: string = '#999';
     private readonly plusIcon: string = '\uf067';
 
@@ -602,6 +603,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.diagram = this.createDiagram();
 
+        var forelayer = this.diagram.findLayer("Foreground");
+        this.diagram.addLayerBefore(this.g(go.Layer, { name: "Links" }), forelayer);
+
         this.diagram.groupTemplateMap.add("PortGroup", this.createPortGroupNode());
         this.diagram.groupTemplateMap.add("Group", this.createGroupNode());
 
@@ -651,7 +655,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
                     this.parseData(translationModel);
                     this.resizeDiagram();
-                    this.diagram.zoomToFit();
+                    this.diagram.scale = 1;
                     this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
                     this.loadingText = "";
                     this.isLoading = false;
@@ -1583,8 +1587,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 ),
                 this.g(
                     go.Shape,  // the "top" port
-                    { width: 0, height: 0, portId: "T", toSpot: go.Spot.TopCenter, toLinkable: true },
-                    new go.Binding("stroke", "back")
+                    { width: 0, height: 0, portId: "T", toSpot: go.Spot.TopCenter, toLinkable: true, stroke: 'transparent' }//,
+                    //new go.Binding("stroke", "back")
                 ),
                 this.g(go.Panel, "Auto",
                     this.g(
@@ -1896,18 +1900,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 relinkableFrom: false,
                 relinkableTo: false,
                 click: (e, obj) => this.highlightPath(e, obj as any)
-            }, // the whole link panel
-            this.g(go.Shape, {
-                stroke: "gray", strokeWidth: 2
             },
+            // the whole link panel
+            this.g(go.Shape,
+                { stroke: this.linkBackColor, strokeWidth: 1 },
                 new go.Binding("strokeWidth", "hasProperties", function (h) {
                     return h ? 3 : 2;
                 }),
                 new go.Binding("stroke", "hasProperties", function (h) {
-                    return h ? "black" : "gray"
+                    return h ? "black" : this.linkBackColor
                 })), // the link shape
-            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
-            this.g(go.Panel, "Auto",
+            this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
+            this.g(go.Panel, "Auto", 
                 this.g(
                     go.Shape,
                     {
