@@ -116,7 +116,7 @@ namespace igx.jobs.reportlayer
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 1).ToList();
+                companies = companies.Where(i => i.CompanyID == 3).ToList();
 #endif
 
                 companies.ForEach(c =>
@@ -133,13 +133,11 @@ namespace igx.jobs.reportlayer
                         {
                             companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                            var selectSql = "";
-                            var viewSql = "";
+                            var selectSql = "";                            
                             var objectName = "";
                             var assetTypePluralizedName = "";
                             var legacyPrefix = "Glossary";
-                            string objectID;
-
+                            
                             var assetTypes = companyConnection.Query<AssetType>($"select * from AssetType where [Class] in ({(int)AssetTypeClass.BusinessAsset}, {(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy})").ToList();
                             var fieldTypes = companyConnection.Query<FieldType>($"select * from FieldType where AssetTypeID in (select ID from AssetType where [Class] in ({(int)AssetTypeClass.BusinessAsset}, {(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy}))").ToList();
 
@@ -271,13 +269,8 @@ from    h as A
 
                                     #endregion Model/Policy
                                 }
-
-                                objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                                viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                                viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                                executeSqlWithTry(companyConnection, viewSql);
+                                                                
+                                executeSqlWithTry(companyConnection, $@"CREATE OR ALTER VIEW {objectName} AS {selectSql}");
 
                                 if (o.Class == AssetTypeClass.BusinessAsset)
                                 {
@@ -322,511 +315,19 @@ END");
                                     {ffields}
                                     from reporting.Global_Resource as r
                                     {fjoins}";
-
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-
-                            #endregion
-                            
-                            #region Relationship_Fields
-
-                            objectName = $"{SCHEMA}.[Relationship_Fields]";
-                            viewNames.Add(objectName);
-
-                            selectSql = @"
-select 	O.ID, 
-	    O.IntersectTypeID, 
-	    O.Subject, 
-	    O.SubjectID, 
-	    O.SubjectTypeName, 
-	    O.SubjectName, 
-	    O.Object, 
-	    O.ObjectID, 
-	    O.ObjectTypeName, 
-	    O.ObjectName, 
-	    F.FieldTypeID, 
-        FT.Name as FieldName, 
-        FT.FriendlyName as FieldFriendlyName, 
-	    F.FormattedValue as FieldValue 
-from	IntersectDetail O 
-	    inner join Field F on F.ObjectType = 'Intersect' and F.ObjectID = O.ID
-	    inner join FieldType FT on FT.ID = F.FieldTypeID";
-
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-
-                            #endregion
-
-                            #region Rules
-
-                            objectName = $"{SCHEMA}.[Rules_All]";
-                            viewNames.Add(objectName);
-
-                            selectSql = @"
-                                SELECT        
-                                	A.ID AS AssetID, 
-                                	A.ObjectID AS ID, 
-                                	A.DisplayValue AS Name, 
-                                	A.TypeID AS RuleTypeID, 
-                                	A.TypeName AS RuleType, 
-                                	'-1' as RuleDimensionID, 
-                                	'' as RuleDimensionName, 
-                                	R.Threshold, 
-                                	'' as Status, 
-                                	A.CreatedOn, 
-                                	A.CreatedBy, 
-                                	A.UpdatedOn, 
-                                	A.UpdatedBy
-                                FROM  dbo.AssetDetail AS A 
-                                	INNER JOIN dbo.[Rule] AS R ON R.ID = A.ObjectID AND A.AssetTypeClass = 7 AND A.State = 1";
-
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-
-                            #endregion
-
-                            #region Rule_Fields
-
-                            objectName = $"{SCHEMA}.[Rules_Fields]";
-                            viewNames.Add(objectName);
-
-                            selectSql = @"
-select 	O.ID as AssetID,
-        O.ObjectID as RuleID, 
-	    O.DisplayValue as RuleName, 
-	    F.FieldTypeID, 
-        FT.Name as FieldName, 
-        FT.FriendlyName as FieldFriendlyName, 
-	    F.FormattedValue as FieldValue 
-from	AssetDetail O 
-        inner join Field F on F.ObjectType = O.Object and F.ObjectID = O.ObjectID and O.AssetTypeClass = 7 and O.State = 1
-	    inner join FieldType FT on FT.ID = F.FieldTypeID";
-
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-
-                            #endregion
-
-                            #region RuleImplementations
-
-                            objectName = $"{SCHEMA}.[RuleImplementations_All]";
-                            viewNames.Add(objectName);
-
-                            selectSql = @"
-select	R.RuleTypeID,
-		RT.Name as RuleType,
-		D.ID as AssetID,
-        I.RuleID,
-		AD.DisplayValue as [Rule],
-		I.ID as RuleImplementationID,
-		coalesce(I.Name, 'Implementation ' + cast(I.ID as nvarchar)) as RuleImplementation,
-		I.SourceID,
-		I.SourceUri,
-		count(Q.ID) as QualifierCount,
-		I.CreatedOn,
-		I.CreatedBy,
-		I.UpdatedOn,
-		I.UpdatedBy
-from	RuleImplementation I
-		left join RuleResultQualifierType Q on Q.RuleImplementationID = I.ID
-		inner join [Rule] R on R.ID = I.RuleID
-        inner join dbo.Asset D on D.Object = 'Rule' and D.ObjectID = R.ID
-        inner join dbo.AssetDisplayValue AD on AD.AssetId = D.ID
-		inner join RuleType RT on RT.ID = R.RuleTypeID 
-group by R.RuleTypeID,
-		RT.Name,
-        D.ID,
-		I.RuleID,
-		AD.DisplayValue,
-		I.ID,
-		coalesce(I.Name, 'Implementation ' + cast(I.ID as nvarchar)),
-		I.SourceID,
-		I.SourceUri,
-		I.CreatedOn,
-		I.CreatedBy,
-		I.UpdatedOn,
-		I.UpdatedBy";
-
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-
-                            objectName = $"{SCHEMA}.[RuleImplementations_Results]";
-                            viewNames.Add(objectName);
-
-                            selectSql = @"
-select	RI.RuleID,
-		R.Threshold,
-		RI.ID as RuleImplementationID,
-		coalesce(RI.Name, 'Implementation ' + cast(RI.ID as nvarchar)) as RuleImplementation,
-		RR.ID as RuleResultID,
-		RR.EffectiveDate,
-		RR.CreatedOn,
-		RR.RunDate,
-		RR.RowsPassed,
-		RR.RowsFailed,
-		RR.PassFraction,
-		RR.FailFraction,
-		RR.Passed
-from	RuleResult RR
-		inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
-		inner join [Rule] R on R.ID = RI.RuleID";
-
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-
-
-                            objectName = $"{SCHEMA}.[RuleImplementations_ResultQualifiers]";
-                            viewNames.Add(objectName);
-
-                            selectSql = @"
-select	q.RuleResultID, 
-		qt.Name as QualifierName, 
-		q.Value as QualifierValue--,
-		--q.[ResolvedObject],
-		--q.[ResolvedObjectID]
-from	RuleResultQualifier q
-		inner join RuleResultQualifierType qt on qt.ID = q.RuleResultQualifierTypeID";
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-
-                            #endregion
-
-                            #region Workflows
-
-                            objectName = $"{SCHEMA}.[Workflows]";
-                            viewNames.Add(objectName);
-
-                            selectSql = @"
-select	T.Name as WorkflowTypeName,
-		T.Description as WorkflowTypeDescription,
-		I.ID as ItemID,
-		I.Active,
-		I.StartedBy,
-		I.StartedOn,
-		I.CompletedBy,
-		I.CompletedOn,
-		I.Object,
-		I.ObjectID,
-		V.Version
-from	workflow.Item I
-		inner join workflow.[Version] V on V.ID = I.VersionID
-		inner join workflow.Type T on T.ID = V.TypeID";
-
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-
-                            #endregion
-
-                            #region Workflow Steps
-
-                            objectName = $"{SCHEMA}.[WorkflowSteps]";
-                            viewNames.Add(objectName);
-
-                            selectSql = @"
-select	S.ItemID,
-        S.StepID,
-		S.StartedBy,
-		S.StartedOn,
-		S.CompletedBy,
-		S.CompletedOn,
-		V.Name as StepName,
-		case V.ActivityType
-			when 1 then 'Email Notification'
-			when 2 then 'Status Change'
-			when 3 then 'Form'
-			when 4 then 'Procedure'
-			when 5 then 'Field Change'
-			else 'None'
-		end as ActivityTypeName
-from	workflow.ItemStep S
-		inner join workflow.VersionStep V on V.ID = S.StepID";
-
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-
-                            #endregion
-
-                            #region Workflow Forms
-
-                            objectName = $"{SCHEMA}.[WorkflowForms]";
-                            viewNames.Add(objectName);
-
-                            selectSql = @"
-                                select 
-	                                t.ID as WorkflowID,
-	                                i.ID as ItemID,
-	                                coalesce(a.DisplayValue, ai.DisplayValue, arn.[Name], '[unknown]') as WorkflowItem,
-	                                coalesce(a.ID, ai.ID) as AssetID,
-	                                si.StepID,
-	                                form.fieldId as FieldID,
-	                                form.fieldLabel as Field,
-	                                coalesce(form.fieldValue, form.fieldValueRaw) as FieldValue,
-	                                form.resId as ResourceID,
-	                                si.CompletedOn as [Date]
-                                from workflow.itemstep si
-	                                inner join workflow.item i on i.ID = si.ItemID
-	                                left join AssetDetail a on a.[Object] = i.[Object] and a.ObjectiD = i.ObjectID
-	                                left join Issue on issue.ID = i.ObjectID and i.[Object] = 'Issue'
-	                                left join AssetDetail ai on ai.[Object] = issue.[Object] and ai.ObjectID = issue.ObjectID
-	                                left join IntersectDetail ar on ar.ID = i.ID and i.[Object] = 'Intersect'
-	                                outer apply dbo.GetIntersectNames(ar.ID) arn
-	                                inner join workflow.versionstep vs on vs.ID = si.StepID
-	                                inner join workflow.[version] v on v.ID = vs.VersionID
-	                                inner join workflow.[type] t on t.ID = v.TypeID
-	                                cross apply (
-		                                select 
-			                                sif.ID,
-			                                f.n.value('(../@ResourceID)[1]','int') as resId,
-			                                f.n.value('(./@label)[1]','varchar(max)') as fieldLabel,
-			                                f.n.value('(./@value)[1]','varchar(max)') as fieldValueRaw,
-			                                f.n.value('(./@displayvalue)[1]','varchar(max)') as fieldValue,
-			                                f.n.value('(./@fieldtype)[1]','varchar(max)') as fieldType,
-			                                f.n.value('(./@id)[1]','varchar(max)') as fieldId
-		                                from 
-			                                workflow.itemstep sif
-			                                cross apply sif.Fields.nodes('fields/form/field') f(n)
-		                                where 
-			                                sif.ID = si.ID
-	                                ) form
-                                where 
-	                                vs.StepType = 2 and vs.ActivityType = 3";
-
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-                            #endregion
-
-
-                            legacyPrefix = "Global";
-
-                            #region InterRelationships
-
-                            objectName = string.Format("{0}.[{1}_{2}]", SCHEMA, legacyPrefix, "ModelInterRelationships");
-                            viewNames.Add(objectName);
-
-                            selectSql = @"
-select	I.ID as IntersectID,
-
-		S.ObjectID as SourceID,
-		S.DisplayValue as SourceName,
-		S.TypeName as SourceType,
-		dbo.GenerateAssetUrl(S.ID) as SourceUrl,
-
-		O.ObjectID as TargetID,
-		O.DisplayValue as TargetName,
-		O.TypeName as TargetType,
-		dbo.GenerateAssetUrl(O.ID) as TargetUrl 
-
-from	[Intersect] I
-		inner join IntersectType T on T.ID = I.IntersectTypeID
-		inner join [Predicate] P on P.ID = T.PredicateID and P.Type <> 4
-		inner join AssetDetail S on S.Object = I.Subject and S.ObjectID = I.SubjectID and S.AssetTypeClass = 2 and S.State = 1
-		inner join AssetDetail O on O.Object = I.Object and O.ObjectID = I.ObjectID and O.AssetTypeClass = 2 and O.State = 1";
-
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-
-                            #endregion
-
-                            #region Integration 
-
-
-                            # region Mappings
-
-                            objectName = $"{SCHEMA}.[Integration_Mappings]";
-                            viewNames.Add(objectName);
-
-                            selectSql = @"
-select	case SE.IntegrationSystem
-			when 1 then 'IGC'
-			else cast(SE.IntegrationSystem as varchar)
-		end IntegrationSystem,
-		O.Active,
-		O.MappingType,
-		O.SourceAssetTypeName,
-		O.SourceField,
-		O.TargetType,
-		O.TargetAssetTypeName,
-		O.TargetField,
-		O.DefaultValue
-from	(
-		select	ST.IntegrationSettingID,
-				F.Active,
-				'Field' as MappingType,
-				ST.SourceAssetTypeName,
-				F.SourceField,
-				ST.Object as TargetType,
-				T.Name as TargetAssetTypeName,
-				F.TargetField,
-				F.DefaultValue
-		from	[integration].[SynchedAssetType] ST
-				inner join AssetType T on T.ID = ST.AssetTypeID
-				inner join [integration].[SynchedAssetTypeFieldItem] F on F.SynchedAssetTypeID = ST.ID
-		union
-		select	ST.IntegrationSettingID,
-				F.Active,
-				'Relation' as MappingType,
-				ST.SourceAssetTypeName,
-				F.SourceField,
-				ST.Object as TargetType,
-				T.Name as TargetAssetTypeName,
-				I.SubjectName + ' ' + coalesce(I.PredicateName,'') + ' ' + I.ObjectName as TargetField,
-				null as DefaultValue
-		from	[integration].[SynchedAssetType] ST
-				inner join AssetType T on T.ID = ST.AssetTypeID
-				inner join [integration].[SynchedAssetTypeRelationItem] F on F.SynchedAssetTypeID = ST.ID
-				inner join [integration].[SynchedAssetTypeRelationItemTarget] FT on FT.[SynchedAssetTypeRelationItemID] = F.ID
-				inner join IntersectTypeDetail I on I.ID = FT.IntersectTypeID
-		union
-		select	ST.IntegrationSettingID,
-				F.Active,
-				'Role' as MappingType,
-				ST.SourceAssetTypeName,
-				F.SourceIdField as SourceField,
-				ST.Object as TargetType,
-				T.Name as TargetAssetTypeName,
-				RT.Name as TargetField,
-				null as DefaultValue
-		from	[integration].[SynchedAssetType] ST
-				inner join AssetType T on T.ID = ST.AssetTypeID
-				inner join [integration].[SynchedAssetTypeRoleItem] F on F.SynchedAssetTypeID = ST.ID
-				inner join ResponsibilityType RT on RT.ID = F.ResponsibilityTypeID
-		) O 
-		inner join [integration].Setting SE on SE.ID = O.IntegrationSettingID";
-
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-
-                            #endregion
-
-
-                            #region Errors
-
-                            objectName = $"{SCHEMA}.[Integration_ExecutionErrors]";
-                            viewNames.Add(objectName);
-
-                            selectSql = @"
-select	E.Uid,
-		E.ExecutionID,
-		E.SynchedAssetTypeID,
-		S.SourceAssetTypeName,
-		coalesce(D.DisplayValue, F.NAme) as AssetName,
-		E.SourceID,
-		E.ErrorMessages
-from	integration.ExecutionAssetTypeError E
-		inner join integration.ExecutionAssetType Ex on Ex.ExecutionID = E.ExecutionID and Ex.SynchedAssetTypeID = E.SynchedAssetTypeID and Ex.StartedOn > DATEADD(d, -14, getutcdate())
-		inner join integration.SynchedAssetType S on S.ID = E.SynchedAssetTypeID 
-		inner join Asset A on A.AssetTypeID = S.AssetTypeID and A.SourceID = E.SourceID
-		left join AssetDisplayValue D on D.AssetID = A.ID
-		left join FusionAttribute F on F.FusionAttributeTypeID = S.ObjectID and A.Object = 'FusionAttribute' and F.ID = A.ObjectID";
-
-                            objectID = companyConnection.Query<string>("select OBJECT_ID(@n, 'V')", new { n = objectName }).First();
-
-                            viewSql = (string.IsNullOrEmpty(objectID)) ? "CREATE " : "ALTER ";
-                            viewSql += $@" VIEW {objectName} AS {selectSql}";
-
-                            executeSqlWithTry(companyConnection, viewSql);
-
-                            #endregion
-
+                                                        
+                            executeSqlWithTry(companyConnection, $@"CREATE OR ALTER VIEW {objectName} AS {selectSql}");
 
                             #endregion
 
                             #endregion
+                                                        
+                            RemoveOldDynamicViews(companyConnection, AssetTypeClass.BusinessAsset, viewNames, log);
+                            RemoveOldDynamicViews(companyConnection, AssetTypeClass.TechnicalAsset, viewNames, log);
+                            RemoveOldDynamicViews(companyConnection, AssetTypeClass.Model, viewNames, log);
+                            RemoveOldDynamicViews(companyConnection, AssetTypeClass.Policy, viewNames, log);
 
-                            #region Remove Old Views
-
-                            var currentViewNames = companyConnection.Query<string>(@"select TABLE_SCHEMA + '.[' + TABLE_NAME + ']' from [INFORMATION_SCHEMA].[VIEWS] where TABLE_SCHEMA = 'reporting'").ToList();
-
-                            currentViewNames.ForEach(cv =>
-                            {
-                                if (!viewNames.Contains(cv))
-                                {
-                                    try
-                                    {
-                                        companyConnection.Execute(string.Format(@"drop view {0}", cv));
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                                        log.WriteLine(msg);
-                                    }
-                                }
-                            });
-
-                            #endregion
-
-                            #region Remove Old Synonyms
-
-                            var currentSynonyms = companyConnection.Query<string>(@"select name from sys.synonyms where base_object_name like '%reporting%'").ToList();
-
-                            currentSynonyms.ForEach(cv =>
-                            {
-                                cv = $"{SCHEMA}.{cv}";
-
-                                if (!synonymNames.Contains(cv))
-                                {
-                                    try
-                                    {
-                                        companyConnection.Execute(string.Format(@"drop synonym {0}", cv));
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
-                                        log.WriteLine(msg);
-                                    }
-                                }
-                            });
-
-                            #endregion
-
+                            RemoveSynonyms(companyConnection, synonymNames, log, SCHEMA);
                         }
                     }
                     catch (Exception ex)
@@ -839,6 +340,51 @@ from	integration.ExecutionAssetTypeError E
             {
                 CoreFunction.AITrackException(functionName, ex);
             }
+        }
+
+        private static void RemoveSynonyms(SqlConnection companyConnection, List<string> synonymNames, TextWriter log, string schemaName)
+        {
+            var currentSynonyms = companyConnection.Query<string>(@"select name from sys.synonyms where base_object_name like '%reporting%'").ToList();
+
+            currentSynonyms.ForEach(cv =>
+            {
+                cv = $"{schemaName}.{cv}";
+
+                if (!synonymNames.Contains(cv))
+                {
+                    try
+                    {
+                        companyConnection.Execute(string.Format(@"drop synonym {0}", cv));
+                    }
+                    catch (Exception ex)
+                    {
+                        var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                        log.WriteLine(msg);
+                    }
+                }
+            });
+
+        }
+
+        private static void RemoveOldDynamicViews(SqlConnection connection, AssetTypeClass className, List<string> viewNames, TextWriter log)
+        {
+            var currentViewNames = connection.Query<string>($@"select TABLE_SCHEMA + '.[' + TABLE_NAME + ']' from [INFORMATION_SCHEMA].[VIEWS] where TABLE_SCHEMA = 'reporting' and TABLE_NAME like '{className}_%'").ToList();
+
+            currentViewNames.ForEach(cv =>
+            {
+                if (!viewNames.Contains(cv))
+                {
+                    try
+                    {
+                        connection.Execute(string.Format(@"drop view {0}", cv));
+                    }
+                    catch (Exception ex)
+                    {
+                        var msg = ex.GetFullExceptionData() + " Stack: " + ex.StackTrace;
+                        log.WriteLine(msg);
+                    }
+                }
+            });
         }
     }
 }
