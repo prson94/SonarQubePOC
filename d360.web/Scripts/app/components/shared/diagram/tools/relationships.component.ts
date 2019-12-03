@@ -276,6 +276,21 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     private validateRelationships() {
         console.log("Validating relationships");
+
+        this.sourceAssets.forEach(x => {
+            x.Warnings = [];
+            if (!x.Predicate) {
+                x.Warnings.push("Predicate not set!");
+            }
+        });
+        this.targetAssets.forEach(x => {
+            x.Warnings = [];
+
+            if (!x.Predicate) {
+                x.Warnings.push("Predicate not set!");
+            }
+        });
+
         var relationships = this.buildRelationshipsFromSelection();
 
         var resolveRelationshipTasks = [];
@@ -295,10 +310,28 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             });
 
             relationships.forEach(rel => {
-                var intersectType = eligibleRelationships.find(x => x.Object.Uid == rel.ObjectAssetTypeUid && x.Subject.Uid == rel.SubjectAssetTypeUid);
+                var intersectType = eligibleRelationships.find(x => x.Predicate.Uid == rel.PredicateUid && x.Object.Uid == rel.ObjectAssetTypeUid && x.Subject.Uid == rel.SubjectAssetTypeUid);
                 rel.IntersectTypeUid = intersectType ? intersectType.Uid : null;
             });
 
+
+            var invalidRelationships = relationships.filter(x => x.IntersectTypeUid == null);
+            invalidRelationships.forEach(inv => {
+                inv.Intersects.forEach(rel => {
+                    this.sourceAssets.forEach(sa => {
+                        if (rel.PredicateUid == sa.Predicate.Uid && sa.Uid == rel.SubjectAssetUid) {
+                            sa.Warnings = [];
+                            sa.Warnings.push("Cannot create relationship of this type!");
+                        }
+                    });
+                    this.targetAssets.forEach(ta => {
+                        if (rel.PredicateUid == ta.Predicate.Uid && ta.Uid == rel.ObjectAssetUid) {
+                            ta.Warnings = [];
+                            ta.Warnings.push("Cannot create relationship of this type!");
+                        }
+                    });
+                });
+            });
         });
 
         console.log(relationships);
@@ -427,6 +460,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                     rel1.Intersects = [];
                     rel1.SubjectAssetTypeUid = a.AssetTypeUid;
                     rel1.ObjectAssetTypeUid = transformation.AssetTypeUid;
+                    rel1.PredicateUid = a.Predicate.Uid;
                     rel1.Intersects.push({ SubjectAssetUid: a.Uid, ObjectAssetUid: transformation.Uid, type: 'S->T' });
                     relationships.push(rel1);
                 });
@@ -436,6 +470,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                 var rel2: any = {};
                 rel2.Intersects = [];
                 rel2.ObjectAssetTypeUid = a.AssetTypeUid;
+                rel2.PredicateUid = a.Predicate.Uid;
                 rel2.SubjectAssetTypeUid = transformation.AssetTypeUid;
                 rel2.Intersects.push({ ObjectAssetUid: a.Uid, SubjectAssetUid: transformation.Uid, type: 'T->S' });
                 relationships.push(rel2);
