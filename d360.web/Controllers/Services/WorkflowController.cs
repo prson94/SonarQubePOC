@@ -3103,6 +3103,8 @@ order by wi.StartedOn desc";
                     {
                         if (detail.Settings.MessageSubjectTemplate != null)
                             detail.Settings.MessageSubjectTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageSubjectTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);
+                        else
+                            detail.Settings.MessageSubjectTemplate = string.Empty;
 
                         if (detail.Settings.MessageBodyTemplate != null)
                             detail.Settings.MessageBodyTemplate = await Company.ProcessMessageTokens(detail.Settings.MessageBodyTemplate.Value, eventInfo, Company.CurrentCompanyDomain, itemStep);

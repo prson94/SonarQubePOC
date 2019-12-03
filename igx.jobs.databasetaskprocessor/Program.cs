@@ -520,6 +520,7 @@ from    [queue].[Task] T
                     || string.Compare(obj, "Tag", true) == 0
                     || string.Compare(obj, "FieldType", true) == 0
                     || string.Compare(obj, "ArtifactType", true) == 0
+                    || string.Compare(obj, "IssueType", true) == 0
                     ) return false;
 
             return true;
