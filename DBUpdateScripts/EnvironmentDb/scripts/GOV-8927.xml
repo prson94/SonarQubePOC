@@ -349,7 +349,7 @@ end
 	</rollback>
   </changeSet>
 
- <changeSet author="Pappas" id="GOV-8927-PathProc-B">
+ <changeSet author="Pappas" id="GOV-8927-PathProc-C">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -412,6 +412,7 @@ begin
 					inner join [IntersectDetail] I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
 					inner join p on p.Object = I.Subject and p.ObjectID = I.SubjectID
 			where	A.AssetTypeID = @assetTypeID
+					and p.[Level] <= 25
 		)
 		insert into @hierarchy
 			select ID, [Level], Segments, Segment from p
@@ -794,6 +795,60 @@ begin
 		execute sp_executesql @sql
 	end
 end
+]]>
+	</rollback>
+  </changeSet>
+
+ <changeSet author="Pappas" id="GOV-8927-GetPathSegment">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [graph].[GetPathSegment]
+(
+	@id bigint
+)
+RETURNS nvarchar(2500)
+AS
+BEGIN
+    DECLARE @text nvarchar(2500)
+
+	select		@text =	coalesce(string_agg(O.Segment, '.'),'[ERROR:KEY_FIELDS_NULL]')
+	from		(
+				select		top 100
+							'['+coalesce(FormattedValue,'')+']' as Segment
+				from		Field F
+							inner join FieldType T on T.ID = F.FieldTypeID and T.IsPartOfKey = 1 and F.AssetID = @id
+				order by	T.ColumnOrder				
+				) O
+
+    RETURN @text
+END
+		]]>
+    </sql>
+	<rollback>
+	<![CDATA[	
+CREATE OR ALTER FUNCTION [graph].[GetPathSegment]
+(
+	@id bigint
+)
+RETURNS nvarchar(2500)
+AS
+BEGIN
+    DECLARE @text nvarchar(2500)
+
+	select		@text =	string_agg(O.Segment, '.')
+	from		(
+				select		top 100
+							'['+FormattedValue+']' as Segment
+				from		Field F
+							inner join FieldType T on T.ID = F.FieldTypeID and T.IsPartOfKey = 1 and F.AssetID = @id
+				order by	T.ColumnOrder				
+				) O
+
+    RETURN @text
+END
 ]]>
 	</rollback>
   </changeSet>
