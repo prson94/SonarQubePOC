@@ -323,6 +323,7 @@
     <Compile Include="Controllers\V2\FusionController.cs" />
     <Compile Include="Controllers\V2\ActionsController.cs" />
     <Compile Include="Controllers\V2\BrowserController.cs" />
+    <Compile Include="Controllers\V2\HealthController.cs" />
     <Compile Include="Controllers\V2\LineageController.cs" />
     <Compile Include="Controllers\V2\MembershipController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
