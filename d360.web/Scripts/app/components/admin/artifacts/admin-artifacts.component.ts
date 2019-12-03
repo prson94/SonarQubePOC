@@ -31,7 +31,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     isEditingFieldType = false;
     isAddingFieldType = false;
     artifactTypes: TreeNode[];
-    unfilteredAssetTypes: TreeNode[];
     editorModel: any;
     theDeleteCallback: Function;
     assetTypeClass: AssetTypeClass;
@@ -98,7 +97,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.artifactsService.getArtifactTypeTree(this.assetTypeClass)
             .subscribe(data => {
                 this.artifactTypes = data;  
-                this.unfilteredAssetTypes = data;
                 if (selectionId <= 0) {
                     this.selectedRow = this.artifactTypes[0];
                 } else {                    
@@ -156,7 +154,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
             this.showMessageForResult(this.messagesService, result);
             this.isDeleting = false;
             this.load();
-            this.stateService.reloadLeftNavMenu();
+            this.stateService.reloadLeftNavMenu(); 
         })
     }
 
@@ -168,7 +166,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         window.clearTimeout(this.filterQ);
         this.filterQ = setTimeout(() => {
             this.dt.reset();
-            this.filterTreeTable(this.unfilteredAssetTypes, this.searchValue, this.dt);
+            this.filterTreeTable(this.artifactTypes, this.searchValue, this.dt);
         }, event ? 600 : 0);
     }
 }
