@@ -371,4 +371,5 @@
   <include file="scripts/GOV-8514.xml"/>
   <include file="scripts/GOV-8657.xml"/>
   <include file="scripts/GOV-8949.xml"/>  <!-- reporting schema static views removed from webjob-->
+  <include file="scripts/GOV-8969.xml"/>  <!-- change parent to come from graph tables on artifact list pages, changes to [dbo].[GetDynamicAssets] proc! and [utility].[ArtifactAssetParent] view -->
 </databaseChangeLog>
