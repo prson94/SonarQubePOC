@@ -939,7 +939,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     r.DisplayFormat = model.DisplayFormat;
                     r.Description = model.Description;
                     CompanyContext.Update(r);
-                    
+
+                    assetType.Name = model.Name;
+                    assetType.DisplayFormat = model.DisplayFormat;
+                    assetType.Description = model.Description;
+
                     #endregion
                     break;
                 case AssetTypeClass.FusionAttribute:
