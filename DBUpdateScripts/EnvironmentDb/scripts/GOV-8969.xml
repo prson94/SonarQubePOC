@@ -76,13 +76,13 @@ GO
     </rollback>
   </changeSet>
 
-  <changeSet author="kmcnamee" id="GOV-8969-dynamic-asset">
+  <changeSet author="kmcnamee" id="GOV-8969-dynamic-asset-b">
     <sql dbms="mssql"
           endDelimiter="\nGO"
           splitStatements="true"
           stripComments="true">
       <![CDATA[
-CREATE OR ALTER   procedure [dbo].[GetDynamicAssets]
+CREATE OR ALTER     procedure [dbo].[GetDynamicAssets]
 	@assetTypeId int,
 	@userId int,
 	@filter nvarchar(250),
@@ -390,9 +390,8 @@ begin
 		set		JoinStatement = ' left join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' and FT'+TxtId+'.LookupObjectType = ''IntersectType''' 
 					+ case 
 						when @listableFieldsOnly = 0 or IsListable = 1 then 
-						' left join [Intersect] F'+TxtId+'R with(nolock) on F'+TxtId+'R.IntersectTypeID = FT'+TxtId+'.LookupObjectID and F'+TxtId+'R.Object = A.Object and F'+TxtId+'R.ObjectID = A.ObjectID'
-					   +' left join [Intersect] F'+TxtId+'R_B with(nolock) on F'+TxtId+'R_B.IntersectTypeID = FT'+TxtId+'.LookupObjectID and F'+TxtId+'R_B.Subject = A.Object and F'+TxtId+'R_B.SubjectID = A.ObjectID'
-						+ ' outer apply dbo.GetRelationshipDisplayValue(case when ISNULL(F'+TxtId+'R.Subject, F'+TxtId+'R_B.Subject) = A.Object AND ISNULL(F'+TxtId+'R.SubjectID,F'+TxtId+'R_B.SubjectID) = A.ObjectID THEN ISNULL(F'+TxtId+'R.Object,F'+TxtId+'R_B.Object) ELSE ISNULL(F'+TxtId+'R.Subject,F'+TxtId+'R_B.Subject) END, CASE WHEN ISNULL(F'+TxtId+'R.Subject, F'+TxtId+'R_B.Subject) = A.Object AND ISNULL(F'+TxtId+'R.SubjectID, F'+TxtId+'R_B.SubjectID) = A.ObjectID THEN ISNULL(F'+TxtId+'R.ObjectID,F'+TxtId+'R_B.ObjectID) ELSE ISNULL(F'+TxtId+'R.SubjectID, F'+TxtId+'R_B.SubjectID) END) AS F'+TxtId
+						' left join [Intersect] F'+TxtId+'R with(nolock) on F'+TxtId+'R.IntersectTypeID = FT'+TxtId+'.LookupObjectID and ( (F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID) or (F'+TxtId+'R.Object = A.Object and F'+TxtId+'R.ObjectID = A.ObjectID) )'
+						+ ' outer apply dbo.GetRelationshipDisplayValue(case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.Object else F'+TxtId+'R.Subject end,case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.ObjectID else F'+TxtId+'R.SubjectID end) as F'+TxtId
 					  else ''
 					  end,
 				ColumnStatement = 'F'+TxtId+'.DisplayValue',
@@ -414,7 +413,7 @@ begin
 	end
 	
 	update	#ft
-	set		JoinStatement = 'inner join utility.FieldValue F'+TxtId+' on F'+TxtId+'.FieldTypeID = '+TxtId+' and F'+TxtId+'.AssetID = A.ID',
+	set		JoinStatement = 'left join FieldDetail F'+TxtId+' on F'+TxtId+'.FieldTypeID = '+TxtId+' and F'+TxtId+'.AssetID = A.ID',
 			ColumnStatement = 'F'+TxtId+'.FormattedValue',
 			OrderStatement = case when DataType = 'nvarchar' then 'F'+TxtId+'.FormattedValue' else 'try_cast(F'+TxtId+'.FormattedValue as '+DataType+')' end,
 			FilterStatement =	case 
@@ -718,7 +717,7 @@ end
           splitStatements="true"
           stripComments="true">
         <![CDATA[
-CREATE OR ALTER   procedure [dbo].[GetDynamicAssets]
+CREATE OR ALTER procedure [dbo].[GetDynamicAssets]
 	@assetTypeId int,
 	@userId int,
 	@filter nvarchar(250),
@@ -1026,9 +1025,8 @@ begin
 		set		JoinStatement = ' left join FieldType FT'+TxtId+' with(nolock) on FT'+TxtId+'.ID = '+TxtId+' and FT'+TxtId+'.LookupObjectType = ''IntersectType''' 
 					+ case 
 						when @listableFieldsOnly = 0 or IsListable = 1 then 
-						' left join [Intersect] F'+TxtId+'R with(nolock) on F'+TxtId+'R.IntersectTypeID = FT'+TxtId+'.LookupObjectID and F'+TxtId+'R.Object = A.Object and F'+TxtId+'R.ObjectID = A.ObjectID'
-					   +' left join [Intersect] F'+TxtId+'R_B with(nolock) on F'+TxtId+'R_B.IntersectTypeID = FT'+TxtId+'.LookupObjectID and F'+TxtId+'R_B.Subject = A.Object and F'+TxtId+'R_B.SubjectID = A.ObjectID'
-						+ ' outer apply dbo.GetRelationshipDisplayValue(case when ISNULL(F'+TxtId+'R.Subject, F'+TxtId+'R_B.Subject) = A.Object AND ISNULL(F'+TxtId+'R.SubjectID,F'+TxtId+'R_B.SubjectID) = A.ObjectID THEN ISNULL(F'+TxtId+'R.Object,F'+TxtId+'R_B.Object) ELSE ISNULL(F'+TxtId+'R.Subject,F'+TxtId+'R_B.Subject) END, CASE WHEN ISNULL(F'+TxtId+'R.Subject, F'+TxtId+'R_B.Subject) = A.Object AND ISNULL(F'+TxtId+'R.SubjectID, F'+TxtId+'R_B.SubjectID) = A.ObjectID THEN ISNULL(F'+TxtId+'R.ObjectID,F'+TxtId+'R_B.ObjectID) ELSE ISNULL(F'+TxtId+'R.SubjectID, F'+TxtId+'R_B.SubjectID) END) AS F'+TxtId
+						' left join [Intersect] F'+TxtId+'R with(nolock) on F'+TxtId+'R.IntersectTypeID = FT'+TxtId+'.LookupObjectID and ( (F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID) or (F'+TxtId+'R.Object = A.Object and F'+TxtId+'R.ObjectID = A.ObjectID) )'
+						+ ' outer apply dbo.GetRelationshipDisplayValue(case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.Object else F'+TxtId+'R.Subject end,case when F'+TxtId+'R.Subject = A.Object and F'+TxtId+'R.SubjectID = A.ObjectID then F'+TxtId+'R.ObjectID else F'+TxtId+'R.SubjectID end) as F'+TxtId
 					  else ''
 					  end,
 				ColumnStatement = 'F'+TxtId+'.DisplayValue',
@@ -1050,7 +1048,7 @@ begin
 	end
 	
 	update	#ft
-	set		JoinStatement = 'inner join utility.FieldValue F'+TxtId+' on F'+TxtId+'.FieldTypeID = '+TxtId+' and F'+TxtId+'.AssetID = A.ID',
+	set		JoinStatement = 'left join FieldDetail F'+TxtId+' on F'+TxtId+'.FieldTypeID = '+TxtId+' and F'+TxtId+'.AssetID = A.ID',
 			ColumnStatement = 'F'+TxtId+'.FormattedValue',
 			OrderStatement = case when DataType = 'nvarchar' then 'F'+TxtId+'.FormattedValue' else 'try_cast(F'+TxtId+'.FormattedValue as '+DataType+')' end,
 			FilterStatement =	case 
@@ -1345,8 +1343,7 @@ end as P_CanDelete, '
 	print 'sql [' + @sql + ']'
 
 	exec sp_executesql @sql, @parameters, @assetTypeId = @assetTypeId, @filter = @filter, @userId = @userId, @pageNumber = @pageNumber, @pageSize = @pageSize, @filters = @filters
-end
-]]>
+end]]>
       </sql>
     </rollback>
   </changeSet>
