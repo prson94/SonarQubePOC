@@ -52,7 +52,7 @@
                           [predicateSelectorType]="predicateType"
                           [selected]="targetAssets"
                           [filters]="targetFilters"
-                          [relationshipSide]="0"
+                          [relationshipSide]="1"
                           [resultDisplayStyle]="1"
                           [clearResultsAfterSelection]="false"
                           [multiSelectStyle]="'Button'"
@@ -61,7 +61,7 @@
         </d3s-asset-search>
 
 
-        <div class="err-message" *ngFor="let err of existingRelationshipsError; let i = index">
+        <div class="err-message" *ngFor="let err of relationshipsError; let i = index">
             <i class="warning-icon fa fa-exclamation-triangle"></i>
             <span class="message">{{err.errorMsg}}</span>
             <div class="asset-box" *ngIf="err.subject">

@@ -21,6 +21,8 @@ export class PredicateSelectorComponent implements OnInit {
     @Input() selected: Predicate;
     @Input() assetTypeUid: string;
 
+
+    private noPredicates: boolean = false;
     private predicates: Predicate[] = [];
 
     private isSelectionVisible: boolean = false;
@@ -57,7 +59,14 @@ export class PredicateSelectorComponent implements OnInit {
                 this.predicatesService.getPredicatesByType(this.predicateType)
                     .subscribe(res => {
                         this.predicates = res;
+                        if (this.predicates.length == 0) {
+                            this.noPredicates = true;
+                        }
+                        else {
+                            this.noPredicates = false;
+                        }
                         this.ref.markForCheck();
+
                     });
             }
             else {
@@ -67,14 +76,20 @@ export class PredicateSelectorComponent implements OnInit {
                         result.forEach(rel => {
 
                             if (rel.Predicate.Type == this.predicateType.toString()) {
-                                console.log("here");
-                                console.log(rel);
-                                console.log(this.relationshipSide);
                                 if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Subject && this.assetTypeUid == rel.Subject.Uid)
                                     this.predicates.push(rel.Predicate);
                                 if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Object && this.assetTypeUid == rel.Object.Uid)
                                     this.predicates.push(rel.Predicate);
                             }
+
+                            if (this.predicates.length == 0) {
+                                this.noPredicates = true;
+                            }
+                            else {
+                                this.noPredicates = false;
+                            }
+                            this.ref.markForCheck();
+
                         });
                     });
             }
