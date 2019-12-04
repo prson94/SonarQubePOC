@@ -115,7 +115,8 @@
                         </div>
                     </div>
                     <div class="asset-browser-tab">
-                        <d3s-diagram-relationships 
+                        <d3s-diagram-relationships *ngIf="isAddRelationshipWindowVisible" 
+                                                   [assetBrowserData]="responseModel"
                                                    (refreshDiagram)="refreshButtonClick($event)"
                                                    ></d3s-diagram-relationships>
                     </div>

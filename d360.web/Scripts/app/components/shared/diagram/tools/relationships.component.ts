@@ -34,6 +34,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     @HostBinding('class') class = 'relationship-editor';
 
     @Output() refreshDiagram: EventEmitter<any> = new EventEmitter();
+
+    @Input() assetBrowserData: any;
     private editorType: RelationshipEditorType = RelationshipEditorType.Lineage;
     private sourceAssets: CommonComponentAssetSelection[] = [];
     private targetAssets: CommonComponentAssetSelection[] = [];
@@ -62,7 +64,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     private isSavingAndContinue: boolean = false;
     private afterSaveEvent: Function;
 
-    private existingRelationshipsError: any[] = [];
+    private relationshipsError: any[] = [];
     private areRelationshipsValid = false;
 
     constructor(
@@ -76,8 +78,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.selected.previousValue != changes.selected.currentValue) {
-            this.loadSettings(false);
+        if (this.assetBrowserData) {
+            console.log(this.assetBrowserData);
         }
 
         this.checkSelectionValues();
@@ -107,13 +109,15 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     private loadSettings(switchTargetToSource: boolean) {
         var tempSource = JSON.parse(JSON.stringify(this.targetAssets));
-
+        console.log("loading settings with flag ", switchTargetToSource);
         this.sourceAssets = [];
         this.transformationAsset = [];
         this.targetAssets = [];
 
-        if (tempSource)
+        if (switchTargetToSource == true && tempSource.length > 0) {
+            tempSource.forEach(x => x.Predicate = null);
             this.sourceAssets = tempSource;
+        }
 
         if (this.editorType == RelationshipEditorType.Lineage) {
             this.predicateType = PredicateType.Transformation;
@@ -317,19 +321,24 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             invalidRelationships.forEach(inv => {
                 inv.Intersects.forEach(rel => {
                     this.sourceAssets.forEach(sa => {
-                        if (inv.PredicateUid == sa.Predicate.Uid.toString() && sa.Uid == rel.SubjectAssetUid) {
+                        if (sa.Predicate && inv.PredicateUid == sa.Predicate.Uid.toString() && sa.Uid == rel.SubjectAssetUid) {
                             sa.Warnings = [];
                             sa.Warnings.push("Cannot create relationship of this type!");
                         }
                     });
                     this.targetAssets.forEach(ta => {
-                        if (inv.PredicateUid == ta.Predicate.Uid.toString() && ta.Uid == rel.ObjectAssetUid) {
+
+                        if (ta.Predicate && inv.PredicateUid == ta.Predicate.Uid.toString() && ta.Uid == rel.ObjectAssetUid) {
                             ta.Warnings = [];
                             ta.Warnings.push("Cannot create relationship of this type!");
                         }
                     });
                 });
             });
+
+            if (invalidRelationships.length == 0) {
+                this.areRelationshipsValid = true;
+            }
         });
 
     }
@@ -354,7 +363,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             });
 
             relationships.forEach(rel => {
-                var intersectType = eligibleRelationships.find(x => x.Object.Uid == rel.ObjectAssetTypeUid && x.Subject.Uid == rel.SubjectAssetTypeUid);
+                var intersectType = eligibleRelationships.find(x => x.Predicate.Uid == rel.PredicateUid && x.Object.Uid == rel.ObjectAssetTypeUid && x.Subject.Uid == rel.SubjectAssetTypeUid);
                 rel.IntersectTypeUid = intersectType ? intersectType.Uid : null;
             });
 
@@ -374,7 +383,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                     }
                     var subject = this.getAssetFromSelection(fail.Intersects[0].SubjectAssetUid);
                     var object = this.getAssetFromSelection(fail.Intersects[0].ObjectAssetUid);
-                    this.existingRelationshipsError.push({ errorMsg, subject, subjectTitle, object, objectTitle });
+                    this.relationshipsError.push({ errorMsg, subject, subjectTitle, object, objectTitle });
                 });
             }
         });
@@ -394,17 +403,15 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     private processResults(results: any[]): boolean {
         let rollback: boolean = false;
-        this.existingRelationshipsError = [];
+        this.relationshipsError = [];
         results.forEach(res => {
             var data = res.obj;
             var result: any[] = res.response;
             result.forEach((r, idx) => {
-                if (r.IsNew == false || r.Success == false) {
-                    var errorMsg = 'This lineage relationship cannot be created, as it already exists:';
-                    if (r.Success == false) {
-                        errorMsg = 'An error occurred when creating a relationship';
-                        rollback = true;
-                    }
+                if (r.Success == false) {
+
+                    var errorMsg = 'An error occurred when creating a relationship';
+                    rollback = true;
 
                     var subjectTitle = 'Source Asset:';
                     var objectTitle = 'Transformation:';
@@ -414,7 +421,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                     }
                     var subject = this.getAssetFromSelection(data.model[idx].SubjectAssetUid);
                     var object = this.getAssetFromSelection(data.model[idx].ObjectAssetUid);
-                    this.existingRelationshipsError.push({ errorMsg, subject, subjectTitle, object, objectTitle });
+                    this.relationshipsError.push({ errorMsg, subject, subjectTitle, object, objectTitle });
                 }
 
             });
