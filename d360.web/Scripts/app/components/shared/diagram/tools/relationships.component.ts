@@ -275,8 +275,6 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     private validateRelationships() {
-        console.log("Validating relationships");
-
         this.sourceAssets.forEach(x => {
             x.Warnings = [];
             if (!x.Predicate) {
@@ -319,13 +317,13 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             invalidRelationships.forEach(inv => {
                 inv.Intersects.forEach(rel => {
                     this.sourceAssets.forEach(sa => {
-                        if (rel.PredicateUid == sa.Predicate.Uid && sa.Uid == rel.SubjectAssetUid) {
+                        if (inv.PredicateUid == sa.Predicate.Uid.toString() && sa.Uid == rel.SubjectAssetUid) {
                             sa.Warnings = [];
                             sa.Warnings.push("Cannot create relationship of this type!");
                         }
                     });
                     this.targetAssets.forEach(ta => {
-                        if (rel.PredicateUid == ta.Predicate.Uid && ta.Uid == rel.ObjectAssetUid) {
+                        if (inv.PredicateUid == ta.Predicate.Uid.toString() && ta.Uid == rel.ObjectAssetUid) {
                             ta.Warnings = [];
                             ta.Warnings.push("Cannot create relationship of this type!");
                         }
@@ -334,7 +332,6 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             });
         });
 
-        console.log(relationships);
     }
 
     private executeSave() {
@@ -460,7 +457,9 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                     rel1.Intersects = [];
                     rel1.SubjectAssetTypeUid = a.AssetTypeUid;
                     rel1.ObjectAssetTypeUid = transformation.AssetTypeUid;
-                    rel1.PredicateUid = a.Predicate.Uid;
+                    if (a.Predicate)
+                        rel1.PredicateUid = a.Predicate.Uid;
+                    else rel1.PredicateUid = '';
                     rel1.Intersects.push({ SubjectAssetUid: a.Uid, ObjectAssetUid: transformation.Uid, type: 'S->T' });
                     relationships.push(rel1);
                 });
@@ -470,14 +469,15 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                 var rel2: any = {};
                 rel2.Intersects = [];
                 rel2.ObjectAssetTypeUid = a.AssetTypeUid;
-                rel2.PredicateUid = a.Predicate.Uid;
+                if (a.Predicate)
+                    rel2.PredicateUid = a.Predicate.Uid;
+                else rel2.PredicateUid = '';
                 rel2.SubjectAssetTypeUid = transformation.AssetTypeUid;
                 rel2.Intersects.push({ ObjectAssetUid: a.Uid, SubjectAssetUid: transformation.Uid, type: 'T->S' });
                 relationships.push(rel2);
             });
 
         }
-
         return relationships;
     }
 
