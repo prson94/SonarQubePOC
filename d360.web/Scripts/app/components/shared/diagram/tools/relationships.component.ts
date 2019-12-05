@@ -66,6 +66,9 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     private relationshipsError: any[] = [];
     private areRelationshipsValid = false;
+    private areAllItemsSelected = false;
+
+    private noAssetOnDiagram: boolean = false;
 
     constructor(
         private relationshipService: RelationshipsService,
@@ -78,16 +81,11 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        if (this.assetBrowserData) {
-            console.log(this.assetBrowserData);
-        }
-
         this.checkSelectionValues();
     }
 
     private checkSelectionValues() {
         if (this.transformationAsset.length > 0) {
-
             this.relationshipService.getRelationshipsByAssetTypeUid(this.transformationAsset[0].AssetTypeUid)
                 .subscribe(res => {
                     this.targetAllowedPredicates = [];
@@ -104,12 +102,35 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         if (this.sourceAssets.length > 0) {
             this.isTransformationDisabled = false;
         }
+        this.noAssetOnDiagram = false;
+        this.areAllItemsSelected = false;
 
+        if (this.sourceAssets.length > 0 && this.transformationAsset.length > 0 && this.targetAssets.length) {
+            this.areAllItemsSelected = true;
+            var doesSourceContains = false;
+            var doesTargetContains = false;
+
+            this.assetBrowserData.assets.forEach(type => {
+                type.items.forEach(asset => {
+                    this.sourceAssets.forEach(sa => {
+                        if (sa.Uid == asset.assetUid)
+                            doesSourceContains = true;
+                    });
+                    this.targetAssets.forEach(sa => {
+                        if (sa.Uid == asset.assetUid)
+                            doesTargetContains = true;
+                    });
+                });
+            });
+            if (!doesSourceContains && !doesTargetContains) {
+                this.noAssetOnDiagram = true;
+            }
+        }
     }
 
     private loadSettings(switchTargetToSource: boolean) {
         var tempSource = JSON.parse(JSON.stringify(this.targetAssets));
-        console.log("loading settings with flag ", switchTargetToSource);
+
         this.sourceAssets = [];
         this.transformationAsset = [];
         this.targetAssets = [];
@@ -279,6 +300,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     private validateRelationships() {
+        this.areRelationshipsValid = false;
         this.sourceAssets.forEach(x => {
             x.Warnings = [];
             if (!x.Predicate) {

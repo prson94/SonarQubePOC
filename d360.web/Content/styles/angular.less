@@ -5225,6 +5225,23 @@ a.mid-blue {
     }
 
     .relationship-editor {
+        max-width: 380px;
+
+        .asset-browser-window-header {
+            height: 74px;
+        }
+
+        .asset-browser-window-content {
+            top: 84px;
+            padding: 16px;
+            padding-top: 0px;
+        }
+
+        span.title {
+            margin-top: 15px!important;
+            font-weight: bold;
+        }
+
         .asset-browser-window-header {
             height: 85px;
 
@@ -5238,10 +5255,10 @@ a.mid-blue {
                     border: none;
                     border-bottom: 4px rgba(255,255,255,0);
                     color: #006fc0;
-                    padding: 4px 12px;
+                    padding: 5px 20px;
 
                     &.selected, &:hover {
-                        border-bottom: 4px solid #006fc0;
+                        border-bottom: 3px solid #006fc0;
                     }
                 }
             }
@@ -5268,6 +5285,10 @@ a.mid-blue {
                     }
                 }
             }
+        }
+
+        .info-message {
+            margin-top: 15px;
         }
 
         .warningMessage {
@@ -5763,5 +5784,23 @@ a.mid-blue {
         padding: 20px 20px 0px 20px !important;
         min-height: 20px !important;
         margin: auto !important;
+    }
+}
+
+
+.info-message {
+    background-color: rgb(223,243,247);
+    border: 1px solid rgb(112,192,203);
+    border-radius: 4px;
+    padding: 8px;
+    padding-left: 30px;
+    font-size: 14px;
+    line-height: 16px;
+    position: relative;
+
+    .fa-info-circle {
+        position: absolute;
+        top: 10px;
+        left: 10px;
     }
 }

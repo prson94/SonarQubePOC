@@ -41,10 +41,11 @@
                                   [filters]="transformationFilters"
                                   (selectedChange)="onAssetSearchSelection($event)">
                 </d3s-asset-search>
+                <div class="flex-grow"></div>
                 <button type="button" title="Add Transformation" (click)="isAddTransformationVisible = true"><i class="fa fa-plus"></i></button>
             </div>
         </ng-container>
-      
+
         <span class="title">Target Assets</span>
         <d3s-asset-search [multiSelect]="true"
                           [isDisabled]="isTargetDisabled"
@@ -59,6 +60,7 @@
                           [multiSelectButtonLabel]="'Add target'"
                           (selectedChange)="onAssetSearchSelection($event)">
         </d3s-asset-search>
+
 
 
         <div class="err-message" *ngFor="let err of relationshipsError; let i = index">
@@ -93,6 +95,16 @@
                 </span>
             </div>
         </div>
+
+        <div *ngIf="!areRelationshipsValid && areAllItemsSelected" class="err-message">
+            <i class="warning-icon fa fa-exclamation-triangle"></i>
+            <span class="message">Relationships are not resolved, please check your asset selection for warnings</span>
+        </div>
+        <div class="info-message" *ngIf="noAssetOnDiagram">
+            <i class="fa fa-info-circle"></i>
+            Please note that, as neither the source nor target assets are currently displayed in the diagram, creating this realtionship will not have any effect on the current diagram.
+        </div>
+
         <div class="actions">
             <button *ngIf="!isSaving" (click)="save()" [disabled]="!IsValid" class="button">Apply</button>
             <button class="button" *ngIf="isSaving"><i style="padding:0px;" class="fa fa-spinner fa-spin ng-star-inserted"></i></button>
