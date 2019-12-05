@@ -502,8 +502,10 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 		                IntersectTypeID int,
 		                [Subject] varchar(50),
 		                SubjectID int,
+                        SubjectAssetTypeID int,
 		                [Object] varchar(50),
 		                ObjectID int,
+                        ObjectAssetTypeID int,
                         SwitchObject bit
 	                )
                     ;with R
@@ -511,14 +513,17 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                             select  distinct 
                                     A.[Object],
                                     A.ObjectID,
+                                    OT.ID as ObjectAssetTypeID,
                                     FT.LookupObjectId as IntersectTypeID,
                                     S.[Object] as [Subject],
                                     S.ObjectID as SubjectID,
+                                    S.AssetTypeID as SubjectAssetTypeID,
                                     case 
                                     when S.[Type] = IT.[Object] AND S.TypeID = IT.ObjectID then 1
                                     else 0
                                     end as switchObject
                             from    {tableName} A
+                                    inner join AssetType OT on OT.Object = A.ObjectType and OT.ObjectID = A.ObjectTypeID
                                     inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
                                         and F.ItemNumber = A.ItemNumber 
                                         and A.ObjectID is not null 
@@ -532,14 +537,16 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                                 AD.[Object], 
 												AD.ObjectID, 
 												AD.[Type], 
-												AD.TypeID 
+												AD.TypeID,
+                                                AD.AssetTypeID
 										from	AssetDetail AD 
 										union all
 										select	T.[Name] as DisplayValue,
                                                 T.[Object],
 												T.ObjectID,
 												T.[Object] as [Type],
-												0 as TypeID 
+												0 as TypeID,
+                                                T.ID as AssetTypeID
 										from	AssetType T
 										where	T.[Object] = 'ReferenceItemType'
 									) S on {assetJoin}
@@ -550,10 +557,14 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                     and (F.Ignore = 0 or F.Ignore is null)
                                     and FT.Type = 'Relationship'
                             )
-                            insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID, SwitchObject)
+                            insert into #Relationships (ID, IntersectTypeID, SubjectAssetTypeID, Subject, SubjectId, ObjectAssetTypeID, Object, ObjectID, SwitchObject)
                             select
                                 null as ID,
 			                    IntersectTypeId, 
+			                    CASE 
+				                    when switchObject = 0 then SubjectAssetTypeID
+				                    else ObjectAssetTypeID
+			                    END AS SubjectAssetTypeID, 
 			                    CASE 
 				                    when switchObject = 0 then Subject
 				                    else Object
@@ -562,6 +573,10 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 				                    when switchObject = 0 then SubjectId
 				                    else ObjectID
 			                    END AS SubjectId,
+			                    CASE 
+				                    when switchObject = 0 then ObjectAssetTypeID
+				                    else SubjectAssetTypeID
+			                    END AS ObjectAssetTypeID, 
 			                    CASE 
 				                    when switchObject = 0 then Object
 				                    else Subject
@@ -621,17 +636,16 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                     R.Object,
                                     R.ObjectID
                                 from    #Relationships R
-							    left join AssetDetail ADO on ADO.Object = R.Object and ADO.ObjectID = R.ObjectID
-							    left join AssetDetail ADS on ADS.Object = R.Subject and ADS.ObjectID = R.SubjectID
-							    left join AssetType ATO on ATO.Object = R.Object and ATO.ObjectID = R.ObjectID
-							    left join AssetType ATS on ATS.Object = R.Subject and ATS.ObjectID = R.SubjectID
 							    inner join [IntersectType] IT on IT.ID = IntersectTypeID
+                                inner join AssetType ST on ST.ID = R.SubjectAssetTypeID
+                                inner join AssetType OT on OT.ID = R.ObjectAssetTYpeID
                                 where  R.ID is null 
-                                        and ISNULL(ADO.Type, ATO.Object) = IT.Object 
-                                        and ISNULL(ADS.Type, ATS.Object) = IT.Subject;;
+                                       and OT.Object = IT.Object 
+                                       and ST.Object = IT.Subject;      
                 end
 ",
             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
         }
 
         private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
