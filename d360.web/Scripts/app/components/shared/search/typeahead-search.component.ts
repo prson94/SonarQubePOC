@@ -68,6 +68,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     navigateToTag(tag: any, event:any, ac:any) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl("TAG", tag.Uid));
         this.removeFocus(ac);
+        ac.hide();
         event.stopPropagation();
     }
 
