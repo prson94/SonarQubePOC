@@ -41,7 +41,7 @@ namespace d360.model.DataAccessLayer
         {
             return AssetTypeClass.BusinessAsset.GetAsList();
         }
-        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams,AssetTypeClass? Class, Guid? fusionTypeUid)
+        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams,AssetTypeClass? Class, Guid? fusionTypeUid,Guid? assetTypeUid)
         {
             var dbArgs = new DynamicParameters();
             string condition = string.Empty;
@@ -146,6 +146,11 @@ namespace d360.model.DataAccessLayer
 
             }
 
+            if(assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
+            {
+                condition += " and A.uid=@assetTypeUid ";
+                dbArgs.Add("assetTypeUid", assetTypeUid.Value);
+            }
           
             var sql = $@"
                         SELECT     A.[Name]
@@ -934,7 +939,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     r.DisplayFormat = model.DisplayFormat;
                     r.Description = model.Description;
                     CompanyContext.Update(r);
-                    
+
+                    assetType.Name = model.Name;
+                    assetType.DisplayFormat = model.DisplayFormat;
+                    assetType.Description = model.Description;
+
                     #endregion
                     break;
                 case AssetTypeClass.FusionAttribute:

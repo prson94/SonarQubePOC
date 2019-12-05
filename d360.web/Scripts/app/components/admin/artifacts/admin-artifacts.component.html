@@ -5,11 +5,14 @@
                 {{tabTitle}}
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add(0)"></d3s-tile-actions>
             </header>
+            <input type="text"
+                   pInputText
+                   [(ngModel)]="searchValue"
+                   (keyup)="filter($event)"
+                   placeholder="Search"
+                   style="width: 100%;margin-bottom:10px;">
 
-            <p-treeTable #dt [value]="artifactTypes" #assetTypeTree selectionMode="single" [(selection)]="selectedRow" [globalFilterFields]="filterFields" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3" >
-                <ng-template pTemplate="caption">
-                    <input type="text" pInputText (input)="assetTypeTree.filterGlobal($event.target.value, 'contains')" placeholder="Search..." style="width: 100%;margin-bottom:10px;margin-right:0px;margin-left:0px">
-                </ng-template>
+            <p-treeTable #dt [value]="artifactTypes" #assetTypeTree selectionMode="single" filterMode="strict" [(selection)]="selectedRow" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3">
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 60%">Name</th>
@@ -50,6 +53,13 @@
                 <ng-template pTemplate="summary">
                     <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
                                           [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+                <ng-template pTemplate="emptymessage" let-columns>
+                    <tr>
+                        <td colspan="5">
+                            No asset types found.
+                        </td>
+                    </tr>
                 </ng-template>
             </p-treeTable>
         </div>
