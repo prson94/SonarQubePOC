@@ -401,7 +401,7 @@ export class BaseComponent {
     }
 
     public filterTreeTable(originalArray: TreeNode[], search: string, tree: any) {
-        var arrDeepCopy = JSON.parse(JSON.stringify(originalArray));
+        var arrDeepCopy = originalArray.map(x => Object.assign({}, x));
         if (search.length == 0) {
             tree.value = arrDeepCopy;
             return;
@@ -442,7 +442,7 @@ export class BaseComponent {
         if (node.children && node.children.length > 0) return true;
 
         nodeProps.forEach(prop => {
-            if (prop.toLowerCase().indexOf("value") != -1 || prop.toLowerCase().indexOf("field") != -1) {
+            if (prop.toLowerCase().indexOf("name") != -1 || prop.toLowerCase().indexOf("value") != -1 || prop.toLowerCase().indexOf("field") != -1) {
                 if (node.data[prop] && node.data[prop].toString().toLowerCase().indexOf(q.toLowerCase()) != -1) hasValue = true;
             }
         });

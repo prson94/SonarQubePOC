@@ -48,7 +48,6 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     selectedLevel: number = 0;
 
     @ViewChild("treeTable", {static:false}) treeTable: any;
-    unfilteredTreeNode: TreeNode[] = [];
 
     constructor(
         private headerActionsService: HeaderActionsService,
@@ -81,7 +80,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         }
         window.clearTimeout(this.filterQ);
         this.filterQ = setTimeout(() => {
-            this.filterTreeTable(this.unfilteredTreeNode, this.searchValue, this.treeTable);
+            this.filterTreeTable(this.treeNodeArray, this.searchValue, this.treeTable);
         }, event ? 600 : 0);
     }
 
@@ -153,7 +152,6 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                 this.modelHierarchy = result;
 
                 this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy, 1);
-                this.unfilteredTreeNode = JSON.parse(JSON.stringify(this.treeNodeArray));
 
                 this.filter(null);
                 this.isLoading = false;
@@ -227,7 +225,6 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         this.deleteSelectedTreeNode(this.selected.data.ID);
         this.modelHierarchy = this.modelHierarchy.filter(x => x.ID != this.selected.data.ID);
         this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy, 1);
-        this.unfilteredTreeNode = JSON.parse(JSON.stringify(this.treeNodeArray));
 
         this.selected = null;
         this.showDelete = false;

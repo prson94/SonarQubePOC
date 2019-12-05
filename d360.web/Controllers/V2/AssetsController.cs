@@ -97,6 +97,7 @@ namespace d360.web.Controllers.V2
         /// GET a list of asset types.
         /// </summary>
         /// <param name="Class">Allows for filtering the Asset type's by Class.</param>
+        /// <param name="assetTypeUid">Filter by Asset type UID.</param>
         /// <param name="FusionTypeUID">Filter by Fusion type UID. Only applicable for FusionQuery and FusionAttribute classes.</param>
         /// <returns></returns>
         [
@@ -107,10 +108,11 @@ namespace d360.web.Controllers.V2
              SwaggerParameter("Hierarchical", "Filter by Hierarchical", DataType = "boolean", ParameterType = "query", Required = false),
              SwaggerParameter("AutoDisplayDescription", "Filter by Auto Display Description", DataType = "boolean", ParameterType = "query", Required = false),
              SwaggerParameter("CanOwnFusion", "Filter by Can Own Fusion", DataType = "boolean", ParameterType = "query", Required = false),
+             SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null, string FusionTypeUID = null)
+        public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null,string FusionTypeUID = null, Guid? assetTypeUid=null)
         {
             var prefix = "Assets.GetAssetTypesAsync => ";
             var errorMessage = "";
@@ -130,9 +132,15 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                if(assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
+                {
+                    var assetType = this.AssetRepository.GetAssetTypeByUID(assetTypeUid.Value);
+                    if(assetType == null)
+                        if (assetType == null) return ReturnApiError(HttpStatusCode.BadRequest, AssetTypeErrors.NotFoundGeneric);
+                }
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                var assetTypes = await AssetRepository.GetAssetType(queryParams,Class, fusionTypeGuid);
+                var assetTypes = await AssetRepository.GetAssetType(queryParams,Class, fusionTypeGuid,assetTypeUid);
 
                 return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
             }

@@ -41,7 +41,7 @@ namespace d360.model.DataAccessLayer
         {
             return AssetTypeClass.BusinessAsset.GetAsList();
         }
-        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams,AssetTypeClass? Class, Guid? fusionTypeUid)
+        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams,AssetTypeClass? Class, Guid? fusionTypeUid,Guid? assetTypeUid)
         {
             var dbArgs = new DynamicParameters();
             string condition = string.Empty;
@@ -146,6 +146,11 @@ namespace d360.model.DataAccessLayer
 
             }
 
+            if(assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
+            {
+                condition += " and A.uid=@assetTypeUid ";
+                dbArgs.Add("assetTypeUid", assetTypeUid.Value);
+            }
           
             var sql = $@"
                         SELECT     A.[Name]
@@ -389,8 +394,8 @@ namespace d360.model.DataAccessLayer
                     A.UpdatedOn,
                     A.CreatedOn,
                     A.Code,
-                    Node.Path,
-                    Node.Segments
+                    Node.Path --,
+                    --Node.Segments --GOV-8967 - temporarily remove segments property due to analyze issue
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
                     {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
@@ -417,31 +422,32 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            foreach (var result in results)
-            {
-                try
-                {
-                    var xmlString = result.Segments;
-                    if (xmlString != null)
-                    {
-                        List<AssetsByPathItemSegmentApiViewModel> segments = new List<AssetsByPathItemSegmentApiViewModel>();
-                        var xml = XDocument.Parse(xmlString as string);
-                        foreach (var segment in xml.Descendants("segment"))
-                        {
-                            segments.Add(new AssetsByPathItemSegmentApiViewModel()
-                            {
-                                Value = segment.Value
-                            });
-                        }
+            //GOV-8967 - temporarily remove segments property due to analyze issue
+            //foreach (var result in results)
+            //{
+            //    try
+            //    {
+            //        var xmlString = result.Segments;
+            //        if (xmlString != null)
+            //        {
+            //            List<AssetsByPathItemSegmentApiViewModel> segments = new List<AssetsByPathItemSegmentApiViewModel>();
+            //            var xml = XDocument.Parse(xmlString as string);
+            //            foreach (var segment in xml.Descendants("segment"))
+            //            {
+            //                segments.Add(new AssetsByPathItemSegmentApiViewModel()
+            //                {
+            //                    Value = segment.Value
+            //                });
+            //            }
 
-                        result.Segments = segments;
-                    }
-                }
-                catch
-                {
-                    result.Segments = null;
-                }
-            }
+            //            result.Segments = segments;
+            //        }
+            //    }
+            //    catch
+            //    {
+            //        result.Segments = null;
+            //    }
+            //}
 
             model.items = results;
             model.total = count;
@@ -934,7 +940,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     r.DisplayFormat = model.DisplayFormat;
                     r.Description = model.Description;
                     CompanyContext.Update(r);
-                    
+
+                    assetType.Name = model.Name;
+                    assetType.DisplayFormat = model.DisplayFormat;
+                    assetType.Description = model.Description;
+
                     #endregion
                     break;
                 case AssetTypeClass.FusionAttribute:
