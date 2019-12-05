@@ -31,16 +31,17 @@ namespace igx.jobs.responsibilityruleprocessor
     public static class ResponsibilityRuleProcessor
     {
         const string functionName = "ResponsibilityRules_ProcessScheduled";
-#if DEBUG
-        const string timerSettings = "*/2 * * * * *";
-#else
         const string timerSettings = "0 */3 * * * *";
-#endif
-        public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log) //   
+
+        public static async Task Run([TimerTrigger(timerSettings, RunOnStartup = true)]TimerInfo myTimer, TextWriter log) //   
         {
             try
             {
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
+
+#if DEBUG
+                companies = companies.Where(i => i.CompanyID == 166).ToList();
+#endif
 
                 foreach (var c in companies)
                 {
