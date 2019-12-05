@@ -65,6 +65,12 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
         this.searchText = event.srcElement.value;
     }
 
+    navigateToTag(tag: any, event:any, ac:any) {
+        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl("TAG", tag.Uid));
+        this.removeFocus(ac);
+        event.stopPropagation();
+    }
+
     search(event) {
         this.searchText = event.query;
         let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
