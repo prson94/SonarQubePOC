@@ -1089,8 +1089,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (parts.count == 1) {
                     let data = parts.first().data;
 
-
-                    if (data.assetUid != null) { //selected item is an asset
+                    if (data.assetUid != null && data.assetUid != '00000000-0000-0000-0000-000000000000') { //selected item is an asset
                         this.isInfoTabDisabled = false;
                         if (this.isInfoWindowVisible) {
                             if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != data.assetUid) {
@@ -1480,9 +1479,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenuShowDetails }),
                 {
                     click: (e, obj) => {
-                        this.isFilterWindowVisible = false;
-                        this.isInfoWindowVisible = true;
-                        this.showDetails(obj.part.data.assetUid);
+                        if (obj.part.data.assetUid != null && obj.part.data.assetUid != '00000000-0000-0000-0000-000000000000') {
+                            this.isFilterWindowVisible = false;
+                            this.isInfoWindowVisible = true;
+                            this.showDetails(obj.part.data.assetUid);
+                        }
                     }
                 }
             ),
@@ -1762,7 +1763,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 go.Panel,
                 "Horizontal",
                 { stretch: go.GraphObject.Horizontal, padding: 5 },
-                new go.Binding("background", "isHighlighted", function (h) { return h ? this.selectionPathHighlightColor : this.leafBackColor; }).ofObject(),
+                new go.Binding("background", "isHighlighted", (h) => (h ? this.selectionPathHighlightColor : this.leafBackColor)).ofObject(),
                 this.g(
                     go.Shape,
                     { width: 10, height: 0, stroke: "transparent" }
@@ -1875,7 +1876,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         height: 25
                     },
                     new go.Binding("fill", "back"),
-                    new go.Binding("stroke", "back", function (v) { return go.Brush.mix(v, this.lightenBoxColor, .15); })
+                    new go.Binding("stroke", "back", (v) => go.Brush.mix(v, this.lightenBoxColor, .15))
                 ),
                 this.g(
                     go.TextBlock,
@@ -1907,9 +1908,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("strokeWidth", "hasProperties", function (h) {
                     return h ? 3 : 2;
                 }),
-                new go.Binding("stroke", "hasProperties", function (h) {
-                    return h ? "black" : this.linkBackColor
-                })), // the link shape
+                new go.Binding("stroke", "hasProperties", (h) => (h ? "black" : this.linkBackColor))
+            ), // the link shape
             this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
             this.g(go.Panel, "Auto", 
                 this.g(
