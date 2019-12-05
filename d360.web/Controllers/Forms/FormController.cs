@@ -81,7 +81,7 @@ namespace d360.web.Controllers
                     ID = assetType.ID,
                     IconBackColor = backColor,
                     IconForeColor = foreColor,
-                    IconText = getIconText(objectName)
+                    IconText = Company.GetIconText(objectName)
                 };
                 Company.Add(style);
             }
@@ -89,58 +89,9 @@ namespace d360.web.Controllers
             {
                 style.IconBackColor = backColor;
                 style.IconForeColor = foreColor;
-                style.IconText = getIconText(objectName);
+                style.IconText = Company.GetIconText(objectName);
                 Company.Update(style);
             }
-        }
-
-        /// <summary>
-        /// Generates the icon text shown on icons that represent the Asset 
-        /// </summary>
-        /// <param name="assetName"></param>
-        /// <returns></returns>
-        private string getIconText(string assetName)
-        {
-            string iconText = "Tx";
-            if (string.IsNullOrEmpty(assetName))
-            {
-                return iconText;
-            }
-
-            var name = assetName.Trim();
-            
-            var words = name.Split(' ');
-            if (words.Length > 1 && words[1].Length > 0)
-            {
-                if (!string.IsNullOrEmpty(words[0]))
-                {
-                    iconText = words[0][0].ToString().ToUpper();
-                }
-                else
-                {
-                    iconText = "_"; // first character is space.
-                }
-                
-                if (!string.IsNullOrEmpty(words[1]))
-                {
-
-                    iconText += words[1][0].ToString().ToLower();
-                }
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(name))
-                {
-                    iconText = name[0].ToString().ToUpper();
-                    if (name.Length > 1)
-                    {
-                        iconText += name[1].ToString().ToLower();
-                    }
-                }
-            }
-
-            return iconText;
-
         }
 
         void upsertAssetStyle(SystemObjects type, int id, string foreColor, string backColor, string objectName = "Tx")

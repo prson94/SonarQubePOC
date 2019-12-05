@@ -1225,17 +1225,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
             bool add = (style == null);
 
-            string iconText;
-
-            var words = objectName.Trim().Split(' ');
-            if (words.Length > 1 && words[1].Length > 0)
-            {
-                iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
-            }
-            else
-            {
-                iconText = objectName[0].ToString().ToUpper() + objectName[1].ToString().ToLower();
-            }
+            string iconText = CompanyContext.GetIconText(objectName);
 
             if (add)
             {
