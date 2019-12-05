@@ -35,7 +35,7 @@
                             </div>
                             <div class="card-row tags-row">
                                 <span *ngIf="result?.Tags" class="tag-list-container">
-                                    <button *ngFor="let tag of result?.Tags" class="button search-tag">
+                                    <button *ngFor="let tag of result?.Tags" class="button search-tag" (click)="navigateToTag(tag, $event, ac)">
                                         <span class="tag-item-wrapper" [innerHtml]="tag.Value"></span>
                                     </button>
                                 </span>
