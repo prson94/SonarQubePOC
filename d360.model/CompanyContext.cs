@@ -3363,5 +3363,54 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             WHERE A.ID = @assetId order by S.EffectiveDate desc";
             return Query<int?>(sql, new { assetId }).FirstOrDefault();
         }
+
+        /// <summary>
+        /// Generates the icon text shown on icons that represent the Asset 
+        /// </summary>
+        /// <param name="assetName"></param>
+        /// <returns></returns>
+        public string GetIconText(string assetName)
+        {
+            string iconText = "Tx";
+            if (string.IsNullOrEmpty(assetName))
+            {
+                return iconText;
+            }
+
+            var name = assetName.Trim();
+
+            var words = name.Split(' ');
+            if (words.Length > 1 && words[1].Length > 0)
+            {
+                if (!string.IsNullOrEmpty(words[0]))
+                {
+                    iconText = words[0][0].ToString().ToUpper();
+                }
+                else
+                {
+                    iconText = "_"; // first character is space.
+                }
+
+                if (!string.IsNullOrEmpty(words[1]))
+                {
+
+                    iconText += words[1][0].ToString().ToLower();
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(name))
+                {
+                    iconText = name[0].ToString().ToUpper();
+                    if (name.Length > 1)
+                    {
+                        iconText += name[1].ToString().ToLower();
+                    }
+                }
+            }
+
+            return iconText;
+
+        }
     }
 }
