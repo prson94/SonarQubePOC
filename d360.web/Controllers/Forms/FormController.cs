@@ -28,6 +28,7 @@ using System.Configuration;
 using d360.core.helpers;
 using System.Text;
 using d360.core.resources;
+using Newtonsoft.Json;
 
 namespace d360.web.Controllers
 {    
@@ -1828,10 +1829,15 @@ order by Sort, title";
         }
 
         [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddLoad")]
-        public JsonResult AddLoad(LoadFilePostModel model)
+        public JsonResult AddLoad()
         {
             try
             {
+                Stream inputStream = Request.InputStream;
+                string postJson = new StreamReader(inputStream).ReadToEnd();
+                LoadFilePostModel model = JsonConvert.DeserializeObject<LoadFilePostModel>(postJson);
+
+
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
