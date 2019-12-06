@@ -105,7 +105,7 @@ where   A.RuleImplementationID = @id";
         [Route("ExportResultsByRule"), FileDownload, NonNullableParameters]
         public FileResult ExportQueryItemsByAttributeType(int id)
         {
-            string sql = @"select R.DisplayValue as SheetName,
+            string sql = @"select D.DisplayValue as SheetName,
 	                              RR.RunDate,
 	                              RR.EffectiveDate,
 	                              RR.PassFraction,
@@ -118,6 +118,7 @@ where   A.RuleImplementationID = @id";
 	                           left join FusionAttribute FA on FA.Id = RRFA.FusionAttributeID
 	                           inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID 
 	                           inner join [Rule] R on R.ID = RI.RuleID
+                               inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = R.ID
  	                           where RuleImplementationID = @ruleImplementationID
 	                           order by RR.EffectiveDate desc";
 
