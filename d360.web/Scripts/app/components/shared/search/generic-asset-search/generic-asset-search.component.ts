@@ -63,7 +63,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
     private isFullPathVisible: boolean = false;
 
-    private readonly pageSize: number = 6;
+    private readonly pageSize: number = 10;
     private pageNum: number = 1;
     private numberOfPages: number = 1;
 
@@ -106,14 +106,13 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     onclick(ev: MouseEvent) {
         var target = <HTMLElement>ev.target;
         // if clicked outside of the component
-        if (!this.eRef.nativeElement.contains(target)) {
+        if (!this.eRef.nativeElement.contains(target) && this.isSearchWindowOpened) {
             this.closeSearch();
         }
     }
 
 
     ngOnInit() {
-        this.prePopulate();
         if (this.resultDisplayStyle == CommonComponentDisplayStyle.AbbreviatedPath
             || this.resultDisplayStyle == CommonComponentDisplayStyle.Name) {
             this.isFullPathVisible = false;
@@ -126,6 +125,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
+
         if (changes.prepopulatedResults && changes.prepopulatedResults.previousValue != changes.prepopulatedResults.currentValue) {
             this.prePopulate();
         }
@@ -134,6 +134,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
             clearTimeout(this.resolveAssetTimeout);
             this.resolveAssetTimeout = setTimeout(() => this.resolveAssetSegments(), 50);
         }
+
 
     }
     private resolveAssetTimeout = null;
@@ -168,13 +169,44 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     }
 
     private prePopulate() {
-        if (this.prepopulatedResults) {
+        if (this.prepopulatedResults && this.prepopulatedResults.length > 0) {
             this.searchresults = [];
             this.prepopulatedResults.forEach(pr => {
                 this.searchresults.push({ AssetTypeUid: pr.AssetTypeUid, Uid: pr.Uid, Segments: pr.Segments, IsSelected: false });
                 this.ref.markForCheck();
             })
-            this.prepopulatedResults = null;
+
+            var itemsToResolve = [];
+            this.searchresults.forEach(item => {
+                if (!item.Segments) itemsToResolve.push({ uid: item.Uid, typeUid: item.AssetTypeUid });
+            });
+            let groups = itemsToResolve.reduce((r, a) => {
+                r[a.typeUid] = [...r[a.typeUid] || [], a];
+                return r;
+            }, {});
+
+            Object.keys(groups).forEach((key) => {
+                var assets = groups[key].map(x => x.uid);
+                var params = { _assetUid: assets.join(',') };
+                this.assetService.getAssets(key, params).subscribe(res => {
+                    var items = res.items;
+                    if (items) {
+                        items.forEach(asset => {
+                            var update = this.searchresults.find(x => x.Uid == asset.AssetUid && x.AssetTypeUid == asset.AssetTypeUid);
+                            if (update) {
+                                update.Segments = [];
+                                update.Segments = asset.Segments;
+                                if (!asset.Segments) {
+                                    update.Segments = [];
+                                    update.Segments.push({ Value: asset.Name });
+                                }
+                            }
+                        });
+                    }
+                    this.ref.markForCheck();
+                });
+            });
+
         }
     }
 
@@ -183,6 +215,8 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         this.currentSearchNavigationIndex = 0;
         if (this.clearResultsAfterSelection)
             this.searchresults = [];
+
+        this.ref.markForCheck();
     }
 
     paginate($event, el) {
@@ -192,10 +226,10 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
 
     private search($event) {
-
         if ($event) {
             if ($event.key === 'Escape' || $event.key === 'Esc') {
-                this.closeSearch();
+                if (this.isSearchWindowOpened)
+                    this.closeSearch();
             }
 
             if (this.searchOption.SearchPhrase == $event.target.value)
@@ -248,7 +282,6 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         if ($event && $event.target.className.indexOf('checker') != -1) {
             return;
         }
-
         var item = this.searchresults[idx];
 
         if (this.selected.some(x => x.Uid == item.Uid)) {

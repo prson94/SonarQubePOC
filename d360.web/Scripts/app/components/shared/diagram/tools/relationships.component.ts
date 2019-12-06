@@ -1,15 +1,10 @@
 ﻿import { Component, EventEmitter, ChangeDetectionStrategy, OnInit, HostBinding, Input, OnChanges, SimpleChanges, ChangeDetectorRef, Output } from '@angular/core';
 import { CommonComponentAssetResult, CommonComponentAssetTypeFilter, CommonComponentAssetTypeFilterSideOfRelationship, CommonComponentAssetTypeFilterRelationshipSide, CommonComponentAssetResultExt, CommonComponentAssetSelection } from '../../../../models/asset-search.model';
 import { PredicateType } from '../../../../models/predicate.model';
-import { AssetTypeClass } from '../../../../models/asset.model';
-import { AssetService } from '../../../../services/asset.service';
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { Observable, forkJoin } from 'rxjs';
-import { exec } from 'child_process';
-import { createTokenForExternalReference } from '@angular/compiler/src/identifiers';
-import { ApiResult } from '../../../../models/apiresult.model';
 import { Predicate } from '../../../../models/predicate.model';
-
+import { delay, take } from 'rxjs/operators';
 
 export enum RelationshipEditorType {
     Lineage = 'Lineage',
@@ -76,8 +71,23 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     ) { }
 
     ngOnInit() {
-
         this.loadSettings(false);
+
+        if (this.assetBrowserData && this.assetBrowserData.assets) {
+            var tempArr = [];
+            this.assetBrowserData.assets.filter(x => x.useAsTransformation == false).forEach(group => {
+                group.items.forEach(asset => {
+                    if (this.sourcePrePop.length < 10) {
+                        var item = new CommonComponentAssetResult();
+                        item.AssetTypeUid = group.assetUid;
+                        item.Uid = asset.assetUid;
+                        tempArr.push(item);
+                    }
+                });
+            });
+            this.sourcePrePop = tempArr;
+        }
+        this.ref.markForCheck();
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -235,6 +245,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         this.buildTargetFilters();
 
         this.validateRelationships();
+
     }
 
     newAssetAdded($event) {
@@ -301,6 +312,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     private validateRelationships() {
         this.areRelationshipsValid = false;
+        this.relationshipsError = [];
+
         this.sourceAssets.forEach(x => {
             x.Warnings = [];
             if (!x.Predicate) {
@@ -431,8 +444,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             var result: any[] = res.response;
             result.forEach((r, idx) => {
                 if (r.Success == false) {
-
-                    var errorMsg = 'An error occurred when creating a relationship';
+                    
+                    var errorMsg = r.Message;
                     rollback = true;
 
                     var subjectTitle = 'Source Asset:';
@@ -444,6 +457,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                     var subject = this.getAssetFromSelection(data.model[idx].SubjectAssetUid);
                     var object = this.getAssetFromSelection(data.model[idx].ObjectAssetUid);
                     this.relationshipsError.push({ errorMsg, subject, subjectTitle, object, objectTitle });
+                    console.log(this.relationshipsError);
                 }
 
             });
@@ -468,6 +482,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             insertObs.subscribe(results => {
                 console.log(results);
             });
+            this.ref.markForCheck();
+
             return false;
         }
         this.ref.markForCheck();
