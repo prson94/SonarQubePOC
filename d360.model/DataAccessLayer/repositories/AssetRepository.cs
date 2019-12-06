@@ -394,8 +394,8 @@ namespace d360.model.DataAccessLayer
                     A.UpdatedOn,
                     A.CreatedOn,
                     A.Code,
-                    Node.Path,
-                    Node.Segments
+                    Node.Path --,
+                    --Node.Segments --GOV-8967 - temporarily remove segments property due to analyze issue
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
                     {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
@@ -422,31 +422,32 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            foreach (var result in results)
-            {
-                try
-                {
-                    var xmlString = result.Segments;
-                    if (xmlString != null)
-                    {
-                        List<AssetsByPathItemSegmentApiViewModel> segments = new List<AssetsByPathItemSegmentApiViewModel>();
-                        var xml = XDocument.Parse(xmlString as string);
-                        foreach (var segment in xml.Descendants("segment"))
-                        {
-                            segments.Add(new AssetsByPathItemSegmentApiViewModel()
-                            {
-                                Value = segment.Value
-                            });
-                        }
+            //GOV-8967 - temporarily remove segments property due to analyze issue
+            //foreach (var result in results)
+            //{
+            //    try
+            //    {
+            //        var xmlString = result.Segments;
+            //        if (xmlString != null)
+            //        {
+            //            List<AssetsByPathItemSegmentApiViewModel> segments = new List<AssetsByPathItemSegmentApiViewModel>();
+            //            var xml = XDocument.Parse(xmlString as string);
+            //            foreach (var segment in xml.Descendants("segment"))
+            //            {
+            //                segments.Add(new AssetsByPathItemSegmentApiViewModel()
+            //                {
+            //                    Value = segment.Value
+            //                });
+            //            }
 
-                        result.Segments = segments;
-                    }
-                }
-                catch
-                {
-                    result.Segments = null;
-                }
-            }
+            //            result.Segments = segments;
+            //        }
+            //    }
+            //    catch
+            //    {
+            //        result.Segments = null;
+            //    }
+            //}
 
             model.items = results;
             model.total = count;
@@ -1224,17 +1225,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
             bool add = (style == null);
 
-            string iconText;
-
-            var words = objectName.Trim().Split(' ');
-            if (words.Length > 1 && words[1].Length > 0)
-            {
-                iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
-            }
-            else
-            {
-                iconText = objectName[0].ToString().ToUpper() + objectName[1].ToString().ToLower();
-            }
+            string iconText = CompanyContext.GetIconText(objectName);
 
             if (add)
             {

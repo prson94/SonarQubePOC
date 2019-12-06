@@ -40,7 +40,7 @@ namespace d360.model
     {
         internal const int API_V2_RETRY_LIMIT = 10;
         internal const int API_V2_RETRY_INTERVAL = 100; // interval set in ms
-        
+
         public int SqlBulkBatchSize { get; set; } = 5000; // default size to use for sqlbulkcopy operations 0 means one batch
         public int SqlBulkBatchTimeout { get; set; } = 0; // timeout for sqlbulkcopy operations  0 means run until it happens
         public int WorkflowSendBatchSize { get; set; } = 50; // number of items to send at a time for a batch of service bus messages
@@ -2248,7 +2248,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             else
             {
                 #region Build data tables for bulk load.
-               
+
                 var table = new DataTable();
                 table.Columns.Add("ExecutionID", typeof(Guid));
                 table.Columns.Add("ExecutionItemUid", typeof(Guid));
@@ -2287,7 +2287,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                     {
                         row["uid"] = item.Uid.Value;
                     }
-                    
+
 
                     table.Rows.Add(row);
                 }
@@ -2300,7 +2300,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                         Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
                     #region Bulk Copy
-                    
+
                     var bulkCopy = new SqlBulkCopy(Connection)
                     {
                         BatchSize = SqlBulkBatchSize,
@@ -2451,7 +2451,7 @@ where   ExecutionID = @ExecutionID
                         bulkCopy.ColumnMappings.Add("uid", "uid");
 
                         bulkCopy.WriteToServer(table);
-                                                
+
                         #endregion
 
                         this.ValidateRelationshipTypes(false, execution, timeout);
@@ -2607,7 +2607,7 @@ where   ExecutionID = @ExecutionID
             }
             return results;
         }
-        
+
         private void AITrackTrace(TelemetryClient client, ApiExecution execution, string methodName, string logMessage, long ElapsedMilliseconds, bool isLog)
         {
             if (!isLog) return;
@@ -2927,7 +2927,7 @@ where   ExecutionID = @ExecutionID
 
                         bulkCopy.WriteToServer(fieldTable);
 
-                        
+
                         this.AITrackTrace(client, execution, METHOD_NAME, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
                         #endregion
@@ -3714,6 +3714,9 @@ select [uid] from #ParentChildRelationships",
             var results = new List<DatabaseBulkRelationshipResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+            bool checkCircularRelationships = false;
+            if (rt.Predicate.Type == PredicateType.Transformation)
+                checkCircularRelationships = true;
 
             //check if trigger workflows is set to true and there are actually no workflows
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), rt.ID, null);
@@ -4061,6 +4064,22 @@ end",
                     new { execution.ExecutionID, execution.ResourceID }, commandTimeout: timeout);
                     this.AITrackTrace(client, execution, METHOD_NAME, "  Permissions Validation", sw.ElapsedMilliseconds, isLog);
                     #endregion
+
+                    if (checkCircularRelationships)
+                    {
+                        sw.Restart();
+                        Connection.Execute(@"
+                            update	T
+                            set		T.Message = coalesce(T.Message + '; ', '') + 'Not able to create this relationship as it would cause circular relationship',
+		                            T.Success = 0
+                            from	api.ExecutionRelationship T
+		                            where T.ExecutionId = @ExecutionID
+                                    and T.IsNew = 1 
+		                            and graph.CheckCircularRelationshipCollision(T.SubjectUid, T.ObjectUid, @predicateType) = 1
+                            ", new { execution.ExecutionID, predicateType = rt.Predicate.Type}, commandTimeout: timeout);
+                        this.AITrackTrace(client, execution, METHOD_NAME, "  Circular Relationships Validation", sw.ElapsedMilliseconds, isLog);
+
+                    }
 
                     generalChecksCompleted = true;
                 }
@@ -4624,7 +4643,7 @@ set     Success = 0,
 from    [api].[ExecutionRelationshipType] ER 
 where   ER.ExecutionID = @ExecutionID 
         and ER.Success is null 
-        and not exists (select 1 from IntersectType where Uid = ER.[Uid]);", 
+        and not exists (select 1 from IntersectType where Uid = ER.[Uid]);",
                 new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
 
@@ -4650,9 +4669,9 @@ set     Success = 0,
         Message='ObjectCardinality is missing / incorrect' 
 where   ExecutionID = @ExecutionID 
         and Success is null 
-        and (ObjectCardinality is null or ObjectCardinality = 0);", 
-        new { execution.ExecutionID }, commandTimeout: timeout);  
-            
+        and (ObjectCardinality is null or ObjectCardinality = 0);",
+        new { execution.ExecutionID }, commandTimeout: timeout);
+
             Connection.Execute(@"
 with cte_relations as (
                       select    ItemNumber, 
@@ -4667,7 +4686,7 @@ SET     Success = 0,
 from    api.[ExecutionRelationshipType] ER
 where   ER.ExecutionID = @ExecutionID 
         and Success is null 
-        and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );", 
+        and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );",
         new { execution.ExecutionID }, commandTimeout: timeout);
 
             Connection.Execute(@"
@@ -4676,7 +4695,7 @@ set     [Subject] = AST.[Object],
         SubjectID = AST.[ObjectID]
 from    [api].[ExecutionRelationshipType] ER 
         inner join AssetType AST on AST.UID = ER.SubjectUID 
-where   ER.ExecutionID = @ExecutionID and ER.Success is null;", 
+where   ER.ExecutionID = @ExecutionID and ER.Success is null;",
         new { execution.ExecutionID }, commandTimeout: timeout);
 
             Connection.Execute(@"
@@ -4685,7 +4704,7 @@ set     [Object] = AST.[Object],
         ObjectID = AST.[ObjectID] 
 from    [api].[ExecutionRelationshipType] ER 
         inner join AssetType AST on AST.UID = ER.ObjectUID 
-where   ER.ExecutionID = @ExecutionID and ER.Success is null;", 
+where   ER.ExecutionID = @ExecutionID and ER.Success is null;",
         new { execution.ExecutionID }, commandTimeout: timeout);
 
             Connection.Execute(@"
@@ -4693,7 +4712,7 @@ update  ER
 set     PredicateID = P.ID 
 from    [api].[ExecutionRelationshipType] ER 
         inner join [Predicate] P on P.UID = ER.PredicateUID 
-where   ER.ExecutionID = @ExecutionID and ER.Success is null;", 
+where   ER.ExecutionID = @ExecutionID and ER.Success is null;",
         new { execution.ExecutionID }, commandTimeout: timeout);
 
             if (isInsert)
@@ -4722,7 +4741,7 @@ set     Success = 0,
         Message = 'Predicate not found.' 
 where   ExecutionID = @ExecutionID 
         and Success is null 
-        and PredicateID is null;", 
+        and PredicateID is null;",
         new { execution.ExecutionID }, commandTimeout: timeout);
 
             Connection.Execute(@"
@@ -4735,7 +4754,7 @@ from    [api].[ExecutionRelationshipType] ER
 where   ER.ExecutionID = @ExecutionID 
         and P.[Type] in @disallowEditIds 
         and ER.Success is null 
-        and ER.PredicateID is not null;", 
+        and ER.PredicateID is not null;",
         new { execution.ExecutionID, disallowEditIds = disallowEditIds }, commandTimeout: timeout);
 
             if (isInsert)
@@ -4758,7 +4777,7 @@ where   ER.ExecutionID = @ExecutionID
                 new { execution.ExecutionID }, commandTimeout: timeout);
             }
             else
-            { 
+            {
                 Connection.Execute(@"
 update  ER
 set     Success = 0, 
@@ -4786,7 +4805,7 @@ where   ER.ExecutionID = @ExecutionID
                     and I.Uid != IT.Uid 
                     and I.[Object]=IT.[Object] 
                     and I.ObjectID=IT.ObjectID 
-            );", 
+            );",
                 new { execution.ExecutionID }, commandTimeout: timeout);
             }
 

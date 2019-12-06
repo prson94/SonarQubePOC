@@ -365,10 +365,14 @@
   <include file="scripts/GOV-8815.xml"/> <!-- graph.GetLineageByAsset - return solitary assets with no lineage - MUST GO AFTER GOV-7910 -->
   <include file="scripts/GOV-8898.xml"/> <!-- graph.SynchronizeTables - refresh paths where null -->
   <include file="scripts/GOV-8927.xml"/> <!-- graph.SynchronizeTables / graph.PopulatePathsForAssetType - throwing error when called via web job -->
+  <include file="scripts/GOV-8948.xml"/> <!-- Update RuleResult Computation fields -->
   <include file="scripts/GOV-8865.xml"/> <!-- Add search boost for Name -->
 
   <!-- Sprint 1 2020 Start-->
   <include file="scripts/GOV-8514.xml"/>
   <include file="scripts/GOV-8657.xml"/>
   <include file="scripts/GOV-8949.xml"/>  <!-- reporting schema static views removed from webjob-->
+  <include file="scripts/GOV-8963.xml"/>  <!-- added [dbo].[CheckCircularRelationshipCollision]-->
+  <include file="scripts/GOV-8969.xml"/>  <!-- change parent to come from graph tables on artifact list pages, changes to [dbo].[GetDynamicAssets] proc! and [utility].[ArtifactAssetParent] view -->
+  <include file="scripts/GOV-8999.xml"/>  <!-- changes to [dbo].[GetDynamicAssets] -->
 </databaseChangeLog>

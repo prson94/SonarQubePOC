@@ -243,7 +243,7 @@ namespace d360.model
         {
             string whenSql = "";
 
-            whenSql += "select	A.ID as AssetID ";
+            whenSql += "select distinct A.ID as AssetID ";
             if (includeName)
                 whenSql += ", utility.GetAssetDisplayValueWrapper(A.ID) as Name ";
 
@@ -309,7 +309,7 @@ namespace d360.model
 
             if ((rule.StructuredDefinition != null) && (rule.StructuredDefinition.Then != null) && (rule.StructuredDefinition.Then.Object != null))
             {
-                thenSql = $@"select {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}";
+                thenSql = $@"select distinct {rule.ID} as RuleID, {rule.ResponsibilityTypeID} as ResponsibilityTypeID, {(string.IsNullOrEmpty(assetIDColumn) ? "" : assetIDColumn + ", ")}";
 
                 if (rule.StructuredDefinition.Then.Object == "OrganizationType")
                 {

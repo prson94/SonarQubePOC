@@ -1,0 +1,71 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-8963">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+   CREATE OR ALTER FUNCTION [graph].[CheckCircularRelationshipCollision]
+(
+	 @sourceUid uniqueidentifier,
+	 @targetUid uniqueidentifier,
+	 @predicateType int
+)
+RETURNS bit
+AS
+BEGIN
+		declare @maxLevel int = 20;
+		declare @willCauseCircularRef bit = 0;
+
+		;WITH TraverseForward as (
+			select $node_id as NodeId, S.Uid, 0 as Level
+				from graph.AssetNode S
+				where S.Uid = @sourceUid
+			union all
+				select T.$node_id NodeId, T.Uid, AN.Level + 1 as Level
+				from graph.AssetNode T 
+				inner join graph.AssetEdge E on T.$node_id = E.$to_id and E.PredicateType = @predicateType 
+				inner join TraverseForward AN on E.$from_id = AN.NodeId and AN.Level < @maxLevel
+		)
+		select @willCauseCircularRef = 1
+			from TraverseForward
+			where Uid = @targetUid
+		OPTION (MAXRECURSION 100)
+
+		IF @willCauseCircularRef = 0
+			BEGIN
+					;with TraverseBackward as (
+							select $node_id as NodeId, S.Uid, 0 as Level
+								from graph.AssetNode S
+								where S.Uid = @sourceUid
+							union all
+								select T.$node_id NodeId, T.Uid, AN.Level + 1 as Level
+								from graph.AssetNode T 
+								inner join graph.AssetEdge E on T.$node_id = E.$from_id and E.PredicateType = @predicateType 
+								inner join TraverseBackward AN on E.$to_id = AN.NodeId and AN.Level < @maxLevel
+						)
+						select @willCauseCircularRef = 1
+							from TraverseBackward 
+							where Uid = @targetUid
+						OPTION (MAXRECURSION 100)
+			END
+
+
+		return @willCauseCircularRef
+END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+drop function if exists [graph].[CheckCircularRelationshipCollision]
+]]>
+	</rollback>
+  </changeSet>
+
+  </databaseChangeLog>

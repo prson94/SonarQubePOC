@@ -142,7 +142,7 @@ namespace d360.web.Models
             return new RelationshipTypeUpdate
             {
                 ExecutionItemUid = Guid.Empty,
-                Uid = Guid.NewGuid(),
+                Uid = Guid.Empty,
                 PredicateUid = Guid.Empty,
                 SubjectCardinality = core.enums.Cardinality.Many,
                 ObjectCardinality = core.enums.Cardinality.Many
