@@ -72,7 +72,7 @@ namespace d360.model.DataAccessLayer
                 {
                     var Id = (int)Class;
                     dbArgs.Add("@Id", Id.ToString());
-                    condition = "and A.[Class]=@Id";
+                    condition = " and A.[Class]=@Id";
                 }
             }
             else if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty)
@@ -89,7 +89,7 @@ namespace d360.model.DataAccessLayer
                 dbArgs.Add("@class2", (int)AssetTypeClass.FusionQuery);
                 dbArgs.Add("@fusionTypeUid", fusionTypeUid);
 
-                condition = string.Format("and (A.[Class] = @class1 OR A.[Class] = @class2) AND (ATQFusionType.uid = @fusionTypeUid or ATTFusionType.uid = @fusionTypeUid)");
+                condition = string.Format(" and (A.[Class] = @class1 OR A.[Class] = @class2) AND (ATQFusionType.uid = @fusionTypeUid or ATTFusionType.uid = @fusionTypeUid)");
 
             }
 
@@ -103,7 +103,7 @@ namespace d360.model.DataAccessLayer
                     if (Boolean.TryParse(useAsTransformationString, out useAsTransformation))
                     {
 
-                        condition += "and A.UseAsTransformation=@useAsTransformation ";
+                        condition += " and A.UseAsTransformation=@useAsTransformation ";
                         dbArgs.Add("useAsTransformation", useAsTransformation);
                     }
                 }
@@ -115,7 +115,7 @@ namespace d360.model.DataAccessLayer
                     if (Boolean.TryParse(hierarchicalString, out hierarchical))
                     {
 
-                        condition += "and A.Hierarchical=@hierarchical ";
+                        condition += " and A.Hierarchical=@hierarchical ";
                         dbArgs.Add("hierarchical", hierarchical);
                     }
                 }
@@ -127,7 +127,7 @@ namespace d360.model.DataAccessLayer
                     if (Boolean.TryParse(autoDisplayDescriptionString, out autoDisplayDescription))
                     {
 
-                        condition += "and A.AutoDisplayDescription=@autodisplaydescription ";
+                        condition += " and A.AutoDisplayDescription=@autodisplaydescription ";
                         dbArgs.Add("autoDisplayDescription", autoDisplayDescription);
                     }
                 }
@@ -139,7 +139,7 @@ namespace d360.model.DataAccessLayer
                     if (Boolean.TryParse(canOwnFusionString, out canOwnFusion))
                     {
 
-                        condition += "and A.CanOwnFusion=@canownfusion ";
+                        condition += " and A.CanOwnFusion=@canownfusion ";
                         dbArgs.Add("canownfusion", canOwnFusion);
                     }
                 }
