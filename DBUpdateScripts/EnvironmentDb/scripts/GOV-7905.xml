@@ -11,7 +11,7 @@
             splitStatements="true"
             stripComments="false">
 <![CDATA[
-CREATE OR ALTER procedure [graph].[GetLineageByAsset]
+create or alter procedure [graph].[GetLineageByAsset]
 	@assets dbo.UidTable readonly,
 	@isReveal bit = 0,
 	@StartHop int = 0,
@@ -471,7 +471,7 @@ begin
 				null,--T.XmlPosition,
 				null,
 				T.ParentID,
-				0,--1 as IsDupe,
+				0,--1 as IsDupe
 				[AT].UseAsTransformation
 		from	#rawHierarchies T
 				inner join AssetDisplayValue d on d.AssetID = T.AssetID
@@ -533,6 +533,7 @@ begin
 	from	#hierarchies T
 			inner join	#singles S on S.Hop = T.Hop and S.ID = T.ID;
 
+
 	insert into #hierarchies
 		select	T.Hop,
 				T.ID,
@@ -543,7 +544,7 @@ begin
 				1 as HierarchyLevel,
 				T.AssetTypeID,
 				A.ID as AssetID,
-				A.Uid as AssetUid,
+				CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid, --A.Uid as AssetUid, 
 				A.Name as DisplayValue,
 				A.Class,
 				A.Name as AssetTypeName,
@@ -609,7 +610,7 @@ end
     </sql>
 	<rollback>
 <![CDATA[
-CRATE OR ALTER procedure [graph].[GetLineageByAsset]
+create or alter procedure [graph].[GetLineageByAsset]
 	@assets dbo.UidTable readonly,
 	@isReveal bit = 0,
 	@StartHop int = 0,
@@ -1130,6 +1131,7 @@ begin
 	from	#hierarchies T
 			inner join	#singles S on S.Hop = T.Hop and S.ID = T.ID;
 
+
 	insert into #hierarchies
 		select	T.Hop,
 				T.ID,
@@ -1140,7 +1142,7 @@ begin
 				1 as HierarchyLevel,
 				T.AssetTypeID,
 				A.ID as AssetID,
-				A.Uid as AssetUid,
+				CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid, --A.Uid as AssetUid, 
 				A.Name as DisplayValue,
 				A.Class,
 				A.Name as AssetTypeName,
