@@ -375,5 +375,6 @@
   <include file="scripts/GOV-8963.xml"/>  <!-- added [dbo].[CheckCircularRelationshipCollision]-->
   <include file="scripts/GOV-8969.xml"/>  <!-- change parent to come from graph tables on artifact list pages, changes to [dbo].[GetDynamicAssets] proc! and [utility].[ArtifactAssetParent] view -->
   <include file="scripts/GOV-8999.xml"/>  <!-- changes to [dbo].[GetDynamicAssets] -->
+  <include file="scripts/GOV-8904.xml"/>  <!-- remove DisplayValue column from dbo.Rule -->
   <include file="scripts/GOV-8986.xml"/>  <!-- graph.GetLineageByAsset / graph.GetImpactRelationshipsByAssets -->
 </databaseChangeLog>

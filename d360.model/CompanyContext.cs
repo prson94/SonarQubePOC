@@ -1595,10 +1595,11 @@ where	R.SourceObject = 'FusionAttribute'
                 FROM	IntersectType IT    
 		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
                 UNION
-                SELECT	ID,
-		                'Rule Implementation :: ' + DisplayValue as Name,
+                SELECT	R.ID,
+		                'Rule Implementation :: ' + A.DisplayValue as Name,
 		                'RuleImplementationType' as Type
-                FROM    [Rule]
+                FROM    [Rule] R
+                inner join AssetDetail A on A.Object = 'Rule' and A.ObjectID = R.ID
                 UNION
                 SELECT	0 as ID,
 		                'Reference :: List' as Name,
