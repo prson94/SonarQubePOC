@@ -479,7 +479,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
                 var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));
 
