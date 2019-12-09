@@ -38,7 +38,7 @@ namespace d360.web.Controllers.V2
                                           where ex.Exception != null && ex.Exception.InnerException != null
                                           select new
                                           {
-                                              IsEnumError = ex.Exception.InnerException.StackTrace.Contains("Newtonsoft.Json.Utilities.EnumUtils.ParseEnum"),
+                                              IsEnumError = ex.Exception.StackTrace.Contains("d360.core.EnumConverter.ReadJson") || ex.Exception.InnerException.StackTrace.Contains("Newtonsoft.Json.Utilities.EnumUtils.ParseEnum"),
                                               ex.Exception.InnerException.Message,
                                               Field = ms.Key
                                           }).ToList();
