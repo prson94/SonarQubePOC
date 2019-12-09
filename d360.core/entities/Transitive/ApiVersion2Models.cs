@@ -43,7 +43,7 @@ namespace d360.core.entities
     public class AssetTypeUpsert
     {
         [DataMember]
-        public new Guid Uid { get; set; }
+        public Guid Uid { get; set; }
 
         [DataMember]
         public string Name { get; set; }
