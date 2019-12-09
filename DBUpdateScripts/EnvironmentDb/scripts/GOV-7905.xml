@@ -11,7 +11,7 @@
             splitStatements="true"
             stripComments="false">
 <![CDATA[
-create or alter procedure [graph].[GetLineageByAsset]
+Create or ALTER   procedure [graph].[GetLineageByAsset]
 	@assets dbo.UidTable readonly,
 	@isReveal bit = 0,
 	@StartHop int = 0,
@@ -47,7 +47,7 @@ begin
 
 	create table #clean ([Hop] int, ID bigint, [Path] nvarchar(2500), Segment xml, Reveal int)
 
-	create table #hierarchies ([Hop] int, ID bigint, [Key] varchar(50), Back varchar(25), Fore varchar(25), Icon varchar(50), HierarchyLevel int, AssetTypeID int, AssetID bigint, AssetUid uniqueidentifier, DisplayValue nvarchar(500), Class int, AssetTypeName nvarchar(250), Reveal int, RelationCounts varchar(max), XmlPosition int, ParentKey varchar(50), ParentID bigint null, IsDupe bit null, UseAsTransformation bit null)
+	create table #hierarchies ([Hop] int, ID bigint, [Key] varchar(50), Back varchar(25), Fore varchar(25), Icon varchar(50), HierarchyLevel int, AssetTypeID int,AssetTypeUid uniqueidentifier, AssetID bigint, AssetUid uniqueidentifier, DisplayValue nvarchar(500), Class int, AssetTypeName nvarchar(250), Reveal int, RelationCounts varchar(max), XmlPosition int, ParentKey varchar(50), ParentID bigint null, IsDupe bit null, UseAsTransformation bit null)
 	create index ix_TempHierarchies on #hierarchies ([Hop] asc, HierarchyLevel asc)
 
 	create table #mappedAssetIds (RowOrder int identity, ID bigint, Class int, AddToAssetTemp bit, BusinessAssetID bigint)
@@ -461,6 +461,7 @@ begin
 				S.Icon,
 				T.[HierarchyLevel],
 				T.AssetTypeID,
+				[AT].uid as AssetTypeUid,
 				T.AssetID,
 				A.Uid,
 				d.DisplayValue,
@@ -471,7 +472,7 @@ begin
 				null,--T.XmlPosition,
 				null,
 				T.ParentID,
-				0,--1 as IsDupe
+				0,--1 as IsDupe,
 				[AT].UseAsTransformation
 		from	#rawHierarchies T
 				inner join AssetDisplayValue d on d.AssetID = T.AssetID
@@ -533,7 +534,6 @@ begin
 	from	#hierarchies T
 			inner join	#singles S on S.Hop = T.Hop and S.ID = T.ID;
 
-
 	insert into #hierarchies
 		select	T.Hop,
 				T.ID,
@@ -543,8 +543,9 @@ begin
 				T.Icon,
 				1 as HierarchyLevel,
 				T.AssetTypeID,
+				[A].uid as AssetTypeUid,
 				A.ID as AssetID,
-				CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid, --A.Uid as AssetUid, 
+				A.Uid as AssetUid,
 				A.Name as DisplayValue,
 				A.Class,
 				A.Name as AssetTypeName,
@@ -589,7 +590,7 @@ begin
 			inner join #hierarchies S on S.[Key] = T.[Key] and T.Reveal = 0 and S.Reveal <> 0;
 
 	select		distinct
-				Hop, [Key], ParentKey, Back, Fore, Icon, HierarchyLevel, AssetTypeID, AssetID, AssetUid, DisplayValue, Class, AssetTypeName, Reveal, RelationCounts, UseAsTransformation
+				Hop, [Key], ParentKey, Back, Fore, Icon, HierarchyLevel, AssetTypeID, AssetTypeUid, AssetID, AssetUid, DisplayValue, Class, AssetTypeName, Reveal, RelationCounts, UseAsTransformation
 	from		#hierarchies 
 	order by	Hop, HierarchyLevel, DisplayValue;
 	
@@ -610,7 +611,7 @@ end
     </sql>
 	<rollback>
 <![CDATA[
-create or alter procedure [graph].[GetLineageByAsset]
+CRATE OR ALTER procedure [graph].[GetLineageByAsset]
 	@assets dbo.UidTable readonly,
 	@isReveal bit = 0,
 	@StartHop int = 0,
@@ -1131,7 +1132,6 @@ begin
 	from	#hierarchies T
 			inner join	#singles S on S.Hop = T.Hop and S.ID = T.ID;
 
-
 	insert into #hierarchies
 		select	T.Hop,
 				T.ID,
@@ -1142,7 +1142,7 @@ begin
 				1 as HierarchyLevel,
 				T.AssetTypeID,
 				A.ID as AssetID,
-				CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid, --A.Uid as AssetUid, 
+				A.Uid as AssetUid,
 				A.Name as DisplayValue,
 				A.Class,
 				A.Name as AssetTypeName,

@@ -47,6 +47,7 @@ namespace d360.web.Controllers.V2
             public string Icon { get; set; }
             public int HierarchyLevel { get; set; }
             public int AssetTypeID { get; set; }
+            public Guid AssetTypeUid { get; set; }
             public long AssetID { get; set; }
             public Guid AssetUid { get; set; }
             public string DisplayValue { get; set; }
@@ -90,7 +91,7 @@ namespace d360.web.Controllers.V2
                     }
                     
                     var child = new AssetBrowserLineageApiItemModel { 
-                        hop = h.Hop, key = h.Key, assetUid = h.AssetUid, assetTypeId = h.AssetTypeID,
+                        hop = h.Hop, key = h.Key, assetUid = h.AssetUid, assetTypeId = h.AssetTypeID, assetTypeUid = h.AssetTypeUid,
                         backColor = h.Back, foreColor = h.Fore, icon = h.Icon, 
                         @class = h.Class, displayValue = h.DisplayValue, 
                         reveal = h.Reveal, relationCounts = relationCounts, useAsTransformation = h.UseAsTransformation };
@@ -119,7 +120,7 @@ namespace d360.web.Controllers.V2
                     relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
                 }
 
-                var current = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, assetTypeId = h.AssetTypeID, backColor = h.Back, foreColor = h.Fore, icon = h.Icon, @class = h.Class, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts, useAsTransformation = h.UseAsTransformation };
+                var current = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, assetTypeId = h.AssetTypeID, assetTypeUid= h.AssetTypeUid, backColor = h.Back, foreColor = h.Fore, icon = h.Icon, @class = h.Class, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts, useAsTransformation = h.UseAsTransformation };
                 recurse(hierarchies, current);
                 model.assets.Add(current);
             }

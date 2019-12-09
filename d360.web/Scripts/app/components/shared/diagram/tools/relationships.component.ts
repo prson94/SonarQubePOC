@@ -5,6 +5,7 @@ import { RelationshipsService } from '../../../../services/relationships.service
 import { Observable, forkJoin } from 'rxjs';
 import { Predicate } from '../../../../models/predicate.model';
 import { delay, take } from 'rxjs/operators';
+import { createTokenForExternalReference } from '@angular/compiler/src/identifiers';
 
 export enum RelationshipEditorType {
     Lineage = 'Lineage',
@@ -31,6 +32,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     @Output() refreshDiagram: EventEmitter<any> = new EventEmitter();
 
     @Input() assetBrowserData: any;
+
+    private browserAssets: CommonComponentAssetResult[] = [];
     private editorType: RelationshipEditorType = RelationshipEditorType.Lineage;
     private sourceAssets: CommonComponentAssetSelection[] = [];
     private targetAssets: CommonComponentAssetSelection[] = [];
@@ -72,26 +75,41 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     ngOnInit() {
         this.loadSettings(false);
-
         if (this.assetBrowserData && this.assetBrowserData.assets) {
-            var tempArr = [];
-            this.assetBrowserData.assets.filter(x => x.useAsTransformation == false).forEach(group => {
-                group.items.forEach(asset => {
-                    if (this.sourcePrePop.length < 10) {
-                        var item = new CommonComponentAssetResult();
-                        item.AssetTypeUid = group.assetUid;
-                        item.Uid = asset.assetUid;
-                        tempArr.push(item);
-                    }
-                });
+            var assetTypes = this.assetBrowserData.assets;
+
+            assetTypes.forEach(at => {
+                at.items.forEach(group => {
+                    this.populateAssets(group);
+                })
             });
-            this.sourcePrePop = tempArr;
+
+            if (this.browserAssets.length > 10)
+                this.sourcePrePop = this.browserAssets.slice(0, 10);
+            else this.sourcePrePop = this.browserAssets;
         }
         this.ref.markForCheck();
     }
 
+
+
     ngOnChanges(changes: SimpleChanges) {
         this.checkSelectionValues();
+    }
+
+    private populateAssets(group) {
+        if (!group.items) {
+            var item = new CommonComponentAssetResult();
+            item.AssetTypeUid = group.assetTypeUid;
+            item.Uid = group.assetUid;
+            if (group.useAsTransformation == false && !this.browserAssets.find(x => x.Uid == item.Uid && x.AssetTypeUid == item.AssetTypeUid))
+                this.browserAssets.push(item);
+        }
+        else {
+            group.items.forEach(g => {
+                this.populateAssets(g);
+            });
+        }
     }
 
     private checkSelectionValues() {
@@ -120,18 +138,17 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             var doesSourceContains = false;
             var doesTargetContains = false;
 
-            this.assetBrowserData.assets.forEach(type => {
-                type.items.forEach(asset => {
-                    this.sourceAssets.forEach(sa => {
-                        if (sa.Uid == asset.assetUid)
-                            doesSourceContains = true;
-                    });
-                    this.targetAssets.forEach(sa => {
-                        if (sa.Uid == asset.assetUid)
-                            doesTargetContains = true;
-                    });
+            this.browserAssets.forEach(asset => {
+                this.sourceAssets.forEach(sa => {
+                    if (sa.Uid == asset.Uid)
+                        doesSourceContains = true;
                 });
-            });
+                this.targetAssets.forEach(sa => {
+                    if (sa.Uid == asset.Uid)
+                        doesTargetContains = true;
+                });
+            })
+
             if (!doesSourceContains && !doesTargetContains) {
                 this.noAssetOnDiagram = true;
             }
@@ -164,6 +181,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         this.targetFilters = [];
         if (this.targetAllowedPredicates.length == 0) {
             var targetFilters = new CommonComponentAssetTypeFilter();
+            targetFilters.UseAsTransformation = false;
             targetFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
             targetFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object;
             targetFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
@@ -173,6 +191,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             this.targetAllowedPredicates.forEach(tp => {
                 var targetFilters = new CommonComponentAssetTypeFilter();
                 targetFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+                targetFilters.UseAsTransformation = false;
                 targetFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object;
                 targetFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
                 targetFilters.AsSideOfRelationship.PredicateUid = tp.Uid.toString();
@@ -186,6 +205,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         if (this.sourceFilters.length == 0) {
             var sourceFilters = new CommonComponentAssetTypeFilter();
             sourceFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+            sourceFilters.UseAsTransformation = false;
             sourceFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Subject;
             sourceFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
             this.sourceFilters.push(sourceFilters);
@@ -194,6 +214,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             this.sourceAssets.forEach(asset => {
                 var sourceFilters = new CommonComponentAssetTypeFilter();
                 sourceFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+                sourceFilters.UseAsTransformation = false;
                 sourceFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Subject;
                 if (asset.Predicate)
                     sourceFilters.AsSideOfRelationship.PredicateUid = asset.Predicate.Uid.toString();
@@ -444,7 +465,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             var result: any[] = res.response;
             result.forEach((r, idx) => {
                 if (r.Success == false) {
-                    
+
                     var errorMsg = r.Message;
                     rollback = true;
 
