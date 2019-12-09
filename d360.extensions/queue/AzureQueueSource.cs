@@ -21,6 +21,8 @@ namespace d360.extensions.queue
         public string QueueStorageKey { get { return CloudConfigurationManager.GetSetting("QueueStorageKey"); } }
         public string EventServiceBusConnectionString { get { return CloudConfigurationManager.GetSetting("EventServiceBus"); } }
 
+        private const long MAX_MESSAGE_SIZE = 1024 * 256;
+
         private StorageCredentials getCredentials()
         {
             return new StorageCredentials(QueueStorageName, QueueStorageKey);
@@ -133,6 +135,7 @@ namespace d360.extensions.queue
         public void CreateTopicMessages(string topicName, List<EventInfo> events)
         {
             var list = new List<BrokeredMessage>();
+            
             foreach (var e in events)
             {
                 var bm = new BrokeredMessage(e);
@@ -169,16 +172,31 @@ namespace d360.extensions.queue
 
         public async Task CreateTopicMessagesAsync(string topicName, List<EventInfo> events)
         {
-            var list = new List<BrokeredMessage>();
+            var batches = new List<List<BrokeredMessage>>();
+            long length = 0;
+
+            batches.Add(new List<BrokeredMessage>());
+
             foreach (var e in events)
             {
                 var bm = new BrokeredMessage(e);
                 bm.Properties["topic"] = topicName;
-                list.Add(bm);
+
+                length += bm.Size;
+                if (length > MAX_MESSAGE_SIZE)
+                {
+                    length = 0;
+                    batches.Add(new List<BrokeredMessage>());
+                }
+
+                batches[batches.Count - 1].Add(bm);
             }
 
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); //Microsoft.ServiceBus.ConnectionString in app.config
-            await client.SendBatchAsync(list);
+            foreach (var batch in batches)
+            {
+                var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+                await client.SendBatchAsync(batch);
+            }
         }
 
         public void CreateTopicMessage<T>(string topicName, T e)
@@ -200,9 +218,14 @@ namespace d360.extensions.queue
 
         public void CreateTopicMessages<T>(string topicName, List<T> events, DateTime? scheduledEnqueueTime = null)
         {
-            var list = new List<BrokeredMessage>();
+            var batches = new List<List<BrokeredMessage>>();
+            long length = 0;
+
+            batches.Add(new List<BrokeredMessage>());
+
             foreach (var e in events)
             {
+                
                 var bm = new BrokeredMessage(e);
 
                 bm.Properties["topic"] = topicName;
@@ -212,25 +235,50 @@ namespace d360.extensions.queue
                     bm.ScheduledEnqueueTimeUtc = scheduledEnqueueTime.Value;
                 }
 
-                list.Add(bm);
+                length += bm.Size;
+                if (length > MAX_MESSAGE_SIZE)
+                {
+                    length = 0;
+                    batches.Add(new List<BrokeredMessage>());
+                }
+
+                batches[batches.Count - 1].Add(bm);
             }
 
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); 
-            client.SendBatch(list);
+            foreach(var batch in batches)
+            {
+                var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+                client.SendBatch(batch);
+            }
+
         }
 
         public async Task CreateTopicMessagesAsync<T>(string topicName, List<T> events)
         {
-            var list = new List<BrokeredMessage>();
+            var batches = new List<List<BrokeredMessage>>();
+            long length = 0;
+
             foreach (var e in events)
             {
                 var bm = new BrokeredMessage(e);
                 bm.Properties["topic"] = topicName;
-                list.Add(bm);
+
+                length += bm.Size;
+                if (length > MAX_MESSAGE_SIZE)
+                {
+                    length = 0;
+                    batches.Add(new List<BrokeredMessage>());
+                }
+
+                batches[batches.Count - 1].Add(bm);
             }
 
-            var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName); 
-            await client.SendBatchAsync(list);
+            foreach (var batch in batches)
+            {
+                var client = TopicClient.CreateFromConnectionString(EventServiceBusConnectionString, topicName);
+                await client.SendBatchAsync(batch);
+            }
+
         }
     }
 }
