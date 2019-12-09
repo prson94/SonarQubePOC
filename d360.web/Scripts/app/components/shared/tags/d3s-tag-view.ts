@@ -159,6 +159,10 @@ export class TagView extends BaseComponent implements OnInit {
             this.existingTag = true;
             this.messagesService.showError('Error', "Tag can't contain | character");
         }
+        if (event.Value.length < 1) {
+            this.existingTag = true;
+            this.messagesService.showError('Error', "Tag must be as least 1 character long in length");
+        }
         if (!this.existingTag) {
             this.tagService.doesTagExist(event)
                 .subscribe(result => {
