@@ -212,7 +212,7 @@
         <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
         <label>
             <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
-            <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
+            <span *ngIf="!fieldTooltip">{{currentFieldName}}</span>
         </label>
         <div [ngSwitch]="field.FieldType" class="col s12 form-field" *ngIf="field.FieldType!='Hidden'">
             <div *ngIf="object != 'Tag' || (object == 'Tag' && !objectID)" class="field {{field.Required == true ? 'required' : ''}} {{isValid == false && isDirty == true ? 'error' : ''}}">
