@@ -729,7 +729,6 @@ main {
     list-style-type: disc;
 }
 
-
 /* end main content*/
 
 /* forms */
@@ -2855,6 +2854,10 @@ button.button, a.link-button {
         &:not(:disabled):active, &.active {
             background: mix(black, @igx-blue, 14%)
         }
+
+        &:disabled, &.hover {
+            background: mix(black, @igx-blue, 21%)
+        }
     }
 
     &.accent {
@@ -2868,6 +2871,10 @@ button.button, a.link-button {
         &:not(:disabled):active, &.active {
             background: mix(black, @igx-coral, 14%)
         }
+
+        &:disabled, &.hover {
+            background: mix(black, @igx-coral, 21%)
+        }
     }
 
     &.negative {
@@ -2880,6 +2887,10 @@ button.button, a.link-button {
 
         &:not(:disabled):active, &.active {
             background: mix(black, @igx-red, 14%)
+        }
+
+        &:disabled, &.hover {
+            background: mix(black, @igx-red, 21%)
         }
     }
 
