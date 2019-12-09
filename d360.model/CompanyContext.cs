@@ -2761,7 +2761,7 @@ select @err";
                     {
                         case EntityState.Added:
                             if (Any<AssetType>(i => i.Name == o.Name && i.Object == o.Object))
-                                throw new ArgumentException(Messages.Error_NameTaken);
+                                throw new ConflictException("AssetType name conflict", Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
                             if (Any<AssetType>(i => i.Name == o.Name && i.ID != o.ID && i.Object == o.Object))
