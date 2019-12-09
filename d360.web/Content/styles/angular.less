@@ -2597,31 +2597,44 @@ div.home-image-title-text {
     transform: scale(0.8);
     transform-origin: center top;
     transition: transform 200ms ease;
+
+    &.small-dialog {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    &.medium-dialog {
+        width: 100%;
+        max-width: 600px;
+    }
+
+    &.large-dialog {
+        width: 100%;
+        max-width: 800px;
+    }
 }
 
-.modal-overlay .modal-dialog .title-bar {
+.modal-overlay .modal-dialog .modal-title-bar {
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 10px;
-    padding-left: 20px;
-    margin-left: 0px;
+    padding: 24px;
 }
 
-.modal-overlay .modal-dialog .title-bar h1 {
+.modal-overlay .modal-dialog .modal-title-bar h1 {
     color: #202020;
     font-size: 18px;
     font-weight: 300;
     width: 100%;
     display: inline-flex;
-    line-height: 1;
+    line-height: 2;
     margin-right: 30px;
     margin-left: 0px;
     margin-bottom: 0px;
     margin-top: 0px;
 }
 
-.modal-overlay .modal-dialog .title-bar button {
+.modal-overlay .modal-dialog .modal-title-bar button {
     border-radius: 3px;
     flex-shrink: 0;
 }
@@ -2630,15 +2643,15 @@ div.home-image-title-text {
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 20px;
+    padding: 0px 24px 24px 24px;
 }
 
 .modal-overlay .modal-dialog .content {
-    background: #f0f0f0;
-    padding: 20px;
+    background: #ffffff;
+    padding: 0px 24px 24px 24px;
     flex-grow: 1;
     flex-shrink: 1;
-    min-height: 66px;
+    min-height: 32px;
 }
 
 .modal-overlay.show .modal-dialog {
@@ -2708,25 +2721,6 @@ div.home-image-title-text {
     line-height: 1.2;
     margin: 0;
     margin-top: 15px;
-}
-
-.modal-overlay .modal-dialog .title-bar {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    padding: 10px;
-    padding-left: 20px;
-}
-
-.modal-overlay .modal-dialog .title-bar h1 {
-    display: inline-flex;
-    line-height: 1;
-    margin-right: 30px;
-}
-
-.modal-overlay .modal-dialog .title-bar button {
-    border-radius: 3px;
-    flex-shrink: 0;
 }
 
 .grow {
@@ -2822,6 +2816,10 @@ button.button, a.link-button {
     border-radius: 3px;
 
     &:not(.icon):not(.bar) {
+        &:first-of-type {
+            margin-left: 0px;
+        }
+
         padding: 0 15px;
         margin-left: 5px;
 
@@ -5643,5 +5641,6 @@ a.mid-blue {
         padding: 20px 20px 0px 20px !important;
         min-height: 20px !important;
         margin: auto !important;
+        text-align: center;
     }
 }
