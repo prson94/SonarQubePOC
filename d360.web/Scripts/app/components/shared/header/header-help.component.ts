@@ -13,16 +13,15 @@ declare var VersionNumber: string;
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="adminGuide">Admin Guide</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="whatIsNew">What's New</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="community">Community</a></div></div></li>
-                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="popup(popupBox)">About Data3Sixty Govern</a></div></div></li>
+                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">About Data3Sixty Govern</a></div></div></li>
                        </ul>
                     </div>
-                    <div #popupBox class="modal-overlay about" tabindex=-1 (keydown)="checkKey($event,popupBox)" >
-                    <div class="modal-dialog">
-                        <div class="title-bar">
-                            <h1>About Data3Sixty Govern</h1>
-                            <span class="grow"></span>
-                            <button (click)="closePopUp(popupBox)" class="light bar button close" title="Close"><i class="fa fa-times"></i></button>
-                        </div>
+                    <d3s-modal #popupBox [title]="'About Data3Sixty Govern'" 
+                                         additionalClasses="about medium-dialog" 
+                                         (onClose)="closeAbout()" 
+                                         [isVisible]="isModalVisible"
+                                         (keydown)="checkKey($event,popupBox)"
+                                         tabindex=-1 >
                         <div class="content">
                             <div class="flex row">
                                 <img class="about-image" src="../../../../../Content/images/aboutLogo.png"/>
@@ -39,11 +38,10 @@ declare var VersionNumber: string;
                         </div>
                         <div class="action-bar">
                             <span class="grow"></span>
-                            <button focus-me="focusInput" (click)="closePopUp(popupBox)" class="primary button close">Close</button>
+                            <button focus-me="focusInput" (click)="closeAbout()" class="primary button close">Close</button>
                         </div>
-                    </div>
-                </div>
-            </span>`,
+                    </d3s-modal>
+                </span>`,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -58,7 +56,7 @@ export class HeaderHelpComponent implements AfterViewInit{
     public community = "https://support.infogix.com/hc/en-us/community/topics/360000029388-Data3Sixty-Govern";
     buildDate: string = __BUILD_DATE;
     versionNumber: string = VersionNumber;
-
+    isModalVisible: boolean = false;
     @ViewChild("popupBox", {static:false}) popupBox: ElementRef;
 
     constructor(
@@ -87,19 +85,12 @@ export class HeaderHelpComponent implements AfterViewInit{
         }
     }
 
-    popup(item) {
-        this.display = true;
-        item.className = "modal-overlay about";
-        item.className = item.className + " show";
-        item.focus();
+    showAbout() {
+        this.isModalVisible = true;
     }
 
-    closePopUp(item) {
-        item.className = item.className + " begin-hide";
-        window.setTimeout(function () {
-            item.className = "modal-overlay about";
-        }, 250);
-        this.display = false;
+    closeAbout() {
+        this.isModalVisible = false;
     }
 
     @HostListener('wheel', ['$event'])
@@ -119,10 +110,10 @@ export class HeaderHelpComponent implements AfterViewInit{
             500);
     }
 
-    checkKey(event,popupBox) {
+    checkKey(event) {
         if (event.keyCode) {
             if (event.keyCode == 27 || event.keyCode == 13)
-                this.closePopUp(popupBox);
+                this.closeAbout();
         }
     }
 }

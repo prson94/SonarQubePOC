@@ -210,11 +210,11 @@
 <ng-container *ngIf="useNewUI && useNewUI == true">
     <div [formGroup]="form">
         <input *ngIf="field.FieldType=='Hidden'" [formControlName]="field.FieldName" type="hidden" />
+        <label>
+            <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
+            <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
+        </label>
         <div [ngSwitch]="field.FieldType" class="col s12 form-field" *ngIf="field.FieldType!='Hidden'">
-            <label>
-                <span *ngIf="fieldTooltip" [pTooltip]="fieldTooltip">{{currentFieldName}}</span>
-                <span *ngIf="!fieldTooltip">{{currentFieldName}}&nbsp;</span>
-            </label>
             <div *ngIf="object != 'Tag' || (object == 'Tag' && !objectID)" class="field {{field.Required == true ? 'required' : ''}} {{isValid == false && isDirty == true ? 'error' : ''}}">
                 <input placeholder="{{field.Required == true ? 'Value required' : ''}}" *ngSwitchCase="'Text'" [formControlName]="field.FieldName" (blur)="OnBlurTrim()" type="text">
                 <span *ngIf="!isValid && isDirty" class="feedback">{{errorMessage}}</span>
