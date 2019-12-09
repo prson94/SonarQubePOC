@@ -135,6 +135,8 @@ namespace d360.web.Models
         [DataMember]
         public int assetTypeId { get; set; }
         [DataMember]
+        public Guid assetTypeUid { get; set; }
+        [DataMember]
         public Guid assetUid { get; set; }
         [DataMember]
         public string key { get; set; }
