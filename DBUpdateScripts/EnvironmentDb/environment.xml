@@ -378,4 +378,5 @@
   <include file="scripts/GOV-8999.xml"/>  <!-- changes to [dbo].[GetDynamicAssets] -->
   <include file="scripts/GOV-8904.xml"/>  <!-- remove DisplayValue column from dbo.Rule -->
   <include file="scripts/GOV-8986.xml"/>  <!-- graph.GetLineageByAsset / graph.GetImpactRelationshipsByAssets -->  
+  <include file="scripts/GOV-7905.xml"/>  <!-- changes to [graph].[GetLineageByAsset] : add useAsTransformation to response-->
 </databaseChangeLog>
