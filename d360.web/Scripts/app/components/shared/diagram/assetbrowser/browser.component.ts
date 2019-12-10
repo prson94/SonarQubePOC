@@ -243,12 +243,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.filterSelectionsModel.AssetTypeOptions.forEach(at => {
             if (classIDs.findIndex(c => c == at.ClassId) > -1) {
 
-                let thisClassNode = assetTypes.find(c => c.data == at.ClassId);
+                let thisClassNode = assetTypes.find(c => c.data == 'C' +at.ClassId);
                 let nodeExists: boolean = (thisClassNode != undefined);
                 if (!nodeExists) {
                     thisClassNode = {
                         label: at.Class,
-                        data: at.ClassId,
+                        data: 'C'+at.ClassId,
                         children: []
                     };
                 }
@@ -271,12 +271,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //#region Predicates
 
         this.filterSelectionsModel.PredicateOptions.forEach(p => {
-            let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == p.TypeId);
+            let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == 'F' +p.TypeId);
             let nodeExists: boolean = (thisPredicateTypeNode != undefined);
             if (!nodeExists) {
                 thisPredicateTypeNode = {
                     label: p.Type,
-                    data: p.TypeId,
+                    data: 'F'+p.TypeId, 
                     children: []
                 };
             }
