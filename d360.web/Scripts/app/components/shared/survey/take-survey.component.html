@@ -31,11 +31,20 @@
             </div>
         </div>
         <div class="action-bar">
-            <button class="left button" *ngIf="ShowCloseButton" type="button" label="Close" (click)="closeDialog()">Cancel</button>
+            <button class="left button" *ngIf="ShowCloseButton" type="button" label="Close" (click)="closeDialog()" [disabled]="submitting">Cancel</button>
             <span class="grow"></span>
-            <button class="button" *ngIf="currentQuestionIndex > 0" type="button" [disabled]="!surveyForm.form.valid" label="Previous" (click)="previousQuestion(currentQuestionIndex)"><i class="fa fa-arrow-circle-left"></i>Previous</button>
-            <button class="button" *ngIf="currentQuestionIndex + 1 < questions.length" type="button" [disabled]="!surveyForm.form.valid" label="Next" (click)="nextQuestion(currentQuestionIndex)"><i class="fa fa-arrow-circle-right"></i>Next</button>
-            <button class="button primary" *ngIf="currentQuestionIndex+1 == questions.length" type="submit" [disabled]="!surveyForm.form.valid" label="Save">Save</button>
+            <button class="button" *ngIf="currentQuestionIndex > 0" type="button" [disabled]="!surveyForm.form.valid || submitting" label="Previous" (click)="previousQuestion(currentQuestionIndex)">
+                <span *ngIf="submitting" class="spinner"></span>
+                <span *ngIf="!submitting"><i class="fa fa-arrow-circle-left"></i>Previous</span>
+            </button>
+            <button class="button" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex + 1 < questions.length" type="button" [disabled]="!surveyForm.form.valid || submitting" label="Next" (click)="nextQuestion(currentQuestionIndex)">
+                <span *ngIf="submitting" class="spinner"></span>
+                <span *ngIf="!submitting"><i class="fa fa-arrow-circle-right"></i>Next</span>
+            </button>
+            <button class="button primary" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex+1 == questions.length" type="submit" [disabled]="!surveyForm.form.valid || submitting" label="Save">
+                <span *ngIf="submitting" class="spinner"></span>    
+                <span *ngIf="!submitting">Save</span>
+            </button>
             <em *ngIf="questions.length > 1">Question {{currentQuestionIndex+1}} of {{questions.length}}</em>
         </div>
     </form>

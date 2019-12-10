@@ -29,6 +29,7 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit 
     private errorMessage: string = '';
     SurveyTypeDisplayStyle = SurveyTypeDisplayStyle;
 
+    private submitting: boolean = false;
     private questionDetails: SurveyQuestionTypeDetails[] = [];
     private currentQuestion: SurveyQuestionTypeDetails;
 
@@ -44,6 +45,7 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit 
 
     private load() {
         this.isLoading = true;
+        this.submitting = false;
         this.surveysService.getSurveyTypeQuestions(this.surveyType)
             .subscribe(result => {
                 this.questions = result;
@@ -76,13 +78,18 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit 
     }
 
     private closeDialog() {
+        this.currentQuestionIndex = 0;
+        this.questionDetails.forEach(qd => { qd.Items.forEach(i => { i.Value = null; i.IsChecked = false }) });
+        this.currentQuestion = this.questionDetails[0];
+        this.ref.markForCheck();
         this.surveyBack.emit();
     }
 
     private onSubmit() {
         if (!this.isValid()) return;
-
+        this.submitting = true;
         this.surveysService.saveSurveyResponse(this.questionDetails, this.surveyType.ID, this.objectType, this.objectID).subscribe(res => {
+            this.submitting = false
             this.surveyComplete.emit(res);
         });
     }

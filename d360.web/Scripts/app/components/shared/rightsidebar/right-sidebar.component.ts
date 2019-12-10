@@ -330,7 +330,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     closeSurveyPopup() {
         this.showSurveyPopup = false;
     }
-    
+    handleComplete(event) {
+        this.closeSurveyPopup();
+    }
     private lastCalculatedMessage() {
         if (!this.statistics) {
             return "Governance Score not yet calculated";
