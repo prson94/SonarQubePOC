@@ -106,3 +106,12 @@
         </button>
     </div>
 </d3s-modal>
+<d3s-take-survey *ngIf="surveyType"
+                 [isModalVisible]="showSurveyPopup"
+                 [surveyType]="surveyType"
+                 [objectID]="currentObject.objectID"
+                 [objectType]="currentObject.objectName"
+                 [ShowCloseButton]="true"
+                 (surveyBack)="closeSurveyPopup()"
+                 (surveyComplete)="handleComplete($event)">
+</d3s-take-survey>

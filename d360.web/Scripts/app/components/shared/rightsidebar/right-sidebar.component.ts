@@ -9,12 +9,8 @@ import { ObjectStatisticsService } from '../../../services/object-statistics.ser
 import { SurveysService } from '../../../services/surveys.service';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { SurveyType } from '../../../models/survey.model';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { Artifact } from '../../../models/artifacts.model';
 import { WorkflowService } from '../../../services/workflow.service';
-import { D3SModal } from '../modal/gov-modal.component';
-import { setInterval } from 'timers';
-import { map } from 'rxjs/operators';
+
 
 declare var CompanySettings
 declare var CurrentResourceID;
@@ -59,6 +55,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     showCertify = false;
     showHeader: boolean = false;
     showSurvey: boolean = false;
+    showSurveyPopup: boolean = false;
     showScrollButtons: boolean = false;
     showCertifyModal: boolean = false;
     assetAction: AssetAction;
@@ -327,12 +324,15 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     navigateToSurvey() {
         if (this.currentObject) {
-            let Url = `${SiteUrlHelpers.SITE_URL_SURVEY_ROOT}/${this.currentObject.objectType}/${this.currentObject.objectTypeID}/${this.currentObject.objectName}/${this.currentObject.objectID}`
-            this.showSurvey = false;
-            this.router.navigateByUrl(Url);
+            this.showSurveyPopup = true;
         }
     }
-
+    closeSurveyPopup() {
+        this.showSurveyPopup = false;
+    }
+    handleComplete(event) {
+        this.closeSurveyPopup();
+    }
     private lastCalculatedMessage() {
         if (!this.statistics) {
             return "Governance Score not yet calculated";

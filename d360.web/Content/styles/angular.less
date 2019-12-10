@@ -2262,6 +2262,7 @@ div.home-image-title-text {
         color: #202020;
         border: none;
         border-radius: 3px;
+        line-height: normal;
     }
 
     button.button:not(.icon):not(.bar) {
@@ -2442,139 +2443,6 @@ div.home-image-title-text {
     .flex.row {
         flex-direction: row;
     }
-
-    .flex.row.wrap.sp15 {
-        margin: -7.5px;
-    }
-
-    .flex.row.wrap.sp15 > * {
-        margin: 7.5px;
-    }
-
-    .flex.row:not(.wrap).sp15 > * {
-        margin-right: 15px;
-    }
-
-    .flex.row:not(.wrap).sp15 > *:last-child {
-        margin-right: 0;
-    }
-
-    .flex.column {
-        flex-direction: column;
-    }
-
-    .flex.column:not(.wrap).sp15 > * {
-        margin-bottom: 15px;
-    }
-
-    .flex.column:not(.wrap).sp15 > *:last-child {
-        margin-bottom: 0;
-    }
-
-    .flex.jcs {
-        justify-content: flex-start;
-    }
-
-    .flex.jce {
-        justify-content: flex-end;
-    }
-
-    .flex.jcc {
-        justify-content: center;
-    }
-
-    .flex.jcstr {
-        justify-content: flex-start;
-    }
-
-    .flex.jcstr > * {
-        flex-grow: 1;
-        flex-shrink: 1;
-    }
-
-    .flex.jca {
-        justify-content: space-around;
-    }
-
-    .flex.jcb {
-        justify-content: space-between;
-    }
-
-    .flex.ais {
-        align-items: flex-start;
-    }
-
-    .flex.aie {
-        align-items: flex-end;
-    }
-
-    .flex.aic {
-        align-items: center;
-    }
-
-    .flex.aib {
-        align-items: baseline;
-    }
-
-    .flex.aistr {
-        align-items: flex-start;
-    }
-
-    .flex.aistr > * {
-        width: 100%;
-    }
-
-    .flex.wrap {
-        flex-shrink: 1;
-        flex-wrap: wrap;
-    }
-
-    .flex > * {
-        flex-shrink: 0;
-    }
-
-    .flex > *.grow {
-        flex-grow: 1;
-    }
-
-    .flex > *.shrink {
-        flex-shrink: 1;
-    }
-
-    .flex > *.scroll {
-        flex-shrink: 1;
-        flex-basis: auto;
-    }
-
-    .flex > *.stretch {
-        align-self: stretch;
-    }
-
-    .flex.row > *.scroll {
-        overflow-x: auto;
-    }
-
-    .flex.row > *.spacer {
-        min-width: 20px;
-    }
-
-    .flex.row > *.stretcher {
-        min-width: 20px;
-        flex-grow: 1;
-    }
-
-    .flex.column > *.scroll {
-        overflow-y: auto;
-    }
-
-    .flex.column > *.spacer {
-        min-height: 20px;
-    }
-
-    .flex.column > *.stretcher {
-        min-height: 20px;
-        flex-grow: 1;
-    }
 }
 
 .modal-overlay.show {
@@ -2624,7 +2492,7 @@ div.home-image-title-text {
 .modal-overlay .modal-dialog .modal-title-bar h1 {
     color: #202020;
     font-size: 18px;
-    font-weight: 300;
+    font-weight: 600;
     width: 100%;
     display: inline-flex;
     line-height: 2;
@@ -3371,6 +3239,7 @@ button.tab-scroller {
         margin-top: 15px;
         color: #000;
         font-weight: normal;
+        display: flex;
     }
 }
 
