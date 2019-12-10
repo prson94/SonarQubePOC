@@ -1379,10 +1379,10 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 	RC.FirstName + ' ' + RC.LastName as CompletedBy,
 	coalesce(s.[Object], I.[Object]) as [Object],
 	coalesce(s.ObjectID, I.ObjectID) as ObjectID,
-	coalesce(dv.DisplayValue, ISD.SubjectShortName + ' [' + ISD.PredicateName + '] ' + ISD.ObjectShortName) as [Name], 
-	coalesce(D.TypeName, DITN.Name) as ObjectTypeName,
+	coalesce(dv.DisplayValue, ISD.SubjectShortName + ' [' + ISD.PredicateName + '] ' + ISD.ObjectShortName , '[unknown]') as [Name], 
+	coalesce(D.TypeName, DITN.Name, '[unknown]') as ObjectTypeName,
 	UL.[Url] as NgUrl, 
-	coalesce(D.DisplayValue, DIN.Name) as TextPath,
+	coalesce(D.DisplayValue, DIN.Name, '[unknown]') as TextPath,
 	VS.[Name] as StepName, 
 	dbo.GetWorkflowResponsibleUsers(IST.ID, 0) as Assignments,
 	convert(nvarchar(max),VS.Settings) as Settings,
@@ -1433,8 +1433,8 @@ from
 	left join [IntersectDetail] ISD on coalesce(s.[Object], I.[Object]) = 'Intersect' and ISD.ID = coalesce(s.ObjectID, I.ObjectID)
 	left join Asset A on A.[Object] = coalesce(s.[Object], I.[Object]) and A.ObjectID = coalesce(s.ObjectID, I.ObjectID)
 	left join AssetType AST on AST.id = A.AssetTypeID
-	cross apply dbo.GetAssetDisplayValueById(A.ID) DV
-	cross apply dbo.GetAssetUrlById(A.ID) UL
+	outer apply dbo.GetAssetDisplayValueById(A.ID) DV
+	outer apply dbo.GetAssetUrlById(A.ID) UL
 	inner join workflow.VersionStep VS on VS.ID = IST.StepID
 	left join AssetDetail D on D.Object = I.Object and D.ObjectID = I.ObjectID
 	left join [Intersect] DI on 'Intersect' = I.Object and DI.ID = I.ObjectID

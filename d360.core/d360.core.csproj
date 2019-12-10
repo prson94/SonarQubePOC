@@ -353,7 +353,7 @@
     <Compile Include="exceptions\GenericException.cs" />
     <Compile Include="exceptions\InvalidFieldException.cs" />
     <Compile Include="exceptions\NoFormDataException.cs" />
-    <Compile Include="exceptions\DuplicateNameException.cs" />
+    <Compile Include="exceptions\DuplicateObjectException.cs" />
     <Compile Include="exceptions\MissingPropertiesException.cs" />
     <Compile Include="exceptions\NotFoundException.cs" />
     <Compile Include="exceptions\UnauthorizedException.cs" />

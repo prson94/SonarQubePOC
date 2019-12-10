@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 
 namespace d360.core
 {
@@ -150,5 +152,19 @@ namespace d360.core
             this.Excluded = exclude;
         }
     }
+    public class EnumConverter : StringEnumConverter
+    {
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        {
+            if (!Enum.IsDefined(objectType, reader.Value))
+            {
+                var ex = new JsonSerializationException($"Requested value '{reader.Value}' was not found.", new Exception("Invalid enum value"));
+                ex.Source = "Newtonsoft.Json";
 
+                throw ex;
+            }
+
+            return base.ReadJson(reader, objectType, existingValue, serializer);
+        }
+    }
 }
