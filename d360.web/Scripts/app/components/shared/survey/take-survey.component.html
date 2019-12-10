@@ -1,5 +1,5 @@
 ﻿
-<d3s-modal [title]="'Survey - ' + surveyType.Name" additionalClasses="medium-dialog" [isVisible]="isModalVisible">
+<d3s-modal [title]="'Survey - ' + surveyType.Name" additionalClasses="medium-dialog" (onClose)="closeDialog()" [isVisible]="isModalVisible">
     <form (ngSubmit)="onSubmit()" #surveyForm="ngForm">
         <div class="content">
             <div class="row" *ngIf="currentQuestion">
