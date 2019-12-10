@@ -112,7 +112,7 @@ namespace d360.web.Controllers.V2
         public IHttpActionResult DeleteById(Guid tagUid, bool cascade = false)
         {
             if (!tagRepository.IsAuthorizedToEditTag(tagUid))
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
 
             try
             {
