@@ -1917,8 +1917,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     {
                         visible: false,
                         fill: this.linkDefaultBackColor,
-                        stroke: this.linkDefaultBorderColor,
-                        strokeDashArray: [3, 2]
+                        stroke: this.linkDefaultBorderColor
                     },
                     new go.Binding("background", "back"),
                     //only visible if there's a label
