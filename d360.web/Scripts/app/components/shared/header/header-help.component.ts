@@ -38,7 +38,7 @@ declare var VersionNumber: string;
                         </div>
                         <div class="action-bar">
                             <span class="grow"></span>
-                            <button focus-me="focusInput" (click)="closeAbout()" class="primary button close">Close</button>
+                            <button focus-me="focusInput" (click)="closeAbout()" class="button close">Close</button>
                         </div>
                     </d3s-modal>
                 </span>`,

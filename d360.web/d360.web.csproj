@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -1273,9 +1273,10 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\survey\take-survey.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.ts" />
-    <Content Include="Scripts\app\components\shared\take-survey.component.html" />
+    <Content Include="Scripts\app\components\shared\survey\take-survey.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\shared\treetable-toggler.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-column-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\turbotable-sorticon.component.ts" />
@@ -1595,7 +1596,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\object-followers.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\raise-issue-button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\relationship-technical-relations.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\take-survey.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\survey\take-survey.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\core.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\social\social.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\workflow\workflow-issue-details.component.ts" />
