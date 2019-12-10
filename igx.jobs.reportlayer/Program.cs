@@ -104,7 +104,7 @@ namespace igx.jobs.reportlayer
         const string functionName = "ReportingLayer_Generate";
 
 #if DEBUG
-        const string timerSettings = "*/15 * * * * *";
+        const string timerSettings = "1 * * * * *";
 #else
         const string timerSettings = "0 */5 * * * *";
 #endif
@@ -116,7 +116,7 @@ namespace igx.jobs.reportlayer
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 12).ToList();
+                companies = companies.Where(i => i.CompanyID == 3).ToList();
 #endif
 
                 companies.ForEach(c =>
