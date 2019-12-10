@@ -72,7 +72,7 @@ namespace d360.core
             _allowed = allowed;
         }
     }
-    
+
     public class ForceDifferentSubjectObjectAttribute : Attribute
     {
         private bool _allowed = true;
@@ -156,12 +156,26 @@ namespace d360.core
     {
         public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            if (!Enum.IsDefined(objectType, reader.Value))
+            bool isValidEnum = true;
+            if (reader.Value != null)
             {
-                var ex = new JsonSerializationException($"Requested value '{reader.Value}' was not found.", new Exception("Invalid enum value"));
-                ex.Source = "Newtonsoft.Json";
+                int enumValue;
+                bool isNumeric = int.TryParse(reader.Value.ToString(), out enumValue);
+                if (isNumeric && !Enum.IsDefined(objectType, enumValue))
+                {
+                    isValidEnum = false;
+                }
+                if(!isNumeric && !Enum.IsDefined(objectType, reader.Value))
+                {
+                    isValidEnum = false;
+                }
 
-                throw ex;
+                if (!isValidEnum)
+                {
+                    var ex = new JsonSerializationException($"Requested value '{reader.Value}' was not found.", new Exception("Invalid enum value"));
+                    ex.Source = "Newtonsoft.Json";
+                    throw ex;
+                }
             }
 
             return base.ReadJson(reader, objectType, existingValue, serializer);
