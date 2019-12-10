@@ -173,6 +173,18 @@ namespace igx.jobs.reportlayer
                                 var joins = "";
                                 var columns = "";
 
+                                if (PluralCultureHelper.IsNeutralCultureEnglish())
+                                {
+                                    var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                                    assetTypePluralizedName = pluralize.Pluralize(cleanObjectName(o.Name));
+                                }
+
+
+                                if (assetTypePluralizedName.Length > 100)
+                                    assetTypePluralizedName = assetTypePluralizedName.Substring(0, 100);
+
+                                objectName = $"{SCHEMA}.[{o.Class.ToString()}_{assetTypePluralizedName}]";
+
                                 // Get fields for asset
                                 getDynamicFieldJoinStatements(
                                     fieldTypes.Where(f => f.AssetTypeID == o.ID).ToList(),
