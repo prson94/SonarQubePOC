@@ -622,6 +622,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
                                     inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
 									inner join IntersectType IT on IT.ID = FT.LookupObjectId
 									inner join [Intersect] I on IT.ID = I.IntersectTypeID
+		                                 and ((I.Object = A.Object and I.ObjectID = A.ObjectID) OR (I.Subject = A.Object and I.SubjectID = A.ObjectID))
 									left join #Relationships R on R.ID = I.Id
 									where R.ID is null and
                                             A.ExecutionID = @executionID
