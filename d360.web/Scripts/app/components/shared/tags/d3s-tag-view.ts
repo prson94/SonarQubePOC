@@ -28,6 +28,7 @@ export class TagView extends BaseComponent implements OnInit {
     showEditor: boolean = false;
     showDelete: boolean = false;
     private inputValue: any;
+    tagNoSpaces: string = "";
     private searchResults: any[] = [];
     private tags: any[];
     private resultPanel: any;
@@ -159,7 +160,8 @@ export class TagView extends BaseComponent implements OnInit {
             this.existingTag = true;
             this.messagesService.showError('Error', "Tag can't contain | character");
         }
-        if (event.Value.length < 1) {
+        this.tagNoSpaces = event.Value.trim();
+        if (this.tagNoSpaces.length < 1) {
             this.existingTag = true;
             this.messagesService.showError('Error', "Tag must be as least 1 character long in length");
         }
