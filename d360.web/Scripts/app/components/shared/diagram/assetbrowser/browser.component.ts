@@ -1895,11 +1895,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private createDefaultLink(): go.Link {
         return this.g(
             go.Link, {
-                routing: go.Link.Orthogonal,
+                routing: go.Link.AvoidsNodes,
                 corner: 5,
                 relinkableFrom: false,
                 relinkableTo: false,
-                click: (e, obj) => this.highlightPath(e, obj as any)
+                click: (e, obj) => this.highlightPath(e, obj as any),
+                zOrder: 1000
             },
             // the whole link panel
             this.g(go.Shape,
@@ -1910,7 +1911,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("stroke", "hasProperties", (h) => (h ? "black" : this.linkBackColor))
             ), // the link shape
             this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
-            this.g(go.Panel, "Auto", 
+            this.g(go.Panel, "Auto",  
                 this.g(
                     go.Shape,
                     {
