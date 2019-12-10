@@ -271,12 +271,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //#region Predicates
 
         this.filterSelectionsModel.PredicateOptions.forEach(p => {
-            let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == p.TypeId);
+            let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == 'F' +p.TypeId);
             let nodeExists: boolean = (thisPredicateTypeNode != undefined);
             if (!nodeExists) {
                 thisPredicateTypeNode = {
                     label: p.Type,
-                    data: p.TypeId,
+                    data: 'F'+p.TypeId, 
                     children: []
                 };
             }
