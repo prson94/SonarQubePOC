@@ -1492,13 +1492,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Forward) }
-            ),
-            this.g(
-                "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Isolate", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: function (e, obj) { alert("Not yet implemented") } }
-            )
+                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Forward) } 
+            )//,
+            //this.g(
+            //    "ContextMenuButton",
+            //    this.g(go.TextBlock, { text: "Isolate", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+            //    { click: function (e, obj) { alert("Not yet implemented") } }
+            //)
         );
     }
 
