@@ -14,7 +14,7 @@
             <i class="warning-icon fa fa-exclamation-triangle"></i>
             {{topWarningMessage}}
         </div>
-        <d3s-asset-type-modal-editor [isModalVisable]="isAddTransformationVisible" (onCancel)="onCancel()" (onSave)="newAssetAdded($event)"></d3s-asset-type-modal-editor>
+        <d3s-asset-type-modal-editor [isModalVisable]="isAddTransformationVisible" (closeEvent)="onCancel()" (onSave)="newAssetAdded($event)"></d3s-asset-type-modal-editor>
 
         <span class="title">Source Assets</span>
         <d3s-asset-search [multiSelect]="true"
@@ -26,9 +26,14 @@
                           [multiSelectStyle]="'Button'"
                           [relationshipSide]="0"
                           [clearResultsAfterSelection]="0"
-                          [multiSelectButtonLabel]="'Add source'"
+                          [multiSelectButtonLabel]="sourceBtnText"
                           (selectedChange)="onAssetSearchSelection($event)">
         </d3s-asset-search>
+        <div class="info-message" *ngIf="missingPredicateSource">
+            <i class="fa fa-info-circle"></i>
+            Please check that all assets have selected predicate
+        </div>
+
         <ng-container *ngIf="editorType == 'Lineage'">
             <span class="title">Transformation</span>
             <div class="transformation-block" style="display:flex;">
@@ -42,7 +47,7 @@
                                   (selectedChange)="onAssetSearchSelection($event)">
                 </d3s-asset-search>
                 <div class="flex-grow"></div>
-                <button type="button" title="Add Transformation" (click)="isAddTransformationVisible = true"><i class="fa fa-plus"></i></button>
+                <button type="button" [disabled]="isTransformationDisabled" title="Add Transformation" (click)="isAddTransformationVisible = true"><i class="fa fa-plus"></i></button>
             </div>
         </ng-container>
 
@@ -56,10 +61,13 @@
                           [relationshipSide]="1"
                           [clearResultsAfterSelection]="false"
                           [multiSelectStyle]="'Button'"
-                          [multiSelectButtonLabel]="'Add target'"
+                          [multiSelectButtonLabel]="targetBtnText"
                           (selectedChange)="onAssetSearchSelection($event)">
         </d3s-asset-search>
-
+        <div class="info-message" *ngIf="missingPredicateTarget">
+            <i class="fa fa-info-circle"></i>
+            Please check that all assets have selected predicate
+        </div>
 
 
         <div class="err-message" *ngFor="let err of relationshipsError; let i = index">
@@ -105,11 +113,22 @@
         </div>
 
         <div class="actions">
-            <button *ngIf="!isSaving" (click)="save()" [disabled]="!IsValid" class="button">Apply</button>
-            <button class="button" *ngIf="isSaving"><i style="padding:0px;" class="fa fa-spinner fa-spin ng-star-inserted"></i></button>
-            <div class="flex-grow"></div>
-            <button *ngIf="!isSavingAndContinue" (click)="saveAndContinue()" [disabled]="!IsValid" class="button">Apply and Continue</button>
+            <button *ngIf="!isSavingAndContinue" (click)="saveAndContinue()" [disabled]="!IsValid" class="button">Create Lineage chain</button>
             <button class="button" *ngIf="isSavingAndContinue"><i style="padding:0px;" class="fa fa-spinner fa-spin ng-star-inserted"></i></button>
+            <div class="flex-grow"></div>
+            <button *ngIf="!isSaving" (click)="save()" [disabled]="!IsValid" class="button primary">Apply Lineage</button>
+            <button class="button" *ngIf="isSaving"><i style="padding:0px;" class="fa fa-spinner fa-spin ng-star-inserted"></i></button>
+        </div>
+
+        <div class="help-box">
+            <span class="help-title">
+                <i class="fa fa-info-circle"></i>&nbsp;&nbsp;What is a lineage chain?
+                <span class="help-text">
+                    <span class="h-title">What is a lineage chain?</span>
+                    <span class="desc">Create new lineage relationship and update diagram then set up another hop in the lineage sequence being defined
+                    </span>
+                </span>
+            </span>
         </div>
     </div>
 </div>

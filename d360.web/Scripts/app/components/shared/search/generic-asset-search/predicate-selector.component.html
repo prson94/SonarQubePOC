@@ -1,11 +1,14 @@
 ﻿<div class="predicate-selector" (click)="openSelection()">
     <span class="selected-value">{{selected ? renderPredicateTitle(selected) : noPredicates ? 'no defined predicates' : '-select predicate-'}}</span>
-    <i class="fa fa-caret-down"></i>
-    <div class="selector" *ngIf="isSelectionVisible">
-        <ul class="options stripped-list">
-            <li *ngFor="let item of predicates" (click)="selectPredicate(item);">
-                {{renderPredicateTitle(item)}}
-            </li>
-        </ul>
-    </div>
+    
+    <ng-container *ngIf="predicates && predicates.length > 1">
+        <i class="fa fa-caret-down"></i>
+        <div class="selector" *ngIf="isSelectionVisible">
+            <ul class="options stripped-list">
+                <li *ngFor="let item of predicates" (click)="selectPredicate(item);">
+                    {{renderPredicateTitle(item)}}
+                </li>
+            </ul>
+        </div>
+    </ng-container>
 </div>

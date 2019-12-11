@@ -2480,6 +2480,17 @@ div.home-image-title-text {
         width: 100%;
         max-width: 800px;
     }
+
+    d3s-dynamic-editor {
+        .errorMessage {
+            color: #BC1B01;
+            font-weight: bold;
+            background: none;
+            padding: 0px;
+            border: none;
+            margin: 0;
+        }
+    }
 }
 
 .modal-overlay .modal-dialog .modal-title-bar {
@@ -5162,10 +5173,6 @@ a.mid-blue {
 
                 &:disabled {
                     opacity: 0.5;
-
-                    &:hover {
-                        background: #f0f0f0;
-                    }
                 }
             }
         }
@@ -5661,8 +5668,8 @@ a.mid-blue {
 }
 
 .filtered-asset-container {
-    padding: 10px;
-    min-width: 500px;
+    padding: 10px 24px;
+    min-width: 1008px;
     display: flex;
     flex-direction: column;
 
@@ -5705,6 +5712,19 @@ a.mid-blue {
     .definition {
         overflow-y: auto;
         margin-top: 25px;
+        padding-left: 0px;
+
+
+
+        d3s-dynamic-editor {
+            header {
+                padding-left: 0px !important;
+            }
+
+            .field-col {
+                padding-left: 0px;
+            }
+        }
     }
 }
 
@@ -5751,5 +5771,42 @@ a.mid-blue {
         position: absolute;
         top: 10px;
         left: 10px;
+    }
+}
+
+
+.help-box {
+    color: gray;
+    position: relative;
+
+    .help-title {
+
+
+        &:hover {
+            cursor: pointer;
+            color: #006fc0;
+
+            .help-text {
+                display: block;
+            }
+        }
+    }
+
+    .help-text {
+        .h-title {
+            font-size: 14px;
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+
+        color: gray;
+        display: none;
+        position: absolute;
+        top: 24px;
+        background-color: white;
+        border: 1px solid #d5d5d6;
+        border-radius: 4px;
+        padding: 10px;
     }
 }

@@ -22,7 +22,7 @@
                         <div class="row"
                              *ngFor="let row of category.rows">
                             <div *ngFor="let field of row.Fields"
-                                 [class]="'col ' + row.getColClass()"
+                                 [class]="'field-col col ' + row.getColClass()"
                                  style="padding-bottom:10px;">
                                 <d3s-dynamic-field [field]="field"
                                                    [form]="form"
@@ -38,7 +38,7 @@
                         <div class="row"
                              *ngFor="let row of category.rows">
                             <div *ngFor="let field of row.Fields"
-                                 [class]="'col ' + row.getColClass()"
+                                 [class]="'field-col col ' + row.getColClass()"
                                  style="padding-bottom:10px;">
                                 <d3s-dynamic-field [field]="field"
                                                    [form]="form"
