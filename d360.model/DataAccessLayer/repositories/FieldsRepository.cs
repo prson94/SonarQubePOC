@@ -655,9 +655,10 @@ from	IntersectType I
                     f.Type.ComputedRelationshipLookup.Definition.Fields.ForEach(i =>
                     {
                         var field = new FieldTypeComplexLookupDefinitionField();
-                        var fieldInfo = Company.Query<dynamic>("select F.ID as FieldTypeID, T.Object, T.ObjectID from FieldType F inner join AssetType T on T.ID = F.AssetTypeID where F.Name = @name and T.uid = @uid", new { name = i.FieldTypeName, uid = i.AssetTypeUid }).SingleOrDefault();
-                        
-                        if (fieldInfo == null)
+                        var specialFields = new List<string>() { "DisplayValue", "TextPath" };
+                        var fieldInfo = Company.Query<dynamic>("select coalesce(F.ID, 0) as FieldTypeID, T.Object, T.ObjectID from AssetType T left join FieldType F on F.AssetTypeID = T.ID and F.Name = @name where T.uid = @uid", new { name = i.FieldTypeName, uid = i.AssetTypeUid }).SingleOrDefault();
+
+                        if (fieldInfo.FieldTypeID == 0 && !specialFields.Contains(i.FieldTypeName))
                         {
                             hasDefinitionError = true;
                             return;
@@ -672,6 +673,8 @@ from	IntersectType I
                         field.OverrideDisplayName = i.OverrideDisplayName;
                         field.SortOrder = i.SortOrder;
                         field.Width = i.Width;
+
+
 
                         definitionFields.Add(field);
                     });
