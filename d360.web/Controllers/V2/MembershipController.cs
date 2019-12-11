@@ -56,7 +56,10 @@ namespace d360.web.Controllers.V2
             string finalSql = "";
             string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
             string whereSql = "";
-            string selectSql = $"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, gr.State";
+            string selectSql = $"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, case gr.State " +
+                $" when 1 then 'Active'" +
+                $"when 2 then 'InActive'" +
+                $"when 3 then 'Deleted' end as State ";
             string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
             string orderBySQL = $"";
 
@@ -156,7 +159,7 @@ namespace d360.web.Controllers.V2
             model.pageSize = _pageSize;
             string offsetSql = $" {orderBySQL} offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
             finalSql += offsetSql;
-            
+
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
             var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
             model.items = results;
@@ -187,7 +190,10 @@ namespace d360.web.Controllers.V2
             string whereSql = "";
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
-            string selectSql = $"select gr.uid, gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, gr.IsAdministrator, gr.LastLoggedInOn, gr.State";
+            string selectSql = $"select gr.uid, gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, gr.IsAdministrator, gr.LastLoggedInOn, case gr.State " +
+                $" when 1 then 'Active'" +
+                $"when 2 then 'InActive'" +
+                $"when 3 then 'Deleted' end as State ";
             string countSql = @"
                            select count(*)
                                    from[reporting].[Global_Resource] as gr

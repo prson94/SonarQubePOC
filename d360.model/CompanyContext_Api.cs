@@ -40,7 +40,7 @@ namespace d360.model
     {
         internal const int API_V2_RETRY_LIMIT = 10;
         internal const int API_V2_RETRY_INTERVAL = 100; // interval set in ms
-        
+
         public int SqlBulkBatchSize { get; set; } = 5000; // default size to use for sqlbulkcopy operations 0 means one batch
         public int SqlBulkBatchTimeout { get; set; } = 0; // timeout for sqlbulkcopy operations  0 means run until it happens
         public int WorkflowSendBatchSize { get; set; } = 50; // number of items to send at a time for a batch of service bus messages
@@ -475,13 +475,14 @@ using       (
                     and A.ItemNumber between @beginItemNumber and @endItemNumber 
                     and (F.Ignore = 0 or F.Ignore is null)
                     and FT.Type != 'Relationship'
+                    and IsNull(F.FieldValue, '') != '' 
             ) as S 
 on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
-{(shouldCheckExistingFieldValues ? " when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update set T.Value = S.Value,T.FormattedValue = S.FormattedValue " : " ")}
+{(shouldCheckExistingFieldValues ? " when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId " : " ")}
 when		not matched by target then
-insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue)
-values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
-            new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy)
+values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId);",
+            new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
             return res;
         }
@@ -501,8 +502,10 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 		                IntersectTypeID int,
 		                [Subject] varchar(50),
 		                SubjectID int,
+                        SubjectAssetTypeID int,
 		                [Object] varchar(50),
 		                ObjectID int,
+                        ObjectAssetTypeID int,
                         SwitchObject bit
 	                )
                     ;with R
@@ -510,14 +513,17 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                             select  distinct 
                                     A.[Object],
                                     A.ObjectID,
+                                    OT.ID as ObjectAssetTypeID,
                                     FT.LookupObjectId as IntersectTypeID,
                                     S.[Object] as [Subject],
                                     S.ObjectID as SubjectID,
+                                    S.AssetTypeID as SubjectAssetTypeID,
                                     case 
                                     when S.[Type] = IT.[Object] AND S.TypeID = IT.ObjectID then 1
                                     else 0
                                     end as switchObject
                             from    {tableName} A
+                                    inner join AssetType OT on OT.Object = A.ObjectType and OT.ObjectID = A.ObjectTypeID
                                     inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
                                         and F.ItemNumber = A.ItemNumber 
                                         and A.ObjectID is not null 
@@ -531,14 +537,16 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                                 AD.[Object], 
 												AD.ObjectID, 
 												AD.[Type], 
-												AD.TypeID 
+												AD.TypeID,
+                                                AD.AssetTypeID
 										from	AssetDetail AD 
 										union all
 										select	T.[Name] as DisplayValue,
                                                 T.[Object],
 												T.ObjectID,
 												T.[Object] as [Type],
-												0 as TypeID 
+												0 as TypeID,
+                                                T.ID as AssetTypeID
 										from	AssetType T
 										where	T.[Object] = 'ReferenceItemType'
 									) S on {assetJoin}
@@ -549,10 +557,14 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                     and (F.Ignore = 0 or F.Ignore is null)
                                     and FT.Type = 'Relationship'
                             )
-                            insert into #Relationships (ID, IntersectTypeID, Subject, SubjectId, Object, ObjectID, SwitchObject)
+                            insert into #Relationships (ID, IntersectTypeID, SubjectAssetTypeID, Subject, SubjectId, ObjectAssetTypeID, Object, ObjectID, SwitchObject)
                             select
                                 null as ID,
 			                    IntersectTypeId, 
+			                    CASE 
+				                    when switchObject = 0 then SubjectAssetTypeID
+				                    else ObjectAssetTypeID
+			                    END AS SubjectAssetTypeID, 
 			                    CASE 
 				                    when switchObject = 0 then Subject
 				                    else Object
@@ -561,6 +573,10 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
 				                    when switchObject = 0 then SubjectId
 				                    else ObjectID
 			                    END AS SubjectId,
+			                    CASE 
+				                    when switchObject = 0 then ObjectAssetTypeID
+				                    else SubjectAssetTypeID
+			                    END AS ObjectAssetTypeID, 
 			                    CASE 
 				                    when switchObject = 0 then Object
 				                    else Subject
@@ -595,15 +611,24 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                 and I.ObjectID = R.SubjectID
 					        where R.ID is null;
 
-                            delete I
-			                from [Intersect] I
-			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Object] = I.[Object] and R.ObjectID = I.ObjectID and R.SwitchObject = 0
-			                where not exists (select 1 from #Relationships where [Subject] = I.[Subject] and SubjectID = I.SubjectID);
 
-                            delete I
-			                from [Intersect] I
-			                inner join #Relationships R on R.IntersectTypeID = I.IntersectTypeID and R.[Subject] = I.[Subject] and R.SubjectID = I.SubjectID and R.SwitchObject = 1
-			                where not exists (select 1 from #Relationships where [Object] = I.[Object] and ObjectID = I.ObjectID);
+                            delete from [Intersect] where ID in(
+                             select I.ID  from api.ExecutionAsset A
+                                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                                        and F.ItemNumber = A.ItemNumber 
+                                        and A.ObjectID is not null 
+                                        and F.FieldTypeID is not null
+						                and A.Success is null
+                                    inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
+									inner join IntersectType IT on IT.ID = FT.LookupObjectId
+									inner join [Intersect] I on IT.ID = I.IntersectTypeID
+		                                 and ((I.Object = A.Object and I.ObjectID = A.ObjectID) OR (I.Subject = A.Object and I.SubjectID = A.ObjectID))
+									left join #Relationships R on R.ID = I.Id
+									where R.ID is null and
+                                            A.ExecutionID = @executionID
+                                            and A.ItemNumber between @beginItemNumber and @endItemNumber 
+                                            and (F.Ignore = 0 or F.Ignore is null)
+                                            and FT.Type = 'Relationship');
 
                             insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
                             select  R.IntersectTypeID,
@@ -612,17 +637,16 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue);",
                                     R.Object,
                                     R.ObjectID
                                 from    #Relationships R
-							    left join AssetDetail ADO on ADO.Object = R.Object and ADO.ObjectID = R.ObjectID
-							    left join AssetDetail ADS on ADS.Object = R.Subject and ADS.ObjectID = R.SubjectID
-							    left join AssetType ATO on ATO.Object = R.Object and ATO.ObjectID = R.ObjectID
-							    left join AssetType ATS on ATS.Object = R.Subject and ATS.ObjectID = R.SubjectID
 							    inner join [IntersectType] IT on IT.ID = IntersectTypeID
+                                inner join AssetType ST on ST.ID = R.SubjectAssetTypeID
+                                inner join AssetType OT on OT.ID = R.ObjectAssetTYpeID
                                 where  R.ID is null 
-                                        and ISNULL(ADO.Type, ATO.Object) = IT.Object 
-                                        and ISNULL(ADS.Type, ATS.Object) = IT.Subject;;
+                                       and OT.Object = IT.Object 
+                                       and ST.Object = IT.Subject;      
                 end
 ",
             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
         }
 
         private void MergeJsonFieldProperties(Guid executionID, SqlTransaction trans, List<FieldType> jsonFieldTypes, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true)
@@ -2239,7 +2263,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             else
             {
                 #region Build data tables for bulk load.
-               
+
                 var table = new DataTable();
                 table.Columns.Add("ExecutionID", typeof(Guid));
                 table.Columns.Add("ExecutionItemUid", typeof(Guid));
@@ -2278,7 +2302,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                     {
                         row["uid"] = item.Uid.Value;
                     }
-                    
+
 
                     table.Rows.Add(row);
                 }
@@ -2291,7 +2315,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                         Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
                     #region Bulk Copy
-                    
+
                     var bulkCopy = new SqlBulkCopy(Connection)
                     {
                         BatchSize = SqlBulkBatchSize,
@@ -2442,7 +2466,7 @@ where   ExecutionID = @ExecutionID
                         bulkCopy.ColumnMappings.Add("uid", "uid");
 
                         bulkCopy.WriteToServer(table);
-                                                
+
                         #endregion
 
                         this.ValidateRelationshipTypes(false, execution, timeout);
@@ -2598,7 +2622,7 @@ where   ExecutionID = @ExecutionID
             }
             return results;
         }
-        
+
         private void AITrackTrace(TelemetryClient client, ApiExecution execution, string methodName, string logMessage, long ElapsedMilliseconds, bool isLog)
         {
             if (!isLog) return;
@@ -2918,7 +2942,7 @@ where   ExecutionID = @ExecutionID
 
                         bulkCopy.WriteToServer(fieldTable);
 
-                        
+
                         this.AITrackTrace(client, execution, METHOD_NAME, "BulkCopy to api.Execution table", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
                         #endregion
@@ -3705,6 +3729,9 @@ select [uid] from #ParentChildRelationships",
             var results = new List<DatabaseBulkRelationshipResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+            bool checkCircularRelationships = false;
+            if (rt.Predicate.Type == PredicateType.Transformation)
+                checkCircularRelationships = true;
 
             //check if trigger workflows is set to true and there are actually no workflows
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), rt.ID, null);
@@ -4052,6 +4079,22 @@ end",
                     new { execution.ExecutionID, execution.ResourceID }, commandTimeout: timeout);
                     this.AITrackTrace(client, execution, METHOD_NAME, "  Permissions Validation", sw.ElapsedMilliseconds, isLog);
                     #endregion
+
+                    if (checkCircularRelationships)
+                    {
+                        sw.Restart();
+                        Connection.Execute(@"
+                            update	T
+                            set		T.Message = coalesce(T.Message + '; ', '') + 'Not able to create this relationship as it would cause circular relationship',
+		                            T.Success = 0
+                            from	api.ExecutionRelationship T
+		                            where T.ExecutionId = @ExecutionID
+                                    and T.IsNew = 1 
+		                            and graph.CheckCircularRelationshipCollision(T.SubjectUid, T.ObjectUid, @predicateType) = 1
+                            ", new { execution.ExecutionID, predicateType = rt.Predicate.Type}, commandTimeout: timeout);
+                        this.AITrackTrace(client, execution, METHOD_NAME, "  Circular Relationships Validation", sw.ElapsedMilliseconds, isLog);
+
+                    }
 
                     generalChecksCompleted = true;
                 }
@@ -4615,7 +4658,7 @@ set     Success = 0,
 from    [api].[ExecutionRelationshipType] ER 
 where   ER.ExecutionID = @ExecutionID 
         and ER.Success is null 
-        and not exists (select 1 from IntersectType where Uid = ER.[Uid]);", 
+        and not exists (select 1 from IntersectType where Uid = ER.[Uid]);",
                 new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
 
@@ -4641,9 +4684,9 @@ set     Success = 0,
         Message='ObjectCardinality is missing / incorrect' 
 where   ExecutionID = @ExecutionID 
         and Success is null 
-        and (ObjectCardinality is null or ObjectCardinality = 0);", 
-        new { execution.ExecutionID }, commandTimeout: timeout);  
-            
+        and (ObjectCardinality is null or ObjectCardinality = 0);",
+        new { execution.ExecutionID }, commandTimeout: timeout);
+
             Connection.Execute(@"
 with cte_relations as (
                       select    ItemNumber, 
@@ -4658,7 +4701,7 @@ SET     Success = 0,
 from    api.[ExecutionRelationshipType] ER
 where   ER.ExecutionID = @ExecutionID 
         and Success is null 
-        and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );", 
+        and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );",
         new { execution.ExecutionID }, commandTimeout: timeout);
 
             Connection.Execute(@"
@@ -4667,7 +4710,7 @@ set     [Subject] = AST.[Object],
         SubjectID = AST.[ObjectID]
 from    [api].[ExecutionRelationshipType] ER 
         inner join AssetType AST on AST.UID = ER.SubjectUID 
-where   ER.ExecutionID = @ExecutionID and ER.Success is null;", 
+where   ER.ExecutionID = @ExecutionID and ER.Success is null;",
         new { execution.ExecutionID }, commandTimeout: timeout);
 
             Connection.Execute(@"
@@ -4676,7 +4719,7 @@ set     [Object] = AST.[Object],
         ObjectID = AST.[ObjectID] 
 from    [api].[ExecutionRelationshipType] ER 
         inner join AssetType AST on AST.UID = ER.ObjectUID 
-where   ER.ExecutionID = @ExecutionID and ER.Success is null;", 
+where   ER.ExecutionID = @ExecutionID and ER.Success is null;",
         new { execution.ExecutionID }, commandTimeout: timeout);
 
             Connection.Execute(@"
@@ -4684,7 +4727,7 @@ update  ER
 set     PredicateID = P.ID 
 from    [api].[ExecutionRelationshipType] ER 
         inner join [Predicate] P on P.UID = ER.PredicateUID 
-where   ER.ExecutionID = @ExecutionID and ER.Success is null;", 
+where   ER.ExecutionID = @ExecutionID and ER.Success is null;",
         new { execution.ExecutionID }, commandTimeout: timeout);
 
             if (isInsert)
@@ -4713,7 +4756,7 @@ set     Success = 0,
         Message = 'Predicate not found.' 
 where   ExecutionID = @ExecutionID 
         and Success is null 
-        and PredicateID is null;", 
+        and PredicateID is null;",
         new { execution.ExecutionID }, commandTimeout: timeout);
 
             Connection.Execute(@"
@@ -4726,7 +4769,7 @@ from    [api].[ExecutionRelationshipType] ER
 where   ER.ExecutionID = @ExecutionID 
         and P.[Type] in @disallowEditIds 
         and ER.Success is null 
-        and ER.PredicateID is not null;", 
+        and ER.PredicateID is not null;",
         new { execution.ExecutionID, disallowEditIds = disallowEditIds }, commandTimeout: timeout);
 
             if (isInsert)
@@ -4749,7 +4792,7 @@ where   ER.ExecutionID = @ExecutionID
                 new { execution.ExecutionID }, commandTimeout: timeout);
             }
             else
-            { 
+            {
                 Connection.Execute(@"
 update  ER
 set     Success = 0, 
@@ -4777,7 +4820,7 @@ where   ER.ExecutionID = @ExecutionID
                     and I.Uid != IT.Uid 
                     and I.[Object]=IT.[Object] 
                     and I.ObjectID=IT.ObjectID 
-            );", 
+            );",
                 new { execution.ExecutionID }, commandTimeout: timeout);
             }
 

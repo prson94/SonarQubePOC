@@ -93,7 +93,7 @@
         </div>
     </div>
 </div>
-<d3s-modal [showTitle]="false" additionalClasses="request-cert" (onClose)="closeCertifyModal()" [isVisible]="showCertifyModal">
+<d3s-modal [showTitle]="false" additionalClasses="request-cert small-dialog" (onClose)="closeCertifyModal()" [isVisible]="showCertifyModal">
     <div class="content">
         <div>Click Confirm to request certification of this asset.</div>
     </div>
@@ -106,3 +106,12 @@
         </button>
     </div>
 </d3s-modal>
+<d3s-take-survey *ngIf="surveyType"
+                 [isModalVisible]="showSurveyPopup"
+                 [surveyType]="surveyType"
+                 [objectID]="currentObject.objectID"
+                 [objectType]="currentObject.objectName"
+                 [ShowCloseButton]="true"
+                 (surveyBack)="closeSurveyPopup()"
+                 (surveyComplete)="handleComplete($event)">
+</d3s-take-survey>

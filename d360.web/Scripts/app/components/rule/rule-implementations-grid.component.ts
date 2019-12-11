@@ -9,13 +9,14 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
 import { RuleColumnFilterComponent } from './rule-column-filter.component'
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { AuthenticationService } from '../../services/authentication.service';
 
 @Component({
     selector: 'd3s-rule-implementations-grid',
     template: `
                 <header>
                     Implementations
-                    <d3s-tile-actions [hasExport]="true" [hasAdd]="true" (addClick)="add()" (exportClick)="doExport()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
+                    <d3s-tile-actions [hasExport]="true" [hasAdd]="hasModifyPermission" (addClick)="add()" (exportClick)="doExport()" hasFilterMode="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div *ngIf="!isLoading && !showDelete && !showEditor">
@@ -56,12 +57,12 @@ import { MessagesObservableService } from '../../services/messages-observable.se
                                         </div>
                                 </td>
                                 <td>
-                                        <div class="RowTools">
+                                        <div class="RowTools" *ngIf="hasModifyPermission">
                                             <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
                                         </div>
                                 </td>
                                 <td>
-                                        <div class="RowTools">
+                                        <div class="RowTools" *ngIf="hasDeletePermission">
                                             <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
                                         </div>
                                 </td>
@@ -113,10 +114,14 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
     private showDelete: boolean = false;
     private showEditor: boolean = false;
 
+    private hasModifyPermission: boolean;
+    private hasDeletePermission: boolean;
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private ruleService: RulesService,
+        private authenticationService: AuthenticationService,
         private messagesService: MessagesObservableService) {
         super();
         this.theDeleteCallback = this.deleteImplementation.bind(this);
@@ -130,6 +135,8 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
         if (changes['ruleId'] && this.ruleId) {
             this.filters = [];
             this.getData();
+            this.hasModifyPermission = this.hasModifyAssetPermissions() || this.authenticationService.isAdmin;
+            this.hasDeletePermission = this.hasDeleteAssetPermissions() || this.authenticationService.isAdmin;
         }
     }
 

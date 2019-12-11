@@ -1595,10 +1595,11 @@ where	R.SourceObject = 'FusionAttribute'
                 FROM	IntersectType IT    
 		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
                 UNION
-                SELECT	ID,
-		                'Rule Implementation :: ' + DisplayValue as Name,
+                SELECT	R.ID,
+		                'Rule Implementation :: ' + A.DisplayValue as Name,
 		                'RuleImplementationType' as Type
-                FROM    [Rule]
+                FROM    [Rule] R
+                inner join AssetDetail A on A.Object = 'Rule' and A.ObjectID = R.ID
                 UNION
                 SELECT	0 as ID,
 		                'Reference :: List' as Name,
@@ -2760,7 +2761,7 @@ select @err";
                     {
                         case EntityState.Added:
                             if (Any<AssetType>(i => i.Name == o.Name && i.Object == o.Object))
-                                throw new ArgumentException(Messages.Error_NameTaken);
+                                throw new ConflictException("AssetType name conflict", Messages.Error_NameTaken);
                             break;
                         case EntityState.Modified:
                             if (Any<AssetType>(i => i.Name == o.Name && i.ID != o.ID && i.Object == o.Object))
@@ -3362,6 +3363,55 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
                             WHERE A.ID = @assetId order by S.EffectiveDate desc";
             return Query<int?>(sql, new { assetId }).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Generates the icon text shown on icons that represent the Asset 
+        /// </summary>
+        /// <param name="assetName"></param>
+        /// <returns></returns>
+        public string GetIconText(string assetName)
+        {
+            string iconText = "Tx";
+            if (string.IsNullOrEmpty(assetName))
+            {
+                return iconText;
+            }
+
+            var name = assetName.Trim();
+
+            var words = name.Split(' ');
+            if (words.Length > 1 && words[1].Length > 0)
+            {
+                if (!string.IsNullOrEmpty(words[0]))
+                {
+                    iconText = words[0][0].ToString().ToUpper();
+                }
+                else
+                {
+                    iconText = "_"; // first character is space.
+                }
+
+                if (!string.IsNullOrEmpty(words[1]))
+                {
+
+                    iconText += words[1][0].ToString().ToLower();
+                }
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(name))
+                {
+                    iconText = name[0].ToString().ToUpper();
+                    if (name.Length > 1)
+                    {
+                        iconText += name[1].ToString().ToLower();
+                    }
+                }
+            }
+
+            return iconText;
+
         }
     }
 }

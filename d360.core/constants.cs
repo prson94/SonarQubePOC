@@ -29,8 +29,8 @@ namespace d360.core
         public const string TITLE_PREFIX = "Data3Sixty";
         public const string COMPANY = "Infogix, Inc.";
         public const string PRODUCT = "Data3Sixty Govern";
-        public const string COPYRIGHT = "Copyright © Infogix, Inc. 2019";
-        public const string PRODUCT_VERSION = "2019.12.06.*";
-        public const string PRODUCT_VERSION_NOREVISION = "2019.12.06";
+        public const string COPYRIGHT = "Copyright © Infogix, Inc. 2020";
+        public const string PRODUCT_VERSION = "2020.01.10.*";
+        public const string PRODUCT_VERSION_NOREVISION = "2020.01.10";
     }
 }

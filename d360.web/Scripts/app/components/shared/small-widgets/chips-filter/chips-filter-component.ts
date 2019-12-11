@@ -27,7 +27,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                                 <li>
                                     <span>
                                         <button class="button" (click)="closeMenu();">Cancel</button>
-                                        <button class="button primary pull-right" (click)="edit(item,filterText,exact.checked)"  [disabled]="!filterText || filterText == ''">Update</button>
+                                        <button class="button primary pull-right" (click)="edit(item,filterText,exact.checked)"  [disabled]="isFilterValid(filterText,exact.checked)">Update</button>
                                     </span>
                                 </li>
                             </ul>
@@ -103,6 +103,7 @@ export class ChipsFilterComponent {
 
     private openEdit(editor: HTMLElement, input: HTMLInputElement, inputText: string) {
         this.closeMenu();
+        this.filterText = inputText;
         editor.classList.add('popup-open');
         setTimeout(() => {
             this.isEditOpen = true;
@@ -150,6 +151,12 @@ export class ChipsFilterComponent {
         this.checkMenuPosistion();
     }
 
+    private isFilterValid(filterValue: string, exact: any) {
+        if (!filterValue)
+            return true;
+        if (exact == null)
+            return true;
+    }
     private checkMenuPosistion() {
         window.setTimeout(() => {
             if (this.popup || this.allEditors.length > 0) {

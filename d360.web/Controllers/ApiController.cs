@@ -4085,14 +4085,16 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                     break;
                 case SystemObjects.RuleType:
                 case SystemObjects.Rule:
-                    sql = @"select distinct A.DisplayValue as Name, A.ID, 'Rule' as [Type] 
+                    sql = @"select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] 
                             from [Rule] A 
+                            inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = A.ID
                             inner join [Intersect] I on A.RuleTypeID = @id and (I.Subject = 'Rule' and A.ID = I.SubjectID)
                             union
-                            select distinct A.DisplayValue as Name, A.ID, 'Rule' as [Type] 
+                            select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] 
                             from [Rule] A 
+                            inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = A.ID
                             inner join [Intersect] I on A.RuleTypeID = @id and (I.Object = 'Rule' and A.ID = I.ObjectID)
-                            order by A.DisplayValue";
+                            order by D.DisplayValue";
                     break;
                 case SystemObjects.TaxonomyType:
                     sql = @"select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Taxonomy' as [Type] 

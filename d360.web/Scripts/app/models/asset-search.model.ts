@@ -34,6 +34,7 @@ export class CommonComponentAssetSelection {
     AssetTypeUid: string;
     Segments: CommonComponentAssetResultSegment[];
     Predicate: Predicate;
+    Warnings: string[] = [];
 }
 
 export class CommonComponentAssetResultSegment {

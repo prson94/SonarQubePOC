@@ -135,6 +135,8 @@ namespace d360.web.Models
         [DataMember]
         public int assetTypeId { get; set; }
         [DataMember]
+        public Guid assetTypeUid { get; set; }
+        [DataMember]
         public Guid assetUid { get; set; }
         [DataMember]
         public string key { get; set; }
@@ -146,6 +148,8 @@ namespace d360.web.Models
         public string foreColor { get; set; }
         [DataMember]
         public string icon { get; set; }
+        [DataMember]
+        public bool useAsTransformation { get; set; }
         [DataMember]
         public AssetTypeClass @class { get; set; }
         [DataMember]

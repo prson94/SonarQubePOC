@@ -1,0 +1,51 @@
+﻿
+<d3s-modal [title]="'Survey - ' + surveyType.Name" additionalClasses="medium-dialog" (onClose)="closeDialog()" [isVisible]="isModalVisible">
+    <form (ngSubmit)="onSubmit()" #surveyForm="ngForm">
+        <div class="content">
+            <div class="row" *ngIf="currentQuestion">
+                <h4 style="padding-bottom:10px"><span *ngIf="questions.length > 1">{{currentQuestionIndex+1}} - </span>{{currentQuestion.Name}}</h4>
+                <span *ngIf="currentQuestion.Description" [innerHtml]="currentQuestion.Description"></span>
+                <span [ngSwitch]="currentQuestion.DisplayStyle">
+                    <span *ngSwitchCase="SurveyTypeDisplayStyle.RadioList">
+                        <div *ngFor="let option of currentQuestion?.Items" style="padding:2px">
+                            <label>
+                                <input type="radio" name="options" (click)="option.IsChecked=$event.target.checked" [value]="option.Value" [checked]="option.IsChecked">
+                                {{option.Name}}
+                            </label>
+                        </div>
+                    </span>
+                    <span *ngSwitchCase="SurveyTypeDisplayStyle.CheckList">
+                        <div *ngFor="let option of currentQuestion?.Items;index as i" style="padding:2px">
+                            <label>
+                                <input type="checkbox" name="options_{{i}}" [(ngModel)]="option.IsChecked" [value]="option.Value" [checked]="option.IsChecked">
+                                {{option.Name}}
+                            </label>
+                        </div>
+                    </span>
+                </span>
+                <div class="col s12">
+                    <div class="FieldName">Comments</div>
+                    <textarea name="comments" [style]="{'height':'150px'}" [(ngModel)]="currentQuestion.Comments"></textarea>
+                </div>
+                <div *ngIf="errorMessage.length > 0" class="errorMessage ng-star-inserted">* {{errorMessage}}</div>
+            </div>
+        </div>
+        <div class="action-bar">
+            <button class="left button" *ngIf="ShowCloseButton" type="button" label="Close" (click)="closeDialog()" [disabled]="submitting">Cancel</button>
+            <span class="grow"></span>
+            <button class="button" *ngIf="currentQuestionIndex > 0" type="button" [disabled]="!surveyForm.form.valid || submitting" label="Previous" (click)="previousQuestion(currentQuestionIndex)">
+                <span *ngIf="submitting" class="spinner"></span>
+                <span *ngIf="!submitting"><i class="fa fa-arrow-circle-left"></i>Previous</span>
+            </button>
+            <button class="button" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex + 1 < questions.length" type="button" [disabled]="!surveyForm.form.valid || submitting" label="Next" (click)="nextQuestion(currentQuestionIndex)">
+                <span *ngIf="submitting" class="spinner"></span>
+                <span *ngIf="!submitting"><i class="fa fa-arrow-circle-right"></i>Next</span>
+            </button>
+            <button class="button primary" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex+1 == questions.length" type="submit" [disabled]="!surveyForm.form.valid || submitting" label="Save">
+                <span *ngIf="submitting" class="spinner"></span>    
+                <span *ngIf="!submitting">Save</span>
+            </button>
+            <em *ngIf="questions.length > 1">Question {{currentQuestionIndex+1}} of {{questions.length}}</em>
+        </div>
+    </form>
+</d3s-modal>

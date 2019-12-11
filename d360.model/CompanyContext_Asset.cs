@@ -16,7 +16,7 @@ namespace d360.model
     public class AssetResults
     {
         public int Count { get; set; }
-        public IEnumerable<dynamic> Results { get; set; }        
+        public IEnumerable<dynamic> Results { get; set; }
     }
 
     partial class CompanyContext : BaseContext
@@ -42,6 +42,25 @@ namespace d360.model
             value = value.Replace("*", "%").Replace("?", "_");
             value = isContains ? $"%{value}%" : $"{value}%";
             return value;
+        }
+
+        private string escapeForSQLLike(string value, bool isContains = true)
+        {
+            char[] escapeChars = new char[] { '%', '_', '^', '['};
+            string escapedValue = "";
+
+            foreach (char c in value)
+            {
+                if (escapeChars.Contains(c))
+                {
+                    escapedValue += $"[{c}]";
+                }
+                else
+                {
+                    escapedValue += c;
+                }
+            }
+            return escapedValue;
         }
 
         public string DetermineSqlDataTypeForFieldType(FieldType f)
@@ -109,9 +128,9 @@ namespace d360.model
                         var f = filter as UiRequestAttributeFilterValue;
                         if (!usedFilters.Contains($"A{f.AttributeTypeID}"))
                         {
-                            filterTable.Rows.Add("A", f.Operator, f.AttributeTypeID, null, $"{wildcardValue(f.RawValue)}");
+                            filterTable.Rows.Add("A", f.Operator, f.AttributeTypeID, null, $"{wildcardValue(escapeForSQLLike(f.RawValue))}");
                             usedFilters.Add($"A{f.AttributeTypeID}");
-                        }                        
+                        }
                     }
 
                     if (filter is UiRequestFieldFilterValue)
@@ -122,7 +141,7 @@ namespace d360.model
                         {
                             if (!usedFilters.Contains($"P0"))
                             {
-                                filterTable.Rows.Add("P", f.Operator, 0, null, $"{wildcardValue(f.RawValue)}");
+                                filterTable.Rows.Add("P", f.Operator, 0, null, $"{wildcardValue(escapeForSQLLike(f.RawValue))}");
                                 usedFilters.Add($"P0");
                             }
                         }
@@ -160,7 +179,7 @@ namespace d360.model
                                         }
                                         else
                                         {
-                                            fieldFilterValue = wildcardValue(f.RawValue);
+                                            fieldFilterValue = wildcardValue(escapeForSQLLike(f.RawValue));
                                         }
                                         filterTable.Rows.Add("F", f.Operator, int.Parse(f.FieldName.Replace("Field", "")), null, $"{fieldFilterValue}");
 
@@ -207,13 +226,13 @@ namespace d360.model
             }
             else
             {
-                simpleFilter = wildcardValue(simpleFilter, false);
+                simpleFilter = wildcardValue(escapeForSQLLike(simpleFilter), false);
             }
 
             #endregion
 
             // Scrub sort fields
-            sortField = sortField.Replace("'", "").Replace(" ", "").Replace("-","");
+            sortField = sortField.Replace("'", "").Replace(" ", "").Replace("-", "");
             sortOrder = string.IsNullOrEmpty(sortOrder) ? "" : (sortOrder.ToLower().Equals("asc") ? "asc" : "desc");
 
             parameters.Add("assetTypeId", assetTypeId);
@@ -231,11 +250,11 @@ namespace d360.model
             using (var multi = await QueryMultipleAsync(
                 "exec GetDynamicAssets @assetTypeId, @userId, @filter, @apiNamesInOutput, @listableFieldsOnly, @pagingEnabled, @pageNumber, @pageSize, @sortField, @sortDirection, @filters",
                 parameters))
-            {                
+            {
                 results.Count = multi.Read<int>().First();
                 results.Results = multi.Read<dynamic>().ToList();
             }
-                
+
 
             return results;
         }

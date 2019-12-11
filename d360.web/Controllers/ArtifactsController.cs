@@ -724,6 +724,7 @@ select	O.ID as AssetID,
         P.ID as ParentID,
         P.DisplayValue as Parent,
         dbo.GenerateAssetUrl(P.ID) as ParentUrl,
+        O.DisplayValue as DisplayValue,
         {0}
         dbo.GenerateAssetUrl(O.ID) as Url
 from	AssetDetail O

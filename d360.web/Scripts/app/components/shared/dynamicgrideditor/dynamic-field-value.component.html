@@ -10,7 +10,7 @@
 </style>
 <span [ngSwitch]="fieldType">
     <span *ngSwitchCase="'date'"><span *ngIf="fieldValue">{{fieldValue | date:'shortDate'}}</span></span>
-    <span *ngSwitchCase="'datetime'"><span *ngIf="fieldValue">{{fieldValue | date:'medium'}}</span></span>
+    <span *ngSwitchCase="'datetime'"><span *ngIf="fieldValue">{{fieldValue | utcDate | date:'medium'}}</span></span>
     <span *ngSwitchCase="'number'">{{formatAsNumber()}}</span>
     <span *ngSwitchCase="'bool'">
         <i *ngIf="fieldValue == 'TRUE'"

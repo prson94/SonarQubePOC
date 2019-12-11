@@ -96,15 +96,13 @@ select	A.ObjectID as ID,
         {editRightsColumnStatement}
         A.ID as AssetID,  
         {columns} 
-        D.DisplayValue, 
-        hch.HasChildren
+        D.DisplayValue
 from	AssetWithType A        
         {joins} 
-        cross apply [dbo].[GetAssetHasChildrenByAssetID](a.id,4) hch        
         inner join dbo.AssetDisplayValue D on A.ID = D.AssetID
         {editRightsJoinStatement}
         outer apply (
-					select	I.SubjectID, A.uid
+					select	top 1 I.SubjectID, A.uid
 					from	[Intersect] I
                             inner join IntersectType IT on IT.ID = I.IntersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
 							inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 4

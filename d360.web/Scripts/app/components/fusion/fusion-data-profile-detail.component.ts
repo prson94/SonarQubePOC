@@ -28,7 +28,7 @@ export class FusionDataProfileDetailComponent  extends BaseComponent implements 
         this.fusionAttributeService.getAssetDataProfile(this.profileId).subscribe(
             item => {
                 this.assetDataProfile = item;
-                this.top10Values = JSON.parse(this.assetDataProfile.Top10Values)
+                this.top10Values = JSON.parse(this.assetDataProfile ? this.assetDataProfile.Top10Values : null);
                 this.isLoading = false;
             }
         );

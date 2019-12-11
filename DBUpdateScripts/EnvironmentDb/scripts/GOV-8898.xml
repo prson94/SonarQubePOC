@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="GOV-8898">
+  <changeSet author="Pappas" id="GOV-8898-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -109,7 +109,7 @@ begin
 					null as ParentID,
 					1 as [Level]
 			from	AssetType A
-					left join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType in (3,4)
+					left join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
 			where	I.ID is null
 			union all
 			select	A.Object,
@@ -118,12 +118,15 @@ begin
 					P.ID as ParentID,
 					P.[Level]+1 as [Level]
 			from	AssetType A
-					inner join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType in (3,4)
+					inner join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
 					inner join h as P on P.Object = I.Subject and P.ObjectID = I.SubjectID
 		)
 		
 		insert into #assetTypes
 			select ID, [Level] from h order by [Level];
+
+		insert into #assetTypes
+			select ID, 1 from AssetType where Class in (2,6);
 	
 		while ((select count(*) from #assetTypes) > 0)
 		begin

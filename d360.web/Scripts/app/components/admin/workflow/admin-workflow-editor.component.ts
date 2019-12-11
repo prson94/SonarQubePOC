@@ -276,12 +276,11 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     }
 
     onStateChange($event) {
-        if ($event) {
+         if ($event) {
             this.model.Type.State = State.Active;
-            this.warningMessage = "";
         } else {
             this.model.Type.State = State.InActive;
-            if (this.model.Type.ID != 0) this.hasPendingWorkflowItems();
+            if (this.model.Type.ID && this.model.Type.ID != 0) this.hasPendingWorkflowItems();
         }
     }
 

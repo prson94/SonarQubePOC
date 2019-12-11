@@ -26,6 +26,8 @@ import { HeaderHomePageComponent } from './header-homepage.component';
 import { HeaderProfileComponent } from './header-profile.component';
 import { HeaderMiniMenuComponent } from './header-mini-menu-component';
 import { TypeaheadSearchModule } from '../search/typeahead-search.component';
+import { SiteModalModule } from '../modal/gov-modal.module';
+
 
 @NgModule({
     imports: [CommonModule,
@@ -44,6 +46,7 @@ import { TypeaheadSearchModule } from '../search/typeahead-search.component';
         SharedModule,        
         TreeModule, 
         DialogModule,
+        SiteModalModule,
     ],
     declarations: [
         HeaderActionsComponent,

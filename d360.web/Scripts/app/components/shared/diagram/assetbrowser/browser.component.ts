@@ -91,10 +91,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly fontLabel: string = "12px 'Source Sans Pro'";
     private readonly fontLabelColor: string = "#404040";
     private readonly fontLink: string = "9pt 'Source Sans Pro'";
-    private readonly fontLinkColor: string = "#000";
+    private readonly fontLinkColor: string = "#fff";
+    private readonly linkBackColor: string = "#808080";
     private readonly lightenBoxColor: string = "#fff";
     private readonly darkenBoxColor: string = "#000";
-    private readonly linkDefaultBackColor: string = '#ccc';
+    private readonly linkDefaultBackColor: string = '#808080';
     private readonly linkDefaultBorderColor: string = '#999';
     private readonly plusIcon: string = '\uf067';
 
@@ -134,7 +135,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             { icon: 'fa fa-refresh', title: 'Refresh' }
         );
         this.initializeDiagram();
-
     }
 
     public ngAfterViewInit() {
@@ -243,12 +243,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.filterSelectionsModel.AssetTypeOptions.forEach(at => {
             if (classIDs.findIndex(c => c == at.ClassId) > -1) {
 
-                let thisClassNode = assetTypes.find(c => c.data == at.ClassId);
+                let thisClassNode = assetTypes.find(c => c.data == 'C' +at.ClassId);
                 let nodeExists: boolean = (thisClassNode != undefined);
                 if (!nodeExists) {
                     thisClassNode = {
                         label: at.Class,
-                        data: at.ClassId,
+                        data: 'C'+at.ClassId,
                         children: []
                     };
                 }
@@ -271,12 +271,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //#region Predicates
 
         this.filterSelectionsModel.PredicateOptions.forEach(p => {
-            let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == p.TypeId);
+            let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == 'F' +p.TypeId);
             let nodeExists: boolean = (thisPredicateTypeNode != undefined);
             if (!nodeExists) {
                 thisPredicateTypeNode = {
                     label: p.Type,
-                    data: p.TypeId,
+                    data: 'F'+p.TypeId, 
                     children: []
                 };
             }
@@ -602,6 +602,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.diagram = this.createDiagram();
 
+        var forelayer = this.diagram.findLayer("Foreground");
+        this.diagram.addLayerBefore(this.g(go.Layer, { name: "Links" }), forelayer);
+
         this.diagram.groupTemplateMap.add("PortGroup", this.createPortGroupNode());
         this.diagram.groupTemplateMap.add("Group", this.createGroupNode());
 
@@ -651,7 +654,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     let translationModel: AssetBrowserTranslation = this.browserService.translateAssetLineageResponseModel(data);
                     this.parseData(translationModel);
                     this.resizeDiagram();
-                    this.diagram.zoomToFit();
+                    this.diagram.scale = 1;
                     this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
                     this.loadingText = "";
                     this.isLoading = false;
@@ -1085,8 +1088,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (parts.count == 1) {
                     let data = parts.first().data;
 
-
-                    if (data.assetUid != null) { //selected item is an asset
+                    if (data.assetUid != null && data.assetUid != '00000000-0000-0000-0000-000000000000') { //selected item is an asset
                         this.isInfoTabDisabled = false;
                         if (this.isInfoWindowVisible) {
                             if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != data.assetUid) {
@@ -1476,9 +1478,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenuShowDetails }),
                 {
                     click: (e, obj) => {
-                        this.isFilterWindowVisible = false;
-                        this.isInfoWindowVisible = true;
-                        this.showDetails(obj.part.data.assetUid);
+                        if (obj.part.data.assetUid != null && obj.part.data.assetUid != '00000000-0000-0000-0000-000000000000') {
+                            this.isFilterWindowVisible = false;
+                            this.isInfoWindowVisible = true;
+                            this.showDetails(obj.part.data.assetUid);
+                        }
                     }
                 }
             ),
@@ -1583,8 +1587,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 ),
                 this.g(
                     go.Shape,  // the "top" port
-                    { width: 0, height: 0, portId: "T", toSpot: go.Spot.TopCenter, toLinkable: true },
-                    new go.Binding("stroke", "back")
+                    { width: 0, height: 0, portId: "T", toSpot: go.Spot.TopCenter, toLinkable: true, stroke: 'transparent' }//,
+                    //new go.Binding("stroke", "back")
                 ),
                 this.g(go.Panel, "Auto",
                     this.g(
@@ -1758,7 +1762,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 go.Panel,
                 "Horizontal",
                 { stretch: go.GraphObject.Horizontal, padding: 5 },
-                new go.Binding("background", "isHighlighted", function (h) { return h ? this.selectionPathHighlightColor : this.leafBackColor; }).ofObject(),
+                new go.Binding("background", "isHighlighted", (h) => (h ? this.selectionPathHighlightColor : this.leafBackColor)).ofObject(),
                 this.g(
                     go.Shape,
                     { width: 10, height: 0, stroke: "transparent" }
@@ -1871,7 +1875,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         height: 25
                     },
                     new go.Binding("fill", "back"),
-                    new go.Binding("stroke", "back", function (v) { return go.Brush.mix(v, this.lightenBoxColor, .15); })
+                    new go.Binding("stroke", "back", (v) => go.Brush.mix(v, this.lightenBoxColor, .15))
                 ),
                 this.g(
                     go.TextBlock,
@@ -1891,30 +1895,29 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private createDefaultLink(): go.Link {
         return this.g(
             go.Link, {
-                routing: go.Link.Orthogonal,
+                routing: go.Link.AvoidsNodes,
                 corner: 5,
                 relinkableFrom: false,
                 relinkableTo: false,
-                click: (e, obj) => this.highlightPath(e, obj as any)
-            }, // the whole link panel
-            this.g(go.Shape, {
-                stroke: "gray", strokeWidth: 2
+                click: (e, obj) => this.highlightPath(e, obj as any),
+                zOrder: 1000
             },
+            // the whole link panel
+            this.g(go.Shape,
+                { stroke: this.linkBackColor, strokeWidth: 1 },
                 new go.Binding("strokeWidth", "hasProperties", function (h) {
                     return h ? 3 : 2;
                 }),
-                new go.Binding("stroke", "hasProperties", function (h) {
-                    return h ? "black" : "gray"
-                })), // the link shape
-            this.g(go.Shape, { toArrow: "standard", fill: "gray", stroke: "gray" }), // the arrowhead
-            this.g(go.Panel, "Auto",
+                new go.Binding("stroke", "hasProperties", (h) => (h ? "black" : this.linkBackColor))
+            ), // the link shape
+            this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
+            this.g(go.Panel, "Auto",  
                 this.g(
                     go.Shape,
                     {
                         visible: false,
                         fill: this.linkDefaultBackColor,
-                        stroke: this.linkDefaultBorderColor,
-                        strokeDashArray: [3, 2]
+                        stroke: this.linkDefaultBorderColor
                     },
                     new go.Binding("background", "back"),
                     //only visible if there's a label

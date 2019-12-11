@@ -365,5 +365,19 @@
   <include file="scripts/GOV-8815.xml"/> <!-- graph.GetLineageByAsset - return solitary assets with no lineage - MUST GO AFTER GOV-7910 -->
   <include file="scripts/GOV-8898.xml"/> <!-- graph.SynchronizeTables - refresh paths where null -->
   <include file="scripts/GOV-8927.xml"/> <!-- graph.SynchronizeTables / graph.PopulatePathsForAssetType - throwing error when called via web job -->
+  <include file="scripts/GOV-8948.xml"/> <!-- Update RuleResult Computation fields -->
+  <include file="scripts/GOV-8865.xml"/> <!-- Add search boost for Name -->
+  <include file="scripts/GOV-9024.xml"/> <!-- clean up source to target mapping map object type with technology asset class -->
+
+  <!-- Sprint 1 2020 Start-->
   <include file="scripts/GOV-8514.xml"/>
+  <include file="scripts/GOV-8657.xml"/>
+  <include file="scripts/GOV-8949.xml"/>  <!-- reporting schema static views removed from webjob-->
+  <include file="scripts/GOV-8963.xml"/>  <!-- added [dbo].[CheckCircularRelationshipCollision]-->
+  <include file="scripts/GOV-8969.xml"/>  <!-- change parent to come from graph tables on artifact list pages, changes to [dbo].[GetDynamicAssets] proc! and [utility].[ArtifactAssetParent] view -->
+  <include file="scripts/GOV-8999.xml"/>  <!-- changes to [dbo].[GetDynamicAssets] -->
+  <include file="scripts/GOV-8904.xml"/>  <!-- remove DisplayValue column from dbo.Rule -->
+  <include file="scripts/GOV-8986.xml"/>  <!-- graph.GetLineageByAsset / graph.GetImpactRelationshipsByAssets -->  
+  <include file="scripts/GOV-7905.xml"/>  <!-- changes to [graph].[GetLineageByAsset] : add useAsTransformation to response-->
+  <include file="scripts/GOV-9010.xml"/>  <!-- changes to [graph].[GetLineageByAsset] : set single-level assetUid value to be empty Guid for top-level-->
 </databaseChangeLog>
