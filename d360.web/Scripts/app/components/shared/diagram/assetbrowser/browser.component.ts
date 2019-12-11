@@ -243,12 +243,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.filterSelectionsModel.AssetTypeOptions.forEach(at => {
             if (classIDs.findIndex(c => c == at.ClassId) > -1) {
 
-                let thisClassNode = assetTypes.find(c => c.data == at.ClassId);
+                let thisClassNode = assetTypes.find(c => c.data == 'C' +at.ClassId);
                 let nodeExists: boolean = (thisClassNode != undefined);
                 if (!nodeExists) {
                     thisClassNode = {
                         label: at.Class,
-                        data: at.ClassId,
+                        data: 'C'+at.ClassId,
                         children: []
                     };
                 }
@@ -271,12 +271,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //#region Predicates
 
         this.filterSelectionsModel.PredicateOptions.forEach(p => {
-            let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == p.TypeId);
+            let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == 'F' +p.TypeId);
             let nodeExists: boolean = (thisPredicateTypeNode != undefined);
             if (!nodeExists) {
                 thisPredicateTypeNode = {
                     label: p.Type,
-                    data: p.TypeId,
+                    data: 'F'+p.TypeId, 
                     children: []
                 };
             }
@@ -380,18 +380,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return "fa " + icon;
     }
 
-    private scoreClass(value: number) {
-        let css: string = "asset-browser-window-tabs-content-score-";
-        if (+value < 60) {
-            css += "low";
+    protected scoreBetween(value: number, start: number, end: number) : boolean {
+        if (value) {
+            return +value >= start && +value <= end;
         }
-        else if (+value > 60 && +value < 75) {
-            css += "medium";
-        }
-        else {
-            css += "high";
-        }
-        return css;
+        return false;
     }
 
     private GetJSON(value: string) {
@@ -1499,13 +1492,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Forward) }
-            ),
-            this.g(
-                "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Isolate", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: function (e, obj) { alert("Not yet implemented") } }
-            )
+                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Forward) } 
+            )//,
+            //this.g(
+            //    "ContextMenuButton",
+            //    this.g(go.TextBlock, { text: "Isolate", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+            //    { click: function (e, obj) { alert("Not yet implemented") } }
+            //)
         );
     }
 

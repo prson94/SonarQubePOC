@@ -302,7 +302,9 @@ from    h as A
                                     var synonymName = $"{SCHEMA}.{legacyPrefix}_{assetTypePluralizedName}";
                                     synonymNames.Add(synonymName);
                                     executeSqlWithTry(companyConnection, $@"
-if not exists(select * from sys.synonyms where name = '{legacyPrefix}_{assetTypePluralizedName}')
+if (not exists(select * from sys.synonyms where name = '{legacyPrefix}_{assetTypePluralizedName}')
+and not exists(select * from sys.views where name = '{legacyPrefix}_{assetTypePluralizedName}')
+)
 BEGIN
 	CREATE SYNONYM {synonymName} FOR {objectName}
 END");

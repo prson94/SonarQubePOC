@@ -361,10 +361,12 @@ select	A.TypeName,
 			for json path
 		) as Fields,
 		(
-			select	'Governance Score' as Name,
-					cast([Value]*100 as int) as Value
-			from	metrics.Score
-			where	AssetUid = A.Uid
+			select	    top 1 
+                        'Governance Score' as Name,
+					    cast([Value]*100 as int) as Value
+			from	    metrics.Score
+			where	    AssetUid = A.Uid
+            order by    EffectiveDate desc
 			for json path
 		) as Scores,
 		(
