@@ -150,7 +150,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
         Object.keys(groups).forEach((key) => {
             var assets = groups[key].map(x => x.uid);
-            var params = { _assetUid: assets.join(',') };
+            var params = { _assetUid: assets.join(','), includeSegments: true  };
             this.assetService.getAssets(key, params).subscribe(res => {
                 var items = res.items;
                 if (items) {
@@ -187,7 +187,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
             Object.keys(groups).forEach((key) => {
                 var assets = groups[key].map(x => x.uid);
-                var params = { _assetUid: assets.join(',') };
+                var params = { _assetUid: assets.join(','), includeSegments: true };
                 this.assetService.getAssets(key, params).subscribe(res => {
                     var items = res.items;
                     if (items) {
