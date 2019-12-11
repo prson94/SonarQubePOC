@@ -227,7 +227,7 @@ namespace d360.model.DataAccessLayer
                     if (Guid.TryParse(relatedAssetUIDString, out relatedAssetUID))
                     {
                         dbArgs.Add("@relatedAssetUid", relatedAssetUID);
-                        relatedAssetSql = $"{subjectAlias}.[UID] = @relatedAssetUid";
+                        relatedAssetSql = $"{objectAlias}.[UID] = @relatedAssetUid";
                     }
                     intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and abs(I.SubjectID) = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
 
