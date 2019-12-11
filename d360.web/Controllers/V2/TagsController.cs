@@ -245,7 +245,7 @@ namespace d360.web.Controllers.V2
             foreach (var item in model)
             {
                 if (!tagRepository.IsAuthorizedToEditTag(item.uid))
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
             }
 
 
