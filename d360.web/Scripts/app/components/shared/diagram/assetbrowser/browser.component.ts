@@ -380,18 +380,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return "fa " + icon;
     }
 
-    private scoreClass(value: number) {
-        let css: string = "asset-browser-window-tabs-content-score-";
-        if (+value < 60) {
-            css += "low";
+    protected scoreBetween(value: number, start: number, end: number) : boolean {
+        if (value) {
+            return +value >= start && +value <= end;
         }
-        else if (+value > 60 && +value < 75) {
-            css += "medium";
-        }
-        else {
-            css += "high";
-        }
-        return css;
+        return false;
     }
 
     private GetJSON(value: string) {

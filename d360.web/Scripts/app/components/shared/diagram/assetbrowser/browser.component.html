@@ -145,7 +145,12 @@
                                     <div *ngIf="filterModel.DisplayScores">
                                         <div class="asset-browser-window-tabs-content-field" *ngFor="let field of selectedDiagramAsset?.Scores">
                                             <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:&#160;</span>
-                                            <span [class]="scoreClass(field.Value)">{{field.Value}}%</span>
+                                            <span class="asset-browser-score"
+                                                  [ngClass]="{
+                                                    'fail':scoreBetween(field.Value,0,49),
+                                                    'ok':scoreBetween(field.Value,50,89),
+                                                    'good':scoreBetween(field.Value,90,1000)
+                                                }">{{field.Value}}%</span>
                                         </div>
                                     </div>
 
