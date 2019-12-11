@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges, OnInit, ViewChild, ElementRef } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeClass, AssetTypeEditorModel, AssetType } from '../../../models/asset.model';
@@ -27,6 +27,7 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
     private isModelLoading: boolean = false;
     private asSub: Subscription;
     private savingInProgress: boolean = false;
+    private isValid: boolean = false;
 
     @ViewChild('definition', { static: false }) definition: ElementRef;
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: DynamicEditorComponent;
@@ -39,6 +40,10 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
         if (!changes.isModalVisable.isFirstChange() && (changes.isModalVisable.currentValue !== changes.isModalVisable.previousValue)) {
             this.load();
         }
+    }
+    
+    @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+        this.validate();
     }
 
     ngOnInit(): void {
@@ -67,11 +72,12 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
         }
     }
 
-    isInvalid() {
-        if (!this.dynamicEditor || this.dynamicEditor.isLoading)
-            return true;
-        if (!this.dynamicEditor.form && !this.dynamicEditor.form.valid)
-            return true;
+    validate() {
+        this.isValid = false;
+        if (this.dynamicEditor && this.dynamicEditor.form) {
+            if (this.dynamicEditor.form.valid)
+                this.isValid = true;
+        }
     }
 
     savedItem(event) {

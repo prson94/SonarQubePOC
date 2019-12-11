@@ -65,6 +65,10 @@ export class PredicateSelectorComponent implements OnInit {
                         else {
                             this.noPredicates = false;
                         }
+                        if (this.predicates.length == 1) {
+                            this.selected = this.predicates[0];
+                            this.onChange.emit(this.selected);
+                        }
                         this.ref.markForCheck();
 
                     });
@@ -87,6 +91,10 @@ export class PredicateSelectorComponent implements OnInit {
                             }
                             else {
                                 this.noPredicates = false;
+                            }
+                            if (this.predicates.length == 1) {
+                                this.selected = this.predicates[0];
+                                this.onChange.emit(this.selected);
                             }
                             this.ref.markForCheck();
 

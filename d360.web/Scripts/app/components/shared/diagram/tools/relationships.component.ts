@@ -68,6 +68,12 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     private noAssetOnDiagram: boolean = false;
 
+    private sourceBtnText: string = 'Add source';
+    private targetBtnText: string = 'Add target';
+
+    private missingPredicateSource: boolean = false;
+    private missingPredicateTarget: boolean = false;
+
     constructor(
         private relationshipService: RelationshipsService,
         private ref: ChangeDetectorRef
@@ -95,6 +101,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     ngOnChanges(changes: SimpleChanges) {
         this.checkSelectionValues();
+        this.validateRelationships();
+
     }
 
     private populateAssets(group) {
@@ -126,10 +134,19 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                     this.isTargetDisabled = false;
                 });
         }
+        else {
+            this.isTargetDisabled = true;
+        }
 
         if (this.sourceAssets.length > 0) {
             this.isTransformationDisabled = false;
         }
+        else {
+            this.isTransformationDisabled = true;
+            this.isTargetDisabled = true;
+        }
+
+
         this.noAssetOnDiagram = false;
         this.areAllItemsSelected = false;
 
@@ -260,6 +277,16 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     onAssetSearchSelection(event: any) {
+        if (this.sourceAssets.length > 0) {
+            this.sourceBtnText = 'Add another source asset';
+        }
+        else this.sourceBtnText = 'Add source';
+
+        if (this.targetAssets.length > 0) {
+            this.targetBtnText = 'Add another target asset';
+        }
+        else this.targetBtnText = 'Add target';
+
         this.checkSelectionValues();
         this.buildTransformationFilters();
         this.buildSourceFilters();
@@ -333,19 +360,21 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     private validateRelationships() {
         this.areRelationshipsValid = false;
+        this.missingPredicateSource = false;
+        this.missingPredicateTarget = false;
         this.relationshipsError = [];
 
         this.sourceAssets.forEach(x => {
             x.Warnings = [];
             if (!x.Predicate) {
-                x.Warnings.push("Predicate not set!");
+                this.missingPredicateSource = true;
             }
         });
         this.targetAssets.forEach(x => {
             x.Warnings = [];
 
             if (!x.Predicate) {
-                x.Warnings.push("Predicate not set!");
+                this.missingPredicateTarget = true;
             }
         });
 
