@@ -165,6 +165,10 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <remarks>
         /// In addition to the below query parameters a field name for the asset type can be specified to filter by exact match. For example MyCustomField=someExactValue.
+        /// *  If you use the object asset type Uid as the assetTypeUid value, only use of the subjectUid filter is supported.
+        /// *  If you use the subject asset type Uid as the assetTypeUid value, only use of the objectUid filter is supported.
+        /// *  If you use either the subjectUid or objectUid filter, the predicateUid must be included in the request. 
+        /// *  If you do not include the predicateUid, any values given in the subjectUid or objectUid field are ignored.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -179,6 +183,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_predicateUid", "The Uid of a predicate type to return relationships for. If specified the results will include relationships of this predicate type. Assets without this type of relationship defined will be omitted.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_subjectUid", "The Uid of the subject side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_objectuid", "The Uid of the object side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "Filter by provided asset Uid. Multiple asset Uids can be provided delimited by comma", DataType = "string", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
