@@ -17,6 +17,11 @@ namespace d360.model.validators
             {
                 throw new Exception("Invalid tag specified [null model].");
             }
+            if (string.IsNullOrEmpty(model.Value))
+            {
+                throw new Exception("Invalid tag specified [no value].");
+            }
+
             if (!string.IsNullOrEmpty(model.Value))
             {
                 isTagBlank = Regex.Replace(model.Value, @"\s+", "");
@@ -25,11 +30,6 @@ namespace d360.model.validators
             if (isTagBlank.Length < 1)
             {
                 throw new Exception("Tag must be as least 1 character long in length.");
-            }
-
-            if (string.IsNullOrEmpty(model.Value))
-            {
-                throw new Exception("Invalid tag specified [no value].");
             }
 
             if (model.Value.Length > 250)
