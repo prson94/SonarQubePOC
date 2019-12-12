@@ -55,6 +55,9 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     @Input() relationshipSide: CommonComponentAssetTypeFilterRelationshipSide;
 
     @Input() isDisabled: boolean = false;
+
+    @Input() maxItems: number;
+
     private isSearchWindowOpened: boolean = false;
 
     private searchOption = new AssetSearchFilter();

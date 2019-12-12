@@ -1,7 +1,7 @@
 ﻿<div class="predicate-selector" (click)="openSelection()">
     <span class="selected-value">{{selected ? renderPredicateTitle(selected) : noPredicates ? 'no defined predicates' : '-select predicate-'}}</span>
     
-    <ng-container *ngIf="predicates && predicates.length > 1">
+    <ng-container *ngIf="predicates">
         <i class="fa fa-caret-down"></i>
         <div class="selector" *ngIf="isSelectionVisible">
             <ul class="options stripped-list">
