@@ -147,16 +147,9 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult PostTag(TagApiUpsertModel model)
         {
-            string tagNoSpaces;
-            tagNoSpaces = Regex.Replace(model.Value, @"\s+", "");
-
             if (model == null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty request please check your request and try again."));
 
-            if (tagNoSpaces.Length < 1)
-            {
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Tag must be as least 1 character long in length."));
-            }
             TagApiModel result = new TagApiModel();
             try
             {

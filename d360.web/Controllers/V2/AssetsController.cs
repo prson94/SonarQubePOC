@@ -1173,22 +1173,10 @@ namespace d360.web.Controllers.V2
         {
             List<AssetTagSuccessApiModel> resultList = new List<AssetTagSuccessApiModel>();
             Tag currentTag;
-            string tagNoSpaces;
             foreach (var assetTagApi in assetTags)
             {
                 AssetTagSuccessApiModel result;
-                tagNoSpaces = Regex.Replace(assetTagApi.TagName, @"\s+", "");
-                if(tagNoSpaces.Length < 1)
-                {
-                    result = new AssetTagSuccessApiModel()
-                    {
-                        Message = $"Tag must be as least 1 character long in length",
-                        Success = false
-                    };
 
-                    resultList.Add(result);
-                    continue;
-                }
                 if(assetTagApi.TagUID == Guid.Empty)
                 {
                     currentTag = tagRepository.GetTagByName(assetTagApi.TagName);

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace d360.model.validators
@@ -11,9 +12,17 @@ namespace d360.model.validators
     {
         public static void ValidateForPost(TagApiUpsertModel model)
         {
+            string isTagBlank;
             if (model == null)
             {
                 throw new Exception("Invalid tag specified [null model].");
+            }
+
+            isTagBlank = Regex.Replace(model.Value, @"\s+", "");
+
+            if (isTagBlank.Length < 1)
+            {
+                throw new Exception("Tag must be as least 1 character long in length.");
             }
 
             if (string.IsNullOrEmpty(model.Value))
