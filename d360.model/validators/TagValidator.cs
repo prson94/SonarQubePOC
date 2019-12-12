@@ -12,13 +12,15 @@ namespace d360.model.validators
     {
         public static void ValidateForPost(TagApiUpsertModel model)
         {
-            string isTagBlank;
+            string isTagBlank = "";
             if (model == null)
             {
                 throw new Exception("Invalid tag specified [null model].");
             }
-
-            isTagBlank = Regex.Replace(model.Value, @"\s+", "");
+            if (!string.IsNullOrEmpty(model.Value))
+            {
+                isTagBlank = Regex.Replace(model.Value, @"\s+", "");
+            }
 
             if (isTagBlank.Length < 1)
             {
