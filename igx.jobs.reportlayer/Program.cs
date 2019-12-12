@@ -133,13 +133,40 @@ namespace igx.jobs.reportlayer
                         {
                             companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-                            var selectSql = "";                            
+                            var selectSql = "";
                             var objectName = "";
                             var assetTypePluralizedName = "";
                             var legacyPrefix = "Glossary";
-                            
-                            var assetTypes = companyConnection.Query<AssetType>($"select * from AssetType where [Class] in ({(int)AssetTypeClass.BusinessAsset}, {(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy})").ToList();
-                            var fieldTypes = companyConnection.Query<FieldType>($"select * from FieldType where AssetTypeID in (select ID from AssetType where [Class] in ({(int)AssetTypeClass.BusinessAsset}, {(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy}))").ToList();
+                            var allAssetTypes = companyConnection.Query<AssetType>($"select * from dbo.AssetType  where[Class] in ({ (int)AssetTypeClass.BusinessAsset}, { (int)AssetTypeClass.TechnicalAsset}, { (int)AssetTypeClass.Model}, { (int)AssetTypeClass.Policy})").ToList();
+
+                            //Generate required view names
+                            foreach(var at in allAssetTypes)
+                            {
+                                if (PluralCultureHelper.IsNeutralCultureEnglish())
+                                {
+                                    var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
+                                    assetTypePluralizedName = pluralize.Pluralize(cleanObjectName(at.Name));
+                                }
+
+
+                                if (assetTypePluralizedName.Length > 100)
+                                    assetTypePluralizedName = assetTypePluralizedName.Substring(0, 100);
+
+                                objectName = $"{SCHEMA}.[{at.Class.ToString()}_{assetTypePluralizedName}]";
+
+                                viewNames.Add(objectName);
+                            }
+
+
+                            //Get only changed assettypes
+                            var changedAssetTypes = GetChangedAssetTypeUids(companyConnection);
+                            var dbArgs = new DynamicParameters();
+                            dbArgs.Add("@assetTypeUids", changedAssetTypes);
+
+                            var assetTypes = allAssetTypes.Where(x => changedAssetTypes.Contains(x.uid)).ToList();
+                            var fieldTypes = companyConnection.Query<FieldType>($@"select FT.* from FieldType FT
+                                                    inner join AssetType AT on AT.Id = FT.AssetTypeID
+                                                        where AT.uid in @assetTypeUids", dbArgs).ToList();
 
                             assetTypes.ForEach(o =>
                             {
@@ -157,8 +184,6 @@ namespace igx.jobs.reportlayer
                                     assetTypePluralizedName = assetTypePluralizedName.Substring(0, 100);
 
                                 objectName = $"{SCHEMA}.[{o.Class.ToString()}_{assetTypePluralizedName}]";
-
-                                viewNames.Add(objectName);
 
                                 // Get fields for asset
                                 getDynamicFieldJoinStatements(
@@ -269,7 +294,7 @@ from    h as A
 
                                     #endregion Model/Policy
                                 }
-                          
+
                                 executeSqlWithTry(companyConnection, $@"CREATE OR ALTER VIEW {objectName} AS {selectSql}");
 
                                 if (o.Class == AssetTypeClass.BusinessAsset)
@@ -317,13 +342,13 @@ END");
                                     {ffields}
                                     from reporting.Global_Resource as r
                                     {fjoins}";
-                                                        
+
                             executeSqlWithTry(companyConnection, $@"CREATE OR ALTER VIEW {objectName} AS {selectSql}");
 
                             #endregion
 
                             #endregion
-                                                        
+
                             RemoveOldDynamicViews(companyConnection, AssetTypeClass.BusinessAsset, viewNames, log);
                             RemoveOldDynamicViews(companyConnection, AssetTypeClass.TechnicalAsset, viewNames, log);
                             RemoveOldDynamicViews(companyConnection, AssetTypeClass.Model, viewNames, log);
@@ -342,6 +367,64 @@ END");
             {
                 CoreFunction.AITrackException(functionName, ex);
             }
+        }
+
+        private static List<Guid> GetChangedAssetTypeUids(SqlConnection companyConnection)
+        {
+            var sql = $@"drop table if exists #hashTable
+                                    create  table #hashTable (
+	                                    Uid uniqueidentifier,
+	                                    OldHash binary(20),
+	                                    NewHash binary(20)
+                                    )
+
+                                    INSERT INTO #hashTable
+                                    SELECT
+	                                    at.uid,	 
+	                                    at.HashValue as OldHashValue,
+	                                    HASHBYTES('SHA1',(
+                                            SELECT   [ID]
+			                                    ,[Name]
+			                                    ,[Description]
+			                                    ,[Class]
+			                                    ,[DisplayFormat]
+			                                    ,[State]
+			                                    ,[Hierarchical]
+			                                    ,[HierarchyPredicateID]
+			                                    ,[HierarchyIntersectTypeID]
+			                                    ,[HierarchyMaximumDepth]
+			                                    ,[Object]
+			                                    ,[ObjectID]
+			                                    ,[CreatedOn]
+			                                    ,[CreatedBy]
+			                                    ,[UpdatedOn]
+			                                    ,[UpdatedBy]
+			                                    ,[Notes]
+			                                    ,[uid]
+			                                    ,[CanOwnFusion]
+			                                    ,[AutoDisplayDescription]
+			                                    ,[UseAsTransformation]
+			                                    ,F.FieldXML as FieldXml
+                                            FROM    [dbo].AssetType as HashingTable 
+		                                    CROSS APPLY (select * from FieldType where AssetTypeID = HashingTable.ID for xml path)F(FieldXML)
+                                            where   HashingTable.ID = AT.id 
+                                            FOR XML RAW
+                                        ))  as  NewHashValue
+                                    from dbo.AssetType as AT
+                                    where [Class] in ({(int)AssetTypeClass.BusinessAsset}, {(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.Model}, {(int)AssetTypeClass.Policy})
+                                    
+
+                                    select uid from #hashTable 
+                                       where NewHash <> OldHash or OldHash is null
+
+
+                                    MERGE dbo.AssetType as AT
+                                    USING #hashTable as HT
+                                    ON AT.uid = HT.Uid
+                                    WHEN MATCHED
+	                                    THEN UPDATE SET AT.HashValue = HT.NewHash;";
+
+            return companyConnection.Query<Guid>(sql).ToList();
         }
 
         private static void RemoveSynonyms(SqlConnection companyConnection, List<string> synonymNames, TextWriter log, string schemaName)
