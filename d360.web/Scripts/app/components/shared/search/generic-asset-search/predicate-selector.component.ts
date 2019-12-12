@@ -85,20 +85,19 @@ export class PredicateSelectorComponent implements OnInit {
                                 if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Object && this.assetTypeUid == rel.Object.Uid)
                                     this.predicates.push(rel.Predicate);
                             }
-
-                            if (this.predicates.length == 0) {
-                                this.noPredicates = true;
-                            }
-                            else {
-                                this.noPredicates = false;
-                            }
-                            if (this.predicates.length == 1) {
-                                this.selected = this.predicates[0];
-                                this.onChange.emit(this.selected);
-                            }
-                            this.ref.markForCheck();
-
                         });
+
+                        if (this.predicates.length == 0) {
+                            this.noPredicates = true;
+                        }
+                        else {
+                            this.noPredicates = false;
+                        }
+                        if (this.predicates.length == 1) {
+                            this.selected = this.predicates[0];
+                            this.onChange.emit(this.selected);
+                        }
+                        this.ref.markForCheck();
                     });
             }
         }

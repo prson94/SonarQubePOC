@@ -68,8 +68,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     private noAssetOnDiagram: boolean = false;
 
-    private sourceBtnText: string = 'Add source';
-    private targetBtnText: string = 'Add target';
+    private sourceBtnText: string = 'Add source asset';
+    private targetBtnText: string = 'Add target asset';
 
     private missingPredicateSource: boolean = false;
     private missingPredicateTarget: boolean = false;
@@ -151,7 +151,6 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         this.areAllItemsSelected = false;
 
         if (this.sourceAssets.length > 0 && this.transformationAsset.length > 0 && this.targetAssets.length) {
-            this.areAllItemsSelected = true;
             var doesSourceContains = false;
             var doesTargetContains = false;
 
@@ -169,6 +168,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             if (!doesSourceContains && !doesTargetContains) {
                 this.noAssetOnDiagram = true;
             }
+
         }
     }
 
@@ -280,12 +280,12 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         if (this.sourceAssets.length > 0) {
             this.sourceBtnText = 'Add another source asset';
         }
-        else this.sourceBtnText = 'Add source';
+        else this.sourceBtnText = 'Add source asset';
 
         if (this.targetAssets.length > 0) {
             this.targetBtnText = 'Add another target asset';
         }
-        else this.targetBtnText = 'Add target';
+        else this.targetBtnText = 'Add target asset';
 
         this.checkSelectionValues();
         this.buildTransformationFilters();
@@ -358,11 +358,10 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     }
 
-    private validateRelationships() {
-        this.areRelationshipsValid = false;
+    private checkPredicateTimeout = null;
+    private doMissingPredicateCheck() {
         this.missingPredicateSource = false;
         this.missingPredicateTarget = false;
-        this.relationshipsError = [];
 
         this.sourceAssets.forEach(x => {
             x.Warnings = [];
@@ -377,6 +376,21 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                 this.missingPredicateTarget = true;
             }
         });
+
+        if (this.sourceAssets.length > 0 && this.transformationAsset.length > 0 && this.targetAssets.length > 0) {
+            if (!this.missingPredicateSource && !this.missingPredicateTarget) {
+                this.areAllItemsSelected = true;
+            }
+        }
+        this.ref.markForCheck();
+    }
+
+    private validateRelationships() {
+        this.areRelationshipsValid = false;
+        this.relationshipsError = [];
+
+        clearTimeout(this.checkPredicateTimeout);
+        this.checkPredicateTimeout = setTimeout(() => this.doMissingPredicateCheck(), 1500);
 
         var relationships = this.buildRelationshipsFromSelection();
 
@@ -475,20 +489,39 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     private postRelationships(relationships: any[]) {
-        var tasks = [];
+        
+        var source_tasks = [];
+        var target_tasks = [];
         relationships.forEach(r => {
-            tasks.push(this.relationshipService.saveRelationshipsForked(r.IntersectTypeUid, r.Intersects));
+            if (r.Intersects.some(x => x.type == 'S->T')) {
+                source_tasks.push(this.relationshipService.saveRelationshipsForked(r.IntersectTypeUid, r.Intersects));
+            }
+            else {
+                target_tasks.push(this.relationshipService.saveRelationshipsForked(r.IntersectTypeUid, r.Intersects));
+            }
+
         })
-        var insertObs = forkJoin(tasks);
-        insertObs.subscribe(results => {
+
+        //Split relationships, and save target after source, so we can properly check for circular relationships
+        var sourceObs = forkJoin(source_tasks);
+        var targetObs = forkJoin(target_tasks);
+        sourceObs.subscribe(results => {
+            this.relationshipsError = [];
             var isSuccess = this.processResults(results);
-            this.afterSaveEvent(isSuccess);
+            if (isSuccess) {
+                targetObs.subscribe(res => {
+                    var isSuccess = this.processResults(res);
+                    this.afterSaveEvent(isSuccess);
+                });
+            }
+            else {
+                this.afterSaveEvent(isSuccess);
+            }
         });
     }
 
     private processResults(results: any[]): boolean {
         let rollback: boolean = false;
-        this.relationshipsError = [];
         results.forEach(res => {
             var data = res.obj;
             var result: any[] = res.response;
@@ -507,7 +540,6 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                     var subject = this.getAssetFromSelection(data.model[idx].SubjectAssetUid);
                     var object = this.getAssetFromSelection(data.model[idx].ObjectAssetUid);
                     this.relationshipsError.push({ errorMsg, subject, subjectTitle, object, objectTitle });
-                    console.log(this.relationshipsError);
                 }
 
             });

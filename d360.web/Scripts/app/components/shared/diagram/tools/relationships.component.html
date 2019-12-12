@@ -1,8 +1,8 @@
 ﻿
 <div class="asset-browser-window-header">
-    <div class="asset-browser-window-header-name">Add Relationships</div>
+    <div class="asset-browser-window-header-name">Add Lineage</div>
     <div class="clearfix"></div>
-    <div class="switcher">
+    <div class="switcher" style="display:none;">
         <button class="{{editorType == 'Lineage' ? 'selected' : ''}}" (click)="changeEditorType('Lineage')">Lineage</button>
         <!--<button class="{{editorType == 'RelatedAssets' ? 'selected' : ''}}" (click)="changeEditorType('RelatedAssets')">Related Assets</button>-->
     </div>
@@ -37,12 +37,13 @@
         <ng-container *ngIf="editorType == 'Lineage'">
             <span class="title">Transformation</span>
             <div class="transformation-block" style="display:flex;">
-                <d3s-asset-search [multiSelect]="false"
+                <d3s-asset-search [multiSelect]="true"
+                                  [maxItems]="1"
                                   [isDisabled]="isTransformationDisabled"
                                   [predicateSelectorType]="predicateType"
                                   [selected]="transformationAsset"
                                   [clearResultsAfterSelection]="true"
-                                  [placeholder]="'Choose or create a transformation...'"
+                                  [multiSelectButtonLabel]="'Add transformation asset'"
                                   [filters]="transformationFilters"
                                   (selectedChange)="onAssetSearchSelection($event)">
                 </d3s-asset-search>
@@ -113,10 +114,10 @@
         </div>
 
         <div class="actions">
-            <button *ngIf="!isSavingAndContinue" (click)="saveAndContinue()" [disabled]="!IsValid" class="button">Create Lineage chain</button>
+            <button *ngIf="!isSavingAndContinue" (click)="saveAndContinue()" [disabled]="!IsValid" class="button">Create lineage chain</button>
             <button class="button" *ngIf="isSavingAndContinue"><i style="padding:0px;" class="fa fa-spinner fa-spin ng-star-inserted"></i></button>
             <div class="flex-grow"></div>
-            <button *ngIf="!isSaving" (click)="save()" [disabled]="!IsValid" class="button primary">Apply Lineage</button>
+            <button *ngIf="!isSaving" (click)="save()" [disabled]="!IsValid" class="button primary">Apply lineage</button>
             <button class="button" *ngIf="isSaving"><i style="padding:0px;" class="fa fa-spinner fa-spin ng-star-inserted"></i></button>
         </div>
 

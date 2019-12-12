@@ -14,11 +14,11 @@
 </ng-template>
 <div class="generic-asset-search {{isDisabled ? 'disabled' : ''}}">
     <div class="disable-overlay"></div>
-   
+
     <div class="gas-container {{displayStyle}}">
         <div class="selection">
             <ng-container *ngIf="multiSelect">
-                <div class="selected-item hide-full-path" *ngFor="let item of selected;let i = index;">
+                <div class="selected-item hide-full-path {{(maxItems != undefined && (maxItems == i+1)) ? 'no-margin' : ''}}" *ngFor="let item of selected;let i = index;">
                     <div class="selection-errors" *ngIf="item.Warnings && item.Warnings.length > 0">
                         <i class="fa fa-exclamation-triangle toggle-warning">
                             <div class="warning-list warningMessage">
@@ -34,7 +34,7 @@
                     <i (click)="unselect(i)" class="unselect fa fa-times-circle" aria-hidden="true"></i>
                     <div style="display:block;width:100%;"></div>
                 </div>
-                <button *ngIf="multiSelect" type="button" class="add-source-button" (click)="openSearchWindow();">{{multiSelectButtonLabel}}</button>
+                <button *ngIf="multiSelect && (maxItems == undefined || maxItems > selected)" type="button" class="add-source-button" (click)="openSearchWindow();">{{multiSelectButtonLabel}}</button>
             </ng-container>
 
             <ng-container *ngIf="!multiSelect">
