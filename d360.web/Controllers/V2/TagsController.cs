@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace d360.web.Controllers.V2
 {
@@ -146,7 +147,6 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult PostTag(TagApiUpsertModel model)
         {
-
             if (model == null)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty request please check your request and try again."));
 

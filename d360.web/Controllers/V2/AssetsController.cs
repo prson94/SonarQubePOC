@@ -1176,6 +1176,7 @@ namespace d360.web.Controllers.V2
             foreach (var assetTagApi in assetTags)
             {
                 AssetTagSuccessApiModel result;
+
                 if(assetTagApi.TagUID == Guid.Empty)
                 {
                     currentTag = tagRepository.GetTagByName(assetTagApi.TagName);
