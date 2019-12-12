@@ -1287,6 +1287,51 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return asset.uid;
         }
 
+
+        public async Task<dynamic> GetAssetDetails(Asset asset)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@typeUid", asset.AssetType.uid.ToString());
+            dbArgs.Add("@assetUid", asset.uid.ToString());
+            dbArgs.Add("@id", asset.ID);
+
+            var sql = $@"
+                select
+	                A.[UID] as [uid],
+                    COALESCE(f.FormattedValue, ft.DefaultFormattedValue) as Status,
+                    cast(S.Value * 100 as int) as 'Score',
+                    S.EffectiveDate as 'EffectiveDate',  
+	                Node.Path 
+                from Asset A
+                inner join AssetType AT on AT.ID = A.AssetTypeID and AT.UID = @typeUid
+                left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
+                left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
+                left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
+                left join metrics.Score S on AssetUid = @assetUid and EffectiveDate <= getutcdate()
+                WHERE A.ID = @id
+            ";
+
+            var res = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
+            return res;
+        }
+
+        public async Task<dynamic> GetAssetTypeDetails(AssetType type)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@typeUid", type.uid.ToString());
+            var sql = $@"
+                    SELECT
+                        A.[uid]
+                        ,P.[Path]
+                    FROM AssetType A
+                        cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+                        where       A.[State] = 1 and A.Uid = @typeUid
+                    ";
+
+            return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
+        }
+
+
         #region Private
         private void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns)
         {
@@ -1603,7 +1648,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     return "";
             }
         }
-
 
         #endregion
 

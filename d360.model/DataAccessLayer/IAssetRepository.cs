@@ -37,7 +37,7 @@ namespace d360.model.DataAccessLayer
         bool IsReachedTransformationLimit(AssetTypeUpsert model);
 
         Guid GetRuleUIDFromRuleID(int id);
-
-
+        Task<dynamic> GetAssetDetails(Asset asset);
+        Task<dynamic> GetAssetTypeDetails(AssetType type);
     }
 }
