@@ -44,6 +44,7 @@ namespace d360.model
 		case 
 			when L.[Action] = 'M' and L.ObjectID = 0 then 'Group Membership'
 			when L.[Action] = 'M' and L.ObjectID = 1 then 'Users'
+            when L.[Action] = 'P' then coalesce(C_D.[Name], '[Deleted]') 
 			else coalesce(C_D.[Name], 'Default') 
 		end as ObjectName,
 		L.Notes,
@@ -167,9 +168,8 @@ order by	ColumnIndex", new { id });
 
             if (useExecutionTable)
             {
-                var assetType = Filter<AssetType>(a => a.uid == load.AssetTypeUid).FirstOrDefault();
-
-                var parentAssetType = GetParentTypeById(assetType.ID);
+                AssetType assetType = Filter<AssetType>(a => a.uid == load.AssetTypeUid).FirstOrDefault();
+                AssetType parentAssetType = assetType == null ? null : GetParentTypeById(assetType.ID);
 
                 sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
                 sqlTables = @"from (
