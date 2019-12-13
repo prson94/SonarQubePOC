@@ -1,4 +1,4 @@
-﻿import * as _ from 'lodash';
+import * as _ from 'lodash';
 import { Number, setTimeout } from 'core-js';
 import {
     ChangeDetectionStrategy,
@@ -539,6 +539,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
                 else {
                     this.showMessageForApiResult(this.messagesService, res);
+                    this.saveClick.emit(event);
                 }
 
             });
