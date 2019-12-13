@@ -43,8 +43,6 @@
             this.btnClear = new System.Windows.Forms.Button();
             this.chkUat = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
-            this.chkLegacy = new System.Windows.Forms.CheckBox();
-            this.chkAlternate = new System.Windows.Forms.CheckBox();
             this.chkPreview = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.chkSaveResultsInJson = new System.Windows.Forms.CheckBox();
@@ -191,8 +189,6 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Controls.Add(this.chkLegacy);
-            this.groupBox1.Controls.Add(this.chkAlternate);
             this.groupBox1.Controls.Add(this.chkPreview);
             this.groupBox1.Controls.Add(this.chkDevelopment);
             this.groupBox1.Controls.Add(this.chkUat);
@@ -203,28 +199,6 @@
             this.groupBox1.TabIndex = 12;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Environments";
-            // 
-            // chkLegacy
-            // 
-            this.chkLegacy.AutoSize = true;
-            this.chkLegacy.Location = new System.Drawing.Point(115, 38);
-            this.chkLegacy.Name = "chkLegacy";
-            this.chkLegacy.Size = new System.Drawing.Size(84, 17);
-            this.chkLegacy.TabIndex = 15;
-            this.chkLegacy.Text = "Legacy Dev";
-            this.chkLegacy.UseVisualStyleBackColor = true;
-            this.chkLegacy.CheckedChanged += new System.EventHandler(this.chkLegacy_CheckedChanged);
-            // 
-            // chkAlternate
-            // 
-            this.chkAlternate.AutoSize = true;
-            this.chkAlternate.Location = new System.Drawing.Point(115, 18);
-            this.chkAlternate.Name = "chkAlternate";
-            this.chkAlternate.Size = new System.Drawing.Size(68, 17);
-            this.chkAlternate.TabIndex = 14;
-            this.chkAlternate.Text = "Alternate";
-            this.chkAlternate.UseVisualStyleBackColor = true;
-            this.chkAlternate.CheckedChanged += new System.EventHandler(this.chkAlternate_CheckedChanged);
             // 
             // chkPreview
             // 
@@ -304,8 +278,6 @@
         private System.Windows.Forms.CheckBox chkUat;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox chkPreview;
-        private System.Windows.Forms.CheckBox chkAlternate;
-        private System.Windows.Forms.CheckBox chkLegacy;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.CheckBox chkSaveResultsInJson;
     }
