@@ -336,10 +336,15 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
     private checkPropagation() {
         for (let i = 0; i < this.selection.length; i++) {
             let node = this.getNodeWithKey(this.selection[i].key, this.value);
-            if (node && node.parent) {
-                let parent = node.parent;
-                if (this.findIndexInSelection(parent) == -1) {
-                    this.propagateUp(parent, true);
+            if (node) {
+                this.propagateDown(node, true);
+                node.expanded = true;
+                if (node.parent) {
+                    let parent = node.parent;
+                    parent.expanded = true;
+                    if (this.findIndexInSelection(parent) == -1) {
+                        this.propagateUp(parent, true);
+                    }
                 }
             }
         }

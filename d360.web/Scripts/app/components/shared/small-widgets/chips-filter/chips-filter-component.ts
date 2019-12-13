@@ -21,7 +21,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                                 </li>
                                 <li>
                                     <span>
-                                        <label class="checkbox mr10"><input type="checkbox" #exact/><span>Match Whole Words</span></label>
+                                        <label class="checkbox mr10"><input type="checkbox" #exact/><span>>Match exact phrase</span></label>
                                     </span>
                                 </li>
                                 <li>
@@ -53,7 +53,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                                 </li>
                                 <li>
                                     <span>
-                                        <label class="checkbox mr10"><input type="checkbox" #exact/><span>Match Whole Words</span></label>
+                                        <label class="checkbox mr10"><input type="checkbox" #exact/><span>>Match exact phrase</span></label>
                                     </span>
                                 </li>
                                 <li>
