@@ -71,7 +71,6 @@ namespace igx.jobs.bulkloadprocessor
                 var repository = new AssetRepository(company, queue, storage,community);
 
                 #endregion
-
                 try
                 {
                     var companyConnection = CompanyConnectionUtils.GetCompanyConnection(loadInfo.CompanyID);
