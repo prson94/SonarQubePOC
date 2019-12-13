@@ -179,7 +179,7 @@ insert into [api].[ExecutionField] (ExecutionID, ItemNumber, FieldName, FieldVal
 			R.Code,
 			0,
 			R.Code,
-			1 
+			1
 	from	[api].[ExecutionAsset] A
             inner join Asset R on A.Object =  R.Object and R.ObjectID = A.ObjectID
 			left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Code'
