@@ -539,6 +539,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
                 else {
                     this.showMessageForApiResult(this.messagesService, res);
+                    this.saveClick.emit(event);
                 }
 
             });
