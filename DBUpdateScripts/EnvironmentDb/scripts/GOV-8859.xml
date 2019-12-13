@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="GOV-8859-3">
+  <changeSet author="MDonato" id="GOV-8859-4">
 
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -460,7 +460,7 @@ begin
 				utility.GetHash(cast(T.[Hop] as varchar) + '|' + cast(T.AssetID as varchar(50))) as [Key],
 				coalesce(S.[IconBackColor], '#000000'),
 				coalesce(S.[IconForeColor], '#FFFFFF'),
-				S.Icon,
+				N.Icon,
 				T.[HierarchyLevel],
 				T.AssetTypeID,
 				[AT].uid as AssetTypeUid,
@@ -480,15 +480,9 @@ begin
 				inner join AssetDisplayValue d on d.AssetID = T.AssetID
 				inner join AssetType [AT] on [AT].ID = T.AssetTypeID
 				left join AssetTypeStyle S on S.ID = [AT].ID
+				cross apply dbo.GetAssetTypeIconById(T.AssetTypeID) N
 				inner join Asset A on A.ID = d.AssetID; 
 
-
-		update	H
-		set		H.Icon = N.Icon
-		from	#hierarchies H
-				cross apply dbo.GetAssetTypeIconById(H.AssetTypeId) N
-		where	H.Icon is null 
-				and N.Icon is not null
 
 
 	-- Determine relationships breakdown by predicate.
@@ -813,7 +807,7 @@ begin
 				utility.GetHash(cast(T.[Hop] as varchar) + '|' + cast(T.AssetID as varchar(50))) as [Key],
 				coalesce(S.[IconBackColor], '#000000'),
 				coalesce(S.[IconForeColor], '#FFFFFF'),
-				S.Icon,
+				N.Icon,
 				T.[HierarchyLevel],
 				T.AssetTypeID,
 				T.AssetID,
@@ -831,14 +825,8 @@ begin
 				inner join AssetDisplayValue d on d.AssetID = T.AssetID
 				inner join AssetType [AT] on [AT].ID = T.AssetTypeID
 				left join AssetTypeStyle S on S.ID = [AT].ID
+				cross apply dbo.GetAssetTypeIconById(T.AssetTypeID) N
 				inner join Asset A on A.ID = d.AssetID;
-
-		update	H
-		set		H.Icon = N.Icon
-		from	#hierarchies H
-				cross apply dbo.GetAssetTypeIconById(H.AssetTypeId) N
-		where	H.Icon is null 
-				and N.Icon is not null
 
 	--Add Type as parent to those nodes that have a single-level hierarchy.
 	drop table if exists #singles
@@ -1905,7 +1893,7 @@ end
 ]]>
 	</rollback>
   </changeSet>
-    <changeSet author="MDonato" id="GOV-8859-func">
+    <changeSet author="MDonato" id="GOV-8859-func-2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -1952,7 +1940,7 @@ begin
 					ObjectID, 
 					Icon 
 			from	SiteNav N 
-			where	ParentID is null and N.Object = @object
+			where	ParentID is null and (N.Object = @object or N.Object is null)
 
 			union all
 
@@ -2002,7 +1990,7 @@ begin
 			T.ObjectID, 
 			coalesce(S.Icon, N.Icon, R.Icon, @defaultIcon) as Icon 
 	from	AssetType T
-			left join AssetTypeStyle S on S.ID = T.ID
+			left join AssetTypeStyle S on S.ID = T.ID and S.Icon <> ''
 			left join @nav N on N.Object = T.Object and N.ObjectID = T.ObjectID
 			left join childNavItems R on R.ChildID = T.ID
 	where	T.ID = @Id;
