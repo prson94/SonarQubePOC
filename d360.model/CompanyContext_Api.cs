@@ -5073,6 +5073,7 @@ where   ER.ExecutionID = @ExecutionID
     set T.Success = 0, [Message] = coalesce([Message] + '; ', '') + 'This predicate is currently in use and may not be removed.'
     from	api.ExecutionDeletedPredicate T
     cross apply (select * from IntersectType where PredicateId = T.PredicateId)Usage
+    where	T.ExecutionID = @ExecutionID
 ",
                         new { execution.ExecutionID }, commandTimeout: timeout);
 
