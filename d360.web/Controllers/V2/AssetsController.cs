@@ -294,7 +294,6 @@ namespace d360.web.Controllers.V2
         }
 
 
-
         /// <summary>
         /// Get field types for the given asset type Uid
         /// </summary>
@@ -794,6 +793,54 @@ namespace d360.web.Controllers.V2
         public dynamic GetScoreAndStatus(Guid assetUid)
         {
             return Company.GetAssetStatusAndScore(assetUid);
+        }
+
+        /// <summary>
+        /// Get field types for the given asset type Uid
+        /// </summary>
+        /// <param name="assetUid">The Uid of the asset type</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("searchDetails/{assetUid}"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = false)
+        ]
+        public async Task<IHttpActionResult> GetAssetsSearchDetailsAsync(Guid assetUid)
+        {
+            var prefix = "Assets.GetAssetsSearchDetailsAsync => ";
+            var errorMessage = "";
+            AssetType type = new AssetType();
+            Asset asset = new Asset();
+            try
+            {
+                asset = AssetRepository.GetAssetByUID(assetUid);
+                if(asset != null)
+                {
+                    var res = await AssetRepository.GetAssetDetails(asset) as object;
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res )));
+
+                }
+                else
+                {
+                    type = AssetRepository.GetAssetTypeByUID(assetUid);
+                    if(type == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, string.Format("No Asset or AsssetType found for Guid [{0}]",assetUid), errorMessage));
+
+                    var res  = await AssetRepository.GetAssetTypeDetails(type) as object;
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res )));
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
         }
 
 
