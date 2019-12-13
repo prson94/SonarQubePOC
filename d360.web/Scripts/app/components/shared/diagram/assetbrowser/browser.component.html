@@ -195,7 +195,7 @@
                                             </ng-container>
                                             <ng-container *ngSwitchDefault>
                                                 <span *ngIf="field.Value !== ''" class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:&#160;</span>
-                                                <span *ngIf="field.Value !== ''" [innerHtml]="field.Value"></span>
+                                                <span *ngIf="field.Value != null" [innerHtml]="field.Value"></span>
                                             </ng-container>
                                         </ng-container>
                                     </div>
