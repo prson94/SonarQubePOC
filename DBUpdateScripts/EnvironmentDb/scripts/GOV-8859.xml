@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="GOV-8859-2">
+  <changeSet author="MDonato" id="GOV-8859-3">
 
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -486,7 +486,7 @@ begin
 		update	H
 		set		H.Icon = N.Icon
 		from	#hierarchies H
-				cross apply dbo.GetAssetTypeStyleById(H.AssetTypeId) N
+				cross apply dbo.GetAssetTypeIconById(H.AssetTypeId) N
 		where	H.Icon is null 
 				and N.Icon is not null
 
@@ -836,7 +836,7 @@ begin
 		update	H
 		set		H.Icon = N.Icon
 		from	#hierarchies H
-				cross apply dbo.GetAssetTypeStyleById(H.AssetTypeId) N
+				cross apply dbo.GetAssetTypeIconById(H.AssetTypeId) N
 		where	H.Icon is null 
 				and N.Icon is not null
 
