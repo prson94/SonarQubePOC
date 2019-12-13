@@ -21,7 +21,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                                 </li>
                                 <li>
                                     <span>
-                                        <label class="checkbox mr10"><input type="checkbox" #exact/><span>>Match exact phrase</span></label>
+                                        <label class="checkbox mr10"><input type="checkbox" #exact/><span>Match exact phrase</span></label>
                                     </span>
                                 </li>
                                 <li>
@@ -36,7 +36,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                     <div class="chip-option clickable" tabindex=0
                                 (click)="toggleMenu()" 
                                 (keydown.esc)="closeMenu()">
-                        <span *ngIf="!currentFilter">Add Filter...</span>
+                        <span *ngIf="!currentFilter">Refine Results <i class="fa fa-chevron-down"></i></span>
                         <span *ngIf="currentFilter" class="chip-option input">{{currentFilter.field}}: Any<i class="fa fa-times-circle" (click)="closeMenu()"></i></span>
                         <div class="popup-menu" [ngClass]="{'popup-open': openMenu || isInputOpen}"  #popup>
                             <ul *ngIf="!isInputOpen" class="chips-options-list">
@@ -53,7 +53,7 @@ import { AdvancedSearchFilter } from '../../../../models/search-result.model';
                                 </li>
                                 <li>
                                     <span>
-                                        <label class="checkbox mr10"><input type="checkbox" #exact/><span>>Match exact phrase</span></label>
+                                        <label class="checkbox mr10"><input type="checkbox" #exact/><span>Match exact phrase</span></label>
                                     </span>
                                 </li>
                                 <li>
