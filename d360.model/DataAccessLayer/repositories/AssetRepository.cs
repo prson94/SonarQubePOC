@@ -1448,15 +1448,15 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                                 {
                                     orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FA.Name {orderDirection} ";
                                 }
-                                else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == $"sourceid {orderDirection} ")
+                                else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "sourceid")
                                 {
                                     orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FA.SourceID {orderDirection} ";
                                 }
-                                else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == $"textpath {orderDirection} ")
+                                else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "textpath")
                                 {
                                     orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FA.TextPath {orderDirection} ";
                                 }
-                                else if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == $"code {orderDirection} ")
+                                else if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
                                 {
                                     orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"RI.Code {orderDirection} ";
                                 }
@@ -1472,10 +1472,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                                         switch (q.Value.Trim().ToLower())
                                         {
                                             case "createdon":
-                                                orderBy = $"A.CreatedOn {orderDirection}";
+                                                orderBy = $"A.CreatedOn {(string.IsNullOrEmpty(orderDirection) ? "DESC" : orderDirection)}";
                                                 break;
                                             case "updatedon":
-                                                orderBy = $"A.UpdatedOn {orderDirection}";
+                                                orderBy = $"A.UpdatedOn {(string.IsNullOrEmpty(orderDirection) ? "DESC" : orderDirection)}";
                                                 break;
                                             default:
                                                 orderBy = $"A.ID {orderDirection}";
