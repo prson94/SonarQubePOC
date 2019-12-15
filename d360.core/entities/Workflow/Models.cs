@@ -344,6 +344,7 @@ namespace d360.core.entities.Workflow
         [DataMember, JsonConverter(typeof(StringEnumConverter))]
         public ChangeType ChangeType { get; set; }
         public string Description { get; set; }
+        public string Type { get; set; }
         public Guid? PublishedVersionUid { get; set; }
         public int? PublishedVersion { get; set; }
         public DateTime CreatedOn { get; set; }

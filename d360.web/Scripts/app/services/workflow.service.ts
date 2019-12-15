@@ -26,6 +26,7 @@ import {
     BulkWorkflowFormModel,
     WorkflowItemStep,
     BulkWorkflowReassignModel,
+    WorkflowTypeItem,
 } from '../models/workflow.model';
 import { FieldType } from '../models/fields.model';
 import { SelectItem, FormHelper } from '../models/form.model';
@@ -229,13 +230,22 @@ export class WorkflowService extends BaseObservableService {
              );
     }
 
-    getAdminTypes(): Observable<any> {
-        return this.http.get('services/workflow/admintypes')
+    getAdminTypes(): Observable<WorkflowTypeItem[]> {
+        return this.http.get('api/v2/workflow/types')
             .pipe(
-                map(response => response),
+            map(response => <WorkflowTypeItem[]> response),
                 catchError(err => this.handleError(err))
             );
     }
+
+    getWorkflowTypeId(uid: string):Observable<number> {
+        return this.http.get(`api/v2/workflow/type/${uid}/id`)
+            .pipe(
+                map(response => <number>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
 
     getTypes(): Observable<any> {
         return this.http.get('services/workflow/types')
