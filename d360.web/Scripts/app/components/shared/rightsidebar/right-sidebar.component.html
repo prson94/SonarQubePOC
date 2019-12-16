@@ -106,7 +106,9 @@
         </button>
     </div>
 </d3s-modal>
-<d3s-take-survey *ngIf="surveyType && currentObject && currentObject.objectName"
+<d3s-take-survey *ngIf="surveyType 
+                        && currentObject?.objectName
+                        && !currentObject?.isType"
                  [isModalVisible]="showSurveyPopup"
                  [surveyType]="surveyType"
                  [objectID]="currentObject.objectID"

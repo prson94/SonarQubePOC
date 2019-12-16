@@ -41,20 +41,23 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.surveyType && changes.surveyType.previousValue != changes.surveyType.currentValue) {
+        if (changes.surveyType && (changes.surveyType.previousValue !== changes.surveyType.currentValue)) {
             if (changes.surveyType.currentValue) {
+                this.questionDetails = [];
+                this.questions = [];
+                console.log(changes.surveyType.previousValue);
+                console.log(changes.surveyType.currentValue);
                 this.load();
             }
         }  
     }
 
     private load() {
+        console.log("load");
         this.isLoading = true;
         this.submitting = false;
         this.surveysService.getSurveyTypeQuestions(this.surveyType)
             .subscribe(result => {
-                this.questionDetails = [];
-                this.questions = [];
                 this.questions = result;
                 if (this.questions.length > 0) {
                     this.loadQuestionDetails(this.questions[0]);
@@ -77,7 +80,8 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
                     for (let option of this.currentQuestion.Items) {
                         option.IsChecked = false;
                     }
-                    this.questionDetails.push(result);
+                    if (this.questionDetails.indexOf(result) != -1)
+                        this.questionDetails.push(result);
                     this.isLoading = false;
                     this.ref.markForCheck();
                 });
@@ -132,10 +136,6 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
         }
 
         this.loadQuestionDetails(this.questions[--this.currentQuestionIndex]);
-    }
-
-    private selectRadioValue(event, option) {
-        //console.log(event);
     }
 }
 
