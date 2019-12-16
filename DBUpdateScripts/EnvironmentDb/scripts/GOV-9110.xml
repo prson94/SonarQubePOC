@@ -25,7 +25,7 @@ AS
 BEGIN
 	declare @formattedValue nvarchar(max)
 	
-	if @Value is null or @Value = ''
+	if @Value is null or (@Value = '' and @LookupObjectID is not null)
 	begin
 		return null
 	end
