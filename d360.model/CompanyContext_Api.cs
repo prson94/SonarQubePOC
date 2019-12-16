@@ -475,7 +475,7 @@ using       (
                     and A.ItemNumber between @beginItemNumber and @endItemNumber 
                     and (F.Ignore = 0 or F.Ignore is null)
                     and FT.Type != 'Relationship'
-                    and IsNull(F.FieldValue, '') != '' 
+                    and F.FieldValue is not null
             ) as S 
 on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
 {(shouldCheckExistingFieldValues ? " when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId " : " ")}
