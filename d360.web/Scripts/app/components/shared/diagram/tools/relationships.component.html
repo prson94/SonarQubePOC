@@ -7,7 +7,7 @@
         <!--<button class="{{editorType == 'RelatedAssets' ? 'selected' : ''}}" (click)="changeEditorType('RelatedAssets')">Related Assets</button>-->
     </div>
 </div>
-<div class="asset-browser-window-content asset-browser-window-content-padded">
+<div class="asset-browser-window-content asset-browser-window-content-padded {{isAddTransformationVisible ? 'popup-opened' : ''}}">
     
     <div class="browser-relationship-editor">
         <div class="errorMessage" *ngIf="topWarningMessage.length > 0">

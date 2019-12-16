@@ -694,6 +694,7 @@ d3s-navbar-item {
 
 .maincontent {
     margin-left: 40px;
+    padding-top:12px;
 }
 
 .maincontent-open {
@@ -4862,7 +4863,7 @@ a.mid-blue {
     .asset-browser-window-content {
         position: absolute;
         right: 16px;
-        z-index: 100;
+        z-index: 1000;
         max-width: 400px;
         width: 400px;
         top: 60px;
@@ -4874,6 +4875,10 @@ a.mid-blue {
         border-bottom-left-radius: 3px;
         border-bottom-right-radius: 3px;
         border-top: none;
+
+        &.popup-opened{
+            z-index:auto;
+        }
 
         .browser-relationship-editor {
             .title {
@@ -4896,6 +4901,10 @@ a.mid-blue {
                     background-color: #f0f0f0;
                     padding: 5px 10px;
                     line-height: 22px;
+
+                    &:disabled {
+                        opacity: 0.5;
+                    }
                 }
             }
         }
@@ -4978,7 +4987,7 @@ a.mid-blue {
         position: relative;
         border-radius: 4px;
         margin-left: 4px;
-        
+
 
         &.right-margin-4 {
             margin-right: 4px;
@@ -5471,8 +5480,8 @@ a.mid-blue {
             border: 1px solid #cccccc;
             margin-left: 0px;
 
-            &.no-margin{
-                margin-bottom:0px;
+            &.no-margin {
+                margin-bottom: 0px;
             }
 
             .unselect {
