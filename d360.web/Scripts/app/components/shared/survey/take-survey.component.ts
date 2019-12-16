@@ -45,15 +45,12 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
             if (changes.surveyType.currentValue) {
                 this.questionDetails = [];
                 this.questions = [];
-                console.log(changes.surveyType.previousValue);
-                console.log(changes.surveyType.currentValue);
                 this.load();
             }
         }  
     }
 
     private load() {
-        console.log("load");
         this.isLoading = true;
         this.submitting = false;
         this.surveysService.getSurveyTypeQuestions(this.surveyType)
