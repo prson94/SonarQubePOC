@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="SDooley" id="GOV-8573-1">
+  <changeSet author="SDooley" id="GOV-8573-3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -32,7 +32,7 @@ IF (EXISTS (SELECT *
 ]]>
 	</rollback>
   </changeSet>
-  <changeSet author="SDooley" id="GOV-8573-2">
+  <changeSet author="SDooley" id="GOV-8573-4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -45,23 +45,17 @@ ALTER procedure [api].[DeleteAssetType]
 as
 begin
 	set nocount on;
-
 	declare @date datetime = getutcdate(),
 			@success bit;
-
 	BEGIN TRANSACTION [Tran1]
-
 	BEGIN TRY
-
 		select	@success = Success
 		from	api.ExecutionDeletedAssetType
 		where	ExecutionID = @executionUid
 				and ItemNumber = @itemNumber
 				and FromHierarchy = 0;
-
 		if @success is null or @success = 1
 		begin
-
 			with h as (
 				select	D.ExecutionID,
 						D.ItemNumber,
@@ -118,17 +112,14 @@ begin
 					inner join api.EntityFieldType F on F.ID = T.EntityFieldTypeID
 					inner join api.Entity E on E.ID = F.EntityID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	api.EntityFieldType T
 					inner join api.Entity E on E.ID = T.EntityID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	api.EntityUri T
 					inner join api.Entity E on E.ID = T.EntityID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	api.Entity T
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -138,7 +129,6 @@ begin
 					inner join [Attribute] A on T.ObjectType = 'Attribute' and A.ID = T.ObjectID
 					inner join Asset O on O.Object = A.ObjectType and O.ObjectID = A.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[Attribute] T
 					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
@@ -150,7 +140,6 @@ begin
 			
 			drop table if exists #w;
 			create table #w (ID int);
-
 			insert into #w
 				select	distinct 
 						wi.ID 
@@ -159,48 +148,37 @@ begin
 						inner join workflow.[Version] wv on wt.id = wv.typeId
 						inner join workflow.Item wi on 	wv.id = wi.VersionID
 						inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			insert into #w
 				select	wi.id 
 				from	workflow.Item wi
 						inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
 						inner join Asset A on A.Object = i.ObjectType and A.ObjectID = i.ObjectID
 						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
-
 			delete  T
 			from	[workflow].[ItemStepTransition] T
 					inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
 					inner join #w S on S.ID = wis.ItemID;
-
 			delete  workflow.itemstep 
 			where	ItemID in (Select ID from #w);
-
 			delete	T
 			from	[workflow].[ItemAssignment] T
 					inner join #w S on S.ID = T.ItemID;
  
 			delete  [workflow].[Item] 
 			where	ID in (Select ID from #w);
-
-
-
 			truncate table #w;
-
 			insert into #w
 				select	distinct 
 						wt.ID 
 				from	workflow.[Type] wt
 						inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
 						inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete  T
 			from	[workflow].[VersionStepTransition] T
 					inner join workflow.Versionstep wis on (wis.ID = T.ToVersionStepID or wis.ID = T.FromVersionStepID)
 					inner join [workflow].[Version] v on v.ID = wis.VersionID
 					inner join [workflow].[Type] wt on wt.ID = v.TypeID
 					inner join #w S on S.ID = wt.ID;
-
 			delete  wis
 			from	workflow.Versionstep wis
 					inner join [workflow].[Version] v on v.ID = wis.VersionID
@@ -211,12 +189,10 @@ begin
 			set		PublishedVersionID = null
 			from	workflow.type wt
 					inner join #w S on S.ID = wt.ID;
-
 			delete  v
 			from	[workflow].[Version] v
 					inner join [workflow].[Type] wt on wt.ID = v.TypeID
 					inner join #w S on S.ID = wt.ID;
-
 			delete  wt
 			from	[workflow].[Type] wt
 					inner join #w S on S.ID = wt.ID;
@@ -225,20 +201,16 @@ begin
 			from	ResponsibilityRuleResultAsset T
 					inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
 					inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	ResponsibilityRuleResultSecurityAsset T
 					inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
 					inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	ResponsibilityTypeRelationRule T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	ResponsibilityTypeRelation T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	ResponsibilityTypeRelationOverrideItem T
 					inner join Asset A on A.ID = T.AssetID
@@ -269,27 +241,19 @@ begin
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			
 			delete	T
-			from	fusion.[Rule] T
-					inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-			
-			delete	T
 			from	[Intersect] T 
 					inner join api.ExecutionDeletedAssetType S on S.IntersectTypeID = T.IntersectTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[Intersect] T
 					inner join Asset A on A.Object = T.Subject and A.ObjectID = T.SubjectID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[Intersect] T
 					inner join Asset A on A.Object = T.Object and A.ObjectID = T.ObjectID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[IntersectType] T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.Subject and S.ObjectID = T.SubjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[IntersectType] T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -298,23 +262,19 @@ begin
 			from	CommentRelation T
 					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	CommentVote T
 					inner join Comment C on C.ID = T.CommentID
 					inner join Asset O on O.Object = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	Comment T
 					inner join Asset O on O.Object = T.OwnerObjectType and O.ObjectID = T.OwnerObjectID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	Favorite T
 					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	Follow T
 					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
@@ -324,13 +284,11 @@ begin
 			from	Field T
 					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	Field T
 					inner join Issue I on T.ObjectType = 'Issue' and I.ID = T.ObjectID
 					inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	FieldType T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -339,7 +297,6 @@ begin
 			from	Issue T
 					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	IssueTypeRelation T
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -348,12 +305,10 @@ begin
 			from	[metrics].[ScoreItem] T
 					inner join Asset O on O.Uid = T.AssetUid
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[metrics].[Score] T
 					inner join Asset O on O.Uid = T.AssetUid
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[metrics].[Asset] T
 					inner join api.ExecutionDeletedAssetType S on S.Uid = T.AssetTypeUid and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -362,7 +317,6 @@ begin
 			from	SiteNavPermission T
 					inner join SiteNav O on O.ID = T.SiteNavID
 					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	O
 			from	SiteNav O
 					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -371,7 +325,6 @@ begin
 			from	Nym T
 					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	NymRelation T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -392,7 +345,6 @@ begin
 			delete  E
 			from    AssetTypeStyle E 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete A
 			from	Asset A
 					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'ArtifactType' and A.[Object] = 'Artifact'
@@ -401,39 +353,28 @@ begin
 			delete T
 			from	AssetType T
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'ArtifactType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
-
-
 			delete	T
 			from	Fusion T
 					inner join FusionType A on A.ID = T.FusionTypeID
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	A
 			from	FusionType A
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	FusionAttribute T
 					inner join FusionType A on A.ID = T.FusionAttributeTypeID
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionAttributeType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	A
 			from	FusionAttributeType A
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionAttributeType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			
-			
-			delete T
-			from	AssetType T
-					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete A
 			from	Asset A
 					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'PolicyType' and A.[Object] = 'Policy'
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.AssetTypeID = ATT.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
-			
+			delete T
+			from	AssetType T
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			delete A
 			from	Asset A
 					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'ReferenceItemType' and A.[Object] = 'ReferenceItem'
@@ -447,11 +388,9 @@ begin
 			from	[Rule] T
 					inner join RuleType A on A.ID = T.RuleTypeID
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'RuleType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	A
 			from	RuleType A
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'RuleType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete A
 			from	Asset A
 					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType' and A.[Object] = 'Taxonomy'
@@ -460,7 +399,6 @@ begin
 			delete T
 			from	AssetType T
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			
 			delete	T
 			from	Asset T
@@ -469,7 +407,6 @@ begin
 			delete	T
 			from	AssetType T
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			update	api.ExecutionDeletedAssetType
 			set		[Message] = 'Removed Asset type from environment, along with all related assets, scores, and relationships.',
 					Success = 1
@@ -477,13 +414,10 @@ begin
 					and ItemNumber = @itemNumber
 					and FromHierarchy = 0;
 		end;
-
 		COMMIT TRANSACTION [Tran1];
 	END TRY
 	BEGIN CATCH
-
 		ROLLBACK TRANSACTION [Tran1]
-
 		update	api.ExecutionDeletedAssetType
 		set		[Message] = 'Error occurred: ' + ERROR_MESSAGE(),
 				Success = 0
@@ -491,13 +425,12 @@ begin
 				and ItemNumber = @itemNumber
 				and FromHierarchy = 0;
 	END CATCH
-
 	select	*
 	from	api.ExecutionDeletedAssetType
 	where	ExecutionID = @executionUid 
 			and ItemNumber = @itemNumber
 			and FromHierarchy = 0;
-end
+end 
 ]]>
     </sql>
     <rollback>
@@ -509,23 +442,17 @@ ALTER procedure [api].[DeleteAssetType]
 as
 begin
 	set nocount on;
-
 	declare @date datetime = getutcdate(),
 			@success bit;
-
 	BEGIN TRANSACTION [Tran1]
-
 	BEGIN TRY
-
 		select	@success = Success
 		from	api.ExecutionDeletedAssetType
 		where	ExecutionID = @executionUid
 				and ItemNumber = @itemNumber
 				and FromHierarchy = 0;
-
 		if @success is null or @success = 1
 		begin
-
 			with h as (
 				select	D.ExecutionID,
 						D.ItemNumber,
@@ -582,17 +509,14 @@ begin
 					inner join api.EntityFieldType F on F.ID = T.EntityFieldTypeID
 					inner join api.Entity E on E.ID = F.EntityID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	api.EntityFieldType T
 					inner join api.Entity E on E.ID = T.EntityID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	api.EntityUri T
 					inner join api.Entity E on E.ID = T.EntityID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	api.Entity T
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -602,7 +526,6 @@ begin
 					inner join [Attribute] A on T.ObjectType = 'Attribute' and A.ID = T.ObjectID
 					inner join Asset O on O.Object = A.ObjectType and O.ObjectID = A.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[Attribute] T
 					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
@@ -614,7 +537,6 @@ begin
 			
 			drop table if exists #w;
 			create table #w (ID int);
-
 			insert into #w
 				select	distinct 
 						wi.ID 
@@ -623,48 +545,37 @@ begin
 						inner join workflow.[Version] wv on wt.id = wv.typeId
 						inner join workflow.Item wi on 	wv.id = wi.VersionID
 						inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			insert into #w
 				select	wi.id 
 				from	workflow.Item wi
 						inner join Issue i on wi.object = 'Issue' and i.id = wi.objectid
 						inner join Asset A on A.Object = i.ObjectType and A.ObjectID = i.ObjectID
 						inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
-
 			delete  T
 			from	[workflow].[ItemStepTransition] T
 					inner join workflow.itemstep wis on (wis.ID = T.ToItemStepID or wis.ID = T.FromItemStepID)
 					inner join #w S on S.ID = wis.ItemID;
-
 			delete  workflow.itemstep 
 			where	ItemID in (Select ID from #w);
-
 			delete	T
 			from	[workflow].[ItemAssignment] T
 					inner join #w S on S.ID = T.ItemID;
  
 			delete  [workflow].[Item] 
 			where	ID in (Select ID from #w);
-
-
-
 			truncate table #w;
-
 			insert into #w
 				select	distinct 
 						wt.ID 
 				from	workflow.[Type] wt
 						inner join workflow.EventRegistration we on we.typeid = wt.id and we.changetype <> 3
 						inner join api.ExecutionDeletedAssetType S on S.Object = we.Object and S.ObjectID = we.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete  T
 			from	[workflow].[VersionStepTransition] T
 					inner join workflow.Versionstep wis on (wis.ID = T.ToVersionStepID or wis.ID = T.FromVersionStepID)
 					inner join [workflow].[Version] v on v.ID = wis.VersionID
 					inner join [workflow].[Type] wt on wt.ID = v.TypeID
 					inner join #w S on S.ID = wt.ID;
-
 			delete  wis
 			from	workflow.Versionstep wis
 					inner join [workflow].[Version] v on v.ID = wis.VersionID
@@ -675,12 +586,10 @@ begin
 			set		PublishedVersionID = null
 			from	workflow.type wt
 					inner join #w S on S.ID = wt.ID;
-
 			delete  v
 			from	[workflow].[Version] v
 					inner join [workflow].[Type] wt on wt.ID = v.TypeID
 					inner join #w S on S.ID = wt.ID;
-
 			delete  wt
 			from	[workflow].[Type] wt
 					inner join #w S on S.ID = wt.ID;
@@ -689,20 +598,16 @@ begin
 			from	ResponsibilityRuleResultAsset T
 					inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
 					inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	ResponsibilityRuleResultSecurityAsset T
 					inner join ResponsibilityTypeRelationRule R on R.ID = T.RuleID
 					inner join api.ExecutionDeletedAssetType S on S.Object = R.Object and S.ObjectID = R.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	ResponsibilityTypeRelationRule T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	ResponsibilityTypeRelation T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	ResponsibilityTypeRelationOverrideItem T
 					inner join Asset A on A.ID = T.AssetID
@@ -733,27 +638,19 @@ begin
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			
 			delete	T
-			from	fusion.[Rule] T
-					inner join api.ExecutionDeletedAssetType S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-			
-			delete	T
 			from	[Intersect] T 
 					inner join api.ExecutionDeletedAssetType S on S.IntersectTypeID = T.IntersectTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[Intersect] T
 					inner join Asset A on A.Object = T.Subject and A.ObjectID = T.SubjectID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[Intersect] T
 					inner join Asset A on A.Object = T.Object and A.ObjectID = T.ObjectID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[IntersectType] T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.Subject and S.ObjectID = T.SubjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[IntersectType] T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -762,23 +659,19 @@ begin
 			from	CommentRelation T
 					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	CommentVote T
 					inner join Comment C on C.ID = T.CommentID
 					inner join Asset O on O.Object = C.OwnerObjectType and O.ObjectID = C.OwnerObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	Comment T
 					inner join Asset O on O.Object = T.OwnerObjectType and O.ObjectID = T.OwnerObjectID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	Favorite T
 					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	Follow T
 					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
@@ -788,18 +681,15 @@ begin
 			from	Field T
 					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	Field T
 					inner join Issue I on T.ObjectType = 'Issue' and I.ID = T.ObjectID
 					inner join Asset O on O.Object = I.Object and O.ObjectID = I.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	D
 			from	FieldTypeFusionLookupDefinition D
 					inner join FieldType T on T.ID = D.FieldTypeID
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	FieldType T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -808,7 +698,6 @@ begin
 			from	Issue T
 					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	IssueTypeRelation T
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -817,12 +706,10 @@ begin
 			from	[metrics].[ScoreItem] T
 					inner join Asset O on O.Uid = T.AssetUid
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[metrics].[Score] T
 					inner join Asset O on O.Uid = T.AssetUid
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	[metrics].[Asset] T
 					inner join api.ExecutionDeletedAssetType S on S.Uid = T.AssetTypeUid and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -831,7 +718,6 @@ begin
 			from	SiteNavPermission T
 					inner join SiteNav O on O.ID = T.SiteNavID
 					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	O
 			from	SiteNav O
 					inner join api.ExecutionDeletedAssetType S on S.Object = O.Object and S.ObjectID = O.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -840,7 +726,6 @@ begin
 			from	Nym T
 					inner join Asset O on O.Object = T.Object and O.ObjectID = T.ObjectID 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	NymRelation T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -861,7 +746,6 @@ begin
 			delete  E
 			from    AssetTypeStyle E 
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = E.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete A
 			from	Asset A
 					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'ArtifactType' and A.[Object] = 'Artifact'
@@ -870,39 +754,28 @@ begin
 			delete T
 			from	AssetType T
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'ArtifactType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
-
-
 			delete	T
 			from	Fusion T
 					inner join FusionType A on A.ID = T.FusionTypeID
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	A
 			from	FusionType A
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	T
 			from	FusionAttribute T
 					inner join FusionType A on A.ID = T.FusionAttributeTypeID
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionAttributeType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	A
 			from	FusionAttributeType A
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'FusionAttributeType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			
-			
-			delete T
-			from	AssetType T
-					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete A
 			from	Asset A
 					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'PolicyType' and A.[Object] = 'Policy'
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.AssetTypeID = ATT.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
-			
+			delete T
+			from	AssetType T
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'PolicyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			delete A
 			from	Asset A
 					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'ReferenceItemType' and A.[Object] = 'ReferenceItem'
@@ -916,11 +789,9 @@ begin
 			from	[Rule] T
 					inner join RuleType A on A.ID = T.RuleTypeID
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'RuleType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete	A
 			from	RuleType A
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'RuleType' and S.ObjectID = A.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			delete A
 			from	Asset A
 					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType' and A.[Object] = 'Taxonomy'
@@ -929,7 +800,6 @@ begin
 			delete T
 			from	AssetType T
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			
 			delete	T
 			from	Asset T
@@ -938,7 +808,6 @@ begin
 			delete	T
 			from	AssetType T
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-
 			update	api.ExecutionDeletedAssetType
 			set		[Message] = 'Removed Asset type from environment, along with all related assets, scores, and relationships.',
 					Success = 1
@@ -946,13 +815,10 @@ begin
 					and ItemNumber = @itemNumber
 					and FromHierarchy = 0;
 		end;
-
 		COMMIT TRANSACTION [Tran1];
 	END TRY
 	BEGIN CATCH
-
 		ROLLBACK TRANSACTION [Tran1]
-
 		update	api.ExecutionDeletedAssetType
 		set		[Message] = 'Error occurred: ' + ERROR_MESSAGE(),
 				Success = 0
@@ -960,7 +826,6 @@ begin
 				and ItemNumber = @itemNumber
 				and FromHierarchy = 0;
 	END CATCH
-
 	select	*
 	from	api.ExecutionDeletedAssetType
 	where	ExecutionID = @executionUid 
@@ -970,5 +835,4 @@ end
 ]]>
     </rollback>
   </changeSet>
-
   </databaseChangeLog>

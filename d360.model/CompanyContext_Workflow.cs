@@ -1905,6 +1905,13 @@ namespace d360.model
         public async Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml)
         {
             if (string.IsNullOrEmpty(bodyTemplate)) return string.Empty;
+            
+            if (supportHtml)
+            {
+                var sanitizer = new Ganss.XSS.HtmlSanitizer();
+                sanitizer.AllowedSchemes.Add("data");
+                bodyTemplate = sanitizer.Sanitize(bodyTemplate);
+            }
 
             var result = bodyTemplate;
             //replace [OBJECT_NAME] with the object name            

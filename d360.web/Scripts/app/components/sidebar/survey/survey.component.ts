@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, Input, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, Input, OnDestroy, AfterViewInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SurveysService } from '../../../services/surveys.service';
@@ -11,19 +11,20 @@ declare var CurrentResourceID;
 @Component({
     selector: 'd3s-survey',
     template: `
-            <d3s-loading [isLoading]="isLoading"></d3s-loading>
-            <div class="row" *ngIf="!isLoading">
-                <div class="col s12">
-                    <div *ngIf="showBoard" class="tile tile-detail">
-                        <d3s-take-survey [surveyType]="surveyType" [objectID]="objectId" [objectType]="objectName" [ShowCloseButton]="true" (surveyBack)="goBack()" (surveyComplete)="handleComplete($event)"></d3s-take-survey>
-                    </div>
-                </div>
-            </div>
+            <d3s-take-survey 
+                *ngIf="!isLoading && showBoard" 
+                    [surveyType]="surveyType" 
+                    [objectID]="objectId" 
+                    [objectType]="objectName" 
+                    [ShowCloseButton]="true" 
+                    (surveyBack)="goBack()" 
+                    (surveyComplete)="handleComplete($event)">
+            </d3s-take-survey>
         `,    
     providers: [SurveysService]
 })
 
-export class SurveyComponent extends BaseComponent implements OnInit, OnDestroy {
+export class SurveyComponent extends BaseComponent implements AfterViewInit, OnDestroy {
     @Input() objectType: string = "";
     @Input() objectTypeId: number = 0;
     @Input() objectName: string = "";
@@ -40,10 +41,8 @@ export class SurveyComponent extends BaseComponent implements OnInit, OnDestroy 
         private msgService: MessagesObservableService,
         private router: Router) { super(); }
 
-    ngOnInit() {
-
+    ngAfterViewInit(): void {    
         this.isLoading = true;
-        this.showBoard = false;
 
         this.sub = this.route.params.subscribe(params => {
             this.objectType = params['objectType'];

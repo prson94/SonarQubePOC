@@ -117,19 +117,7 @@ namespace d360.core
         {
             return b ? Values.BooleanTrue : Values.BooleanFalse;
         }
-
-        public static string Decode(this string text)
-        {
-            text = text.Trim();
-            return System.Web.HttpContext.Current.Server.HtmlDecode(text);
-        }
-
-        public static string Encode(this string text)
-        {
-            text = text.Trim();
-            return System.Web.HttpContext.Current.Server.HtmlEncode(text);
-        }
-
+        
         /// <summary>
         /// Parses a string made up of one or more field tokens.
         /// </summary>
@@ -152,30 +140,6 @@ namespace d360.core
             try
             {
                 text = Regex.Replace(text, "'", "''");
-            }
-            catch
-            { }
-
-            return text;
-        }
-
-        public static string StripFormatting(this string text, int? length)
-        {
-            try
-            {
-                text = Regex.Replace(text, "<[^>]*>", "");
-                text = Regex.Replace(text, "&[^>]*;", "");
-                text = text.Replace("\r", "");
-                text = text.Replace("\n", "");
-
-                if (length.HasValue)
-                {
-                    if (text.Length > length)
-                    {
-                        text = text.Substring(0, length.Value);
-                        text += "...";
-                    }
-                }
             }
             catch
             { }

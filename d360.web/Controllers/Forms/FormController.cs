@@ -28,6 +28,7 @@ using System.Configuration;
 using d360.core.helpers;
 using System.Text;
 using d360.core.resources;
+using Newtonsoft.Json;
 
 namespace d360.web.Controllers
 {    
@@ -80,7 +81,7 @@ namespace d360.web.Controllers
                     ID = assetType.ID,
                     IconBackColor = backColor,
                     IconForeColor = foreColor,
-                    IconText = getIconText(objectName)
+                    IconText = Company.GetIconText(objectName)
                 };
                 Company.Add(style);
             }
@@ -88,58 +89,9 @@ namespace d360.web.Controllers
             {
                 style.IconBackColor = backColor;
                 style.IconForeColor = foreColor;
-                style.IconText = getIconText(objectName);
+                style.IconText = Company.GetIconText(objectName);
                 Company.Update(style);
             }
-        }
-
-        /// <summary>
-        /// Generates the icon text shown on icons that represent the Asset 
-        /// </summary>
-        /// <param name="assetName"></param>
-        /// <returns></returns>
-        private string getIconText(string assetName)
-        {
-            string iconText = "Tx";
-            if (string.IsNullOrEmpty(assetName))
-            {
-                return iconText;
-            }
-
-            var name = assetName.Trim();
-            
-            var words = name.Split(' ');
-            if (words.Length > 1 && words[1].Length > 0)
-            {
-                if (!string.IsNullOrEmpty(words[0]))
-                {
-                    iconText = words[0][0].ToString().ToUpper();
-                }
-                else
-                {
-                    iconText = "_"; // first character is space.
-                }
-                
-                if (!string.IsNullOrEmpty(words[1]))
-                {
-
-                    iconText += words[1][0].ToString().ToLower();
-                }
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(name))
-                {
-                    iconText = name[0].ToString().ToUpper();
-                    if (name.Length > 1)
-                    {
-                        iconText += name[1].ToString().ToLower();
-                    }
-                }
-            }
-
-            return iconText;
-
         }
 
         void upsertAssetStyle(SystemObjects type, int id, string foreColor, string backColor, string objectName = "Tx")
@@ -1828,10 +1780,15 @@ order by Sort, title";
         }
 
         [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddLoad")]
-        public JsonResult AddLoad(LoadFilePostModel model)
+        public JsonResult AddLoad()
         {
             try
             {
+                Stream inputStream = Request.InputStream;
+                string postJson = new StreamReader(inputStream).ReadToEnd();
+                LoadFilePostModel model = JsonConvert.DeserializeObject<LoadFilePostModel>(postJson);
+
+
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
@@ -2707,7 +2664,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         {
             var list = new List<EditableField>();
 
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Tag name", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }
@@ -2720,7 +2677,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var a = Company.GetById<Tag>(id);
 
             list.Add(new EditableField { FieldName = "uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
-            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Name", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
+            list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Value", Name = "Tag name", FieldType = DataType.Text.ToString(), Value = a.Value, Validations = checkAndAddValidation("Text", "Value", true, "", 1, 100) });
 
             return Json(list, JsonRequestBehavior.AllowGet);
         }

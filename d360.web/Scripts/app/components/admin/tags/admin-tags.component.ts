@@ -233,8 +233,11 @@ export class AdminTagsComponent extends AdminBaseComponent {
     }
 
     openDeleteModal() {
-        this.deletePopupTitle = this.selected.length == 1 ? 'Delete Tag' : 'Delete Tags';
-        this.showDelete = true;
+        window.setTimeout(() => {
+            this.deletePopupTitle = this.selected.length == 1 ? 'Delete Tag' : 'Delete Tags';
+            this.showDelete = true;
+        }, 100)
+
     }
 
     openConsolidateModal() {

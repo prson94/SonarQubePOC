@@ -22,7 +22,7 @@
                         <div class="row"
                              *ngFor="let row of category.rows">
                             <div *ngFor="let field of row.Fields"
-                                 [class]="'col ' + row.getColClass()"
+                                 [class]="'field-col col ' + row.getColClass()"
                                  style="padding-bottom:10px;">
                                 <d3s-dynamic-field [field]="field"
                                                    [form]="form"
@@ -38,7 +38,7 @@
                         <div class="row"
                              *ngFor="let row of category.rows">
                             <div *ngFor="let field of row.Fields"
-                                 [class]="'col ' + row.getColClass()"
+                                 [class]="'field-col col ' + row.getColClass()"
                                  style="padding-bottom:10px;">
                                 <d3s-dynamic-field [field]="field"
                                                    [form]="form"
@@ -74,7 +74,7 @@
 <ng-template [ngIf]="showAsModal">
 
 
-    <d3s-modal [title]="modalTitle" additionalClasses="modal-dyn-editor" (onClose)="closeClick.emit()" [isVisible]="isModalVisible">
+    <d3s-modal [title]="modalTitle" additionalClasses="modal-dyn-editor medium-dialog" (onClose)="closeClick.emit()" [isVisible]="isModalVisible">
         <form #assetForm (ngSubmit)="onSubmit()"
               [formGroup]="form" *ngIf="!isLoading" prompt>
             <div class="content">
@@ -92,7 +92,7 @@
                                           [active]="true">
                             <div class="row"
                                  *ngFor="let row of category.rows">
-                                <div *ngFor="let field of row.Fields" [class]="row.getColClass() + ' form-row'">
+                                <div *ngFor="let field of row.Fields" [class]="'form-row'">
                                     <d3s-dynamic-field [useNewUI]="true"
                                                        [field]="field"
                                                        [form]="form"
@@ -107,7 +107,7 @@
                         <span *ngIf="!category.name">
                             <div class="row"
                                  *ngFor="let row of category.rows">
-                                <div *ngFor="let field of row.Fields" [class]="row.getColClass() + ' form-row'">
+                                <div *ngFor="let field of row.Fields" [class]="'form-row'">
                                     <d3s-dynamic-field [useNewUI]="true"
                                                        [field]="field"
                                                        [form]="form"
@@ -155,8 +155,8 @@
                 <button class="right button primary {{savingInProgress ? 'loading' : ''}}"
                         type="submit"
                         [disabled]="!form.valid || (hasIconFields && fore.Value == back.Value)"
-                        label="Done">
-                    {{this.consolidateToTag ? 'Consolidate' :'Done'}}
+                        label="Save">
+                    {{this.consolidateToTag ? 'Consolidate' :'Save'}}
                     <span class="loader"><span class="spinner light"></span></span>
                 </button>
             </div>

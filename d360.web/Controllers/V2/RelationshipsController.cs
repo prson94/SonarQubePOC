@@ -227,7 +227,8 @@ namespace d360.web.Controllers.V2
 
                 var types = PredicateType.DataLineage.GetAsList()
                     .Where(i => i.LineageVersionsSupported.Contains(lineageVersion) && !i.Obsolete)
-                    .Select(i => new PredicateTypeApiViewModel {
+                    .Select(i => new PredicateTypeApiViewModel
+                    {
                         Type = i.ID,
                         Name = i.Name,
                         Description = i.Description
@@ -438,7 +439,7 @@ namespace d360.web.Controllers.V2
             var prefix = "Relationships.PostRelationshipTypesAsync => ";
             var errorMessage = "";
             try
-            { 
+            {
 
                 if (!Company.CurrentResourceIsAdmin)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
@@ -457,7 +458,7 @@ namespace d360.web.Controllers.V2
                 var results = RelationshipRepository.PostRelationshipTypes(relationshiptypes, execution);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
-             catch (Exception ex)
+            catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);

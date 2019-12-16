@@ -1,55 +1,299 @@
-﻿import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import { CommonComponentAssetResult, CommonComponentAssetTypeFilter } from '../../../../models/asset-search.model';
+﻿import { Component, EventEmitter, ChangeDetectionStrategy, OnInit, HostBinding, Input, OnChanges, SimpleChanges, ChangeDetectorRef, Output } from '@angular/core';
+import { CommonComponentAssetResult, CommonComponentAssetTypeFilter, CommonComponentAssetTypeFilterSideOfRelationship, CommonComponentAssetTypeFilterRelationshipSide, CommonComponentAssetResultExt, CommonComponentAssetSelection } from '../../../../models/asset-search.model';
 import { PredicateType } from '../../../../models/predicate.model';
-import { AssetTypeClass } from '../../../../models/asset.model';
-import { AssetService } from '../../../../services/asset.service';
+import { RelationshipsService } from '../../../../services/relationships.service';
+import { Observable, forkJoin } from 'rxjs';
+import { Predicate } from '../../../../models/predicate.model';
+import { delay, take } from 'rxjs/operators';
+import { createTokenForExternalReference } from '@angular/compiler/src/identifiers';
 
+export enum RelationshipEditorType {
+    Lineage = 'Lineage',
+    RelatedAssets = 'RelatedAssets'
+}
 
-declare var CompanySettings;
+export class RelationshipInsertModel {
+    IntersectTypeUid: string;
+    SubjectUid: string;
+    ObjectUid: string;
+    IsTypeResolved: boolean = false;
+    IsSaved: boolean = false;
+}
 
 @Component({
     selector: 'd3s-diagram-relationships',
     templateUrl: 'relationships.component.html',
+    providers: [RelationshipsService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
+export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
+    @HostBinding('class') class = 'relationship-editor';
 
-export class DiagramAssetRelationshipComponent implements OnInit {
-    private sourceAssets: CommonComponentAssetResult[] = [];
+    @Output() refreshDiagram: EventEmitter<any> = new EventEmitter();
+
+    @Input() assetBrowserData: any;
+
+    private browserAssets: CommonComponentAssetResult[] = [];
+    private editorType: RelationshipEditorType = RelationshipEditorType.Lineage;
+    private sourceAssets: CommonComponentAssetSelection[] = [];
+    private targetAssets: CommonComponentAssetSelection[] = [];
+    private transformationAsset: CommonComponentAssetSelection[] = [];
+
+    private transformationFilters: CommonComponentAssetTypeFilter[] = [];
+    private sourceFilters: CommonComponentAssetTypeFilter[] = [];
+    private targetFilters: CommonComponentAssetTypeFilter[] = [];
+
+    private targetAllowedPredicates: Predicate[] = [];
+    private transformationRelationships: any[] = [];
+
     private sourcePrePop: CommonComponentAssetResult[] = [];
-    private sourceAssetFilters: CommonComponentAssetTypeFilter[] = [];
-
-    private transformationAsset: CommonComponentAssetResult[] = [];
-
-    private targetAssets: CommonComponentAssetResult[] = [];
     private isAddTransformationVisible: boolean = false;
 
-    private predicateType: PredicateType = PredicateType.Simple;
-    constructor() { }
+    private predicateType: PredicateType = PredicateType.Transformation;
+    private showPredicateSelector: boolean = false;
+
+    private topWarningMessage: string = '';
+    private bottomWarningMessage: string = '';
+
+    private isTransformationDisabled: boolean = true;
+    private isTargetDisabled: boolean = true;
+
+    private isSaving: boolean = false;
+    private isSavingAndContinue: boolean = false;
+    private afterSaveEvent: Function;
+
+    private relationshipsError: any[] = [];
+    private areRelationshipsValid = false;
+    private areAllItemsSelected = false;
+
+    private noAssetOnDiagram: boolean = false;
+
+    private sourceBtnText: string = 'Add source asset';
+    private targetBtnText: string = 'Add target asset';
+
+    private missingPredicateSource: boolean = false;
+    private missingPredicateTarget: boolean = false;
+
+    constructor(
+        private relationshipService: RelationshipsService,
+        private ref: ChangeDetectorRef
+    ) { }
 
     ngOnInit() {
-        
+        this.loadSettings(false);
+        if (this.assetBrowserData && this.assetBrowserData.assets) {
+            var assetTypes = this.assetBrowserData.assets;
+
+            assetTypes.forEach(at => {
+                at.items.forEach(group => {
+                    this.populateAssets(group);
+                })
+            });
+
+            if (this.browserAssets.length > 10)
+                this.sourcePrePop = this.browserAssets.slice(0, 10);
+            else this.sourcePrePop = this.browserAssets;
+        }
+        this.ref.markForCheck();
     }
 
-    addSourceAssetFilter() {
-        var filter = new CommonComponentAssetTypeFilter();
-        filter.Class = AssetTypeClass.Policy;
-        filter.Uid = '8f492762-e3ae-421d-a9ec-5e2cd81331cb';
-        this.sourceAssetFilters.push(filter);
+
+
+    ngOnChanges(changes: SimpleChanges) {
+        this.checkSelectionValues();
+        this.validateRelationships();
+
     }
 
-    prepopulateSourceAssets() {
-        var json = `[{"AssetTypeUid":"527ff749-fc47-4356-92aa-67f58a73a1af","Uid":"0267efb9-84c3-4371-9b13-18902fdbfc6b","Predicate":null,"Segments":[{"Value":"Shyam adding a new artifact to test delete workflow"}]},{"AssetTypeUid":"9af94c0a-cd70-4246-95a8-840cc6d6fec3","Uid":"086ca61b-ebee-4c48-a296-fe2fb2cf1989","Predicate":null,"Segments":[{"Value":"(Sme SCHEMA"},{"Value":"(Sme function) (Shyam testing) how Parens will work ()"}]},{"AssetTypeUid":"9af94c0a-cd70-4246-95a8-840cc6d6fec3","Uid":"a42d9455-e3b5-4627-adeb-1175c60f6c5f","Predicate":null,"Segments":[{"Value":"(Sme SCHEMA"},{"Value":"(Sme function) (Shyam testing) how Parens will work 2 ()"}]},{"AssetTypeUid":"99fd5ad4-ec9f-4d0e-84bd-0539b2fb3d37","Uid":"e9d15314-ed4f-46e2-9ccf-d049c3c91209","Predicate":null,"Segments":[{"Value":"(Sme SCHEMA"},{"Value":"(Sme function) (Shyam testing) how Parens will work 2 ()"},{"Value":"(Shyam testing) how Parens will work2 ()"}]}]`;
-        this.sourceAssets = JSON.parse(json);
+    private populateAssets(group) {
+        if (!group.items) {
+            var item = new CommonComponentAssetResult();
+            item.AssetTypeUid = group.assetTypeUid;
+            item.Uid = group.assetUid;
+            if (group.useAsTransformation == false && !this.browserAssets.find(x => x.Uid == item.Uid && x.AssetTypeUid == item.AssetTypeUid))
+                this.browserAssets.push(item);
+        }
+        else {
+            group.items.forEach(g => {
+                this.populateAssets(g);
+            });
+        }
     }
 
-    prepopulateSearchResult() {
-        var json = `[{"Uid":"d46d09c9-6657-4a1d-bdeb-1f42976d5d3e","AssetTypeUid":"8a4c2c8e-29cc-441b-a03c-addd7d0e94b6","Segments":[{"Value":"CADIS"},{"Value":"IL_MAPPED_DIV_FQCY"},{"Value":"Portia Dividend Mode"}]},{"Uid":"d6c9de11-d0b3-426f-bcdf-870f872626ea","AssetTypeUid":"e9a2dbfd-d9ce-466d-ae57-1004db33a2fa","Segments":[{"Value":"CADIS_PROC"},{"Value":"DC_CRPREMASTE_BLMAUTOBLD_PREP"},{"Value":"Is Muni AdJ Coupon Mode pop?"}]},{"Uid":"c80ce2cf-2509-4860-9b9c-12d831eb19bc","AssetTypeUid":"e9a2dbfd-d9ce-466d-ae57-1004db33a2fa","Segments":[{"Value":"CADIS_PROC"},{"Value":"DC_CRPREMASTE_BLMAUTOBLD_PRLIM"},{"Value":"Is Muni AdJ Coupon Mode pop?"}]},{"Uid":"e4b8c058-21d1-465d-976c-0ad1d479179e","AssetTypeUid":"6df437a9-574c-4754-acad-1cd67098d616","Segments":[{"Value":"MAPPED_DIV_FQCY"},{"Value":"Portia Dividend Mode"}]},{"Uid":"6219b146-1e07-4375-84e3-7dd670b63525","AssetTypeUid":"a8b2e96a-8c83-4f6b-a6e8-708741c9a0f0","Segments":[{"Value":"SYS"},{"Value":"V_$DIAG_HM_RUN"},{"Value":"MODE"}]},{"Uid":"962a8038-35a3-4156-8d2c-027ff671f6a6","AssetTypeUid":"a8b2e96a-8c83-4f6b-a6e8-708741c9a0f0","Segments":[{"Value":"SYS"},{"Value":"V_$DIAG_HM_RUN"},{"Value":"MODE"}]}]`;
-        this.sourcePrePop = JSON.parse(json);
+    private checkSelectionValues() {
+        if (this.transformationAsset.length > 0) {
+            this.relationshipService.getRelationshipsByAssetTypeUid(this.transformationAsset[0].AssetTypeUid)
+                .subscribe(res => {
+                    this.targetAllowedPredicates = [];
+                    res.forEach(rel => {
+                        if (rel.Predicate.Type == PredicateType.Transformation.toString()) {
+                            this.targetAllowedPredicates.push(rel.Predicate);
+                        }
+                    });
+                    this.buildTargetFilters();
+                    this.isTargetDisabled = false;
+                });
+        }
+        else {
+            this.isTargetDisabled = true;
+        }
+
+        if (this.sourceAssets.length > 0) {
+            this.isTransformationDisabled = false;
+        }
+        else {
+            this.isTransformationDisabled = true;
+            this.isTargetDisabled = true;
+        }
+
+
+        this.noAssetOnDiagram = false;
+        this.areAllItemsSelected = false;
+
+        if (this.sourceAssets.length > 0 && this.transformationAsset.length > 0 && this.targetAssets.length) {
+            var doesSourceContains = false;
+            var doesTargetContains = false;
+
+            this.browserAssets.forEach(asset => {
+                this.sourceAssets.forEach(sa => {
+                    if (sa.Uid == asset.Uid)
+                        doesSourceContains = true;
+                });
+                this.targetAssets.forEach(sa => {
+                    if (sa.Uid == asset.Uid)
+                        doesTargetContains = true;
+                });
+            })
+
+            if (!doesSourceContains && !doesTargetContains) {
+                this.noAssetOnDiagram = true;
+            }
+
+        }
+    }
+
+    private loadSettings(switchTargetToSource: boolean) {
+        var tempSource = JSON.parse(JSON.stringify(this.targetAssets));
+
+        this.sourceAssets = [];
+        this.transformationAsset = [];
+        this.targetAssets = [];
+
+        if (switchTargetToSource == true && tempSource.length > 0) {
+            tempSource.forEach(x => x.Predicate = null);
+            this.sourceAssets = tempSource;
+        }
+
+        if (this.editorType == RelationshipEditorType.Lineage) {
+            this.predicateType = PredicateType.Transformation;
+        }
+
+        if (this.editorType == RelationshipEditorType.Lineage) {
+            this.buildSourceFilters();
+            this.buildTransformationFilters();
+            this.buildTargetFilters();
+        }
+    }
+    private buildTargetFilters() {
+        this.targetFilters = [];
+        if (this.targetAllowedPredicates.length == 0) {
+            var targetFilters = new CommonComponentAssetTypeFilter();
+            targetFilters.UseAsTransformation = false;
+            targetFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+            targetFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object;
+            targetFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
+            this.targetFilters.push(targetFilters);
+        }
+        else {
+            this.targetAllowedPredicates.forEach(tp => {
+                var targetFilters = new CommonComponentAssetTypeFilter();
+                targetFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+                targetFilters.UseAsTransformation = false;
+                targetFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object;
+                targetFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
+                targetFilters.AsSideOfRelationship.PredicateUid = tp.Uid.toString();
+                this.targetFilters.push(targetFilters);
+            });
+        }
+    }
+
+    private buildSourceFilters() {
+        this.sourceFilters = [];
+        if (this.sourceFilters.length == 0) {
+            var sourceFilters = new CommonComponentAssetTypeFilter();
+            sourceFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+            sourceFilters.UseAsTransformation = false;
+            sourceFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Subject;
+            sourceFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
+            this.sourceFilters.push(sourceFilters);
+        }
+        else {
+            this.sourceAssets.forEach(asset => {
+                var sourceFilters = new CommonComponentAssetTypeFilter();
+                sourceFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+                sourceFilters.UseAsTransformation = false;
+                sourceFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Subject;
+                if (asset.Predicate)
+                    sourceFilters.AsSideOfRelationship.PredicateUid = asset.Predicate.Uid.toString();
+                sourceFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
+                this.sourceFilters.push(sourceFilters);
+            });
+        }
+    }
+
+    private buildTransformationFilters() {
+        this.transformationFilters = [];
+        if (this.sourceAssets.length == 0) {
+            var transformationFilters = new CommonComponentAssetTypeFilter();
+            transformationFilters.UseAsTransformation = true;
+            transformationFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+            transformationFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
+            transformationFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object
+            this.transformationFilters.push(transformationFilters);
+        }
+        else {
+            this.sourceAssets.forEach(asset => {
+                var transformationFilters = new CommonComponentAssetTypeFilter();
+                transformationFilters.UseAsTransformation = true;
+                transformationFilters.AsSideOfRelationship = new CommonComponentAssetTypeFilterSideOfRelationship();
+                transformationFilters.AsSideOfRelationship.PredicateType = PredicateType.Transformation;
+                if (asset.Predicate)
+                    transformationFilters.AsSideOfRelationship.PredicateUid = asset.Predicate.Uid.toString();
+                transformationFilters.AsSideOfRelationship.Side = CommonComponentAssetTypeFilterRelationshipSide.Object
+                this.transformationFilters.push(transformationFilters);
+            });
+        }
+    }
+
+    private changeEditorType(type: RelationshipEditorType) {
+        if (this.sourceAssets.length > 0 || this.targetAssets.length > 0) {
+            this.topWarningMessage = 'You cannot switch! Save your changes or remove selection from Source and Target assets';
+        }
+        else {
+            this.topWarningMessage = '';
+            this.editorType = type;
+            this.loadSettings(false);
+        }
     }
 
     onAssetSearchSelection(event: any) {
-        console.warn("Search selection event triggered!");
-        console.warn("Event:", event);
+        if (this.sourceAssets.length > 0) {
+            this.sourceBtnText = 'Add another source asset';
+        }
+        else this.sourceBtnText = 'Add source asset';
+
+        if (this.targetAssets.length > 0) {
+            this.targetBtnText = 'Add another target asset';
+        }
+        else this.targetBtnText = 'Add target asset';
+
+        this.checkSelectionValues();
+        this.buildTransformationFilters();
+        this.buildSourceFilters();
+        this.buildTargetFilters();
+
+        this.validateRelationships();
+
     }
 
     newAssetAdded($event) {
@@ -66,6 +310,315 @@ export class DiagramAssetRelationshipComponent implements OnInit {
 
     onCancel() {
         this.isAddTransformationVisible = false;
+    }
+
+    private get IsValid(): boolean {
+
+        if (!this.areRelationshipsValid)
+            return false;
+
+        if (this.isSaving || this.isSavingAndContinue)
+            return false;
+
+        if (this.editorType == RelationshipEditorType.Lineage && this.sourceAssets.length > 0 && this.transformationAsset.length > 0 && this.targetAssets.length > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    resolveAssets() {
+        if (this.sourceAssets.length > 0 && this.transformationAsset.length > 0) {
+            var transformAsset = this.transformationAsset[0];
+
+        }
+    }
+
+    private saveAndContinue() {
+        this.isSavingAndContinue = true;
+        this.afterSaveEvent = function (ev: boolean) {
+            if (ev) {
+                this.loadSettings(true);
+                this.refreshDiagram.emit();
+            }
+            this.isSaving = this.isSavingAndContinue = false;
+        };
+        this.executeSave();
+    }
+
+    private save() {
+        this.isSaving = true;
+        this.afterSaveEvent = function (ev: boolean) {
+            if (ev) {
+                this.loadSettings(false);
+                this.refreshDiagram.emit();
+            }
+            this.isSaving = this.isSavingAndContinue = false;
+        };
+        this.executeSave();
+
+    }
+
+    private checkPredicateTimeout = null;
+    private doMissingPredicateCheck() {
+        this.missingPredicateSource = false;
+        this.missingPredicateTarget = false;
+
+        this.sourceAssets.forEach(x => {
+            x.Warnings = [];
+            if (!x.Predicate) {
+                this.missingPredicateSource = true;
+            }
+        });
+        this.targetAssets.forEach(x => {
+            x.Warnings = [];
+
+            if (!x.Predicate) {
+                this.missingPredicateTarget = true;
+            }
+        });
+
+        if (this.sourceAssets.length > 0 && this.transformationAsset.length > 0 && this.targetAssets.length > 0) {
+            if (!this.missingPredicateSource && !this.missingPredicateTarget) {
+                this.areAllItemsSelected = true;
+            }
+        }
+        this.ref.markForCheck();
+    }
+
+    private validateRelationships() {
+        this.areRelationshipsValid = false;
+        this.relationshipsError = [];
+
+        clearTimeout(this.checkPredicateTimeout);
+        this.checkPredicateTimeout = setTimeout(() => this.doMissingPredicateCheck(), 1500);
+
+        var relationships = this.buildRelationshipsFromSelection();
+
+        var resolveRelationshipTasks = [];
+        relationships.forEach(r => {
+            resolveRelationshipTasks.push(this.relationshipService.getRelationshipsByAssetTypeUid(r.SubjectAssetTypeUid));
+        });
+
+        var resolveRelationshipsObservable = forkJoin(resolveRelationshipTasks);
+        resolveRelationshipsObservable.subscribe(results => {
+            var eligibleRelationships = [];
+            results.forEach(res => {
+                res.forEach(r => {
+                    if (r.Predicate.Type == 'Transformation') {
+                        eligibleRelationships.push(r);
+                    }
+                });
+            });
+
+            relationships.forEach(rel => {
+                var intersectType = eligibleRelationships.find(x => x.Predicate.Uid == rel.PredicateUid && x.Object.Uid == rel.ObjectAssetTypeUid && x.Subject.Uid == rel.SubjectAssetTypeUid);
+                rel.IntersectTypeUid = intersectType ? intersectType.Uid : null;
+            });
+
+
+            var invalidRelationships = relationships.filter(x => x.IntersectTypeUid == null);
+            invalidRelationships.forEach(inv => {
+                inv.Intersects.forEach(rel => {
+                    this.sourceAssets.forEach(sa => {
+                        if (sa.Predicate && inv.PredicateUid == sa.Predicate.Uid.toString() && sa.Uid == rel.SubjectAssetUid) {
+                            sa.Warnings = [];
+                            sa.Warnings.push("Cannot create relationship of this type!");
+                        }
+                    });
+                    this.targetAssets.forEach(ta => {
+
+                        if (ta.Predicate && inv.PredicateUid == ta.Predicate.Uid.toString() && ta.Uid == rel.ObjectAssetUid) {
+                            ta.Warnings = [];
+                            ta.Warnings.push("Cannot create relationship of this type!");
+                        }
+                    });
+                });
+            });
+
+            if (invalidRelationships.length == 0) {
+                this.areRelationshipsValid = true;
+            }
+        });
+
+    }
+
+    private executeSave() {
+        var relationships = this.buildRelationshipsFromSelection();
+
+        var resolveRelationshipTasks = [];
+        relationships.forEach(r => {
+            resolveRelationshipTasks.push(this.relationshipService.getRelationshipsByAssetTypeUid(r.SubjectAssetTypeUid));
+        });
+
+        var resolveRelationshipsObservable = forkJoin(resolveRelationshipTasks);
+        resolveRelationshipsObservable.subscribe(results => {
+            var eligibleRelationships = [];
+            results.forEach(res => {
+                res.forEach(r => {
+                    if (r.Predicate.Type == 'Transformation') {
+                        eligibleRelationships.push(r);
+                    }
+                });
+            });
+
+            relationships.forEach(rel => {
+                var intersectType = eligibleRelationships.find(x => x.Predicate.Uid == rel.PredicateUid && x.Object.Uid == rel.ObjectAssetTypeUid && x.Subject.Uid == rel.SubjectAssetTypeUid);
+                rel.IntersectTypeUid = intersectType ? intersectType.Uid : null;
+            });
+
+            if (!relationships.some(x => x.IntersectTypeUid == null)) {
+                this.postRelationships(relationships);
+            }
+            else {
+                this.afterSaveEvent(false);
+                relationships.filter(x => x.IntersectTypeUid == null).forEach(fail => {
+                    var errorMsg = 'This lineage relationship cannot be created, as there is no relationship type defined between 2 asset types:';
+
+                    var subjectTitle = 'Source Asset:';
+                    var objectTitle = 'Transformation:';
+                    if (fail.type == 'T->S') {
+                        subjectTitle = objectTitle;
+                        objectTitle = 'Target Asset:';
+                    }
+                    var subject = this.getAssetFromSelection(fail.Intersects[0].SubjectAssetUid);
+                    var object = this.getAssetFromSelection(fail.Intersects[0].ObjectAssetUid);
+                    this.relationshipsError.push({ errorMsg, subject, subjectTitle, object, objectTitle });
+                });
+            }
+        });
+    }
+
+    private postRelationships(relationships: any[]) {
+        
+        var source_tasks = [];
+        var target_tasks = [];
+        relationships.forEach(r => {
+            if (r.Intersects.some(x => x.type == 'S->T')) {
+                source_tasks.push(this.relationshipService.saveRelationshipsForked(r.IntersectTypeUid, r.Intersects));
+            }
+            else {
+                target_tasks.push(this.relationshipService.saveRelationshipsForked(r.IntersectTypeUid, r.Intersects));
+            }
+
+        })
+
+        //Split relationships, and save target after source, so we can properly check for circular relationships
+        var sourceObs = forkJoin(source_tasks);
+        var targetObs = forkJoin(target_tasks);
+        sourceObs.subscribe(results => {
+            this.relationshipsError = [];
+            var isSuccess = this.processResults(results);
+            if (isSuccess) {
+                targetObs.subscribe(res => {
+                    var isSuccess = this.processResults(res);
+                    this.afterSaveEvent(isSuccess);
+                });
+            }
+            else {
+                this.afterSaveEvent(isSuccess);
+            }
+        });
+    }
+
+    private processResults(results: any[]): boolean {
+        let rollback: boolean = false;
+        results.forEach(res => {
+            var data = res.obj;
+            var result: any[] = res.response;
+            result.forEach((r, idx) => {
+                if (r.Success == false) {
+
+                    var errorMsg = r.Message;
+                    rollback = true;
+
+                    var subjectTitle = 'Source Asset:';
+                    var objectTitle = 'Transformation:';
+                    if (data.model[idx].type == 'T->S') {
+                        subjectTitle = objectTitle;
+                        objectTitle = 'Target Asset:';
+                    }
+                    var subject = this.getAssetFromSelection(data.model[idx].SubjectAssetUid);
+                    var object = this.getAssetFromSelection(data.model[idx].ObjectAssetUid);
+                    this.relationshipsError.push({ errorMsg, subject, subjectTitle, object, objectTitle });
+                }
+
+            });
+        })
+
+        //If error occured, delete only newly created relationships
+        if (rollback) {
+            var deleteTasks = [];
+            results.forEach(res => {
+                var ituid = res.obj.intersectTypeUid;
+                let rels: any[] = [];
+                var arr = <any[]>res.response;
+                arr.forEach(rel => {
+                    if (rel.IsNew == true) {
+                        rels.push({ uid: rel.uid });
+                    }
+                });
+                deleteTasks.push(this.relationshipService.deleteRelationshipV2(ituid, rels));
+            });
+
+            var insertObs = forkJoin(deleteTasks);
+            insertObs.subscribe(results => {
+                console.log(results);
+            });
+            this.ref.markForCheck();
+
+            return false;
+        }
+        this.ref.markForCheck();
+        return true;
+
+    }
+
+    buildRelationshipsFromSelection(): any[] {
+        var relationships = [];
+        if (this.editorType == RelationshipEditorType.Lineage) {
+            var transformation = this.transformationAsset[0];
+
+            if (this.transformationAsset.length != 0) {
+                this.sourceAssets.forEach(a => {
+                    var rel1: any = {};
+                    rel1.Intersects = [];
+                    rel1.SubjectAssetTypeUid = a.AssetTypeUid;
+                    rel1.ObjectAssetTypeUid = transformation.AssetTypeUid;
+                    if (a.Predicate)
+                        rel1.PredicateUid = a.Predicate.Uid;
+                    else rel1.PredicateUid = '';
+                    rel1.Intersects.push({ SubjectAssetUid: a.Uid, ObjectAssetUid: transformation.Uid, type: 'S->T' });
+                    relationships.push(rel1);
+                });
+            }
+
+            this.targetAssets.forEach(a => {
+                var rel2: any = {};
+                rel2.Intersects = [];
+                rel2.ObjectAssetTypeUid = a.AssetTypeUid;
+                if (a.Predicate)
+                    rel2.PredicateUid = a.Predicate.Uid;
+                else rel2.PredicateUid = '';
+                rel2.SubjectAssetTypeUid = transformation.AssetTypeUid;
+                rel2.Intersects.push({ ObjectAssetUid: a.Uid, SubjectAssetUid: transformation.Uid, type: 'T->S' });
+                relationships.push(rel2);
+            });
+
+        }
+        return relationships;
+    }
+
+
+    private getAssetFromSelection(assetUid) {
+        let result: CommonComponentAssetResult;
+        result = this.sourceAssets.find(x => x.Uid == assetUid);
+        if (result === undefined)
+            result = this.transformationAsset.find(x => x.Uid == assetUid);
+
+        if (result === undefined)
+            result = this.targetAssets.find(x => x.Uid == assetUid);
+
+        return result;
     }
 
 }

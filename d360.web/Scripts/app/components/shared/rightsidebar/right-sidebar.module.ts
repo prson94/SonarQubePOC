@@ -11,6 +11,7 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SiteModalModule } from '../modal/gov-modal.module';
+import { TakeSurveyModule } from '../survey/take-survey.module';
 
 
 @NgModule({
@@ -23,6 +24,7 @@ import { SiteModalModule } from '../modal/gov-modal.module';
         TagUsageInfoModule,
         SharedDeleteFormModule,
         SiteModalModule,
+        TakeSurveyModule,
     ],
     declarations: [
         RightSidebarItemComponent,

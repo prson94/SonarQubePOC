@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="GOV-8927-SynchProc">
+  <changeSet author="Pappas" id="GOV-8927-SynchProc-B">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -110,7 +110,7 @@ begin
 					null as ParentID,
 					1 as [Level]
 			from	AssetType A
-					left join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType in (3,4)
+					left join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
 			where	I.ID is null
 			union all
 			select	A.Object,
@@ -119,12 +119,15 @@ begin
 					P.ID as ParentID,
 					P.[Level]+1 as [Level]
 			from	AssetType A
-					inner join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType in (3,4)
+					inner join IntersectTypeDetail I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 3
 					inner join h as P on P.Object = I.Subject and P.ObjectID = I.SubjectID
 		)
 		
 		insert into #assetTypes
 			select ID, [Level] from h order by [Level];
+
+		insert into #assetTypes
+			select ID, 1 from AssetType where Class in (2,6);
 	
 		while ((select count(*) from #assetTypes) > 0)
 		begin
@@ -346,13 +349,13 @@ end
 	</rollback>
   </changeSet>
 
- <changeSet author="Pappas" id="GOV-8927-PathProc">
+ <changeSet author="Pappas" id="GOV-8927-PathProc-C">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER procedure [graph].[PopulatePathsForAssetType]
+create or alter procedure [graph].[PopulatePathsForAssetType]
 	@assetTypeID int,
 	@assetID bigint = null
 as
@@ -409,6 +412,7 @@ begin
 					inner join [IntersectDetail] I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
 					inner join p on p.Object = I.Subject and p.ObjectID = I.SubjectID
 			where	A.AssetTypeID = @assetTypeID
+					and p.[Level] <= 25
 		)
 		insert into @hierarchy
 			select ID, [Level], Segments, Segment from p
@@ -551,7 +555,7 @@ begin
 								+ iif(@assetID is not null, ' and a'+ @sCurrent + '.ID = ' + cast(@assetID as nvarchar), '')
 								+ @whereSql
 				
-				select @segmentSql = '(select L.L as ''@level'', L.A as ''@assetTypeId'', L.Name as ''data()'' from ( '+@segmentSql+' ) L for xml path(''segment''), ELEMENTS, root(''path'')) as Segments'
+				select @segmentSql = '(select L.L as ''@level'', L.A as ''@assetTypeId'', L.AssetID as ''@assetId'', L.Name as ''data()'' from ( '+@segmentSql+' ) L for xml path(''segment''), ELEMENTS, root(''path'')) as Segments'
 				--select @segmentSql = '''<path>''+' + @segmentSql + '+''</path>'' as Segments'
 			end
 
@@ -791,6 +795,60 @@ begin
 		execute sp_executesql @sql
 	end
 end
+]]>
+	</rollback>
+  </changeSet>
+
+ <changeSet author="Pappas" id="GOV-8927-GetPathSegment">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [graph].[GetPathSegment]
+(
+	@id bigint
+)
+RETURNS nvarchar(2500)
+AS
+BEGIN
+    DECLARE @text nvarchar(2500)
+
+	select		@text =	coalesce(string_agg(O.Segment, '.'),'[ERROR:KEY_FIELDS_NULL]')
+	from		(
+				select		top 100
+							'['+coalesce(FormattedValue,'')+']' as Segment
+				from		Field F
+							inner join FieldType T on T.ID = F.FieldTypeID and T.IsPartOfKey = 1 and F.AssetID = @id
+				order by	T.ColumnOrder				
+				) O
+
+    RETURN @text
+END
+		]]>
+    </sql>
+	<rollback>
+	<![CDATA[	
+CREATE OR ALTER FUNCTION [graph].[GetPathSegment]
+(
+	@id bigint
+)
+RETURNS nvarchar(2500)
+AS
+BEGIN
+    DECLARE @text nvarchar(2500)
+
+	select		@text =	string_agg(O.Segment, '.')
+	from		(
+				select		top 100
+							'['+FormattedValue+']' as Segment
+				from		Field F
+							inner join FieldType T on T.ID = F.FieldTypeID and T.IsPartOfKey = 1 and F.AssetID = @id
+				order by	T.ColumnOrder				
+				) O
+
+    RETURN @text
+END
 ]]>
 	</rollback>
   </changeSet>

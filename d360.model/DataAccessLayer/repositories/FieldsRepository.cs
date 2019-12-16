@@ -630,6 +630,13 @@ from	IntersectType I
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Relationship Lookup type on an action type or relationship type for field {f.Name}.");
                     }
 
+                    if (f.Type.ComputedRelationshipLookup.Definition == null 
+                        || !f.Type.ComputedRelationshipLookup.Definition.Fields.Any() 
+                        || !f.Type.ComputedRelationshipLookup.Definition.Relations.Any())
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You must provide a definition for the computed relationship lookup field {f.Name}.");
+                    }
+
                     newFieldType.Type = DataType.ComplexRelationLookup.ToString();
                     newFieldType.ColumnOrder = f.Type.ComputedRelationshipLookup.ColumnOrder;
                     if (f.Type.ComputedRelationshipLookup.Description != null)
@@ -638,13 +645,79 @@ from	IntersectType I
                     }
                     newFieldType.IsDisplayable = f.Type.ComputedRelationshipLookup.IsDisplayable;
                     newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipLookup.ShowIfEmpty;
+
+                    #region build definition
+
+                    var definitionFields = new List<FieldTypeComplexLookupDefinitionField>();
+                    var definitionRelations = new List<FieldTypeComplexLookupDefinitionRelation>();
+                    var hasDefinitionError = false;
+
+                    f.Type.ComputedRelationshipLookup.Definition.Fields.ForEach(i =>
+                    {
+                        var field = new FieldTypeComplexLookupDefinitionField();
+                        var computedFields = new List<string>() { "DisplayValue", "TextPath" };
+                        var fieldInfo = Company.Query<dynamic>("select coalesce(F.ID, 0) as FieldTypeID, T.Object, T.ObjectID from AssetType T left join FieldType F on F.AssetTypeID = T.ID and F.Name = @name where T.uid = @uid", new { name = i.FieldTypeName, uid = i.AssetTypeUid }).SingleOrDefault();
+
+                        if (fieldInfo.FieldTypeID == 0 && !computedFields.Contains(i.FieldTypeName))
+                        {
+                            hasDefinitionError = true;
+                            return;
+                        }
+
+                        field.FieldTypeID = fieldInfo.FieldTypeID;
+                        field.Object = fieldInfo.Object;
+                        field.ObjectID = fieldInfo.ObjectID;
+                        field.DisplayOrder = i.DisplayOrder;
+                        field.FieldTypeName = i.FieldTypeName;
+                        field.Filter = i.Filter;
+                        field.OverrideDisplayName = i.OverrideDisplayName;
+                        field.SortOrder = i.SortOrder;
+                        field.Width = i.Width;
+
+
+
+                        definitionFields.Add(field);
+                    });
+
+                    f.Type.ComputedRelationshipLookup.Definition.Relations.ForEach(i =>
+                    {
+                        var relation = new FieldTypeComplexLookupDefinitionRelation(); 
+                        var relationInfo = Company.Query<dynamic>("select T.ID as IntersectTypeID, A.Object, A.ObjectID from IntersectType T left join AssetType A on A.uid = @uid where T.uid = @intersectUid", new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid }).SingleOrDefault();
+
+                        if (relationInfo == null || i.Direction == null || i.RelationType == null)
+                        {
+                            hasDefinitionError = true;
+                            return;
+                        }
+
+                        relation.Direction = (FieldTypeComplexLookupRelationDirection)i.Direction;
+                        relation.IntersectTypeID = relationInfo.IntersectTypeID;
+                        relation.Object = relationInfo.Object;
+                        relation.ObjectID = relationInfo.ObjectID;
+                        relation.RelationType = (ComplexLookupRelationType)i.RelationType;
+
+                        definitionRelations.Add(relation);
+
+                    });
+
+                    if (hasDefinitionError)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"The definition provided for the computed relationship lookup {f.Name} has one or more invalid uids.");
+                    }
+
+                    #endregion
+
                     newFieldType.FieldTypeLookup = new FieldTypeLookup
                     {
                         HideFilter = f.Type.ComputedRelationshipLookup.HideFilter,
                         HideFooter = f.Type.ComputedRelationshipLookup.HideFooter,
                         HideHeader = f.Type.ComputedRelationshipLookup.HideHeader,
                         LookupType = 0,
-                        Definition = JsonConvert.SerializeObject(f.Type.ComputedRelationshipLookup.Definition)
+                        Definition = JsonConvert.SerializeObject(new
+                        {
+                            Relations = definitionRelations,
+                            Fields = definitionFields
+                        })
                     };
                 }
                 else if (f.Type.ComputedRelationshipReferenceList != null)

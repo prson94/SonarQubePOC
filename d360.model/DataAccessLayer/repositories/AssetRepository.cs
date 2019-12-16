@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data;
@@ -41,7 +41,7 @@ namespace d360.model.DataAccessLayer
         {
             return AssetTypeClass.BusinessAsset.GetAsList();
         }
-        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams,AssetTypeClass? Class, Guid? fusionTypeUid)
+        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams,AssetTypeClass? Class, Guid? fusionTypeUid,Guid? assetTypeUid)
         {
             var dbArgs = new DynamicParameters();
             string condition = string.Empty;
@@ -72,7 +72,7 @@ namespace d360.model.DataAccessLayer
                 {
                     var Id = (int)Class;
                     dbArgs.Add("@Id", Id.ToString());
-                    condition = "and A.[Class]=@Id";
+                    condition = " and A.[Class]=@Id";
                 }
             }
             else if (fusionTypeUid.HasValue && fusionTypeUid.Value != Guid.Empty)
@@ -89,7 +89,7 @@ namespace d360.model.DataAccessLayer
                 dbArgs.Add("@class2", (int)AssetTypeClass.FusionQuery);
                 dbArgs.Add("@fusionTypeUid", fusionTypeUid);
 
-                condition = string.Format("and (A.[Class] = @class1 OR A.[Class] = @class2) AND (ATQFusionType.uid = @fusionTypeUid or ATTFusionType.uid = @fusionTypeUid)");
+                condition = string.Format(" and (A.[Class] = @class1 OR A.[Class] = @class2) AND (ATQFusionType.uid = @fusionTypeUid or ATTFusionType.uid = @fusionTypeUid)");
 
             }
 
@@ -103,7 +103,7 @@ namespace d360.model.DataAccessLayer
                     if (Boolean.TryParse(useAsTransformationString, out useAsTransformation))
                     {
 
-                        condition += "and A.UseAsTransformation=@useAsTransformation ";
+                        condition += " and A.UseAsTransformation=@useAsTransformation ";
                         dbArgs.Add("useAsTransformation", useAsTransformation);
                     }
                 }
@@ -115,7 +115,7 @@ namespace d360.model.DataAccessLayer
                     if (Boolean.TryParse(hierarchicalString, out hierarchical))
                     {
 
-                        condition += "and A.Hierarchical=@hierarchical ";
+                        condition += " and A.Hierarchical=@hierarchical ";
                         dbArgs.Add("hierarchical", hierarchical);
                     }
                 }
@@ -127,7 +127,7 @@ namespace d360.model.DataAccessLayer
                     if (Boolean.TryParse(autoDisplayDescriptionString, out autoDisplayDescription))
                     {
 
-                        condition += "and A.AutoDisplayDescription=@autodisplaydescription ";
+                        condition += " and A.AutoDisplayDescription=@autodisplaydescription ";
                         dbArgs.Add("autoDisplayDescription", autoDisplayDescription);
                     }
                 }
@@ -139,14 +139,19 @@ namespace d360.model.DataAccessLayer
                     if (Boolean.TryParse(canOwnFusionString, out canOwnFusion))
                     {
 
-                        condition += "and A.CanOwnFusion=@canownfusion ";
+                        condition += " and A.CanOwnFusion=@canownfusion ";
                         dbArgs.Add("canownfusion", canOwnFusion);
                     }
                 }
 
             }
 
-          
+            if(assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
+            {
+                condition += " and A.uid=@assetTypeUid ";
+                dbArgs.Add("assetTypeUid", assetTypeUid.Value);
+            }
+
             var sql = $@"
                         SELECT     A.[Name]
                                     ,ISNULL(A.[Description],'') as Description
@@ -175,6 +180,7 @@ namespace d360.model.DataAccessLayer
             var assetTypeID = 0;
             var includeRelationships = false;
             var fusionAttributeWithParent = false;
+            var includeSegments = false;
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
@@ -221,7 +227,7 @@ namespace d360.model.DataAccessLayer
                     if (Guid.TryParse(relatedAssetUIDString, out relatedAssetUID))
                     {
                         dbArgs.Add("@relatedAssetUid", relatedAssetUID);
-                        relatedAssetSql = $"{subjectAlias}.[UID] = @relatedAssetUid";
+                        relatedAssetSql = $"{objectAlias}.[UID] = @relatedAssetUid";
                     }
                     intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and abs(I.SubjectID) = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
 
@@ -361,6 +367,12 @@ namespace d360.model.DataAccessLayer
 
             }
 
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "includesegments"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "includesegments").Value;
+                bool.TryParse(value, out includeSegments);
+            }
+
             var whereSql = "";
             if (whereStatements.Any())
                 whereSql = $"where {string.Join(" and ", whereStatements)}";
@@ -389,8 +401,9 @@ namespace d360.model.DataAccessLayer
                     A.UpdatedOn,
                     A.CreatedOn,
                     A.Code,
-                    Node.Path,
-                    Node.Segments
+                    {(includeSegments ? "Node.Segments," : "")}
+                    Node.Path --,
+                    --Node.Segments --GOV-8967 - temporarily remove segments property due to analyze issue
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
                     {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
@@ -417,29 +430,32 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            foreach (var result in results)
+            if (includeSegments)
             {
-                try
+                foreach (var result in results)
                 {
-                    var xmlString = result.Segments;
-                    if (xmlString != null)
+                    try
                     {
-                        List<AssetsByPathItemSegmentApiViewModel> segments = new List<AssetsByPathItemSegmentApiViewModel>();
-                        var xml = XDocument.Parse(xmlString as string);
-                        foreach (var segment in xml.Descendants("segment"))
+                        var xmlString = result.Segments;
+                        if (xmlString != null)
                         {
-                            segments.Add(new AssetsByPathItemSegmentApiViewModel()
+                            List<AssetsByPathItemSegmentApiViewModel> segments = new List<AssetsByPathItemSegmentApiViewModel>();
+                            var xml = XDocument.Parse(xmlString as string);
+                            foreach (var segment in xml.Descendants("segment"))
                             {
-                                Value = segment.Value
-                            });
-                        }
+                                segments.Add(new AssetsByPathItemSegmentApiViewModel()
+                                {
+                                    Value = segment.Value
+                                });
+                            }
 
-                        result.Segments = segments;
+                            result.Segments = segments;
+                        }
                     }
-                }
-                catch
-                {
-                    result.Segments = null;
+                    catch
+                    {
+                        result.Segments = null;
+                    }
                 }
             }
 
@@ -868,11 +884,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 case AssetTypeClass.TechnicalAsset:
                     #region
 
-                    if (assetType == null) 
+                    if (assetType == null)
                     {
                         return new Tuple<HttpStatusCode, string, string>(
-                            HttpStatusCode.BadRequest, 
-                            $"Wrong {model.Class.ToString()}", 
+                            HttpStatusCode.BadRequest,
+                            $"Wrong {model.Class.ToString()}",
                             $"Invalid {model.Class.ToString()} provided. {AssetTypeErrors.CheckRequest}"
                         );
                     }
@@ -915,37 +931,41 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     break;
                 case AssetTypeClass.Organization:
                     #region
-                    
+
                     var org = CompanyContext.GetById<OrganizationType>(model.ObjectID);
                     if (org == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Organization.ToString()}", $"Invalid {AssetTypeClass.Organization.ToString()} provided. {AssetTypeErrors.CheckRequest}");
                     org.Name = model.Name;
                     org.Description = model.Description;
                     org.DisplayFormat = model.DisplayFormat;
                     CompanyContext.Update(org);
-                    
+
                     #endregion
                     break;
                 case AssetTypeClass.Rule:
                     #region
-                    
+
                     var r = CompanyContext.GetById<RuleType>(model.ObjectID);
                     if (r == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Rule.ToString()}", $"Not valid {AssetTypeClass.Rule.ToString()} provided. {AssetTypeErrors.CheckRequest}");
                     r.Name = model.Name;
                     r.DisplayFormat = model.DisplayFormat;
                     r.Description = model.Description;
                     CompanyContext.Update(r);
-                    
+
+                    assetType.Name = model.Name;
+                    assetType.DisplayFormat = model.DisplayFormat;
+                    assetType.Description = model.Description;
+
                     #endregion
                     break;
                 case AssetTypeClass.FusionAttribute:
                     #region
-                    
+
                     var fusionAttributeType = CompanyContext.GetById<FusionAttributeType>(model.ObjectID);
                     if (fusionAttributeType == null)
                     {
                         return new Tuple<HttpStatusCode, string, string>(
-                            HttpStatusCode.BadRequest, 
-                            $"Wrong {AssetTypeClass.FusionAttribute.ToString()}", 
+                            HttpStatusCode.BadRequest,
+                            $"Wrong {AssetTypeClass.FusionAttribute.ToString()}",
                             $"Not valid {AssetTypeClass.FusionAttribute.ToString()} provided. {AssetTypeErrors.CheckRequest}"
                         );
                     }
@@ -954,7 +974,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                     fusionAttributeType.Name = model.Name;
                     CompanyContext.Update(fusionAttributeType);
-                    
+
                     #endregion
                     break;
             }
@@ -964,14 +984,14 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             if (predicateClass.Contains(model.Class) && (parentAssetType != null || predicate != null))
             {
-                var parentPredicateType = (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy) ? 
-                    PredicateType.IntraTypeHierarchy : 
+                var parentPredicateType = (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy) ?
+                    PredicateType.IntraTypeHierarchy :
                     PredicateType.InterTypeHierarchy;
 
                 intersectType = CompanyContext.Filter<IntersectType>(i =>
                     i.Object == model.Object &&
                     i.ObjectID == model.ObjectID &&
-                    i.Predicate.Type == parentPredicateType, 
+                    i.Predicate.Type == parentPredicateType,
                     i => i.Predicate
                 ).SingleOrDefault();
 
@@ -990,14 +1010,14 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                             relationshipChangeMade = true;
                         }
                     }
-                    
+
                     if (intersectType.SubjectID != parentID)
                     {
                         if (anyExistingRelationships)
                         {
                             return new Tuple<HttpStatusCode, string, string>(
-                                HttpStatusCode.Conflict, 
-                                $"Invalid Parent Selected", 
+                                HttpStatusCode.Conflict,
+                                $"Invalid Parent Selected",
                                 $"There are existing parent/child relationships for assets of this type. You may not alter the parent type until these relationships are removed. {AssetTypeErrors.CheckRequest}"
                             );
                         }
@@ -1011,7 +1031,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CompanyContext.Update(intersectType);
                     }
                 }
-                else 
+                else
                 {
                     // We now want to require a parent on an asset type that previously did NOT have any parent.
                     intersectType = new IntersectType
@@ -1112,7 +1132,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 SendWorkflowEvents = sendWorkflowEvents
             };
 
-           
+
             if ((assets == null || assets.Count == 0) && clearallassetsfromtype)
             {
                 var assetList = CompanyContext.Assets.Include(at => at.AssetType).Where(xx => xx.AssetType.uid == assetTypeUid).Select(xx => new AssetDelete { Uid = xx.uid, Cascade = true }).ToList<AssetDelete>();
@@ -1121,9 +1141,9 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assets.AddRange(assetList);
                 execution.Total = assets.Count;
             }
-            
-                // Save to storage container.
-                StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
+
+            // Save to storage container.
+            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
             await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
@@ -1194,7 +1214,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         {
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid).SingleOrDefault();
         }
-        
+
         public AssetType GetAssetTypeByUidAndClass(Guid assetTypeUid, AssetTypeClass @class)
         {
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid && i.Class == @class).SingleOrDefault();
@@ -1215,17 +1235,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             var style = CompanyContext.GetAssetTypeStyle(assetTypeId);
             bool add = (style == null);
 
-            string iconText;
-
-            var words = objectName.Trim().Split(' ');
-            if (words.Length > 1 && words[1].Length > 0)
-            {
-                iconText = words[0][0].ToString().ToUpper() + words[1][0].ToString().ToLower();
-            }
-            else
-            {
-                iconText = objectName[0].ToString().ToUpper() + objectName[1].ToString().ToLower();
-            }
+            string iconText = CompanyContext.GetIconText(objectName);
 
             if (add)
             {
@@ -1276,6 +1286,51 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 return Guid.Empty;
             return asset.uid;
         }
+
+
+        public async Task<dynamic> GetAssetDetails(Asset asset)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@typeUid", asset.AssetType.uid.ToString());
+            dbArgs.Add("@assetUid", asset.uid.ToString());
+            dbArgs.Add("@id", asset.ID);
+
+            var sql = $@"
+                select
+	                A.[UID] as [uid],
+                    COALESCE(f.FormattedValue, ft.DefaultFormattedValue) as Status,
+                    cast(S.Value * 100 as int) as 'Score',
+                    S.EffectiveDate as 'EffectiveDate',  
+	                Node.Path 
+                from Asset A
+                inner join AssetType AT on AT.ID = A.AssetTypeID and AT.UID = @typeUid
+                left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
+                left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
+                left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
+                left join metrics.Score S on AssetUid = @assetUid and EffectiveDate <= getutcdate()
+                WHERE A.ID = @id
+            ";
+
+            var res = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
+            return res;
+        }
+
+        public async Task<dynamic> GetAssetTypeDetails(AssetType type)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@typeUid", type.uid.ToString());
+            var sql = $@"
+                    SELECT
+                        A.[uid]
+                        ,P.[Path]
+                    FROM AssetType A
+                        cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+                        where       A.[State] = 1 and A.Uid = @typeUid
+                    ";
+
+            return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
+        }
+
 
         #region Private
         private void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns)
@@ -1405,14 +1460,23 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
 
                 var orderBySql = "";
+                var orderDirection = "";
                 var offsetSql = "";
                 var pageNum = -1;
                 var pageSize = -1;
 
+                if(queryParams.Any(x=> x.Key == "_direction"))
+                {
+                    string[] allowedDirections = new string[] { "asc", "desc" };
+                    var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+
+                    orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "";
+                }
+
                 //add base sort if none is specified
                 if (!queryParams.Any(p => p.Key == "_order"))
                 {
-                    orderBySql = "order by A.ID";
+                    orderBySql = $"order by A.ID {orderDirection}";
                 }
 
                 queryParams
@@ -1427,19 +1491,19 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                             {
                                 if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "name")
                                 {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.Name";
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FA.Name {orderDirection} ";
                                 }
                                 else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "sourceid")
                                 {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.SourceID";
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FA.SourceID {orderDirection} ";
                                 }
                                 else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "textpath")
                                 {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.TextPath";
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FA.TextPath {orderDirection} ";
                                 }
                                 else if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
                                 {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "RI.Code";
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"RI.Code {orderDirection} ";
                                 }
                                 else
                                 {
@@ -1449,17 +1513,17 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                                     if (field == null)
                                     {
-                                        var orderBy = "A.ID";
+                                        var orderBy = $"A.ID {orderDirection}";
                                         switch (q.Value.Trim().ToLower())
                                         {
                                             case "createdon":
-                                                orderBy = "A.CreatedOn DESC";
+                                                orderBy = $"A.CreatedOn {(string.IsNullOrEmpty(orderDirection) ? "DESC" : orderDirection)}";
                                                 break;
                                             case "updatedon":
-                                                orderBy = "A.UpdatedOn DESC";
+                                                orderBy = $"A.UpdatedOn {(string.IsNullOrEmpty(orderDirection) ? "DESC" : orderDirection)}";
                                                 break;
                                             default:
-                                                orderBy = "A.ID";
+                                                orderBy = $"A.ID {orderDirection}";
                                                 break;
                                         }
 
@@ -1470,7 +1534,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                                     if (field.Type == "Link") valueColumn = "Value";
 
                                     if (!string.IsNullOrEmpty(fieldDataType))
-                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"cast(F{field.ID}.{valueColumn} as {fieldDataType})";
+                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"cast(F{field.ID}.{valueColumn} as {fieldDataType}) {orderDirection}";
                                     else
                                     {
                                         if (field.Type == "JsonElement")
@@ -1484,11 +1548,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                                             fieldDataType = jsonElementDefinition.DataType;
 
-                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(FJP{field.ID}.Value as {fieldDataType})";
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(FJP{field.ID}.Value as {fieldDataType}) {orderDirection}";
                                         }
                                         else
                                         {
-                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn}";
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn} {orderDirection}";
                                         }
                                     }
                                 }
@@ -1593,7 +1657,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     return "";
             }
         }
-
 
         #endregion
 

@@ -9,7 +9,7 @@ import { PredicatesService } from '../../../../services/predicates.service';
 @Component({
     selector: 'd3s-predicate-selector',
     templateUrl: 'predicate-selector.component.html',
-    providers: [AssetService, RelationshipsService],
+    providers: [AssetService, RelationshipsService, PredicatesService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -19,13 +19,17 @@ export class PredicateSelectorComponent implements OnInit {
     @Input() relationshipSide: CommonComponentAssetTypeFilterRelationshipSide;
     @Output() onChange: EventEmitter<Predicate> = new EventEmitter();
     @Input() selected: Predicate;
+    @Input() assetTypeUid: string;
 
+
+    private noPredicates: boolean = false;
     private predicates: Predicate[] = [];
 
     private isSelectionVisible: boolean = false;
 
     constructor(
         private predicatesService: PredicatesService,
+        private relationshipService: RelationshipsService,
         private ref: ChangeDetectorRef,
         private eRef: ElementRef
     ) {
@@ -51,11 +55,51 @@ export class PredicateSelectorComponent implements OnInit {
 
     ngOnInit() {
         if (this.predicateType) {
-            this.predicatesService.getPredicatesByType(this.predicateType)
-                .subscribe(res => {
-                    this.predicates = res;
-                    this.ref.markForCheck();
-                });
+            if (!this.assetTypeUid) {
+                this.predicatesService.getPredicatesByType(this.predicateType)
+                    .subscribe(res => {
+                        this.predicates = res;
+                        if (this.predicates.length == 0) {
+                            this.noPredicates = true;
+                        }
+                        else {
+                            this.noPredicates = false;
+                        }
+                        if (this.predicates.length == 1) {
+                            this.selected = this.predicates[0];
+                            this.onChange.emit(this.selected);
+                        }
+                        this.ref.markForCheck();
+
+                    });
+            }
+            else {
+                this.relationshipService.getRelationshipsByAssetTypeUid(this.assetTypeUid)
+                    .subscribe(result => {
+                        this.predicates = [];
+                        result.forEach(rel => {
+
+                            if (rel.Predicate.Type == this.predicateType.toString()) {
+                                if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Subject && this.assetTypeUid == rel.Subject.Uid)
+                                    this.predicates.push(rel.Predicate);
+                                if (this.relationshipSide == CommonComponentAssetTypeFilterRelationshipSide.Object && this.assetTypeUid == rel.Object.Uid)
+                                    this.predicates.push(rel.Predicate);
+                            }
+                        });
+
+                        if (this.predicates.length == 0) {
+                            this.noPredicates = true;
+                        }
+                        else {
+                            this.noPredicates = false;
+                        }
+                        if (this.predicates.length == 1) {
+                            this.selected = this.predicates[0];
+                            this.onChange.emit(this.selected);
+                        }
+                        this.ref.markForCheck();
+                    });
+            }
         }
         else {
             console.warn("PredicateSelectorType not set!");

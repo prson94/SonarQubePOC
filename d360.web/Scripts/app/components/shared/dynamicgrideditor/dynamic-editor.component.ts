@@ -1,4 +1,4 @@
-﻿import * as _ from 'lodash';
+import * as _ from 'lodash';
 import { Number, setTimeout } from 'core-js';
 import {
     ChangeDetectionStrategy,
@@ -273,7 +273,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
             } else if (field.FieldType == "Date" || field.FieldType == "DateTime") {
                 if (field.Value != null) {
-                    field.Value = new Date(field.Value);
+                    let date = new Date(field.Value);
+                    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+                    field.Value = date;
                 }
 
                 group[field.FieldName] = new FormControl({
@@ -537,6 +539,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 }
                 else {
                     this.showMessageForApiResult(this.messagesService, res);
+                    this.saveClick.emit(event);
                 }
 
             });

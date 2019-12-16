@@ -44,19 +44,20 @@ namespace igx.jobs.displayvalueupdateprocessor
             try
             {
                 #region Create EF connection
+                var _c = CoreFunction.GetCompaniesByCurrentSlot()
+                    .FirstOrDefault(x => x.CompanyID == updateInfo.CompanyID);
 
                 var sec = new UriSecurityContextProvider()
                 {
                     CompanyID = updateInfo.CompanyID,
                     ResourceID = 0,
-                    CompanyPrefix = "demo.dev",
+                    CompanyPrefix = _c.UrlPrefix,
                     IsAdministrator = true
                 };
                 var cache = new DummyCachingProvider();
                 var queue = new AzureQueueSource();
                 var community = new CommunityContext(cache, queue, sec);
                 var company = new CompanyContext(community, cache, queue, sec, true);
-                var isDev = (company.ObjectContext.Connection.DataSource.Contains("dev")) || (updateInfo.CompanyID == 8);
 
                 #endregion
 

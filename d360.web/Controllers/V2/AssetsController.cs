@@ -97,6 +97,7 @@ namespace d360.web.Controllers.V2
         /// GET a list of asset types.
         /// </summary>
         /// <param name="Class">Allows for filtering the Asset type's by Class.</param>
+        /// <param name="assetTypeUid">Filter by Asset type UID.</param>
         /// <param name="FusionTypeUID">Filter by Fusion type UID. Only applicable for FusionQuery and FusionAttribute classes.</param>
         /// <returns></returns>
         [
@@ -107,10 +108,11 @@ namespace d360.web.Controllers.V2
              SwaggerParameter("Hierarchical", "Filter by Hierarchical", DataType = "boolean", ParameterType = "query", Required = false),
              SwaggerParameter("AutoDisplayDescription", "Filter by Auto Display Description", DataType = "boolean", ParameterType = "query", Required = false),
              SwaggerParameter("CanOwnFusion", "Filter by Can Own Fusion", DataType = "boolean", ParameterType = "query", Required = false),
+             SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null, string FusionTypeUID = null)
+        public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null,string FusionTypeUID = null, Guid? assetTypeUid=null)
         {
             var prefix = "Assets.GetAssetTypesAsync => ";
             var errorMessage = "";
@@ -130,9 +132,15 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                if(assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
+                {
+                    var assetType = this.AssetRepository.GetAssetTypeByUID(assetTypeUid.Value);
+                    if(assetType == null)
+                        if (assetType == null) return ReturnApiError(HttpStatusCode.BadRequest, AssetTypeErrors.NotFoundGeneric);
+                }
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                var assetTypes = await AssetRepository.GetAssetType(queryParams,Class, fusionTypeGuid);
+                var assetTypes = await AssetRepository.GetAssetType(queryParams,Class, fusionTypeGuid,assetTypeUid);
 
                 return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
             }
@@ -157,6 +165,10 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <remarks>
         /// In addition to the below query parameters a field name for the asset type can be specified to filter by exact match. For example MyCustomField=someExactValue.
+        /// *  If you use the object asset type Uid as the assetTypeUid value, only use of the subjectUid filter is supported.
+        /// *  If you use the subject asset type Uid as the assetTypeUid value, only use of the objectUid filter is supported.
+        /// *  If you use either the subjectUid or objectUid filter, the predicateUid must be included in the request. 
+        /// *  If you do not include the predicateUid, any values given in the subjectUid or objectUid field are ignored.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -169,8 +181,10 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_predicateUid", "The Uid of a predicate type to return relationships for. If specified the results will include relationships of this predicate type. Assets without this type of relationship defined will be omitted.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_subjectUid", "The Uid of the subject side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_objectUid", "The Uid of the object side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "Filter by provided asset Uid. Multiple asset Uids can be provided delimited by comma", DataType = "string", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
@@ -183,6 +197,9 @@ namespace d360.web.Controllers.V2
                 var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));
                 if(!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request"));
+
+                if (!validator.IsValidOrderDirectionGetAssets(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order direction passed in the request"));
 
                 var results = await AssetRepository.GetAssets(assetTypeUid, queryParams);
 
@@ -275,7 +292,6 @@ namespace d360.web.Controllers.V2
             }
 
         }
-
 
 
         /// <summary>
@@ -471,7 +487,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                    await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
                 var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));
 
@@ -777,6 +793,54 @@ namespace d360.web.Controllers.V2
         public dynamic GetScoreAndStatus(Guid assetUid)
         {
             return Company.GetAssetStatusAndScore(assetUid);
+        }
+
+        /// <summary>
+        /// Get field types for the given asset type Uid
+        /// </summary>
+        /// <param name="assetUid">The Uid of the asset type</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("searchDetails/{assetUid}"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = false)
+        ]
+        public async Task<IHttpActionResult> GetAssetsSearchDetailsAsync(Guid assetUid)
+        {
+            var prefix = "Assets.GetAssetsSearchDetailsAsync => ";
+            var errorMessage = "";
+            AssetType type = new AssetType();
+            Asset asset = new Asset();
+            try
+            {
+                asset = AssetRepository.GetAssetByUID(assetUid);
+                if(asset != null)
+                {
+                    var res = await AssetRepository.GetAssetDetails(asset) as object;
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res )));
+
+                }
+                else
+                {
+                    type = AssetRepository.GetAssetTypeByUID(assetUid);
+                    if(type == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, string.Format("No Asset or AsssetType found for Guid [{0}]",assetUid), errorMessage));
+
+                    var res  = await AssetRepository.GetAssetTypeDetails(type) as object;
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res )));
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
         }
 
 
@@ -1168,6 +1232,7 @@ namespace d360.web.Controllers.V2
             foreach (var assetTagApi in assetTags)
             {
                 AssetTagSuccessApiModel result;
+
                 if(assetTagApi.TagUID == Guid.Empty)
                 {
                     currentTag = tagRepository.GetTagByName(assetTagApi.TagName);

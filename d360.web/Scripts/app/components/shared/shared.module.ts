@@ -37,9 +37,9 @@ import { ObjectFollowersComponent } from './object-followers.component';
 import { ResourceResponsibilityComponent } from './resource-responsibility.component';
 import { ResourceResponsibilityGridComponent } from './resource-responsibility-grid.component';
 import { SynonymsTile } from './synonyms.tile';
-import { TakeSurveyComponent } from './take-survey.component';
 import { UserListComponent } from './user-list.component';
 import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.component';
+import { SiteModalModule } from './modal/gov-modal.module';
 
 
 @NgModule({
@@ -51,8 +51,7 @@ import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.co
         ObjectFollowersComponent,                          
         ResourceResponsibilityComponent,        
         ResourceResponsibilityGridComponent,                        
-        SynonymsTile,
-        TakeSurveyComponent,                 
+        SynonymsTile,           
         UserListComponent,
         ResourceMultiSelectGridComponent,
     ],
@@ -62,8 +61,7 @@ import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.co
         ObjectDefinitionTile,
         ObjectFollowersComponent,                                 
         ResourceResponsibilityComponent,
-        ResourceResponsibilityGridComponent,                        
-        TakeSurveyComponent,              
+        ResourceResponsibilityGridComponent,               
         UserListComponent,    
         ResourceMultiSelectGridComponent,
         ]
@@ -98,6 +96,7 @@ import { ResourceMultiSelectGridComponent } from './resource-multiselect-grid.co
         SharedObjectDetailsModule,
         SimpleAccordionModule,        
         TilesModule,
+        SiteModalModule,
     ],
     providers: [
         {

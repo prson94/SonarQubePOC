@@ -283,6 +283,7 @@ namespace d360.model
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml);
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
+        Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90);
         Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90);
         void RebuildDisplayValuesRequest();
         void RebuildAssetGraphRequest();
@@ -326,5 +327,6 @@ namespace d360.model
         List<PredicateDeleteResult> RemovePredicates(ApiExecution execution, PredicateDeletes import, int timeout = 3600);
         List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600);
         List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);
+        string GetIconText(string assetName);
     }
 }

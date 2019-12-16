@@ -44,7 +44,10 @@ export class D3SModal implements OnChanges {
     handleWheelEvent(event) {
         let path: any[] = event.path;
         //add scroll exceptions here
-        if (this.display == true && !(path.filter(x => x.tagName == 'D3S-TAG-USAGE').length > 0)) {
+        if (this.display == true
+            && !(path.filter(x => x.tagName == 'D3S-TAG-USAGE').length > 0)
+            && !(path.filter(x => x.tagName == 'D3S-ASSET-TYPE-MODAL-EDITOR').length > 0)
+        ) {
             event.preventDefault();
         }
     }
