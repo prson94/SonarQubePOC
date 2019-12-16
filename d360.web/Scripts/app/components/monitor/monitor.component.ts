@@ -139,7 +139,7 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
         this.sub = this.route.params.subscribe(params => {
             if (params['id'] != null) {
                 this.selectedWorkflowTypes = [];
-                this.selectedWorkflowTypes.push(+params['id']);
+                this.selectedWorkflowTypes.push(params['id']);
                 this.selectAll = false;
             }
 
