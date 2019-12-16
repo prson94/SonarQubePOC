@@ -10,7 +10,7 @@ using System.Web.Http.Description;
 namespace d360.web.Controllers.Services
 {
     /// <summary>
-    /// Manage your organizations within Data3Sixty.
+    /// Manage your organizations within Data360.
     /// </summary>
     [ApiVersion("1.0"), RoutePrefix("services/organizations"), ApiExplorerSettings(IgnoreApi = true), Authorize]
     public class OrganizationsController : BaseApiController

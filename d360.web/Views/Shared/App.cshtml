@@ -33,9 +33,9 @@
         baseUrl = System.Configuration.ConfigurationManager.AppSettings["cdn:url"];
     }
 
-    var title = settings["BrowserTitlePrefix"] ?? "Data3Sixty, Inc.";
+    var title = settings["BrowserTitlePrefix"] ?? "Data360, Inc.";
 
-    var companyLogo = string.Format("{0}/content/images/logo.new.png", baseUrl);
+    var companyLogo = string.Format("{0}/content/images/govern-small-white.png", baseUrl);
     var companyIcon = string.Format("{0}/favicon.ico", baseUrl);
 
     companyLogo = settings["CompanyLogo"];
@@ -59,7 +59,7 @@
     <meta charset="utf-8" />
     <title>@(title)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="Data3Sixty: Data Collaboration Suite" />
+    <meta name="description" content="Data360: Data Collaboration Suite" />
     <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
     <link rel="Shortcut Icon" href="@(companyIcon)" />
     <script type="text/javascript" src="scripts/ai.0.22.9-build00167.min.js"></script>
@@ -100,7 +100,7 @@
         }
         .ng-loading{position:fixed;height:100%;width:100%;top:0;left:0;background:white;}
         .ng-loading-wrap{position:fixed;top:45%;left:50%;color:#54a4da;}
-        .ng-loading-image{background-image: url(@string.Format("{0}/content/images/logo.new.color.png", baseUrl));background-size:auto 40px;background-repeat:no-repeat;width:224px;height:44px;margin-left:-65px;}
+        .ng-loading-image{background-image: url(@string.Format("{0}/content/images/govern-small.png", baseUrl));background-size:auto 40px;background-repeat:no-repeat;width:224px;height:44px;margin-left:-65px;}
 </style>
 @if (!string.IsNullOrEmpty(customStylesheetURL))
 {

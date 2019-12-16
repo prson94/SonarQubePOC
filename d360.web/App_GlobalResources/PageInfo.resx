@@ -271,13 +271,13 @@
     <value>Synonym Types</value>
   </data>
   <data name="Load_Description" xml:space="preserve">
-    <value>You can bulk load almost any piece of content contained within the Data3Sixty platform.</value>
+    <value>You can bulk load almost any piece of content contained within the Data360 platform.</value>
   </data>
   <data name="Load_Title" xml:space="preserve">
     <value>Bulk Loading</value>
   </data>
   <data name="Community_Home_Description" xml:space="preserve">
-    <value>A place to share and report issues to the greater Data3Sixty audience.</value>
+    <value>A place to share and report issues to the greater Data360 audience.</value>
   </data>
   <data name="Community_Home_Title" xml:space="preserve">
     <value>Community</value>

@@ -745,7 +745,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The date that this item was created in Data3Sixty..
+        ///   Looks up a localized string similar to The date that this item was created in Data360..
         /// </summary>
         public static string CreatedOn_Description {
             get {
@@ -3112,7 +3112,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The date that this item was last modified in Data3Sixty..
+        ///   Looks up a localized string similar to The date that this item was last modified in Data360..
         /// </summary>
         public static string UpdatedOn_Description {
             get {

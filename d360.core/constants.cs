@@ -26,9 +26,9 @@ namespace d360.core
         //azure container names
         public static string AZURE_CLOUD_FUSION_CONTAINER = "cloud-fusion-data";
 
-        public const string TITLE_PREFIX = "Data3Sixty";
+        public const string TITLE_PREFIX = "Data360";
         public const string COMPANY = "Infogix, Inc.";
-        public const string PRODUCT = "Data3Sixty Govern";
+        public const string PRODUCT = "Data360 Govern";
         public const string COPYRIGHT = "Copyright © Infogix, Inc. 2020";
         public const string PRODUCT_VERSION = "2020.01.10.*";
         public const string PRODUCT_VERSION_NOREVISION = "2020.01.10";

@@ -124,13 +124,13 @@
     <value>API Name</value>
   </data>
   <data name="AssetId_Description" xml:space="preserve">
-    <value>The Asset ID is the unique identifier for this asset across all Data3Sixty assets.</value>
+    <value>The Asset ID is the unique identifier for this asset across all Data360 assets.</value>
   </data>
   <data name="AssetId_Name" xml:space="preserve">
     <value>Asset ID</value>
   </data>
   <data name="CreatedOn_Description" xml:space="preserve">
-    <value>The date that this item was created in Data3Sixty.</value>
+    <value>The date that this item was created in Data360.</value>
   </data>
   <data name="CreatedOn_Name" xml:space="preserve">
     <value>Date created</value>
@@ -178,7 +178,7 @@
     <value>Friendly Name</value>
   </data>
   <data name="FusionPromotionEnable_ToolTip" xml:space="preserve">
-    <value>To enable the promotion rule, check the enabled check box.  This will enable the promotion rule within Data3Sixty.</value>
+    <value>To enable the promotion rule, check the enabled check box.  This will enable the promotion rule within Data360.</value>
   </data>
   <data name="FusionPromotionTo_ToolTip" xml:space="preserve">
     <value>Please select a destination where you would like the fusion item to be promoted to.</value>
@@ -295,7 +295,7 @@
     <value>Measurement</value>
   </data>
   <data name="RuleName_Description" xml:space="preserve">
-    <value>The name of this rule within Data3Sixty.</value>
+    <value>The name of this rule within Data360.</value>
   </data>
   <data name="RuleName_Name" xml:space="preserve">
     <value>Name</value>
@@ -340,13 +340,13 @@
     <value>Test Pattern</value>
   </data>
   <data name="UID_Description" xml:space="preserve">
-    <value>The UID is the unique identifier for this item across all of Data3Sixty.</value>
+    <value>The UID is the unique identifier for this item across all of Data360.</value>
   </data>
   <data name="UID_Name" xml:space="preserve">
     <value>UID</value>
   </data>
   <data name="UpdatedOn_Description" xml:space="preserve">
-    <value>The date that this item was last modified in Data3Sixty.</value>
+    <value>The date that this item was last modified in Data360.</value>
   </data>
   <data name="UpdatedOn_Name" xml:space="preserve">
     <value>Date Last Modified</value>
