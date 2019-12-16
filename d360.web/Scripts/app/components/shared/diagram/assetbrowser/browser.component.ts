@@ -380,8 +380,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return "fa " + icon;
     }
 
-    protected scoreBetween(value: number, start: number, end: number) : boolean {
-        if (value) {
+    protected scoreBetween(value: number, start: number, end: number): boolean {
+        if (value !== null && value !== undefined) {
             return +value >= start && +value <= end;
         }
         return false;
