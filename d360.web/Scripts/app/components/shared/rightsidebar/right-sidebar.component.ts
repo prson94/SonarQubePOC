@@ -333,6 +333,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
     handleComplete(event) {
         this.closeSurveyPopup();
+        this.showSurvey = false;
     }
     private lastCalculatedMessage() {
         if (!this.statistics) {
