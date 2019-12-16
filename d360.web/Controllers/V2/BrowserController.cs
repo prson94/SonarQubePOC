@@ -456,10 +456,10 @@ with H as	(
 					outer apply (
 								select	I.ID 
 								from	IntersectType I 
-										inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4) and I.Object = O.Object and I.ObjectID = O.ObjectID
+										inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = 3 and I.Object = O.Object and I.ObjectID = O.ObjectID
 								) I
 			where	I.ID is null
-					and O.Class in (1,2,6,7,8)
+					and O.Class in (1,7,8)
 			union all
 			select	O.Class,
 					O.[uid],
@@ -472,27 +472,38 @@ with H as	(
 			from	AssetType O
 					inner join IntersectType I on I.Object = O.Object and I.ObjectID = O.ObjectID
 					inner join H on H.Object = I.Subject and H.ObjectID = I.SubjectID
-					inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4)
+					inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] = 3
 			)
 
-select		[Uid], [Path], AssetTypeID, Class as ClassId
-from		H 
-where		[Level] = 1
-			or AssetTypeID in (
-				select	A.ID
-				from	AssetType A
-						inner join	(
-									select	I.Subject,
-											I.SubjectID
-									from	AssetType O
-											inner join IntersectType I on I.Object = O.Object and I.ObjectID = O.ObjectID
-											inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4)
-											left join IntersectType SI on SI.Subject = O.Object and SI.SubjectID = O.ObjectID and SI.PredicateID = P.ID
-									where	O.Class in (1,2,6,7,8)
-											and SI.ID is null
-									) S on S.Subject = A.Object and S.SubjectID = A.ObjectID			
-			)
-order by	Class, [Path];
+select	*
+from	(
+		select		[Uid], [Path], AssetTypeID, Class as ClassId, [Level]
+		from		H 
+		where		[Level] = 1
+					or AssetTypeID in (
+										select	A.ID
+										from	AssetType A
+												inner join	(
+															select	I.Subject,
+																	I.SubjectID
+															from	AssetType O
+																	inner join IntersectType I on I.Object = O.Object and I.ObjectID = O.ObjectID
+																	inner join [Predicate] P on P.ID = I.PredicateID and P.[Type] in (3,4)
+																	left join IntersectType SI on SI.Subject = O.Object and SI.SubjectID = O.ObjectID and SI.PredicateID = P.ID
+															where	O.Class in (1,7,8)
+																	and SI.ID is null
+															) S on S.Subject = A.Object and S.SubjectID = A.ObjectID			
+									)
+		union
+		select	O.[Uid],
+				cast(O.Name as nvarchar(2500)) as [Path],
+				O.ID as AssetTypeID,
+				O.Class as ClassId,
+				1 as [Level]
+		from	AssetType O
+		where	O.Class in (2,6)
+		) H
+order by	ClassId, [Path];
 
 select	Id,
         [Uid],

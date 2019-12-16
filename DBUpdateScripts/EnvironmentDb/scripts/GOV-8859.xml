@@ -6,7 +6,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="GOV-8859">
+  <changeSet author="MDonato" id="GOV-8859-4">
+
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -459,7 +460,7 @@ begin
 				utility.GetHash(cast(T.[Hop] as varchar) + '|' + cast(T.AssetID as varchar(50))) as [Key],
 				coalesce(S.[IconBackColor], '#000000'),
 				coalesce(S.[IconForeColor], '#FFFFFF'),
-				S.Icon,
+				N.Icon,
 				T.[HierarchyLevel],
 				T.AssetTypeID,
 				[AT].uid as AssetTypeUid,
@@ -479,35 +480,9 @@ begin
 				inner join AssetDisplayValue d on d.AssetID = T.AssetID
 				inner join AssetType [AT] on [AT].ID = T.AssetTypeID
 				left join AssetTypeStyle S on S.ID = [AT].ID
+				cross apply dbo.GetAssetTypeIconById(T.AssetTypeID) N
 				inner join Asset A on A.ID = d.AssetID; 
 
-		;with Nav as
-		(
-			select	ID, 
-					ParentID, 
-					[Object], 
-					ObjectID, 
-					Icon 
-			from	SiteNav N 
-			where	ParentID is null
-
-			union all
-
-			select	S.ID, 
-					S.ParentID, 
-					S.[Object], 
-					S.ObjectID, 
-					N.Icon 
-			from	SiteNav S
-					inner join Nav N on N.ID = S.ParentID
-		)
-		update	H
-		set		H.Icon = N.Icon
-		from	#hierarchies H
-				inner join AssetType T on T.ID = H.AssetTypeID
-				inner join Nav N on N.[Object] = T.[Object] and N.ObjectID = T.ObjectID
-		where	H.Icon is null 
-				and N.Icon is not null
 
 
 	-- Determine relationships breakdown by predicate.
@@ -638,6 +613,7 @@ begin
 	order by	Hop;
 end
 GO
+
 ALTER   procedure [graph].[GetImpactRelationshipsByAssets]
 	@assets dbo.AssetBrowserImpactTable readonly,
 	@predicateUid uniqueidentifier,
@@ -831,7 +807,7 @@ begin
 				utility.GetHash(cast(T.[Hop] as varchar) + '|' + cast(T.AssetID as varchar(50))) as [Key],
 				coalesce(S.[IconBackColor], '#000000'),
 				coalesce(S.[IconForeColor], '#FFFFFF'),
-				S.Icon,
+				N.Icon,
 				T.[HierarchyLevel],
 				T.AssetTypeID,
 				T.AssetID,
@@ -849,35 +825,8 @@ begin
 				inner join AssetDisplayValue d on d.AssetID = T.AssetID
 				inner join AssetType [AT] on [AT].ID = T.AssetTypeID
 				left join AssetTypeStyle S on S.ID = [AT].ID
+				cross apply dbo.GetAssetTypeIconById(T.AssetTypeID) N
 				inner join Asset A on A.ID = d.AssetID;
-
-	;with Nav as
-	(
-		select	ID, 
-				ParentID, 
-				[Object], 
-				ObjectID, 
-				Icon 
-		from	SiteNav N 
-		where	ParentID is null
-
-		union all
-
-		select	S.ID, 
-				S.ParentID, 
-				S.[Object], 
-				S.ObjectID, 
-				N.Icon 
-		from	SiteNav S
-				inner join Nav N on N.ID = S.ParentID
-	)
-	update	H
-	set		H.Icon = N.Icon
-	from	#hierarchies H
-			inner join AssetType T on T.ID = H.AssetTypeID
-			inner join Nav N on N.[Object] = T.[Object] and N.ObjectID = T.ObjectID
-	where	H.Icon is null 
-			and N.Icon is not null
 
 	--Add Type as parent to those nodes that have a single-level hierarchy.
 	drop table if exists #singles
@@ -1002,6 +951,7 @@ begin
 	from		#tbl 
 	order by	Hop;
 end
+GO
 
 		]]>
     </sql>
@@ -1943,4 +1893,120 @@ end
 ]]>
 	</rollback>
   </changeSet>
+    <changeSet author="MDonato" id="GOV-8859-func-2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE or ALTER FUNCTION [dbo].[GetAssetTypeIconById]
+(
+	@Id bigint
+)
+RETURNS @icons TABLE 
+(
+	Id bigint,
+	[Object] varchar(50),
+	Objectid int,
+	Icon varchar(50)
+)
+AS
+begin
+
+	declare @object varchar(50),
+			@defaultIcon varchar(50);
+
+	declare @nav table (ID int, ParentID int, Object varchar(50), ObjectID int, Icon varchar(50), AssetTypeID bigint);
+
+	select	@object = T.[Object], 
+			@defaultIcon = N.Icon
+	from	AssetType T
+			left join SiteNav N on N.[Name] =
+				case when T.Class = 1 then '#Business'
+				when T.Class in (3,4) then '#Fusion'
+				when T.Class = 2 then '#Models'
+				when T.Class = 6 then '#Policy'
+				when T.Class in (9,14) then '#Reference'
+				when T.Class = 7 then '#Data Quality'
+				when T.Class = 8 then '#Technical'
+				else null end
+	where	T.ID = @Id;
+
+	;with Nav as
+		(
+			select	ID, 
+					ParentID, 
+					[Object], 
+					ObjectID, 
+					Icon 
+			from	SiteNav N 
+			where	ParentID is null and (N.Object = @object or N.Object is null)
+
+			union all
+
+			select	S.ID, 
+					S.ParentID, 
+					S.[Object], 
+					S.ObjectID, 
+					N.Icon 
+			from	SiteNav S
+					inner join Nav N on N.ID = S.ParentID
+		)
+		insert into @nav
+		select	N.ID,
+				N.ParentID,
+				N.[Object],
+				N.ObjectID,
+				N.Icon,
+				T.ID as AssetTypeID
+		from	Nav N
+				inner join AssetType T on T.[Object] = N.[Object] and T.ObjectID = N.ObjectID
+		where	N.ObjectID is not null;
+
+	;with childNavItems as
+	(
+		select	T.ID, 
+				C.ID as ChildID, 
+				N.Icon 
+		from	AssetType T
+				inner join @nav N on N.Object = T.Object and N.ObjectID = T.ObjectID
+				inner join IntersectTypeDetail I on I.Subject = T.Object and I.SubjectID = T.ObjectID and I.PredicateType in (3, 4)
+				inner join AssetType C on C.Object = I.Object and C.ObjectID = I.ObjectID
+
+		union all
+
+		select	T.ID, 
+				C.ID as ChildID, 
+				R.Icon 
+		from	AssetType T 
+				inner join childNavItems R on R.ChildID = T.ID
+				inner join IntersectTypeDetail I on I.Subject = T.Object and I.SubjectID = T.ObjectID and I.PredicateType in (3, 4)
+				inner join AssetType C on C.Object = I.Object and C.ObjectID = I.ObjectID
+		where	C.ID <> T.ID
+	)
+	insert into @icons
+	select	T.ID, 
+			T.Object, 
+			T.ObjectID, 
+			coalesce(S.Icon, N.Icon, R.Icon, @defaultIcon) as Icon 
+	from	AssetType T
+			left join AssetTypeStyle S on S.ID = T.ID and S.Icon <> ''
+			left join @nav N on N.Object = T.Object and N.ObjectID = T.ObjectID
+			left join childNavItems R on R.ChildID = T.ID
+	where	T.ID = @Id;
+
+	return
+
+end
+
+
+		]]>
+    </sql>
+	<rollback>
+			<![CDATA[
+			drop function if exists [dbo].[GetAssetTypeIconById];
+
+		]]>
+	</rollback>
+	</changeSet>
   </databaseChangeLog>

@@ -1287,6 +1287,51 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return asset.uid;
         }
 
+
+        public async Task<dynamic> GetAssetDetails(Asset asset)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@typeUid", asset.AssetType.uid.ToString());
+            dbArgs.Add("@assetUid", asset.uid.ToString());
+            dbArgs.Add("@id", asset.ID);
+
+            var sql = $@"
+                select
+	                A.[UID] as [uid],
+                    COALESCE(f.FormattedValue, ft.DefaultFormattedValue) as Status,
+                    cast(S.Value * 100 as int) as 'Score',
+                    S.EffectiveDate as 'EffectiveDate',  
+	                Node.Path 
+                from Asset A
+                inner join AssetType AT on AT.ID = A.AssetTypeID and AT.UID = @typeUid
+                left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
+                left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
+                left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
+                left join metrics.Score S on AssetUid = @assetUid and EffectiveDate <= getutcdate()
+                WHERE A.ID = @id
+            ";
+
+            var res = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
+            return res;
+        }
+
+        public async Task<dynamic> GetAssetTypeDetails(AssetType type)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@typeUid", type.uid.ToString());
+            var sql = $@"
+                    SELECT
+                        A.[uid]
+                        ,P.[Path]
+                    FROM AssetType A
+                        cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+                        where       A.[State] = 1 and A.Uid = @typeUid
+                    ";
+
+            return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
+        }
+
+
         #region Private
         private void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns)
         {
@@ -1415,14 +1460,23 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
 
                 var orderBySql = "";
+                var orderDirection = "";
                 var offsetSql = "";
                 var pageNum = -1;
                 var pageSize = -1;
 
+                if(queryParams.Any(x=> x.Key == "_direction"))
+                {
+                    string[] allowedDirections = new string[] { "asc", "desc" };
+                    var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+
+                    orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "";
+                }
+
                 //add base sort if none is specified
                 if (!queryParams.Any(p => p.Key == "_order"))
                 {
-                    orderBySql = "order by A.ID";
+                    orderBySql = $"order by A.ID {orderDirection}";
                 }
 
                 queryParams
@@ -1437,19 +1491,19 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                             {
                                 if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "name")
                                 {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.Name";
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FA.Name {orderDirection} ";
                                 }
                                 else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "sourceid")
                                 {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.SourceID";
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FA.SourceID {orderDirection} ";
                                 }
                                 else if (assetType.Object == "FusionAttributeType" && q.Value.ToLower() == "textpath")
                                 {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "FA.TextPath";
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"FA.TextPath {orderDirection} ";
                                 }
                                 else if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
                                 {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + "RI.Code";
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"RI.Code {orderDirection} ";
                                 }
                                 else
                                 {
@@ -1459,17 +1513,17 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                                     if (field == null)
                                     {
-                                        var orderBy = "A.ID";
+                                        var orderBy = $"A.ID {orderDirection}";
                                         switch (q.Value.Trim().ToLower())
                                         {
                                             case "createdon":
-                                                orderBy = "A.CreatedOn DESC";
+                                                orderBy = $"A.CreatedOn {(string.IsNullOrEmpty(orderDirection) ? "DESC" : orderDirection)}";
                                                 break;
                                             case "updatedon":
-                                                orderBy = "A.UpdatedOn DESC";
+                                                orderBy = $"A.UpdatedOn {(string.IsNullOrEmpty(orderDirection) ? "DESC" : orderDirection)}";
                                                 break;
                                             default:
-                                                orderBy = "A.ID";
+                                                orderBy = $"A.ID {orderDirection}";
                                                 break;
                                         }
 
@@ -1480,7 +1534,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                                     if (field.Type == "Link") valueColumn = "Value";
 
                                     if (!string.IsNullOrEmpty(fieldDataType))
-                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"cast(F{field.ID}.{valueColumn} as {fieldDataType})";
+                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"cast(F{field.ID}.{valueColumn} as {fieldDataType}) {orderDirection}";
                                     else
                                     {
                                         if (field.Type == "JsonElement")
@@ -1494,11 +1548,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
                                             fieldDataType = jsonElementDefinition.DataType;
 
-                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(FJP{field.ID}.Value as {fieldDataType})";
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(FJP{field.ID}.Value as {fieldDataType}) {orderDirection}";
                                         }
                                         else
                                         {
-                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn}";
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn} {orderDirection}";
                                         }
                                     }
                                 }
@@ -1603,7 +1657,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     return "";
             }
         }
-
 
         #endregion
 

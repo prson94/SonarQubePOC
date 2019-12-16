@@ -238,7 +238,7 @@ namespace d360.model
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
         public DbSet<Tag> Tags { get; set; }
-        public DbSet<AssetTag> AssetTags { get;set;}
+        public DbSet<AssetTag> AssetTags { get; set; }
 
 
 
@@ -707,17 +707,17 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                 .AsQueryable();
         }
 
-        public Dictionary<string,object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true)
+        public Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true)
         {
             var ft = GetById<FieldType>(fieldTypeID);
 
-            if(!ft.LookupObjectID.HasValue)
+            if (!ft.LookupObjectID.HasValue)
             {
                 throw new Exception("Invalid Relationship field encountered no relationship type to lookup found in definition.");
             }
             var intersectType = GetById<IntersectType>(ft.LookupObjectID.Value);
 
-            if(intersectType == null)
+            if (intersectType == null)
             {
                 throw new Exception("Invalid Relationship field encountered invalid or deleted relationship type encountered.");
             }
@@ -1011,9 +1011,9 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             int pageSize = 2000;
             int pageNumbers = lookupIDs.Count / pageSize;
 
-            pageNumbers += ((lookupIDs.Count % pageSize) > 0 ) ? 1 : 0;
+            pageNumbers += ((lookupIDs.Count % pageSize) > 0) ? 1 : 0;
 
-            for(var i = 0; i< pageNumbers; i++)
+            for (var i = 0; i < pageNumbers; i++)
             {
                 var subList = pageNumbers > 1 ? lookupIDs.Skip(i * pageSize).Take(pageSize) : lookupIDs;
                 fields.AddRange(Query<LookupFieldValueModel>(@"
@@ -1094,7 +1094,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             if ((model != null) && PluralCultureHelper.IsNeutralCultureEnglish())
             {
                 var pluralize = PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
-                model.PluralizedName = pluralize.Pluralize(model.Name??"");
+                model.PluralizedName = pluralize.Pluralize(model.Name ?? "");
                 pluralize = null;
             }
             return model;
@@ -1113,7 +1113,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
         public AssetTypeStyle GetAssetTypeStyle(Guid assetTypeUid)
         {
-            var assetType = Filter<AssetType>(i => i.uid==assetTypeUid).FirstOrDefault();
+            var assetType = Filter<AssetType>(i => i.uid == assetTypeUid).FirstOrDefault();
             if (assetType != null)
                 return GetAssetTypeStyle(assetType.ID);
             return null;
@@ -1129,7 +1129,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
         public AssetType GetParentType(int id, SystemObjects obj)
         {
-            if ( id < 0)
+            if (id < 0)
                 return null;
 
             var sql = @"select a.id from IntersectType I
@@ -1184,7 +1184,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
                     return false;
                 }
 
-                intersect.Subject = type.ToString().Replace("Type","");
+                intersect.Subject = type.ToString().Replace("Type", "");
                 intersect.SubjectID = parentID;
 
                 return SaveOrUpdate<Intersect>(intersect) > 0;
@@ -1321,7 +1321,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             }
 
 
-            if ( id < 0)
+            if (id < 0)
                 return default(AssetDetail);
 
             var sql = @"select a.Id from PredicateIntersect I
@@ -1353,7 +1353,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
         public bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID)
         {
-            return (GetFollowingParent(type,objectID,resourceID) != null);
+            return (GetFollowingParent(type, objectID, resourceID) != null);
         }
 
         public Follow GetFollowingParent(SystemObjects type, int objectID, int? resourceID)
@@ -1532,7 +1532,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             if (intersectType == null)
                 throw new NotFoundException("Intersect Type");
 
-            if  (
+            if (
                 (intersectType.Subject == subjectDetail.Type && intersectType.SubjectID == subjectDetail.TypeID && intersectType.Object == objectDetail.Type && intersectType.ObjectID == objectDetail.TypeID) ||
                 (intersectType.Subject == objectDetail.Type && intersectType.SubjectID == objectDetail.TypeID && intersectType.Object == subjectDetail.Type && intersectType.ObjectID == subjectDetail.TypeID)
                 )
@@ -1676,7 +1676,7 @@ where	R.SourceObject = 'FusionAttribute'
             {
                 if (limitToClasses.Count > 0)
                 {
-                    classLimitSql = " and T.[Class] in ("  + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
+                    classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
                 }
             }
 
@@ -1888,7 +1888,7 @@ where	I.ID is null";
             if (relations == null)
                 relations = new List<CommentRelation>();
 
-            var removeRelations = Filter<CommentRelation>(t => t.CommentID == comment.ID && !(t.ObjectType == "Resource" && t.ObjectID == CurrentResourceID )).ToList();
+            var removeRelations = Filter<CommentRelation>(t => t.CommentID == comment.ID && !(t.ObjectType == "Resource" && t.ObjectID == CurrentResourceID)).ToList();
 
             foreach (var r in removeRelations)
                 if (!relations.ToList().Contains(r))
@@ -2045,10 +2045,10 @@ where	I.ID is null";
             {
                 dateStart = (daysToGet < 0) ? dateEnd.AddDays(daysToGet) : dateEnd.AddDays(-daysToGet);
             }
-            return Query<CommentCount>("GetCommentCountByFollower @resourceID, @dateStart, @dateEnd, @searchPhrase", new { resourceID, dateStart, dateEnd, searchPhrase}).AsQueryable();
+            return Query<CommentCount>("GetCommentCountByFollower @resourceID, @dateStart, @dateEnd, @searchPhrase", new { resourceID, dateStart, dateEnd, searchPhrase }).AsQueryable();
         }
 
-        public IQueryable<CommentCount> GetCommentCountByType(SystemObjects type,int id, int daysToGet = 0, string searchPhrase = "")
+        public IQueryable<CommentCount> GetCommentCountByType(SystemObjects type, int id, int daysToGet = 0, string searchPhrase = "")
         {
             DateTime dateStart;
             DateTime dateEnd = DateTime.UtcNow;
@@ -2065,7 +2065,7 @@ where	I.ID is null";
 
         public IQueryable<CommentVote> VoteComment(int CommentID, int ResourceID, int Vote)
         {
-            return Query<CommentVote>("VoteComment @CommentID, @ResourceID, @Vote",new { CommentID, ResourceID, Vote }).AsQueryable();
+            return Query<CommentVote>("VoteComment @CommentID, @ResourceID, @Vote", new { CommentID, ResourceID, Vote }).AsQueryable();
         }
 
         public IQueryable<CommentDetail> GetCommentDetailsByType(SystemObjects type, int id, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "")
@@ -2299,6 +2299,10 @@ where	I.ID is null";
         public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
         {
             return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
+        }
+        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90)
+        {
+            return await Database.Connection.QueryFirstOrDefaultAsync<T>(sql, param, null, timeout);
         }
 
         public async Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90)

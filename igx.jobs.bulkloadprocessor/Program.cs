@@ -52,12 +52,14 @@ namespace igx.jobs.bulkloadprocessor
             try
             {
                 #region Create EF connection
+                var _c = CoreFunction.GetCompaniesByCurrentSlot()
+                    .FirstOrDefault(x=> x.CompanyID == loadInfo.CompanyID);
 
                 var sec = new UriSecurityContextProvider()
                 {
                     CompanyID = loadInfo.CompanyID,
                     ResourceID = 0,
-                    CompanyPrefix = "demo.dev",
+                    CompanyPrefix = _c.UrlPrefix,
                     IsAdministrator = true
                 };
                 var cache = new DummyCachingProvider();
@@ -67,10 +69,8 @@ namespace igx.jobs.bulkloadprocessor
                 
                 var company = new CompanyContext(community, cache, queue, sec, true);
                 var repository = new AssetRepository(company, queue, storage,community);
-                var isDev = (company.ObjectContext.Connection.DataSource.Contains("dev")) || (loadInfo.CompanyID == 8);
 
                 #endregion
-
                 try
                 {
                     var companyConnection = CompanyConnectionUtils.GetCompanyConnection(loadInfo.CompanyID);

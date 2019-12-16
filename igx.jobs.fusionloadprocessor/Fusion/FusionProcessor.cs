@@ -249,6 +249,7 @@ namespace igx.jobs.fusionloadprocessor
             if (string.IsNullOrEmpty(topicName)) return;
 
             var eventBus = new AzureQueueSource();
+            var company = CoreFunction.GetCompaniesByCurrentSlot().FirstOrDefault(x=> x.CompanyID == CompanyID);
 
             eventBus.CreateTopicMessage(topicName, new d360.core.queue.EventInfo
             {
@@ -262,7 +263,7 @@ namespace igx.jobs.fusionloadprocessor
                     ObjectType = SystemObjects.FusionType,
                     ObjectTypeID = -1
                 },
-                DomainPrefix = "demo.dev"
+                DomainPrefix = company.UrlPrefix
             });
         }
 
