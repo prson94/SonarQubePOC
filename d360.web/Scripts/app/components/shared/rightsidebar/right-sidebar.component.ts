@@ -329,6 +329,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
     closeSurveyPopup() {
         this.showSurveyPopup = false;
+        this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
     }
     handleComplete(event) {
         this.closeSurveyPopup();
