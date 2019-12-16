@@ -382,4 +382,5 @@
   <include file="scripts/GOV-7905.xml"/>  <!-- changes to [graph].[GetLineageByAsset] : add useAsTransformation to response-->
   <include file="scripts/GOV-9010.xml"/>  <!-- changes to [graph].[GetLineageByAsset] : set single-level assetUid value to be empty Guid for top-level-->
   <include file="scripts/GOV-8859.xml"/>  <!-- changes to [graph].[GetLineageByAsset] : populate navigation folder icons -->
+  <include file="scripts/GOV-8945.xml"/>  <!-- Renaming dbo.FieldTypeFusionLookupDisplayField table  -->
 </databaseChangeLog>

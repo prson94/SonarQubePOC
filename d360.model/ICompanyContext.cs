@@ -58,7 +58,6 @@ namespace d360.model
         DbSet<Field> Fields { get; set; }
         DbSet<FieldTypeFilteredLookupDefinition> FieldTypeFilteredLookupDefinitions { get; set; }
         DbSet<FieldTypeFilteredLookupDisplayField> FieldTypeFilteredLookupDisplayFields { get; set; }
-        DbSet<FieldTypeFusionLookupDisplayField> FieldTypeFusionLookupDisplayFields { get; set; }
         DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }        
         DbSet<FieldType> FieldTypes { get; set; }
         DbSet<FieldValue> FieldValues { get; set; }

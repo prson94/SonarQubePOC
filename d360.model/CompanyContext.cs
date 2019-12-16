@@ -136,8 +136,6 @@ namespace d360.model
 
         public DbSet<FieldTypeFilteredLookupDisplayField> FieldTypeFilteredLookupDisplayFields { get; set; }
 
-        public DbSet<FieldTypeFusionLookupDisplayField> FieldTypeFusionLookupDisplayFields { get; set; }
-
         public DbSet<Follow> Follows { get; set; }
 
         public DbSet<FollowDetail> FollowDetails { get; set; }                                  /* VIEW */
