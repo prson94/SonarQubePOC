@@ -276,7 +276,7 @@ select  T.*
 from    [queue].[Task] T
         inner join @IDs S on S.ID = T.ID
 ";
-                            var queueItems = outerCompanyConnection.Query<QueueTask>(checkoutAndGetQueueItemSql, new { m = System.Environment.MachineName }).ToList();
+                            var queueItems = outerCompanyConnection.Query<QueueTask>(checkoutAndGetQueueItemSql, new { m = new DbString { Value = System.Environment.MachineName, IsAnsi = true, Length = 200 } }).ToList();
 
                             queueItems.AsParallel().ForAll(q =>
                             {
