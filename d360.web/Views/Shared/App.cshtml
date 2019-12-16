@@ -33,7 +33,7 @@
         baseUrl = System.Configuration.ConfigurationManager.AppSettings["cdn:url"];
     }
 
-    var title = settings["BrowserTitlePrefix"] ?? "Data3Sixty, Inc.";
+    var title = settings["BrowserTitlePrefix"] ?? "Data360, Inc.";
 
     var companyLogo = string.Format("{0}/content/images/govern-small-white.png", baseUrl);
     var companyIcon = string.Format("{0}/favicon.ico", baseUrl);
@@ -59,7 +59,7 @@
     <meta charset="utf-8" />
     <title>@(title)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="Data3Sixty: Data Collaboration Suite" />
+    <meta name="description" content="Data360: Data Collaboration Suite" />
     <link rel="icon" href="@(companyIcon)" type="image/x-icon" />
     <link rel="Shortcut Icon" href="@(companyIcon)" />
     <script type="text/javascript" src="scripts/ai.0.22.9-build00167.min.js"></script>
