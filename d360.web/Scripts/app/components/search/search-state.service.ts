@@ -59,7 +59,7 @@ export class SearchStateService extends BaseObservableService {
     private _searchTypes: string[];
     private _needAggregation: boolean = false;
 
-    loadState(term: string, searchCategotries: string[]) {
+    loadState(term: string, searchCategotries: string[], keepFilters: boolean) {
         this._resultCount.next(0);
         this._results.next([]);
         this._categories.next([]);
@@ -81,8 +81,11 @@ export class SearchStateService extends BaseObservableService {
             this._searchTypes = state.SearchTypes;
             this.advancedFilters = state.AdvancedFilters;
             this._checkTreeKeys = state.CheckTreeKeys;
+        } else {
+            if (!keepFilters) {
+                this.selectedFilters = [];
+            }
         }
-
         this.setSearchCategories(searchCategotries);
     }
 
@@ -99,7 +102,7 @@ export class SearchStateService extends BaseObservableService {
             Query: this._query,
             AggFilters: this._aggFilters,
             SearchTypes: this._searchTypes,
-            CheckTreeKeys: (this._checkTreeKeys !== []) ? this._checkTreeKeys : this.selectedFilters.map(f => f.key),
+            CheckTreeKeys: (this._checkTreeKeys != undefined && this._checkTreeKeys.length > 0) ? this._checkTreeKeys : this.selectedFilters.map(f => f.key),
             AdvancedFilters: this.advancedFilters,
             Querytime: new Date()
         });
