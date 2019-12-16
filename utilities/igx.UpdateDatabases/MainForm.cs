@@ -262,17 +262,5 @@ namespace igx.UpdateDatabases
             var chk = (chkPreview.CheckState == CheckState.Checked);
             checkRelevantItems(chk, EnvironmentLevel.Nightly);
         }
-
-        private void chkAlternate_CheckedChanged(object sender, EventArgs e)
-        {
-            var chk = (chkAlternate.CheckState == CheckState.Checked);
-            checkRelevantItems(chk, EnvironmentLevel.Alternate);
-        }
-
-        private void chkLegacy_CheckedChanged(object sender, EventArgs e)
-        {
-            var chk = (chkLegacy.CheckState == CheckState.Checked);
-            checkRelevantItems(chk, EnvironmentLevel.LegacyDevelopment);
-        }
     }
 }

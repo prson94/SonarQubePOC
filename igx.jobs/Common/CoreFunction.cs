@@ -191,10 +191,7 @@ namespace igx.jobs
                         break;
                     case "PROD":
                         lvl = d360.core.enums.EnvironmentLevel.Production;
-                        break;
-                    case "ALTERNATE":
-                        lvl = d360.core.enums.EnvironmentLevel.Alternate;
-                        break;
+                        break;                    
                 }
 
                 return lvl;

@@ -186,5 +186,20 @@ namespace d360.core.validators
 
             return doesOrderFieldExists || defaultAssetFields.Contains(fieldName.Trim().ToLower());
         }
+
+
+        public bool IsValidOrderDirectionGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            string[] allowedValues = new string[] { "asc", "desc" };
+            var directionFilter = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction");
+
+            if (directionFilter.Key == null)
+                return true;
+
+            if (!allowedValues.Contains(directionFilter.Value.Trim().ToLower()))
+                return false;
+
+            return true;
+        }
     }
 }
