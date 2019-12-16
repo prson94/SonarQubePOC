@@ -12,7 +12,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     templateUrl: 'take-survey.component.html'
 })
 
-export class TakeSurveyComponent extends BaseComponent implements AfterViewInit, OnChanges {
+export class TakeSurveyComponent extends BaseComponent implements OnChanges {
 
     @Input() surveyType: SurveyType;
 
@@ -34,6 +34,12 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit,
     private questionDetails: SurveyQuestionTypeDetails[] = [];
     private currentQuestion: SurveyQuestionTypeDetails;
 
+
+    constructor(private surveysService: SurveysService,
+        private ref: ChangeDetectorRef) {
+        super();
+    }
+
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.surveyType && changes.surveyType.previousValue != changes.surveyType.currentValue) {
             if (changes.surveyType.currentValue) {
@@ -42,20 +48,13 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit,
         }  
     }
 
-    constructor(private surveysService: SurveysService,
-        private ref: ChangeDetectorRef) {
-        super();
-    }
-
-    ngAfterViewInit(): void {
-        this.load();
-    }
-
     private load() {
         this.isLoading = true;
         this.submitting = false;
         this.surveysService.getSurveyTypeQuestions(this.surveyType)
             .subscribe(result => {
+                this.questionDetails = [];
+                this.questions = [];
                 this.questions = result;
                 if (this.questions.length > 0) {
                     this.loadQuestionDetails(this.questions[0]);
