@@ -102,6 +102,14 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     ngOnChanges(changes: SimpleChanges) {
         this.checkSelectionValues();
         this.validateRelationships();
+        if (changes.assetBrowserData.currentValue != changes.assetBrowserData.previousValue && this.assetBrowserData) {
+            var assetTypes = this.assetBrowserData.assets;
+            assetTypes.forEach(at => {
+                at.items.forEach(group => {
+                    this.populateAssets(group);
+                })
+            });
+        }
 
     }
 
