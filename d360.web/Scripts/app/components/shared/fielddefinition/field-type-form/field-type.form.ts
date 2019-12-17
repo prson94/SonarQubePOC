@@ -10,7 +10,6 @@ import {
     FieldTypeFusionItemEditorModel,
     JsonElementSettings,
     OwnershipLookupSettings,
-    FieldTypeFusionLookupDisplayField,
     FieldTypeRelationItemEditorModel,
     ComplexLookupRelationType,
     FieldTypeItemDisplayFieldEditorModel,
@@ -197,11 +196,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     i => {
                         if (i.SourceFusionAttributeType.toString().indexOf('|') == -1)
                             i.SourceFusionAttributeType = 'FusionAttributeType|' + i.SourceFusionAttributeType.toString();
-
-                        for (let j = 0; j < i.DisplayFields.length; j++) {
-                            let d = i.DisplayFields[j] as FieldTypeFusionLookupDisplayField;
-                            i.DisplayFields[j] = d.value;
-                        }
                     }
                 );
             }
@@ -860,25 +854,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
                     if (i.SourceFusionAttributeType.toString().indexOf('|') != -1)
                         i.SourceFusionAttributeType = i.SourceFusionAttributeType.toString().split('|')[1];
-
-                    let d: FieldTypeFusionLookupDisplayField[] = [];
-
-                    (<string[]>i.DisplayFields).forEach(j => {
-                        let k = new FieldTypeFusionLookupDisplayField();
-
-                        try {
-                            k.FieldTypeID = parseInt(j.split('|')[0]);
-                            k.FieldTypeName = j.split('|')[1];
-                            k.Show = true;
-                        } catch (e) {
-                            return;
-                        }
-
-                        d.push(k);
-                    });
-
-                    i.DisplayFields = d;
-
                 }
             );
         }
