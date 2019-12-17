@@ -8,7 +8,7 @@ import {WorkflowType} from '../../models/workflow.model';
 import {Dashboard} from '../../models/dashboard.model';
 
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
-import {RightSidebarService} from '../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../services/right-sidebar.service';
 import {WebAnalyticsService} from '../../services/web-analytics.service';
 import {DashboardService} from '../../services/dashboard.service';
 
@@ -59,11 +59,11 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         webAnalyticsService: WebAnalyticsService,
         protected router: Router,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private dashboardService: DashboardService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
         this.webAnalyticsService = webAnalyticsService;
 
         this.sub = this.router.events.subscribe((val) => {
@@ -82,8 +82,8 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 
         this.clearSidebar();
 
-        this.setCommonRightSideBar(false, false, true);
-        this.rightSidebarService.showHeader(false);
+        this.setCommonSecondaryNavTabs(false, false, true);
+        this.secondaryNavService.showHeader(false);
         this.showActivityTile = CompanySettings.ShowHomeActivityTile == 'true';
         this.showAssignmentTile = CompanySettings.ShowHomeAssignmentTile == 'true';
         this.showBoardTile = CompanySettings.ShowHomeBoardTile == 'true';

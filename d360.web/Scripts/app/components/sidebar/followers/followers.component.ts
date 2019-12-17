@@ -5,6 +5,7 @@ import {FollowerService} from '../../../services/follower.service';
 import {FollowDetail} from '../../../models/follower.model';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import {ObjectDetailService} from '../../../services/object-detail.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-followers',
@@ -83,9 +84,11 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
         private followerService: FollowerService,
         private objectDetailService: ObjectDetailService,
         private route: ActivatedRoute,
+        secondaryNavService: SecondaryNavService,
         private router: Router
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -95,6 +98,8 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
 
             this.load();
         });
+
+        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

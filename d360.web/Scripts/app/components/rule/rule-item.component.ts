@@ -3,7 +3,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { SurveysService } from '../../services/surveys.service';
@@ -13,7 +13,7 @@ import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { Permission } from '../../models/responsibility-type.model';
 import { Observable, Subscribable, Subscription } from 'rxjs';
 
@@ -64,14 +64,14 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     constructor(private rulesService: RulesService,
         private route: ActivatedRoute,
         private router: Router,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         protected surveysService: SurveysService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -114,13 +114,13 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 this.ruleType.ID));
 
             this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
-                this.rightSidebarService.setCurrentArea(this.rule.Name, icon, 'Definition');
-                this.rightSidebarService.setCurrentObject('RuleType', this.ruleType.ID, 'Rule', this.rule.ID, false, this.ruleType.HasWorkflow, this.rule.UID);
-                this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Rule/${this.rule.UID}`, null, 6));
-                this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Rule/${this.rule.ID}`, null, 31));
-                this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Rule/${this.rule.ID}`, null, 26));
+                this.secondaryNavService.setCurrentArea(this.rule.Name, icon, 'Definition');
+                this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, 'Rule', this.rule.ID, false, this.ruleType.HasWorkflow, this.rule.UID));
+                this.secondaryNavService.showItem(new SecondaryNavItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Rule/${this.rule.UID}`, null, 6));
+                this.secondaryNavService.showItem(new SecondaryNavItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Rule/${this.rule.ID}`, null, 31));
+                this.secondaryNavService.showItem(new SecondaryNavItem('Actions', 'Actions', null, `/sidebar/actions/Rule/${this.rule.ID}`, null, 26));
             });
-            this.rightSidebarService.showHeader(true);
+            this.secondaryNavService.showHeader(true);
 
         });
     }
@@ -139,7 +139,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 
                 this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId).then(p => {
                     this.clearSidebar();
-                    this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), false, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
+                    this.setCommonSecondaryNavTabs(true, this.hasPermission(Permission.ReadResponsibilities), false, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
                 });
                 this.isLoading = false;
             });

@@ -2,6 +2,7 @@
 import {Router, ActivatedRoute} from '@angular/router';
 import {BaseComponent} from '../../shared/base.component';
 import {ObjectDetailService} from '../../../services/object-detail.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -32,9 +33,11 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
     constructor(
         private objectDetailService: ObjectDetailService,
         private route: ActivatedRoute,
+        secondaryNavService: SecondaryNavService,
         private router: Router
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -52,6 +55,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
                 );
             }
         );
+
+        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

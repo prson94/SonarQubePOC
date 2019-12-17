@@ -9,8 +9,8 @@ import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { SelectItem } from 'primeng/api';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
-import { DynamicButton } from '../../../models/rightsidebar.model';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { DynamicButton } from '../../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { StringConstants } from '../../../static/string-constants';
 
@@ -57,7 +57,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
         private companySettingsService: CompanySettingsService,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         titleService: Title,
         private siteMenuService: SiteMenuService,        
         private stateService: StateService,
@@ -66,7 +66,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
         private route: ActivatedRoute
     ) {
 
-        super(headerBreadcrumbService, titleService, rightSidebarService);        
+        super(headerBreadcrumbService, titleService, secondaryNavService);        
         this.areaName = "Settings";
         this.setCommonItems();
 
@@ -104,9 +104,9 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                         this.groups.unshift({ label: '[Administrators]', value: 0 });
                         this.isLoading = false;
                     });
-                this.rightSidebarService.clearButtons();
+                this.secondaryNavService.clearButtons();
                 this.SaveButton = new DynamicButton("Save Changes");
-                this.rightSidebarService.showButton(this.SaveButton);
+                this.secondaryNavService.showButton(this.SaveButton);
                 this.SaveButton.dynamicCallback = () => {
                     this.SaveButton.disabled = true;
                     this.SaveButton.isLoading = true;

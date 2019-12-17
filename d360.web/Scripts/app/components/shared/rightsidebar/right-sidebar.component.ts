@@ -1,7 +1,7 @@
 import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange, OnChanges, OnDestroy, AfterViewInit, Output, EventEmitter, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
-import { RightSidebarItem, DynamicButton, AssetAction } from '../../../models/rightsidebar.model';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { SecondaryNavItem, DynamicButton, AssetAction } from '../../../models/secondaryNav.model';
 import { Subscription } from 'rxjs';
 import * as _ from 'lodash';
 import { ObjectStatistics } from '../../../models/object-statistics.model';
@@ -10,6 +10,7 @@ import { SurveysService } from '../../../services/surveys.service';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { SurveyType } from '../../../models/survey.model';
 import { WorkflowService } from '../../../services/workflow.service';
+import { validateDashboardLoad } from 'powerbi-models';
 
 
 declare var CompanySettings
@@ -20,7 +21,7 @@ declare var CurrentResourceID;
     templateUrl: 'right-sidebar.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
-    host: { '(window:resize)': 'checkSize()' }
+    host: { '(window:resize)': 'checkSize()', '(window:beforeunload)': 'destroy()' }
 })
 
 export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewInit {
@@ -34,8 +35,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     hideHeaderSub: Subscription;
     assetActionSub: Subscription;
     assetActionClearSub: Subscription;
+    homeUrlChangeSub: Subscription;
 
-    items: RightSidebarItem[];
+    items: SecondaryNavItem[];
     buttons: DynamicButton[];
     homeUrl: string;
     area: any = { icon: 'fa-folder', title: '' };
@@ -64,7 +66,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     private previousUrl: string = '';
 
     constructor(
-        private rightSidebarService: RightSidebarService,
+        private secondaryNavService: SecondaryNavService,
         protected objectStatisticsService: ObjectStatisticsService,
         private surveysService: SurveysService,
         private ref: ChangeDetectorRef,
@@ -128,41 +130,46 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.buttons = [];
         this.showScrollButtons = false;
         this.currentResouceID = +CurrentResourceID;
-        this.subscription = this.rightSidebarService.rightSidebar$.subscribe(
+        this.subscription = this.secondaryNavService.rightSidebar$.subscribe(
             item => {
                 this.items.push(item);
                 this.items = _.sortBy(this.items, 'orderPriority'); this.emitChanges();
+                this.secondaryNavService.setLocalCurrentTabs(this.items);
             });
 
-        this.buttonSubscription = this.rightSidebarService.rightSidebarButton$.subscribe(
+        this.buttonSubscription = this.secondaryNavService.rightSidebarButton$.subscribe(
             button => {
                 this.buttons.push(button);
                 this.buttons = _.sortBy(this.buttons, 'text'); this.emitChanges();
             });
-        this.buttonSubscriptionClear = this.rightSidebarService.rightSidebarButtonClear$.subscribe(
+        this.buttonSubscriptionClear = this.secondaryNavService.rightSidebarButtonClear$.subscribe(
             item => {
                 this.buttons.splice(0, this.buttons.length); this.emitChanges();
             })
 
 
-        this.subscriptionClear = this.rightSidebarService.rightSidebarClear$.subscribe(
+        this.subscriptionClear = this.secondaryNavService.rightSidebarClear$.subscribe(
             item => {
                 this.items.splice(0, this.items.length);
+                this.secondaryNavService.setLocalCurrentTabs(this.items);
                 this.currentObject = null;
                 this.statistics = null;
                 this.showStatus = false; this.emitChanges();
             })
-        this.areaSub = this.rightSidebarService.currentArea$.subscribe(
+        this.areaSub = this.secondaryNavService.currentArea$.subscribe(
             area => {
                 this.area = area; this.emitChanges();
             }
         );
-        this.hideHeaderSub = this.rightSidebarService.hideHeader$.subscribe(result => {
+        this.hideHeaderSub = this.secondaryNavService.hideHeader$.subscribe(result => {
             this.showHeader = result;
+            if (this.showHeader == false) {
+                this.secondaryNavService.clearSecondaryNavLocalStorage();
+            }
             this.emitChanges();
         });
 
-        this.objectSub = this.rightSidebarService.currentObject$.subscribe(res => {
+        this.objectSub = this.secondaryNavService.currentObject$.subscribe(res => {
             this.currentObject = res;
             if (this.currentObject && !this.currentObject.isType) {
                 this.loadItemStats(this.currentObject.objectID, this.currentObject.objectName, this.currentObject.objectType, this.currentObject.objectTypeID, this.currentObject.hasWorkFlow);
@@ -176,11 +183,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         });
 
 
-        this.assetActionSub = this.rightSidebarService.assetAction$.subscribe(res => {
+        this.assetActionSub = this.secondaryNavService.assetAction$.subscribe(res => {
             this.assetAction = res;
         });
-
-        this.assetActionClearSub = this.rightSidebarService.assetActionClear$.subscribe(
+        
+        this.assetActionClearSub = this.secondaryNavService.assetActionClear$.subscribe(
             item => {
                 //check if router is navigated to asset paga audit
                 if (!this.previousUrl || this.router.url.toLowerCase().indexOf(this.previousUrl.toLowerCase()) <= 0) {
@@ -188,7 +195,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     this.emitChanges();
                 }
             })
-        this.emitChanges();
+        this.emitChanges(); 
     }
 
     private loadItemStats(objectID: number, objectName: string, objectType: string, objectTypeID: number, hasWorkFlow: boolean) {
@@ -235,9 +242,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             });
 
     }
-
+    
     ngOnDestroy() {
-        // prevent memory leak when component destroyed
         this.subscription.unsubscribe();
         this.subscriptionClear.unsubscribe();
         this.areaSub.unsubscribe();
@@ -251,17 +257,22 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         return item.tag;
     }
 
-    itemClicked(item: RightSidebarItem) {
-        if (this.AllClosed()) this.homeUrl = this.router.url;
+    itemClicked(item: SecondaryNavItem) {
+        if (this.AllClosed()) {
+            this.secondaryNavService.setLocalHomeUrl(this.router.url);
+            this.homeUrl = this.router.url;
+        }
         this.closeAll();
         if (item.title == "homeClick") {
-            this.router.navigateByUrl(this.homeUrl);
+            this.secondaryNavService.clearLocalActiveItem();
+            let home = this.homeUrl ? this.homeUrl : this.secondaryNavService.getLocalHomeUrl();
+            this.router.navigateByUrl(home);
             return;
         }
         item.active = true;
         if (item.hasDynamicUrl) this.router.navigateByUrl(item.dynamicUrlCallback());
         else if (item.url) this.router.navigateByUrl(item.url);
-        this.rightSidebarService.itemClicked(item);
+        this.secondaryNavService.itemClicked(item);
         this.AllClosed();
     }
 
@@ -275,7 +286,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         for (let ritem of this.items) {
             if (ritem.active) {
                 ritem.active = false;
-                this.rightSidebarService.itemClicked(ritem);
+                this.secondaryNavService.itemClicked(ritem);
             }
         }
     }

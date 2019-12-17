@@ -1,6 +1,7 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-resource-following',
@@ -24,14 +25,18 @@ export class ItemFollowComponent extends BaseComponent implements OnInit, OnDest
 
     constructor(
         private route: ActivatedRoute,
-        private router: Router) {
+        private router: Router,
+        secondaryNavService: SecondaryNavService) {
         super();
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             this.resourceId = +params['resourceID']; // (+) converts string 'id' to a number
-       });
+        });
+
+        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

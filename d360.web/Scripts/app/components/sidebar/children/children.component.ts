@@ -4,6 +4,7 @@ import {BaseComponent} from '../../shared/base.component';
 import {ObjectStatisticsService} from '../../../services/object-statistics.service';
 import {ObjectStatistics, ObjectStatisticChildItem} from '../../../models/object-statistics.model';
 import {ObjectDetailService} from '../../../services/object-detail.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-children',
@@ -47,8 +48,10 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
         protected objectDetailService: ObjectDetailService,
         private route: ActivatedRoute,
         private router: Router,
+        secondaryNavService: SecondaryNavService    
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -58,6 +61,8 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
 
             this.load();
         });
+
+        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

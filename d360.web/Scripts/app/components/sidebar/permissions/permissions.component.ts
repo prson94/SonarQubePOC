@@ -3,6 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { AuthenticationService } from '../../../services/authentication.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-permissions',
@@ -27,9 +28,11 @@ export class PermissionsComponent extends BaseComponent implements OnInit, OnDes
     constructor(private objectDetailService: ObjectDetailService,
         private route: ActivatedRoute,
         private router: Router,
-        private authenticationService: AuthenticationService
+        private authenticationService: AuthenticationService,
+        secondaryNavService: SecondaryNavService
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -40,6 +43,7 @@ export class PermissionsComponent extends BaseComponent implements OnInit, OnDes
             this.assetTypeId = +params['assetTypeId'];
    
         });
+        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

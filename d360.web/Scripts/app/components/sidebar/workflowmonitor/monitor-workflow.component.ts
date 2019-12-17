@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-workflow-monitor',
@@ -19,9 +20,11 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
     objectID: number;
 
     constructor(
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        secondaryNavService: SecondaryNavService
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -29,6 +32,8 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
             this.objectID = +params['objectId'];
             this.objectType = params['objectType'];
         });
+
+        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

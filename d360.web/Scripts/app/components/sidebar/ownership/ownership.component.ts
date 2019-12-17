@@ -7,6 +7,7 @@ import {ObjectDetailService} from '../../../services/object-detail.service';
 import {FusionService} from '../../../services/fusion.service';
 
 import {BaseComponent} from '../../shared/base.component';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-ownership',
@@ -33,9 +34,11 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
         private route: ActivatedRoute,
         private router: Router,
         private objectDetailService: ObjectDetailService,
-        private fusionservice: FusionService
+        private fusionservice: FusionService,
+        secondaryNavService: SecondaryNavService
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -60,5 +63,6 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
                 );
             }
         );
+        this.checkSecondaryNavLocalStorage();
     }
 }

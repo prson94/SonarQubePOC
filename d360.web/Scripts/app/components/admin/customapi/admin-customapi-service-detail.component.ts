@@ -4,11 +4,11 @@ import {ActivatedRoute, Router} from '@angular/router';
 
 import {Breadcrumb} from '../../../models/breadcrumb.model';
 import {ApiService} from '../../../models/custom-api.model';
-import {RightSidebarItem} from '../../../models/rightsidebar.model';
+import {SecondaryNavItem} from '../../../models/secondaryNav.model';
 
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {CustomAPIService} from '../../../services/custom-api.service';
-import {RightSidebarService} from '../../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../../services/right-sidebar.service';
 
 import {AdminBaseComponent} from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -32,11 +32,11 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
         private router: Router,
         protected customAPIService: CustomAPIService,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private messagesService: MessagesObservableService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
     }
 
     ngOnInit(): void {
@@ -56,13 +56,13 @@ export class AdminCustomAPIServiceDetailComponent extends AdminBaseComponent imp
                         this.areaName ='Custom API';
                         this.areaLink = '/admin/customapi';
                         this.tabTitle = 'Service';
-                        this.setCommonRightSideBar(false);
+                        this.setCommonSecondaryNavTabs(false);
                         this.setCommonItems();
-                        this.rightSidebarService.setCurrentArea(this.service.Name, 'fa-cog', this.tabTitle);
+                        this.secondaryNavService.setCurrentArea(this.service.Name, 'fa-cog', this.tabTitle);
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.service.Name}`));
 
-                        this.rightSidebarService.showItem(
-                            new RightSidebarItem(
+                        this.secondaryNavService.showItem(
+                            new SecondaryNavItem(
                                 'Namespaces',
                                 'namespaces',
                                 ['fa-address-card'],

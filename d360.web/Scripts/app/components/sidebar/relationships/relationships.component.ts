@@ -3,6 +3,7 @@ import {Router, ActivatedRoute} from '@angular/router';
 import {BaseComponent} from '../../shared/base.component';
 import {PermissionsService} from '../../../services/permissions.service';
 import {ObjectDetailService} from '../../../services/object-detail.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
@@ -30,9 +31,11 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
         private route: ActivatedRoute,
         private router: Router,
         private permissionsService: PermissionsService,
-        private objectDetailService: ObjectDetailService
+        private objectDetailService: ObjectDetailService,
+        secondaryNavService: SecondaryNavService
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -45,10 +48,11 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
                     this.objectName = res.Name ? res.Name : res.DisplayValue;
                 }
             );
-
             this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
         });
+        this.checkSecondaryNavLocalStorage();
     }
+
 
     ngOnDestroy() {
         this.sub.unsubscribe();

@@ -5,7 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { ModelsService } from '../../services/models.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { PermissionsService } from '../../services/permissions.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
@@ -13,7 +13,7 @@ import { TreeNode } from 'primeng/api';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { LevelsService } from '../../services/levels.service';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { GridColumn, GridField } from '../../models/grid-definition.model';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
@@ -53,7 +53,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         private headerActionsService: HeaderActionsService,
         private route: ActivatedRoute,
         private router: Router,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         protected modelsService: ModelsService,
         protected titleService: Title,
         protected messagesService: MessagesObservableService,
@@ -64,7 +64,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     ) {
         super();
 
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
         router.events.subscribe(
             (value) => {
                 this.showEditor = false;
@@ -91,7 +91,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             this.modelId = +params['modelId'];
 
             this.setObjectInfo('TaxonomyType', this.modelId);
-            this.setCommonRightSideBar(true);
+            this.setCommonSecondaryNavTabs(true);
             this.currentAreaNameSubscription =
                 this.headerBreadcrumbService
                     .getAreaName('TaxonomyType', this.modelId)
@@ -114,11 +114,11 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID), undefined, 'TAXONOMYTYPE', this.model.ID, undefined, undefined, true));
                         this.headerBreadcrumbService.getAssetFolderIcon('TaxonomyType', this.modelId,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
-                            this.rightSidebarService.setCurrentArea(this.model.Name, icon, 'Model');
-                            this.rightSidebarService.setCurrentObject('TaxonomyType', this.model.ID, this.model.Name, null, true);
-                            this.setCommonRightSideBar(true, false, this.model.HasDashboards);
-                            this.rightSidebarService.showItem(new RightSidebarItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
-                            this.rightSidebarService.showHeader(true);
+                            this.secondaryNavService.setCurrentArea(this.model.Name, icon, 'Model');
+                            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('TaxonomyType', this.model.ID, this.model.Name, null, true));
+                            this.setCommonSecondaryNavTabs(true, false, this.model.HasDashboards);
+                            this.secondaryNavService.showItem(new SecondaryNavItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
+                            this.secondaryNavService.showHeader(true);
                         });
                          
                     });

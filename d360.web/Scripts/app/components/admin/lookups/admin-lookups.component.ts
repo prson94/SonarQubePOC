@@ -5,7 +5,7 @@ import {Title} from '@angular/platform-browser';
 import {Lookup} from '../../../models/lookup.model';
 
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
-import {RightSidebarService} from '../../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../../services/right-sidebar.service';
 import {LookupService} from '../../../services/lookup.service';
 
 import {AdminBaseComponent} from '../admin-base.component';
@@ -138,18 +138,18 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private lookupService: LookupService,
         protected messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
 
         this.areaName = "Lookups";
         this.tabTitle = 'Lookup Types'
         this.setCommonItems();
-        this.setCommonRightSideBar(true);
+        this.setCommonSecondaryNavTabs(true);
 
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;

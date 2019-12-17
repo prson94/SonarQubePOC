@@ -9,6 +9,7 @@ import {AuditService} from '../../../services/audit.service';
 import {Audit} from '../../../models/audit.model';
 import {SortOrder} from '../../../models/enums.model';
 import {GridFilterExpression} from '../../../models/grid-definition.model';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-audit',
@@ -39,9 +40,11 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         private auditService: AuditService,
         private headerBreadcrumbService: HeaderBreadcrumbService,
         private objectDetailService: ObjectDetailService,
-        private changeDetectorRef: ChangeDetectorRef
+        private changeDetectorRef: ChangeDetectorRef,
+        secondaryNavService: SecondaryNavService    
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -56,20 +59,15 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
 
                 this.objectType = params['objectType'];
 
-                this
-                    .objectDetailService
-                    .getObject(
-                        this.objectID,
-                        this.objectType
-                    )
-                    .subscribe(
-                        res => {
+                this.objectDetailService.getObject(this.objectID,this.objectType).subscribe(res => {
                             if (res) {
                                 this.objectName = res.Name ? res.Name : res.DisplayValue;
                             }
                         }
                     );
             });
+
+        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

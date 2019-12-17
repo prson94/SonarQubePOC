@@ -3,7 +3,7 @@ import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { SurveysService } from '../../services/surveys.service';
@@ -13,7 +13,7 @@ import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { Observable, Subscription } from 'rxjs';
 
 @Component({
@@ -49,13 +49,13 @@ export class RuleImplementationComponent extends BaseComponent implements OnInit
     constructor(private rulesService: RulesService,
         private route: ActivatedRoute,
         private router: Router,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -85,8 +85,8 @@ export class RuleImplementationComponent extends BaseComponent implements OnInit
                 this.implementation = result;
 
                 this.setObjectInfo('RuleImplementation', this.implementation.ID, this.implementation.Name);
-                this.setCommonRightSideBar(true, false, false, false, false, false, false);
-                this.rightSidebarService.showItem(<RightSidebarItem>{
+                this.setCommonSecondaryNavTabs(true, false, false, false, false, false, false);
+                this.secondaryNavService.showItem(<SecondaryNavItem>{
                     active: false,
                     icons: ['fa-tags'],
                     tag: 'qualifiers',

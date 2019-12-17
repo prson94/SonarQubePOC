@@ -12,8 +12,8 @@ import { Resource } from '../../models/resource.model';
 import { ObjectStatistics } from '../../models/object-statistics.model';
 import { WorkflowType } from '../../models/workflow.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavItem } from '../../models/secondaryNav.model';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 
 declare var CompanySettings;
@@ -52,11 +52,11 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
     private showResourcesLink: boolean = ((CompanySettings.ShowResources) && (CompanySettings.ShowResources.toUpperCase() == 'TRUE'));
     PageMode = PageMode;
     private allowChangePassword = !SingleSignOn;
-    itemsOwn: RightSidebarItem;
-    itemsFollow: RightSidebarItem;
-    memberGroups: RightSidebarItem;
-    comments: RightSidebarItem;
-    hasRelations: RightSidebarItem;
+    itemsOwn: SecondaryNavItem;
+    itemsFollow: SecondaryNavItem;
+    memberGroups: SecondaryNavItem;
+    comments: SecondaryNavItem;
+    hasRelations: SecondaryNavItem;
 
     constructor(
         protected router: Router,
@@ -67,10 +67,10 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
         private statisticsService: ObjectStatisticsService,
         private uriBasedService: UriBasedService,
         private socialService: SocialService,
-        rightSideBarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         protected messagesService: MessagesObservableService) {
         super();
-        this.rightSidebarService = rightSideBarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -108,39 +108,39 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
                     this.isLoading = false;
 
-                    this.setCommonRightSideBar(
+                    this.setCommonSecondaryNavTabs(
                         false, false, false,
                         false, false, false,
                         false, false
                     );
-                    this.rightSidebarService.showHeader(true);
-                    this.rightSidebarService.setCurrentArea(this.resource.FirstName + " " + this.resource.LastName, 'fa-cog', 'Profile');
+                    this.secondaryNavService.showHeader(true);
+                    this.secondaryNavService.setCurrentArea(this.resource.FirstName + " " + this.resource.LastName, 'fa-cog', 'Profile');
                    
-                    this.itemsOwn = new RightSidebarItem(
+                    this.itemsOwn = new SecondaryNavItem(
                         'Responsibilities', 'itemOwn', ['fa-tasks'],
                         `/sidebar/itemown/${resourceId}`, null, 15
                     );
-                    this.rightSidebarService.showItem(this.itemsOwn);
-                    this.memberGroups = new RightSidebarItem(
+                    this.secondaryNavService.showItem(this.itemsOwn);
+                    this.memberGroups = new SecondaryNavItem(
                         'Groups', 'memberGroup', ['fa-user-circle'],
                         `/sidebar/membergroup/${resourceId}`,null,5
                     );
-                    this.rightSidebarService.showItem(this.memberGroups);
-                    this.itemsFollow = new RightSidebarItem(
+                    this.secondaryNavService.showItem(this.memberGroups);
+                    this.itemsFollow = new SecondaryNavItem(
                         'Following', 'itemFollow', ['fa-user-plus'],
                         `/sidebar/itemfollow/${resourceId}`, null, 20
                     );
-                    this.rightSidebarService.showItem(this.itemsFollow);
-                    this.hasRelations = new RightSidebarItem(
+                    this.secondaryNavService.showItem(this.itemsFollow);
+                    this.hasRelations = new SecondaryNavItem(
                         'Related Assets', 'hasRelations', ['fa-retweet'],
                         `/sidebar/relationships/resource/${resourceId}`, null, 10
                     );
-                    this.rightSidebarService.showItem(this.hasRelations);
-                    this.comments = new RightSidebarItem(
+                    this.secondaryNavService.showItem(this.hasRelations);
+                    this.comments = new SecondaryNavItem(
                         'Comments', 'comments', ['fa-comments'],
                         `/sidebar/comments/Resource/${resourceId}`, null, 25
                     );
-                    this.rightSidebarService.showItem(this.comments);
+                    this.secondaryNavService.showItem(this.comments);
                 });
 
             this.pageMode = PageMode.Default;

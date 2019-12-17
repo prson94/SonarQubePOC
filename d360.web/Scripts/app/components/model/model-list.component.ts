@@ -4,7 +4,7 @@ import {BaseComponent} from '../shared/base.component';
 import {Title} from '@angular/platform-browser';
 import {ModelsService} from '../../services/models.service';
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
-import {RightSidebarService} from '../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../services/right-sidebar.service';
 import {Breadcrumb} from '../../models/breadcrumb.model';
 import {Model} from '../../models/model.model';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
@@ -100,14 +100,14 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected modelsService: ModelsService) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
         this.setObjectInfo('TaxonomyType', -1);
-        this.setCommonRightSideBar(true);
+        this.setCommonSecondaryNavTabs(true);
 
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
@@ -158,9 +158,9 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
                         this.headerBreadcrumbService.clearBreadcrumbs();
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, this.modelGroup ? `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}` : undefined));
                         this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
-                            this.rightSidebarService.setCurrentArea(res, icon, 'Models');
+                            this.secondaryNavService.setCurrentArea(res, icon, 'Models');
                         });
-                        this.rightSidebarService.showHeader(true);
+                        this.secondaryNavService.showHeader(true);
                     });
 
                 if (this.modelGroup) {

@@ -2,7 +2,7 @@
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { WorkflowIssueType } from '../../../models/workflow.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
@@ -106,14 +106,14 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(rightSidebarService: RightSidebarService, private workflowService: WorkflowService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+    constructor(secondaryNavService: SecondaryNavService, private workflowService: WorkflowService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Workflow Actions";
         this.adminHeading = "Workflow Actions";
         this.tabTitle = 'Action Types';
         this.setCommonItems();
         this.theDeleteCallback = this.deleteIssueType.bind(this);
-        this.setCommonRightSideBar(true);
+        this.setCommonSecondaryNavTabs(true);
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {
