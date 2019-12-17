@@ -2993,17 +2993,17 @@ where   ExecutionID = @ExecutionID
                         string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
                         string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
                         string keyComparisonUpdateStatement = $@"
-update  T 
-set     T.Success = 0, 
-        T.Message = {keyErrorMessage}
-from    api.ExecutionAsset T 
-        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and S.AssetID <> T.AssetID and T.AssetID is not null; 
+                            update  T 
+                            set     T.Success = 0, 
+                                    T.Message = {keyErrorMessage}
+                            from    api.ExecutionAsset T 
+                                    inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and S.AssetID <> T.AssetID and T.AssetID is not null; 
 
-update  T 
-set     T.Success = 0, 
-        T.Message = {keyErrorMessage}
-from    api.ExecutionAsset T 
-        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and T.AssetID is null; ";
+                            update  T 
+                            set     T.Success = 0, 
+                                    T.Message = {keyErrorMessage}
+                            from    api.ExecutionAsset T 
+                                    inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and T.AssetID is null; ";
 
                         if (at.Object == "FusionAttributeType")
                         {
@@ -3111,8 +3111,8 @@ group by    A.ID;";
 select		A.ID,
 			utility.GetHash(cast(@ID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
 from		Asset A 
-			inner join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
-			inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+			left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+			left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
 			inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 			left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
 where		A.AssetTypeID = @ID
