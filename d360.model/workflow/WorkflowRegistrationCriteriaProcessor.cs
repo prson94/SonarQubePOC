@@ -58,10 +58,9 @@ namespace d360.model.workflow
 
             //since field and object events come in separately, we need to skip eval in some cases to prevent duplicate runs
             //1. There is a change condition on the workflow, and no change fields are present: Ignore the initial object event and wait for the field event to come in
-            //2. There is not a change condition on the workflow and change fields are present: Ignore the fields event, the object event was already processed
             bool hasChangeCondition = expression.Any(e => e.Operator == core.enums.Workflow.CriteriaOperator.Changed);
+            
             if (satisfyAll && hasChangeCondition && !changedFields.Any()) return false;
-            if (satisfyAll && !hasChangeCondition && changedFields.Any()) return false;
 
             var fields = context.Fields.Where(x => x.ObjectID == objectId && x.ObjectType == @object);
 
@@ -77,6 +76,11 @@ namespace d360.model.workflow
 
         private static bool EvaluateField(ICompanyContext context, WorkflowCriteriaExpressionModel item, IQueryable<Field> fields, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null)
         {
+            //If evaluated field is not part of changed fields return false
+            //With this, we avoid triggering workflow again on plain save where field meets condition but is not changed
+            if (changedFields != null && !changedFields.Contains(item.FieldTypeId))
+                return false;
+
             if (item.FieldTypeId > 0)
             {
                 var value = fields.Where(x => x.FieldTypeID == item.FieldTypeId).FirstOrDefault();
