@@ -457,7 +457,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A place to share and report issues to the greater Data3Sixty audience..
+        ///   Looks up a localized string similar to A place to share and report issues to the greater Data360 audience..
         /// </summary>
         public static string Community_Home_Description {
             get {
@@ -538,7 +538,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You can bulk load almost any piece of content contained within the Data3Sixty platform..
+        ///   Looks up a localized string similar to You can bulk load almost any piece of content contained within the Data360 platform..
         /// </summary>
         public static string Load_Description {
             get {

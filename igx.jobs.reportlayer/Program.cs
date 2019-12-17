@@ -420,7 +420,7 @@ END");
 
                                     MERGE dbo.AssetType as AT
                                     USING #hashTable as HT
-                                    ON AT.uid = HT.Uid
+                                    ON AT.uid = HT.Uid and (HT.NewHash <> HT.OldHash or HT.OldHash is null)
                                     WHEN MATCHED
 	                                    THEN UPDATE SET AT.HashValue = HT.NewHash;";
 

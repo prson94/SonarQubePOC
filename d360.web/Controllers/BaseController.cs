@@ -2185,7 +2185,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             templateValues["request_url"] = strUrl;
 
             //email user 
-            extensions.mail.TemplateMessage.SendMessage("Data3Sixty Password Reset", email, fullName, templateValues, "forms-password-reset");
+            extensions.mail.TemplateMessage.SendMessage("Data360 Password Reset", email, fullName, templateValues, "forms-password-reset");
         }
 
         #endregion

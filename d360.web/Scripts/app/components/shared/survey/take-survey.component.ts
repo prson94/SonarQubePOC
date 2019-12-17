@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit, AfterViewInit, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { SurveysService } from '../../../services/surveys.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -12,7 +12,8 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     templateUrl: 'take-survey.component.html'
 })
 
-export class TakeSurveyComponent extends BaseComponent implements AfterViewInit {
+export class TakeSurveyComponent extends BaseComponent implements OnChanges {
+
     @Input() surveyType: SurveyType;
 
     @Output() surveyComplete = new EventEmitter();
@@ -39,8 +40,14 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit 
         super();
     }
 
-    ngAfterViewInit(): void {
-        this.load();
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.surveyType && (changes.surveyType.previousValue !== changes.surveyType.currentValue)) {
+            if (changes.surveyType.currentValue) {
+                this.questionDetails = [];
+                this.questions = [];
+                this.load();
+            }
+        }  
     }
 
     private load() {
@@ -70,7 +77,8 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit 
                     for (let option of this.currentQuestion.Items) {
                         option.IsChecked = false;
                     }
-                    this.questionDetails.push(result);
+                    if (this.questionDetails.indexOf(result) != -1)
+                        this.questionDetails.push(result);
                     this.isLoading = false;
                     this.ref.markForCheck();
                 });
@@ -125,10 +133,6 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit 
         }
 
         this.loadQuestionDetails(this.questions[--this.currentQuestionIndex]);
-    }
-
-    private selectRadioValue(event, option) {
-        //console.log(event);
     }
 }
 

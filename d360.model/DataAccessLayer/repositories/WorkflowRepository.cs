@@ -109,7 +109,30 @@ namespace d360.model.DataAccessLayer
 					v.Version as PublishedVersion,
 					is_t.name as ActionType,
 					D.Name as AssetType,
-					ITN.name as RelationshipType
+					ITN.name as RelationshipType,
+                    case when e.[Object] = 'ArtifactType' and D.[Class] = 1 then
+						'Business Asset'
+                    when e.[Object] = 'ArtifactType' and D.[Class] = 8 then
+						'Technical Asset'
+					when e.[Object] = 'RuleType' then
+						'Rule'
+					when e.[Object] = 'PolicyType' then
+						'Policy'
+					when e.[Object] = 'TaxonomyType' then
+						'Model'
+					when e.[Object] = 'IssueType' then
+						'Action'
+                    when e.[Object] = 'IntersectType' then
+						'Relationship'
+                    when e.[Object] = 'ShoppingCartType' then
+                        'Shopping Cart'
+					when e.[Object] = 'ReferenceItemType' then
+					'Reference List'
+					when e.[Object] = 'Fusion' then
+						'Fusion'
+					else
+						''
+					end as [Type]
 				from workflow.type t
 				inner join workflow.eventregistration e on e.typeid = t.id
 				left join AssetType D on D.Object = E.Object and D.ObjectID = e.ObjectID 

@@ -727,7 +727,7 @@ namespace d360.web.Controllers
                                 Company.SaveChanges();
                             }
                                                         
-                            model.Message = "Thank you for accepting the terms of use. You may now <a href='/'>sign into Data3Sixty</a>.";
+                            model.Message = "Thank you for accepting the terms of use. You may now <a href='/'>sign into Data360</a>.";
                             break;
                     }
 
@@ -815,7 +815,7 @@ namespace d360.web.Controllers
                                 {
 
                                     var content = $@"Please complete registration to {orgs.First().Name} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
-                                    await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
+                                    await SimpleMessage.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
 
                                     model.Step = RegisterStep.Email;
                                     model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
@@ -848,7 +848,7 @@ namespace d360.web.Controllers
                                 {
 
                                     var content = $@"Please complete registration to {org.Name} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
-                                    await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
+                                    await SimpleMessage.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
 
                                     model.Step = RegisterStep.Email;
                                     model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
@@ -883,7 +883,7 @@ namespace d360.web.Controllers
                                     else
                                     {
                                         var content = $@"Please complete registration to {invite.OrganizationName} by entering the following code:<br/><br/><strong>{registration.ID}</strong>";
-                                        await SimpleMessage.SendMessage("Data3Sixty Registration", "Complete your registration", model.Email, model.Email, content, true);
+                                        await SimpleMessage.SendMessage("Data360 Registration", "Complete your registration", model.Email, model.Email, content, true);
 
                                         model.Step = RegisterStep.Email;
                                         model.Message = "You will receive an email shortly to confirm ownership of this email address, and to continue registration.";
@@ -1023,11 +1023,11 @@ namespace d360.web.Controllers
                                         return new RedirectResult(inviteResult.inviteRedeemUrl);
                                     }
 
-                                    model.Message = "Thank you registering. Please review your mail for an invitation to use Data3Sixty.";
+                                    model.Message = "Thank you registering. Please review your mail for an invitation to use Data360.";
                                 }
                                 else
                                 {
-                                    model.Message = "Thank you for completing registration. You may now <a href='/'>sign into Data3Sixty</a>.";
+                                    model.Message = "Thank you for completing registration. You may now <a href='/'>sign into Data360</a>.";
                                 }
 
                                 model.Step = registration.Step;
@@ -1118,7 +1118,7 @@ namespace d360.web.Controllers
                                 registration.Step = RegisterStep.TermsOfUseValidated;
                                 Company.Update(registration);
                                 model.Step = registration.Step;
-                                model.Message = "Thank you for completing registration. You may now <a href='/'>sign into Data3Sixty</a>.";
+                                model.Message = "Thank you for completing registration. You may now <a href='/'>sign into Data360</a>.";
 
                                 return View(model);
                             }
@@ -1253,11 +1253,11 @@ namespace d360.web.Controllers
                                         return new RedirectResult(inviteResult.inviteRedeemUrl);
                                     }
 
-                                    model.Message = "Thank you registering. Please review your mail for an invitation to use Data3Sixty.";
+                                    model.Message = "Thank you registering. Please review your mail for an invitation to use Data360.";
                                 }
                                 else
                                 {
-                                    model.Message = "Thank you for completing registration. You may now <a href='/'>sign into Data3Sixty</a>.";
+                                    model.Message = "Thank you for completing registration. You may now <a href='/'>sign into Data360</a>.";
                                 }
 
                                 model.Step = registration.Step;
@@ -1368,11 +1368,11 @@ namespace d360.web.Controllers
                                     }
 
                                     await registerAzureActiveDirectoryGuest(model.Email, model.FirstName, model.Title, model.LastName, aadReturnDomain);
-                                    model.Message = "Thank you for accepting the terms of use.  Please review your mail for an invitation to use Data3Sixty.";
+                                    model.Message = "Thank you for accepting the terms of use.  Please review your mail for an invitation to use Data360.";
                                 }
                                 else
                                 {
-                                    model.Message = "Thank you for accepting the terms of use. You may now <a href='/'>sign into Data3Sixty</a>.";
+                                    model.Message = "Thank you for accepting the terms of use. You may now <a href='/'>sign into Data360</a>.";
                                 }
 
                                 model.Step = registration.Step;                                
@@ -1466,7 +1466,7 @@ namespace d360.web.Controllers
                 templateValues["request_url"] = strUrl;
 
                 //email user 
-                extensions.mail.TemplateMessage.SendMessage("Data3Sixty Forgotten Password", resource.Email, resource.FullName, templateValues, "forgot-password-reset-request");
+                extensions.mail.TemplateMessage.SendMessage("Data360 Forgotten Password", resource.Email, resource.FullName, templateValues, "forgot-password-reset-request");
             }
             //redirect to login page
             FormsAuthentication.RedirectToLoginPage();

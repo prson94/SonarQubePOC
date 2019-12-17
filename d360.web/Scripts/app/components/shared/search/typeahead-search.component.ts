@@ -22,6 +22,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     @Input() showBigButton: boolean = false;
     @Input() defaultValue: string;
     @Input() isExactMatch: boolean = undefined;
+    @Input() keepFilter: boolean = false;
 
     public result: SearchResult;
     public searchText: string;
@@ -96,7 +97,7 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     private navigateQuery(q: string) {
         let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
-        let url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}&types=${options ? options.join(',') : ''}`
+        let url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}${(this.keepFilter) ? '&f=1' : ''}&types=${options ? options.join(',') : ''}`
         if (this.isExactMatch !== undefined)
             url += '&exactMatch=' + (this.isExactMatch ? 1 : 0);
         this.router.navigateByUrl(url);

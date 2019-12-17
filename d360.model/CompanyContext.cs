@@ -728,8 +728,31 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             objID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
             var cardinality = isSubject ? intersectType.ObjectCardinality : intersectType.SubjectCardinality;
 
-            countSql = @"select count(*) from AssetDetail with (nolock) where [Type] = @obj and TypeID = @objID order by DisplayValue";
-            sql = @"select ObjectID as Value, DisplayValue as Text from AssetDetail with (nolock) where [Type] = @obj and TypeID = @objID
+            var cardinalityCheckSQL = "";
+            if (intersectType.SubjectCardinality == Cardinality.One)
+            {
+                cardinalityCheckSQL += " and I.Id not in (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.SubjectCardinality = 1 and Object = {0} and ObjectID = {1} and I.Id is null)";
+            }
+            if (intersectType.ObjectCardinality == Cardinality.One)
+            {
+                cardinalityCheckSQL += " and I.Id not in  (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.ObjectCardinality = 1 and Subject = {0} and SubjectID = {1} and I.Id is null)";
+            }
+
+            string formattedCardinalityCheck = string.Format(cardinalityCheckSQL, $"'{obj.Replace("Type","")}'", "AD.[ObjectId]");
+
+            countSql = $@"select count(*) from AssetDetail AD with (nolock) 
+                    inner join IntersectType IT on IT.Id = @intersectTypeID
+                    left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
+	                            ((I.[Subject] = AD.[Object] and I.SubjectID = AD.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+	                            (I.[Object] = AD.[Object] and I.ObjectID = AD.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+                    where [Type] = @obj and TypeID = @objID {formattedCardinalityCheck}";
+            sql = $@"select AD.ObjectID as Value, DisplayValue as Text, case when I.ID is not null then 1 else 0 end as Selected from AssetDetail AD with (nolock) 
+                    inner join IntersectType IT on IT.Id = @intersectTypeID
+ left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
+	                            ((I.[Subject] = AD.[Object] and I.SubjectID = AD.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+	                            (I.[Object] = AD.[Object] and I.ObjectID = AD.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+                    where [Type] = @obj and TypeID = @objID 
+                    {formattedCardinalityCheck}
                     order by DisplayValue OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
             selectedSql = @"select 
 	                case when i.Subject = @obj and i.SubjectID = @objID then i.ObjectID else i.SubjectID end as [Value],
@@ -747,14 +770,22 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
                     if (objID == 0)
                     {
-                        countSql = @"select count(*) from AssetType A with (nolock)
-                        where A.[Object] = @obj  and (@query is null or A.Name like '%' + @query + '%')";
-                        sql = @"select  A.ObjectID as [Value], A.[Name] as [Text], case when I.ID is not null then 1 else 0 end as Selected
+                        formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.[Object]", "A.[ObjectId]");
+
+                        countSql = $@"select count(*) from AssetType A with (nolock)
+                        inner join [IntersectType] IT on IT.Id = @intersectTypeID
+ left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
+	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+	                            (I.[Object] = A.[Object] and I.ObjectID = A.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+                        where A.[Object] = @obj  and (@query is null or A.Name like '%' + @query + '%') {formattedCardinalityCheck}";
+                        sql = $@"select  A.ObjectID as [Value], A.[Name] as [Text], case when I.ID is not null then 1 else 0 end as Selected
                             from AssetType A with (nolock)
+                            inner join [IntersectType] IT on IT.Id = @intersectTypeID
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
 	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
 	                            (I.[Object] = A.[Object] and I.ObjectID = A.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
                             where A.[Object] = @obj and (@query is null or A.[Name] like '%' + @query + '%')
+                            {formattedCardinalityCheck}
                             order by 3 desc, A.[Name] asc
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                         selectedSql = @"select 
@@ -768,21 +799,29 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                     }
                     else
                     {
-                        countSql = @"select count(*) from Asset A with (nolock)
+                        formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.[Object]", "A.[ObjectId]");
+
+                        countSql = $@"select count(*) from Asset A with (nolock)
                         inner join AssetType T with (nolock) on T.ID = A.AssetTypeID
+                        inner join [IntersectType] IT on IT.Id = @intersectTypeID
+ left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
+	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+	                            (I.[Object] = A.[Object] and I.ObjectID = A.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
 						cross apply dbo.GetAssetDisplayValueById(a.ID) D
                         where T.[Object] = @obj and T.ObjectID = @objID and (@query is null or D.DisplayValue like '%' + @query + '%')
-                            and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID)";
+                            and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID) {formattedCardinalityCheck}";
 
-                        sql = @"select  A.ObjectID as [Value], D.DisplayValue as [Text], case when I.ID is not null then 1 else 0 end as Selected
+                        sql = $@"select  A.ObjectID as [Value], D.DisplayValue as [Text], case when I.ID is not null then 1 else 0 end as Selected
                             from Asset A with (nolock)
 							inner join AssetType T with (nolock) on T.ID = A.AssetTypeID
+                            inner join [IntersectType] IT on IT.Id = @intersectTypeID
 							cross apply dbo.GetAssetDisplayValueById(a.ID) D
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
 	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
 	                            (I.[Object] = A.[Object] and I.ObjectID = A.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
                             where T.[Object] = @obj and T.ObjectID = @objID and (@query is null or D.DisplayValue like '%' + @query + '%')
                             and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID)                            
+                            {formattedCardinalityCheck}
                             order by 3 desc, D.DisplayValue asc
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     }
@@ -792,48 +831,76 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                 case "PolicyType":
                 case "RuleType":
                 case "TaxonomyType":
-                    countSql = @"select count(*) from AssetWithType A with (nolock)
+                    formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "A.[Object]", "A.[ObjectId]");
+
+                    countSql = $@"select count(*) from AssetWithType A with (nolock)
                         cross apply GetAssetTextPathById(A.ID, '/') P 
-                        where A.[Type] = @obj and A.TypeID = @objID and not (A.Object = @fieldObject and A.ObjectID = @fieldObjectID) and (@query is null or P.TextPath like '%' + @query + '%')";
-                    sql = @"select distinct A.ObjectID as Value, P.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected 
+                        inner join [IntersectType] IT on IT.Id = @intersectTypeID
+ left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
+	                            ((I.[Subject] = A.[Type] and I.SubjectID = A.TypeId and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+	                            (I.[Object] = A.[Type] and I.ObjectID = A.TypeID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+                        where A.[Type] = @obj and A.TypeID = @objID and not (A.Object = @fieldObject and A.ObjectID = @fieldObjectID) and (@query is null or P.TextPath like '%' + @query + '%')
+                        {formattedCardinalityCheck}";
+                    sql = $@"select distinct A.ObjectID as Value, P.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected 
                             from AssetWithType A with (nolock)
                             cross apply GetAssetTextPathById(A.ID, '/') P 
+                            inner join [IntersectType] IT on IT.Id = @intersectTypeID
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
 	                            ((I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
 	                            (I.[Object] = A.[Object] and I.ObjectID = A.ObjectID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
                             where A.[Type] = @obj and A.TypeID = @objID and (@query is null or P.TextPath like '%' + @query + '%')
-                                and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID)
+                                and not (A.Object = @fieldObject and a.ObjectID = @fieldObjectID) {formattedCardinalityCheck}
                             order by 3 desc, P.TextPath asc
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     break;
                 case "FusionAttributeType":
-                    countSql = "select count(*) from FusionAttribute F where FusionAttributeTypeID = @objID and (@query is null or F.TextPath like '%' + @query + '%')";
-                    sql = @"select F.ID as Value, F.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected   
+                    formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "'FusionAttribute'", "F.Id");
+
+                    countSql = $@"select count(*) from FusionAttribute F 
+                                    inner join [IntersectType] IT on IT.Id = @intersectTypeID
+                        left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and 
+	                            ((I.[Subject] = 'FusionAttribute' and I.SubjectID = F.Id and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+	                            (I.[Object] = 'FusionAttribute' and I.ObjectID = F.Id and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+                                where FusionAttributeTypeID = @objID and (@query is null or F.TextPath like '%' + @query + '%')
+                                {formattedCardinalityCheck}";
+                    sql = $@"select F.ID as Value, F.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected   
                             from FusionAttribute F with (nolock)
+                            inner join [IntersectType] IT on IT.Id = @intersectTypeID
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and
-                                ((I.[Subject] = 'FustionAttribute' and I.SubjectID = F.ID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
-                                (I.[Object] = 'FustionAttribute' and I.ObjectID = F.ID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+                                ((I.[Subject] = 'FusionAttribute' and I.SubjectID = F.ID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+                                (I.[Object] = 'FusionAttribute' and I.ObjectID = F.ID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
                             where F.FusionAttributeTypeID = @objID and (@query is null or F.TextPath like '%' + @query + '%')
+                            {formattedCardinalityCheck}
                             order by 3 desc, TextPath asc
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     break;
                 case "ResourceType":
-                    countSql = "select count(*) from reporting.Global_Resource R where (@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')" +
-                        " and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)";
-                    sql = @"select R.ResourceID as Value, R.LastName + ', ' + R.FirstName as Text, case when I.ID is not null then 1 else 0 end as Selected 
+                    formattedCardinalityCheck = string.Format(cardinalityCheckSQL, "'Resource'", "R.ResourceID");
+
+                    countSql = $@"select count(*) from reporting.Global_Resource R 
+                                inner join [IntersectType] IT on IT.Id = @intersectTypeID
+                            left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and
+	                            ((I.[Subject] = 'Resource' and I.SubjectID = R.ResourceID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
+	                            (I.[Object] = 'Resource' and I.ObjectID = R.ResourceID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
+                                    where (@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
+                                and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
+                               {formattedCardinalityCheck}";
+                    sql = $@"select R.ResourceID as Value, R.LastName + ', ' + R.FirstName as Text, case when I.ID is not null then 1 else 0 end as Selected 
                             from reporting.[Global_Resource] R
+                            inner join [IntersectType] IT on IT.Id = @intersectTypeID
                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and
 	                            ((I.[Subject] = 'Resource' and I.SubjectID = R.ResourceID and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
 	                            (I.[Object] = 'Resource' and I.ObjectID = R.ResourceID and I.[Subject] = @fieldObject and I.SubjectID = @fieldObjectID))
                             where (@query is null or R.LastName + ', ' + R.FirstName like '%' + @query + '%')
                                 and not ('Resource' = @fieldObject and R.ResourceID = @fieldObjectID)
+                            {formattedCardinalityCheck}
                             order by 3 desc, R.LastName + ', ' + R.FirstName asc  
                             OFFSET @offset ROWS FETCH NEXT @rows ROWS ONLY";
                     break;
             }
 
             if (offset == 0 || query != null)
-                count = Query<int>(countSql, new { obj, objID, query, fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID }).FirstOrDefault();
+                count = Query<int>(countSql, new { obj, objID, query, fieldObject = @object ?? obj, fieldObjectID = objectID ?? objID, intersectTypeID = intersectType.ID }).FirstOrDefault();
 
             List<dynamic> selected = null, items = null;
 
@@ -2248,9 +2315,9 @@ where	I.ID is null";
         }
 
         public bool SaveOrUpdate<T>(T entity, List<Field> fields, int parentId = -1, bool forceUpdate = false) where T : BaseIntObject, IFieldsObject
-        {            
+        {
             var isUpdate = forceUpdate || IsPersistent(entity);
-            
+
             var fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));
             var attr = entity.GetFieldsObjectInfo();
             bool exists = false;
@@ -2265,7 +2332,7 @@ where	I.ID is null";
                 throw new ApplicationException($"{attr.Object} already exists.");
             }
 
-            
+
             bool returnValue = true;
 
             if (isUpdate)
@@ -2300,7 +2367,7 @@ where	I.ID is null";
         {
             var isUpdate = asset.ID > 0;
 
-            var fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));            
+            var fieldsJson = JsonConvert.SerializeObject(fields.Select(f => new { ID = f.FieldTypeID, Value = f.Value }));
             bool exists = false;
 
             if (isUpdate)
@@ -2312,7 +2379,7 @@ where	I.ID is null";
             {
                 throw new ApplicationException($"{asset.Object} already exists.");
             }
-            
+
             bool returnValue = true;
 
             if (isUpdate)
@@ -2378,7 +2445,7 @@ where	I.ID is null";
 
         public void UpdateAssetGraphNode(Guid uid, List<string> changedFieldNames = null)
         {
-            
+
             QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
             {
                 CompanyID = CurrentCompanyID,
@@ -2429,7 +2496,7 @@ where	I.ID is null";
                 DomainPrefix = CurrentCompanyDomain,
                 ResourceID = CurrentResourceID,
                 Action = action,
-                Object = item        
+                Object = item
             });
         }
 
@@ -2461,7 +2528,7 @@ where	I.ID is null";
             }
 
             foreach (var entry in ObjectContext.ObjectStateManager.GetObjectStateEntries(EntityState.Added | EntityState.Modified | EntityState.Deleted))
-            {                
+            {
                 #region Business logic : IUpdatedMetadata
                 if (entry.Entity is IUpdatedMetadata)
                 {
@@ -2475,23 +2542,23 @@ where	I.ID is null";
                 if (entry.Entity is AttributeType)
                 {
                     var o = entry.Entity as AttributeType;
-                    
+
                     switch (entry.State)
                     {
                         case EntityState.Added:
                             if (Any<AttributeType>(i => i.ParentID == o.ParentID && i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-                            
+
                             break;
                         case EntityState.Deleted:
                             if (Any<AttributeTypeRelation>(i => i.AttributeTypeID == o.ID))
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_AttributeType_Allocations);
-                            
+
                             break;
                         case EntityState.Modified:
                             if (Any<AttributeType>(i => i.ParentID == o.ParentID && i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-                            
+
                             break;
                     }
                 }
@@ -2517,7 +2584,7 @@ where	I.ID is null";
                     // please dont run a query for each modified field if there are 10 we are running 10 queries.  Do one query.
                     if(entry.State != EntityState.Added)
                     {
-                        fieldsToCheckForChanges.Add(field);                        
+                        fieldsToCheckForChanges.Add(field);
                     }
 
                 }
@@ -2527,7 +2594,7 @@ where	I.ID is null";
                 if (entry.Entity is FieldType)
                 {
                     var o = entry.Entity as FieldType;
-                    
+
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2554,7 +2621,7 @@ where	I.ID is null";
                 if (entry.Entity is FusionAttributeType)
                 {
                     var o = entry.Entity as FusionAttributeType;
-                    
+
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2573,18 +2640,18 @@ where	I.ID is null";
                 if (entry.Entity is Fusion)
                 {
                     var o = entry.Entity as Fusion;
-                    
+
                     switch (entry.State)
                     {
                         case EntityState.Added:
                             if (Any<Fusion>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-                            
+
                             break;
                         case EntityState.Modified:
                             if (Any<Fusion>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-                            
+
                             break;
                     }
                 }
@@ -2594,18 +2661,18 @@ where	I.ID is null";
                 if (entry.Entity is FusionType)
                 {
                     var o = entry.Entity as FusionType;
-                    
+
                     switch (entry.State)
                     {
                         case EntityState.Added:
                             if (Any<FusionType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-                            
+
                             break;
                         case EntityState.Modified:
                             if (Any<FusionType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-                            
+
                             break;
                     }
                 }
@@ -2615,23 +2682,23 @@ where	I.ID is null";
                 if (entry.Entity is Group)
                 {
                     var o = entry.Entity as Group;
-                    
+
                     switch (entry.State)
                     {
                         case EntityState.Added:
                             if (Any<Group>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-                            
+
                             break;
                         case EntityState.Modified:
                             if (Any<Group>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-                            
+
                             break;
                         case EntityState.Deleted:
                             if (Any<ResponsibilityTypeRelationOverrideItem>(i => i.SecurityAsset == "G" && i.SecurityAssetID == o.ID))
                                 throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_ResponsibilitiesAssignedToGroup);
-                            
+
                             break;
                     }
                 }
@@ -2754,7 +2821,7 @@ select @err";
                 #region Business logic : AssetType
                 if (entry.Entity is AssetType)
                 {
-                    var o = entry.Entity as AssetType;                    
+                    var o = entry.Entity as AssetType;
                     if (string.IsNullOrEmpty(o.Name.Trim()))   throw new ArgumentException(Messages.Error_Name_Required);
 
 
@@ -2777,7 +2844,7 @@ select @err";
                 if (entry.Entity is QuestionType)
                 {
                     var o = entry.Entity as QuestionType;
-                    
+
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2798,7 +2865,7 @@ select @err";
                 if (entry.Entity is Report)
                 {
                     var o = entry.Entity as Report;
-                    
+
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2819,7 +2886,7 @@ select @err";
                 if (entry.Entity is ReportTile)
                 {
                     var o = entry.Entity as ReportTile;
-                    
+
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2836,7 +2903,7 @@ select @err";
                 if (entry.Entity is ResponsibilityType)
                 {
                     var o = entry.Entity as ResponsibilityType;
-                    
+
                     switch (entry.State)
                     {
                         case EntityState.Added:
@@ -2884,18 +2951,18 @@ select @err";
                 if (entry.Entity is SurveyType)
                 {
                     var o = entry.Entity as SurveyType;
-                    
+
                     switch (entry.State)
                     {
                         case EntityState.Added:
                             if (Any<SurveyType>(i => i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-                            
+
                             break;
                         case EntityState.Modified:
                             if (Any<SurveyType>(i => i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-                            
+
                             break;
                     }
                 }
@@ -2922,9 +2989,9 @@ select @err";
                 }
                 #endregion
 
-                
 
-                
+
+
 
             }
 
@@ -2933,7 +3000,7 @@ select @err";
             var modifiedEventEntities = ChangeTracker.Entries<IEventTrackedEntity>()
                .Where(p => p.State == EntityState.Modified)
                .Select(p => p.Entity).ToList();
-            
+
             var addedEventEntities = ChangeTracker.Entries<IEventTrackedEntity>()
                 .Where(p => p.State == EntityState.Added)
                 .Select(p => p.Entity).ToList();
@@ -2946,7 +3013,7 @@ select @err";
 
             //check for changed field values before the new values are written tothe db
             if (fieldsToCheckForChanges.Any())
-            {                
+            {
                 var fieldSql = "";
 
                 foreach (var item in fieldsToCheckForChanges)
@@ -2978,13 +3045,13 @@ select @err";
             }
 
             try
-            {                
+            {
                 returnValue = base.SaveChanges();
             }
             catch (OptimisticConcurrencyException)
             {
             }
-            
+
             // create events for the objects this needs to be done after save changes so we have new objects id's
             if(IsEventingEnabled) CreateEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities, changedFields);
 
@@ -3030,12 +3097,12 @@ select @err";
             {
                 AddQE(events, ChangeType.Update, modified.GetEventObjectInfo());
             }
-                        
+
             foreach (var added in addedEntities)
             {
                 AddQE(events, ChangeType.Add, added.GetEventObjectInfo());
             }
-            
+
             foreach (var deleted in deletedEntities)
             {
                 AddQE(events, ChangeType.Delete, deleted.GetEventObjectInfo());
@@ -3046,7 +3113,7 @@ select @err";
                 QueueSource.CreateTopicMessages(events);
             }
         }
-        
+
         public string GetUserHomePage()
         {
             var homePage = Favorites.FirstOrDefault(f => f.ResourceID == CurrentResourceID && f.IsHomePage);
@@ -3272,8 +3339,8 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             fields = null;
         }
 
-        
-        
+
+
         public List<RelationshipDirectionFieldInfo> getRelationFieldData(string type, int typeID, List<FieldType> fields)
         {
             var relationFieldInfos = new List<RelationshipDirectionFieldInfo>();

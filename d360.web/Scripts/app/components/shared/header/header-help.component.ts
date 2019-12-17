@@ -13,10 +13,10 @@ declare var VersionNumber: string;
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="adminGuide">Admin Guide</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="whatIsNew">What's New</a></div></div></li>
                             <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" [href]="community">Community</a></div></div></li>
-                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">About Data3Sixty Govern</a></div></div></li>
+                            <li class="header-item"><div class="mini-menu-line"><div class="text"><a target="_blank" (click)="showAbout()">About Data360 Govern</a></div></div></li>
                        </ul>
                     </div>
-                    <d3s-modal #popupBox [title]="'About Data3Sixty Govern'" 
+                    <d3s-modal #popupBox [title]="'About Data360 Govern'" 
                                          additionalClasses="about medium-dialog" 
                                          (onClose)="closeAbout()" 
                                          [isVisible]="isModalVisible"
