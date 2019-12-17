@@ -1232,15 +1232,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.hideIndividualNode(node, group);
                 }
                 else { //hide upstream or downstream
-
-                    this.diagram.startTransaction('hide');
-
                     let subgraph = this.findSubGraph(group.key, direction);
 
                     if (subgraph == null || subgraph.nodes.length < 1)
                         return; //nothing to hide
                     if (subgraph.nodes.length == 1 && subgraph.nodes[0].template == "HiddenData")
                         return; //subgraph already hidden
+
+                    this.diagram.startTransaction('hide');
 
                     let hideNode = new AssetBrowserTranslationNode();
 
