@@ -59,7 +59,7 @@ export class SearchStateService extends BaseObservableService {
     private _searchTypes: string[];
     private _needAggregation: boolean = false;
 
-    loadState(term: string, searchCategotries: string[]) {
+    loadState(term: string, searchCategotries: string[], keepFilters: boolean) {
         this._resultCount.next(0);
         this._results.next([]);
         this._categories.next([]);
@@ -81,11 +81,12 @@ export class SearchStateService extends BaseObservableService {
             this._searchTypes = state.SearchTypes;
             this.advancedFilters = state.AdvancedFilters;
             this._checkTreeKeys = state.CheckTreeKeys;
+        } else {
+            if (!keepFilters) {
+                this.selectedFilters = [];
+            }
         }
-
         this.setSearchCategories(searchCategotries);
-//        this.setFieldFilters(fieldFilters);
-        this.selectedFilters = [];
     }
 
     private saveState() {
@@ -101,15 +102,13 @@ export class SearchStateService extends BaseObservableService {
             Query: this._query,
             AggFilters: this._aggFilters,
             SearchTypes: this._searchTypes,
-            CheckTreeKeys: (this._checkTreeKeys !== undefined) ? this._checkTreeKeys : this.selectedFilters.map(f => f.key),
+            CheckTreeKeys: (this._checkTreeKeys != undefined && this._checkTreeKeys.length > 0) ? this._checkTreeKeys : this.selectedFilters.map(f => f.key),
             AdvancedFilters: this.advancedFilters,
             Querytime: new Date()
         });
         sess.push(state);
         sessionStorage.setItem(this.sessionKey, JSON.stringify(sess));
     }
-
-
 
     /**
      * Resets search state
@@ -144,28 +143,16 @@ export class SearchStateService extends BaseObservableService {
             return category;
     }
 
-    private areDifferent(a: string[], b: string[]): boolean {
-        if (a.length !== b.length) {
-            return true;
-        }
-        for (var i = 0; i < a.length; ++i) {
-            if (a[i] !== b[i]) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     /**
      * Sets search categories that search will be limited to. These will be combined with aggregation filters
-     * If search categories change, we'll need new aggregation
+     * Only set search categories if no select filters are set
      * @param searchCategories
      */
     setSearchCategories(searchCategories: string[]) {
-        var cat = searchCategories.sort().filter((x, i, a) => !i || x != a[i - 1]);
-        if (this.areDifferent(cat, this._searchTypes)) {
-            this._searchTypes = cat;
-            this._needAggregation = true;
+        if (this.selectedFilters == undefined || this.selectedFilters.length == 0) {
+            this._searchTypes = searchCategories.sort().filter((x, i, a) => !i || x != a[i - 1]);
+            this.selectedFilters = [];
         }
     }
 
@@ -277,12 +264,12 @@ export class SearchStateService extends BaseObservableService {
      * Performs search and updates observable values
      */
     private doSearch() {
-        this._loading.next(true);
         this.saveState();
-        let seachTypeFilter = [new SearchAggregationFilter({
-                Field: "d3sCategory",
-                Values: this._searchTypes.sort().filter((x, i, a) => !i || x != a[i - 1])
-            })];
+        this._loading.next(true);
+
+        //If searchTypes are set, retrieve and apply, then set to empty as we'll rely on selectedFilters going forward
+        let searchTypes = this._searchTypes.sort().filter((x, i, a) => !i || x != a[i - 1]);
+        this._searchTypes = [];
 
         if (this._needAggregation || this._categories.value.length == 0) {
             this._treeLoading.next(true);
@@ -295,7 +282,7 @@ export class SearchStateService extends BaseObservableService {
             var aggQuery = Object.assign({}, this._query);
             aggQuery.Aggregations = ['category'];
             aggQuery.Size = 0;
-            aggQuery.AggregationFilters = seachTypeFilter;
+            aggQuery.AggregationFilters = [];
 
             this.searchService.getSearchResultsByQuery(aggQuery).pipe(
                 debounceTime(1000)
@@ -306,7 +293,7 @@ export class SearchStateService extends BaseObservableService {
                             "key": val.Name,
                             "label": this.getDisplayLookup(val.Name),
                             "type": "category",
-                            "expanded": true,
+                            "expanded": false,
                             "data": val.Name,
                             "count": val.ResultCount,
                             "children": val.Categories.map((cat) => {
@@ -320,8 +307,8 @@ export class SearchStateService extends BaseObservableService {
                             })
                         }
                     });
-                    if (this._checkTreeKeys != undefined) {
-                        let selectedFilters = [];
+                    let selectedFilters = [];
+                    if (this._checkTreeKeys != undefined && this._checkTreeKeys.length > 0) {
                         for (let key of this._checkTreeKeys) {
                             let node = this.getNodeWithKey(key, filterTree);
                             if (node) {
@@ -329,7 +316,15 @@ export class SearchStateService extends BaseObservableService {
                             }
                         }
                         this.selectedFilters = selectedFilters;
-                        this._checkTreeKeys = undefined;
+                        this._checkTreeKeys = [];
+                    } else if (searchTypes.length > 0) {
+                        for (let key in searchTypes) {
+                            let node = this.getNodeWithKey(searchTypes[key], filterTree);
+                            if (node) {
+                                selectedFilters.push(node);
+                            }
+                        }
+                        this.selectedFilters = selectedFilters;
                     }
                     this._categories.next(filterTree);
                     this._needAggregation = false;
@@ -337,7 +332,12 @@ export class SearchStateService extends BaseObservableService {
                 this._treeLoading.next(false);
             });
         }
-        this._query.AggregationFilters = this.combineAggFilters(this._aggFilters, seachTypeFilter);
+
+        this._query.AggregationFilters = this.combineAggFilters(this._aggFilters, [new SearchAggregationFilter({
+            Field: "d3sCategory",
+            Values: searchTypes
+        })]);
+
         this.searchService.getSearchResultsByQuery(this._query).pipe(
             debounceTime(1000)).subscribe(res => {
             this._resultCount.next(res.Result.Matches);

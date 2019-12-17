@@ -18,7 +18,7 @@ import { CompanySettingsService } from '../../../services/settings.service';
 
 export class HeaderComponent extends BaseComponent implements OnInit {
     public controlWidth: number = 0;
-    private imageSource: string = '/Content/images/logo.new.png';
+    private imageSource: string = '/Content/images/govern-small-white.png';
 
     constructor(private router: Router,
         private route: ActivatedRoute,
