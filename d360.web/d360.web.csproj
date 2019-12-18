@@ -432,6 +432,7 @@
     <Content Include="Content\images\govern.png" />
     <Content Include="Content\images\home.background.new.png" />
     <Content Include="Content\images\home.background.png" />
+    <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\images\logo.old.png" />
     <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.svg" />
     <Content Include="Content\primeicons\1.0.0-beta.10\primeicons.css" />
