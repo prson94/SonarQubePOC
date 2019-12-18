@@ -800,15 +800,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 this.browserService.getAssetLineage(model)
                     .subscribe(response => {
-
                         response.assets.forEach(a => {
-                            if (this.responseModel.assets.find(r => r.assetUid == a.assetUid) == null) {
+                            if (this.responseModel.assets.find(r => r.key == a.key) == null) {
                                 this.responseModel.assets.push(a);
                             }
                         });
 
                         response.intersects.forEach(i => {
-                            if (this.responseModel.intersects.find(r => r.intersectUid == i.intersectUid) == null) {
+                            if (this.responseModel.intersects.find(r => r.subjectKey == i.subjectKey && r.objectKey == i.objectKey) == null) {
                                 this.responseModel.intersects.push(i);
                             }
                         });
