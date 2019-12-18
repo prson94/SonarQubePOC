@@ -114,10 +114,12 @@ namespace igx.jobs.databasetaskprocessor
                                 IndexObjectModel indexObject = new IndexObjectModel {
                                     CompanyID = c.CompanyID,
                                     Fields = new Dictionary<string, string>(),
-                                    Category = AssetTypeClass.Generic.ToString(),
+                                    Category = o,
                                     ID = oid,
                                     Tags = new Dictionary<string, string>()
                                 };
+                                if (givenAssetId > 0)
+                                    indexObject.AssetID = givenAssetId;
 
                                 #region Load Info for Object
 
@@ -137,8 +139,6 @@ namespace igx.jobs.databasetaskprocessor
                                 var itemName = detail != null ? detail.Name : "";
                                 var itemParentType = detail != null ? detail.ParentType : "";
                                 var itemParentId = detail != null ? (detail.ParentID ?? 0) : 0;
-
-                                long assetId = givenAssetId;
 
                                 if (detail != null)
                                 {
@@ -172,9 +172,10 @@ namespace igx.jobs.databasetaskprocessor
                                         indexObject.Uid = detail.UID;
                                     }
 
-                                    indexObject.Tags = companyConnection
-                                        .Query<TagSqlModel>("SELECT t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID WHERE at.AssetID = @i", new {i = assetId})
-                                        .ToDictionary(x => x.TagUID.ToString(), x => x.Value);
+                                    if(indexObject.AssetID > 0)
+                                        indexObject.Tags = companyConnection
+                                            .Query<TagSqlModel>("SELECT t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID WHERE at.AssetID = @i", new {i = indexObject.AssetID})
+                                            .ToDictionary(x => x.TagUID.ToString(), x => x.Value);
                                 }
                                 else if ((detail == null) && (string.Compare(o, "Synonym", true) == 0))
                                 {
@@ -225,9 +226,9 @@ namespace igx.jobs.databasetaskprocessor
                                         {
                                             indexObject.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
                                         }
-                                        else if (o == "Artifact" && assetId > 0)
+                                        else if (o == "Artifact" && indexObject.AssetID > 0)
                                         {
-                                            indexObject.ItemUniqueID = assetId.ToString();
+                                            indexObject.ItemUniqueID = indexObject.AssetID.ToString();
                                         }
                                         indexCollectionModel.Adds.Add(indexObject);
                                         break;
@@ -238,9 +239,9 @@ namespace igx.jobs.databasetaskprocessor
                                         {
                                             indexObject.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
                                         }
-                                        else if (o == "Artifact" && assetId > 0)
+                                        else if (o == "Artifact" && indexObject.AssetID > 0)
                                         {
-                                            indexObject.ItemUniqueID = assetId.ToString();
+                                            indexObject.ItemUniqueID = indexObject.AssetID.ToString();
                                         }
                                         indexCollectionModel.Updates.Add(indexObject);
                                         break;
@@ -249,7 +250,6 @@ namespace igx.jobs.databasetaskprocessor
                                         indexObject.RelativeUrl = "#";
 
                                         if (o == "Artifact" && givenAssetId > 0) indexObject.ItemUniqueID = givenAssetId.ToString();
-                                        if (o == "Artifact" && assetId > 0) indexObject.ItemUniqueID = assetId.ToString();
                                         indexCollectionModel.Deletes.Add(indexObject);
                                         break;
                                 }

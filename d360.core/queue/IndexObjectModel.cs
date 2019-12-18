@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using d360.core.enums;
 
 namespace d360.core.queue
 {
@@ -40,8 +41,11 @@ namespace d360.core.queue
         /// <returns></returns>
         public string getObjectID()
         {
-            if (!string.IsNullOrEmpty(ItemUniqueID))
+            if (!string.IsNullOrEmpty(ItemUniqueID)) {
+                if (Category == AssetTypeClass.BusinessAsset.ToString() || Category == AssetTypeClass.TechnicalAsset.ToString())
+                    return $"{SystemObjects.Artifact.ToString()}|{ItemUniqueID}";
                 return $"{Category}|{ItemUniqueID}";
+            }
             return $"{Category}|{ID}";
         }
     }
