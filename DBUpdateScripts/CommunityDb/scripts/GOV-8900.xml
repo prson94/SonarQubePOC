@@ -20,5 +20,20 @@
 ]]>
 	</rollback>
   </changeSet>
+  <changeSet author="SDooley" id="GOV-8900-2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+  UPDATE [dbo].[Setting] set DefaultValue ='/Content/images/govern-small-white.png' where FieldName = 'CompanyLogo'
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+  UPDATE [dbo].[Setting] set DefaultValue ='/Content/images/logo.new.png' where FieldName = 'CompanyLogo'
+]]>
+    </rollback>
+  </changeSet>
 
   </databaseChangeLog>
