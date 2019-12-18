@@ -314,6 +314,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
         this.transformationAsset = arr;
         this.isAddTransformationVisible = false;
+        this.onAssetSearchSelection(null);
     }
 
     onCancel() {
@@ -629,6 +630,9 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         return result;
     }
 
+    private lineageChainMouseEnter(event) {
+        event.target.getElementsByClassName('help-text')[0].style.top = event.y + "px;";
+    }
 }
 
 
