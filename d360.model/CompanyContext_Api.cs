@@ -335,7 +335,7 @@ from	{targetTable} T
         private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
         {
             string targetTable = (obj != "IntersectType") ? "api.ExecutionAsset" : "api.ExecutionRelationship";
-            string assetJoin = lookupFieldsPassedByValue ? "AD.ObjectID = cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
+            string assetJoin = lookupFieldsPassedByValue ? "AD.ObjectID = try_cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
 
             Connection.Execute($@"
                     update	T
@@ -489,7 +489,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
         private void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
         {
 
-            string assetJoin = resolveRelationshipOnObjectId ? "S.ObjectID = cast(V.[value] as int)" : "S.DisplayValue = V.[value]";
+            string assetJoin = resolveRelationshipOnObjectId ? "S.ObjectID = try_cast(V.[value] as int)" : "S.DisplayValue = V.[value]";
 
 
             Connection.Execute($@"
