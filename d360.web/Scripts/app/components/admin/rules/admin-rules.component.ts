@@ -1,12 +1,12 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { RulesService } from '../../../services/rules.service';
 import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { RuleType } from '../../../models/rule.model';
 import { Title } from '@angular/platform-browser';
-import { RightSidebarItem } from '../../../models/rightsidebar.model';
+import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
 
@@ -123,17 +123,17 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
     theDeleteCallback: Function;
     private isDimensionsVisible: boolean = false;
 
-    constructor(private stateService: StateService, protected rightSidebarService: RightSidebarService,
+    constructor(private stateService: StateService, protected secondaryNavService: SecondaryNavService,
         private rulesService: RulesService,
         protected messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,        
         titleService: Title)
     {
-        super(headerBreadcrumbService, titleService, rightSidebarService);        
+        super(headerBreadcrumbService, titleService, secondaryNavService);        
         this.areaName = "Rules";
         this.setCommonItems();
         this.theDeleteCallback = this.deleteRuleType.bind(this);
-        this.setCommonRightSideBar(false, false, false);
+        this.setCommonSecondaryNavTabs(false, false, false);
     }
 
     ngOnInit() {
@@ -185,7 +185,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         this.selected = null;
     }
 
-    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
+    protected showHideBreadcrumbItem(activatedItem: SecondaryNavItem) {
         if (activatedItem.tag == 'dimensions') this.isDimensionsVisible = !this.isDimensionsVisible;
     }
 

@@ -9,7 +9,7 @@ import {FormMode} from '../../../models/form.model';
 import {Title} from '@angular/platform-browser';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import {StringConstants} from '../../../static/string-constants';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
@@ -29,11 +29,11 @@ export class AdminGroupsComponent extends AdminBaseComponent {
         private router: Router,
         private groupService: GroupService,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         titleService: Title,
         protected messagesService: MessagesObservableService
     ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Groups";
         this.adminHeading = "Security";
         this.setCommonItems();

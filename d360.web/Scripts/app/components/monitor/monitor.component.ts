@@ -5,7 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { GridFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
 import { isNull } from 'util';
 
@@ -128,9 +128,9 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected router: Router,
         protected route: ActivatedRoute,
-        rightSidebarService: RightSidebarService) {
+        secondaryNavService: SecondaryNavService) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -192,10 +192,10 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, SiteUrlHelpers.SITE_URL_MONITOR_ROOT));
 
                 this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
-                    this.rightSidebarService.clearItems();
-                    this.rightSidebarService.clearCurrentObject();
-                    this.rightSidebarService.setCurrentArea(res, icon, 'Definition');
-                    this.rightSidebarService.showHeader(true);
+                    this.secondaryNavService.clearItems();
+                    this.secondaryNavService.clearCurrentObject();
+                    this.secondaryNavService.setCurrentArea(res, icon, 'Definition');
+                    this.secondaryNavService.showHeader(true);
                 });
 
             });

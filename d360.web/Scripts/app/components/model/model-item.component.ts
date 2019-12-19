@@ -6,7 +6,7 @@ import { SurveysService } from '../../services/surveys.service';
 import { ModelsService } from '../../services/models.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { PermissionsService } from '../../services/permissions.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Model, ModelHierarchy } from '../../models/model.model';
 import { TreeNode } from 'primeng/api';
@@ -15,7 +15,7 @@ import { SurveyType } from '../../models/survey.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { Permission } from '../../models/responsibility-type.model';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 
 declare var CompanySettings;
 
@@ -59,7 +59,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
     constructor(private route: ActivatedRoute,
         private router: Router,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         protected modelsService: ModelsService,
         protected titleService: Title,
         protected surveysService: SurveysService,
@@ -67,7 +67,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         protected permissionsService: PermissionsService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -127,14 +127,14 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                 this.crumbs = [];
                 this.headerBreadcrumbService.getAssetFolderIcon('TaxonomyType', this.modelId, this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
                     this.lineageShowUsageOnly = true;
-                    this.setCommonRightSideBar(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
-                    this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
-                    this.rightSidebarService.setCurrentObject('TaxonomyType', this.model.ID, 'Taxonomy', this.selected.ID, false, this.selected.HasWorkflow, this.selected.Uid);
-                    this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Taxonomy/${this.selected.Uid}`, null, 6));
-                    this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Taxonomy/${this.selected.ID}`, null, 31));
-                    this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Taxonomy/${this.selected.ID}`, null, 26));
+                    this.setCommonSecondaryNavTabs(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
+                    this.secondaryNavService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
+                    this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('TaxonomyType', this.model.ID, 'Taxonomy', this.selected.ID, false, this.selected.HasWorkflow, this.selected.Uid));
+                    this.secondaryNavService.showItem(new SecondaryNavItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Taxonomy/${this.selected.Uid}`, null, 6));
+                    this.secondaryNavService.showItem(new SecondaryNavItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Taxonomy/${this.selected.ID}`, null, 31));
+                    this.secondaryNavService.showItem(new SecondaryNavItem('Actions', 'Actions', null, `/sidebar/actions/Taxonomy/${this.selected.ID}`, null, 26));
                 });
-                this.rightSidebarService.showHeader(true);
+                this.secondaryNavService.showHeader(true);
 
                 this.headerBreadcrumbService.clearBreadcrumbs();
                 let areaBreadcrumb = new Breadcrumb(

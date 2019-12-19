@@ -2,13 +2,13 @@
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { OrganizationsService } from '../../../services/organizations.service';
 import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Organization, OrganizationType } from '../../../models/organization.model';
 import { Title } from '@angular/platform-browser';
-import { RightSidebarItem } from '../../../models/rightsidebar.model';
+import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
@@ -64,8 +64,8 @@ export class AdminOrganizationsComponent extends AdminBaseComponent implements O
     selectedType: OrganizationType = null;
     selected: Organization;
 
-    constructor(private router: Router, private stateService: StateService, rightSidebarService: RightSidebarService, private organizationService: OrganizationsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);        
+    constructor(private router: Router, private stateService: StateService, secondaryNavService: SecondaryNavService, private organizationService: OrganizationsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, secondaryNavService);        
         this.areaName = "Organizations";
         this.adminHeading = "Security";
         this.setCommonItems();

@@ -4,7 +4,7 @@ import { HierarchyType } from '../../../models/hierarchy.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { TaxonomiesService } from '../../../services/taxonomies.service';
 import { PoliciesService } from '../../../services/policies.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
@@ -33,14 +33,14 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         private stateService: StateService,
         protected assetTypeService: AssetTypeService,
         protected policiesService: PoliciesService,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private taxonomiesService: TaxonomiesService,        
         private messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title
     ) {
 
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
                 
         this.activatedRoute.parent.url.subscribe((urlPath) => {
             const url = urlPath[urlPath.length - 1].path;            
@@ -69,7 +69,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
             }
 
             this.setCommonItems();
-            this.setCommonRightSideBar(true);
+            this.setCommonSecondaryNavTabs(true);
 
             if (this.auditSidebar) {
                 this.auditSidebar.hasDynamicUrl = true;

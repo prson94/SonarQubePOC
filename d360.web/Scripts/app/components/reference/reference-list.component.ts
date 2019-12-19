@@ -2,12 +2,12 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ReferenceItemType } from '../../models/reference.model';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { ReferenceService } from '../../services/reference.service';
 import { UriBasedService } from '../../services/uri-based.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -59,7 +59,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     private canRemoveReferenceItem: boolean = false;
 
     constructor(
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private route: ActivatedRoute,
         private router: Router,
         private permissionsService: PermissionsService,
@@ -70,7 +70,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         private uriBasedService: UriBasedService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -103,9 +103,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
                                 this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
                                     this.clearSidebar();
-                                    this.rightSidebarService.setCurrentArea(res, icon, 'Reference Lists');
-                                    this.rightSidebarService.clearCurrentObject();
-                                    this.setCommonRightSideBar(true, false, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true);
+                                    this.secondaryNavService.setCurrentArea(res, icon, 'Reference Lists');
+                                    this.secondaryNavService.clearCurrentObject();
+                                    this.setCommonSecondaryNavTabs(true, false, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true);
 
 
                                     if (this.auditSidebar) {
@@ -139,7 +139,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                                     }
 
                                     if (this.authenticationService.isAdmin) {
-                                        let fields = new RightSidebarItem()
+                                        let fields = new SecondaryNavItem()
                                         fields.hasDynamicUrl = true;
                                         fields.icons = ['fa-drivers-license-o'];
                                         fields.tag = 'fields'
@@ -150,11 +150,11 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                                             return `/sidebar/fields/ReferenceItemType/${this.selectedReferenceListId}`
                                         });
 
-                                        this.rightSidebarService.showItem(fields);
+                                        this.secondaryNavService.showItem(fields);
                                     }
 
                                     if (this.authenticationService.isAdmin) {
-                                        let permissions = new RightSidebarItem()
+                                        let permissions = new SecondaryNavItem()
                                         permissions.hasDynamicUrl = true;
                                         permissions.icons = ['fa-bars'];
                                         permissions.tag = 'responsibilities'
@@ -164,10 +164,10 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                                         permissions.dynamicUrlCallback = (() => {
                                             return `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`
                                         });
-                                        this.rightSidebarService.showItem(permissions);
+                                        this.secondaryNavService.showItem(permissions);
                                     }
 
-                                    this.rightSidebarService.showHeader(true);      
+                                    this.secondaryNavService.showHeader(true);      
                                 });
                             });
                         });

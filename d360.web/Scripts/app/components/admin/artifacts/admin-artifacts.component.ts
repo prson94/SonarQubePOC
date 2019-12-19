@@ -2,7 +2,7 @@
 import { TreeNode } from 'primeng/api';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AuditService } from '../../../services/audit.service';
 import { StateService } from '../../../services/state.service';
 import { ArtifactTypeService } from '../../../services/artifact-type.service';
@@ -42,13 +42,13 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     constructor(private route: ActivatedRoute,
         private router: Router,
         private stateService: StateService,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private artifactsService: ArtifactTypeService,
         titleService: Title,
         protected messagesService: MessagesObservableService        
     ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.theDeleteCallback = this.deleteArtifactType.bind(this);
     }
 
@@ -80,7 +80,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.setCommonItems();
 
         this.setObjectInfo('ArtifactType', -1);
-        this.setCommonRightSideBar(true);
+        this.setCommonSecondaryNavTabs(true);
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {

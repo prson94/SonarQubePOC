@@ -5,7 +5,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { ResponsibilityTypeService } from '../../services/responsibility-type.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ResponsibilityTypeCount, ResourceResponsibilityTypeCount } from '../../models/responsibility-type.model';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 
 declare var require: any;
 const Highcharts = require('highcharts/highstock.src');
@@ -57,10 +57,10 @@ export class CommunityComponent extends BaseComponent implements OnInit {
     constructor(protected responsibilityTypeService: ResponsibilityTypeService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        rightSidebarService: RightSidebarService
+        secondaryNavService: SecondaryNavService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -72,10 +72,10 @@ export class CommunityComponent extends BaseComponent implements OnInit {
 
             this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
                 this.clearSidebar();
-                this.rightSidebarService.setCurrentArea(res, icon, 'Community');
-                this.rightSidebarService.clearCurrentObject();
+                this.secondaryNavService.setCurrentArea(res, icon, 'Community');
+                this.secondaryNavService.clearCurrentObject();
             });
-            this.rightSidebarService.showHeader(true);
+            this.secondaryNavService.showHeader(true);
 
         });
         this.load();

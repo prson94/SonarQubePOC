@@ -4,7 +4,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { SiteCustomizationsService } from '../../../services/site-customizations.service';
 import { Title } from '@angular/platform-browser';
 import 'codemirror/mode/css/css.js';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
@@ -42,12 +42,12 @@ export class AdminCustomizationsComponent extends AdminBaseComponent implements 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,        
         titleService: Title,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         protected siteCustomizationsService: SiteCustomizationsService,
         protected messagesService: MessagesObservableService
     ) {
 
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Branding";
         this.setCommonItems();
         

@@ -29,6 +29,7 @@ export class HeaderBreadcrumbComponent {
     @Input() controlWidth: number;
     subscriptionPop: Subscription;
     subscriptionClear: Subscription;
+    subscriptionBuildFromStorage: Subscription;
     subscriptionAdd: Subscription;
     breadcrumbs: Breadcrumb[];
     showLastOnly: boolean = false;
@@ -54,6 +55,7 @@ export class HeaderBreadcrumbComponent {
                     }
                     this.breadcrumbs.push(breadcrumb);
                     setTimeout(() => { this.resizeControlsToFit(window.innerWidth); }, 100);
+                    headerBreadcrumbService.saveBreacrumbsToStorage(this.breadcrumbs)
                     this.ref.markForCheck();
                 }
             });
@@ -67,6 +69,9 @@ export class HeaderBreadcrumbComponent {
                 this.breadcrumbs.pop();                
                 this.ref.markForCheck();
             })
+        this.subscriptionBuildFromStorage = headerBreadcrumbService.buildFromStorage$.subscribe(res => {
+            this.breadcrumbs = res;
+        });
     }
 
     
@@ -84,6 +89,7 @@ export class HeaderBreadcrumbComponent {
         this.subscriptionPop.unsubscribe();
         this.subscriptionClear.unsubscribe();
         this.subscriptionAdd.unsubscribe();
+        this.subscriptionBuildFromStorage.unsubscribe();
     }
 
     private handleTreeClick(event) {

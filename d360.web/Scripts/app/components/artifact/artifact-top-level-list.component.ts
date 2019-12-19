@@ -8,7 +8,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { ArtifactBaseComponent} from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { AssetTypeClass } from '../../models/asset.model';
 
 @Component({
@@ -33,9 +33,9 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
         private artifactsService: ArtifactTypeService,        
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
-        rightSidebarService: RightSidebarService
+        secondaryNavService: SecondaryNavService
     ) {
-        super(headerBreadcrumbService, rightSidebarService);
+        super(headerBreadcrumbService, secondaryNavService);
     }
 
     ngOnInit() {
@@ -100,9 +100,9 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
                 this.headerBreadcrumbService.clearCurrentObjectInfo();
                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.folderTitle ? this.folderTitle : this.area));
                 this.headerBreadcrumbService.getFolderIcon(this.folderTitle ? this.folderTitle : this.area).subscribe(res => {
-                    this.rightSidebarService.clearCurrentObject();
-                    this.rightSidebarService.clearItems();
-                    this.rightSidebarService.setCurrentArea(this.folderTitle ? this.folderTitle : this.area, res, null);
+                    this.secondaryNavService.clearCurrentObject();
+                    this.secondaryNavService.clearItems();
+                    this.secondaryNavService.setCurrentArea(this.folderTitle ? this.folderTitle : this.area, res, null);
                 });
 
                 this.isLoading = false;

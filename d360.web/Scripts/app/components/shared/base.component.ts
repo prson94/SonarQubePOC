@@ -1,7 +1,7 @@
 import { Title } from '@angular/platform-browser';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { PermissionsService } from '../../services/permissions.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 
 import { Subscription } from 'rxjs';
@@ -12,6 +12,7 @@ import { ResponsibilityTypeRelationPermission, Permission } from '../../models/r
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { TreeNode } from 'primeng/api';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 
 declare var CompanySettings;
 
@@ -31,12 +32,12 @@ export class BaseComponent {
     sidebarSubscription: Subscription;
     isVisitingSidebar = false;
 
-    auditSidebar: RightSidebarItem;
-    ownershipSidebar: RightSidebarItem;
-    lineageSidebar: RightSidebarItem;
-    impactSidebar: RightSidebarItem;
-    relationsSidebar: RightSidebarItem;
-    monitorSidebar: RightSidebarItem;
+    auditSidebar: SecondaryNavItem;
+    ownershipSidebar: SecondaryNavItem;
+    lineageSidebar: SecondaryNavItem;
+    impactSidebar: SecondaryNavItem;
+    relationsSidebar: SecondaryNavItem;
+    monitorSidebar: SecondaryNavItem;
     // tabs
 
     lineageShowUsageOnly = false;
@@ -53,8 +54,9 @@ export class BaseComponent {
     defaultPagingOptions: number[] = [10, 25, 50, 100];
     defaultInitialItemsPerPage = 10;
 
-    protected rightSidebarService: RightSidebarService = null;
+    protected secondaryNavService: SecondaryNavService = null;
     protected webAnalyticsService: WebAnalyticsService = null;
+    protected breadcrumbsService: HeaderBreadcrumbService = null;
 
     protected setBrowserTitle(tileService: Title, area: string) {
         tileService.setTitle(`${CompanySettings.BrowserTitlePrefix} - ${area}`);
@@ -133,7 +135,47 @@ export class BaseComponent {
 
     /*end permissions functionality*/
 
-    setCommonRightSideBar(
+    
+
+    checkSecondaryNavLocalStorage(checkLocal?: boolean ) {
+        if (this.secondaryNavService) {
+            this.buildLocalStorage();
+            this.secondaryNavService.rebuildHeader$.subscribe(res => {
+                if (res) {
+                    window.setTimeout(() => {
+                        this.buildLocalStorage();
+                    }, 250);
+                    
+                }
+            });
+        } 
+    }
+    buildLocalStorage() {
+        let currentObject = this.secondaryNavService.getLocalCurrentObject();
+        let currentArea = this.secondaryNavService.getLocalCurrentArea();
+        let tabs: SecondaryNavItem[] = this.secondaryNavService.getLocalCurrentTabs();
+        let currentTab = this.secondaryNavService.getLocalActiveItem();
+        let homeUrl = this.secondaryNavService.getLocalHomeUrl();
+        let crumbs = this.breadcrumbsService.getBreadcrumbsFromStorage();
+        if (currentObject && currentArea && tabs.length > 0&& currentTab && homeUrl) {
+            this.secondaryNavService.clearItems();
+            this.secondaryNavService.setCurrentObject(currentObject);
+            this.secondaryNavService.setCurrentArea(currentArea.title, currentArea.icon, currentArea.tabTitle);
+            this.secondaryNavService.setLocalHomeUrl(homeUrl);
+            tabs.forEach(tab => {
+                if (tab.title == currentTab.title)
+                    tab.active = true;
+                else
+                    tab.active = false;
+                this.secondaryNavService.showItem(tab);
+            });
+            this.secondaryNavService.showHeader(true);
+        }
+        if (crumbs.length > 0)
+            this.breadcrumbsService.buildFromStorage();
+    }
+
+    setCommonSecondaryNavTabs(
         hasAudit?: boolean,
         hasOwnership?: boolean,
         hasDashboard?: boolean,
@@ -143,7 +185,7 @@ export class BaseComponent {
         hasFollowers?: boolean,
         hasMonitor?: boolean
     ) {
-        if (this.rightSidebarService) {
+        if (this.secondaryNavService) {
             this.clearSidebar();
             if (hasLineage && CompanySettings.ShowLineageSidebar != 'false') {
 
@@ -157,7 +199,7 @@ export class BaseComponent {
                     const isLineageShowUsageOnly = this.lineageShowUsageOnly ? '/1' : '';
                     const urlLineage = this.objectContextUrl() + isLineageShowUsageOnly;
 
-                    this.lineageSidebar = new RightSidebarItem(
+                    this.lineageSidebar = new SecondaryNavItem(
                         'Lineage',
                         'lineage',
                         ['fa-random'],
@@ -165,39 +207,39 @@ export class BaseComponent {
                     );
                 }
                 else {
-                    this.lineageSidebar = new RightSidebarItem(
+                    this.lineageSidebar = new SecondaryNavItem(
                         'Visualization',
                         'lineage',
                         ['fa-random'],
                         `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
                     );
                 }
-                this.rightSidebarService.showItem(this.lineageSidebar);
+                this.secondaryNavService.showItem(this.lineageSidebar);
             }
 
             if (hasAudit || hasAudit === undefined) {
-                this.auditSidebar = new RightSidebarItem(
+                this.auditSidebar = new SecondaryNavItem(
                     'Change Log',
                     'Change Log',
                     ['fa-eye'],
                     `/sidebar/audit${this.objectContextUrl()}`, null, 40
                 );
-                this.rightSidebarService.showItem(this.auditSidebar);
+                this.secondaryNavService.showItem(this.auditSidebar);
             }
 
             if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
-                this.ownershipSidebar = new RightSidebarItem(
+                this.ownershipSidebar = new SecondaryNavItem(
                     'Responsibilities',
                     'ownership',
                     ['fa-user'],
                     `/sidebar/ownership/${this.assetID}`, null, 25
                 );
-                this.rightSidebarService.showItem(this.ownershipSidebar);
+                this.secondaryNavService.showItem(this.ownershipSidebar);
             }
 
             if (hasDashboard) {
-                this.rightSidebarService.showItem(
-                    new RightSidebarItem(
+                this.secondaryNavService.showItem(
+                    new SecondaryNavItem(
                         'Dashboards',
                         'dashboards',
                         ['fa-tachometer'],
@@ -207,28 +249,28 @@ export class BaseComponent {
             }
 
             if (hasImpact && CompanySettings.ShowImpactSidebar != 'false' && CompanySettings.LineageVersion != 3) {
-                this.impactSidebar = new RightSidebarItem(
+                this.impactSidebar = new SecondaryNavItem(
                     'Impact',
                     'impact',
                     ['fa-exchange'],
                     `/sidebar/visualization/impact${this.objectContextUrl()}`, null, 10
                 );
-                this.rightSidebarService.showItem(this.impactSidebar);
+                this.secondaryNavService.showItem(this.impactSidebar);
             }
 
             if (hasRelationships) {
-                this.relationsSidebar = new RightSidebarItem(
+                this.relationsSidebar = new SecondaryNavItem(
                     'Related Assets',
                     'relationship',
                     ['fa-retweet'],
                     `/sidebar/relationships${this.objectContextUrl()}`, null, 20
                 );
-                this.rightSidebarService.showItem(this.relationsSidebar);
+                this.secondaryNavService.showItem(this.relationsSidebar);
             }
 
             if (hasFollowers && CompanySettings.ShowFollowersSidebar != 'false') {
-                this.rightSidebarService.showItem(
-                    new RightSidebarItem(
+                this.secondaryNavService.showItem(
+                    new SecondaryNavItem(
                         'Followers',
                         'followers',
                         ['fa-bookmark-o'],
@@ -238,16 +280,16 @@ export class BaseComponent {
             }
 
             if (hasMonitor) {
-                this.monitorSidebar = new RightSidebarItem(
+                this.monitorSidebar = new SecondaryNavItem(
                     'Workflow',
                     'monitor',
                     ['fa-usb'],
                     `/sidebar/workflowmonitor${this.objectContextUrl()}`, null, 30
                 );
-                this.rightSidebarService.showItem(this.monitorSidebar);
+                this.secondaryNavService.showItem(this.monitorSidebar);
             }
 
-            this.sidebarSubscription = this.rightSidebarService.rightSidebarClicked$.subscribe(
+            this.sidebarSubscription = this.secondaryNavService.rightSidebarClicked$.subscribe(
                 item => {
                     this.isVisitingSidebar = true;
                     this.showHideBreadcrumbItem(item);
@@ -315,14 +357,14 @@ export class BaseComponent {
     }
 
     // This is generally overloaded to show hide in your own class.
-    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
+    protected showHideBreadcrumbItem(activatedItem: SecondaryNavItem) {
     }
 
     clearSidebar(unsubscribe?: boolean) {
-        if (this.rightSidebarService) {
+        if (this.secondaryNavService) {
             if (!this.isVisitingSidebar) {
-                this.rightSidebarService.clearItems();
-                this.rightSidebarService.clearButtons();
+                this.secondaryNavService.clearItems();
+                this.secondaryNavService.clearButtons();
             }
 
             if (this.sidebarSubscription && (unsubscribe || unsubscribe == undefined)) {

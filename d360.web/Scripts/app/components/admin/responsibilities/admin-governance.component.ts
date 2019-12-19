@@ -1,7 +1,7 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { ResponsibilityTypeService } from '../../../services/responsibility-type.service';
 import { ResponsibilityType, IResponsibilityTypeService } from '../../../models/responsibility-type.model';
 import { FormMode } from '../../../models/form.model';
@@ -23,13 +23,13 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     private responsibilityTypeItems = new Array<ResponsibilityType>();
     private selectedRow = new ResponsibilityType();
 
-    constructor(rightSidebarService: RightSidebarService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesObservableService) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+    constructor(secondaryNavService: SecondaryNavService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesObservableService) {
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Responsibilities";
         this.adminHeading = "Security";
         this.tabTitle = 'Responsibility Types';
         this.setCommonItems();
-        this.setCommonRightSideBar();
+        this.setCommonSecondaryNavTabs();
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {

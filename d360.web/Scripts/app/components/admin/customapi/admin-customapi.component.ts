@@ -6,7 +6,7 @@ import {ApiService} from '../../../models/custom-api.model';
 
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {CustomAPIService} from '../../../services/custom-api.service';
-import {RightSidebarService} from '../../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../../services/right-sidebar.service';
 
 import {AdminBaseComponent} from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -28,13 +28,13 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
 
     constructor(
         protected customAPIService: CustomAPIService,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private messagesService: MessagesObservableService,
         titleService: Title,
         private router: Router
     ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
 
         this.areaName = "Custom API";
         this.adminHeading = 'Integration';
@@ -44,7 +44,7 @@ export class AdminCustomAPIComponent extends AdminBaseComponent implements OnIni
     }
 
     ngOnInit(): void {
-        this.rightSidebarService.clearItems();
+        this.secondaryNavService.clearItems();
         this.load();
     }
 

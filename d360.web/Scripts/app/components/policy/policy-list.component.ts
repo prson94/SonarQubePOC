@@ -11,7 +11,7 @@ import {PolicyType} from '../../models/policy.model';
 
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
 import {PoliciesService} from '../../services/policies.service';
-import {RightSidebarService} from '../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../services/right-sidebar.service';
 
 import {BaseComponent} from '../shared/base.component';
 
@@ -107,14 +107,14 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected policiesService: PoliciesService
     ) {
         super();
 
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -125,8 +125,8 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
                     this.headerBreadcrumbService.clearCurrentObjectInfo();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
                     this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
-                        this.rightSidebarService.showHeader(true);
-                        this.setCommonRightSideBar(true);
+                        this.secondaryNavService.showHeader(true);
+                        this.setCommonSecondaryNavTabs(true);
                         if (this.auditSidebar) {
                             this.auditSidebar.hasDynamicUrl = true;
                             this.auditSidebar.dynamicUrlCallback = (
@@ -135,7 +135,7 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
                                 }
                             );
                         }
-                        this.rightSidebarService.setCurrentArea(res, icon, 'Policies');
+                        this.secondaryNavService.setCurrentArea(res, icon, 'Policies');
                     });
                 });
 

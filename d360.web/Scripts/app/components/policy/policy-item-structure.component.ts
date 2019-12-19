@@ -15,7 +15,7 @@ import { GridColumn, GridField } from '../../models/grid-definition.model';
 
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { PoliciesService } from '../../services/policies.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { LevelsService } from '../../services/levels.service';
@@ -26,6 +26,7 @@ import { BaseComponent } from '../shared/base.component';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 
 @Component({
     selector: 'd3s-policy-item-structure',
@@ -72,13 +73,13 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         private route: ActivatedRoute,
         private router: Router,
         private messagesService: MessagesObservableService,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private permissionsService: PermissionsService,
         private levelsService: LevelsService,
         private gridDefinitionService: GridDefinitionService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
         router.events.subscribe(
             (value) => {
                 this.showEditor = false;
@@ -106,7 +107,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
                 this.setObjectInfo('PolicyType', this.policyTypeId);
                 this.clearSidebar();
-                this.setCommonRightSideBar(true);
+                this.setCommonSecondaryNavTabs(true);
                 this.getFieldsDefinition();
                 this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicyType, this.policyTypeId);
 
@@ -135,9 +136,9 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                                                 undefined, 'POLICYTYPE', this.policyTypeId, undefined, undefined, true)
                                         );
                                         this.headerBreadcrumbService.getAssetFolderIcon('PolicyType', this.policyTypeId,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
-                                            this.rightSidebarService.showHeader(true);
-                                            this.rightSidebarService.setCurrentArea(this.policyType.Name, icon, 'Policy');
-                                            this.rightSidebarService.setCurrentObject('PolicyType', this.policyType.ID, null, null, true);
+                                            this.secondaryNavService.showHeader(true);
+                                            this.secondaryNavService.setCurrentArea(this.policyType.Name, icon, 'Policy');
+                                            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('PolicyType', this.policyType.ID, null, null, true));
                                         });
                                     });
                                 });

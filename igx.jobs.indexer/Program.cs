@@ -436,10 +436,12 @@ from
 	                        f.Name,
 	                        f.FusionAttributeTypeID,
 	                        ft.Name as FusionAttributeTypeName,
-	                        fu.Name as FusionName
+	                        fu.Name as FusionName,
+							a.id as AssetID
                         from fusionattribute f
 	                        inner join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
 	                        inner join fusion fu on (f.fusionid = fu.id)
+                            inner join asset a on a.object = 'FusionAttribute' and f.id = a.objectid
                         where f.Deleted = 0";
 
             foreach (var a in context.Query(sql, new { compid = companyID }, buffered:false,commandTimeout: _defaultQueryCommandTimeout))
@@ -449,7 +451,8 @@ from
                     Category = "FusionAttributes",
                     CompanyID = companyID,
                     AssetType = $"{a.FusionName} {a.FusionAttributeTypeName}",
-                    ID = a.ID,                    
+                    ID = a.ID,
+                    AssetID = a.AssetID,
                     RelativeUrl = $"/fusion/details/FusionAttribute/{a.ID}/{Uri.EscapeDataString(a.Name)}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", a.Name }
@@ -502,7 +505,9 @@ from
 
         private static IEnumerable<IndexObjectModel> LoadGroups(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = @"SELECT [ID],[Name],[Description] FROM [Group]";
+            var sql = @"SELECT g.[ID], g.[Name], g.[Description], a.ID as AssetID
+                    FROM [Group] g
+                    INNER JOIN [Asset] a ON a.[Object] = 'Group' AND a.ObjectID = g.ID";
 
             var sType = "Group";
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
@@ -513,6 +518,7 @@ from
                     CompanyID = companyID,
                     ID = o.ID,
                     AssetType = sType,
+                    AssetID = o.AssetId,
                     RelativeUrl = $"/groups/{o.ID}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
