@@ -455,7 +455,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.hideIndividualNode(g.data as AssetBrowserTranslationNode, g);
                 }
                 else {
-                    this.unhideNode(g.data as AssetBrowserTranslationNode);
+                    if (this.filterModel.SelectedAssetTypes.findIndex(v => { return v == (g.data as AssetBrowserTranslationNode).assetTypeId; }) == -1) {
+                        this.unhideNode(g.data as AssetBrowserTranslationNode);
+                    }
                 }
             }
         });
@@ -846,6 +848,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.fromRefresh = true;
         this.populateDiagram().subscribe(bComplete => {
             this.fromRefresh = false;
+            this.hideDeselectedAssetTypes();
+            this.hideDeselectedPredicates();
         });
     }
 
@@ -1316,7 +1320,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.parseData(translationModel, true);
 
                     this.hideDeselectedAssetTypes();
-                    this.hideDeselectedPredicates();
+                    this.hideDeselectedPredicates(); 
                 });
         }
     }
