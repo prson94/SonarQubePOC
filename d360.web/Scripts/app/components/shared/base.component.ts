@@ -133,33 +133,42 @@ export class BaseComponent {
 
     /*end permissions functionality*/
 
-    checkSecondaryNavLocalStorage() {
-        if (this.secondaryNavService) {
-            let currentObject = this.secondaryNavService.getLocalCurrentObject();
-            let currentArea = this.secondaryNavService.getLocalCurrentArea();
-            let tabs = this.secondaryNavService.getLocalCurrentTabs();
-            let currentTab = this.secondaryNavService.getLocalActiveItem();
-            let homeUrl = this.secondaryNavService.getLocalHomeUrl();
-            if (currentObject && currentArea && tabs.length > 0 && currentTab && homeUrl) {
-                this.secondaryNavService.clearItems();
-                this.secondaryNavService.setCurrentObject(currentObject);
-                this.secondaryNavService.setCurrentArea(currentArea.title, currentArea.icon, currentArea.tabTitle);
-                this.secondaryNavService.setLocalHomeUrl(homeUrl);
-                tabs.forEach(tab => {
-                    if (tab.title == currentTab.title)
-                        tab.active = true;
-                    else
-                        tab.active = false;
-                    this.secondaryNavService.showItem(tab);
-                });
-                this.secondaryNavService.showHeader(true);
-            }
+    
 
-        } else {
-            console.log("[secondary nav service not initialised]");
+    checkSecondaryNavLocalStorage(checkLocal?: boolean ) {
+        if (this.secondaryNavService) {
+            this.buildLocalStorage();
+            this.secondaryNavService.rebuildHeader$.subscribe(res => {
+                if (res) {
+                    window.setTimeout(() => {
+                        this.buildLocalStorage();
+                    },250);
+                }
+            });
+        } 
+    }
+    buildLocalStorage() {
+        let currentObject = this.secondaryNavService.getLocalCurrentObject();
+        let currentArea = this.secondaryNavService.getLocalCurrentArea();
+        let tabs: SecondaryNavItem[] = this.secondaryNavService.getLocalCurrentTabs();
+        let currentTab = this.secondaryNavService.getLocalActiveItem();
+        let homeUrl = this.secondaryNavService.getLocalHomeUrl();
+
+        if (currentObject && currentArea && tabs.length > 0&& currentTab && homeUrl) {
+            this.secondaryNavService.clearItems();
+            this.secondaryNavService.setCurrentObject(currentObject);
+            this.secondaryNavService.setCurrentArea(currentArea.title, currentArea.icon, currentArea.tabTitle);
+            this.secondaryNavService.setLocalHomeUrl(homeUrl);
+            tabs.forEach(tab => {
+                if (tab.title == currentTab.title)
+                    tab.active = true;
+                else
+                    tab.active = false;
+                this.secondaryNavService.showItem(tab);
+            });
+            this.secondaryNavService.showHeader(true);
         }
     }
-
     setCommonSecondaryNavTabs(
         hasAudit?: boolean,
         hasOwnership?: boolean,

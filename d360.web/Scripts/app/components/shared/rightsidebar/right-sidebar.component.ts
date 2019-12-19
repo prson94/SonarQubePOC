@@ -1,5 +1,6 @@
 import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange, OnChanges, OnDestroy, AfterViewInit, Output, EventEmitter, ViewChild, ViewChildren, QueryList } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, NavigationStart } from '@angular/router';
+import { Event as NavigationEvent } from "@angular/router";
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { SecondaryNavItem, DynamicButton, AssetAction } from '../../../models/secondaryNav.model';
 import { Subscription } from 'rxjs';
@@ -10,7 +11,7 @@ import { SurveysService } from '../../../services/surveys.service';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { SurveyType } from '../../../models/survey.model';
 import { WorkflowService } from '../../../services/workflow.service';
-import { validateDashboardLoad } from 'powerbi-models';
+import { filter } from "rxjs/operators";
 
 
 declare var CompanySettings
@@ -74,11 +75,39 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         private workflowService: WorkflowService,
         private router: Router
     ) {
-        router.events.subscribe(event => {
-            if (event instanceof NavigationEnd) {
-                this.previousUrl = event.url;
-            }
-        });
+        router.events
+            .pipe(
+            filter(
+                (event: NavigationEvent) => {
+                    return (event instanceof NavigationStart || event instanceof NavigationEnd);
+                    }
+                )
+        ).subscribe(
+            (event: NavigationEvent) => {
+                this.secondaryNavService.saveLastState();
+                if (event instanceof NavigationStart) {
+                    if (event.navigationTrigger != 'imperative') {
+                        let state = this.secondaryNavService.getItemState(event.url);
+                        if (state) {
+                            this.secondaryNavService.rebuildFromStorage(state);
+                        }
+                    }
+                    window.setTimeout(() => {
+                        this.items.forEach((item => {
+                            if (item.url === event.url) {
+                                item.active = true;
+                                this.secondaryNavService.setLocalActiveItem(item);
+                            } else {
+                                item.active = false;
+                            }
+                            this.ref.markForCheck();
+                        }));
+                    },200);
+                }
+                if (event instanceof NavigationEnd) {
+                    this.previousUrl = event.url;
+                }
+            });
     }
 
     ngAfterViewInit(): void {
@@ -134,7 +163,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             item => {
                 this.items.push(item);
                 this.items = _.sortBy(this.items, 'orderPriority'); this.emitChanges();
-                this.secondaryNavService.setLocalCurrentTabs(this.items);
+                this.secondaryNavService.setLocalCurrentTabs([ ...this.items ]);
             });
 
         this.buttonSubscription = this.secondaryNavService.rightSidebarButton$.subscribe(
@@ -151,7 +180,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.subscriptionClear = this.secondaryNavService.rightSidebarClear$.subscribe(
             item => {
                 this.items.splice(0, this.items.length);
-                this.secondaryNavService.setLocalCurrentTabs(this.items);
+                
                 this.currentObject = null;
                 this.statistics = null;
                 this.showStatus = false; this.emitChanges();
@@ -163,9 +192,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         );
         this.hideHeaderSub = this.secondaryNavService.hideHeader$.subscribe(result => {
             this.showHeader = result;
-            if (this.showHeader == false) {
-                this.secondaryNavService.clearSecondaryNavLocalStorage();
-            }
             this.emitChanges();
         });
 
@@ -176,7 +202,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             } else {
                 this.showStatus = false;
                 this.statistics = null;
-                this.showCertify = false;
+                this.showCertify = false; 
                 this.showSurvey = false;
                 this.emitChanges();
             }
@@ -278,7 +304,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     AllClosed() {
         let count = this.items.filter(x => x.active == true).length;
-
+        if (count === 0)
+            this.secondaryNavService.setLocalActiveItem(undefined);
         return count == 0;
     }
 

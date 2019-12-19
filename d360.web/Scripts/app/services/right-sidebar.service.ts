@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import {Subject} from 'rxjs';
-import { SecondaryNavItem, DynamicButton, AssetAction, SecondaryNavCurrentObject } from '../models/secondaryNav.model';
+import { SecondaryNavItem, DynamicButton, AssetAction, SecondaryNavCurrentObject, SecondaryNavState, NavState } from '../models/secondaryNav.model';
 
 @Injectable()
 export class SecondaryNavService {
@@ -16,7 +16,11 @@ export class SecondaryNavService {
     private assetActionSource = new Subject<AssetAction>();
     private assetActionClearSource = new Subject<boolean>();
     private homeUrlChangeSource = new Subject<string>();
-
+    private rebuildHeaderSource = new Subject<any>();
+    private secondaryNavState: SecondaryNavState;
+    constructor() {
+        this.secondaryNavState = new SecondaryNavState();
+    }
     // Observable streams
     rightSidebar$ = this.rightSidebarSource.asObservable();
     rightSidebarClear$ = this.rightSidebarClearSource.asObservable();
@@ -29,19 +33,24 @@ export class SecondaryNavService {
     assetAction$ = this.assetActionSource.asObservable();
     assetActionClear$ = this.assetActionClearSource.asObservable();
     homeUrlChange$ = this.homeUrlChangeSource.asObservable();
+    rebuildHeader$ = this.rebuildHeaderSource.asObservable();
+
 
     setCurrentArea(area: string, icon: string, title: string) {
         this.currentAreaSource.next({ title: area, icon: icon, tabTitle: title });
-        localStorage.setItem('SecondaryNav_CurrentArea', JSON.stringify({ title: area, icon: icon, tabTitle: title }));
+        this.secondaryNavState.currentState.currentArea = { title: area, icon: icon, tabTitle: title };
+        this.saveSecondaryNavState(this.secondaryNavState);
     }
 
     setCurrentObject(currentObject: SecondaryNavCurrentObject) {
-        localStorage.setItem('SecondaryNav_CurrentObject', JSON.stringify(currentObject));
+        this.secondaryNavState.currentState.currentObject = currentObject;
+        this.saveSecondaryNavState(this.secondaryNavState);
         this.currentObjectSource.next(currentObject);
     }
 
     clearCurrentObject() {
-        localStorage.removeItem('SecondaryNav_CurrentObject')
+        this.secondaryNavState.currentState.currentObject = undefined;
+        this.saveSecondaryNavState(this.secondaryNavState);
         this.currentObjectSource.next(null);
     }
 
@@ -79,36 +88,59 @@ export class SecondaryNavService {
         this.assetActionSource.next(val);
     }
 
+    rebuildFromStorage(state: NavState) {
+        this.secondaryNavState.currentState = state;
+        this.saveSecondaryNavState(this.secondaryNavState);
+        this.rebuildHeaderSource.next(true);
+    }
+
     //local storage functions 
     setLocalActiveItem(item: SecondaryNavItem) {
-        localStorage.setItem('SecondaryNav_CurrentTab', JSON.stringify(item));
+        this.secondaryNavState.currentState.currentTab = item;
+        this.saveSecondaryNavState(this.secondaryNavState);
     }
     getLocalActiveItem(): SecondaryNavItem {
-        return JSON.parse(localStorage.getItem('SecondaryNav_CurrentTab'));
+        return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentTab;
     }
     setLocalCurrentTabs(items: SecondaryNavItem[]) {
-        localStorage.setItem('SecondaryNav_ShownTabs', JSON.stringify(items));
+        this.secondaryNavState.currentState.shownTabs = items;
+        this.saveSecondaryNavState(this.secondaryNavState);
     }
     getLocalCurrentTabs(): SecondaryNavItem[] {
-        return JSON.parse(localStorage.getItem('SecondaryNav_ShownTabs'));
+        let state: SecondaryNavState = JSON.parse(localStorage.getItem('SecondaryNavState'));
+        return state.currentState.shownTabs;
     }
     getLocalCurrentObject() {
-        return JSON.parse(localStorage.getItem('SecondaryNav_CurrentObject'));
+        return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentObject;
     }
     getLocalCurrentArea() {
-        return JSON.parse(localStorage.getItem('SecondaryNav_CurrentArea'));
+        return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentArea;
     }
     setLocalHomeUrl(url: string): any {
-        localStorage.setItem('SecondaryNav_CurrentHome', url);
+        this.secondaryNavState.currentState.currentHome = url;
+        this.saveSecondaryNavState(this.secondaryNavState);
     }
     getLocalHomeUrl(): string {
-        return localStorage.getItem('SecondaryNav_CurrentHome');
+        return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentHome;
     }
     clearSecondaryNavLocalStorage() {
-        localStorage.removeItem('SecondaryNav_CurrentTab');
-        localStorage.removeItem('SecondaryNav_ShownTabs');
-        localStorage.removeItem('SecondaryNav_CurrentObject');
-        localStorage.removeItem('SecondaryNav_CurrentArea');
-        localStorage.removeItem('SecondaryNav_CurrentHome');
+        localStorage.removeItem('SecondaryNavState');
+    }
+    saveLastState(): any {
+        if (this.secondaryNavState.currentState && this.secondaryNavState.currentState.currentObject) {
+            this.secondaryNavState.pushPreviousState({ ...this.secondaryNavState.currentState });
+            this.saveSecondaryNavState(this.secondaryNavState);
+        }
+    }
+    getItemState(url: string): NavState {
+        let current = this.getCurrentState();
+        return current.previousStates.find(state => state.currentTab && state.currentTab.url == url);
+    }
+    getCurrentState(): SecondaryNavState{
+        return JSON.parse(localStorage.getItem('SecondaryNavState'));
+    }
+
+    private saveSecondaryNavState(state: SecondaryNavState) {
+        localStorage.setItem('SecondaryNavState', JSON.stringify({ ...state }));
     }
 }

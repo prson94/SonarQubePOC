@@ -1,6 +1,7 @@
 ﻿import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-impact-wrapper',
@@ -14,9 +15,11 @@ export class ImpactComponent extends BaseComponent implements OnInit, OnDestroy 
 
     constructor(
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        secondaryNavService: SecondaryNavService
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -24,6 +27,8 @@ export class ImpactComponent extends BaseComponent implements OnInit, OnDestroy 
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
         });
+
+        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

@@ -21,6 +21,27 @@ export class SecondaryNavItem {
     orderPriority: number = 99;
 }
 
+export class NavState {
+    currentObject: SecondaryNavCurrentObject;
+    currentHome: string;
+    shownTabs: Array<SecondaryNavItem> = [];
+    currentTab: SecondaryNavItem;
+    currentArea: any;
+}
+
+export class SecondaryNavState {
+    private maxStack = 20;
+    currentState: NavState = new NavState();
+    previousStates: NavState[] = [];
+
+    public pushPreviousState(item: NavState) {
+        if (this.previousStates.length >= this.maxStack) {
+            this.previousStates.splice(0, 1);
+        }
+        this.previousStates.push(item);
+    }
+}
+
 export class SecondaryNavCurrentObject {
     constructor(objectType: string, objectTypeID: number, objectName: string, objectID: number, isType: boolean, hasWorkFlow?: boolean, Uid?: string) {
         this.objectType = objectType;
