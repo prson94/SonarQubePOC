@@ -210,9 +210,11 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.relationItemsLoading = false;
                 this.field.Items = res.results["items"];
                 this.selectRelationItems(this.relationItems);
-
-                if ((res.event.globalFilter != null && res.event.globalFilter != "") || res.event.first == 0)
-                    this.field.RecordCount = res.results["count"];
+                
+                if ((res.event.globalFilter != null && res.event.globalFilter != "") || res.event.first == 0) {
+                    var selectedCount = this.relationItems ? this.relationItems.length : 0;
+                    this.field.RecordCount = selectedCount + res.results["count"];
+                }
                 this.ref.markForCheck();
             });
 
