@@ -4,6 +4,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 
 @Component({
     selector: 'd3s-workflow-monitor',
@@ -21,10 +22,12 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
 
     constructor(
         private route: ActivatedRoute,
+        breadcrumbService: HeaderBreadcrumbService,
         secondaryNavService: SecondaryNavService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
     }
 
     ngOnInit() {

@@ -12,6 +12,7 @@ import { ArtifactService } from '../../../services/artifacts.service';
 import { SurveyType } from '../../../models/survey.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { filter } from "rxjs/operators";
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 
 
 declare var CompanySettings
@@ -91,6 +92,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                         if (state) {
                             this.secondaryNavService.rebuildFromStorage(state);
                         }
+                        
                     }
                     window.setTimeout(() => {
                         this.items.forEach((item => {

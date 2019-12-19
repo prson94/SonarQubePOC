@@ -41,10 +41,12 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         private headerBreadcrumbService: HeaderBreadcrumbService,
         private objectDetailService: ObjectDetailService,
         private changeDetectorRef: ChangeDetectorRef,
-        secondaryNavService: SecondaryNavService    
+        secondaryNavService: SecondaryNavService,
+        breadcrumbService: HeaderBreadcrumbService    
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
     }
 
     ngOnInit() {

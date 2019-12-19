@@ -30,10 +30,12 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
         private route: ActivatedRoute,
         private headerBreadcrumbService: HeaderBreadcrumbService,
         secondaryNavService: SecondaryNavService,
-        private router: Router
+        private router: Router,
+        breadcrumbService: HeaderBreadcrumbService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
     }
 
     ngOnInit() {

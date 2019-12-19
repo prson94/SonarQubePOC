@@ -12,6 +12,7 @@ import { ResponsibilityTypeRelationPermission, Permission } from '../../models/r
 import { HttpErrorResponse } from '@angular/common/http';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { TreeNode } from 'primeng/api';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 
 declare var CompanySettings;
 
@@ -55,6 +56,7 @@ export class BaseComponent {
 
     protected secondaryNavService: SecondaryNavService = null;
     protected webAnalyticsService: WebAnalyticsService = null;
+    protected breadcrumbsService: HeaderBreadcrumbService = null;
 
     protected setBrowserTitle(tileService: Title, area: string) {
         tileService.setTitle(`${CompanySettings.BrowserTitlePrefix} - ${area}`);
@@ -142,7 +144,8 @@ export class BaseComponent {
                 if (res) {
                     window.setTimeout(() => {
                         this.buildLocalStorage();
-                    },250);
+                    }, 250);
+                    
                 }
             });
         } 
@@ -153,7 +156,7 @@ export class BaseComponent {
         let tabs: SecondaryNavItem[] = this.secondaryNavService.getLocalCurrentTabs();
         let currentTab = this.secondaryNavService.getLocalActiveItem();
         let homeUrl = this.secondaryNavService.getLocalHomeUrl();
-
+        let crumbs = this.breadcrumbsService.getBreadcrumbsFromStorage();
         if (currentObject && currentArea && tabs.length > 0&& currentTab && homeUrl) {
             this.secondaryNavService.clearItems();
             this.secondaryNavService.setCurrentObject(currentObject);
@@ -168,7 +171,10 @@ export class BaseComponent {
             });
             this.secondaryNavService.showHeader(true);
         }
+        if (crumbs.length > 0)
+            this.breadcrumbsService.buildFromStorage();
     }
+
     setCommonSecondaryNavTabs(
         hasAudit?: boolean,
         hasOwnership?: boolean,

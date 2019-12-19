@@ -30,7 +30,7 @@ export class NavState {
 }
 
 export class SecondaryNavState {
-    private maxStack = 20;
+    private maxStack = 50;
     currentState: NavState = new NavState();
     previousStates: NavState[] = [];
 

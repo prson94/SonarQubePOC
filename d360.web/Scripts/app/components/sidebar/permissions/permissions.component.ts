@@ -4,6 +4,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 
 @Component({
     selector: 'd3s-permissions',
@@ -29,10 +30,12 @@ export class PermissionsComponent extends BaseComponent implements OnInit, OnDes
         private route: ActivatedRoute,
         private router: Router,
         private authenticationService: AuthenticationService,
-        secondaryNavService: SecondaryNavService
+        secondaryNavService: SecondaryNavService,
+        breadcrumbService: HeaderBreadcrumbService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
     }
 
     ngOnInit() {
