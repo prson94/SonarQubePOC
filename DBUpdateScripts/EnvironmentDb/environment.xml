@@ -385,4 +385,5 @@
   <include file="scripts/GOV-8945.xml"/>  <!-- Renaming dbo.FieldTypeFusionLookupDisplayField table  -->
   <include file="scripts/GOV-9110.xml"/>  <!-- update [GetFormattedFieldLookupValueWithMultiple] fcn : fix invalid lookup formatted value -->
   <include file="scripts/GOV-8669.xml"/>  <!-- update triggers on Group so only one record is created in [queue].[task] -->
+  <include file="scripts/GOV-9158.xml"/>  <!-- adds empty stoplist and updates graph.AssetNode FULLTEXT Index -->
 </databaseChangeLog>
