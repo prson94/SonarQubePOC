@@ -1,6 +1,8 @@
 ﻿import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 
 @Component({
     selector: 'd3s-actions',
@@ -25,7 +27,13 @@ export class ActionsComponent extends BaseComponent implements OnInit, OnDestroy
 
     private sub: any;    
     
-    constructor(private route: ActivatedRoute) { super(); }
+    constructor(private route: ActivatedRoute,
+        secondaryNavService: SecondaryNavService,
+        breadcrumbService: HeaderBreadcrumbService) {
+        super();
+        this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
+    }
 
     ngOnInit() {
         this.isLoading = true;
@@ -34,9 +42,9 @@ export class ActionsComponent extends BaseComponent implements OnInit, OnDestroy
 
             this.objectType = params['objectType'];
             this.objectID = +params['objectId'];
-            
             this.isLoading = false;            
         });
+        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

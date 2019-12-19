@@ -9,7 +9,7 @@ import { Location } from '@angular/common';
 import { ShoppingCart, ShoppingCartListItem } from '../../models/shopping-cart.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { MessagesObservableService } from '../../services/messages-observable.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-shopping-cart',
@@ -27,7 +27,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
 
     constructor(
         private headerBreadcrumbService: HeaderBreadcrumbService,
-        protected rightSidebarService: RightSidebarService,
+        protected secondaryNavService: SecondaryNavService,
         private titleService: Title,
         private locationService: Location,
         private shoppingCartService: ShoppingCartService,
@@ -35,7 +35,7 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
         private router: Router)
     {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -43,9 +43,9 @@ export class ShoppingCartComponent extends BaseComponent implements OnInit {
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.title));
         this.setBrowserTitle(this.titleService, this.title);
         this.clearSidebar();
-        this.rightSidebarService.clearCurrentObject();
-        this.rightSidebarService.setCurrentArea('Shopping Cart', 'fa-shopping-cart', null);
-        this.rightSidebarService.showHeader(true);
+        this.secondaryNavService.clearCurrentObject();
+        this.secondaryNavService.setCurrentArea('Shopping Cart', 'fa-shopping-cart', null);
+        this.secondaryNavService.showHeader(true);
         this.load();
     }
 

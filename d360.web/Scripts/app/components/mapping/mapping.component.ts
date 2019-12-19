@@ -5,7 +5,7 @@ import {Breadcrumb} from '../../models/breadcrumb.model';
 
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
 import {DiagramService} from '../../services/diagram.service';
-import {RightSidebarService} from '../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../services/right-sidebar.service';
 import {PermissionsService} from '../../services/permissions.service';
 
 import {BaseComponent} from '../shared/base.component';
@@ -29,12 +29,12 @@ export class MappingComponent extends BaseComponent implements OnInit, OnDestroy
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected diagramService: DiagramService,
         protected messagesService: MessagesObservableService,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         protected permissionsService: PermissionsService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
-        this.setCommonRightSideBar(true, false, false, false, false, true);
+        this.secondaryNavService = secondaryNavService;
+        this.setCommonSecondaryNavTabs(true, false, false, false, false, true);
         this.theDeleteCallback = this.deleteMapping.bind(this);
     }
 

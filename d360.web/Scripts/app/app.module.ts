@@ -20,7 +20,7 @@ import {AuthenticationService} from './services/authentication.service';
 import {MessagesObservableService} from "./services/messages-observable.service";
 import {HeaderBreadcrumbService} from './services/header-breadcrumb.service';
 import {HeaderActionsService} from './services/header-actions.service';
-import {RightSidebarService} from './services/right-sidebar.service';
+import {SecondaryNavService} from './services/right-sidebar.service';
 import {StateService} from './services/state.service';
 import {WebAnalyticsService} from './services/web-analytics.service';
 
@@ -73,7 +73,7 @@ export function getLocale() {
         HeaderActionsService,
         HeaderBreadcrumbService,
         MessagesObservableService,
-        RightSidebarService,
+        SecondaryNavService,
         AssetStyleService,
         WebAnalyticsService,
         TooltipSingletonService,

@@ -5,7 +5,7 @@ import {BaseComponent} from '../shared/base.component';
 import {Title} from '@angular/platform-browser';
 import {WorkflowService} from '../../services/workflow.service';
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
-import {RightSidebarService} from '../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../services/right-sidebar.service';
 import {WebAnalyticsService} from '../../services/web-analytics.service';
 import {ObjectDetailService} from '../../services/object-detail.service';
 import {TagService} from '../../services/tag.service';
@@ -13,7 +13,7 @@ import {Breadcrumb} from '../../models/breadcrumb.model';
 import {SocialCommentType} from '../../models/social.model';
 import {WorkflowType, WorkflowIssueType} from '../../models/workflow.model';
 import {Subscription, SubscriptionLike as ISubscription} from 'rxjs';
-import {RightSidebarItem} from '../../models/rightsidebar.model';
+import {SecondaryNavItem} from '../../models/secondaryNav.model';
 import {ObjectDetail} from '../../models/object-detail.model';
 import {Tag} from '../../models/tag.model';
 import {D3SObjectHelpers} from '../../static/d3s-object-helpers';
@@ -133,9 +133,9 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         private headerActionsService: HeaderActionsService,
         webAnalyticsService: WebAnalyticsService,
         private messagesService: MessagesObservableService,
-        rightSidebarService: RightSidebarService) {
+        secondaryNavService: SecondaryNavService) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
         this.webAnalyticsService = webAnalyticsService;
     }
 
@@ -154,8 +154,8 @@ export class WorkflowRaiseIssueComponent extends BaseComponent implements OnInit
         this.headerBreadcrumbService.clearCurrentObjectInfo();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Take Action'));
         this.clearSidebar();
-        this.rightSidebarService.setCurrentArea('Take Action', 'fa-paper-plane-o', null);
-        this.rightSidebarService.showHeader(true);
+        this.secondaryNavService.setCurrentArea('Take Action', 'fa-paper-plane-o', null);
+        this.secondaryNavService.showHeader(true);
     }
 
     ngOnDestroy(): void {

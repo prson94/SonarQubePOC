@@ -2,10 +2,10 @@
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { MapRuleItemDetail } from '../../models/fusion.model';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
@@ -44,9 +44,9 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
     sub: any;
     
 
-    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, rightSidebarService: RightSidebarService ) {
+    constructor(protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, secondaryNavService: SecondaryNavService ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -58,14 +58,14 @@ export class FusionListComponent extends BaseComponent implements OnInit, OnDest
             this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
             this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).subscribe(icon => {
                 this.clearSidebar();
-                //this.rightSidebarService.showItem(new RightSidebarItem('Technical Mappings','technical'));
+                //this.secondaryNavService.showItem(new SecondaryNavItem('Technical Mappings','technical'));
 
-                this.sub = this.rightSidebarService.rightSidebarClicked$.subscribe(s => {
+                this.sub = this.secondaryNavService.rightSidebarClicked$.subscribe(s => {
                     if (s.tag == 'technical')
                         this.showTechnicalMappings = s.active
                 });
-                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon, 'Fusion List');
-                this.rightSidebarService.showHeader(true);
+                this.secondaryNavService.setCurrentArea(areaBreadcrumb.text, icon, 'Fusion List');
+                this.secondaryNavService.showHeader(true);
             });
         });
         

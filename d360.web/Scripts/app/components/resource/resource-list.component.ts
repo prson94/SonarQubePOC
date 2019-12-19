@@ -12,7 +12,7 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { GridDefinition, GridColumn, GridField } from '../../models/grid-definition.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 
 declare var CompanySettings;
 
@@ -36,14 +36,14 @@ export class ResourceListComponent extends BaseComponent {
 
     constructor(private route: ActivatedRoute,
         private router: Router,
-        protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, rightSideBarService: RightSidebarService) {
+        protected titleService: Title, protected headerBreadcrumbService: HeaderBreadcrumbService, secondaryNavService: SecondaryNavService) {
         super();
-        this.rightSidebarService = rightSideBarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
         this.clearSidebar();
-        this.rightSidebarService.showHeader(false);
+        this.secondaryNavService.showHeader(false);
         this.setBrowserTitle(this.titleService, 'Resource');
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb("Resource"))

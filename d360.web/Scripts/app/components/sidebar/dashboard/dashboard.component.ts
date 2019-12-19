@@ -6,7 +6,7 @@ import {Dashboard} from '../../../models/dashboard.model'
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-dashboard',
@@ -29,11 +29,13 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
         protected dashboardService: DashboardService,
         private route: ActivatedRoute,
         private headerBreadcrumbService: HeaderBreadcrumbService,
-        rightSidebarService: RightSidebarService,
-        private router: Router
+        secondaryNavService: SecondaryNavService,
+        private router: Router,
+        breadcrumbService: HeaderBreadcrumbService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
     }
 
     ngOnInit() {
@@ -46,6 +48,8 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
             this.loadAvailableDashboards();      
             
         });
+
+        this.checkSecondaryNavLocalStorage();
     }
 
 
@@ -73,10 +77,10 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
             if (clearInfo) {
                 this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
                         this.clearSidebar();
-                        this.rightSidebarService.setCurrentArea(res, icon, 'Dashboards');
-                        this.rightSidebarService.clearCurrentObject();
-                        this.rightSidebarService.clearButtons();
-                        this.rightSidebarService.showHeader(false);
+                        this.secondaryNavService.setCurrentArea(res, icon, 'Dashboards');
+                        this.secondaryNavService.clearCurrentObject();
+                        this.secondaryNavService.clearButtons();
+                        this.secondaryNavService.showHeader(false);
                 });
             }
 

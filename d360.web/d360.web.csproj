@@ -1657,7 +1657,7 @@
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\Dropdown.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\resource.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\rightsidebar.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\secondaryNav.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\score.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-menu.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\social.model.ts" />

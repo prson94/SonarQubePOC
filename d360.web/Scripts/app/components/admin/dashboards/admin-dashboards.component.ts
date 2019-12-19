@@ -2,7 +2,7 @@
 import { NgForm } from '@angular/forms';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { ReportsService } from '../../../services/reports.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Report, ReportType } from '../../../models/report.model';
 import { Title } from '@angular/platform-browser';
@@ -126,12 +126,12 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     powerBiUser: string;
     powerBiPassword: string;
 
-    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, protected reportsService: ReportsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);        
+    constructor(private stateService: StateService, secondaryNavService: SecondaryNavService, protected reportsService: ReportsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, secondaryNavService);        
         this.areaName = "Dashboards";
         this.tabTitle = 'Dashboards'
         this.setCommonItems();
-        this.setCommonRightSideBar();
+        this.setCommonSecondaryNavTabs();
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;
             this.auditSidebar.dynamicUrlCallback = (() => {

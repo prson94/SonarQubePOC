@@ -6,7 +6,7 @@ import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { SurveyType } from '../../../models/survey.model';
 import { catchError } from 'rxjs/operators';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
@@ -104,8 +104,8 @@ export class AdminSurveysComponent extends AdminBaseComponent {
         headerBreadcrumbService: HeaderBreadcrumbService,
         private messagesService: MessagesObservableService,
         titleService: Title,
-        rightSidebarService: RightSidebarService) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        secondaryNavService: SecondaryNavService) {
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Surveys";
         this.setCommonItems();
     }

@@ -7,7 +7,7 @@ import {ApiNamespace, ApiService} from '../../../models/custom-api.model';
 
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {CustomAPIService} from '../../../services/custom-api.service';
-import {RightSidebarService} from '../../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../../services/right-sidebar.service';
 
 import {AdminBaseComponent} from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -33,11 +33,11 @@ export class AdminCustomAPIServiceNamespaceComponent extends AdminBaseComponent 
         private router: Router,
         protected customAPIService: CustomAPIService,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private messagesService: MessagesObservableService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Custom API";
         this.theDeleteCallback = this.deleteItem.bind(this);
     }

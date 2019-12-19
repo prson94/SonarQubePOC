@@ -2,7 +2,7 @@
 import { Predicate } from '../../../models/predicate.model';
 import { PredicatesService } from '../../../services/predicates.service';
 import { AdminBaseComponent } from '../admin-base.component';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -100,11 +100,11 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
 
     constructor(private predicatesService: PredicatesService,
         private messagesService: MessagesObservableService,
-        rightSidebarService: RightSidebarService,        
+        secondaryNavService: SecondaryNavService,        
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.theDeleteCallback = this.deletePredicate.bind(this);        
         this.areaName = "Predicates";
         this.setCommonItems();        

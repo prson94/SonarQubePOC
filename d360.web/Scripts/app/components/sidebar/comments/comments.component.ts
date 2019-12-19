@@ -1,6 +1,8 @@
 ﻿import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 
 declare var CurrentResourceID;
 
@@ -27,7 +29,14 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
     hasCloseButton: boolean = false;
     showBoard: boolean = false;
 
-    constructor(private route: ActivatedRoute, private router: Router) { super(); }
+    constructor(private route: ActivatedRoute,
+        private router: Router,
+        secondaryNavService: SecondaryNavService,
+        breadcrumbService: HeaderBreadcrumbService) {
+        super();
+        this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
+    }
 
     ngOnInit() {
 
@@ -40,6 +49,8 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
             this.isLoading = false;
             this.showBoard = true;
         });
+
+        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

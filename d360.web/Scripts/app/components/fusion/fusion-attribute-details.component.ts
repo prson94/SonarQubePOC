@@ -2,7 +2,7 @@
 import { Location } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
@@ -42,7 +42,7 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
     constructor(        
         private route: ActivatedRoute,
         private router: Router,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private titleService: Title,
         private headerBreadcrumbService: HeaderBreadcrumbService,
         private permissionsService: PermissionsService,
@@ -50,11 +50,11 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
         private fusionAttributeService: FusionAttributeService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {        
-        this.setCommonRightSideBar(true, true, false, true, true, true, false);
+        this.setCommonSecondaryNavTabs(true, true, false, true, true, true, false);
         this.sub = this.route.params.subscribe(params => {
             this.type = decodeURIComponent(params['type']);
             this.id = +params['id'];
@@ -111,9 +111,9 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
             }
 
             this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).subscribe(icon => {
-                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon, 'Definition');
-                this.setCommonRightSideBar(true, true, false, true, true, true, false);
-                this.rightSidebarService.showHeader(true);
+                this.secondaryNavService.setCurrentArea(areaBreadcrumb.text, icon, 'Definition');
+                this.setCommonSecondaryNavTabs(true, true, false, true, true, true, false);
+                this.secondaryNavService.showHeader(true);
             });
 
         });

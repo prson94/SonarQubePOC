@@ -7,7 +7,7 @@ import {ApiEndpoint, ApiService, ApiVersion} from '../../../models/custom-api.mo
 
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {CustomAPIService} from '../../../services/custom-api.service';
-import {RightSidebarService} from '../../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../../services/right-sidebar.service';
 
 import {AdminBaseComponent} from '../admin-base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -33,11 +33,11 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
         private router: Router,
         protected customAPIService: CustomAPIService,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private messagesService: MessagesObservableService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
     }
 
     ngOnInit(): void {
@@ -64,7 +64,7 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
 
                             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(`${this.endpoint.Name}`));
                             
-                            this.rightSidebarService.setCurrentArea(this.endpoint.Name, 'fa-cog', this.endpoint.Name);
+                            this.secondaryNavService.setCurrentArea(this.endpoint.Name, 'fa-cog', this.endpoint.Name);
                             this.isLoading = false;
                         });
                 });

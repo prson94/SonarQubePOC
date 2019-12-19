@@ -1,22 +1,26 @@
 import { Injectable } from '@angular/core';
 import {Subject} from 'rxjs';
-import { RightSidebarItem, DynamicButton, AssetAction } from '../models/rightsidebar.model';
+import { SecondaryNavItem, DynamicButton, AssetAction, SecondaryNavCurrentObject, SecondaryNavState, NavState } from '../models/secondaryNav.model';
 
 @Injectable()
-export class RightSidebarService {
+export class SecondaryNavService {
     // Observable sources
-    private rightSidebarSource = new Subject<RightSidebarItem>();
+    private rightSidebarSource = new Subject<SecondaryNavItem>();
     private rightSidebarClearSource = new Subject<boolean>();
     private rightSidebarClearButtonSource = new Subject<boolean>();
-    private rightSidebarClickedSource = new Subject<RightSidebarItem>();
+    private rightSidebarClickedSource = new Subject<SecondaryNavItem>();
     private currentAreaSource = new Subject<any>();
-    private currentObjectSource = new Subject<any>();
+    private currentObjectSource = new Subject<SecondaryNavCurrentObject>();
     private hideHeaderSource = new Subject<boolean>();
     private rightSidebarButtonSource = new Subject<DynamicButton>();
     private assetActionSource = new Subject<AssetAction>();
     private assetActionClearSource = new Subject<boolean>();
-
-
+    private homeUrlChangeSource = new Subject<string>();
+    private rebuildHeaderSource = new Subject<any>();
+    private secondaryNavState: SecondaryNavState;
+    constructor() {
+        this.secondaryNavState = new SecondaryNavState();
+    }
     // Observable streams
     rightSidebar$ = this.rightSidebarSource.asObservable();
     rightSidebarClear$ = this.rightSidebarClearSource.asObservable();
@@ -28,25 +32,25 @@ export class RightSidebarService {
     rightSidebarButton$ = this.rightSidebarButtonSource.asObservable();
     assetAction$ = this.assetActionSource.asObservable();
     assetActionClear$ = this.assetActionClearSource.asObservable();
+    homeUrlChange$ = this.homeUrlChangeSource.asObservable();
+    rebuildHeader$ = this.rebuildHeaderSource.asObservable();
+
 
     setCurrentArea(area: string, icon: string, title: string) {
-        this.currentAreaSource.next({ title: area, icon: icon, tabTitle:title });
+        this.currentAreaSource.next({ title: area, icon: icon, tabTitle: title });
+        this.secondaryNavState.currentState.currentArea = { title: area, icon: icon, tabTitle: title };
+        this.saveSecondaryNavState(this.secondaryNavState);
     }
 
-    setCurrentObject(objectType: string, objectTypeID: number, objectName: string, objectID: number, isType: boolean, hasWorkFlow?: boolean, Uid?: string) {
-        this.currentObjectSource.next(
-            {
-                objectType,
-                objectTypeID,
-                objectName,
-                objectID,
-                isType,
-                hasWorkFlow: hasWorkFlow == undefined ? false : hasWorkFlow,
-                Uid: Uid == undefined ? undefined : Uid
-            });
+    setCurrentObject(currentObject: SecondaryNavCurrentObject) {
+        this.secondaryNavState.currentState.currentObject = currentObject;
+        this.saveSecondaryNavState(this.secondaryNavState);
+        this.currentObjectSource.next(currentObject);
     }
 
     clearCurrentObject() {
+        this.secondaryNavState.currentState.currentObject = undefined;
+        this.saveSecondaryNavState(this.secondaryNavState);
         this.currentObjectSource.next(null);
     }
 
@@ -61,7 +65,7 @@ export class RightSidebarService {
     }
 
     // Service message commands
-    showItem(rightSidebarItem: RightSidebarItem) {
+    showItem(rightSidebarItem: SecondaryNavItem) {
         this.rightSidebarSource.next(rightSidebarItem);
     }
 
@@ -69,8 +73,12 @@ export class RightSidebarService {
         this.rightSidebarClearSource.next(true);
     }
 
-    itemClicked(item: RightSidebarItem) {
+    itemClicked(item: SecondaryNavItem) {
+        this.setLocalActiveItem(item);
         this.rightSidebarClickedSource.next(item);
+    }
+    clearLocalActiveItem() {
+        localStorage.removeItem('SecondaryNav_CurrentTab');
     }
     showHeader(val: boolean) {
         this.hideHeaderSource.next(val);
@@ -78,5 +86,61 @@ export class RightSidebarService {
 
     setActionTitleItems(val: AssetAction) {
         this.assetActionSource.next(val);
+    }
+
+    rebuildFromStorage(state: NavState) {
+        this.secondaryNavState.currentState = state;
+        this.saveSecondaryNavState(this.secondaryNavState);
+        this.rebuildHeaderSource.next(true);
+    }
+
+    //local storage functions 
+    setLocalActiveItem(item: SecondaryNavItem) {
+        this.secondaryNavState.currentState.currentTab = item;
+        this.saveSecondaryNavState(this.secondaryNavState);
+    }
+    getLocalActiveItem(): SecondaryNavItem {
+        return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentTab;
+    }
+    setLocalCurrentTabs(items: SecondaryNavItem[]) {
+        this.secondaryNavState.currentState.shownTabs = items;
+        this.saveSecondaryNavState(this.secondaryNavState);
+    }
+    getLocalCurrentTabs(): SecondaryNavItem[] {
+        let state: SecondaryNavState = JSON.parse(localStorage.getItem('SecondaryNavState'));
+        return state.currentState.shownTabs;
+    }
+    getLocalCurrentObject() {
+        return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentObject;
+    }
+    getLocalCurrentArea() {
+        return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentArea;
+    }
+    setLocalHomeUrl(url: string): any {
+        this.secondaryNavState.currentState.currentHome = url;
+        this.saveSecondaryNavState(this.secondaryNavState);
+    }
+    getLocalHomeUrl(): string {
+        return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentHome;
+    }
+    clearSecondaryNavLocalStorage() {
+        localStorage.removeItem('SecondaryNavState');
+    }
+    saveLastState(): any {
+        if (this.secondaryNavState.currentState && this.secondaryNavState.currentState.currentObject) {
+            this.secondaryNavState.pushPreviousState({ ...this.secondaryNavState.currentState });
+            this.saveSecondaryNavState(this.secondaryNavState);
+        }
+    }
+    getItemState(url: string): NavState {
+        let current = this.getCurrentState();
+        return current.previousStates.find(state => state.currentTab && state.currentTab.url == url);
+    }
+    getCurrentState(): SecondaryNavState{
+        return JSON.parse(localStorage.getItem('SecondaryNavState'));
+    }
+
+    private saveSecondaryNavState(state: SecondaryNavState) {
+        localStorage.setItem('SecondaryNavState', JSON.stringify({ ...state }));
     }
 }

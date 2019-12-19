@@ -1,7 +1,7 @@
 ﻿import {Component} from '@angular/core';
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {AttributeTypeService} from '../../../services/attribute-type.service';
-import {RightSidebarService} from '../../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../../services/right-sidebar.service';
 import {AdminBaseComponent} from '../admin-base.component';
 import {AttributeType} from '../../../models/attribute-type.model';
 import {TreeNode} from 'primeng/api';
@@ -25,18 +25,18 @@ export class AdminAttributesComponent extends AdminBaseComponent {
     parentID: number = 0;
 
     constructor(
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private attributeTypeService: AttributeTypeService,
         protected messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
 
         this.areaName = "Attributes";
         this.tabTitle = 'Attribute Groups';
         this.setCommonItems();
-        this.setCommonRightSideBar(true);
+        this.setCommonSecondaryNavTabs(true);
 
         if (this.auditSidebar) {
             this.auditSidebar.hasDynamicUrl = true;

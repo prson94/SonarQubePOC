@@ -4,7 +4,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { AdminBaseComponent } from '../admin-base.component';
 import { FormMode } from '../../../models/form.model';
 import { Title } from '@angular/platform-browser';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 
 @Component({
@@ -13,11 +13,11 @@ import { RightSidebarService } from '../../../services/right-sidebar.service';
 })
 
 export class AdminResourcesComponent extends AdminBaseComponent {    
-    constructor(headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, rightSideBarService: RightSidebarService,) {
+    constructor(headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, secondaryNavService: SecondaryNavService,) {
         super(headerBreadcrumbService, titleService);        
         this.areaName = "Users";
         this.adminHeading = "Security";
-        this.rightSidebarService = rightSideBarService;
+        this.secondaryNavService = secondaryNavService;
        
         this.setCommonItems();
         this.setObjectInfo('ResourceType', 1);        

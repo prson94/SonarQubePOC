@@ -3,11 +3,11 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { AssetAction, EditFormData, DeleteFormData } from '../../models/rightsidebar.model';
+import { AssetAction, EditFormData, DeleteFormData } from '../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { TagService } from '../../services/tag.service';
@@ -50,12 +50,12 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         protected messagesService: MessagesObservableService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private authService: AuthenticationService,
         private ref: ChangeDetectorRef
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
 
     }
 
@@ -70,7 +70,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
         this.sub = this.route.params.subscribe(params => {
             this.tagUid = params['tagUid'];
 
-            this.rightSidebarService.clearCurrentObject();
+            this.secondaryNavService.clearCurrentObject();
 
             this.logAction('open', 'Tag', this.tagUid);
             this.isLoading = true;
@@ -92,7 +92,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
     ngOnDestroy() {
         this.sub.unsubscribe();
-        this.rightSidebarService.clearActions();
+        this.secondaryNavService.clearActions();
         this.clearSidebar();
     }
 
@@ -118,7 +118,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
 
                     if (this.isAdmin) {
 
-                        this.setCommonRightSideBar(true);
+                        this.setCommonSecondaryNavTabs(true);
 
                         if (this.auditSidebar) {
                             this.auditSidebar.hasDynamicUrl = true;
@@ -128,12 +128,12 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         }
                     }
                     else {
-                        this.setCommonRightSideBar(false);
+                        this.setCommonSecondaryNavTabs(false);
 
                     }
                     this.setActions();
 
-                    this.rightSidebarService.showHeader(true);
+                    this.secondaryNavService.showHeader(true);
 
                     this.tagsService.getTagDetails(this.tag.uid)
                         .subscribe(data => {
@@ -177,7 +177,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     buildBreadcrumb() {
-        this.rightSidebarService.setCurrentArea(this.tag.Value, 'fa-tag', 'Tagged Assets');
+        this.secondaryNavService.setCurrentArea(this.tag.Value, 'fa-tag', 'Tagged Assets');
 
     }
 
@@ -234,7 +234,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
             this.actions.delete = deleteAction;
         }
 
-        this.rightSidebarService.setActionTitleItems(this.actions);
+        this.secondaryNavService.setActionTitleItems(this.actions);
     }
 
 
@@ -242,25 +242,25 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
     onActionEditCloseClick() {
         if (this.actions) {
             this.actions.edit.isModalVisible = false;
-            this.rightSidebarService.setActionTitleItems(this.actions);
+            this.secondaryNavService.setActionTitleItems(this.actions);
         }
     }
 
     onActionEditClick() {
         this.actions.edit.isModalVisible = true;
-        this.rightSidebarService.setActionTitleItems(this.actions);
+        this.secondaryNavService.setActionTitleItems(this.actions);
     }
 
     onActionDeleteCloseClick() {
         if (this.actions) {
             this.actions.delete.isModalVisible = false;
-            this.rightSidebarService.setActionTitleItems(this.actions);
+            this.secondaryNavService.setActionTitleItems(this.actions);
         }
     }
 
     onActionDeleteClick() {
         this.actions.delete.isModalVisible = true;
-        this.rightSidebarService.setActionTitleItems(this.actions);
+        this.secondaryNavService.setActionTitleItems(this.actions);
     }
 
     onActionBackClick() {
@@ -298,7 +298,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                 }
                 this.tag = event.item;
                 this.showMessageForResult(this.messagesService, result, msg);
-                this.rightSidebarService.setCurrentArea(this.tag.Value, 'fa-tag', 'Tagged Assets');
+                this.secondaryNavService.setCurrentArea(this.tag.Value, 'fa-tag', 'Tagged Assets');
                 this.setBrowserTitle(this.titleService, this.tag.Value);
 
                 this.tagUsage.forEach(detail => {
