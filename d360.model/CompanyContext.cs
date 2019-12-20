@@ -708,6 +708,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
         public Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true)
         {
             var ft = GetById<FieldType>(fieldTypeID);
+            bool hasCardinalityOne = false;
 
             if (!ft.LookupObjectID.HasValue)
             {
@@ -731,10 +732,12 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             var cardinalityCheckSQL = "";
             if (intersectType.SubjectCardinality == Cardinality.One)
             {
+                hasCardinalityOne = true;
                 cardinalityCheckSQL += " and I.Id not in (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.SubjectCardinality = 1 and Object = {0} and ObjectID = {1} and I.Id is null)";
             }
             if (intersectType.ObjectCardinality == Cardinality.One)
             {
+                hasCardinalityOne = true;
                 cardinalityCheckSQL += " and I.Id not in  (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.ObjectCardinality = 1 and Subject = {0} and SubjectID = {1} and I.Id is null)";
             }
 
@@ -916,6 +919,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             if (!includeSelection)
                 dict.Add("Items", items.ToList());
             dict.Add("Count", count);
+            dict.Add("HasCardinalityOne", hasCardinalityOne);
 
             return dict;
         }
