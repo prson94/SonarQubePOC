@@ -141,7 +141,15 @@ namespace d360.model
                         {
                             if (!usedFilters.Contains($"P0"))
                             {
-                                filterTable.Rows.Add("P", f.Operator, 0, null, $"{wildcardValue(escapeForSQLLike(f.RawValue))}");
+                                if((f.Condition ?? "").ToUpper() == "EQUAL")
+                                {
+                                    filterTable.Rows.Add("P", f.Operator, 0, null, $"{f.RawValue}");
+                                }
+                                else
+                                {
+                                    filterTable.Rows.Add("P", f.Operator, 0, null, $"{wildcardValue(escapeForSQLLike(f.RawValue))}");
+                                }
+                                
                                 usedFilters.Add($"P0");
                             }
                         }

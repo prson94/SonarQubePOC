@@ -387,4 +387,5 @@
   <include file="scripts/GOV-9141.xml"/>  <!-- changes to [graph].[GetLineageByAsset] : fixed GOV-8724, GOV-9075, GOV-9141 -->
   <include file="scripts/GOV-8669.xml"/>  <!-- update triggers on Group so only one record is created in [queue].[task] -->
   <include file="scripts/GOV-9158.xml"/>  <!-- adds empty stoplist and updates graph.AssetNode FULLTEXT Index -->
+  <include file="scripts/GOV-9167.xml"/>  <!-- changes to [dbo].[GetDynamicAssets] fix advanced filtering by parent always doing like -->
 </databaseChangeLog>
