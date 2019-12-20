@@ -528,9 +528,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         this.assetService.saveAsset(this.objectTypeUid, asset)
             .subscribe(res => {
+                event.Success = res.Success;
+
                 if (res.Success) {
                     let msg = asset.Uid ? 'Successfully updated' : 'Successfully added';
-                    this.showMessageForApiResult(this.messagesService, res, msg);
+                    this.showMessageForApiResult(this.messagesService, res, msg); 
                     if (res.uid) {
                         event.assetUid = res.uid;
                         event.assetTypeUid = this.objectTypeUid;
@@ -538,7 +540,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     this.saveClick.emit(event);
                 }
                 else {
-                    this.showMessageForApiResult(this.messagesService, res);
+                    this.showMessageForApiResult(this.messagesService, res); 
+                    this.isLoading = false;
                     this.saveClick.emit(event);
                 }
 
