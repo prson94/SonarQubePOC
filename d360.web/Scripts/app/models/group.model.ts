@@ -4,7 +4,7 @@ import {Observable} from "rxjs";
 
 export interface IGroupService {
     getGroupList(): Observable<GroupSearchResultModel[]>;
-    getGroupResourceList(id: number): Observable<GroupResourceInfo[]>;
+    getGroupResourceList(id: string): Observable<any>;
     getGroup(id: number): Observable<GroupEditorModel>;
     putGroup(group: Group): Observable<JsonResult>;
     postGroup(group: Group): Observable<JsonResult>;

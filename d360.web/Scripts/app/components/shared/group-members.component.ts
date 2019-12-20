@@ -54,7 +54,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         this.groupService.getGroupUid(this.groupId).subscribe(
             d => {
                 this.groupUid = d[0].uid;
-                this.groupService.getGroupResourceListByUid(this.groupUid).subscribe(
+                this.groupService.getGroupResourceList(this.groupUid).subscribe(
                     d => {
                         this.groupItems = d.items;
                         if (this.groupItems.length > 0) {
