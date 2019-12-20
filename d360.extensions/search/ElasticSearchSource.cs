@@ -903,9 +903,12 @@ namespace d360.extensions.search
             if (shouldQueries.Count == 0)
                 return result;
 
-            //No need to ignore filters with empty values. NEST does that for us
+            //Apply aggregation filters
             foreach (AggregationFilter aggFilter in queryRequest.AggregationFilters)
             {
+                if (aggFilter.Values == null)
+                    continue;
+
                 string fieldname;
                 switch (aggFilter.Field)
                 {
