@@ -280,30 +280,15 @@ namespace igx.jobs.indexer
             }
 
             LogReindexStart("Users", c.CompanyID);
-
-            var users = new List<IndexObjectModel>();
-
-            #region Company Users
-
-            var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
-
-            users = company.Query(sql).ToList().Select(u => new IndexObjectModel
+            try
             {
-                Category = "Resource",
-                CompanyID = c.CompanyID,
-                AssetType = "User",
-                ID = u.ResourceID,
-                RelativeUrl = $"#/resources/{u.ResourceID}",
-                Fields = new Dictionary<string, string>() {
-                                    { "Name", $"{u.FirstName} {u.LastName}" },
-                                    { "Email", u.Email },
-                                    { "Username", u.Username }
-                                }
-            }).ToList();
-
-            source.AddToIndex(users);
-
-            #endregion
+                models = LoadUsers(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
 
             LogCompanyReindexComplete(c.CompanyID);
         }
@@ -518,11 +503,41 @@ from
                     CompanyID = companyID,
                     ID = o.ID,
                     AssetType = sType,
-                    AssetID = o.AssetId,
+                    AssetID = o.AssetID,
                     RelativeUrl = $"/groups/{o.ID}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
                         { "Description", o.Description }
+                    }
+                };
+            });
+        }
+
+        private static IEnumerable<IndexObjectModel> LoadUsers(SqlConnection context, int companyID, ElasticSearchSource source)
+        {
+            var sql = @"SELECT ResourceID, Email AS Username, LastName, FirstName, Email,
+                        CASE
+                        WHEN Email not like '%@data3sixty.com' and Email not like '%@infogix.com'
+                            THEN '0'
+                            ELSE '1'
+                        END as Data3SixtyUser
+                        FROM reporting.global_resource";
+
+            var sType = "Resource";
+            return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
+            {
+                return new IndexObjectModel
+                {
+                    Category = sType,
+                    CompanyID = companyID,
+                    AssetType = "User",
+                    ID = o.ResourceID,
+                    RelativeUrl = $"#/resources/{o.ResourceID}",
+                    Fields = new Dictionary<string, string>() {
+                        { "Name", $"{o.FirstName} {o.LastName}" },
+                        { "Email", o.Email },
+                        { "Username", o.Username },
+                        { "Data3SixtyUser", o.Data3SixtyUser },
                     }
                 };
             });

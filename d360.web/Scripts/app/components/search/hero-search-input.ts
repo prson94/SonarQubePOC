@@ -3,6 +3,7 @@ import { BaseComponent } from '../shared/base.component';
 import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
+import { AuthenticationService } from '../../services/authentication.service';
 import { SettingsHelper } from '../../models/settings.model';
 
 declare var CompanySettings;
@@ -23,7 +24,7 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
         };
     });
 
-    constructor() {
+    constructor(protected authenticationService: AuthenticationService) {
         super();
     }
 
@@ -36,6 +37,11 @@ export class HeroSearchInputComponent extends BaseComponent implements OnInit, A
                 this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'TechnicalAsset');
             }
         }
+        if (!this.authenticationService.isAdmin) {
+            this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'Resource' && x.value != 'Group');
+        }
+        var availableTypes = this.searchObjectTypes.map((x) => x.value);
+        this.searchTypes = this.searchTypes.filter(st => availableTypes.indexOf(st) >= 0);
     }
 
     ngAfterViewInit(): void {

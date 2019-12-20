@@ -176,6 +176,9 @@ namespace d360.extensions.search
             "          \"Url\": {" +
             "            \"type\": \"keyword\"," +
             "            \"index\": false" +
+            "          }," +
+            "          \"Data3SixtyUser\": {" +
+            "            \"type\": \"boolean\"" +
             "          }" +
             "        }" +
             "      }" +
@@ -205,6 +208,13 @@ namespace d360.extensions.search
                 d3sFields.Add("Uid", item.Uid.ToString());
             if (item.AssetTypeUid.HasValue && item.AssetTypeUid != Guid.Empty)
                 d3sFields.Add("AssetTypeUid", item.AssetTypeUid.ToString());
+
+            //For users move Data3SixtyUser from Fields to d3sFields
+            if (item.Category == "Resource" && item.AssetType == "User" && dynamicFields.ContainsKey("Data3SixtyUser"))
+            {
+                d3sFields.Add("Data3SixtyUser", dynamicFields["Data3SixtyUser"] == "1" ? "true" : "false");
+                dynamicFields.Remove("Data3SixtyUser");
+            }
 
             sb.Append("{\"" + D3S_FIELD + "\": {");
             sb.Append(string.Join(",", d3sFields.Select(i => "\"" + i.Key + "\": \"" + EscapeValueForDoc(i.Value) + "\"").ToArray()));
@@ -742,7 +752,7 @@ namespace d360.extensions.search
             return result;
         }
 
-        public IndexResults GetSearchResultsWithAggregation(int companyID, int resourceID, QueryRequest queryRequest, List<IndexTypeList> categories)
+        public IndexResults GetSearchResultsWithAggregation(int companyID, int resourceID, QueryRequest queryRequest, List<IndexTypeList> categories, QueryLimitation queryLimit)
         {
             IndexResults result = new IndexResults();
 
@@ -756,6 +766,7 @@ namespace d360.extensions.search
             List<QueryContainer> shouldQueries = new List<QueryContainer>();
             List<QueryContainer> mustQueries = new List<QueryContainer>();
             List<QueryContainer> filterQueries = new List<QueryContainer>();
+            List<QueryContainer> mustNotQueries = new List<QueryContainer>();
 
             List<Nest.Field> mainFields = new List<Nest.Field>
             {
@@ -908,10 +919,61 @@ namespace d360.extensions.search
                         fieldname = DYNAMIC_FIELD_PREFIX + aggFilter.Field;
                         break;
                 }
-                filterQueries.Add(new TermsQuery
+                IEnumerable<string> terms;
+                if (queryLimit.AggregationFilters.Exists(l => l.Field == aggFilter.Field))
+                {
+                    terms = aggFilter.Values.Except(queryLimit.AggregationFilters.Find(l => l.Field == aggFilter.Field).Values);
+                } else
+                {
+                    terms = aggFilter.Values;
+                }
+
+                if (terms.Count() > 0)
+                {
+                    filterQueries.Add(new TermsQuery
+                    {
+                        Field = new Nest.Field(fieldname),
+                        Terms = terms.ToArray()
+                    });
+                }
+            }
+
+            //Apply limitations
+            if(queryLimit.HideData3SixtyUsers)
+            {
+                mustNotQueries.Add(new BoolQuery {
+                    Must = new QueryContainer[] {
+                            new TermQuery {
+                                Field = fldCategory,
+                                Value = "Resource"
+                            },
+                            new TermQuery
+                            {
+                                Field = new Nest.Field(D3S_FIELD_PREFIX + "Data3SixtyUser"),
+                                Value = true
+                            }
+                        }
+                });
+            }
+            foreach (AggregationFilter limitAggFilter in queryLimit.AggregationFilters)
+            {
+                string fieldname;
+                switch (limitAggFilter.Field)
+                {
+                    case "d3sCategory":
+                        fieldname = D3S_FIELD_PREFIX + "Category";
+                        break;
+                    case "d3sAssetType":
+                        fieldname = D3S_FIELD_PREFIX + "AssetType";
+                        break;
+                    default:
+                        fieldname = DYNAMIC_FIELD_PREFIX + limitAggFilter.Field;
+                        break;
+                }
+                mustNotQueries.Add(new TermsQuery
                 {
                     Field = new Nest.Field(fieldname),
-                    Terms = aggFilter.Values
+                    Terms = limitAggFilter.Values
                 });
             }
 
@@ -926,6 +988,7 @@ namespace d360.extensions.search
                             MinimumShouldMatch = 1
                         }
                     },
+                    MustNot = mustNotQueries,
                     Filter = new QueryContainer[] { new BoolQuery {
                         Must = filterQueries
                     } }
@@ -1056,7 +1119,7 @@ namespace d360.extensions.search
             return 0;
         }
 
-        public IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, int size = 10, string category = "")
+        public IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, QueryLimitation queryLimit, int size = 10, string category = "")
         {
             if (string.IsNullOrEmpty(phrase))
                 return new List<TypeaheadResult>();
@@ -1065,6 +1128,7 @@ namespace d360.extensions.search
             Nest.Field fldCategory = new Nest.Field(D3S_FIELD_PREFIX + "Category");
             Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
             List<QueryContainer> mustClauses = new List<QueryContainer>();
+            List<QueryContainer> mustNotQueries = new List<QueryContainer>();
             BoolQuery filterQuery = null;
             string tagSearch;
 
@@ -1115,6 +1179,12 @@ namespace d360.extensions.search
             if (!string.IsNullOrEmpty(category))
             {
                 string[] categories = category.Split(',');
+                if (queryLimit.AggregationFilters.Exists(l => l.Field == "d3sCategory"))
+                {
+                    IEnumerable<string> cats = categories.Except(queryLimit.AggregationFilters.Find(l => l.Field == "d3sCategory").Values);
+                    categories = cats.ToArray();
+                }
+
                 if (categories.Length > 1)
                 {
                     filterQuery = new BoolQuery
@@ -1134,11 +1204,38 @@ namespace d360.extensions.search
                         Must = new QueryContainer[] {
                             new TermQuery {
                                 Field = fldCategory,
-                                Value = category
+                                Value = categories[0]
                             }
                         }
                     };
                 }
+            }
+
+            //Apply limitations
+            if (queryLimit.HideData3SixtyUsers)
+            {
+                mustNotQueries.Add(new BoolQuery
+                {
+                    Must = new QueryContainer[] {
+                            new TermQuery {
+                                Field = fldCategory,
+                                Value = "Resource"
+                            },
+                            new TermQuery
+                            {
+                                Field = new Nest.Field(D3S_FIELD_PREFIX + "Data3SixtyUser"),
+                                Value = true
+                            }
+                        }
+                });
+            }
+            foreach (AggregationFilter limitAggFilter in queryLimit.AggregationFilters)
+            {
+                mustNotQueries.Add(new TermsQuery
+                {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
+                    Terms = limitAggFilter.Values
+                });
             }
 
             SearchRequest sReq = new SearchRequest
@@ -1168,6 +1265,7 @@ namespace d360.extensions.search
                             }
                         }
                     },
+                    MustNot = mustNotQueries,
                     Filter = new QueryContainer[] { filterQuery }
                 },
                 Size = size
