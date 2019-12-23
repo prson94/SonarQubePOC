@@ -40,6 +40,7 @@ export class GroupItemComponent extends BaseComponent implements OnInit {
     private sub: any;
     private model: GroupEditorModel;
     private groupId: number;
+    private groupUid: string;
 
     constructor(private route: ActivatedRoute,
                 private router: Router,
