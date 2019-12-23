@@ -674,6 +674,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 n.showIcon = this.filterModel.DisplayIcons;
                 let x = dm.findNodeDataForKey(n.key);
                 if (x == null) {
+                    //handle case where appended lineage reveals that a leaf node is
+                    //now a parent of another node deeper in the hierarchy
+                    if (n.group != null) {
+                        let r = dm.findNodeDataForKey(n.group);
+                        if (r != null) {
+                            if (r.isGroup != true) {
+                                dm.removeNodeData(r);
+                                r.isGroup = true;
+                                r.template = "Group"
+                                dm.addNodeData(r);
+                            }
+                        }
+                    }
+
                     dm.addNodeData(n);
                 }
             });
@@ -1293,6 +1307,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         asset.Uid = g.data.assetUid;
                         asset.Key = g.data.key
                         requestModel.Assets.push(asset);
+
+                        //add immediate parent
+                        let p = this.diagram.model.nodeDataArray.find(n => n.key == g.data.group);
+                        let a = new AssetBrowserImpactApiAssetRequestModel();
+                        if (p != null) {
+                            a.Uid = p.assetUid;
+                            a.Key = p.key
+                            requestModel.Assets.push(a);
+                        }
                     }
                 })
             }
