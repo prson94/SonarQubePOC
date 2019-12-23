@@ -5,6 +5,7 @@ import { debounceTime } from 'rxjs/operators';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { BaseObservableService } from '../../services/baseObservable.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { AuthenticationService } from '../../services/authentication.service';
 import { CheckTreeNode } from '../shared/small-widgets/check-tree/checktreenode';
 import { SearchService } from '../../services/search.service';
 import { SettingsHelper } from '../../models/settings.model';
@@ -17,7 +18,7 @@ export class SearchStateService extends BaseObservableService {
     private readonly sessionAgeMinutes: number = 10;
     private searchService: SearchService;
 
-    constructor(private http: HttpClient, messagesService: MessagesObservableService) {
+    constructor(private http: HttpClient, messagesService: MessagesObservableService, protected authenticationService: AuthenticationService) {
         super(messagesService);
         this.searchService = new SearchService(http, messagesService);
         this.reset();
@@ -149,6 +150,9 @@ export class SearchStateService extends BaseObservableService {
                 if (CompanySettings.FusionEnabled == 'true') {
                     this._baseCategoryTree = this._baseCategoryTree.filter(x => x.key != 'TechnicalAsset');
                 }
+            }
+            if (!this.authenticationService.isAdmin) {
+                this._baseCategoryTree = this._baseCategoryTree.filter(x => x.key != 'Resource' && x.key != 'Group');
             }
         }
         return this._baseCategoryTree;

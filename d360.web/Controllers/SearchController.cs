@@ -39,7 +39,7 @@ namespace d360.web.Controllers
             if (!string.IsNullOrEmpty(queryRequest.Term))
             {
                 queryRequest.FieldBoosters = Company.Query<FieldBoost>("SELECT Field, Boost FROM [dbo].[SearchBoost]").ToList();
-                o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories);
+                o.Result = SearchSource.GetSearchResultsWithAggregation(Company.CurrentCompanyID, Company.CurrentResourceID, queryRequest, o.Categories, GetQueryLimitation());
 
                 foreach (IndexResult result in o.Result.Results)
                 {
@@ -70,7 +70,7 @@ namespace d360.web.Controllers
             {
                 if (!string.IsNullOrEmpty(q))
                 {
-                    IList<TypeaheadResult> res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, num.GetValueOrDefault(7), t).ToList();
+                    IList<TypeaheadResult> res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, GetQueryLimitation(), num.GetValueOrDefault(7), t).ToList();
                     foreach(TypeaheadResult result in res)
                     {
                         AddIcon(result);
@@ -86,6 +86,8 @@ namespace d360.web.Controllers
                 return jsonNetException(ex);
             }
         }
+
+        #endregion
 
         private AssetTypeStyle GetAssetTypeStyle(Guid? AssetTypeUid)
         {
@@ -198,6 +200,28 @@ namespace d360.web.Controllers
             return result;
         }
 
-        #endregion
+        private QueryLimitation GetQueryLimitation()
+        {
+            QueryLimitation limits = new QueryLimitation();
+
+            if (Company.CurrentResourceIsAdmin)
+            {
+                if (Community.GetCompanySettings().TryGetValue("HideData3SixtyUsers", out string val))
+                {
+                    limits.HideData3SixtyUsers = bool.Parse(val);
+                }
+            } else
+            {
+                limits.AggregationFilters.Add(
+                    new AggregationFilter
+                    {
+                        Field = "d3sCategory",
+                        Values = new string[] { "Resource", "Group" }
+                    }
+                );
+            }
+            return limits;
+        }
+
     }
 }
