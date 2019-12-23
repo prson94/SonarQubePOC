@@ -1590,17 +1590,13 @@ order by 'Name'";
         #region Groups
 
         [HttpGet, Route("groups")]
-        public IQueryable<GroupSearchResultModel> GetGroups()
+        public async Task<HttpResponseMessage> GetGroups()
         {
-            return Company.Table<Group>()
-                .OrderBy(i => i.Name)
-                .Select(i => new GroupSearchResultModel
-                {
-                    ID = i.ID,
-                    Name = i.Name,
-                    NumberOfMembers = i.ResourceGroups.Count,
-                    IsMember = i.ResourceGroups.Any(r => r.ResourceID == Company.CurrentResourceID)
-                });
+            string sql = $"select g.*, a.[uid] from [group] g inner join [asset] a on g.id = a.ObjectID and a.[object] = 'Group'";
+
+            var results = await Company.QueryAsync<dynamic>(sql);
+            var orderedResults = results.OrderBy(i => i.Name);
+            return Request.CreateResponse(HttpStatusCode.OK, orderedResults);
         }
 
         [Route("{type}/{id:int}/groups")]

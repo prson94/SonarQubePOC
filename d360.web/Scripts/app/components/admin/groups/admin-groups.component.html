@@ -45,7 +45,7 @@
     </div>
     <div class="col l9 m8 s12" [ngSwitch]="formMode">
         <div *ngSwitchDefault class="tile tile-detail">
-            <d3s-group-members [groupId]="selectedRow?.ID" [groupName]="selectedRow?.Name"></d3s-group-members>
+            <d3s-group-members [groupId]="selectedRow?.ID" [groupUid]="selectedRow?.uid" [groupName]="selectedRow?.Name"></d3s-group-members>
         </div>
         <div *ngSwitchCase="FormMode.Adding" class="tile tile-detail">
             <d3s-group-form [id]="0" [title]="'Add Group'" (onCancel)="cancel()" (onSuccess)="success($event)" (onError)="error($event)"></d3s-group-form>

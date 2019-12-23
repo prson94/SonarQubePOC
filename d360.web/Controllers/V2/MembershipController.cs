@@ -14,6 +14,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Description;
 using static d360.core.entities.Resource;
 namespace d360.web.Controllers.V2
 {
@@ -284,6 +285,20 @@ namespace d360.web.Controllers.V2
             model.items = results;
             model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
+        }
+
+        [
+           HttpGet,
+           MapToApiVersion("2.0"),
+           Route("groups/{groupId:int}"),
+           ApiExplorerSettings(IgnoreApi = true)
+       ]
+        public async Task<HttpResponseMessage> GetGroupUid(int groupId)
+        {
+            string sql = $"SELECT uid FROM[dbo].[Asset] where Object = 'Group' and ObjectID =" + groupId;
+
+            var results = await Company.QueryAsync<dynamic>(sql);
+            return Request.CreateResponse(HttpStatusCode.OK, results);
         }
     }
 }

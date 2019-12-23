@@ -18,6 +18,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     @Input() groupId: number;
     @Input() groupName: string;
     @Input() title: string = 'Members';
+    @Input() groupUid: string;
     field: EditorField;
     private groupItems = new Array<GroupResourceInfo>();
     private selectedRow = new GroupResourceInfo();
@@ -50,9 +51,9 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         this.field.FieldName = "resources";
         this.field.MultiSelect = true;
         this.isLoading = true;
-        this.groupService.getGroupResourceList(this.groupId).subscribe(
+        this.groupService.getGroupResourceList(this.groupUid).subscribe(
             d => {
-                this.groupItems = d;
+                this.groupItems = d.items;
                 if (this.groupItems.length > 0) {
                     this.selectedRow = this.groupItems[0];
                 }
