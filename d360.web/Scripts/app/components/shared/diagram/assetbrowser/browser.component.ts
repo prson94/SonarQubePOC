@@ -189,6 +189,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let image_data = this.diagram.makeImageData({
             scale: 1,
             returnType: "blob",
+            background: "#fff", 
             callback: (image_data) => this.savePngButtonClickCallback(image_data, this.assetUid)
         });
     }
