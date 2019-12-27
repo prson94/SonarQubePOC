@@ -60,7 +60,7 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
         this.editorOpen = false;
         window.setTimeout(() => {
             this.editorOpen = true;
-            this.definition.nativeElement.style.width = Math.round(window.innerWidth / 2) + "px";
+            this.definition.nativeElement.style.maxWidth = Math.round(window.innerWidth / 2) + "px"; 
             this.definition.nativeElement.style.maxHeight = Math.round(window.innerHeight / 2) + "px";
         }, 100);
     }
