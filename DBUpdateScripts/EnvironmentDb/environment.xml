@@ -390,4 +390,5 @@
   <include file="scripts/GOV-9167.xml"/>  <!-- changes to [dbo].[GetDynamicAssets] fix advanced filtering by parent always doing like -->
   <include file="scripts/GOV-8479.xml"/>  <!-- update triggers on Global_Resource so only one record is created in [queue].[task] -->
   <include file="scripts/GOV-9170.xml"/>  <!-- changes to [graph].[GetLineageByAsset] : change to NOT double the hop number parameter -->
+  <include file="scripts/GOV-6465.xml"/>  <!-- update triggers on Nym and Intersect so AssetID is included in [queue].[task] -->
 </databaseChangeLog>
