@@ -76,12 +76,9 @@ namespace d360.model.workflow
 
         private static bool EvaluateField(ICompanyContext context, WorkflowCriteriaExpressionModel item, IQueryable<Field> fields, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null)
         {
-            //If evaluated field is not part of changed fields return false
-            //With this, we avoid triggering workflow again on plain save where field meets condition but is not changed
-            if (changedFields != null && !changedFields.Contains(item.FieldTypeId))
-                return false;
-
-            if (item.FieldTypeId > 0)
+            // If evaluated field is not part of changed fields return false
+            // With this, we avoid triggering workflow again on plain save where field meets condition but is not changed
+            if (changedFields != null && item.FieldTypeId > 0)
             {
                 var value = fields.Where(x => x.FieldTypeID == item.FieldTypeId).FirstOrDefault();
 
