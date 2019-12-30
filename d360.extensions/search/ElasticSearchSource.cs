@@ -186,6 +186,51 @@ namespace d360.extensions.search
             "  }" +
             "}}";
 
+        //This complex intersect synonym query is used by both the indexer and and databasetaskprocessor jobs so we maintain the core of the query in one place
+        public const string INTERSECT_SYNONYM_QUERY = "select " +
+            " I.ID," +
+            " 'S' as 'Direction'," +
+            " SubjectAdv.DisplayValue as 'Synonym', " +
+            " I.Subject as 'SynonymObjectType'," +
+            " I.SubjectID as  'SynonymObjectID', " +
+            " SubjectAsset.ID as 'SynonymAssetID', " +
+            " ObjectAdv.DisplayValue as 'SynonymFor', " +
+            " I.Object as 'SynonymForObject', " +
+            " I.ObjectID as 'SynonymForObjectID'," +
+            " dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url', " +
+            " ArtType.Name as 'SynonymForObjectType', " +
+            " P.Name as 'PredicateName' " +
+            " from[intersect] I " +
+            " inner join IntersectType T on T.ID = I.IntersectTypeID " +
+            " inner join Predicate P on P.ID = T.PredicateID and P.Type = 6 " +
+            " inner join Asset SubjectAsset on SubjectAsset.[Object] = I.Subject and SubjectAsset.ObjectID = I.SubjectID " +
+            " inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID " +
+            " inner join Asset ObjectAsset on ObjectAsset.[Object] = I.Object and ObjectAsset.ObjectID = I.ObjectID " +
+            " inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID " +
+            " inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID " +
+            "Union " +
+            " select " +
+            " I.ID, " +
+            " 'O' as 'Direction', " +
+            " SubjectAdv.DisplayValue as 'Synonym', " +
+            " I.Object as 'SynonymObjectType', " +
+            " I.ObjectID as  'SynonymObjectID', " +
+            " SubjectAsset.ID as 'SynonymAssetID', " +
+            " ObjectAdv.DisplayValue as 'SynonymFor', " +
+            " I.Subject as 'SynonymForObject', " +
+            " I.SubjectID as 'SynonymForObjectID', " +
+            " dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url', " +
+            " ArtType.Name as 'SynonymForObjectType', " +
+            " P.Name as 'PredicateName' " +
+            " from [intersect] I " +
+            " inner join IntersectType T on T.ID = I.IntersectTypeID " +
+            " inner join Predicate P on P.ID = T.PredicateID and P.Type = 6 " +
+            " inner join Asset SubjectAsset on SubjectAsset.[Object] = I.Object and SubjectAsset.ObjectID = I.ObjectID " +
+            " inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID " +
+            " inner join Asset ObjectAsset on ObjectAsset.[Object] = I.Subject and ObjectAsset.ObjectID = I.SubjectID " +
+            " inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID " +
+            " inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID";
+
         protected string SearchServerUrl { get; set; }
 
         public int? IndexFieldLimit { get; set; }

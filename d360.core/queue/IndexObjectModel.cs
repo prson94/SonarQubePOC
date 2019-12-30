@@ -48,6 +48,15 @@ namespace d360.core.queue
             }
             return $"{Category}|{ID}";
         }
+
+        /// <summary>
+        /// Performs a shallow copy of the object
+        /// </summary>
+        /// <returns>Shallow copy of IndexObjectModel</returns>
+        public IndexObjectModel ShallowCopy()
+        {
+            return (IndexObjectModel) MemberwiseClone();
+        }
     }
 
     public class ReindexModel : QueueObject

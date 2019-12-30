@@ -315,45 +315,21 @@ namespace igx.jobs.indexer
 
         private static IEnumerable<IndexObjectModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = @"                    	
-                (select	
-	                SubjectAdv.DisplayValue as 'Synonym',	
-	                I.Subject as 'SynonymObjectType',
-	                I.SubjectID as  'SynonymObjectID',
-	                ObjectAdv.DisplayValue as 'SynonymFor',	
-	                I.Object as 'SynonymForObject',
-	                I.ObjectID as 'SynonymForObjectID',		
-	                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url',	
-	                ArtType.Name as 'SynonymForObjectType',
-                    P.Name as 'PredicateName'
-                from [intersect] I
-	                inner join IntersectType T on T.ID = I.IntersectTypeID 
-                    inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-	                inner join Asset SubjectAsset on SubjectAsset.[Object] = 'Artifact' and SubjectAsset.ObjectID = I.SubjectID and I.Subject = 'Artifact'
-					inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
-	                inner join Asset ObjectAsset on ObjectAsset.[Object] = 'Artifact' and ObjectAsset.ObjectID = I.ObjectID and I.Object = 'Artifact'
-					inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID
-	                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID)
-                Union
-                (select	
-	                SubjectAdv.DisplayValue as 'Synonym',	
-	                I.Object as 'SynonymObjectType',
-	                I.ObjectID as  'SynonymObjectID',
-	                ObjectAdv.DisplayValue as 'SynonymFor',	
-	                I.Subject as 'SynonymForObject',
-	                I.SubjectID as 'SynonymForObjectID',		
-	                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url',	
-	                ArtType.Name as 'SynonymForObjectType',
-                    P.Name as 'PredicateName'	
-                from [intersect] I
-	                inner join IntersectType T on T.ID = I.IntersectTypeID 
-                    inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-	                inner join Asset SubjectAsset on SubjectAsset.[Object] = 'Artifact' and SubjectAsset.ObjectID = I.ObjectID and I.Subject = 'Artifact'
-					inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
-	                inner join Asset ObjectAsset on ObjectAsset.[Object] = 'Artifact' and ObjectAsset.ObjectID = I.SubjectID and I.Object = 'Artifact'
-					inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID
-	                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID)
-                order by SynonymFor";
+            /* Intersect Synonym query columns:
+             *  ID
+             *  Direction
+             *  Synonym
+             *  SynonymObjectType
+             *  SynonymObjectID
+             *  SynonymAssetID
+             *  SynonymFor
+             *  SynonymForObject
+             *  SynonymForObjectID
+             *  Url
+             *  SynonymForObjectType
+             *  PredicateName
+             */
+            var sql = ElasticSearchSource.INTERSECT_SYNONYM_QUERY + " order by SynonymFor";
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
             {
@@ -362,7 +338,7 @@ namespace igx.jobs.indexer
                     Category = "Synonym",
                     CompanyID = companyID,
                     AssetType = "Synonym",
-                    ItemUniqueID = $"{o.SynonymObjectType}|{o.SynonymObjectID}|{o.SynonymForObjectType}|{o.SynonymForObjectID}",
+                    ItemUniqueID = $"intersect|{o.ID}|{o.Direction}",
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Synonym },
@@ -401,7 +377,7 @@ from
                     Category = "Synonym",
                     CompanyID = companyID,
                     AssetType = "Synonym",
-                    ItemUniqueID = $"custom|{o.PredicateName}|{o.ID}",
+                    ItemUniqueID = $"custom|{o.ID}",
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Synonym },
