@@ -203,9 +203,9 @@ namespace d360.extensions.search
             " from[intersect] I " +
             " inner join IntersectType T on T.ID = I.IntersectTypeID " +
             " inner join Predicate P on P.ID = T.PredicateID and P.Type = 6 " +
-            " inner join Asset SubjectAsset on SubjectAsset.[Object] = 'Artifact' and SubjectAsset.ObjectID = I.SubjectID and I.Subject = 'Artifact' " +
+            " inner join Asset SubjectAsset on SubjectAsset.[Object] = I.Subject and SubjectAsset.ObjectID = I.SubjectID " +
             " inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID " +
-            " inner join Asset ObjectAsset on ObjectAsset.[Object] = 'Artifact' and ObjectAsset.ObjectID = I.ObjectID and I.Object = 'Artifact' " +
+            " inner join Asset ObjectAsset on ObjectAsset.[Object] = I.Object and ObjectAsset.ObjectID = I.ObjectID " +
             " inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID " +
             " inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID " +
             "Union " +
@@ -225,9 +225,9 @@ namespace d360.extensions.search
             " from [intersect] I " +
             " inner join IntersectType T on T.ID = I.IntersectTypeID " +
             " inner join Predicate P on P.ID = T.PredicateID and P.Type = 6 " +
-            " inner join Asset SubjectAsset on SubjectAsset.[Object] = 'Artifact' and SubjectAsset.ObjectID = I.ObjectID and I.Subject = 'Artifact' " +
+            " inner join Asset SubjectAsset on SubjectAsset.[Object] = I.Object and SubjectAsset.ObjectID = I.ObjectID " +
             " inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID " +
-            " inner join Asset ObjectAsset on ObjectAsset.[Object] = 'Artifact' and ObjectAsset.ObjectID = I.SubjectID and I.Object = 'Artifact' " +
+            " inner join Asset ObjectAsset on ObjectAsset.[Object] = I.Subject and ObjectAsset.ObjectID = I.SubjectID " +
             " inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID " +
             " inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID";
 
