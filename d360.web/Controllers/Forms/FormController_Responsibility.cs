@@ -520,7 +520,7 @@ from	AssetType A
 		cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
 		left join FusionAttributeType FA on A.Object = 'FusionAttributeType' and FA.ID = A.ObjectID
 		left join FusionType FT on FT.ID = FA.FusionTypeID
-where	Class in (1,2,3,4,6,7,9) {ignoreObjectTypeSQL}
+where	Class in (1,2,3,4,6,7,8,9) {ignoreObjectTypeSQL}
 order by case Object
 			when 'ArtifactType' then
 				case Class
