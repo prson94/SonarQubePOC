@@ -1,5 +1,7 @@
 ﻿using d360.core.entities;
+using d360.core.entities.Membership;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -27,10 +29,13 @@ namespace d360.web.Controllers.V2
     public class MembershipController : BaseV2ApiController
     {
         ICompanyContext _company;
-        public MembershipController(ICommunityContext community, ICompanyContext company)
+        IMembershipRepository membershipRepository;
+        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository)
             : base(community, company)
         {
             _company = company;
+            this.membershipRepository = membershipRepository;
+            
         }
         /// <summary>
         /// Retrieves a list of users.
@@ -300,5 +305,41 @@ namespace d360.web.Controllers.V2
             var results = await Company.QueryAsync<dynamic>(sql);
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
+
+
+        [
+    HttpGet,
+    Route("groups"),
+    SwaggerResponse(HttpStatusCode.OK, "", typeof(GroupApiModels)),
+    SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+    SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
+    SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false)
+    
+]
+        public async Task<IHttpActionResult> GetGroups()
+        {
+            var prefix = "Membership.GetGroups => ";
+
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                var results = await this.membershipRepository.GetGroups(queryParams);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix } 
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+
+        }
+
     }
 }
