@@ -1496,3 +1496,8 @@ p-calendar .ui-datepicker {
 .asset-browser-window-tabs .ui-tabview-panels{
     overflow:auto;
 }
+
+/*show calender under field always in case of modal to avoid clipping */
+.modal-dialog p-calendar .ui-datepicker {
+    top: 26px !important;
+}
