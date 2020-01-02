@@ -74,6 +74,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     private missingPredicateSource: boolean = false;
     private missingPredicateTarget: boolean = false;
 
+    private helpTextTop: number = 0;
+
     constructor(
         private relationshipService: RelationshipsService,
         private ref: ChangeDetectorRef
@@ -498,7 +500,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     private postRelationships(relationships: any[]) {
-        
+
         var source_tasks = [];
         var target_tasks = [];
         relationships.forEach(r => {
@@ -631,7 +633,10 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     private lineageChainMouseEnter(event) {
-        event.target.getElementsByClassName('help-text')[0].style.top = event.y + "px;";
+        var element = event.target.getElementsByClassName('help-text')[0];
+        var parentScroll = +element.closest('.asset-browser-window-content').scrollTop;
+        this.helpTextTop = event.y + 16;
+        this.ref.markForCheck();
     }
 }
 

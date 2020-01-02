@@ -121,65 +121,93 @@ namespace igx.jobs.databasetaskprocessor
                                 if (givenAssetId > 0)
                                     indexObject.AssetID = givenAssetId;
 
+                                //Set uniqueID for index object
+                                if(o == "Synonym")
+                                {
+                                    indexObject.ItemUniqueID = $"custom|{oid}";
+                                } else if (o == "Artifact" && indexObject.AssetID > 0)
+                                {
+                                    indexObject.ItemUniqueID = indexObject.AssetID.ToString();
+                                }
+
                                 #region Load Info for Object
 
-                                detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
-                                
-                                var fldInfo = companyConnection.Query<FieldWithRelation>(
-                                    "SELECT * from FieldWithRelation where ObjectType = @t and ObjectID = @i order by SortOrder",
-                                    new { t = new Dapper.DbString { Value = o.ToString(), IsAnsi = true }, i = oid }
-                                );
-
-                                if (fldInfo != null)
-                                    indexObject.Fields = fldInfo.ToDictionary(k => k.Name, v => v.FormattedValue);
-
-                                indexObject.RelativeUrl = detail != null ? detail.Url : "";
-                                indexObject.AssetType = detail != null ? detail.TypeName : "";
-
-                                var itemName = detail != null ? detail.Name : "";
-                                var itemParentType = detail != null ? detail.ParentType : "";
-                                var itemParentId = detail != null ? (detail.ParentID ?? 0) : 0;
-
-                                if (detail != null)
+                                if (o == "Intersect" && givenAssetId > 0)
                                 {
-                                    indexObject.Category = (o == SystemObjects.Artifact.ToString()) ? detail.Class.ToString() : o;
+                                    var sql = @"SELECT * FROM (" + ElasticSearchSource.INTERSECT_SYNONYM_QUERY +
+                                        ") q WHERE q.ID = @oid AND q.SynonymAssetID = @givenAssetId";
+                                    dynamic intersectDetail = companyConnection.Query<dynamic>(sql, new { oid, givenAssetId }).SingleOrDefault();
 
-                                    if (indexObject.Fields.ContainsKey("Name")) indexObject.Fields["Name"] = detail.Name;
-                                    else indexObject.Fields.Add("Name", detail.Name);
-
-                                    if (detail.AssetTypeUid.HasValue) {
-                                        indexObject.AssetTypeUid = detail.AssetTypeUid.Value;
-                                    }
-
-                                    if (o == "Synonym")
+                                    if(intersectDetail != null)
                                     {
-                                        indexObject.Fields.Add("SynonymFor", detail.TextPath);
-                                        indexObject.Fields.Add("SynonymForObject", detail.ParentType);
-                                        indexObject.Fields.Add("SynonymForObjectType", detail.Description);
+                                        indexObject.Category = "Synonym";
+                                        indexObject.AssetType = "Synonym";
+                                        indexObject.ItemUniqueID = $"intersect|{oid}|{intersectDetail.Direction}";
+                                        indexObject.RelativeUrl = intersectDetail.Url;
+                                        indexObject.Fields.Add("Name", intersectDetail.Synonym);
+                                        indexObject.Fields.Add("NymType", intersectDetail.PredicateName);
+                                        indexObject.Fields.Add("SynonymFor", intersectDetail.SynonymFor);
+                                        indexObject.Fields.Add("SynonymForObject", intersectDetail.SynonymForObject);
+                                        indexObject.Fields.Add("SynonymForObjectType", intersectDetail.SynonymForObjectType);
                                     }
-                                    else
+                                }
+                                else
+                                {
+
+                                    detail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = o, i = oid }).SingleOrDefault();
+
+                                    var fldInfo = companyConnection.Query<FieldWithRelation>(
+                                        "SELECT * from FieldWithRelation where ObjectType = @t and ObjectID = @i order by SortOrder",
+                                        new { t = new Dapper.DbString { Value = o.ToString(), IsAnsi = true }, i = oid }
+                                    );
+
+                                    if (fldInfo != null)
+                                        indexObject.Fields = fldInfo.ToDictionary(k => k.Name, v => v.FormattedValue);
+
+                                    indexObject.RelativeUrl = detail != null ? detail.Url : "";
+                                    indexObject.AssetType = detail != null ? detail.TypeName : "";
+
+                                    if (detail != null)
                                     {
-                                        if (!string.IsNullOrEmpty(detail.Description))
+                                        indexObject.Category = (o == SystemObjects.Artifact.ToString()) ? detail.Class.ToString() : o;
+
+                                        if (indexObject.Fields.ContainsKey("Name")) indexObject.Fields["Name"] = detail.Name;
+                                        else indexObject.Fields.Add("Name", detail.Name);
+
+                                        if (detail.AssetTypeUid.HasValue)
                                         {
-                                            if (indexObject.Fields.ContainsKey("Description")) indexObject.Fields["Description"] = detail.Description;
-                                            else indexObject.Fields.Add("Description", detail.Description);
+                                            indexObject.AssetTypeUid = detail.AssetTypeUid.Value;
                                         }
 
-                                        if (indexObject.Fields.ContainsKey("TextPath")) indexObject.Fields["TextPath"] = detail.TextPath;
-                                        else indexObject.Fields.Add("TextPath", detail.TextPath);
+                                        if (o == "Synonym")
+                                        {
+                                            indexObject.Fields.Add("SynonymFor", detail.TextPath);
+                                            indexObject.Fields.Add("SynonymForObject", detail.ParentType);
+                                            indexObject.Fields.Add("SynonymForObjectType", detail.Description);
+                                        }
+                                        else
+                                        {
+                                            if (!string.IsNullOrEmpty(detail.Description))
+                                            {
+                                                if (indexObject.Fields.ContainsKey("Description")) indexObject.Fields["Description"] = detail.Description;
+                                                else indexObject.Fields.Add("Description", detail.Description);
+                                            }
 
-                                        indexObject.AssetType = detail.TypeName;
-                                        indexObject.Uid = detail.UID;
+                                            if (indexObject.Fields.ContainsKey("TextPath")) indexObject.Fields["TextPath"] = detail.TextPath;
+                                            else indexObject.Fields.Add("TextPath", detail.TextPath);
+
+                                            indexObject.AssetType = detail.TypeName;
+                                            indexObject.Uid = detail.UID;
+                                        }
+
+                                        if (indexObject.AssetID > 0)
+                                            indexObject.Tags = companyConnection
+                                                .Query<TagSqlModel>("SELECT t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID WHERE at.AssetID = @i", new { i = indexObject.AssetID })
+                                                .ToDictionary(x => x.TagUID.ToString(), x => x.Value);
                                     }
-
-                                    if(indexObject.AssetID > 0)
-                                        indexObject.Tags = companyConnection
-                                            .Query<TagSqlModel>("SELECT t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID WHERE at.AssetID = @i", new {i = indexObject.AssetID})
-                                            .ToDictionary(x => x.TagUID.ToString(), x => x.Value);
-                                }
-                                else if ((detail == null) && (string.Compare(o, "Synonym", true) == 0))
-                                {
-                                    var sql = @"
+                                    else if ((detail == null) && (string.Compare(o, "Synonym", true) == 0))
+                                    {
+                                        var sql = @"
                                         select 
 	                                        s.Name as 'Synonym'
 	                                        ,c.Name as 'SynonymFor'
@@ -194,24 +222,21 @@ namespace igx.jobs.databasetaskprocessor
 	                                        inner join [cache].[objectdetails] c on (s.[Object] = c.[Object] and s.[ObjectID] = c.[ObjectID])
                                             inner join [dbo].[predicate] p on (s.predicateid = p.id) where s.id = @id";
 
-                                    //custom synonym load details from nym table
-                                    var nymRecord = companyConnection.Query<dynamic>(sql, new { id = oid }).FirstOrDefault();
+                                        //custom synonym load details from nym table
+                                        var nymRecord = companyConnection.Query<dynamic>(sql, new { id = oid }).FirstOrDefault();
 
-                                    if (nymRecord != null)
-                                    {
-                                        itemName = nymRecord.Synonym;
+                                        if (nymRecord != null)
+                                        {
+                                            var nymDetail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = nymRecord.SynonymForObject, i = nymRecord.SynonymForObjectID }).SingleOrDefault();
 
-                                        var nymDetail = companyConnection.Query<ObjectDetail>("SELECT * FROM utility.ObjectDetail(@t, @i)", new { t = nymRecord.SynonymForObject, i = nymRecord.SynonymForObjectID }).SingleOrDefault();
+                                            indexObject.Fields.Add("NymType", nymRecord.PredicateName);
+                                            indexObject.Fields.Add("Name", nymRecord.Synonym);
+                                            indexObject.Fields.Add("SynonymFor", nymRecord.SynonymFor);
+                                            indexObject.Fields.Add("SynonymForObject", nymRecord.SynonymForObject);
+                                            indexObject.Fields.Add("SynonymForObjectType", nymRecord.SynonymForObjectType);
 
-                                        indexObject.Fields.Add("NymType", nymRecord.PredicateName);
-                                        indexObject.Fields.Add("Name", nymRecord.Synonym);
-                                        indexObject.Fields.Add("SynonymFor", nymRecord.SynonymFor);
-                                        indexObject.Fields.Add("SynonymForObject", nymRecord.SynonymForObject);
-                                        indexObject.Fields.Add("SynonymForObjectType", nymRecord.SynonymForObjectType);
-
-                                        itemParentId = nymRecord.SynonymForObjectID;
-                                        itemParentType = nymRecord.PredicateName;
-                                        indexObject.RelativeUrl = nymDetail.Url;
+                                            indexObject.RelativeUrl = nymDetail.Url;
+                                        }
                                     }
                                 }
 
@@ -222,15 +247,7 @@ namespace igx.jobs.databasetaskprocessor
                                     case "A":   //Add
                                         indexObject.To = QueueAction.AddToIndex;
 
-                                        if (o == "Synonym")
-                                        {
-                                            indexObject.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
-                                        }
-                                        else if (o == "Artifact" && indexObject.AssetID > 0)
-                                        {
-                                            indexObject.ItemUniqueID = indexObject.AssetID.ToString();
-                                        }
-                                        else if (o == "Resource" && oid> 0)
+                                       if (o == "Resource" && oid> 0)
                                         {
                                             dynamic userDetail = companyConnection.Query<dynamic>(@"SELECT Email,
                                                 CASE
@@ -251,22 +268,24 @@ namespace igx.jobs.databasetaskprocessor
                                         break;
                                     case "U":   //Update
                                         indexObject.To = QueueAction.UpdateInIndex;
-
-                                        if (o == "Synonym")
-                                        {
-                                            indexObject.ItemUniqueID = $"custom|{itemName}|{itemParentType}|{itemParentId}";
-                                        }
-                                        else if (o == "Artifact" && indexObject.AssetID > 0)
-                                        {
-                                            indexObject.ItemUniqueID = indexObject.AssetID.ToString();
-                                        }
                                         indexCollectionModel.Updates.Add(indexObject);
                                         break;
                                     case "D":   //Delete
                                         indexObject.To = QueueAction.RemoveFromIndex;
                                         indexObject.RelativeUrl = "#";
 
-                                        if (o == "Artifact" && givenAssetId > 0) indexObject.ItemUniqueID = givenAssetId.ToString();
+                                        //Intersects have two search documents, se we need to delete both
+                                        if (o == "Intersect")
+                                        {
+                                            indexObject.Category = "Synonym";
+                                            indexObject.AssetType = "Synonym";
+
+                                            IndexObjectModel reciprocal = indexObject.ShallowCopy();
+                                            reciprocal.ItemUniqueID  = $"intersect|{oid}|O";
+                                            indexObject.ItemUniqueID = $"intersect|{oid}|S";
+                                            indexCollectionModel.Deletes.Add(reciprocal);
+                                        }
+
                                         indexCollectionModel.Deletes.Add(indexObject);
                                         break;
                                 }
@@ -548,7 +567,6 @@ from    [queue].[Task] T
             if (string.Compare(obj, "IntersectType", true) == 0
                     || string.Compare(obj, "ResponsibilityType", true) == 0
                     || string.Compare(obj, "FusionAttributeType", true) == 0
-                    || string.Compare(obj, "Intersect", true) == 0
                     || string.Compare(obj, "Lookup", true) == 0
                     || string.Compare(obj, "LookupType", true) == 0
                     || string.Compare(obj, "Tag", true) == 0

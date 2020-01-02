@@ -110,7 +110,7 @@ from	plugin.FusionAttributeType A
                 community.Dispose();
 
 #if DEBUG
-                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.CompanyID == 3).ToList();
+                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif
@@ -477,7 +477,7 @@ from	plugin.FusionAttributeType A
 			    SELECT	* from #tbl_FusionAttributeTypes
 			    ) S
 	    ON      (S.ID = T.ID) 
-    WHEN MATCHED THEN
+    WHEN MATCHED AND (T.Name <> S.Name OR T.ParentID <> S.ParentID) THEN
         UPDATE SET
         T.Name = S.Name,
         T.ParentID = S.ParentID,
