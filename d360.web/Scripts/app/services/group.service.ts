@@ -9,7 +9,8 @@ import {
     GroupResourceInfo,
     Group,
     GroupEditorModel,
-    ResourceGroup
+    ResourceGroup,
+    GroupApiModels
 } from '../models/group.model';
 import {JsonResult} from '../models/jsonresult.model';
 import {CountObject} from '../models/resource.model';
@@ -33,6 +34,14 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
+    getGroups(): Observable<any> {
+        debugger;
+        return this.http.get('api/v2/membership/groups')
+            .pipe(
+            map(x => <any>x),
+                catchError(err=>this.handleError(err))
+            );
+    }
     getGroupResourceList(uid: string): Observable<any> {
         return this.http.get(`api/v2/membership/groups/${uid}/members`).pipe(
             map(response => <GroupResourceInfo[]>response),
@@ -47,8 +56,8 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
-    getGroup(id: number): Observable<any> {
-        return this.http.get(`form/Group?id=${id}`).pipe(
+    getGroup(id: number,uid:string): Observable<any> {
+        return this.http.get(`form/Group?id=${id}&uid=${uid}`).pipe(
             map(response => <any>response),
             catchError(err => this.handleError(err))
         );

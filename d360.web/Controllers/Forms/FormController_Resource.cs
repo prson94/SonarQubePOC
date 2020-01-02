@@ -501,8 +501,11 @@ namespace d360.web.Controllers
 
 
         [HttpGet, Route("GetGroupUserList"), NonNullableParameters]
-        public JsonNetResult GetGroupUserList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter)
+        public JsonNetResult GetGroupUserList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter,Guid? uid)
         {
+
+            if (uid.HasValue && uid.Value != Guid.Empty)
+                id = Company.Filter<Asset>(x => x.uid == uid).SingleOrDefault().ObjectID;
 
             string querySql;
             var dbArgs = new Dapper.DynamicParameters();
@@ -606,8 +609,10 @@ namespace d360.web.Controllers
         }
 
         [HttpDelete, Route("DeleteGroupByID"), NonNullableParameters]
-        public JsonResult DeleteGroupByID(int id)
+        public JsonResult DeleteGroupByID(int id,Guid? uid)
         {
+            if (uid.HasValue && uid.Value != Guid.Empty)
+                id = Company.Filter<Asset>(x => x.uid == uid).SingleOrDefault().ObjectID;
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteGroup(form);
@@ -703,10 +708,12 @@ namespace d360.web.Controllers
         }
 
         [HttpGet, ActionName("Group"), Route("Group"), NonNullableParameters]
-        public JsonNetResult GetGroup(int id)
+        public JsonNetResult GetGroup(int id,Guid? uid)
         {
             var group = new Group();
             var resourceList = new List<SelectListItem>();
+            if (uid.HasValue && uid.Value != Guid.Empty)
+                id = Company.Filter<Asset>(x => x.uid == uid).SingleOrDefault().ObjectID;
 
             if (id == 0)
             {

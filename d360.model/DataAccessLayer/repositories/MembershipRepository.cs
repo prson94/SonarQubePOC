@@ -55,13 +55,13 @@ namespace d360.model.DataAccessLayer
 ;                        var sql = $@"Select A.Uid,G.Name,G.Description,gr1.uid as PrimaryOwnerUid,gr2.uid as SecondaryOwnerUid from [Group] G
             inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
             left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
-            left join [reporting].[Global_Resource] gr2 on gr1.ResourceID = G.SecondaryOwnerResourceID
+            left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
                 {whereStatements} ";
 
             var countSql = $@"Select count(*) from [Group] G
             inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
             left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
-            left join [reporting].[Global_Resource] gr2 on gr1.ResourceID = G.SecondaryOwnerResourceID
+            left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
                 {whereStatements} ";
 
             var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs);

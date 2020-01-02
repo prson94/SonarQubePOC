@@ -5,7 +5,7 @@ import {Observable} from "rxjs";
 export interface IGroupService {
     getGroupList(): Observable<GroupSearchResultModel[]>;
     getGroupResourceList(id: string): Observable<any>;
-    getGroup(id: number): Observable<GroupEditorModel>;
+    getGroup(id: number,uid:string): Observable<GroupEditorModel>;
     putGroup(group: Group): Observable<JsonResult>;
     postGroup(group: Group): Observable<JsonResult>;
     deleteGroup(id: number): Observable<JsonResult>;
@@ -20,6 +20,18 @@ export class GroupSearchResultModel {
     Name: string;
     NumberOfMembers: number;
     IsMember: boolean;
+}
+
+export class GroupApiModel {
+    Uid: string;
+    Name: string;
+    PrimaryOwnerUid: string;
+    SecondaryOwnerUid: string;
+}
+
+export class GroupApiModels {
+    Items: GroupApiModel[];
+    Total: Number;
 }
 
 export class GroupResourceInfo {
