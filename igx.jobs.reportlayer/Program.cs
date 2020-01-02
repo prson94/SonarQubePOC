@@ -453,8 +453,8 @@ END");
 
         private static void RemoveOldDynamicViews(SqlConnection connection, AssetTypeClass className, List<string> viewNames, TextWriter log)
         {
-            var currentViewNames = connection.Query<string>($@"select TABLE_SCHEMA + '.[' + TABLE_NAME + ']' from [INFORMATION_SCHEMA].[VIEWS] where TABLE_SCHEMA = 'reporting' and TABLE_NAME like '{className}_%'").ToList();
-
+            var currentViewNames = connection.Query<string>($@"select TABLE_SCHEMA + '.[' + TABLE_NAME + ']' from [INFORMATION_SCHEMA].[VIEWS] where TABLE_SCHEMA = 'reporting' and TABLE_NAME like '{className}_%' and TABLE_NAME not in('model_all','model_fields', 'ModelInterRelationships','policy_all')").ToList();
+                        
             currentViewNames.ForEach(cv =>
             {
                 if (!viewNames.Contains(cv))
