@@ -56,6 +56,7 @@ namespace d360.web.Controllers.V2
             public GetAssetLineagePostModelDirection Reveal { get; set; }
             public string RelationCounts { get; set; }
             public bool UseAsTransformation { get; set; }
+            public bool IsSubjectInTransformation { get; set; }
 
         }
 
@@ -94,7 +95,7 @@ namespace d360.web.Controllers.V2
                         hop = h.Hop, key = h.Key, assetUid = h.AssetUid, assetTypeId = h.AssetTypeID, assetTypeUid = h.AssetTypeUid,
                         backColor = h.Back, foreColor = h.Fore, icon = h.Icon, 
                         @class = h.Class, displayValue = h.DisplayValue, 
-                        reveal = h.Reveal, relationCounts = relationCounts, useAsTransformation = h.UseAsTransformation };
+                        reveal = h.Reveal, relationCounts = relationCounts, useAsTransformation = h.UseAsTransformation, isSubjectInTransformation = h.IsSubjectInTransformation  };
 
                     recurse(hierarchies, child);
 
@@ -120,7 +121,7 @@ namespace d360.web.Controllers.V2
                     relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
                 }
 
-                var current = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, assetTypeId = h.AssetTypeID, assetTypeUid= h.AssetTypeUid, backColor = h.Back, foreColor = h.Fore, icon = h.Icon, @class = h.Class, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts, useAsTransformation = h.UseAsTransformation };
+                var current = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, assetTypeId = h.AssetTypeID, assetTypeUid= h.AssetTypeUid, backColor = h.Back, foreColor = h.Fore, icon = h.Icon, @class = h.Class, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts, useAsTransformation = h.UseAsTransformation, isSubjectInTransformation = h.IsSubjectInTransformation };
                 recurse(hierarchies, current);
                 model.assets.Add(current);
             }

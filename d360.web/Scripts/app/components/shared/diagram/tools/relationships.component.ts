@@ -90,9 +90,11 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                 })
             });
 
+            var sourceItems = this.browserAssets.filter(x => x["isSubjectInTransformation"] == true);
+
             if (this.browserAssets.length > 10)
-                this.sourcePrePop = this.browserAssets.slice(0, 10);
-            else this.sourcePrePop = this.browserAssets;
+                this.sourcePrePop = sourceItems.slice(0, 10);
+            else this.sourcePrePop = sourceItems;
         }
         this.ref.markForCheck();
     }
@@ -118,8 +120,10 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             var item = new CommonComponentAssetResult();
             item.AssetTypeUid = group.assetTypeUid;
             item.Uid = group.assetUid;
-            if (group.useAsTransformation == false && !this.browserAssets.find(x => x.Uid == item.Uid && x.AssetTypeUid == item.AssetTypeUid))
+            if (group.useAsTransformation == false && !this.browserAssets.find(x => x.Uid == item.Uid && x.AssetTypeUid == item.AssetTypeUid)) {
+                item["isSubjectInTransformation"] = group.isSubjectInTransformation;
                 this.browserAssets.push(item);
+            }
         }
         else {
             group.items.forEach(g => {
