@@ -391,4 +391,5 @@
   <include file="scripts/GOV-8479.xml"/>  <!-- update triggers on Global_Resource so only one record is created in [queue].[task] -->
   <include file="scripts/GOV-9170.xml"/>  <!-- changes to [graph].[GetLineageByAsset] : change to NOT double the hop number parameter -->
   <include file="scripts/GOV-6465.xml"/>  <!-- update triggers on Nym and Intersect so AssetID is included in [queue].[task] -->
+  <include file="scripts/GOV-9221.xml"/>  <!-- script to create Uid index for graph.AssetEdge -->
 </databaseChangeLog>
