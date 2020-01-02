@@ -91,18 +91,24 @@ namespace igx.jobs.apiexecutionprocessor
                 CompanyID = Info.CompanyID,
                 ResourceID = Info.ResourceID ?? 0,
                 CompanyPrefix = Info.CompanyDomainPrefix,
-                IsAdministrator = true
+                IsAdministrator = false
             };
             var cache = new DummyCachingProvider();
             queue = new AzureQueueSource();
+
             community = new CommunityContext(cache, queue, sec);
             company = new CompanyContext(community, cache, queue, sec, true);
             storage = new AzureStorageProvider();
 
             company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
             company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;
-
-            #endregion
+            var resource = company.GlobalReportingResources.FirstOrDefault(x => x.ResourceID == sec.ResourceID);
+            if (resource != null)
+            {
+                community.CurrentResourceIsAdmin = resource.IsAdministrator;
+                company.CurrentResourceIsAdmin = resource.IsAdministrator;
+            }
+                #endregion
 
             var dbExecutionItem = company.Filter<ApiExecution>(i => i.ExecutionID == Info.ExecutionID).SingleOrDefault();
 
