@@ -822,7 +822,7 @@ order by	ColumnIndex", new { id });
 
         public async Task BulkLoadAssets(Load load, IAssetRepository repository)
         {
-            const int timeout = 600;
+            const int timeout = 3600;
 
             if (load == null)
                 throw new ArgumentNullException("load cannot be null");
