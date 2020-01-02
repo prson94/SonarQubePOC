@@ -13,7 +13,7 @@
       <![CDATA[
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name='IX_GraphAssetEdge_Uid')
 BEGIN
-	CREATE NONCLUSTERED INDEX IX_GraphAssetEdge_Uid ON [graph].[AssetEdge] ([Uid])]
+	CREATE NONCLUSTERED INDEX IX_GraphAssetEdge_Uid ON [graph].[AssetEdge] ([Uid])
 END 
 ]]>
     </sql>
