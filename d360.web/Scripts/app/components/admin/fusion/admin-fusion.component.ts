@@ -41,15 +41,15 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
         this.adminHeading = 'Integration';
         this.setCommonItems();
         this.setCommonSecondaryNavTabs();
-
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/FusionType/${this.selectedRow.ID}`;
-            });
-        }
+        this.selectedItemChange();
 
         this.load();
+    }
+
+    selectedItemChange() {
+        if (this.auditSidebar && this.selectedRow) {
+            this.auditSidebar.url = `/sidebar/audit/FusionType/${this.selectedRow.ID}`;
+        }
     }
 
     ngOnDestroy() {
@@ -62,6 +62,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
             data => {
                 this.fusionTypes = data;
                 this.selectedRow = (this.fusionTypes && this.fusionTypes.length) ? this.fusionTypes[0] : null;
+                this.selectedItemChange();
                 this.isLoading = false;
             }
         );

@@ -81,7 +81,6 @@ export class HeaderBreadcrumbService extends BaseObservableService{
         return JSON.parse(localStorage.getItem("Header_Breadcrumbs"));
     }
     buildFromStorage() {
-        console.log("BFS");
         this.buildFromStorageSource.next(this.getBreadcrumbsFromStorage());
     }
 

@@ -40,7 +40,9 @@ import * as _ from 'lodash';
                              [pageLinks]="3"
                              [paginator]="true"
                              [rows]="defaultInitialItemsPerPage"
-                             [rowsPerPageOptions]="defaultPagingOptions">
+                             [rowsPerPageOptions]="defaultPagingOptions"
+                             [(selection)]="selected"
+                             (onRowSelect)="selectedItemChange()">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'"
@@ -109,21 +111,16 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
         this.setObjectInfo('TaxonomyType', -1);
         this.setCommonSecondaryNavTabs(true);
 
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/TaxonomyType/${this.selected.ID}`
-            });
+        this.selectedItemChange();
+    }
+    selectedItemChange() {
+        if (this.auditSidebar && this.selected) {
+            this.auditSidebar.url = `/sidebar/audit/TaxonomyType/${this.selected.ID}`;
         }
-
-        if (this.ownershipSidebar) {
-            this.ownershipSidebar.hasDynamicUrl = true;
-            this.ownershipSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/ownership/TaxonomyType/${this.selected.ID}`
-            });
+        if (this.ownershipSidebar && this.selected) {
+            this.ownershipSidebar.url = `/sidebar/ownership/TaxonomyType/${this.selected.ID}`
         }
     }
-
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             this.modelGroup = params['group'];
@@ -152,6 +149,7 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
 
                 if (this.models.length && this.models.length > 0) {
                     this.selected = this.models[0];
+                    this.selectedItemChange();
                 }
                     this.headerBreadcrumbService.getFolderTitle('#Models').then((res) => {
                         this.headerBreadcrumbService.clearCurrentObjectInfo();

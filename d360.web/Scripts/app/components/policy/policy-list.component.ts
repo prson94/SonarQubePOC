@@ -48,7 +48,8 @@ import {SiteUrlHelpers} from '../../static/site-url-helpers';
                              [paginator]="true"
                              [rows]="defaultInitialItemsPerPage"
                              [rowsPerPageOptions]="defaultPagingOptions"
-                             [(selection)]="selected">
+                             [(selection)]="selected"
+                             (onNodeSelect)="selectedItemChange()">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'"
@@ -127,14 +128,7 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
                     this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
                         this.secondaryNavService.showHeader(true);
                         this.setCommonSecondaryNavTabs(true);
-                        if (this.auditSidebar) {
-                            this.auditSidebar.hasDynamicUrl = true;
-                            this.auditSidebar.dynamicUrlCallback = (
-                                () => {
-                                    return `/sidebar/audit/PolicyType/${this.selected.ID}`;
-                                }
-                            );
-                        }
+                        this.selectedItemChange();
                         this.secondaryNavService.setCurrentArea(res, icon, 'Policies');
                     });
                 });
@@ -143,7 +137,11 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
             }
         );
     }
-
+    selectedItemChange() {
+        if (this.auditSidebar && this.selected) {
+            this.auditSidebar.url = `/sidebar/audit/PolicyType/${this.selected.ID}`;
+        }
+    }
     ngOnDestroy() {
         this.clearSidebar();
         this.sub.unsubscribe();

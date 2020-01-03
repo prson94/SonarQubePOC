@@ -38,14 +38,15 @@ export class AdminAttributesComponent extends AdminBaseComponent {
         this.setCommonItems();
         this.setCommonSecondaryNavTabs(true);
 
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/AttributeType/${this.selected.data.ID}`
-            });
-        }
+        this.selectedItemChange();
 
         this.theDeleteCallback = this.deleteAttributeType.bind(this);
+    }
+
+    selectedItemChange() {
+        if (this.auditSidebar && this.selected) {
+            this.auditSidebar.url = `/sidebar/audit/AttributeType/${this.selected.data.ID}`;
+        }
     }
 
     ngOnInit() {
@@ -65,6 +66,7 @@ export class AdminAttributesComponent extends AdminBaseComponent {
             .subscribe(result => {
                 this.attributes = this.formTree(result);
                 this.selected = this.attributes.length > 0 ? this.attributes[0] : null;
+                this.selectedItemChange();
                 this.isLoading = false;
             });
     }

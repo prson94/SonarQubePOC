@@ -53,12 +53,9 @@ export class AdminTagsComponent extends AdminBaseComponent {
         this.setCommonSecondaryNavTabs(true);
 
         if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/Tag/0`
-            });
+            this.auditSidebar.url = `/sidebar/audit/Tag/0`;
         }
-        this.getTags();
+        this.getTags(); 
 
         this.theDeleteCallback = this.deleteTags.bind(this);
         this.theConsolidateCallback = this.consolidateTags.bind(this);
