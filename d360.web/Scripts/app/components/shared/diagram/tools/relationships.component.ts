@@ -637,9 +637,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     private lineageChainMouseEnter(event) {
-        var element = event.target.getElementsByClassName('help-text')[0];
-        var parentScroll = +element.closest('.asset-browser-window-content').scrollTop;
-        this.helpTextTop = event.y + 16;
+        this.helpTextTop = event.clientY + 16;
         this.ref.markForCheck();
     }
 }
