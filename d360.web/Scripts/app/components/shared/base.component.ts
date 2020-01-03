@@ -236,6 +236,7 @@ export class BaseComponent {
                     'fields',
                     ['fa-drivers-license-o'],
                     '/sidebar/fields', null, 1);
+                this.secondaryNavService.showItem(this.fieldNav);
             }
             if (hasPermissions || hasPermissions === undefined) {
                 this.permissionsNav = new SecondaryNavItem(
@@ -243,6 +244,7 @@ export class BaseComponent {
                     'responsibilities',
                     ['fa-bars'],
                     '/sidebar/responsibilities', null, 4);
+                this.secondaryNavService.showItem(this.permissionsNav);
             }
 
             if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
