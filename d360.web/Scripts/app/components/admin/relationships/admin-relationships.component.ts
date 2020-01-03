@@ -12,7 +12,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
     template: `<div class="row">
                     <div class="col l12 m12 s12">                    
                         <div class="tile tile-detail">
-                            <d3s-admin-relationships-list [(selected)]="selected"></d3s-admin-relationships-list>
+                            <d3s-admin-relationships-list (selectedChange)="selectedItemChange($event)" [(selected)]="selected"></d3s-admin-relationships-list>
                         </div>
                     </div>                    
                 </div>  
@@ -27,32 +27,19 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
         this.areaName = "Relationships";
         this.tabTitle = "Relationship Types";
         this.setCommonItems();
-        this.setCommonSecondaryNavTabs(true);    
-
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/IntersectType/${this.selected.Id}`
-            });
-        }
-
-       
-        let fields = new SecondaryNavItem()
-        fields.hasDynamicUrl = true;
-        fields.icons = ['fa-drivers-license-o'];
-        fields.tag = 'fields'
-        fields.title = 'Field Definitions'
-        fields.url = '/sidebar/fields'
-        fields.dynamicUrlCallback = (() => {
-            return `/sidebar/fields/IntersectType/${this.selected.Id}`
-        });
-
-        this.secondaryNavService.showItem(fields);
-      
-
-        //this.secondaryNavService.showItem(new SecondaryNavItem('Relationship Roles', 'roles', ['fa-user']));
+        this.setCommonSecondaryNavTabs(true, null, null, null, null, null, null, null, true);
     }
-    
+
+    selectedItemChange(event) {
+        this.selected = event;
+        if (this.auditSidebar && this.selected) {
+            this.auditSidebar.url = `/sidebar/audit/IntersectType/${this.selected.Id}`;
+        }
+        if (this.fieldNav && this.selected) {
+            this.fieldNav.url = `/sidebar/fields/IntersectType/${this.selected.Id}`;
+        }       
+    }
+
     ngOnDestroy() {
         this.clearSidebar();
     }

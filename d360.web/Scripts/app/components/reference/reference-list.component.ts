@@ -108,64 +108,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                                     this.setCommonSecondaryNavTabs(true, false, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true);
 
 
-                                    if (this.auditSidebar) {
-                                        this.auditSidebar.hasDynamicUrl = true;
-                                        this.auditSidebar.dynamicUrlCallback = (() => {
-                                            return `/sidebar/audit/ReferenceItemType/${this.selectedReferenceListId}`
-                                        });
-                                    }
-
-                                    if (this.impactSidebar) {
-                                        this.impactSidebar.hasDynamicUrl = true;
-                                        this.impactSidebar.orderPriority = 2;
-                                        this.impactSidebar.dynamicUrlCallback = (() => {
-                                            return `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceListId}`
-                                        });
-                                    }
-
-                                    if (this.relationsSidebar) {
-                                        this.relationsSidebar.hasDynamicUrl = true;
-                                        this.relationsSidebar.orderPriority = 3;
-                                        this.relationsSidebar.dynamicUrlCallback = (() => {
-                                            return `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceListId}`
-                                        });
-                                    }
-
-                                    if (this.monitorSidebar) {
-                                        this.monitorSidebar.hasDynamicUrl = true;
-                                        this.monitorSidebar.dynamicUrlCallback = (() => {
-                                            return `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceListId}`
-                                        });
-                                    }
-
-                                    if (this.authenticationService.isAdmin) {
-                                        let fields = new SecondaryNavItem()
-                                        fields.hasDynamicUrl = true;
-                                        fields.icons = ['fa-drivers-license-o'];
-                                        fields.tag = 'fields'
-                                        fields.title = 'Field Definitions'
-                                        fields.url = '/sidebar/fields'
-                                        fields.orderPriority = 1;
-                                        fields.dynamicUrlCallback = (() => {
-                                            return `/sidebar/fields/ReferenceItemType/${this.selectedReferenceListId}`
-                                        });
-
-                                        this.secondaryNavService.showItem(fields);
-                                    }
-
-                                    if (this.authenticationService.isAdmin) {
-                                        let permissions = new SecondaryNavItem()
-                                        permissions.hasDynamicUrl = true;
-                                        permissions.icons = ['fa-bars'];
-                                        permissions.tag = 'responsibilities'
-                                        permissions.title = 'Responsibilities'
-                                        permissions.url = '/sidebar/responsibilities'
-                                        permissions.orderPriority = 4;
-                                        permissions.dynamicUrlCallback = (() => {
-                                            return `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`
-                                        });
-                                        this.secondaryNavService.showItem(permissions);
-                                    }
+                                    this.setSecondaryNavItems();
 
                                     this.secondaryNavService.showHeader(true);      
                                 });
@@ -208,6 +151,50 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     changeType(e: any) {
         this.selectedReferenceItemType = e;
         this.selectedReferenceListId = e.ID;
+        this.setSecondaryNavItems();
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.ID}`);        
+    }
+
+    setSecondaryNavItems() {
+        if (this.auditSidebar) {
+            this.auditSidebar.url = `/sidebar/audit/ReferenceItemType/${this.selectedReferenceListId}`;
+        }
+
+        if (this.impactSidebar) {
+            this.impactSidebar.orderPriority = 2;
+            this.impactSidebar.url = `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceListId}`;
+        }
+
+        if (this.relationsSidebar) {
+            this.relationsSidebar.orderPriority = 3;
+            this.relationsSidebar.url = `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceListId}`;
+        }
+
+        if (this.monitorSidebar) {
+            this.monitorSidebar.url = `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceListId}`;
+        }
+
+        if (this.authenticationService.isAdmin) {
+            let fields = new SecondaryNavItem()
+            fields.icons = ['fa-drivers-license-o'];
+            fields.tag = 'fields'
+            fields.title = 'Field Definitions'
+            fields.url = '/sidebar/fields'
+            fields.orderPriority = 1;
+            fields.url = `/sidebar/fields/ReferenceItemType/${this.selectedReferenceListId}`;
+
+            this.secondaryNavService.showItem(fields);
+        }
+
+        if (this.authenticationService.isAdmin) {
+            let permissions = new SecondaryNavItem()
+            permissions.icons = ['fa-bars'];
+            permissions.tag = 'responsibilities'
+            permissions.title = 'Responsibilities'
+            permissions.url = '/sidebar/responsibilities'
+            permissions.orderPriority = 4;
+            permissions.url = `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`;
+            this.secondaryNavService.showItem(permissions);
+        }
     }
 };

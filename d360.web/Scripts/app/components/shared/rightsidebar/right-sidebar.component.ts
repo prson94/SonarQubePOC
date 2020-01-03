@@ -298,8 +298,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             return;
         }
         item.active = true;
-        if (item.hasDynamicUrl) this.router.navigateByUrl(item.dynamicUrlCallback());
-        else if (item.url) this.router.navigateByUrl(item.url);
+        if (item.url) this.router.navigateByUrl(item.url);
         this.secondaryNavService.itemClicked(item);
         this.AllClosed();
     }

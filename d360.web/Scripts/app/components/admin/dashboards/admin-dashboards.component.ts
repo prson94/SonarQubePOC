@@ -22,7 +22,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showEditor && !showDelete && !showCredentials">
                                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                                <p-table #dt [value]="reports" selectionMode="single" [globalFilterFields]="['Name','DisplayType']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
+                                <p-table #dt [value]="reports" selectionMode="single" [globalFilterFields]="['Name','DisplayType']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected" (onRowSelect)="selectedItemChange()">
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th [pSortableColumn]="'Name'">
@@ -132,13 +132,14 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
         this.tabTitle = 'Dashboards'
         this.setCommonItems();
         this.setCommonSecondaryNavTabs();
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/Report/${this.selected.ID}`
-            });
-        }
+        this.selectedItemChange();
         this.theDeleteCallback = this.deleteReport.bind(this);
+    }
+    
+    selectedItemChange() {
+        if (this.auditSidebar && this.selected) {
+            this.auditSidebar.url = `/sidebar/audit/Report/${this.selected.ID}`;
+        }
     }
 
     ngOnInit() {
@@ -159,6 +160,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
             }
             this.reports = result;            
             this.selected = (this.reports.length > 0 ? this.reports[0] : null);
+            this.selectedItemChange();
         });
     }
 
@@ -178,6 +180,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                 if (result.type != 'error') {
                     this.selected = this.reports.length > 0 ? this.reports[0] : null;
                     this.reports.splice(this.findReportIndex(id), 1);
+                    this.selectedItemChange();
                 }
 
                 this.stateService.reloadLeftNavMenu();
@@ -212,6 +215,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                 }
                 this.isLoading = false;
                 this.selected = event.report;
+                this.selectedItemChange();
 
                 this.stateService.reloadLeftNavMenu();
             });
@@ -221,12 +225,14 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
         this.showEditor = false;
         if (this.selected == null) {
             this.selected = this.reports.length > 0 ? this.reports[0] : null;
+            this.selectedItemChange();
         }
     }
 
     add() {
         this.showEditor = true;
         this.selected = null;
+        this.selectedItemChange();
     }
 
     private isBasicReport(report: Report): boolean {        

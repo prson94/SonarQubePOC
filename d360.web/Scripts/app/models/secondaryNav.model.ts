@@ -15,8 +15,6 @@ export class SecondaryNavItem {
     active: boolean;
     icons: string[];
     url: string;
-    hasDynamicUrl: boolean;
-    dynamicUrlCallback: Function;
     count: number;
     orderPriority: number = 99;
 }

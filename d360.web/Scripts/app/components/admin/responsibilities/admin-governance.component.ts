@@ -30,16 +30,15 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         this.tabTitle = 'Responsibility Types';
         this.setCommonItems();
         this.setCommonSecondaryNavTabs();
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/ResponsibilityType/${this.selectedRow.ID}`
-            });
-        }
+        this.selectedItemChange();
         this.load();
     }
 
-
+    selectedItemChange() {
+        if (this.auditSidebar && this.selectedRow) {
+            this.auditSidebar.url = `/sidebar/audit/ResponsibilityType/${this.selectedRow.ID}`;
+        }
+    }
     ngOnDestroy() {
         this.clearSidebar();
     }
@@ -49,6 +48,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
             .subscribe(data => {
                 this.responsibilityTypeItems = data;
                 this.selectedRow = this.responsibilityTypeItems[0];
+                this.selectedItemChange();
             });
     }
 
@@ -59,11 +59,13 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     edit(id: number): void {
         this.formMode = FormMode.Editing;
         this.selectedRow = this.responsibilityTypeItems.find(i => i.ID == id);
+        this.selectedItemChange();
     }
 
     delete(id: number): void {
         this.formMode = FormMode.Deleting;
         this.selectedRow = this.responsibilityTypeItems.find(i => i.ID == id);
+        this.selectedItemChange();
     }
 
     save(e: any) {
