@@ -34,7 +34,7 @@ export class GroupService extends BaseObservableService implements IGroupService
     }
 
     getGroupResourceList(uid: string): Observable<any> {
-        return this.http.get(`api/v2/membership/groups/${uid}/members`).pipe(
+        return this.http.get(`api/v2/membership/groups/${uid}/members?_pageSize=500`).pipe(
             map(response => <GroupResourceInfo[]>response),
             catchError(err => this.handleError(err))
         );
