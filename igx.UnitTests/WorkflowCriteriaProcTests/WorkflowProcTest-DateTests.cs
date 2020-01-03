@@ -9,17 +9,17 @@ using Xunit;
 
 namespace igx.UnitTests.WorkflowCriteriaProcTests
 {
-    [Trait("Unit tests", "Workflow criteria processor - Double tests")]
-    public class WorkflowProcDoubleTests : BaseTest
+    [Trait("Unit tests", "Workflow criteria processor - Date tests")]
+    public class WorkflowProcDateTests : BaseTest
     {
         internal ICompanyContext context;
-        public WorkflowProcDoubleTests()
+        public WorkflowProcDateTests()
         {
             this.context = GetCompany();
         }
 
         [Fact]
-        public void DoubleConditionEqualTest()
+        public void DateConditionEqualTest()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"=\" Value=\"12.56\" Connector =\"AND\" />" +
@@ -31,7 +31,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         }
 
         [Fact]
-        public void DoubleConditionEqualTest_Fail()
+        public void DateConditionEqualTest_Fail()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"=\" Value=\"12.42\" Connector =\"AND\" />" +
@@ -43,7 +43,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         }
 
         [Fact]
-        public void DoubleConditionNotEqualTest()
+        public void DateConditionNotEqualTest()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"=\" Value=\"12.42\" Connector =\"AND\" />" +
@@ -55,7 +55,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         }
 
         [Fact]
-        public void DoubleConditionNotEqualTest_Fail()
+        public void DateConditionNotEqualTest_Fail()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"=\" Value=\"12.56\" Connector =\"AND\" />" +
@@ -67,7 +67,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         }
 
         [Fact]
-        public void DoubleConditionGreaterThanTest()
+        public void DateConditionGreaterThanTest()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\">\" Value=\"12.35\" Connector =\"AND\" />" +
@@ -79,7 +79,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         }
 
         [Fact]
-        public void DoubleConditionGreaterThanTest_Fail()
+        public void DateConditionGreaterThanTest_Fail()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\">\" Value=\"12.58\" Connector =\"AND\" />" +
@@ -91,7 +91,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         }
 
         [Fact]
-        public void DoubleConditionLessThanTest()
+        public void DateConditionLessThanTest()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"&lt;\" Value=\"12.62\" Connector =\"AND\" />" +
@@ -103,7 +103,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         }
 
         [Fact]
-        public void DoubleConditionLessThanTest_Fail()
+        public void DateConditionLessThanTest_Fail()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"&lt;\" Value=\"12.12\" Connector =\"AND\" />" +
@@ -115,7 +115,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         }
 
         [Fact]
-        public void DoubleConditionLessOrEqThanTest()
+        public void DateConditionLessOrEqThanTest()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"&lt;=\" Value=\"12.62\" Connector =\"AND\" />" +
@@ -128,7 +128,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         }
 
         [Fact]
-        public void DoubleConditionLessOrEqTest_Fail()
+        public void DateConditionLessOrEqTest_Fail()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"&lt;=\" Value=\"12.12\" Connector =\"AND\" />" +
@@ -141,7 +141,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         }
 
         [Fact]
-        public void DoubleConditionMoreOrEqThanTest()
+        public void DateConditionMoreOrEqThanTest()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\">=\" Value=\"12.24\" Connector =\"AND\" />" +
@@ -154,7 +154,7 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         }
 
         [Fact]
-        public void DoubleConditionMoreOrEqTest_Fail()
+        public void DateConditionMoreOrEqTest_Fail()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\">=\" Value=\"12.57\" Connector =\"AND\" />" +

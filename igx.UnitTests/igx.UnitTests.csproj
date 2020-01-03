@@ -111,6 +111,7 @@
     <Compile Include="ValidatorTests\FieldValidatorTests.cs" />
     <Compile Include="V2ControllerTests\CrossReferenceControllerTest.cs" />
     <Compile Include="ValidatorTests\WorkflowValidatorTests.cs" />
+    <Compile Include="WorkflowCriteriaProcTests\WorkflowProcTest-DateTests.cs" />
     <Compile Include="WorkflowCriteriaProcTests\WorkflowProcTest-DoubleTests.cs" />
     <Compile Include="WorkflowCriteriaProcTests\WorkflowProcTest-StringTests.cs" />
     <Compile Include="WorkflowCriteriaProcTests\WorkflowProcTests.cs" />
