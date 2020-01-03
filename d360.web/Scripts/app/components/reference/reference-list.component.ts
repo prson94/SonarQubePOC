@@ -105,7 +105,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                                     this.clearSidebar();
                                     this.secondaryNavService.setCurrentArea(res, icon, 'Reference Lists');
                                     this.secondaryNavService.clearCurrentObject();
-                                    this.setCommonSecondaryNavTabs(true, false, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true);
+                                    this.setCommonSecondaryNavTabs(true, false, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true, true, true);
 
 
                                     this.setSecondaryNavItems();
@@ -174,27 +174,25 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             this.monitorSidebar.url = `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceListId}`;
         }
 
-        if (this.authenticationService.isAdmin) {
-            let fields = new SecondaryNavItem()
-            fields.icons = ['fa-drivers-license-o'];
-            fields.tag = 'fields'
-            fields.title = 'Field Definitions'
-            fields.url = '/sidebar/fields'
-            fields.orderPriority = 1;
-            fields.url = `/sidebar/fields/ReferenceItemType/${this.selectedReferenceListId}`;
+        if (this.authenticationService.isAdmin && this.fieldNav) {
+            
+            this.fieldNav.icons = ['fa-drivers-license-o'];
+            this.fieldNav.tag = 'fields'
+            this.fieldNav.title = 'Field Definitions'
+            this.fieldNav.url = '/sidebar/fields'
+            this.fieldNav.orderPriority = 1;
+            this.fieldNav.url = `/sidebar/fields/ReferenceItemType/${this.selectedReferenceListId}`;
 
-            this.secondaryNavService.showItem(fields);
         }
 
-        if (this.authenticationService.isAdmin) {
-            let permissions = new SecondaryNavItem()
-            permissions.icons = ['fa-bars'];
-            permissions.tag = 'responsibilities'
-            permissions.title = 'Responsibilities'
-            permissions.url = '/sidebar/responsibilities'
-            permissions.orderPriority = 4;
-            permissions.url = `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`;
-            this.secondaryNavService.showItem(permissions);
+        if (this.authenticationService.isAdmin && this.permissionsNav) {
+            
+            this.permissionsNav.icons = ['fa-bars'];
+            this.permissionsNav.tag = 'responsibilities'
+            this.permissionsNav.title = 'Responsibilities'
+            this.permissionsNav.url = '/sidebar/responsibilities'
+            this.permissionsNav.orderPriority = 4;
+            this.permissionsNav.url = `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`;
         }
     }
 };
