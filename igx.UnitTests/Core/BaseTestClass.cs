@@ -70,7 +70,32 @@ namespace igx.UnitTests
             mock.Setup(x => x.HasAssetTypePermission(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Permission>()))
                 .Returns(true);
 
+            IList<Field> fields = new List<Field>
+              {
+                new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 1, FormattedValue = "TestStringValue" },
+                new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 2, FormattedValue = "12.56" },
+                new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 3 },
+                new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 4 },
+                new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 5 },
+                new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 6 }
+              };
+
+            var fieldsMock = CreateDbSetMock(fields);
+            mock.Setup(x => x.Fields).Returns(fieldsMock.Object);
             return mock.Object;
+        }
+
+        private static Mock<DbSet<T>> CreateDbSetMock<T>(IEnumerable<T> elements) where T : class
+        {
+            var elementsAsQueryable = elements.AsQueryable();
+            var dbSetMock = new Mock<DbSet<T>>();
+
+            dbSetMock.As<IQueryable<T>>().Setup(m => m.Provider).Returns(elementsAsQueryable.Provider);
+            dbSetMock.As<IQueryable<T>>().Setup(m => m.Expression).Returns(elementsAsQueryable.Expression);
+            dbSetMock.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(elementsAsQueryable.ElementType);
+            dbSetMock.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(elementsAsQueryable.GetEnumerator());
+
+            return dbSetMock;
         }
 
         public IStorageProvider GetStorage()
@@ -108,7 +133,7 @@ namespace igx.UnitTests
             var mockRepo = new Mock<IAssetRepository>();
             var realRepo = new AssetRepository(GetCompany(), GetQueue(), GetStorage(), GetCommunity());
 
-            mockRepo.Setup(x => x.GetAssetType(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>(), It.IsAny<Guid?>()))
+            mockRepo.Setup(x => x.GetAssetType(It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<AssetTypeClass?>(), It.IsAny<Guid?>(), It.IsAny<Guid?>()))
                 .Returns(
                 Task.FromResult<IEnumerable<AssetTypeApiViewModel>>(new List<AssetTypeApiViewModel>() { new AssetTypeApiViewModel() })
             );
@@ -163,7 +188,7 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.PutBulkAssets(It.IsAny<Guid>(), It.IsAny<List<AssetUpdate>>(), It.IsAny<ApiExecution>(), It.IsAny<bool>()))
                .Returns(Task.FromResult(new ApiExecutionInfo()));
 
-            mockRepo.Setup(x => x.BulkDeleteAssets(It.IsAny<Guid>(), It.IsAny<AssetDeletes>(), It.IsAny<ApiExecution>(),false, true))
+            mockRepo.Setup(x => x.BulkDeleteAssets(It.IsAny<Guid>(), It.IsAny<AssetDeletes>(), It.IsAny<ApiExecution>(), false, true))
                .Returns(Task.FromResult(new ApiExecutionInfo()));
 
             mockRepo.Setup(x => x.BulkDeleteAssets(It.IsAny<Guid>(), It.IsAny<AssetDeletes>(), It.IsAny<ApiExecution>(), true, true))
@@ -253,7 +278,7 @@ namespace igx.UnitTests
                 .Returns((Guid guid) => guid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
 
             mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>(), It.IsAny<int>()))
-              .Returns((string ds,int tout) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
+              .Returns((string ds, int tout) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
 
             mock.Setup(x => x.DeleteCrossReferenceByDataSource(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>()))
              .Returns((string ds, string type, int tout) => ds == DataConstants.ValidDataSource ? Task.FromResult(1) : Task.FromResult(0));
