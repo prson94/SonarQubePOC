@@ -237,6 +237,30 @@ where	ExecutionID = @executionID
             new { executionID }, commandTimeout: timeout);
         }
 
+        private void LogAssetPermissionErrors(Guid executionID, AssetType at, Permission p, bool isInsert, string apiTableName, int timeout = 3600)
+        {
+            if (string.IsNullOrEmpty(apiTableName))
+            {
+                throw new ApplicationException("Endpoint logic is misconfigured, and is missing an API table name.");
+            }
+            if (!CurrentResourceIsAdmin)
+            {
+                if (isInsert && p == Permission.ModifyAsset && !this.HasAssetTypePermission(at.Object, at.ObjectID, Permission.ModifyAsset))
+                {
+                    Connection.Execute($@"
+    
+	                update	T
+	                set		T.Success = 0,
+			                T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to add this asset.'
+	                from    api.{apiTableName} T
+			                inner join api.Execution E on E.ExecutionID = T.ExecutionID 
+											                where  E.ExecutionID = @executionID 
+											                and T.AssetID is  null
+                            ", new { executionID }, commandTimeout: timeout);
+                }
+            
+            }
+        }
         private void LogAssetPermissionErrors(Guid executionID, AssetType at, Permission p, string apiTableName, int timeout = 3600)
         {
             if (string.IsNullOrEmpty(apiTableName))
@@ -3168,6 +3192,7 @@ from	api.ExecutionAsset T
 
                         // Validate permissions
                         LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, "ExecutionAsset");
+                        LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, isInsert, "ExecutionAsset");
                         this.AITrackTrace(client, execution, METHOD_NAME, "LogAssetPermissionErrors -  Permission.ModifyAsset- ExecutionAsset", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
 
