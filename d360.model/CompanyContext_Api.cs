@@ -3345,7 +3345,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
     {insertGraphAssetNode}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> 1", sw.ElapsedMilliseconds, isLog);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, $"AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 else
                                                 {
@@ -3432,7 +3432,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
     {insertGraphAssetNode}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> 1", sw.ElapsedMilliseconds, isLog);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 else
                                                 {
@@ -3489,7 +3489,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow },
                                                     transaction: trans,
                                                     commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Rule >> api.ExecutionAsset >> 1", sw.ElapsedMilliseconds, isLog);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, $"AssetTypeClass.Rule >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 else
                                                 {
@@ -3545,7 +3545,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
                                                         {updateAssetInfoOnExecutionRecordsSql}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Reference >> api.ExecutionAsset >> 1", sw.ElapsedMilliseconds, isLog);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 else
                                                 {
@@ -3627,34 +3627,34 @@ create table #ParentChildRelationships([operation] varchar(10),[uid] uniqueident
 select [uid] from #ParentChildRelationships",
                                             new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
                                             .ToList();
-                                            this.AITrackTrace(client, execution, METHOD_NAME, "Parent/Child Relationship >> graph.AssetEdge >> 1", sw.ElapsedMilliseconds, isLog);
+                                            this.AITrackTrace(client, execution, METHOD_NAME, $"Parent/Child Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         }
 
                                         #endregion
                                         sw.Restart();
                                         var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, !isInsert);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, "MergeFields >> 1", sw.ElapsedMilliseconds, isLog);
+                                        this.AITrackTrace(client, execution, METHOD_NAME, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         sw.Restart();
                                         ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, "ImportRelationships >> 1", sw.ElapsedMilliseconds, isLog);
+                                        this.AITrackTrace(client, execution, METHOD_NAME, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         if (jsonFieldTypes.Count > 0)
                                         {
                                             sw.Restart();
                                             MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, fieldJsonPropertyLoadLimitToTopLevel);
-                                            this.AITrackTrace(client, execution, METHOD_NAME, "MergeJsonFieldProperties >> 1", sw.ElapsedMilliseconds, isLog);
+                                            this.AITrackTrace(client, execution, METHOD_NAME, $"MergeJsonFieldProperties >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         }
 
                                         // Must execute BEFORE the Success flag is updated below.
                                         sw.Restart();
                                         MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, "MergeAssetDisplayValues >> 1", sw.ElapsedMilliseconds, isLog);
+                                        this.AITrackTrace(client, execution, METHOD_NAME, $"MergeAssetDisplayValues >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
 
                                         //Delete all field without value ONLY do this if there are lookup fields AND this is an update.
                                         if (hasLookupFieldTypes && !isInsert)
                                         {
                                             sw.Restart();
                                             DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
-                                            this.AITrackTrace(client, execution, METHOD_NAME, "DeleteEmptyAssetListFieldByApiExecutionUid >> 1", sw.ElapsedMilliseconds, isLog);
+                                            this.AITrackTrace(client, execution, METHOD_NAME, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         }
 
                                         sw.Restart();
