@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="tklok" id="GOV-6465">
+  <changeSet author="tklok" id="GOV-6465-V2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -41,12 +41,14 @@ BEGIN
 	SET NOCOUNT ON;
 		
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-        select 'Add', [queue].WriteIndexXml('', I.Subject, I.SubjectID, I.UpdatedBy), 'Intersect', I.ID, A.ID from inserted I
-		left outer join [dbo].[Asset] A on I.[Subject] = A.[Object] and I.[SubjectID] = a.[ObjectID];
+        select 'Add', [queue].WriteIndexXml('', I.Subject, I.SubjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, AT.Id) as AssetID from inserted I
+		left outer join [dbo].[Asset] A on I.[Subject] = A.[Object] and I.[SubjectID] = a.[ObjectID]
+		left outer join [dbo].[AssetType] AT on I.[Subject] = AT.[Object] and I.[SubjectID] = AT.[ObjectID];
 
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-        select 'Add', [queue].WriteIndexXml('', I.Object, I.ObjectID, I.UpdatedBy), 'Intersect', I.ID, A.ID from inserted I
-		left outer join [dbo].[Asset] A on I.[Object] = A.[Object] and I.[ObjectID] = a.[ObjectID];
+        select 'Add', [queue].WriteIndexXml('', I.Object, I.ObjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, AT.Id) from inserted I
+		left outer join [dbo].[Asset] A on I.[Object] = A.[Object] and I.[ObjectID] = a.[ObjectID]
+		left outer join [dbo].[AssetType] AT on I.[Object] = AT.[Object] and I.[ObjectID] = AT.[ObjectID];;
 END
 GO
 
@@ -58,12 +60,14 @@ BEGIN
 	SET NOCOUNT ON;
 		
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-        select 'Add', [queue].WriteIndexXml('', I.Subject, I.SubjectID, I.UpdatedBy), 'Intersect', I.ID, A.ID from inserted I
-		left outer join [dbo].[Asset] A on I.[Subject] = A.[Object] and I.[SubjectID] = a.[ObjectID];
+        select 'Add', [queue].WriteIndexXml('', I.Subject, I.SubjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, AT.ID) as AssetID from inserted I
+		left outer join [dbo].[Asset] A on I.[Subject] = A.[Object] and I.[SubjectID] = a.[ObjectID]
+		left outer join [dbo].[AssetType] AT on I.[Subject] = AT.[Object] and I.[SubjectID] = AT.[ObjectID];
 
 	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
-        select 'Add', [queue].WriteIndexXml('', I.Object, I.ObjectID, I.UpdatedBy), 'Intersect', I.ID, A.ID from inserted I
-		left outer join [dbo].[Asset] A on I.[Object] = A.[Object] and I.[ObjectID] = a.[ObjectID];
+        select 'Add', [queue].WriteIndexXml('', I.Object, I.ObjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, AT.ID) as AssetID from inserted I
+		left outer join [dbo].[Asset] A on I.[Object] = A.[Object] and I.[ObjectID] = a.[ObjectID]
+		left outer join [dbo].[AssetType] AT on I.[Object] = AT.[Object] and I.[ObjectID] = AT.[ObjectID];
 END
 GO
 DROP TRIGGER  IF EXISTS [dbo].[Intersect_AfterDelete]
