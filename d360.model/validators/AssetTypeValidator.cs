@@ -182,7 +182,10 @@ namespace d360.core.validators
             }
 
             var doesOrderFieldExists = CompanyContext.FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.Name.ToLower() == fieldName.ToLower());
-            string[] defaultAssetFields = { "createdon", "updatedon", "assetid" };
+            List<string> defaultAssetFields = new List<string>() { "createdon", "updatedon", "assetid" };
+
+            if (assetType.Object == SystemObjects.ReferenceItemType.ToString())
+                defaultAssetFields.Add("code");
 
             return doesOrderFieldExists || defaultAssetFields.Contains(fieldName.Trim().ToLower());
         }
