@@ -1654,15 +1654,37 @@ where	R.SourceObject = 'FusionAttribute'
         {
             string noClassLimitSql = "";
             string classLimitSql = "";
+
+            List<string> excludedClasses = new List<string>()
+            {
+                SystemObjects.AttributeType.ToString(),
+                SystemObjects.FusionType.ToString(),
+                SystemObjects.OrganizationType.ToString()
+            };
+
+            if (!Community.IsFusionEnabled())
+            {
+                excludedClasses.Add(SystemObjects.FusionAttributeType.ToString());
+                excludedClasses.Add(SystemObjects.FusionQueryAttributeType.ToString());
+            }
+
             if (limitToClasses == null)
             {
-                noClassLimitSql = @"
+                string relationshipsWhere = string.Empty;
+                if (!Community.IsFusionEnabled())
+                {
+                    string filterFusion = $"not in ('{SystemObjects.FusionType.ToString()}', '{SystemObjects.FusionAttributeType.ToString()}', '{SystemObjects.FusionQueryAttributeType.ToString()}')";
+                    relationshipsWhere += $" where IT.Object {filterFusion} and IT.Subject {filterFusion}";
+                }
+
+                noClassLimitSql = $@"
                 UNION
                 SELECT	CAST(IT.ID as int) ID,
 		                'Relationship :: ' + ITypeName.Name AS Name,
 		                'IntersectType' AS Type
                 FROM	IntersectType IT    
-		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
+		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName		
+                        {relationshipsWhere}
                 UNION
                 SELECT	R.ID,
 		                'Rule Implementation :: ' + A.DisplayValue as Name,
@@ -1680,18 +1702,6 @@ where	R.SourceObject = 'FusionAttribute'
                 {
                     classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
                 }
-            }
-
-            List<string> excludedClasses = new List<string>()
-            {
-                SystemObjects.AttributeType.ToString(),
-                SystemObjects.FusionType.ToString(),
-                SystemObjects.OrganizationType.ToString()
-            };
-            if (!Community.IsFusionEnabled())
-            {
-                excludedClasses.Add(SystemObjects.FusionAttributeType.ToString());
-                excludedClasses.Add(SystemObjects.FusionQueryAttributeType.ToString());
             }
 
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
