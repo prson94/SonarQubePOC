@@ -56,7 +56,7 @@ namespace igx.UnitTests.ValidatorTests
         {
             var model = new TagApiUpsertModel()
             {
-                Value = string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127)))
+                Value = GetRandomString(251)
             };
 
             Action act = () => TagValidator.ValidateForPost(model);
@@ -71,10 +71,21 @@ namespace igx.UnitTests.ValidatorTests
         {
             var model = new TagApiUpsertModel()
             {
-                Value = string.Join("", Enumerable.Repeat(0, 250).Select(n => (char)new Random().Next(127)))
+                Value = GetRandomString(250)
             };
             TagValidator.ValidateForPost(model);
 
+        }
+        private static string GetRandomString(int stringLength)
+        {
+            StringBuilder sb = new StringBuilder();
+            int numGuidsToConcat = (((stringLength - 1) / 32) + 1);
+            for (int i = 1; i <= numGuidsToConcat; i++)
+            {
+                sb.Append(Guid.NewGuid().ToString("N"));
+            }
+
+            return sb.ToString(0, stringLength);
         }
 
         [Fact]
