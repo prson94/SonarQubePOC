@@ -39,7 +39,6 @@ export class BaseComponent {
     relationsSidebar: SecondaryNavItem;
     monitorSidebar: SecondaryNavItem;
     fieldNav: SecondaryNavItem;
-    permissionsNav: SecondaryNavItem;
     // tabs
 
     lineageShowUsageOnly = false;
@@ -186,8 +185,7 @@ export class BaseComponent {
         hasRelationships?: boolean,
         hasFollowers?: boolean,
         hasMonitor?: boolean,
-        hasField?: boolean,
-        hasPermissions?: boolean
+        hasField?: boolean
     ) {
         if (this.secondaryNavService) {
             this.clearSidebar();
@@ -230,21 +228,13 @@ export class BaseComponent {
                 );
                 this.secondaryNavService.showItem(this.auditSidebar);
             }
-            if (hasField || hasField === undefined) {
+            if (hasField) {
                 this.fieldNav = new SecondaryNavItem(
                     'Field Definitions',
                     'fields',
                     ['fa-drivers-license-o'],
                     '/sidebar/fields', null, 1);
                 this.secondaryNavService.showItem(this.fieldNav);
-            }
-            if (hasPermissions || hasPermissions === undefined) {
-                this.permissionsNav = new SecondaryNavItem(
-                    'Responsibilities',
-                    'responsibilities',
-                    ['fa-bars'],
-                    '/sidebar/responsibilities', null, 4);
-                this.secondaryNavService.showItem(this.permissionsNav);
             }
 
             if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
