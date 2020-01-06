@@ -220,12 +220,12 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error while updating tag", e.Message);
             }
 
-            return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
+            return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result)); 
         }
 
 
         /// <summary>
-        /// Allows you to remove a tags based on tag lists.
+        /// Allows you to remove tags based on a tag list.
         /// </summary>
         /// <remarks>
         /// Use the cascade flag set to true to delete a tag that is applied to an asset that tag will be deleted along with the association.  If false a tag that is in use will not be deleted.  The default is false for the cascade setting.
