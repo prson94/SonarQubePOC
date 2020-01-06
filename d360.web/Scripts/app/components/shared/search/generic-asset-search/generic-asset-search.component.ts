@@ -254,6 +254,17 @@ export class AssetSearchComponent implements OnInit, OnChanges {
             .subscribe(result => {
                 this.searchresults = JSON.parse(JSON.stringify(result.items));
 
+
+                this.selected.forEach(s => {
+                    let ix = this.searchresults.findIndex(x => x.Uid == s.Uid);
+
+                    if (ix > -1) {
+                        this.searchresults.splice(ix, 1);
+                        this.searchresults = this.searchresults.slice();
+                    }
+                });
+
+
                 this.searchResultsCount = result.total;
                 this.numberOfPages = Math.ceil(result.total / result.pageSize);
 
@@ -312,12 +323,16 @@ export class AssetSearchComponent implements OnInit, OnChanges {
             }
             this.selected.push(selectedItem);
         }
+
+        this.searchresults.splice(idx, 1);
+        this.searchresults = this.searchresults.slice();
         this.selectedChange.emit({ action: 'added', item: selectedItem });
     }
 
     private unselect(idx: number) {
         var item = this.selected[idx];
         this.selected.splice(idx, 1);
+        this.searchresults = this.searchresults.slice();
         this.selectedChange.emit({ action: 'removed', item: item });
     }
 
