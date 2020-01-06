@@ -106,7 +106,6 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                                     this.secondaryNavService.setCurrentArea(res, icon, 'Reference Lists');
                                     this.secondaryNavService.clearCurrentObject();
                                     this.setCommonSecondaryNavTabs(true, true, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true, true);
-                                    console.log(this.hasPermission(Permission.ReadRelationships));
 
                                     this.setSecondaryNavItems();
 
