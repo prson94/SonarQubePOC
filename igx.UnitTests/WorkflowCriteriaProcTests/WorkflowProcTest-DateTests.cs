@@ -22,10 +22,12 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void DateConditionEqualTest()
         {
             string condition = "<Conditions>" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"=\" Value=\"12.56\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\"=\" Value=\"5\" Connector =\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
-            List<int> changedFields = new List<int> { 2 };
+            List<int> changedFields = new List<int> { 3 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
@@ -34,10 +36,12 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void DateConditionEqualTest_Fail()
         {
             string condition = "<Conditions>" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"=\" Value=\"12.42\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\"=\" Value=\"5\" Connector =\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
-            List<int> changedFields = new List<int> { 2 };
+            List<int> changedFields = new List<int> { 3 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(4).ToString();
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
@@ -46,10 +50,12 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void DateConditionNotEqualTest()
         {
             string condition = "<Conditions>" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"=\" Value=\"12.42\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\"!=\" Value=\"5\" Connector =\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
-            List<int> changedFields = new List<int> { 2 };
+            List<int> changedFields = new List<int> { 3 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
@@ -58,10 +64,12 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void DateConditionNotEqualTest_Fail()
         {
             string condition = "<Conditions>" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"=\" Value=\"12.56\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\"!=\" Value=\"5\" Connector =\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
-            List<int> changedFields = new List<int> { 2 };
+            List<int> changedFields = new List<int> { 3 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(4).ToString();
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
@@ -70,10 +78,12 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void DateConditionGreaterThanTest()
         {
             string condition = "<Conditions>" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\">\" Value=\"12.35\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\">\" Value=\"5\" Connector =\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
-            List<int> changedFields = new List<int> { 2 };
+            List<int> changedFields = new List<int> { 3 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(7).ToString();
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
@@ -82,10 +92,12 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void DateConditionGreaterThanTest_Fail()
         {
             string condition = "<Conditions>" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\">\" Value=\"12.58\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\">\" Value=\"5\" Connector =\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
-            List<int> changedFields = new List<int> { 2 };
+            List<int> changedFields = new List<int> { 3 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(3).ToString();
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
@@ -94,10 +106,12 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void DateConditionLessThanTest()
         {
             string condition = "<Conditions>" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"&lt;\" Value=\"12.62\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\"&lt;\" Value=\"5\" Connector =\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
-            List<int> changedFields = new List<int> { 2 };
+            List<int> changedFields = new List<int> { 3 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(3).ToString();
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
@@ -106,10 +120,12 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void DateConditionLessThanTest_Fail()
         {
             string condition = "<Conditions>" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"&lt;\" Value=\"12.12\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\"&lt;\" Value=\"5\" Connector =\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
-            List<int> changedFields = new List<int> { 2 };
+            List<int> changedFields = new List<int> { 3 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(8).ToString();
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
@@ -118,11 +134,13 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void DateConditionLessOrEqThanTest()
         {
             string condition = "<Conditions>" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"&lt;=\" Value=\"12.62\" Connector =\"AND\" />" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"&lt;=\" Value=\"12.56\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\"&lt;=\" Value=\"5\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\"&lt;=\" Value=\"6\" Connector =\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
-            List<int> changedFields = new List<int> { 2 };
+            List<int> changedFields = new List<int> { 3 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
@@ -131,11 +149,13 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void DateConditionLessOrEqTest_Fail()
         {
             string condition = "<Conditions>" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"&lt;=\" Value=\"12.12\" Connector =\"AND\" />" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"&lt;=\" Value=\"12.56\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\"&lt;=\" Value=\"5\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\"&lt;=\" Value=\"2\" Connector =\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
-            List<int> changedFields = new List<int> { 2 };
+            List<int> changedFields = new List<int> { 3 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }
@@ -144,11 +164,13 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void DateConditionMoreOrEqThanTest()
         {
             string condition = "<Conditions>" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\">=\" Value=\"12.24\" Connector =\"AND\" />" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\">=\" Value=\"12.56\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\">=\" Value=\"5\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\">=\" Value=\"4\" Connector =\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
-            List<int> changedFields = new List<int> { 2 };
+            List<int> changedFields = new List<int> { 3 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.True(res, "Invalid evaluation result!");
         }
@@ -157,11 +179,13 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
         public void DateConditionMoreOrEqTest_Fail()
         {
             string condition = "<Conditions>" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\">=\" Value=\"12.57\" Connector =\"AND\" />" +
-                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\">=\" Value=\"12.56\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\">=\" Value=\"5\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\">=\" Value=\"7\" Connector =\"AND\" />" +
                 "</Conditions>";
             bool? res = null;
-            List<int> changedFields = new List<int> { 2 };
+            List<int> changedFields = new List<int> { 3 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
         }

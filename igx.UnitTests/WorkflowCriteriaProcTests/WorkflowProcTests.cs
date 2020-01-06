@@ -33,9 +33,10 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             {
                 WorkflowRegistrationCriteriaProcessor.Evaluate(context, "", 0, "<Conditions />");
             }
-            catch
+            catch (Exception ex)
             {
-                didThrowError = true;
+                if (ex.Message.Contains("OBJECT ID MUST BE GREATER THAN 0"))
+                    didThrowError = true;
             }
             Assert.True(didThrowError, "Invalid object id should throw error");
         }
@@ -48,9 +49,10 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             {
                 WorkflowRegistrationCriteriaProcessor.Evaluate(context, "", 21, "<Conditions />");
             }
-            catch
+            catch (Exception ex)
             {
-                didThrowError = true;
+                if (ex.Message.Contains("OBJECT ID MUST BE GREATER THAN 0"))
+                    didThrowError = true;
             }
             Assert.True(didThrowError, "Invalid object should throw error");
         }
@@ -102,6 +104,43 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             Assert.False(res, "Invalid evaluation result!");
         }
 
+
+        [Fact]
+        public void SatisfyAllTestCaseWithAllFields()
+        {
+            string condition = "<Conditions>" +
+                "<Condition FieldTypeID=\"1\" ValueType=\"T\" Operator=\"=\" Value=\"TestStringValue\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"=\" Value=\"12.56\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\"=\" Value=\"5\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"4\" ValueType=\"B\" Operator=\"=\" Value=\"True\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"5\" ValueType=\"L\" Operator=\"=\" Value=\"1,2\" Connector =\"AND\" />" +
+                "</Conditions>";
+            bool? res = null;
+            List<int> changedFields = new List<int> { 1, 2, 3, 4, 5 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            Assert.True(res, "Invalid evaluation result!");
+        }
+
+        [Fact]
+        public void SatisfyAllTestCaseWithAllFieldsFail()
+        {
+            string condition = "<Conditions>" +
+                "<Condition FieldTypeID=\"1\" ValueType=\"T\" Operator=\"=\" Value=\"TestStringValue\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"2\" ValueType=\"D\" Operator=\"=\" Value=\"12.56\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"3\" ValueType=\"DT\" Operator=\"=\" Value=\"7\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"4\" ValueType=\"B\" Operator=\"=\" Value=\"True\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"5\" ValueType=\"L\" Operator=\"=\" Value=\"1,2\" Connector =\"AND\" />" +
+                "</Conditions>";
+            bool? res = null;
+            List<int> changedFields = new List<int> { 1, 2, 3, 4, 5 };
+            var dateField = context.Fields.FirstOrDefault(x => x.FieldTypeID == 3);
+            dateField.FormattedValue = DateTime.Now.AddDays(5).ToString();
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            Assert.False(res, "Invalid evaluation result!");
+        }
+
         [Fact]
         public void SatisfyAnyTestCase()
         {
@@ -140,6 +179,22 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             List<int> changedFields = new List<int> { };
             res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
             Assert.False(res, "Invalid evaluation result!");
+        }
+
+
+        [Fact]
+        public void NonExistantFieldDeletedCase()
+        {
+            string condition = "<Conditions>" +
+                "<Condition FieldTypeID=\"78\" ValueType=\"T\" Operator=\"=\" Value=\"TestStringValue\" Connector =\"AND\" />" +
+                "<Condition FieldTypeID=\"79\" ValueType=\"D\" Operator=\"=\" Value=\"12.56\" Connector =\"AND\" />" +
+                  "</Conditions>";
+            bool? res = null;
+            List<int> changedFields = new List<int> { };
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            Assert.False(res, "Invalid evaluation result!");
+
+            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
         }
 
 
