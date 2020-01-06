@@ -220,7 +220,7 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error while updating tag", e.Message);
             }
 
-            return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
+            return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result)); 
         }
 
 
