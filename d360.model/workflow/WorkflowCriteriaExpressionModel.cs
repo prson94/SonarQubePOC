@@ -242,9 +242,9 @@ namespace d360.model.workflow
             switch (ValueDataType)
             {
                 case CriteriaValueDataType.Integer:
-                    return (int)val < (int)Value;
+                    return (int)val <= (int)Value;
                 case CriteriaValueDataType.Double:
-                    return (double)val < (double)Value;
+                    return (double)val <= (double)Value;
             }
 
             throw new Exception("ERROR - INVALID OPERATION FOR SPECIFIED DATA TYPE.");
