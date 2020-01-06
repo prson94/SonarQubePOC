@@ -4,12 +4,12 @@ import { Title } from '@angular/platform-browser';
 
 import { ArtifactTypeService } from '../../services/artifact-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { ArtifactType } from '../../models/artifact-type.model';
 import { ArtifactBaseComponent } from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { Artifact } from '../../models/artifacts.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { debounce, debounceTime } from 'rxjs/operators';
@@ -35,8 +35,8 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
-        rightSidebarService: RightSidebarService) {
-        super(headerBreadcrumbService, rightSidebarService, webAnalyticsService);
+        secondaryNavService: SecondaryNavService) {
+        super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);
     }
 
     ngOnInit() {
@@ -113,13 +113,13 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                             x.ParentID > 0));
 
                         this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe(res => {
-                            this.setCommonRightSideBar(false, false, this.artifactType.HasDashboards);
-                            this.rightSidebarService.setCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true);
-                            this.rightSidebarService.setCurrentArea(this.artifactType.Name, res, 'Assets');
+                            this.setCommonSecondaryNavTabs(false, false, this.artifactType.HasDashboards);
+                            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true));
+                            this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, 'Assets');
                             if (this.artifactType.HasV2Workflows) {
-                                this.rightSidebarService
+                                this.secondaryNavService
                                     .showItem(
-                                        new RightSidebarItem(
+                                        new SecondaryNavItem(
                                             'Workflow',
                                             'workflowmonitor',
                                             ['fa-usb'],

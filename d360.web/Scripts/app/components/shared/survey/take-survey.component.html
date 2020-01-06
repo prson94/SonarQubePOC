@@ -3,7 +3,8 @@
     <form (ngSubmit)="onSubmit()" #surveyForm="ngForm">
         <div class="content">
             <div class="row" *ngIf="currentQuestion">
-                <h4 style="padding-bottom:10px"><span *ngIf="questions.length > 1">{{currentQuestionIndex+1}} - </span>{{currentQuestion.Name}}</h4>
+                <span class="question-count" *ngIf="questions.length > 1">Question {{currentQuestionIndex+1}} of {{questions.length}}</span>
+                <h4 style="padding-bottom:10px;padding-top:10px">{{currentQuestion.Name}}</h4>
                 <span *ngIf="currentQuestion.Description" [innerHtml]="currentQuestion.Description"></span>
                 <span [ngSwitch]="currentQuestion.DisplayStyle">
                     <span *ngSwitchCase="SurveyTypeDisplayStyle.RadioList">
@@ -23,7 +24,7 @@
                         </div>
                     </span>
                 </span>
-                <div class="col s12">
+                <div>
                     <div class="FieldName">Comments</div>
                     <textarea name="comments" [style]="{'height':'150px'}" [(ngModel)]="currentQuestion.Comments"></textarea>
                 </div>
@@ -43,9 +44,8 @@
             </button>
             <button class="button primary" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex+1 == questions.length" type="submit" [disabled]="!surveyForm.form.valid || submitting" label="Save">
                 <span *ngIf="submitting" class="spinner"></span>    
-                <span *ngIf="!submitting">Save</span>
+                <span *ngIf="!submitting">Submit Survey</span>
             </button>
-            <em *ngIf="questions.length > 1">Question {{currentQuestionIndex+1}} of {{questions.length}}</em>
         </div>
     </form>
 </d3s-modal>

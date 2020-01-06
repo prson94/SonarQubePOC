@@ -1,7 +1,7 @@
 ﻿import { Component, NgZone, OnDestroy } from '@angular/core';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FusionService } from '../../../services/fusion.service';
 import { AssetStyleService } from '../../../services/asset-style.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -28,28 +28,28 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
     newFusionStyle: AssetTypeStyle;
 
     constructor(
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private fusionService: FusionService,
         titleService: Title,
         private messagesService: MessagesObservableService,
         private objectStyleService: AssetStyleService
     ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = 'Fusion';
         this.tabTitle = 'Fusion Types';
         this.adminHeading = 'Integration';
         this.setCommonItems();
-        this.setCommonRightSideBar();
-
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/FusionType/${this.selectedRow.ID}`;
-            });
-        }
+        this.setCommonSecondaryNavTabs();
+        this.selectedItemChange();
 
         this.load();
+    }
+
+    selectedItemChange() {
+        if (this.auditSidebar && this.selectedRow) {
+            this.auditSidebar.url = `/sidebar/audit/FusionType/${this.selectedRow.ID}`;
+        }
     }
 
     ngOnDestroy() {
@@ -62,6 +62,7 @@ export class AdminFusionComponent extends AdminBaseComponent implements OnDestro
             data => {
                 this.fusionTypes = data;
                 this.selectedRow = (this.fusionTypes && this.fusionTypes.length) ? this.fusionTypes[0] : null;
+                this.selectedItemChange();
                 this.isLoading = false;
             }
         );

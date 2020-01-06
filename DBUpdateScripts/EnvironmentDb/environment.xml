@@ -384,4 +384,14 @@
   <include file="scripts/GOV-8859.xml"/>  <!-- changes to [graph].[GetLineageByAsset] : populate navigation folder icons -->
   <include file="scripts/GOV-8945.xml"/>  <!-- Renaming dbo.FieldTypeFusionLookupDisplayField table  -->
   <include file="scripts/GOV-9110.xml"/>  <!-- update [GetFormattedFieldLookupValueWithMultiple] fcn : fix invalid lookup formatted value -->
+  <include file="scripts/GOV-9141.xml"/>  <!-- changes to [graph].[GetLineageByAsset] : fixed GOV-8724, GOV-9075, GOV-9141 -->
+  <include file="scripts/GOV-8669.xml"/>  <!-- update triggers on Group so only one record is created in [queue].[task] -->
+  <include file="scripts/GOV-9158.xml"/>  <!-- adds empty stoplist and updates graph.AssetNode FULLTEXT Index -->
+  <include file="scripts/GOV-9167.xml"/>  <!-- changes to [dbo].[GetDynamicAssets] fix advanced filtering by parent always doing like -->
+  <include file="scripts/GOV-8479.xml"/>  <!-- update triggers on Global_Resource so only one record is created in [queue].[task] -->
+  <include file="scripts/GOV-9170.xml"/>  <!-- changes to [graph].[GetLineageByAsset] : change to NOT double the hop number parameter -->
+  <include file="scripts/GOV-6465.xml"/>  <!-- update triggers on Nym and Intersect so AssetID is included in [queue].[task] -->
+  <include file="scripts/GOV-9194.xml"/>  <!-- update [graph].[GetLineageByAsset] : add IsSubjectInTransformation to response -->
+  <include file="scripts/GOV-9221.xml"/>  <!-- script to create Uid index for graph.AssetEdge -->
+  <include file="scripts/GOV-9247.xml"/>  <!-- script to create missing [reporting].[RuleImplementations_Results], [reporting].[RuleImplementations_ResultQualifiers] views -->
 </databaseChangeLog>

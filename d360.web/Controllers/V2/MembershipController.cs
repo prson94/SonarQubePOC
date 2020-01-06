@@ -14,6 +14,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Description;
 using static d360.core.entities.Resource;
 namespace d360.web.Controllers.V2
 {
@@ -190,10 +191,19 @@ namespace d360.web.Controllers.V2
             string whereSql = "";
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
-            string selectSql = $"select gr.uid, gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, gr.IsAdministrator, gr.LastLoggedInOn, case gr.State " +
-                $" when 1 then 'Active'" +
-                $"when 2 then 'InActive'" +
-                $"when 3 then 'Deleted' end as State ";
+            string selectSql = $@"select gr.uid, 
+                gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, 
+                gr.IsAdministrator, gr.LastLoggedInOn, 
+                case 
+                    when g.PrimaryOwnerResourceID = gr.ResourceID then 'Primary' 
+                    when g.SecondaryOwnerResourceID = gr.ResourceID then 'Secondary' 
+                    else null end 
+                as [Owner],
+                case gr.State 
+                    when 1 then 'Active' 
+                    when 2 then 'InActive'
+                    when 3 then 'Deleted' end 
+                as State ";
             string countSql = @"
                            select count(*)
                                    from[reporting].[Global_Resource] as gr
@@ -284,6 +294,20 @@ namespace d360.web.Controllers.V2
             model.items = results;
             model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
+        }
+
+        [
+           HttpGet,
+           MapToApiVersion("2.0"),
+           Route("groups/{groupId:int}"),
+           ApiExplorerSettings(IgnoreApi = true)
+       ]
+        public async Task<HttpResponseMessage> GetGroupUid(int groupId)
+        {
+            string sql = $"SELECT uid FROM[dbo].[Asset] where Object = 'Group' and ObjectID =" + groupId;
+
+            var results = await Company.QueryAsync<dynamic>(sql);
+            return Request.CreateResponse(HttpStatusCode.OK, results);
         }
     }
 }

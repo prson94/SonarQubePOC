@@ -4,7 +4,7 @@ import { Title } from '@angular/platform-browser';
 
 import { ArtifactService } from '../../services/artifacts.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { SurveysService } from '../../services/surveys.service';
 import { PermissionsService } from '../../services/permissions.service';
@@ -12,7 +12,7 @@ import { Artifact } from '../../models/artifacts.model';
 import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactBaseComponent } from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
 import { StringConstants } from '../../static/string-constants';
@@ -43,7 +43,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
     constructor(
         private route: ActivatedRoute,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private router: Router,
         private artifactService: ArtifactService,        
         private titleService: Title,
@@ -52,7 +52,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         private surveysService: SurveysService,
         protected permissionsService: PermissionsService
     ) {
-        super(headerBreadcrumbService, rightSidebarService, webAnalyticsService);       
+        super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);       
     }
 
     ngOnInit() {
@@ -123,7 +123,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     ;
                     
                     this
-                        .setCommonRightSideBar(
+                        .setCommonSecondaryNavTabs(
                             true,
                             this.hasPermission(Permission.ReadResponsibilities),
                             this.artifact.HasDashboards,
@@ -134,12 +134,12 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                             true
                         )
                         ;
-                    this.rightSidebarService.setCurrentObject("ArtifactType", typeID, "Artifact", id, false, artifact.HasWorkflow, this.artifact.Uid);
+                    this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject("ArtifactType", typeID, "Artifact", id, false, artifact.HasWorkflow, this.artifact.Uid));
                     if (this.artifact.HasChildArtifacts) {
                         this
-                            .rightSidebarService
+                            .secondaryNavService
                             .showItem(
-                                new RightSidebarItem(
+                                new SecondaryNavItem(
                                     'Children',
                                     'children',
                                     ['fa-sitemap'],
@@ -148,8 +148,8 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                             )
                         ;
                     }
-                    this.rightSidebarService.showItem(
-                        new RightSidebarItem(
+                    this.secondaryNavService.showItem(
+                        new SecondaryNavItem(
                             'Scoring',
                             'Scoring',
                             ['fa-sitemap'],
@@ -157,14 +157,14 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
                         )
                     );
-                    this.rightSidebarService.showItem(
-                        new RightSidebarItem(
+                    this.secondaryNavService.showItem(
+                        new SecondaryNavItem(
                             'Comments', 'Comments', ['fa-comments'],
                             `/sidebar/comments/Artifact/${this.artifact.ID}`,null,33
                         )
                     );
-                    this.rightSidebarService.showItem(
-                        new RightSidebarItem(
+                    this.secondaryNavService.showItem(
+                        new SecondaryNavItem(
                             'Actions', 'Actions', null,
                             `/sidebar/actions/Artifact/${this.artifact.ID}`,null,27
                         )
@@ -211,7 +211,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
                     this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType',this.artifactTypeId,currentFolderName).subscribe(res => {
-                        this.rightSidebarService.setCurrentArea(this.artifact.DisplayValue, res, 'Definition');
+                        this.secondaryNavService.setCurrentArea(this.artifact.DisplayValue, res, 'Definition');
                     });
                     let areaName: string = this.currentAreaName ? this.currentAreaName : this.folderTitle;
                     let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}`;

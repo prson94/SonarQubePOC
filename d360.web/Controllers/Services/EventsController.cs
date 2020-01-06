@@ -17,10 +17,11 @@ using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web.Http;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.Services
 {
-    [ApiVersion("1.0"), RoutePrefix("services/events"), Authorize]
+    [ApiVersion("1.0"), RoutePrefix("services/events"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
     public class EventsController : BaseApiController
     {
         TelemetryClient Telemetry;

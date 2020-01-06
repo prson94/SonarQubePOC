@@ -280,30 +280,15 @@ namespace igx.jobs.indexer
             }
 
             LogReindexStart("Users", c.CompanyID);
-
-            var users = new List<IndexObjectModel>();
-
-            #region Company Users
-
-            var sql = @"select ResourceID, Email as Username, LastName, FirstName, Email from reporting.global_resource";
-
-            users = company.Query(sql).ToList().Select(u => new IndexObjectModel
+            try
             {
-                Category = "Resource",
-                CompanyID = c.CompanyID,
-                AssetType = "User",
-                ID = u.ResourceID,
-                RelativeUrl = $"#/resources/{u.ResourceID}",
-                Fields = new Dictionary<string, string>() {
-                                    { "Name", $"{u.FirstName} {u.LastName}" },
-                                    { "Email", u.Email },
-                                    { "Username", u.Username }
-                                }
-            }).ToList();
-
-            source.AddToIndex(users);
-
-            #endregion
+                models = LoadUsers(company, c.CompanyID, source);
+                source.AddToIndex(models);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+            }
 
             LogCompanyReindexComplete(c.CompanyID);
         }
@@ -330,45 +315,21 @@ namespace igx.jobs.indexer
 
         private static IEnumerable<IndexObjectModel> LoadArtifactSynonyms(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = @"                    	
-                (select	
-	                SubjectAdv.DisplayValue as 'Synonym',	
-	                I.Subject as 'SynonymObjectType',
-	                I.SubjectID as  'SynonymObjectID',
-	                ObjectAdv.DisplayValue as 'SynonymFor',	
-	                I.Object as 'SynonymForObject',
-	                I.ObjectID as 'SynonymForObjectID',		
-	                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url',	
-	                ArtType.Name as 'SynonymForObjectType',
-                    P.Name as 'PredicateName'
-                from [intersect] I
-	                inner join IntersectType T on T.ID = I.IntersectTypeID 
-                    inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-	                inner join Asset SubjectAsset on SubjectAsset.[Object] = 'Artifact' and SubjectAsset.ObjectID = I.SubjectID and I.Subject = 'Artifact'
-					inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
-	                inner join Asset ObjectAsset on ObjectAsset.[Object] = 'Artifact' and ObjectAsset.ObjectID = I.ObjectID and I.Object = 'Artifact'
-					inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID
-	                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID)
-                Union
-                (select	
-	                SubjectAdv.DisplayValue as 'Synonym',	
-	                I.Object as 'SynonymObjectType',
-	                I.ObjectID as  'SynonymObjectID',
-	                ObjectAdv.DisplayValue as 'SynonymFor',	
-	                I.Subject as 'SynonymForObject',
-	                I.SubjectID as 'SynonymForObjectID',		
-	                dbo.GenerateAssetUrl(ObjectAsset.ID) as 'Url',	
-	                ArtType.Name as 'SynonymForObjectType',
-                    P.Name as 'PredicateName'	
-                from [intersect] I
-	                inner join IntersectType T on T.ID = I.IntersectTypeID 
-                    inner join Predicate P on P.ID = T.PredicateID and P.Type = 6
-	                inner join Asset SubjectAsset on SubjectAsset.[Object] = 'Artifact' and SubjectAsset.ObjectID = I.ObjectID and I.Subject = 'Artifact'
-					inner join [dbo].AssetDisplayValue SubjectAdv on SubjectAdv.AssetID = SubjectAsset.ID
-	                inner join Asset ObjectAsset on ObjectAsset.[Object] = 'Artifact' and ObjectAsset.ObjectID = I.SubjectID and I.Object = 'Artifact'
-					inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID
-	                inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID)
-                order by SynonymFor";
+            /* Intersect Synonym query columns:
+             *  ID
+             *  Direction
+             *  Synonym
+             *  SynonymObjectType
+             *  SynonymObjectID
+             *  SynonymAssetID
+             *  SynonymFor
+             *  SynonymForObject
+             *  SynonymForObjectID
+             *  Url
+             *  SynonymForObjectType
+             *  PredicateName
+             */
+            var sql = ElasticSearchSource.INTERSECT_SYNONYM_QUERY + " order by SynonymFor";
 
             return getData(context, sql, companyID, source, "", false, (dynamic o) =>
             {
@@ -377,7 +338,7 @@ namespace igx.jobs.indexer
                     Category = "Synonym",
                     CompanyID = companyID,
                     AssetType = "Synonym",
-                    ItemUniqueID = $"{o.SynonymObjectType}|{o.SynonymObjectID}|{o.SynonymForObjectType}|{o.SynonymForObjectID}",
+                    ItemUniqueID = $"intersect|{o.ID}|{o.Direction}",
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Synonym },
@@ -416,7 +377,7 @@ from
                     Category = "Synonym",
                     CompanyID = companyID,
                     AssetType = "Synonym",
-                    ItemUniqueID = $"custom|{o.PredicateName}|{o.ID}",
+                    ItemUniqueID = $"custom|{o.ID}",
                     RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Synonym },
@@ -436,10 +397,12 @@ from
 	                        f.Name,
 	                        f.FusionAttributeTypeID,
 	                        ft.Name as FusionAttributeTypeName,
-	                        fu.Name as FusionName
+	                        fu.Name as FusionName,
+							a.id as AssetID
                         from fusionattribute f
 	                        inner join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
 	                        inner join fusion fu on (f.fusionid = fu.id)
+                            inner join asset a on a.object = 'FusionAttribute' and f.id = a.objectid
                         where f.Deleted = 0";
 
             foreach (var a in context.Query(sql, new { compid = companyID }, buffered:false,commandTimeout: _defaultQueryCommandTimeout))
@@ -449,7 +412,8 @@ from
                     Category = "FusionAttributes",
                     CompanyID = companyID,
                     AssetType = $"{a.FusionName} {a.FusionAttributeTypeName}",
-                    ID = a.ID,                    
+                    ID = a.ID,
+                    AssetID = a.AssetID,
                     RelativeUrl = $"/fusion/details/FusionAttribute/{a.ID}/{Uri.EscapeDataString(a.Name)}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", a.Name }
@@ -502,7 +466,9 @@ from
 
         private static IEnumerable<IndexObjectModel> LoadGroups(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = @"SELECT [ID],[Name],[Description] FROM [Group]";
+            var sql = @"SELECT g.[ID], g.[Name], g.[Description], a.ID as AssetID
+                    FROM [Group] g
+                    INNER JOIN [Asset] a ON a.[Object] = 'Group' AND a.ObjectID = g.ID";
 
             var sType = "Group";
             return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
@@ -513,10 +479,41 @@ from
                     CompanyID = companyID,
                     ID = o.ID,
                     AssetType = sType,
+                    AssetID = o.AssetID,
                     RelativeUrl = $"/groups/{o.ID}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
                         { "Description", o.Description }
+                    }
+                };
+            });
+        }
+
+        private static IEnumerable<IndexObjectModel> LoadUsers(SqlConnection context, int companyID, ElasticSearchSource source)
+        {
+            var sql = @"SELECT ResourceID, Email AS Username, LastName, FirstName, Email,
+                        CASE
+                        WHEN Email not like '%@data3sixty.com' and Email not like '%@infogix.com'
+                            THEN '0'
+                            ELSE '1'
+                        END as Data3SixtyUser
+                        FROM reporting.global_resource";
+
+            var sType = "Resource";
+            return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
+            {
+                return new IndexObjectModel
+                {
+                    Category = sType,
+                    CompanyID = companyID,
+                    AssetType = "User",
+                    ID = o.ResourceID,
+                    RelativeUrl = $"#/resources/{o.ResourceID}",
+                    Fields = new Dictionary<string, string>() {
+                        { "Name", $"{o.FirstName} {o.LastName}" },
+                        { "Email", o.Email },
+                        { "Username", o.Username },
+                        { "Data3SixtyUser", o.Data3SixtyUser },
                     }
                 };
             });

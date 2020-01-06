@@ -1,6 +1,8 @@
 ﻿import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 
 declare var CompanySettings: any;
 
@@ -23,21 +25,25 @@ export class LineageComponent extends BaseComponent implements OnInit, OnDestroy
 
     constructor(
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        secondaryNavService: SecondaryNavService,
+        breadcrumbService: HeaderBreadcrumbService,
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
     }
 
     ngOnInit() {
         if (CompanySettings != null && CompanySettings.LineageVersion != null) {
             this.lineageVersion = CompanySettings.LineageVersion;
         }
-
         this.sub = this.route.params.subscribe(params => {
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
             this.usageOnly = params['showUsageOnly'] == '1';
         });
+        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

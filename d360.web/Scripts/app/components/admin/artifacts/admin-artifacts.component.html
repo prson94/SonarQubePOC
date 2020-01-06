@@ -12,7 +12,7 @@
                    placeholder="Search"
                    style="width: 100%;margin-bottom:10px;">
 
-            <p-treeTable #dt [value]="artifactTypes" #assetTypeTree selectionMode="single" filterMode="strict" [(selection)]="selectedRow" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3">
+            <p-treeTable #dt [value]="artifactTypes" #assetTypeTree selectionMode="single" filterMode="strict" (onNodeSelect)="selectedItemChange()" [(selection)]="selectedRow" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3">
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 60%">Name</th>

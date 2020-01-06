@@ -5,10 +5,12 @@ import { debounceTime } from 'rxjs/operators';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { BaseObservableService } from '../../services/baseObservable.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { AuthenticationService } from '../../services/authentication.service';
 import { CheckTreeNode } from '../shared/small-widgets/check-tree/checktreenode';
 import { SearchService } from '../../services/search.service';
 import { SettingsHelper } from '../../models/settings.model';
 
+declare var CompanySettings;
 @Injectable()
 export class SearchStateService extends BaseObservableService {
 
@@ -16,7 +18,7 @@ export class SearchStateService extends BaseObservableService {
     private readonly sessionAgeMinutes: number = 10;
     private searchService: SearchService;
 
-    constructor(private http: HttpClient, messagesService: MessagesObservableService) {
+    constructor(private http: HttpClient, messagesService: MessagesObservableService, protected authenticationService: AuthenticationService) {
         super(messagesService);
         this.searchService = new SearchService(http, messagesService);
         this.reset();
@@ -127,6 +129,46 @@ export class SearchStateService extends BaseObservableService {
             FieldFilters: [],
             Aggregations: []
         });
+    }
+
+    private _baseCategoryTree: CheckTreeNode[];
+    private getBaseCategoryTree() {
+        if (this._baseCategoryTree == undefined) {
+            this._baseCategoryTree = SettingsHelper.getSearchTypesList().map((val) => {
+                return {
+                    "label": val.title,
+                    "count": 0,
+                    "type": "category",
+                    "data": val.value,
+                    "key": val.value
+                }
+            })
+            if (CompanySettings) {
+                if (CompanySettings.FusionEnabled == 'false') {
+                    this._baseCategoryTree = this._baseCategoryTree.filter(x => x.key != 'FusionAttributes' && x.key != 'FusionType');
+                }
+                if (CompanySettings.FusionEnabled == 'true') {
+                    this._baseCategoryTree = this._baseCategoryTree.filter(x => x.key != 'TechnicalAsset');
+                }
+            }
+            if (!this.authenticationService.isAdmin) {
+                this._baseCategoryTree = this._baseCategoryTree.filter(x => x.key != 'Resource' && x.key != 'Group');
+            }
+        }
+        return this._baseCategoryTree;
+    }
+
+    private buildTree(aggResult: CheckTreeNode[]): CheckTreeNode[] {
+        let tree = [].concat(this.getBaseCategoryTree());
+        aggResult.forEach(function (v, i, a) {
+            let idx = tree.findIndex((f) => f.key === v.key);
+            if (idx >= 0) {
+                tree[idx] = v;
+            } else {
+                tree.push(v);
+            }
+        });
+        return tree;
     }
 
     private _displayNameLookup: string[];
@@ -288,7 +330,7 @@ export class SearchStateService extends BaseObservableService {
                 debounceTime(1000)
             ).subscribe(res => {
                 if (res.Categories.length != 0) {
-                    var filterTree = res.Categories.map((val) => {
+                    var filterTree = this.buildTree(res.Categories.map((val) => {
                         return {
                             "key": val.Name,
                             "label": this.getDisplayLookup(val.Name),
@@ -306,7 +348,7 @@ export class SearchStateService extends BaseObservableService {
                                 };
                             })
                         }
-                    });
+                    }));
                     let selectedFilters = [];
                     if (this._checkTreeKeys != undefined && this._checkTreeKeys.length > 0) {
                         for (let key of this._checkTreeKeys) {

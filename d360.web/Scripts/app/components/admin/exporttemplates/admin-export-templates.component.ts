@@ -1,7 +1,7 @@
 ﻿import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AdminBaseComponent } from '../admin-base.component'
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { Title } from '@angular/platform-browser';
 import { ExportTemplateService } from '../../../services/export-template.service';
 import { ExportTemplate } from '../../../models/export-template.model';
@@ -131,17 +131,17 @@ export class AdminExportTemplatesComponent extends AdminBaseComponent implements
     theDeleteCallback: Function;
     
     constructor(
-            rightSidebarService: RightSidebarService,
+            secondaryNavService: SecondaryNavService,
             headerBreadcrumbService: HeaderBreadcrumbService,        
             titleService: Title,
             private exportTemplateService: ExportTemplateService,
             protected messagesService: MessagesObservableService,
         ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Export Templates";
         this.setCommonItems();
                 
-        this.setCommonRightSideBar(false);        
+        this.setCommonSecondaryNavTabs(false);        
         this.theDeleteCallback = this.deleteExportTemplate.bind(this);
     }
     

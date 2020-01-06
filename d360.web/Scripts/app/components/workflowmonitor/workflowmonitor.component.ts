@@ -5,7 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { GridFilterExpression } from '../../models/grid-definition.model';
 
 @Component({
@@ -43,9 +43,9 @@ export class WorkflowMonitorComponent extends BaseComponent implements OnInit, O
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected router: Router,
         protected route: ActivatedRoute,        
-        rightSidebarService: RightSidebarService) {
+        secondaryNavService: SecondaryNavService) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
     ngOnInit() {
         if (!this.predefinedFilters || this.predefinedFilters.length < 1)

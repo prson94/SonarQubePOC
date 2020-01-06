@@ -1,10 +1,11 @@
 ﻿import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { ViewChildren } from '@angular/core';
+import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 
 
 
@@ -19,9 +20,9 @@ export class AdminBaseComponent extends BaseComponent {
     private isDefaultTreeValuesSet: boolean = false;
 
 
-    constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, protected titleService: Title, rightSidebarService?: RightSidebarService) {
+    constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, protected titleService: Title, secondaryNavService?: SecondaryNavService) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     setCommonItems() {
@@ -35,11 +36,11 @@ export class AdminBaseComponent extends BaseComponent {
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.adminHeading));     
         
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));
-        this.rightSidebarService.clearItems();
-        this.rightSidebarService.clearButtons();
-        this.rightSidebarService.setCurrentArea(this.areaName, this.area === 'Configuration' ? 'fa-sliders' : "fa-cog", this.tabTitle);
-        this.rightSidebarService.setCurrentObject(null,null,null,null,true);
-        this.rightSidebarService.showHeader(true);
+        this.secondaryNavService.clearItems();
+        this.secondaryNavService.clearButtons();
+        this.secondaryNavService.setCurrentArea(this.areaName, this.area === 'Configuration' ? 'fa-sliders' : "fa-cog", this.tabTitle);
+        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(null,null,null,null,true));
+        this.secondaryNavService.showHeader(true);
         this.setBrowserTitle(this.titleService, this.areaName);
     }       
 

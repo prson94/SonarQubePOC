@@ -28,7 +28,7 @@
                 <p-table #dt [value]="types" selectionMode="single" [metaKeySelection]="true"
                          [globalFilterFields]="['Name','MaximumDepth']" sortField="Name" [sortOrder]="1"
                          [pageLinks]="3" [paginator]="true" [rows]="10"
-                         [(selection)]="selected">
+                         [(selection)]="selected" (onRowSelect)="selectedItemChange()">
                     <ng-template pTemplate="header">
                         <tr>
                             <th [pSortableColumn]="'Name'">

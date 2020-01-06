@@ -1,11 +1,11 @@
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { Title } from '@angular/platform-browser';
 import { BaseComponent } from '../shared/base.component';
 import { Subscription }   from 'rxjs';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 
@@ -16,15 +16,15 @@ export class ArtifactBaseComponent extends BaseComponent {
     //sidebar
     sidebarSubscription: Subscription;
     
-    constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, rightSidebarService?: RightSidebarService, webAnalyticsService?: WebAnalyticsService) {
+    constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, secondaryNavService?: SecondaryNavService, webAnalyticsService?: WebAnalyticsService) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
         this.webAnalyticsService = webAnalyticsService;
         //headerBreadcrumbService.getFolderTitle('#Business').then(res => { this.folderTitle = res; });
-        this.rightSidebarService.showHeader(true);
+        this.secondaryNavService.showHeader(true);
     }        
     
-    protected showHideBreadcrumbItem(activatedItem: RightSidebarItem) {
+    protected showHideBreadcrumbItem(activatedItem: SecondaryNavItem) {
         
     }    
 }

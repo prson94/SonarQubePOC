@@ -33,16 +33,23 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
-    getGroupResourceList(id: number): Observable<GroupResourceInfo[]> {
-        return this.http.get(`api/groups/${id}/resources`).pipe(
+    getGroupResourceList(uid: string): Observable<any> {
+        return this.http.get(`api/v2/membership/groups/${uid}/members?_pageSize=100000`).pipe(
             map(response => <GroupResourceInfo[]>response),
             catchError(err => this.handleError(err))
         );
     }
 
-    getGroup(id: number): Observable<GroupEditorModel> {
+    getGroupUid(id: number): Observable<any> {
+        return this.http.get(`api/v2/membership/groups/${id}`).pipe(
+            map(response => <GroupResourceInfo[]>response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    getGroup(id: number): Observable<any> {
         return this.http.get(`form/Group?id=${id}`).pipe(
-            map(response => <GroupEditorModel>response),
+            map(response => <any>response),
             catchError(err => this.handleError(err))
         );
     }

@@ -4,7 +4,7 @@ import { TagService } from '../../../services/tag.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
 import { TagType, TagItem } from '../../../models/tag.model';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -40,25 +40,22 @@ export class AdminTagsComponent extends AdminBaseComponent {
     @ViewChild('dt', { static: false }) tableEl: any;
     private lastSelectedElement: TagType;
 
-    constructor(private router: Router, private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title, rightSidebarService: RightSidebarService, ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+    constructor(private router: Router, private tagsService: TagService, headerBreadcrumbService: HeaderBreadcrumbService, private messagesService: MessagesObservableService, titleService: Title, secondaryNavService: SecondaryNavService, ) {
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Tags";
         this.setCommonItems();
         this.tabTitle = 'Tags';
-        this.rightSidebarService.setCurrentArea(this.areaName, 'fa-tag', this.tabTitle);
+        this.secondaryNavService.setCurrentArea(this.areaName, 'fa-tag', this.tabTitle);
 
     }
 
     ngOnInit() {
-        this.setCommonRightSideBar(true);
+        this.setCommonSecondaryNavTabs(true);
 
         if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/Tag/0`
-            });
+            this.auditSidebar.url = `/sidebar/audit/Tag/0`;
         }
-        this.getTags();
+        this.getTags(); 
 
         this.theDeleteCallback = this.deleteTags.bind(this);
         this.theConsolidateCallback = this.consolidateTags.bind(this);

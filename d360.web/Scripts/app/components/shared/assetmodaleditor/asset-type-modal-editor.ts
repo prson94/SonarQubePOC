@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges, OnInit, ViewChild, ElementRef, HostListener, ChangeDetectorRef } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeClass, AssetTypeEditorModel, AssetType } from '../../../models/asset.model';
@@ -13,7 +13,7 @@ declare var CompanySettings: any;
 @Component({
     selector: 'd3s-asset-type-modal-editor',
     templateUrl: './asset-type-modal-editor.html',
-    providers: [AssetTypeService],
+    providers: [AssetTypeService]
 })
 
 export class AssetTypeModalEditorComponent extends BaseComponent implements OnInit, OnChanges {
@@ -32,7 +32,10 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
     @ViewChild('definition', { static: false }) definition: ElementRef;
     @ViewChild('dynamicEditor', { static: false }) dynamicEditor: DynamicEditorComponent;
 
-    constructor(private assetTypeService: AssetTypeService, private messagesService: MessagesObservableService) {
+    constructor(private assetTypeService: AssetTypeService,
+        private messagesService: MessagesObservableService,
+        private ref: ChangeDetectorRef
+    ) {
         super();
     }
 
@@ -43,7 +46,7 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
     }
     
     @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
-        this.validate();
+        window.setTimeout(() => this.validate(), 50);
     }
 
     ngOnInit(): void {
@@ -57,10 +60,9 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
         });
     }
     updateAssetTypeEditor(): void {
-        this.editorOpen = false;
+        this.editorOpen = false; 
         window.setTimeout(() => {
             this.editorOpen = true;
-            this.definition.nativeElement.style.width = Math.round(window.innerWidth / 2) + "px";
             this.definition.nativeElement.style.maxHeight = Math.round(window.innerHeight / 2) + "px";
         }, 100);
     }
@@ -77,16 +79,19 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
         if (this.dynamicEditor && this.dynamicEditor.form) {
             if (this.dynamicEditor.form.valid)
                 this.isValid = true;
+            this.ref.markForCheck();
         }
     }
 
     savedItem(event) {
         this.savingInProgress = false;
-        this.editorOpen = false;
-        this.assetType = null;
-        this.assetTypeClass = null;
-        this.isModelLoading = false;
-        this.onSave.emit(event);
+        if (event.Success) {
+            this.editorOpen = false; 
+            this.assetType = null;
+            this.assetTypeClass = null;
+            this.isModelLoading = false;
+            this.onSave.emit(event);
+        }
     }
 
     cancel() {

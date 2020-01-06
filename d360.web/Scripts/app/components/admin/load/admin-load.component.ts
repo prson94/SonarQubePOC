@@ -5,7 +5,7 @@ import {AdminBaseComponent} from '../admin-base.component';
 import {FormMode} from '../../../models/form.model';
 import {LoadService} from '../../../services/load.service';
 import {Title} from '@angular/platform-browser';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
 @Component({
     selector: 'd3s-admin-load',
@@ -22,11 +22,11 @@ export class AdminLoadComponent extends AdminBaseComponent implements OnInit {
 
     constructor(
         headerBreadcrumbService: HeaderBreadcrumbService,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private loadService: LoadService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
 
         this.areaName = "Bulk Loader";
         this.adminHeading = 'Integration';

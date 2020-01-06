@@ -151,6 +151,8 @@ namespace d360.web.Models
         [DataMember]
         public bool useAsTransformation { get; set; }
         [DataMember]
+        public bool isSubjectInTransformation { get; set; }
+        [DataMember]
         public AssetTypeClass @class { get; set; }
         [DataMember]
         public GetAssetLineagePostModelDirection reveal { get; set; }

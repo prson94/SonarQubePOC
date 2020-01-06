@@ -11,7 +11,7 @@ import {PolicyType} from '../../models/policy.model';
 
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
 import {PoliciesService} from '../../services/policies.service';
-import {RightSidebarService} from '../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../services/right-sidebar.service';
 
 import {BaseComponent} from '../shared/base.component';
 
@@ -48,7 +48,8 @@ import {SiteUrlHelpers} from '../../static/site-url-helpers';
                              [paginator]="true"
                              [rows]="defaultInitialItemsPerPage"
                              [rowsPerPageOptions]="defaultPagingOptions"
-                             [(selection)]="selected">
+                             [(selection)]="selected"
+                             (onNodeSelect)="selectedItemChange()">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'"
@@ -107,14 +108,14 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected policiesService: PoliciesService
     ) {
         super();
 
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -125,17 +126,10 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
                     this.headerBreadcrumbService.clearCurrentObjectInfo();
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
                     this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
-                        this.rightSidebarService.showHeader(true);
-                        this.setCommonRightSideBar(true);
-                        if (this.auditSidebar) {
-                            this.auditSidebar.hasDynamicUrl = true;
-                            this.auditSidebar.dynamicUrlCallback = (
-                                () => {
-                                    return `/sidebar/audit/PolicyType/${this.selected.ID}`;
-                                }
-                            );
-                        }
-                        this.rightSidebarService.setCurrentArea(res, icon, 'Policies');
+                        this.secondaryNavService.showHeader(true);
+                        this.setCommonSecondaryNavTabs(true);
+                        this.selectedItemChange();
+                        this.secondaryNavService.setCurrentArea(res, icon, 'Policies');
                     });
                 });
 
@@ -143,7 +137,11 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
             }
         );
     }
-
+    selectedItemChange() {
+        if (this.auditSidebar && this.selected) {
+            this.auditSidebar.url = `/sidebar/audit/PolicyType/${this.selected.ID}`;
+        }
+    }
     ngOnDestroy() {
         this.clearSidebar();
         this.sub.unsubscribe();

@@ -1028,6 +1028,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
+               
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)

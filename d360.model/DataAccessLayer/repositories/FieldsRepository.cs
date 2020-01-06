@@ -510,7 +510,8 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     ObjectID = typeIdentifierInfoModel.ObjectID,
                     Category = f.Category,
                     Name = f.Name,
-                    FriendlyName = f.FriendlyName
+                    FriendlyName = f.FriendlyName,
+                    UpdatedBy = Company.CurrentResourceID
                 };
 
                 if (f.Type.Boolean != null)
