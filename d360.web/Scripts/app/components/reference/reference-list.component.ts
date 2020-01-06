@@ -105,8 +105,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                                     this.clearSidebar();
                                     this.secondaryNavService.setCurrentArea(res, icon, 'Reference Lists');
                                     this.secondaryNavService.clearCurrentObject();
-                                    this.setCommonSecondaryNavTabs(true, false, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true, true, true);
-
+                                    this.setCommonSecondaryNavTabs(true, true, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true, true);
 
                                     this.setSecondaryNavItems();
 
@@ -185,14 +184,14 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
         }
 
-        if (this.authenticationService.isAdmin && this.permissionsNav) {
+        if (this.authenticationService.isAdmin && this.ownershipSidebar) {
             
-            this.permissionsNav.icons = ['fa-bars'];
-            this.permissionsNav.tag = 'responsibilities'
-            this.permissionsNav.title = 'Responsibilities'
-            this.permissionsNav.url = '/sidebar/responsibilities'
-            this.permissionsNav.orderPriority = 4;
-            this.permissionsNav.url = `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`;
+            this.ownershipSidebar.icons = ['fa-bars'];
+            this.ownershipSidebar.tag = 'responsibilities'
+            this.ownershipSidebar.title = 'Responsibilities'
+            this.ownershipSidebar.url = '/sidebar/responsibilities'
+            this.ownershipSidebar.orderPriority = 4;
+            this.ownershipSidebar.url = `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`;
         }
     }
 };
