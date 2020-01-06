@@ -260,6 +260,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
                     if (ix > -1) {
                         this.searchresults.splice(ix, 1);
+                        this.searchresults = this.searchresults.slice();
                     }
                 });
 
@@ -324,12 +325,14 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         }
 
         this.searchresults.splice(idx, 1);
+        this.searchresults = this.searchresults.slice();
         this.selectedChange.emit({ action: 'added', item: selectedItem });
     }
 
     private unselect(idx: number) {
         var item = this.selected[idx];
         this.selected.splice(idx, 1);
+        this.searchresults = this.searchresults.slice();
         this.selectedChange.emit({ action: 'removed', item: item });
     }
 
