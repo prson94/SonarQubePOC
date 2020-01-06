@@ -99,6 +99,7 @@ namespace d360.model.workflow
             }            
             else if ((item.ContextualFieldID ?? "").ToLower() == "requestedon")
             {
+
                 var requestedOn = context.GetById<ShoppingCart>(objectId).RequestedOn;
                 if (!item.IsValueMatch(requestedOn.ToString())) return false;
             }

@@ -70,6 +70,9 @@ namespace igx.UnitTests
             mock.Setup(x => x.HasAssetTypePermission(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Permission>()))
                 .Returns(true);
 
+            mock.Setup(x => x.GetObjectDetail(It.IsAny<string>(), It.IsAny<long>()))
+                .Returns(new ObjectDetail() { Name = "ObjectName", Description = "ObjectDescription" });
+
             IList<Field> fields = new List<Field>
               {
                 new Field(){ ObjectID = 1, ObjectType = "ArtifactType", FieldTypeID = 1, FormattedValue = "TestStringValue" },
@@ -82,6 +85,47 @@ namespace igx.UnitTests
 
             var fieldsMock = CreateDbSetMock(fields);
             mock.Setup(x => x.Fields).Returns(fieldsMock.Object);
+
+            IList<ShoppingCart> shoppingCarts = new List<ShoppingCart>() {
+                new ShoppingCart(){ ID=1 }
+            };
+
+            var shopCartMock = CreateDbSetMock(shoppingCarts);
+            mock.Setup(x => x.ShoppingCarts).Returns(shopCartMock.Object);
+
+            mock.Setup(x => x.GetById<ShoppingCart>(It.IsAny<int>()))
+                .Returns((int id) => id > 0 ? new ShoppingCart() { ID = id, RequestedOn = new DateTime(2000, 1, 1) } : null);
+
+
+            var workflowItemSteps = new List<WorkflowItemStep>() {
+ new WorkflowItemStep(){
+     StepID = 1,
+     ItemID = 1,
+     Fields = "<fields TotalResources=\"1\" NumberOfResponses=\"1\">"+
+  "<form ResourceID=\"1\">"+
+    "<field id=\"boolean1\" label=\"Text\" value=\"True\" displayvalue=\"True\" fieldtype=\"boolean\" />"+
+    "<field id=\"integer1\" label=\"Text\" value=\"45\" displayvalue=\"45\" fieldtype=\"integer\" />"+
+    "<field id=\"text1\" label=\"Text\" value=\"TestText\" displayvalue=\"TestText\" fieldtype=\"text\" />"+
+  "</form>"+
+ "</fields>",
+     Step = new WorkflowVersionStep(){ Fields = "<fields>"+
+  "<form title=\"Form test\">"+
+    "<field type=\"boolean\" required=\"true\" label=\"Field 1\" id=\"boolean1\" />"+
+    "<field type=\"integer\" required=\"true\" label=\"Field 1\" id=\"integer1\" />"+
+    "<field type=\"text\" required=\"true\" label=\"Field 1\" id=\"text1\" />"+
+  "</form>"+
+"</fields>" ,
+     Settings = "<settings>"+
+  "<FormResponseType>FirstResponse</FormResponseType>"+
+  "<SendFormEmail>false</SendFormEmail>"+
+  "<MessageRecipientType>Initiator</MessageRecipientType>"+
+  "<IncludePreviousFormResponses>false</IncludePreviousFormResponses>"+
+"</settings>"}
+ }
+            };
+
+            mock.Setup(x => x.WorkflowItemSteps).Returns(CreateDbSetMock(workflowItemSteps).Object);
+
             return mock.Object;
         }
 

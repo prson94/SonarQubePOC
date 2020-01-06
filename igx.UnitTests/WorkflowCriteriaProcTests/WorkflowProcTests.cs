@@ -181,22 +181,23 @@ namespace igx.UnitTests.WorkflowCriteriaProcTests
             Assert.False(res, "Invalid evaluation result!");
         }
 
-
         [Fact]
-        public void NonExistantFieldDeletedCase()
+        public void NonExistantFieldCase()
         {
             string condition = "<Conditions>" +
                 "<Condition FieldTypeID=\"78\" ValueType=\"T\" Operator=\"=\" Value=\"TestStringValue\" Connector =\"AND\" />" +
-                "<Condition FieldTypeID=\"79\" ValueType=\"D\" Operator=\"=\" Value=\"12.56\" Connector =\"AND\" />" +
                   "</Conditions>";
             bool? res = null;
             List<int> changedFields = new List<int> { };
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            try
+            {
+                res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
+            }
+            catch
+            {
+                Assert.True(false, "Should not throw error if there is no field defined!");
+            }
             Assert.False(res, "Invalid evaluation result!");
-
-            res = WorkflowRegistrationCriteriaProcessor.Evaluate(context, "ArtifactType", 1, condition, -1, changedFields);
         }
-
-
     }
 }
