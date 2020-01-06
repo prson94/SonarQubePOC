@@ -102,10 +102,10 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
     private onSubmit() {
         if (!this.isValid()) return;
         this.submitting = true;
-        this.questionDetails = [];
-        this.questions = [];
         this.currentQuestion = null;
         this.surveysService.saveSurveyResponse(this.questionDetails, this.surveyType.ID, this.objectType, this.objectID).subscribe(res => {
+            this.questionDetails = [];
+            this.questions = [];
             this.submitting = false
             this.surveyComplete.emit(res);
         });
