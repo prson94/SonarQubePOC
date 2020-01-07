@@ -316,6 +316,10 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
         {
             return companyContext.Tags.FirstOrDefault(x => x.ID == tagId);
         }
+        public bool DoesTagExists(Guid tagUid)
+        {
+            return companyContext.Tags.Any(x => x.uid == tagUid);
+        }
 
         public bool DoesTagExists(string value)
         {

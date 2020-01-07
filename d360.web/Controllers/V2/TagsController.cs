@@ -112,6 +112,9 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult DeleteById(Guid tagUid, bool cascade = false)
         {
+            if (!tagRepository.DoesTagExists(tagUid))
+                return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", $"Tag with uid {tagUid} not found.");
+
             if (!tagRepository.IsAuthorizedToEditTag(tagUid))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
 
@@ -220,7 +223,7 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error while updating tag", e.Message);
             }
 
-            return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result)); 
+            return ResponseMessage(Request.CreateResponse<TagApiModel>(HttpStatusCode.OK, result));
         }
 
 
@@ -244,6 +247,9 @@ namespace d360.web.Controllers.V2
 
             foreach (var item in model)
             {
+                if (!tagRepository.DoesTagExists(item.uid))
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", $"Tag with uid {item.uid} not found.");
+
                 if (!tagRepository.IsAuthorizedToEditTag(item.uid))
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
             }
@@ -543,7 +549,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <param name="tag">The tag to be created.</param>
-        [HttpPost, 
+        [HttpPost,
         Route("exists"),
         ApiExplorerSettings(IgnoreApi = true)]
         public IHttpActionResult DoesTagExist(TagApiModel tag)
