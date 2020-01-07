@@ -1,0 +1,50 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="SDooley" id="GOV-8946">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+IF (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'FieldTypeFusionLookupDisplayField_retired'))
+		BEGIN
+			DROP TABLE [dbo].[FieldTypeFusionLookupDisplayField_retired]
+		END 
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF NOT (EXISTS (SELECT * 
+                 FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'FieldTypeFusionLookupDisplayField_retired'))
+		BEGIN
+			  CREATE TABLE [dbo].[FieldTypeFusionLookupDisplayField_retired](
+	      [ID] [int] IDENTITY(1,1) NOT NULL,
+	      [FieldTypeFusionLookupDefinitionID] [int] NOT NULL,
+	      [FieldTypeID] [int] NOT NULL,
+	      [FieldTypeName] [nvarchar](250) NULL,
+	      [Show] [bit] NOT NULL,
+	      [SortOrder] [int] NULL,
+	      [FilterValue] [nvarchar](250) NULL,
+       CONSTRAINT [PK_FieldTypeFusionLookupDisplayField] PRIMARY KEY CLUSTERED 
+      (
+	      [ID] ASC
+      )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+      ) ON [PRIMARY]
+
+      ALTER TABLE [dbo].[FieldTypeFusionLookupDisplayField_retired] ADD  CONSTRAINT [DF_FieldTypeFusionLookupDisplayField_Show]  DEFAULT ((1)) FOR [Show]
+		END 
+]]>
+	</rollback>
+  </changeSet>
+
+  </databaseChangeLog>
