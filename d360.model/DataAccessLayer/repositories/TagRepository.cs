@@ -54,7 +54,7 @@ namespace d360.model.DataAccessLayer
                 throw new Exception($"Tag with uid '{uid}' have related assets. Use cascade='true' to delete this tag!");
 
             model.State = State.Deleted;
-            
+
             companyContext.Query<int>($@"
 INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
     select  distinct
@@ -68,7 +68,7 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
         public async Task<TagApiModelWrapper> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             TagApiModelWrapper results = new TagApiModelWrapper();
-            int pageSize = 0;
+            int pageSize = 250;
             int pageNum = 0;
 
             var dbArgs = new DynamicParameters();
@@ -144,18 +144,13 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
 
             sql += " order by [ID] ASC"; // admin screen will most likely order results however it sees fit
 
-            if (pageSize > 0 || pageNum > 0)
-            {
-                if (pageSize < 1) pageSize = 1;
-                if (pageNum < 1) pageNum = 1;
+            if (pageSize < 1) pageSize = 1;
+            if (pageNum < 1) pageNum = 1;
 
-                results.pageNum = pageNum;
-                results.pageSize = pageSize;
+            sql += $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
 
-                sql += $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-
-            }
-
+            results.pageNum = pageNum;
+            results.pageSize = pageSize;
             results.total = (await companyContext.QueryAsync<int>(countSql, dbArgs)).FirstOrDefault();
 
             if (results.total > 0)
@@ -277,7 +272,7 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
             result.UpdatedOn = existingTag.UpdatedOn.GetValueOrDefault();
             result.CreatedOn = existingTag.CreatedOn.GetValueOrDefault();
             result.UseCount = companyContext.Query<int>
-                ("select count(*) from AssetTag where TagId =  @ID", 
+                ("select count(*) from AssetTag where TagId =  @ID",
                 new DynamicParameters(new { existingTag.ID })).FirstOrDefault();
             // Send To Queue.Task Table
             AddTagAudit(existingTag, "Update");
