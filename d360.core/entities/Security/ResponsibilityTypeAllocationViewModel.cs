@@ -32,7 +32,8 @@ namespace d360.core.entities
                     {
                         Name = ((NameAttribute)tm.GetCustomAttribute(typeof(NameAttribute))).Name,
                         Description = ((DescriptionAttribute)tm.GetCustomAttribute(typeof(DescriptionAttribute))).Description,
-                        ID = (AssetTypeClass)Enum.Parse(typeof(AssetTypeClass), tm.Name)
+                        ID = (AssetTypeClass)Enum.Parse(typeof(AssetTypeClass), tm.Name),
+                        Value = tm.Name
                     };
                 }
                 return null;
