@@ -1654,6 +1654,8 @@ where	R.SourceObject = 'FusionAttribute'
         {
             string noClassLimitSql = "";
             string classLimitSql = "";
+            var dbArgs = new DynamicParameters();
+
 
             List<string> excludedClasses = new List<string>()
             {
@@ -1671,10 +1673,21 @@ where	R.SourceObject = 'FusionAttribute'
             if (limitToClasses == null)
             {
                 string relationshipsWhere = string.Empty;
+                string additionalApply = string.Empty;
                 if (!Community.IsFusionEnabled())
                 {
-                    string filterFusion = $"not in ('{SystemObjects.FusionType.ToString()}', '{SystemObjects.FusionAttributeType.ToString()}', '{SystemObjects.FusionQueryAttributeType.ToString()}')";
-                    relationshipsWhere += $" where IT.Object {filterFusion} and IT.Subject {filterFusion}";
+                    List<string> filteredTypes = new List<string>() { SystemObjects.FusionType.ToString(), SystemObjects.FusionAttributeType.ToString(), SystemObjects.FusionQueryAttributeType.ToString() };
+                    dbArgs.Add("@filterTypes", filteredTypes);
+
+                    additionalApply = @"outer apply (select top 1 * from IntersectType where IT.Object = 'IntersectType' and ID = IT.ObjectId)ITObj
+						                outer apply (select top 1 * from IntersectType where IT.Subject = 'IntersectType' and ID = IT.SubjectId)ITSubj";
+
+                    relationshipsWhere += $@" where IT.Object not in @filterTypes 
+                                                and IT.Subject not in @filterTypes 
+                                                and ITObj.Object not in @filterTypes
+                                                and ITObj.Subject not in @filterTypes
+                                                and ITSubj.Object not in @filterTypes
+                                                and ITSubj.Subject not in @filterTypes";
                 }
 
                 noClassLimitSql = $@"
@@ -1684,6 +1697,7 @@ where	R.SourceObject = 'FusionAttribute'
 		                'IntersectType' AS Type
                 FROM	IntersectType IT    
 		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName		
+                        {additionalApply}
                         {relationshipsWhere}
                 UNION
                 SELECT	R.ID,
@@ -1762,7 +1776,7 @@ where	R.SourceObject = 'FusionAttribute'
 
             sql += " ORDER BY I.Name";
 
-            return Database.Connection.Query<IntersectTypeOption>(sql).ToList();
+            return Database.Connection.Query<IntersectTypeOption>(sql, dbArgs).ToList();
         }
 
         public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
