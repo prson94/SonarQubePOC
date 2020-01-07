@@ -103,7 +103,10 @@ export class WorkflowMonitorListFilterComponent extends BaseComponent  implement
                         this.change(this.selection);
                     }
                     else if (this.workflowTypeFilters && !StringHelpers.isNullOrEmpty(this.workflowTypeFilters.value)) {
-                        this.workflowTypeFilters.value.split(",").forEach(i => this.selection.push(i));
+                        this.workflowTypeFilters.value.split(",").forEach(i => {
+                            if(!(StringHelpers.isNullOrEmpty(i)))
+                                this.selection.push(i);
+                        });
                     } else if (this.selectAll) {
                         this.items.forEach(i => this.selection.push(i.value));
                         this.change(this.selection);
