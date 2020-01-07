@@ -95,10 +95,12 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                         
                     }
                     window.setTimeout(() => {
+                        let isActionItemWorkflow = event.url.toLowerCase().indexOf('workflow/details/') !== -1;
                         this.items.forEach((item => {
-                            if (item.url === event.url) {
+                            if (item.url === event.url
+                                || (isActionItemWorkflow && item.url.toLowerCase().indexOf('sidebar/actions/') !== -1)) {
                                 item.active = true;
-                                this.secondaryNavService.setLocalActiveItem(item);
+                                this.secondaryNavService.setLocalActiveItem(item);                                
                             } else {
                                 item.active = false;
                             }
