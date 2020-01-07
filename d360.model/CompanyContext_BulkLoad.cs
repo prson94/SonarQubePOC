@@ -44,7 +44,7 @@ namespace d360.model
 		case 
 			when L.[Action] = 'M' and L.ObjectID = 0 then 'Group Membership'
 			when L.[Action] = 'M' and L.ObjectID = 1 then 'Users'
-            when L.[Action] = 'P' then coalesce(C_D.[Name], '[Deleted]') 
+            when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[Deleted]')  
 			else coalesce(C_D.[Name], 'Default') 
 		end as ObjectName,
 		L.Notes,

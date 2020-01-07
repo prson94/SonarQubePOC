@@ -397,4 +397,5 @@
 
   <!-- Sprint 2 2020 Start-->
   <include file="scripts/GOV-9133.xml"/> <!-- Set database COMPATIBILITY_LEVEL to 140-->
+  <include file="scripts/GOV-8946.xml"/>
 </databaseChangeLog>
