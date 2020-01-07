@@ -195,6 +195,9 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult Put(Guid tagUid, TagApiUpsertModel model)
         {
+            if (!tagRepository.DoesTagExists(tagUid))
+                return errorMessageResponse(HttpStatusCode.NotFound, "Error updating tag", $"Tag with uid {tagUid} not found.");
+
             if (!tagRepository.IsAuthorizedToEditTag(tagUid))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
