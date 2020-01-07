@@ -165,7 +165,7 @@ namespace igx.UnitTests.ValidatorTests
         {
             var model = new TagApiUpsertModel()
             {
-                Value = string.Join("", Enumerable.Repeat(0, 100).Select(n => (char)new Random().Next(127)))
+                Value = GetRandomString(100)
             };
             try
             {
