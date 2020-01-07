@@ -276,7 +276,9 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
             result.uid = existingTag.uid;
             result.UpdatedOn = existingTag.UpdatedOn.GetValueOrDefault();
             result.CreatedOn = existingTag.CreatedOn.GetValueOrDefault();
-
+            result.UseCount = companyContext.Query<int>
+                ("select count(*) from AssetTag where TagId =  @ID", 
+                new DynamicParameters(new { existingTag.ID })).FirstOrDefault();
             // Send To Queue.Task Table
             AddTagAudit(existingTag, "Update");
 
