@@ -1684,10 +1684,10 @@ where	R.SourceObject = 'FusionAttribute'
 
                     relationshipsWhere += $@" where IT.Object not in @filterTypes 
                                                 and IT.Subject not in @filterTypes 
-                                                and ITObj.Object not in @filterTypes
-                                                and ITObj.Subject not in @filterTypes
-                                                and ITSubj.Object not in @filterTypes
-                                                and ITSubj.Subject not in @filterTypes";
+                                                and ISNULL(ITObj.Object,'') not in @filterTypes
+                                                and ISNULL(ITObj.Subject,'') not in @filterTypes
+                                                and ISNULL(ITSubj.Object,'') not in @filterTypes
+                                                and ISNULL(ITSubj.Subject,'') not in @filterTypes";
                 }
 
                 noClassLimitSql = $@"
