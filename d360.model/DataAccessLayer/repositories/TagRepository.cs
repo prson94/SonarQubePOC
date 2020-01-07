@@ -71,6 +71,8 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
             int pageSize = 250;
             int pageNum = 0;
 
+            bool disablePaging = false;
+
             var dbArgs = new DynamicParameters();
             var sql = @"select t.uid,
 	                        t.Value,
@@ -136,6 +138,11 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
                 }
             }
 
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "getall"))
+            {
+                bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "getall").Value, out disablePaging);
+            }
+
             if (queryFilters.Count > 0)
             {
                 sql += " where " + string.Join(" and ", queryFilters);
@@ -147,7 +154,8 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
             if (pageSize < 1) pageSize = 1;
             if (pageNum < 1) pageNum = 1;
 
-            sql += $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+            if (!disablePaging)
+                sql += $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
 
             results.pageNum = pageNum;
             results.pageSize = pageSize;
