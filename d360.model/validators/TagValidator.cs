@@ -32,7 +32,7 @@ namespace d360.model.validators
                 throw new Exception("Tag must be as least 1 character long in length.");
             }
 
-            if (model.Value.Length > 250)
+            if (model.Value.Length > 100)
             {
                 throw new Exception("Invalid tag specified [too long].");
             }
