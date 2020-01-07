@@ -38,7 +38,7 @@ namespace d360.core.entities
         public Guid ResponsibilityTypeUid { get; set; }
 
         [DataMember]
-        public string ResponsibilityName { get; set; }
+        public string ResponsibilityTypeName { get; set; }
 
         [DataMember]
         public string AssigneeMethod { get; set; }
