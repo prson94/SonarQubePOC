@@ -66,7 +66,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Retrieves a list of all tags defined in Govern.
+        /// Retrieves a list of all tags.
         /// </summary>                
         [
             HttpGet, MapToApiVersion("2.0"), Route(""),
@@ -97,7 +97,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes a tag from Govern.
+        /// Deletes a tag based on the provided Uid.
         /// </summary>
         /// <param name="tagUid">The uid of the tag to be removed.</param>
         /// <param name="cascade">Cascade, if true a tag that is applied to an asset will be deleted along with the association.  If false a tag that is in use will not be deleted.  The default is false for the cascade setting.</param>
@@ -133,7 +133,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Adds a tag to Govern with the properties provided in the model.
+        /// Adds a tag with the properties provided in the model.
         /// </summary>        
         /// <param name="model">The tag to be created.</param>
         /// <returns>The created tag.</returns>
