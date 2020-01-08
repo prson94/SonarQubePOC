@@ -245,7 +245,8 @@ where	ExecutionID = @executionID
             }
             if (!CurrentResourceIsAdmin)
             {
-                if (isInsert && p == Permission.ModifyAsset && !this.HasAssetTypePermission(at.Object, at.ObjectID, Permission.ModifyAsset))
+                PermissionInfo permission = this.GetTypePermissions(at.Object, at.ObjectID).Where(x => x.ID == Permission.ModifyAsset).SingleOrDefault();
+                if (isInsert && p == Permission.ModifyAsset &&  (permission == null || !permission.Selected))
                 {
                     Connection.Execute($@"
     
