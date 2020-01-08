@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 import {Subject} from 'rxjs';
 import { SecondaryNavItem, DynamicButton, AssetAction, SecondaryNavCurrentObject, SecondaryNavState, NavState } from '../models/secondaryNav.model';
+import { AssetTypeClass } from '../models/asset.model';
+import { BaseComponent } from '../components/shared/base.component';
+
+declare var CompanySettings: any;
 
 @Injectable()
 export class SecondaryNavService {
@@ -35,6 +39,7 @@ export class SecondaryNavService {
     homeUrlChange$ = this.homeUrlChangeSource.asObservable();
     rebuildHeader$ = this.rebuildHeaderSource.asObservable();
 
+    private isSidebarCreated: boolean = false;
 
     setCurrentArea(area: string, icon: string, title: string) {
         this.currentAreaSource.next({ title: area, icon: icon, tabTitle: title });

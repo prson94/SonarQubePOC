@@ -1499,6 +1499,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return this.g(
             "ContextMenu",
             { areaBackground: "#ffffff", background: "#ffffff" },
+             this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Navigate to", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+                { click: (e, obj) => this.navigateTo(e, obj) }
+            ),
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenuShowDetails }),
@@ -1533,6 +1538,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             //    { click: function (e, obj) { alert("Not yet implemented") } }
             //)
         );
+    }
+
+    private navigateTo(e: go.InputEvent, obj: go.GraphObject) {
+        
+        console.log("Naviga to");
+        console.log(obj.name);
+        console.log(obj);
     }
 
     private createTooltip(): go.Adornment {

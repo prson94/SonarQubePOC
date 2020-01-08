@@ -1,5 +1,5 @@
 import { Title } from '@angular/platform-browser';
-import { SecondaryNavItem } from '../../models/secondaryNav.model';
+import { SecondaryNavItem, SecondaryNavCurrentObject, SecondaryNavPostModel } from '../../models/secondaryNav.model';
 import { PermissionsService } from '../../services/permissions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
@@ -13,6 +13,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { TreeNode } from 'primeng/api';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { AssetTypeClass } from '../../models/asset.model';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { SiteMenuService } from '../../services/site-menu.service';
 
 declare var CompanySettings;
 
@@ -136,9 +139,9 @@ export class BaseComponent {
 
     /*end permissions functionality*/
 
-    
 
-    checkSecondaryNavLocalStorage(checkLocal?: boolean ) {
+
+    checkSecondaryNavLocalStorage(checkLocal?: boolean) {
         if (this.secondaryNavService) {
             this.buildLocalStorage();
             this.secondaryNavService.rebuildHeader$.subscribe(res => {
@@ -146,10 +149,10 @@ export class BaseComponent {
                     window.setTimeout(() => {
                         this.buildLocalStorage();
                     }, 250);
-                    
+
                 }
             });
-        } 
+        }
     }
     buildLocalStorage() {
         let currentObject = this.secondaryNavService.getLocalCurrentObject();
@@ -158,7 +161,7 @@ export class BaseComponent {
         let currentTab = this.secondaryNavService.getLocalActiveItem();
         let homeUrl = this.secondaryNavService.getLocalHomeUrl();
         let crumbs = this.breadcrumbsService.getBreadcrumbsFromStorage();
-        if (currentObject && currentArea && tabs.length > 0&& currentTab && homeUrl) {
+        if (currentObject && currentArea && tabs.length > 0 && currentTab && homeUrl) {
             this.secondaryNavService.clearItems();
             this.secondaryNavService.setCurrentObject(currentObject);
             this.secondaryNavService.setCurrentArea(currentArea.title, currentArea.icon, currentArea.tabTitle);
@@ -185,7 +188,8 @@ export class BaseComponent {
         hasRelationships?: boolean,
         hasFollowers?: boolean,
         hasMonitor?: boolean,
-        hasField?: boolean
+        hasField?: boolean,
+        hasChild?: boolean
     ) {
         if (this.secondaryNavService) {
             this.clearSidebar();
@@ -238,6 +242,7 @@ export class BaseComponent {
             }
 
             if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
+                console.log(this.assetID);
                 this.ownershipSidebar = new SecondaryNavItem(
                     'Responsibilities',
                     'ownership',
@@ -297,6 +302,44 @@ export class BaseComponent {
                     `/sidebar/workflowmonitor${this.objectContextUrl()}`, null, 30
                 );
                 this.secondaryNavService.showItem(this.monitorSidebar);
+            }
+
+            if (hasChild) {
+                this
+                    .secondaryNavService
+                    .showItem(
+                        new SecondaryNavItem(
+                            'Children',
+                            'children',
+                            ['fa-sitemap'],
+                            `/sidebar/children${this.objectContextUrl()}`
+                        )
+                    )
+                    ;
+            }
+
+            if (this.objectType == 'Artifact') {
+                this.secondaryNavService.showItem(
+                    new SecondaryNavItem(
+                        'Scoring',
+                        'Scoring',
+                        ['fa-sitemap'],
+                        `/sidebar/score/Artifact/${this.uid}`, null, 7
+
+                    )
+                );
+                this.secondaryNavService.showItem(
+                    new SecondaryNavItem(
+                        'Comments', 'Comments', ['fa-comments'],
+                        `/sidebar/comments/Artifact/${this.assetID}`, null, 33
+                    )
+                );
+                this.secondaryNavService.showItem(
+                    new SecondaryNavItem(
+                        'Actions', 'Actions', null,
+                        `/sidebar/actions/Artifact/${this.assetID}`, null, 27
+                    )
+                );
             }
 
             this.sidebarSubscription = this.secondaryNavService.rightSidebarClicked$.subscribe(
@@ -441,7 +484,7 @@ export class BaseComponent {
             failed.forEach(f => {
                 messagesService.showError('Error', f.Message);
             });
-        } 
+        }
     }
 
     showHttpErrorMessage(messagesService: MessagesObservableService, err: HttpErrorResponse) {
@@ -502,4 +545,57 @@ export class BaseComponent {
         return hasValue;
     }
 
+
+    buildSecondaryNavigation(siteMenuService: SiteMenuService) {
+        console.log("Building secondary navigation!");
+        var data = new SecondaryNavPostModel();
+        data.AssetUid = '94A84705-15B2-4F13-AD07-9F77C2F10F73';
+
+        siteMenuService.getSecondaryNav(data).subscribe(r => {
+            this.assetID = r.AssetId;
+            this.assetTypeID = r.AssetTypeId;
+            this.uid = r.Uid;
+            this.objectType = r.Object;
+            this.objectID = r.ObjectID;
+
+            var areaName = r.DisplayValue;
+            var tabTitle = "Definition";
+            var area = "";
+
+            this.secondaryNavService.setLocalHomeUrl("/" + this.objectType +"/" + this.assetTypeID + "/" + this.objectID);
+
+            this.secondaryNavService.clearItems();
+            this.secondaryNavService.clearButtons();
+            this.secondaryNavService.setCurrentArea(areaName, area === 'Configuration' ? 'fa-sliders' : "fa-cog", tabTitle);
+            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, this.assetTypeID, this.objectType, this.objectID, false, r.Items.HasWorkflow, this.uid));
+            this.secondaryNavService.showHeader(true);
+
+            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild);
+
+        });
+
+        //this.assetID = 2394023;
+        //this.assetTypeID = 100002230;
+        //this.uid = '94A84705-15B2-4F13-AD07-9F77C2F10F73';
+        //this.objectType = 'Artifact';
+        //this.objectID = 100085635;
+
+        //var displayValue = "vclong vclong vclongvclong vclong vclongvclong vclong vclongvclong";
+        //var areaName = "vclong vclong vclongvclong vclong vclongvclong vclong vclongvclong";
+        //var area = "";
+        //var icon = "";
+        //var tabTitle = "Definition";
+        //var hasWorkflow = false;
+
+        //this.secondaryNavService.setLocalHomeUrl("/artifact/" + this.assetTypeID + "/" + this.objectID);
+
+        //this.secondaryNavService.clearItems();
+        //this.secondaryNavService.clearButtons();
+        //this.secondaryNavService.setCurrentArea(areaName, area === 'Configuration' ? 'fa-sliders' : "fa-cog", tabTitle);
+        //this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject("ArtifactType", this.assetTypeID, "Artifact", this.objectID, false, hasWorkflow, this.uid));
+        //this.secondaryNavService.showHeader(true);
+
+        //this.setCommonSecondaryNavTabs(true, true, true, true, true, true, true, hasWorkflow, true, true);
+
+    }
 }

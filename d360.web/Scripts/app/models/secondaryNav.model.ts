@@ -104,3 +104,10 @@ export class DeleteFormData {
     modalTitle: string;
     isModalVisible: boolean;
 }
+
+export class SecondaryNavPostModel {
+    ObjectId: number;
+    ObjectType: string;
+    AssetId: number;
+    AssetUid: string;
+}

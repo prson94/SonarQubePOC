@@ -1,5 +1,5 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
-import { Router, ActivatedRoute }       from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 
 import { ArtifactService } from '../../services/artifacts.service';
@@ -21,22 +21,23 @@ import { Permission } from '../../models/responsibility-type.model';
 import { Subscription } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { AssetTypeClass } from '../../models/asset.model';
+import { SiteMenuService } from '../../services/site-menu.service';
 
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-artifact-item',
-    templateUrl:'./artifact-item.component.html',
-    providers: [ArtifactService, SurveysService, PermissionsService]
+    templateUrl: './artifact-item.component.html',
+    providers: [ArtifactService, SurveysService, PermissionsService, SiteMenuService]
 })
 
 export class ArtifactItemComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
     private artifact: Artifact
-    private sub: any; 
+    private sub: any;
     private currentAreaNameSubscription: any;
     private currentAreaName: string;
     private artifactTypeId: number;
-    private messages: MessageBarItem[]=[];
+    private messages: MessageBarItem[] = [];
     private surveyType: SurveyType;
     private showSurvey: boolean = false;
     private showSocialScoreBar: boolean = true;
@@ -45,14 +46,15 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         private route: ActivatedRoute,
         secondaryNavService: SecondaryNavService,
         private router: Router,
-        private artifactService: ArtifactService,        
+        private artifactService: ArtifactService,
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private surveysService: SurveysService,
-        protected permissionsService: PermissionsService
+        protected permissionsService: PermissionsService,
+        private siteMenuService: SiteMenuService
     ) {
-        super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);       
+        super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);
     }
 
     ngOnInit() {
@@ -67,10 +69,10 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                 .loadPermissions(this.permissionsService, StringConstants.ObjectArtifact, artifactId)
                 .then(p => {
                     this.load(artifactId, this.artifactTypeId);
-                    }
+                }
                 )
-            ;
-            
+                ;
+
             this.showSocialScoreBar = (CompanySettings.ShowSocialScoreBar != 'false');
         });
     }
@@ -92,9 +94,9 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                 })
             )
             .subscribe(
-            artifact => {
+                artifact => {
                     this.artifact = artifact;
-                    
+
                     let folderName: string = '#Business';
 
                     if (artifact.Class == AssetTypeClass.TechnicalAsset) {
@@ -110,65 +112,35 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                         this.buildBreadcrumb();
                     });
 
-                    this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
-                    this
-                        .setObjectInfo(
-                            'Artifact',
-                            this.artifact.ID,
-                            this.artifact.DisplayValue,
-                            this.artifact.AssetID,
-                            this.artifact.AssetTypeID,
-                            this.artifact.Uid
-                        )
-                    ;
-                    
-                    this
-                        .setCommonSecondaryNavTabs(
-                            true,
-                            this.hasPermission(Permission.ReadResponsibilities),
-                            this.artifact.HasDashboards,
-                            true,
-                            true,
-                            this.hasPermission(Permission.ReadRelationships),
-                            true,
-                            true
-                        )
-                        ;
-                    this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject("ArtifactType", typeID, "Artifact", id, false, artifact.HasWorkflow, this.artifact.Uid));
-                    if (this.artifact.HasChildArtifacts) {
-                        this
-                            .secondaryNavService
-                            .showItem(
-                                new SecondaryNavItem(
-                                    'Children',
-                                    'children',
-                                    ['fa-sitemap'],
-                                    `/sidebar/children${this.objectContextUrl()}`
-                                )
-                            )
-                        ;
-                    }
-                    this.secondaryNavService.showItem(
-                        new SecondaryNavItem(
-                            'Scoring',
-                            'Scoring',
-                            ['fa-sitemap'],
-                            `/sidebar/score/Artifact/${this.artifact.Uid}`,null,7
+                    this.buildSecondaryNavigation(this.siteMenuService);
 
-                        )
-                    );
-                    this.secondaryNavService.showItem(
-                        new SecondaryNavItem(
-                            'Comments', 'Comments', ['fa-comments'],
-                            `/sidebar/comments/Artifact/${this.artifact.ID}`,null,33
-                        )
-                    );
-                    this.secondaryNavService.showItem(
-                        new SecondaryNavItem(
-                            'Actions', 'Actions', null,
-                            `/sidebar/actions/Artifact/${this.artifact.ID}`,null,27
-                        )
-                    );
+                    //this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
+                    //this
+                    //    .setObjectInfo(
+                    //        'Artifact',
+                    //        this.artifact.ID,
+                    //        this.artifact.DisplayValue,
+                    //        this.artifact.AssetID,
+                    //        this.artifact.AssetTypeID,
+                    //        this.artifact.Uid
+                    //    )
+                    //    ;
+
+                    //this
+                    //    .setCommonSecondaryNavTabs(
+                    //        true,
+                    //        this.hasPermission(Permission.ReadResponsibilities),
+                    //        this.artifact.HasDashboards,
+                    //        true,
+                    //        true,
+                    //        this.hasPermission(Permission.ReadRelationships),
+                    //        true,
+                    //        true,
+                    //        this.artifact.HasChildArtifacts
+                    //    )
+                    //    ;
+                    //this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject("ArtifactType", typeID, "Artifact", id, false, artifact.HasWorkflow, this.artifact.Uid));
+
                     this.loadItemSurvey(id);
                     this.buildBreadcrumb();
                 },
@@ -176,7 +148,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
                 }
             )
-        ;
+            ;
     }
 
     private loadItemSurvey(artifactId: number) {
@@ -186,10 +158,10 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                 this.artifactTypeId,
                 'ArtifactType',
                 artifactId, 'Artifact'
-        )
+            )
             .subscribe(result => {
                 this.surveyType = undefined;
-                
+
                 if (result) {
                     this.surveyType = result;
                     this.messages.push({
@@ -197,7 +169,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     });
                 }
 
-            }); 
+            });
     }
 
     private buildBreadcrumb() {
@@ -210,7 +182,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                     let currentFolderName = this.currentAreaName ? this.currentAreaName : this.folderTitle;
 
                     this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType',this.artifactTypeId,currentFolderName).subscribe(res => {
+                    this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactTypeId, currentFolderName).subscribe(res => {
                         this.secondaryNavService.setCurrentArea(this.artifact.DisplayValue, res, 'Definition');
                     });
                     let areaName: string = this.currentAreaName ? this.currentAreaName : this.folderTitle;
@@ -276,7 +248,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                                 ;
                         }
                     }
-        });
+                });
     }
 
     private GetIDFromUrl(url: string) {
@@ -290,7 +262,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             this.messages.splice(index, 1);
         }
     }
-    
+
     private editArtifact(e: any) {
         this.isLoading = true;
         this.load(e.ID, this.artifactTypeId);

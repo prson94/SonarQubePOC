@@ -48,7 +48,6 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
         this.route.params.subscribe(
             params => {
                 this.assetID = +params['assetID'];
-
                 this.objectDetailService.getAsset(this.assetID).subscribe(
                     res => {
                         if (res.Type == "FusionType") {
