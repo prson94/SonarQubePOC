@@ -652,8 +652,8 @@ from	IntersectType I
                     var definitionFields = new List<FieldTypeComplexLookupDefinitionField>();
                     var definitionRelations = new List<FieldTypeComplexLookupDefinitionRelation>();
                     var hasDefinitionError = false;
-                    var computedFields = new List<string>() { "DisplayValue", "TextPath" };
-                    var relatedItemFields = new Dictionary<string, int>();
+                    var computedFields = new Dictionary<string, int>() { { "DisplayValue", 0 }, { "TextPath", 0 } };
+                    var relatedItemUids = new List<Guid>();
 
                     f.Type.ComputedRelationshipLookup.Definition.Relations.ForEach(i =>
                     {
@@ -673,6 +673,7 @@ from	IntersectType I
                         relation.ObjectID = relationInfo.ObjectID;
                         relation.RelationType = (ComplexLookupRelationType)i.RelationType;
 
+                        relatedItemUids.Add(i.AssetTypeUid);
                         definitionRelations.Add(relation);
 
                         var relatedTypeList = Company.Filter<IntersectTypeDetail>(r =>
@@ -694,13 +695,13 @@ from	IntersectType I
                         {
                             var fieldName = $"Related Item.{r.Name}";
 
-                            if (relatedItemFields.ContainsKey(fieldName))
+                            if (computedFields.ContainsKey(fieldName))
                             {
-                                relatedItemFields.Add($"{fieldName} ({r.ID})", r.ID);
+                                computedFields.Add($"{fieldName} ({r.ID})", r.ID);
                             }
                             else
                             {
-                                relatedItemFields.Add(fieldName, r.ID);
+                                computedFields.Add(fieldName, r.ID);
                             }
                         });
 
@@ -708,6 +709,8 @@ from	IntersectType I
 
                     f.Type.ComputedRelationshipLookup.Definition.Fields.ForEach(i =>
                     {
+
+                        
                         var field = new FieldTypeComplexLookupDefinitionField();
                         var fieldInfo = Company.Query<dynamic>(@"
                             select coalesce(F.ID, 0) as FieldTypeID, T.Object, T.ObjectID 
@@ -715,22 +718,24 @@ from	IntersectType I
                             left join FieldType F on F.AssetTypeID = T.ID and F.Name = @name where T.uid = @uid ", 
                             new { name = i.FieldTypeName, uid = i.AssetTypeUid }).SingleOrDefault();
 
-
-                        if (fieldInfo.FieldTypeID == 0 && !computedFields.Contains(i.FieldTypeName) && !relatedItemFields.ContainsKey(i.FieldTypeName))
+                        //invalid uid
+                        if (!relatedItemUids.Contains(i.AssetTypeUid) || fieldInfo == null)
                         {
                             hasDefinitionError = true;
                             return;
                         }
 
-                        if (relatedItemFields.ContainsKey(i.FieldTypeName))
+                        //invalid computed field
+                        if (fieldInfo.FieldTypeID == 0)
                         {
-                            field.FieldTypeID = relatedItemFields[i.FieldTypeName];
+                            if (!computedFields.ContainsKey(i.FieldTypeName))
+                            {
+                                hasDefinitionError = true;
+                                return;
+                            }
                         }
-                        else
-                        {
-                            field.FieldTypeID = fieldInfo.FieldTypeID;
-                        }
-                        
+
+                        field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? computedFields[i.FieldTypeName] : fieldInfo.FieldTypeID;
                         field.Object = fieldInfo.Object;
                         field.ObjectID = fieldInfo.ObjectID;
                         field.DisplayOrder = i.DisplayOrder;
