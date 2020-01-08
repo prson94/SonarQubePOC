@@ -502,6 +502,9 @@ namespace igx.UnitTests
             mock.Setup(x => x.DeleteAssetTag(It.IsAny<int>(), It.IsAny<long>()))
                 .Returns(true);
 
+            mock.Setup(x => x.DoesTagExists(It.IsAny<Guid>()))
+                .Returns(true);
+
             return mock.Object;
         }
 

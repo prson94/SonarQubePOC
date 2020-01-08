@@ -199,24 +199,33 @@ namespace d360.web.Controllers.V2
                 {
                     actionTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.ActionType, model.ActionTypeUid.Value);
                     typeIdentifierInfoModel = actionTypeIdentifierInfoModel = actionTypeIdentifierInfoModels.SingleOrDefault();
+
+                    if (typeIdentifierInfoModel == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Action Type with Uid {model.AssetTypeUid.Value} could not be found."));
                 }
 
                 if (model.AssetTypeUid.HasValue)
                 {
                     assetTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.AssetType, model.AssetTypeUid.Value);
                     typeIdentifierInfoModel = assetTypeIdentifierInfoModel = assetTypeIdentifierInfoModels.SingleOrDefault();
+
+                    if (typeIdentifierInfoModel == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset Type with Uid {model.AssetTypeUid.Value} could not be found."));
                 }
 
                 if (model.RelationshipTypeUid.HasValue)
                 {
                     relationshipTypeIdentifierInfoModels = await Company.GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType.RelationshipType, model.RelationshipTypeUid.Value);
                     typeIdentifierInfoModel = relationshipTypeIdentifierInfoModel = relationshipTypeIdentifierInfoModels.SingleOrDefault();
+
+                    if (typeIdentifierInfoModel == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Relationship Type with Uid {model.AssetTypeUid.Value} could not be found."));
                 }
-                #endregion
+                #endregion            
 
                 #region SecurityCheck
 
-                bool hasPermissions = false;
+            bool hasPermissions = false;
 
                 if (Company.CurrentResourceIsAdmin)
                 {

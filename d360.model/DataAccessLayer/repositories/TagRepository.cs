@@ -54,7 +54,7 @@ namespace d360.model.DataAccessLayer
                 throw new Exception($"Tag with uid '{uid}' have related assets. Use cascade='true' to delete this tag!");
 
             model.State = State.Deleted;
-            
+
             companyContext.Query<int>($@"
 INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom]) 
     select  distinct
@@ -68,8 +68,10 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
         public async Task<TagApiModelWrapper> GetTags(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             TagApiModelWrapper results = new TagApiModelWrapper();
-            int pageSize = 0;
+            int pageSize = 250;
             int pageNum = 0;
+
+            bool disablePaging = false;
 
             var dbArgs = new DynamicParameters();
             var sql = @"select t.uid,
@@ -136,6 +138,11 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
                 }
             }
 
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == "getall"))
+            {
+                bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "getall").Value, out disablePaging);
+            }
+
             if (queryFilters.Count > 0)
             {
                 sql += " where " + string.Join(" and ", queryFilters);
@@ -144,18 +151,14 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
 
             sql += " order by [ID] ASC"; // admin screen will most likely order results however it sees fit
 
-            if (pageSize > 0 || pageNum > 0)
-            {
-                if (pageSize < 1) pageSize = 1;
-                if (pageNum < 1) pageNum = 1;
+            if (pageSize < 1) pageSize = 1;
+            if (pageNum < 1) pageNum = 1;
 
-                results.pageNum = pageNum;
-                results.pageSize = pageSize;
-
+            if (!disablePaging)
                 sql += $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
 
-            }
-
+            results.pageNum = pageNum;
+            results.pageSize = pageSize;
             results.total = (await companyContext.QueryAsync<int>(countSql, dbArgs)).FirstOrDefault();
 
             if (results.total > 0)
@@ -277,7 +280,7 @@ delete AssetTag where TagID = @t;", new { r = companyContext.CurrentResourceID, 
             result.UpdatedOn = existingTag.UpdatedOn.GetValueOrDefault();
             result.CreatedOn = existingTag.CreatedOn.GetValueOrDefault();
             result.UseCount = companyContext.Query<int>
-                ("select count(*) from AssetTag where TagId =  @ID", 
+                ("select count(*) from AssetTag where TagId =  @ID",
                 new DynamicParameters(new { existingTag.ID })).FirstOrDefault();
             // Send To Queue.Task Table
             AddTagAudit(existingTag, "Update");
@@ -317,6 +320,10 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
         public Tag GetTagById(int tagId)
         {
             return companyContext.Tags.FirstOrDefault(x => x.ID == tagId);
+        }
+        public bool DoesTagExists(Guid tagUid)
+        {
+            return companyContext.Tags.Any(x => x.uid == tagUid);
         }
 
         public bool DoesTagExists(string value)
