@@ -396,5 +396,6 @@
   <include file="scripts/GOV-9247.xml"/>  <!-- script to create missing [reporting].[RuleImplementations_Results], [reporting].[RuleImplementations_ResultQualifiers] views -->
 
   <!-- Sprint 2 2020 Start-->
+  <include file="scripts/GOV-9133.xml"/> <!-- Set database COMPATIBILITY_LEVEL to 140-->
   <include file="scripts/GOV-8946.xml"/>
 </databaseChangeLog>

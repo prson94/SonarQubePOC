@@ -1214,7 +1214,7 @@ from	IntersectType I
             }
             else  // Replace
             {
-                Company.Execute("delete FieldType where Object = @t and ObjectID = @tid", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID });
+                Company.Query<int>("delete FieldType where Object = @t and ObjectID = @tid", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID }).FirstOrDefault();
                 Company.FieldTypes.AddRange(newFieldTypes);
             }
             Company.SaveChanges();
