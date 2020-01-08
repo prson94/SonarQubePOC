@@ -92,18 +92,18 @@ export class SearchType {
 export module SettingsHelper {
     export function getSearchTypesList(): SearchType[] {
         return [
+            { title: StringConstants.AssetTypeClass_Business + "s", value: "BusinessAsset", selected: false },
+            { title: StringConstants.AssetTypeClass_Technical + "s", value: "TechnicalAsset", selected: false },
+            { title: "Models", value: "Taxonomy", selected: false },
+            { title: "Policies", value: "Policy", selected: false },
+            { title: "Rules", value: "Rule", selected: false },
+            { title: "Reference Lists", value: "Reference", selected: false },
+            { title: "Grammatic Types", value: "Synonym", selected: false },
             { title: "Attributes", value: "Attribute", selected: false },
             { title: "Fusion", value: "FusionAttributes", selected: false },
             { title: "Fusion Types", value: "FusionType", selected: false },
-            { title: StringConstants.AssetTypeClass_Business+"s", value: "BusinessAsset", selected: false },
-            { title: StringConstants.AssetTypeClass_Technical + "s", value: "TechnicalAsset", selected: false },
             { title: "Groups", value: "Group", selected: false },
-            { title: "Models", value: "Taxonomy", selected: false },
-            { title: "Policies", value: "Policy", selected: false },
-            { title: "Reference Lists", value: "Reference", selected: false },
-            { title: "Users", value: "Resource", selected: false },
-            { title: "Grammatic Types", value: "Synonym", selected: false },
-            { title: "Rules", value: "Rule", selected: false }
+            { title: "Users", value: "Resource", selected: false }
         ];
     }
 

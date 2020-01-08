@@ -1654,15 +1654,51 @@ where	R.SourceObject = 'FusionAttribute'
         {
             string noClassLimitSql = "";
             string classLimitSql = "";
+            var dbArgs = new DynamicParameters();
+
+
+            List<string> excludedClasses = new List<string>()
+            {
+                SystemObjects.AttributeType.ToString(),
+                SystemObjects.FusionType.ToString(),
+                SystemObjects.OrganizationType.ToString()
+            };
+
+            if (!Community.IsFusionEnabled())
+            {
+                excludedClasses.Add(SystemObjects.FusionAttributeType.ToString());
+                excludedClasses.Add(SystemObjects.FusionQueryAttributeType.ToString());
+            }
+
             if (limitToClasses == null)
             {
-                noClassLimitSql = @"
+                string relationshipsWhere = string.Empty;
+                string additionalApply = string.Empty;
+                if (!Community.IsFusionEnabled())
+                {
+                    List<string> filteredTypes = new List<string>() { SystemObjects.FusionType.ToString(), SystemObjects.FusionAttributeType.ToString(), SystemObjects.FusionQueryAttributeType.ToString() };
+                    dbArgs.Add("@filterTypes", filteredTypes);
+
+                    additionalApply = @"outer apply (select top 1 * from IntersectType where IT.Object = 'IntersectType' and ID = IT.ObjectId)ITObj
+						                outer apply (select top 1 * from IntersectType where IT.Subject = 'IntersectType' and ID = IT.SubjectId)ITSubj";
+
+                    relationshipsWhere += $@" where IT.Object not in @filterTypes 
+                                                and IT.Subject not in @filterTypes 
+                                                and ISNULL(ITObj.Object,'') not in @filterTypes
+                                                and ISNULL(ITObj.Subject,'') not in @filterTypes
+                                                and ISNULL(ITSubj.Object,'') not in @filterTypes
+                                                and ISNULL(ITSubj.Subject,'') not in @filterTypes";
+                }
+
+                noClassLimitSql = $@"
                 UNION
                 SELECT	CAST(IT.ID as int) ID,
 		                'Relationship :: ' + ITypeName.Name AS Name,
 		                'IntersectType' AS Type
                 FROM	IntersectType IT    
-		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName				
+		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName		
+                        {additionalApply}
+                        {relationshipsWhere}
                 UNION
                 SELECT	R.ID,
 		                'Rule Implementation :: ' + A.DisplayValue as Name,
@@ -1680,18 +1716,6 @@ where	R.SourceObject = 'FusionAttribute'
                 {
                     classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
                 }
-            }
-
-            List<string> excludedClasses = new List<string>()
-            {
-                SystemObjects.AttributeType.ToString(),
-                SystemObjects.FusionType.ToString(),
-                SystemObjects.OrganizationType.ToString()
-            };
-            if (!Community.IsFusionEnabled())
-            {
-                excludedClasses.Add(SystemObjects.FusionAttributeType.ToString());
-                excludedClasses.Add(SystemObjects.FusionQueryAttributeType.ToString());
             }
 
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
@@ -1752,7 +1776,7 @@ where	R.SourceObject = 'FusionAttribute'
 
             sql += " ORDER BY I.Name";
 
-            return Database.Connection.Query<IntersectTypeOption>(sql).ToList();
+            return Database.Connection.Query<IntersectTypeOption>(sql, dbArgs).ToList();
         }
 
         public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
