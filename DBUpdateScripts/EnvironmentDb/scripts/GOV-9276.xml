@@ -148,9 +148,9 @@ AS
 BEGIN
 	declare @table table (Name nvarchar(250), Value varchar(250), [Group] varchar(25), Url varchar(250), MostRecent datetime, TypeID int)
 	
-	declare @assetUid uniqueidentifier;
+	declare @assetUid uniqueidentifier
 
-	select @assetUid = [Uid] from dbo.Asset where Object = @type and ObjectID = @id;
+	select @assetUid = [Uid] from dbo.Asset where Object = @type and ObjectID = @id
 
 	insert into @table
 		select NULL, count(1), 'Followers', '', max(datecreated),null
@@ -208,5 +208,31 @@ END
 ]]>
     </rollback>
   </changeSet>
+  <changeSet author="Tomislav Duric" id="GOV-9276-RollbackFields">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+	  select 1
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+IF EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'CompletedOn'
+          AND Object_ID = Object_ID(N'dbo.Issue'))
+BEGIN
+    ALTER TABLE dbo.Issue DROP COLUMN CompletedOn
+END
 
+IF EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'CompletedBy'
+          AND Object_ID = Object_ID(N'dbo.Issue'))
+BEGIN
+    ALTER TABLE dbo.Issue DROP COLUMN CompletedBy
+END
+]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>
