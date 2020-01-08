@@ -329,48 +329,46 @@ export class SearchStateService extends BaseObservableService {
             this.searchService.getSearchResultsByQuery(aggQuery).pipe(
                 debounceTime(1000)
             ).subscribe(res => {
-                if (res.Categories.length != 0) {
-                    var filterTree = this.buildTree(res.Categories.map((val) => {
-                        return {
-                            "key": val.Name,
-                            "label": this.getDisplayLookup(val.Name),
-                            "type": "category",
-                            "expanded": false,
-                            "data": val.Name,
-                            "count": val.ResultCount,
-                            "children": val.Categories.map((cat) => {
-                                return {
-                                    "key": val.Name + '___' + cat.Name,
-                                    "label": cat.Name,
-                                    "type": "subCategory",
-                                    "data": cat.Name,
-                                    "count": cat.ResultCount
-                                };
-                            })
-                        }
-                    }));
-                    let selectedFilters = [];
-                    if (this._checkTreeKeys != undefined && this._checkTreeKeys.length > 0) {
-                        for (let key of this._checkTreeKeys) {
-                            let node = this.getNodeWithKey(key, filterTree);
-                            if (node) {
-                                selectedFilters.push(node);
-                            }
-                        }
-                        this.selectedFilters = selectedFilters;
-                        this._checkTreeKeys = [];
-                    } else if (searchTypes.length > 0) {
-                        for (let key in searchTypes) {
-                            let node = this.getNodeWithKey(searchTypes[key], filterTree);
-                            if (node) {
-                                selectedFilters.push(node);
-                            }
-                        }
-                        this.selectedFilters = selectedFilters;
+                var filterTree = this.buildTree(res.Categories.map((val) => {
+                    return {
+                        "key": val.Name,
+                        "label": this.getDisplayLookup(val.Name),
+                        "type": "category",
+                        "expanded": false,
+                        "data": val.Name,
+                        "count": val.ResultCount,
+                        "children": val.Categories.map((cat) => {
+                            return {
+                                "key": val.Name + '___' + cat.Name,
+                                "label": cat.Name,
+                                "type": "subCategory",
+                                "data": cat.Name,
+                                "count": cat.ResultCount
+                            };
+                        })
                     }
-                    this._categories.next(filterTree);
-                    this._needAggregation = false;
+                }));
+                let selectedFilters = [];
+                if (this._checkTreeKeys != undefined && this._checkTreeKeys.length > 0) {
+                    for (let key of this._checkTreeKeys) {
+                        let node = this.getNodeWithKey(key, filterTree);
+                        if (node) {
+                            selectedFilters.push(node);
+                        }
+                    }
+                    this.selectedFilters = selectedFilters;
+                    this._checkTreeKeys = [];
+                } else if (searchTypes.length > 0) {
+                    for (let key in searchTypes) {
+                        let node = this.getNodeWithKey(searchTypes[key], filterTree);
+                        if (node) {
+                            selectedFilters.push(node);
+                        }
+                    }
+                    this.selectedFilters = selectedFilters;
                 }
+                this._categories.next(filterTree);
+                this._needAggregation = false;
                 this._treeLoading.next(false);
             });
         }
