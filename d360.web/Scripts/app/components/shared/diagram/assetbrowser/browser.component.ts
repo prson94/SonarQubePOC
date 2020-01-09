@@ -32,6 +32,8 @@ import { setTimeout } from 'core-js';
 import { AssetTypeClass } from '../../../../models/asset.model';
 import { Observable } from 'rxjs';
 import { PredicatesService } from '../../../../services/predicates.service';
+import { SecondaryNavService } from '../../../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
 
 declare var window: any;
 
@@ -118,9 +120,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         private myElement: ElementRef,
         private browserService: BrowserService,
         protected permissionsService: PermissionsService,
+        secondaryNavService: SecondaryNavService,
+        breadcrumbService: HeaderBreadcrumbService,
         private cdRef: ChangeDetectorRef
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
     }
 
     public ngOnInit() {
@@ -135,6 +141,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             { icon: 'fa fa-refresh', title: 'Refresh' }
         );
         this.initializeDiagram();
+        this.checkSecondaryNavLocalStorage();
     }
 
     public ngAfterViewInit() {

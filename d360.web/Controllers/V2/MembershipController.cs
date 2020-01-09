@@ -196,10 +196,19 @@ namespace d360.web.Controllers.V2
             string whereSql = "";
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
-            string selectSql = $"select gr.uid, gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, gr.IsAdministrator, gr.LastLoggedInOn, case gr.State " +
-                $" when 1 then 'Active'" +
-                $"when 2 then 'InActive'" +
-                $"when 3 then 'Deleted' end as State ";
+            string selectSql = $@"select gr.uid, 
+                gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, 
+                gr.IsAdministrator, gr.LastLoggedInOn, 
+                case 
+                    when g.PrimaryOwnerResourceID = gr.ResourceID then 'Primary' 
+                    when g.SecondaryOwnerResourceID = gr.ResourceID then 'Secondary' 
+                    else null end 
+                as [Owner],
+                case gr.State 
+                    when 1 then 'Active' 
+                    when 2 then 'InActive'
+                    when 3 then 'Deleted' end 
+                as State ";
             string countSql = @"
                            select count(*)
                                    from[reporting].[Global_Resource] as gr

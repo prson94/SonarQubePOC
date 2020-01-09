@@ -41,7 +41,8 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                          [pageLinks]="3"
                                          [paginator]="true"
                                          [rows]="20"
-                                         [(selection)]="selectedLookup">
+                                         [(selection)]="selectedLookup"
+                                         (onRowSelect)="selectedItemChange()">
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th [pSortableColumn]="'ID'">
@@ -150,15 +151,14 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
         this.tabTitle = 'Lookup Types'
         this.setCommonItems();
         this.setCommonSecondaryNavTabs(true);
-
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/LookupType/${this.selectedLookup.ID}`
-            });
+        this.selectedItemChange();
+        
+    }
+    selectedItemChange() {
+        if (this.auditSidebar && this.selectedLookup) {
+            this.auditSidebar.url = `/sidebar/audit/LookupType/${this.selectedLookup.ID}`;
         }
     }
-
     ngOnInit() {
         this.theDeleteCallback = this.deleteLookup.bind(this);
 
@@ -168,6 +168,8 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
 
                 if (this.lookups.length > 0) {
                     this.selectedLookup = this.lookups[0];
+
+                    this.selectedItemChange();
                 }
 
                 this.sub = this.route.params.subscribe(
@@ -178,6 +180,7 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
 
                         if (preselected) {
                             this.selectedLookup = preselected;
+                            this.selectedItemChange();
                         }
                     }
                 );
@@ -207,6 +210,7 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
 
                 if (result.type != 'error') {
                     this.selectedLookup = this.lookups.length > 0 ? this.lookups[0] : null;
+                    this.selectedItemChange();
                     this.lookups = this.lookups.filter(x => x.ID != id);
                 }
 
@@ -233,6 +237,7 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
 
         if (this.selectedLookup == null) {
             this.selectedLookup = this.lookups.length > 0 ? this.lookups[0] : null;
+            this.selectedItemChange();
         }
     }
 
@@ -258,6 +263,7 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
                 }
 
                 this.selectedLookup = event.lookup;
+                this.selectedItemChange();
 
                 this.showEditor = false;
                 this.isLoading = false;

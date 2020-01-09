@@ -67,17 +67,16 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
 
                 this.getPolicyTypes();
             }
-
+            this.selectedItemChange();
             this.setCommonItems();
             this.setCommonSecondaryNavTabs(true);
-
-            if (this.auditSidebar) {
-                this.auditSidebar.hasDynamicUrl = true;
-                this.auditSidebar.dynamicUrlCallback = (() => {
-                    return `/sidebar/audit/${this.objectType}/${this.selected.ID}`
-                });
-            }
         })
+    }
+
+    selectedItemChange() {
+        if (this.auditSidebar && this.selected) {
+            this.auditSidebar.url = `/sidebar/audit/${this.objectType}/${this.selected.ID}`;
+        }
     }
 
     ngOnInit() {        
@@ -96,6 +95,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                 this.types = results.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.types.length && this.types.length > 0) {
                     this.selected = this.types[0];
+                    this.selectedItemChange();
                 }
                 this.isLoading = false;
             }, error => this.error = error);
@@ -111,6 +111,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
 
                     if (this.types.length > 0) {
                         this.selected = this.types[0];
+                        this.selectedItemChange();
                     }
 
                     this.isLoading = false;
@@ -129,6 +130,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
 
         if (this.selected == null && this.types.length > 0) {
             this.selected = this.types[0];
+            this.selectedItemChange();
         }
     }
 
@@ -154,6 +156,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                 if (res.type != 'error') {
                     this.types = this.types.filter(x => x.AssetTypeID != id);
                     this.selected = this.types.length > 0 ? this.types[0] : null;
+                    this.selectedItemChange();
                     this.stateService.reloadLeftNavMenu();
                 }
 

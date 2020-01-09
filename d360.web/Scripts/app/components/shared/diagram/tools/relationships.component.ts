@@ -74,6 +74,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     private missingPredicateSource: boolean = false;
     private missingPredicateTarget: boolean = false;
 
+    private helpTextTop: number = 0;
+
     constructor(
         private relationshipService: RelationshipsService,
         private ref: ChangeDetectorRef
@@ -90,9 +92,11 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                 })
             });
 
+            var sourceItems = this.browserAssets.filter(x => x["isSubjectInTransformation"] == true);
+
             if (this.browserAssets.length > 10)
-                this.sourcePrePop = this.browserAssets.slice(0, 10);
-            else this.sourcePrePop = this.browserAssets;
+                this.sourcePrePop = sourceItems.slice(0, 10);
+            else this.sourcePrePop = sourceItems;
         }
         this.ref.markForCheck();
     }
@@ -118,8 +122,10 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
             var item = new CommonComponentAssetResult();
             item.AssetTypeUid = group.assetTypeUid;
             item.Uid = group.assetUid;
-            if (group.useAsTransformation == false && !this.browserAssets.find(x => x.Uid == item.Uid && x.AssetTypeUid == item.AssetTypeUid))
+            if (group.useAsTransformation == false && !this.browserAssets.find(x => x.Uid == item.Uid && x.AssetTypeUid == item.AssetTypeUid)) {
+                item["isSubjectInTransformation"] = group.isSubjectInTransformation;
                 this.browserAssets.push(item);
+            }
         }
         else {
             group.items.forEach(g => {
@@ -498,7 +504,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     private postRelationships(relationships: any[]) {
-        
+
         var source_tasks = [];
         var target_tasks = [];
         relationships.forEach(r => {
@@ -631,7 +637,8 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
     }
 
     private lineageChainMouseEnter(event) {
-        event.target.getElementsByClassName('help-text')[0].style.top = event.y + "px;";
+        this.helpTextTop = event.clientY + 16;
+        this.ref.markForCheck();
     }
 }
 

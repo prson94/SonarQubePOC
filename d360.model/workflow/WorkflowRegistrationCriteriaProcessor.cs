@@ -10,7 +10,7 @@ namespace d360.model.workflow
 {
     public static class WorkflowRegistrationCriteriaProcessor
     {
-        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1)
+        public static bool Evaluate(ICompanyContext context, string @object, int objectId, string criteria, long itemId = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1)
         {
             if (string.IsNullOrEmpty(criteria)) return true; // null criteria means all objects are applicable
 
@@ -49,7 +49,7 @@ namespace d360.model.workflow
         /// <param name="context"></param>
         /// <param name="object"></param>
         /// <param name="objectId"></param>
-        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, CompanyContext context, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, bool satisfyAll = true)
+        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, ICompanyContext context, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, bool satisfyAll = true)
         {
 
             //If there are no conditions object is eligible for workflow
@@ -99,6 +99,7 @@ namespace d360.model.workflow
             }            
             else if ((item.ContextualFieldID ?? "").ToLower() == "requestedon")
             {
+
                 var requestedOn = context.GetById<ShoppingCart>(objectId).RequestedOn;
                 if (!item.IsValueMatch(requestedOn.ToString())) return false;
             }

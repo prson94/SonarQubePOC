@@ -121,10 +121,7 @@ export class TagItemComponent extends BaseComponent implements OnInit, OnDestroy
                         this.setCommonSecondaryNavTabs(true);
 
                         if (this.auditSidebar) {
-                            this.auditSidebar.hasDynamicUrl = true;
-                            this.auditSidebar.dynamicUrlCallback = (() => {
-                                return `/sidebar/audit/Tag/${this.tagUid}`
-                            });
+                            this.auditSidebar.url = `/sidebar/audit/Tag/${this.tagUid}`;
                         }
                     }
                     else {

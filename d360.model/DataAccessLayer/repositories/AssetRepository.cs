@@ -1503,7 +1503,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                                 }
                                 else if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
                                 {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"RI.Code {orderDirection} ";
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"A.Code {orderDirection} ";
                                 }
                                 else
                                 {

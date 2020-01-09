@@ -6,7 +6,7 @@
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add();" *ngIf="formMode == FormMode.Default"></d3s-tile-actions>
             </header>
             <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-            <p-table #dt [value]="fusionTypes" selectionMode="single" [globalFilterFields]="['Name']" [paginator]="true" [rows]="20" [(selection)]="selectedRow" [metaKeySelection]="true">
+            <p-table #dt [value]="fusionTypes" selectionMode="single" [globalFilterFields]="['Name']" [paginator]="true" [rows]="20" [(selection)]="selectedRow" (onRowSelect)="selectedItemChange()" [metaKeySelection]="true">
                 <ng-template pTemplate="header">
                     <tr>
                         <th [pSortableColumn]="'Name'" style="width:75%">

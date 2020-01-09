@@ -81,12 +81,13 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
 
         this.setObjectInfo('ArtifactType', -1);
         this.setCommonSecondaryNavTabs(true);
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/ArtifactType/${this.selectedRow.data.ID}`
-            });
-        }    }
+    }
+
+    selectedItemChange() {
+        if (this.auditSidebar && this.selectedRow) {
+            this.auditSidebar.url = `/sidebar/audit/ArtifactType/${this.selectedRow.data.ID}`;
+        }
+    }
 
     ngOnDestroy() {
         this.clearSidebar();
@@ -102,6 +103,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
                 } else {                    
                     this.selectedRow = this.artifactsService.findArtifactType(this.artifactTypes, selectionId);
                 }
+                this.selectedItemChange();
                 this.isLoading = false;
             });
     }

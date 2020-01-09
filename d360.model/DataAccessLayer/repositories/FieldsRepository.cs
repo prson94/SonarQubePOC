@@ -652,38 +652,14 @@ from	IntersectType I
                     var definitionFields = new List<FieldTypeComplexLookupDefinitionField>();
                     var definitionRelations = new List<FieldTypeComplexLookupDefinitionRelation>();
                     var hasDefinitionError = false;
-
-                    f.Type.ComputedRelationshipLookup.Definition.Fields.ForEach(i =>
-                    {
-                        var field = new FieldTypeComplexLookupDefinitionField();
-                        var computedFields = new List<string>() { "DisplayValue", "TextPath" };
-                        var fieldInfo = Company.Query<dynamic>("select coalesce(F.ID, 0) as FieldTypeID, T.Object, T.ObjectID from AssetType T left join FieldType F on F.AssetTypeID = T.ID and F.Name = @name where T.uid = @uid", new { name = i.FieldTypeName, uid = i.AssetTypeUid }).SingleOrDefault();
-
-                        if (fieldInfo.FieldTypeID == 0 && !computedFields.Contains(i.FieldTypeName))
-                        {
-                            hasDefinitionError = true;
-                            return;
-                        }
-
-                        field.FieldTypeID = fieldInfo.FieldTypeID;
-                        field.Object = fieldInfo.Object;
-                        field.ObjectID = fieldInfo.ObjectID;
-                        field.DisplayOrder = i.DisplayOrder;
-                        field.FieldTypeName = i.FieldTypeName;
-                        field.Filter = i.Filter;
-                        field.OverrideDisplayName = i.OverrideDisplayName;
-                        field.SortOrder = i.SortOrder;
-                        field.Width = i.Width;
-
-
-
-                        definitionFields.Add(field);
-                    });
+                    var computedFields = new Dictionary<string, int>() { { "DisplayValue", 0 }, { "TextPath", 0 } };
+                    var relatedItemUids = new List<Guid>();
 
                     f.Type.ComputedRelationshipLookup.Definition.Relations.ForEach(i =>
                     {
-                        var relation = new FieldTypeComplexLookupDefinitionRelation(); 
-                        var relationInfo = Company.Query<dynamic>("select T.ID as IntersectTypeID, A.Object, A.ObjectID from IntersectType T left join AssetType A on A.uid = @uid where T.uid = @intersectUid", new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid }).SingleOrDefault();
+                        var relation = new FieldTypeComplexLookupDefinitionRelation();
+                        var relationInfo = Company.Query<dynamic>("select T.ID as IntersectTypeID, A.Object, A.ObjectID from IntersectType T left join AssetType A on A.uid = @uid where T.uid = @intersectUid"
+                            , new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid }).SingleOrDefault();
 
                         if (relationInfo == null || i.Direction == null || i.RelationType == null)
                         {
@@ -697,9 +673,83 @@ from	IntersectType I
                         relation.ObjectID = relationInfo.ObjectID;
                         relation.RelationType = (ComplexLookupRelationType)i.RelationType;
 
+                        relatedItemUids.Add(i.AssetTypeUid);
                         definitionRelations.Add(relation);
 
+                        var relatedTypeList = Company.Filter<IntersectTypeDetail>(r =>
+                           (r.Subject == relation.Object && r.SubjectID == relation.ObjectID) ||
+                           (r.Object == relation.Object && r.ObjectID == relation.ObjectID)
+                           )
+                        .ToList()
+                        .Select(r => new
+                           {
+                               r.ID,
+                               Name = (r.Subject == relation.Object && r.SubjectID == relation.ObjectID)
+                               ? $"{r.ObjectName} ({r.PredicateName})"
+                               : $"{r.SubjectName} ({r.PredicateName})"
+                           })
+                        .Distinct()
+                        .ToList();
+
+                        relatedTypeList.ForEach(r =>
+                        {
+                            var fieldName = $"Related Item.{r.Name}";
+
+                            if (computedFields.ContainsKey(fieldName))
+                            {
+                                computedFields.Add($"{fieldName} ({r.ID})", r.ID);
+                            }
+                            else
+                            {
+                                computedFields.Add(fieldName, r.ID);
+                            }
+                        });
+
                     });
+
+                    f.Type.ComputedRelationshipLookup.Definition.Fields.ForEach(i =>
+                    {
+
+                        
+                        var field = new FieldTypeComplexLookupDefinitionField();
+                        var fieldInfo = Company.Query<dynamic>(@"
+                            select coalesce(F.ID, 0) as FieldTypeID, T.Object, T.ObjectID 
+                            from AssetType T 
+                            left join FieldType F on F.AssetTypeID = T.ID and F.Name = @name where T.uid = @uid ", 
+                            new { name = i.FieldTypeName, uid = i.AssetTypeUid }).SingleOrDefault();
+
+                        //invalid uid
+                        if (!relatedItemUids.Contains(i.AssetTypeUid) || fieldInfo == null)
+                        {
+                            hasDefinitionError = true;
+                            return;
+                        }
+
+                        //invalid computed field
+                        if (fieldInfo.FieldTypeID == 0)
+                        {
+                            if (!computedFields.ContainsKey(i.FieldTypeName))
+                            {
+                                hasDefinitionError = true;
+                                return;
+                            }
+                        }
+
+                        field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? computedFields[i.FieldTypeName] : fieldInfo.FieldTypeID;
+                        field.Object = fieldInfo.Object;
+                        field.ObjectID = fieldInfo.ObjectID;
+                        field.DisplayOrder = i.DisplayOrder;
+                        field.FieldTypeName = i.FieldTypeName;
+                        field.Filter = i.Filter;
+                        field.OverrideDisplayName = i.OverrideDisplayName;
+                        field.SortOrder = i.SortOrder;
+                        field.Width = i.Width;
+
+
+                        definitionFields.Add(field);
+                    });
+
+
 
                     if (hasDefinitionError)
                     {
@@ -1214,7 +1264,7 @@ from	IntersectType I
             }
             else  // Replace
             {
-                Company.Execute("delete FieldType where Object = @t and ObjectID = @tid", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID });
+                Company.Query<int>("delete FieldType where Object = @t and ObjectID = @tid", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID }).FirstOrDefault();
                 Company.FieldTypes.AddRange(newFieldTypes);
             }
             Company.SaveChanges();
