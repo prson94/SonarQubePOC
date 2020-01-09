@@ -100,9 +100,8 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
             this.objectType = params['objectType'];
 
             this.load();
+            this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
         });
-
-        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

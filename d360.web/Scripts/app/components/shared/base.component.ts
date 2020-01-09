@@ -42,6 +42,12 @@ export class BaseComponent {
     relationsSidebar: SecondaryNavItem;
     monitorSidebar: SecondaryNavItem;
     fieldNav: SecondaryNavItem;
+    dashboardSidebar: SecondaryNavItem;
+    followersSidebar: SecondaryNavItem;
+    childSidebar: SecondaryNavItem;
+    scoreSidebar: SecondaryNavItem;
+    commentsSidebar: SecondaryNavItem;
+    actionsSidebar: SecondaryNavItem;
     // tabs
 
     lineageShowUsageOnly = false;
@@ -242,7 +248,6 @@ export class BaseComponent {
             }
 
             if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
-                console.log(this.assetID);
                 this.ownershipSidebar = new SecondaryNavItem(
                     'Responsibilities',
                     'ownership',
@@ -253,14 +258,14 @@ export class BaseComponent {
             }
 
             if (hasDashboard) {
-                this.secondaryNavService.showItem(
-                    new SecondaryNavItem(
-                        'Dashboards',
-                        'dashboards',
-                        ['fa-tachometer'],
-                        `/dashboard${this.objectContextUrl()}`, null, 5
-                    )
+                this.dashboardSidebar = new SecondaryNavItem(
+                    'Dashboards',
+                    'dashboards',
+                    ['fa-tachometer'],
+                    `/dashboard${this.objectContextUrl()}`, null, 5
                 );
+
+                this.secondaryNavService.showItem(this.dashboardSidebar);
             }
 
             if (hasImpact && CompanySettings.ShowImpactSidebar != 'false' && CompanySettings.LineageVersion != 3) {
@@ -284,14 +289,13 @@ export class BaseComponent {
             }
 
             if (hasFollowers && CompanySettings.ShowFollowersSidebar != 'false') {
-                this.secondaryNavService.showItem(
-                    new SecondaryNavItem(
-                        'Followers',
-                        'followers',
-                        ['fa-bookmark-o'],
-                        `/sidebar/followers${this.objectContextUrl()}`, null, 35
-                    )
+                this.followersSidebar = new SecondaryNavItem(
+                    'Followers',
+                    'followers',
+                    ['fa-bookmark-o'],
+                    `/sidebar/followers${this.objectContextUrl()}`, null, 35
                 );
+                this.secondaryNavService.showItem(this.followersSidebar);
             }
 
             if (hasMonitor) {
@@ -305,41 +309,38 @@ export class BaseComponent {
             }
 
             if (hasChild) {
-                this
-                    .secondaryNavService
-                    .showItem(
-                        new SecondaryNavItem(
-                            'Children',
-                            'children',
-                            ['fa-sitemap'],
-                            `/sidebar/children${this.objectContextUrl()}`
-                        )
-                    )
-                    ;
+                this.childSidebar = new SecondaryNavItem(
+                    'Children',
+                    'children',
+                    ['fa-sitemap'],
+                    `/sidebar/children${this.objectContextUrl()}`
+                );
+
+                this.secondaryNavService.showItem(this.childSidebar);
             }
 
-            if (this.objectType == 'Artifact') {
-                this.secondaryNavService.showItem(
-                    new SecondaryNavItem(
-                        'Scoring',
-                        'Scoring',
-                        ['fa-sitemap'],
-                        `/sidebar/score/Artifact/${this.uid}`, null, 7
+            if (this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy') {
+                this.scoreSidebar = new SecondaryNavItem(
+                    'Scoring',
+                    'Scoring',
+                    ['fa-sitemap'],
+                    `/sidebar/score/${this.objectType}/${this.uid}`, null, 7
+                );
 
-                    )
+                this.secondaryNavService.showItem(this.scoreSidebar);
+
+                this.commentsSidebar = new SecondaryNavItem(
+                    'Comments', 'Comments', ['fa-comments'],
+                    `/sidebar/comments/${this.objectType}/${this.assetID}`, null, 33
                 );
-                this.secondaryNavService.showItem(
-                    new SecondaryNavItem(
-                        'Comments', 'Comments', ['fa-comments'],
-                        `/sidebar/comments/Artifact/${this.assetID}`, null, 33
-                    )
+
+                this.secondaryNavService.showItem(this.commentsSidebar);
+
+                this.actionsSidebar = new SecondaryNavItem(
+                    'Actions', 'Actions', null,
+                    `/sidebar/actions/${this.objectType}/${this.assetID}`, null, 27
                 );
-                this.secondaryNavService.showItem(
-                    new SecondaryNavItem(
-                        'Actions', 'Actions', null,
-                        `/sidebar/actions/Artifact/${this.assetID}`, null, 27
-                    )
-                );
+                this.secondaryNavService.showItem(this.actionsSidebar);
             }
 
             this.sidebarSubscription = this.secondaryNavService.rightSidebarClicked$.subscribe(
@@ -545,13 +546,38 @@ export class BaseComponent {
         return hasValue;
     }
 
+    buildSecondaryNavigationForAssetID(assetId: number, object: string) {
+        this.buildSecondaryNavigation(null, null, object, assetId);
+    }
 
-    buildSecondaryNavigation(siteMenuService: SiteMenuService) {
+    buildSecondaryNavigationForObject(objectId: number, object: string) {
+        this.buildSecondaryNavigation(null, objectId, object);
+    }
+
+    buildSecondaryNavigationForAssetTypeUid(assetTypeUid: string) {
+        this.buildSecondaryNavigation(null, null, null, null, assetTypeUid);
+    }
+
+    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid : string = null) {
         console.log("Building secondary navigation!");
-        var data = new SecondaryNavPostModel();
-        data.AssetUid = '94A84705-15B2-4F13-AD07-9F77C2F10F73';
 
-        siteMenuService.getSecondaryNav(data).subscribe(r => {
+        var data = new SecondaryNavPostModel();
+        if (assetUid)
+            data.AssetUid = assetUid;
+
+        if (objectId)
+            data.ObjectId = objectId;
+
+        if (objectType)
+            data.ObjectType = objectType;
+
+        if (assetId)
+            data.AssetId = assetId;
+
+        if (assetTypeUid)
+            data.AssetTypeUid = assetTypeUid;
+
+        this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe(r => {
             this.assetID = r.AssetId;
             this.assetTypeID = r.AssetTypeId;
             this.uid = r.Uid;
@@ -562,7 +588,11 @@ export class BaseComponent {
             var tabTitle = "Definition";
             var area = "";
 
-            this.secondaryNavService.setLocalHomeUrl("/" + this.objectType +"/" + this.assetTypeID + "/" + this.objectID);
+            this.secondaryNavService.setLocalHomeUrl("/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID);
+
+            if (this.objectType.toLowerCase() == "policy") {
+                this.secondaryNavService.setLocalHomeUrl("/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + ";hierarchyID=" + this.objectID);
+            }
 
             this.secondaryNavService.clearItems();
             this.secondaryNavService.clearButtons();
@@ -572,30 +602,36 @@ export class BaseComponent {
 
             this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild);
 
+            this.activateComponent();
         });
+    }
 
-        //this.assetID = 2394023;
-        //this.assetTypeID = 100002230;
-        //this.uid = '94A84705-15B2-4F13-AD07-9F77C2F10F73';
-        //this.objectType = 'Artifact';
-        //this.objectID = 100085635;
-
-        //var displayValue = "vclong vclong vclongvclong vclong vclongvclong vclong vclongvclong";
-        //var areaName = "vclong vclong vclongvclong vclong vclongvclong vclong vclongvclong";
-        //var area = "";
-        //var icon = "";
-        //var tabTitle = "Definition";
-        //var hasWorkflow = false;
-
-        //this.secondaryNavService.setLocalHomeUrl("/artifact/" + this.assetTypeID + "/" + this.objectID);
-
-        //this.secondaryNavService.clearItems();
-        //this.secondaryNavService.clearButtons();
-        //this.secondaryNavService.setCurrentArea(areaName, area === 'Configuration' ? 'fa-sliders' : "fa-cog", tabTitle);
-        //this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject("ArtifactType", this.assetTypeID, "Artifact", this.objectID, false, hasWorkflow, this.uid));
-        //this.secondaryNavService.showHeader(true);
-
-        //this.setCommonSecondaryNavTabs(true, true, true, true, true, true, true, hasWorkflow, true, true);
-
+    private activateComponent() {
+        var componentName = this.constructor.name;
+        switch (componentName) {
+            case "ScoreComponent": this.scoreSidebar.active = true;
+                break;
+            case "DashboardComponent": this.dashboardSidebar.active = true;
+                break;
+            case "BrowserComponent": this.lineageSidebar.active = true;
+                break;
+            case "RelationshipsComponent": this.relationsSidebar.active = true;
+                break;
+            case "OwnershipComponent": this.ownershipSidebar.active = true;
+                break;
+            case "ActionsComponent": this.actionsSidebar.active = true;
+                break;
+            case "MonitorWorkflowComponent": this.monitorSidebar.active = true;
+                break;
+            case "CommentsComponent": this.commentsSidebar.active = true;
+                break;
+            case "FollowersComponent": this.followersSidebar.active = true;
+                break;
+            case "AuditComponent": this.auditSidebar.active = true;
+                break;
+            case "ChildrenComponent": this.childSidebar.active = true;
+                break;
+            default: break;
+        }
     }
 }

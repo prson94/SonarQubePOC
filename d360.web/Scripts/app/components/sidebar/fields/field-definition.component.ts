@@ -56,10 +56,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
                         }
                     }
                 );
+
+                this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
             }
         );
-
-        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

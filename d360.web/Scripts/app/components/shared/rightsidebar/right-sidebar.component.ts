@@ -303,7 +303,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         if (item.url) this.router.navigateByUrl(item.url);
         this.secondaryNavService.itemClicked(item);
         this.AllClosed();
-        console.log(this.homeUrl);
     }
 
     AllClosed() {

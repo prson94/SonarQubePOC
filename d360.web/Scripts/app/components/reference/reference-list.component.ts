@@ -100,20 +100,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                                 this.headerBreadcrumbService.clearBreadcrumbs();
                                 this.headerBreadcrumbService.clearCurrentObjectInfo();
                                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
-
-                                this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
-                                    this.clearSidebar();
-                                    this.secondaryNavService.setCurrentArea(res, icon, 'Reference Lists');
-                                    this.secondaryNavService.clearCurrentObject();
-                                    this.setCommonSecondaryNavTabs(true, true, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true, true);
-
-                                    this.setSecondaryNavItems();
-
-                                    this.secondaryNavService.showHeader(true);      
-                                });
                             });
                         });
-                           
+                        this.buildSecondaryNavigationForAssetTypeUid(this.selectedReferenceItemType.AssetTypeUID);
                     });
             }
         });

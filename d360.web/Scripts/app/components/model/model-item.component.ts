@@ -123,18 +123,14 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         if (this.selected) {
             this.setObjectInfo('Taxonomy', this.selected.ID, this.selected.DisplayValue, this.selected.AssetID, undefined, this.selected.Uid);
 
+            this.buildSecondaryNavigation(this.selected.Uid);
+
             this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
                 this.crumbs = [];
+
                 this.headerBreadcrumbService.getAssetFolderIcon('TaxonomyType', this.modelId, this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
                     this.lineageShowUsageOnly = true;
-                    this.setCommonSecondaryNavTabs(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
-                    this.secondaryNavService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
-                    this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('TaxonomyType', this.model.ID, 'Taxonomy', this.selected.ID, false, this.selected.HasWorkflow, this.selected.Uid));
-                    this.secondaryNavService.showItem(new SecondaryNavItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Taxonomy/${this.selected.Uid}`, null, 6));
-                    this.secondaryNavService.showItem(new SecondaryNavItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Taxonomy/${this.selected.ID}`, null, 31));
-                    this.secondaryNavService.showItem(new SecondaryNavItem('Actions', 'Actions', null, `/sidebar/actions/Taxonomy/${this.selected.ID}`, null, 26));
-                });
-                this.secondaryNavService.showHeader(true);
+                  });
 
                 this.headerBreadcrumbService.clearBreadcrumbs();
                 let areaBreadcrumb = new Breadcrumb(
@@ -166,6 +162,8 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
                             false));
                 }
             });
+
+
         }
     }
 

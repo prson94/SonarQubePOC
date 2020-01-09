@@ -110,4 +110,5 @@ export class SecondaryNavPostModel {
     ObjectType: string;
     AssetId: number;
     AssetUid: string;
+    AssetTypeUid: string;
 }

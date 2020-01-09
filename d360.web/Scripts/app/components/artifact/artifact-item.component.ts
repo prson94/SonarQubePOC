@@ -51,8 +51,7 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         webAnalyticsService: WebAnalyticsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private surveysService: SurveysService,
-        protected permissionsService: PermissionsService,
-        private siteMenuService: SiteMenuService
+        protected permissionsService: PermissionsService
     ) {
         super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);
     }
@@ -112,34 +111,9 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                         this.buildBreadcrumb();
                     });
 
-                    this.buildSecondaryNavigation(this.siteMenuService);
+                    this.buildSecondaryNavigation(this.artifact.Uid);
 
-                    //this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
-                    //this
-                    //    .setObjectInfo(
-                    //        'Artifact',
-                    //        this.artifact.ID,
-                    //        this.artifact.DisplayValue,
-                    //        this.artifact.AssetID,
-                    //        this.artifact.AssetTypeID,
-                    //        this.artifact.Uid
-                    //    )
-                    //    ;
-
-                    //this
-                    //    .setCommonSecondaryNavTabs(
-                    //        true,
-                    //        this.hasPermission(Permission.ReadResponsibilities),
-                    //        this.artifact.HasDashboards,
-                    //        true,
-                    //        true,
-                    //        this.hasPermission(Permission.ReadRelationships),
-                    //        true,
-                    //        true,
-                    //        this.artifact.HasChildArtifacts
-                    //    )
-                    //    ;
-                    //this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject("ArtifactType", typeID, "Artifact", id, false, artifact.HasWorkflow, this.artifact.Uid));
+                    this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
 
                     this.loadItemSurvey(id);
                     this.buildBreadcrumb();

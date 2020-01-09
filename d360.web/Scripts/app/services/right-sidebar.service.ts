@@ -3,6 +3,7 @@ import {Subject} from 'rxjs';
 import { SecondaryNavItem, DynamicButton, AssetAction, SecondaryNavCurrentObject, SecondaryNavState, NavState } from '../models/secondaryNav.model';
 import { AssetTypeClass } from '../models/asset.model';
 import { BaseComponent } from '../components/shared/base.component';
+import { SiteMenuService } from './site-menu.service';
 
 declare var CompanySettings: any;
 
@@ -22,7 +23,7 @@ export class SecondaryNavService {
     private homeUrlChangeSource = new Subject<string>();
     private rebuildHeaderSource = new Subject<any>();
     private secondaryNavState: SecondaryNavState;
-    constructor() {
+    constructor(private siteMenuService: SiteMenuService) {
         this.secondaryNavState = new SecondaryNavState();
     }
     // Observable streams
@@ -40,6 +41,10 @@ export class SecondaryNavService {
     rebuildHeader$ = this.rebuildHeaderSource.asObservable();
 
     private isSidebarCreated: boolean = false;
+
+    getSiteMenuService(): SiteMenuService {
+        return this.siteMenuService;
+    }
 
     setCurrentArea(area: string, icon: string, title: string) {
         this.currentAreaSource.next({ title: area, icon: icon, tabTitle: title });

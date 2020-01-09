@@ -971,6 +971,19 @@ SELECT count(ATT.[Object]) as count,
         [HttpPost, Route("GetSecondaryNavigationSettings")]
         public JsonNetResult GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)
         {
+            if (model.AssetUid == null)
+            {
+                if (model.ObjectId != null && model.ObjectType != null)
+                {
+                    model.AssetUid = Company.Assets.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId)?.uid;
+                }
+
+                if (model.AssetId != null)
+                {
+                    model.AssetUid = Company.Assets.FirstOrDefault(x => x.ID == model.AssetId)?.uid;
+                }
+            }
+
             var sql = @"
 DECLARE @assetdata TABLE
 (
@@ -979,48 +992,109 @@ DECLARE @assetdata TABLE
   Uid uniqueidentifier,
   Object varchar(50),
   ObjectType varchar(50),
+  ObjectTypeId int,
   ObjectId int,
   DisplayValue nvarchar(max)
 )
 
 DECLARE @navItems TABLE
 (
-  HasAudit bit default(0),
-  HasOwnership bit default(0),
-  HasDashboard bit default(0),
-  HasLineage bit default(0),
-  HasImpact bit default(0),
-  HasRelationship bit default(0),
-  HasFollowers bit default(0),
-  HasWorkflow bit default(0),
-  HasField bit default(0),
-  HasChild bit default(0)
+  HasAudit bit default(null),
+  HasOwnership bit default(null),
+  HasDashboard bit default(null),
+  HasLineage bit default(null),
+  HasImpact bit default(null),
+  HasRelationship bit default(null),
+  HasFollowers bit default(null),
+  HasWorkflow bit default(null),
+  HasField bit default(null),
+  HasChild bit default(null)
 )
 insert into @navItems values (0,0,0,0,0,0,0,0,0,0)
 
 insert into @assetdata
-select ID,AssetTypeID,@uid, Object,Type, ObjectID, DisplayValue from AssetDetail where uid = @uid
+select ID,AssetTypeID,@uid, Object,Type,TypeId, ObjectID, DisplayValue from AssetDetail where uid = @uid
 
-select ad.*, Items.val from @assetdata ad
-cross apply (select top 1 * from @navItems for json path)Items(val)";
+declare @assetUid uniqueidentifier;
+declare @assetTypeUid uniqueidentifier;
+
+set @assetUid = (select top 1 uid from @assetdata)
+
+if @assetUid is not null
+begin
+	update @navItems set HasAudit = 1
+
+	--permission bits
+	if @isAdmin = 1
+		begin
+			update @navItems set HasOwnership = 1
+			update @navItems set HasRelationship = 1
+		end
+
+		--dashboard
+	if exists(select a.uid from Asset A 
+				inner join AssetType T on T.ID = A.AssetTypeID
+				inner join Report R on R.ObjectType = A.Object and R.ObjectID = T.ObjectID
+				where A.uid = @assetUid
+	)
+	begin
+		update @navItems set HasDashboard = 1
+	end
+
+	--has workflow
+	if exists(select a.uid from Asset A 
+				inner join AssetType T on T.ID = A.AssetTypeID
+				inner join workflow.EventRegistration WER on WER.Object = T.Object and WER.ObjectID = T.ObjectID
+				inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
+				where A.uid = @assetUid
+	)
+	begin
+		update @navItems set HasWorkflow = 1
+	end
+
+	-- has child
+	if exists(select a.uid from Asset A 
+				inner join [PredicateIntersect] ON	Subject = A.Object and SubjectID = A.ObjectID and PredicateType = 3
+				where A.uid = @assetUid
+	)
+	begin
+		update @navItems set HasChild = 1
+	end
+
+	--has follower
+	if exists(select a.uid from Asset A 
+				inner join [Follow] F ON F.ObjectType = A.Object and F.ObjectID = A.ObjectID
+				where A.uid = @assetUid
+	)
+	begin
+		update @navItems set HasFollowers = 1
+	end
 
 
+	update @navItems set HasLineage = 1
+	update @navItems set HasImpact = 1
+end
 
-            var response = Company.Query<SecondaryNavigationResponseModel>(sql, new { uid = model.AssetUid }).FirstOrDefault();
+select ad.*, JSON_QUERY(Settings.Items) as Items from @assetdata ad
+cross apply (select top 1 * from @navItems for json path,WITHOUT_ARRAY_WRAPPER)Settings(Items)
+for json path,WITHOUT_ARRAY_WRAPPER";
 
+            var response = Company.Query<string>(sql, new { typeUid = model.AssetTypeUid, uid = model.AssetUid, resourceId = Company.CurrentResourceID, isAdmin = Company.CurrentResourceIsAdmin }).ToList();
+            var result = Newtonsoft.Json.JsonConvert.DeserializeObject<SecondaryNavigationResponseModel>(string.Join("", response));
             return new JsonNetResult
             {
-                Data = response,
+                Data = result,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
 
         public class SecondaryNavigationPostModel
         {
-            public int ObjectId { get; set; }
+            public int? ObjectId { get; set; }
             public string ObjectType { get; set; }
-            public int AssetId { get; set; }
-            public Guid AssetUid { get; set; }
+            public int? AssetId { get; set; }
+            public Guid? AssetUid { get; set; }
+            public Guid? AssetTypeUid { get; set; }
         }
 
         public class SecondaryNavigationResponseModel
@@ -1030,6 +1104,7 @@ cross apply (select top 1 * from @navItems for json path)Items(val)";
             public Guid Uid { get; set; }
             public string Object { get; set; }
             public string ObjectType { get; set; }
+            public int ObjectTypeId { get; set; }
             public string ObjectID { get; set; }
             public string DisplayValue { get; set; }
             public SecondaryNavItems Items { get; set; }

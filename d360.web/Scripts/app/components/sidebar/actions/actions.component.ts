@@ -42,9 +42,10 @@ export class ActionsComponent extends BaseComponent implements OnInit, OnDestroy
 
             this.objectType = params['objectType'];
             this.objectID = +params['objectId'];
-            this.isLoading = false;            
+            this.isLoading = false;
+            //ObjectId here is actually assetid!
+            this.buildSecondaryNavigationForAssetID(this.objectID, this.objectType);
         });
-        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

@@ -61,10 +61,11 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
                         } else {
                             this.objectName = res.DisplayValue;
                         }
+
+                        this.buildSecondaryNavigation(null, +res["ObjectID"], res["Object"]);
                     }
                 );
             }
         );
-        this.checkSecondaryNavLocalStorage();
     }
 }

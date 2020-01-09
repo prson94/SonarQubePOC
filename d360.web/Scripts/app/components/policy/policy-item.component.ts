@@ -156,23 +156,8 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                         this.selected.ID,
                         this.buildTreeNodeArray(this.policies, this.selected.ParentID),
                         this.findSelectedTreeNode(this.selected.ID)));
-                this.headerBreadcrumbService.getAssetFolderIcon('PolicyType', this.policyTypeId,areaBreadcrumb.text).subscribe(icon => {
-                    this.setCommonSecondaryNavTabs(
-                        true,
-                        this.hasPermission(Permission.ReadResponsibilities),
-                        false,
-                        true,
-                        true,
-                        this.hasPermission(Permission.ReadRelationships),
-                        true
-                    );
-                    this.secondaryNavService.showHeader(true);
-                    this.secondaryNavService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
-                    this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('PolicyType', this.policyType.ID, 'Policy', this.selected.ID, false, this.selected.HasWorkflow, this.selected.Uid));
-                    this.secondaryNavService.showItem(new SecondaryNavItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Policy/${this.selected.Uid}`, null, 6));
-                    this.secondaryNavService.showItem(new SecondaryNavItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Policy/${this.selected.ID}`, null, 31));
-                    this.secondaryNavService.showItem(new SecondaryNavItem('Actions', 'Actions', null, `/sidebar/actions/Policy/${this.selected.ID}`, null, 26));
-                });
+
+                this.buildSecondaryNavigation(this.selected.Uid);
             }
         });
         this.currentAreaNameSubscription =
