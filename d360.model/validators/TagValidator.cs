@@ -40,6 +40,7 @@ namespace d360.model.validators
 
         public static void ValidateForPut(Guid uid, TagApiUpsertModel model)
         {
+            string isTagBlank = "";
             if (model == null)
             {
                 throw new Exception("Invalid tag specified [null model].");
@@ -48,6 +49,15 @@ namespace d360.model.validators
             if (string.IsNullOrEmpty(model.Value))
             {
                 throw new Exception("Invalid tag specified [no value].");
+            }
+            if (!string.IsNullOrEmpty(model.Value))
+            {
+                isTagBlank = Regex.Replace(model.Value, @"\s+", "");
+            }
+
+            if (isTagBlank.Length < 1)
+            {
+                throw new Exception("Tag must be as least 1 character long in length.");
             }
 
             if (model.Value.Length > 100)
