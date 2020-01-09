@@ -40,8 +40,8 @@ namespace d360.web.Controllers.V2
         private static string DefaultImplementationName = "default";
 
         /// <summary>
-        /// Returns all the rule results for the specified rule Uid that are under the default implementation
-        /// If the user is not an admin http status code 403 forbidden is returned
+        /// Returns all rule results for the specified rule Uid the default implementation.
+        /// If the user is not an admin, http status code 403 (forbidden) is returned.
         /// </summary>
         /// <param name="ruleUid">The Uid of the rule</param>
         /// <returns>The rule result object with the specified Uid for the default implementation.  If no such rule result or implementation exists http status code 404 not found is returned.</returns>
@@ -75,8 +75,8 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Returns the rule result with the specified rule result id
-        /// If the user is not an admin http status code 403 forbidden is returned
+        /// Returns the rule result with the specified rule result id.
+        /// If the user is not an admin, http status code 403 (forbidden) is returned.
         /// </summary>
         /// <param name="ruleResultId">The id of the rule result</param>
         /// <returns>The rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
@@ -103,8 +103,8 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Returns the asset information of fusion tied to a rule result with the specified rule result id
-        /// If the user is not an admin http status code 403 forbidden is returned
+        /// Returns the asset information of fusion tied to a rule result with the specific rule result id.
+        /// If the user is not an admin, http status code 403 (forbidden) is returned.
         /// </summary>
         /// <param name="ruleResultId">The id of the rule result</param>
         /// <returns>The asset information tied to the rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
