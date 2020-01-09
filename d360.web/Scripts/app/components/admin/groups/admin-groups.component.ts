@@ -48,7 +48,6 @@ export class AdminGroupsComponent extends AdminBaseComponent {
 
         this.groupService.getGroups().subscribe(
             d => {
-                console.log(d);
                 this.groupItems = d.items;
                 this.selectedRow = this.groupItems[0];
 
