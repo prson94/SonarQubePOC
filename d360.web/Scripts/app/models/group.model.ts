@@ -9,7 +9,7 @@ export interface IGroupService {
     putGroup(group: Group): Observable<JsonResult>;
     postGroup(group: Group): Observable<JsonResult>;
     deleteGroup(id: number): Observable<JsonResult>;
-    postResourceGroup(resourceGroup: ResourceGroup[]): Observable<JsonResult>;
+    postResourceGroup(resourceGroupInfo: ResourceGroupInfo): Observable<JsonResult>;
     deleteResourceGroup(groupID: number, resourceID: number): Observable<JsonResult>;
     getGroupUserList(id: number, pagenum: number, pagesize: number, sortDataField: string, sortOrder: string): Observable<JsonResult>;
 }
@@ -61,6 +61,10 @@ export class ResourceGroup {
     IsOwner: boolean;
 }
 
+export class ResourceGroupInfo {
+    ResourceGroups: ResourceGroup[];
+    GroupGuid: string;
+}
 export class GroupEditorModel {
     group: Group;
     resourceList: SelectItem[];

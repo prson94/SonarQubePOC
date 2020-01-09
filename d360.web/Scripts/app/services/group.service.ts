@@ -10,7 +10,8 @@ import {
     Group,
     GroupEditorModel,
     ResourceGroup,
-    GroupApiModels
+    GroupApiModels,
+    ResourceGroupInfo
 } from '../models/group.model';
 import {JsonResult} from '../models/jsonresult.model';
 import {CountObject} from '../models/resource.model';
@@ -84,8 +85,8 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
-    postResourceGroup(resourceGroups: ResourceGroup[]): Observable<JsonResult> {
-        return this.http.post('form/ResourceGroup', resourceGroups).pipe(
+    postResourceGroup(resourceGroupInfo: ResourceGroupInfo): Observable<JsonResult> {
+        return this.http.post('form/ResourceGroup', resourceGroupInfo).pipe(
             map(response => <JsonResult>response),
             catchError(err => this.handleError(err))
         );

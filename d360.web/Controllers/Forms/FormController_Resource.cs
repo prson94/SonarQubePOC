@@ -476,17 +476,23 @@ namespace d360.web.Controllers
 
 
         [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("ResourceGroup"), Route("ResourceGroup")]
-        public JsonResult PostResourceGroup(ResourceGroup[] model)
+        public JsonResult PostResourceGroup(ResourceGroupInfo model)
         {
             try
             {
-                if (!Company.HasAssetPermission(SystemObjects.Group, model[0].GroupID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                var id = Company.Filter<Asset>(x => x.uid == model.GroupGuid).SingleOrDefault().ObjectID;
+                foreach (var m in model.ResourceGroups)
+                    m.GroupID = id;
 
-                foreach (var m in model)
+                if (!Company.HasAssetPermission(SystemObjects.Group, model.ResourceGroups[0].GroupID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                
+                
+
+                foreach (var m in model.ResourceGroups)
                     Company.Add(m);
 
-                return jsonSuccess("User successfully assigned.", model[0].ResourceID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess("User successfully assigned.", model.ResourceGroups[0].ResourceID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -553,10 +559,13 @@ namespace d360.web.Controllers
         #region Group : Delete User
 
         [HttpDelete, ActionName("ResourceGroup"), Route("ResourceGroup"), NonNullableParameters]
-        public JsonResult DeleteResourceGroup(int groupID, int resourceID)
+        public JsonResult DeleteResourceGroup(int groupID, int resourceID,Guid? groupUid)
         {
             try
             {
+                if (groupUid.HasValue && groupUid.Value != Guid.Empty)
+                    groupID = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
+
                 if (!Company.HasAssetPermission(SystemObjects.Group, groupID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 

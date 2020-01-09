@@ -1,5 +1,5 @@
 ﻿import {Input, Output, Component, OnChanges, SimpleChange} from '@angular/core';
-import {GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup} from '../../models/group.model';
+import {GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup, ResourceGroupInfo} from '../../models/group.model';
 import {GroupService} from '../../services/group.service';
 import {FormMode, FormHelper, SelectItem} from '../../models/form.model';
 import {BaseComponent} from '../shared/base.component';
@@ -44,7 +44,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     }
 
     load(): void {
-        if (!this.groupId && !this.groupUid) {
+        if (!this.groupId && this.groupId==0 && !this.groupUid) {
             return;
         }
 
@@ -55,7 +55,6 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         this.isLoading = true;
         this.groupService.getGroupResourceList(this.groupUid).subscribe(
             d => {
-                console.log(d);
                 this.groupItems = d.items;
                 if (this.groupItems.length > 0) {
                     this.selectedRow = this.groupItems[0];
@@ -90,7 +89,11 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
             this.isLoading = false;
         }
 
-        this.groupService.postResourceGroup(resources).subscribe(
+        let resourceGroupInfo = new ResourceGroupInfo();
+        resourceGroupInfo.GroupGuid = this.groupUid;
+        resourceGroupInfo.ResourceGroups = resources;
+
+        this.groupService.postResourceGroup(resourceGroupInfo).subscribe(
             r => {
                 this.load();
                 this.formMode = FormMode.Default;
