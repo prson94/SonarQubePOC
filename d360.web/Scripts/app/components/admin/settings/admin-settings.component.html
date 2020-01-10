@@ -48,6 +48,11 @@
                 The maximum number of items to show in a dropdown list before enabling typeahead search.
             </div>
             <input type="number" min="0" [(ngModel)]="companySettings.MaxDropdownItems" style="width: 95%" /> <br />
+            <div class="FieldName">Maximum Number of Excel Eport Items</div>
+            <div class="directions">
+                The maximum number of items able to be exported in an excel spreadsheet.
+            </div>
+            <input type="number" min="0" [(ngModel)]="companySettings.MaxExcelExportRows" style="width: 95%" /> <br />
         </div>
         <div class="tile tile-detail">
             <header>Workflow</header>

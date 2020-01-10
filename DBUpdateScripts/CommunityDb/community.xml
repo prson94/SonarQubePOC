@@ -46,4 +46,5 @@
   <include file="scripts/GOV-8900.xml"/> <!-- Updating system setting to Data360 Workflow -->
   <include file="scripts/GOV-9109.xml"/> <!-- set UseAsTransformationLimit default to 6 -->
   <include file="scripts/GOV-7930.xml"/> <!-- remove UseLegacyLineage setting -->
+  <include file="scripts/GOV-9226.xml"/> <!-- script to add the setting for max number of excel rows-->
 </databaseChangeLog>
