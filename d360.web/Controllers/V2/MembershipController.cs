@@ -315,7 +315,10 @@ namespace d360.web.Controllers.V2
             return Request.CreateResponse(HttpStatusCode.OK, results);
         }
 
-
+        /// <summary>
+        /// Retrieves a list of groups
+        /// </summary>
+        /// <returns></returns>
         [
     HttpGet,
     Route("groups"),
