@@ -1076,6 +1076,13 @@ SELECT count(ATT.[Object]) as count,
                     responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
                 }
 
+
+                if (responseModel.Object == SystemObjects.Taxonomy.ToString() && model.PreloadData)
+                {
+                    var apiCtrlr = new TaxonomyController(this.Community, this.Company);
+                    responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.ObjectTypeId);
+                }
+
             }
 
 

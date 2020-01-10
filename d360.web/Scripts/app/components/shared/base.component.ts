@@ -17,7 +17,7 @@ import { AssetTypeClass } from '../../models/asset.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteMenuService } from '../../services/site-menu.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { OnDestroy } from '@angular/core';
+import { OnDestroy, OnInit } from '@angular/core';
 import { Policy } from '../../models/policy.model';
 
 declare var CompanySettings;
@@ -35,7 +35,7 @@ export class BaseComponent {
     objectName: string;
     public preloadedTreeData: any[] = [];
     public baseCrumbs: Breadcrumb[] = [];
-    public baseTreeNodeArray: TreeNode[] = [];
+    public baseTreeNodeArray: any[] = [];
 
     // sidebar
     sidebarSubscription: Subscription;
@@ -458,23 +458,24 @@ export class BaseComponent {
         }
     }
 
-    private checkParentBase(policyItem: Policy, policies: Policy[], policyTypeId: number) {
-        console.log(policyItem);
-        if (policyItem.ParentID > 0 && policies) {
-            let parentAr = policies.filter(x => x.ID == policyItem.ParentID);
+    //generic method used for objectName = Policy/Model
+    private checkParentBase(item: any, arr: any[], policyTypeId: number, objectName: string) {
+
+        if (item.ParentID > 0 && arr) {
+            let parentAr = arr.filter(x => x.ID == item.ParentID);
             console.log(parentAr);
-            let parent: Policy;
+            let parent: any;
             if (parentAr.length > 0) {
                 parent = parentAr[0];
                 let crumb = new Breadcrumb(parent.DisplayValue,
-                    SiteUrlHelpers.getObjectUrl('POLICY', parent.ID, policyTypeId),
+                    SiteUrlHelpers.getObjectUrl(objectName.toUpperCase(), parent.ID, policyTypeId),
                     true,
-                    'Policy',
+                    objectName,
                     parent.ID,
-                    this.buildTreeNodeArrayBase(policies, parent.ParentID),
+                    this.buildTreeNodeArrayBase(arr, parent.ParentID),
                     this.findSelectedTreeNodeBase(parent.ID), false, false)
                 this.baseCrumbs.unshift(crumb);
-                this.checkParentBase(parent, policies, policyTypeId);
+                this.checkParentBase(parent, arr, policyTypeId, objectName);
             }
         } else {
             this.baseCrumbs.forEach(x => this.breadcrumbsService.showBreadcrumb(x));
@@ -682,9 +683,12 @@ export class BaseComponent {
             return;
         }
 
-        
+
 
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe(r => {
+            this.clearSidebar();
+            this.breadcrumbsService.clearBreadcrumbs();
+
             this.assetID = r.AssetId;
             this.assetTypeID = r.AssetTypeId;
             this.uid = r.Uid;
@@ -695,6 +699,9 @@ export class BaseComponent {
             var mainTabTitle = r.MainTabTitle;
             if (r.PreloadData) {
                 this.preloadedTreeData = r.PreloadData;
+                if (r.PreloadData.Data) {
+                    this.preloadedTreeData = r.PreloadData.Data;
+                }
             }
             var area = "";
 
@@ -702,13 +709,26 @@ export class BaseComponent {
                 .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
 
             var homeUrl = this.getUrl(r, areaName);
+            console.log(this.objectType);
             this.secondaryNavService.setLocalHomeUrl(homeUrl);
 
             if (this.objectType.toLowerCase() == 'artifact') {
                 this.setArtifactBreadcrumbs(r);
             }
             else if (this.objectType.toLowerCase() == 'policy') {
-                this.setPolicyBreadcrumbs(r);
+                this.setTreeBreadcrumbs(r, 'Policy');
+            }
+            else if (this.objectType.toLowerCase() == 'taxonomy') {
+                this.setTreeBreadcrumbs(r, 'Taxonomy');
+            }
+            else if (this.objectType.toLowerCase() == 'rule') {
+                this.setRuleBreadcrumbs(r);
+            }
+            else if (this.objectType.toLowerCase() == 'referenceitemtype') {
+                this.breadcrumbsService.clearBreadcrumbs();
+
+                this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Reference Lists', homeUrl));
+                this.setBrowserTitle(this.breadcrumbsService.getTitleService(), 'Reference Lists');
             }
             else {
                 this.SetCommonBreadcrumbs(r, area, homeUrl);
@@ -745,6 +765,9 @@ export class BaseComponent {
     private getUrl(r: any, areaName: any) {
         if (this.objectType.toLowerCase() == "policy") {
             return "/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + ";hierarchyID=" + this.objectID;
+        }
+        if (this.objectType.toLowerCase() == "taxonomy") {
+            return "/policy/" + r.ObjectTypeId + ";hierarchyID=" + this.objectID;
         }
         if (this.objectType.toLowerCase() == "rule") {
             return "/quality/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID;
@@ -909,13 +932,27 @@ export class BaseComponent {
 
     }
 
-    private setPolicyBreadcrumbs(data) {
+    //used for policy/model
+    private setTreeBreadcrumbs(data, objectName: string) {
+        var selected = this.preloadedTreeData.find(x => x.ID == data.ObjectID);
+        var objectTypeName = objectName + "Type";
+        this.breadcrumbsService.clearBreadcrumbs();
+
         this.breadcrumbsService
-            .getAreaName('PolicyType', data.ObjectTypeId)
+            .getAreaName(objectTypeName, data.ObjectTypeId)
             .subscribe(result => {
                 this.baseCrumbs = [];
                 var currentAreaName = result;
-                this.breadcrumbsService.getFolderTitle('#Policy').then((res) => {
+
+                this.breadcrumbsService.getFolderTitle('#' + (objectName == 'Taxonomy' ? 'Models' : objectName)).then((res) => {
+
+                    var folderTitle = res;
+                    let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
+
+                    this.breadcrumbsService.getAssetFolderIcon(objectTypeName, data.AssetTypeID, currentFolderName).subscribe(res => {
+                        this.secondaryNavService.setCurrentArea(data.DisplayValue, res, 'Definition');
+                    });
+
                     this.breadcrumbsService.clearBreadcrumbs();
                     let areaBreadcrumb = new Breadcrumb(
                         currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
@@ -925,22 +962,21 @@ export class BaseComponent {
                     this.breadcrumbsService.showBreadcrumb(
                         new Breadcrumb(
                             data.TypeName,
-                            SiteUrlHelpers.getObjectUrl('PolicyType', data.ObjectTypeId), undefined, 'POLICYTYPE', data.ObjectTypeId, undefined, undefined, true
+                            SiteUrlHelpers.getObjectUrl(objectTypeName, data.ObjectTypeId), undefined, objectTypeName.toUpperCase(), data.ObjectTypeId, undefined, undefined, true
                         )
                     );
 
-                    this.setObjectInfo('Policy', data.ObjectId, data.DisplayValue, data.AssetID, undefined, data.Uid);
+                    this.setObjectInfo(objectName, data.ObjectId, data.DisplayValue, data.AssetID, undefined, data.Uid);
 
-                    var selected = this.preloadedTreeData.find(x => x.AssetID == data.AssetId);
                     if (selected && selected.ID > 0) {
-                        this.setObjectInfo('Policy', selected.ID, selected.DisplayValue, selected.AssetID, undefined, selected.Uid);
-                        this.checkParentBase(selected, this.preloadedTreeData, data.ObjectTypeId);
+                        this.setObjectInfo(objectName, selected.ID, selected.DisplayValue, selected.AssetID, undefined, selected.Uid);
+                        this.checkParentBase(selected, this.preloadedTreeData, data.ObjectTypeId, objectName);
                         this.breadcrumbsService.showBreadcrumb(
                             new Breadcrumb(
                                 selected.DisplayValue,
-                                SiteUrlHelpers.getObjectUrl('PolicyType', selected.ID),
+                                SiteUrlHelpers.getObjectUrl(objectTypeName, selected.ID),
                                 true,
-                                'Policy',
+                                objectName,
                                 selected.ID,
                                 this.buildTreeNodeArrayBase(this.preloadedTreeData, selected.ParentID),
                                 this.findSelectedTreeNodeBase(selected.ID)));
@@ -950,6 +986,40 @@ export class BaseComponent {
                 });
             });
     }
+
+
+    private setRuleBreadcrumbs(data) {
+        console.log(data);
+        this.breadcrumbsService
+            .getAreaName('RuleType', data.ObjectTypeId)
+            .subscribe(result => {
+                var currentAreaName = result;
+                this.breadcrumbsService.getFolderTitle('#Data Quality').then((res) => {
+                    this.breadcrumbsService.clearBreadcrumbs();
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(currentAreaName ? currentAreaName : res, undefined));//SiteUrlHelpers.SITE_URL_RULE_ROOT
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.TypeName, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${data.ObjectTypeId}`,
+                        undefined,
+                        'RuleType',
+                        data.ObjectTypeId,
+                        undefined,
+                        undefined,
+                        true));
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue,
+                        SiteUrlHelpers.getObjectUrl('RULEIMPLEMENTATION', data.ObjectId, data.ObjectTypeId),
+                        true,
+                        'Rule',
+                        data.ObjectId));
+
+                    this.breadcrumbsService.getAssetFolderIcon('RuleType', data.ObjectTypeId, currentAreaName ? currentAreaName : res).subscribe(icon => {
+                        this.secondaryNavService.setCurrentArea(data.DisplayValue, icon, 'Definition');
+
+                    });
+
+                });
+            });
+
+    }
+
 
     private GetIDFromUrl(url: string) {
         return +url.split("/")[url.split.length - 1];

@@ -71,6 +71,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = headerBreadcrumbService;
     }
 
     ngOnInit() {
