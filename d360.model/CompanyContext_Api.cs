@@ -243,10 +243,10 @@ where	ExecutionID = @executionID
             {
                 throw new ApplicationException("Endpoint logic is misconfigured, and is missing an API table name.");
             }
-            if (!CurrentResourceIsAdmin)
+            if (!CurrentResourceIsAdmin && isInsert && p == Permission.ModifyAsset)
             {
                 PermissionInfo permission = this.GetTypePermissions(at.Object, at.ObjectID).Where(x => x.ID == Permission.ModifyAsset).SingleOrDefault();
-                if (isInsert && p == Permission.ModifyAsset &&  (permission == null || !permission.Selected))
+                if (permission == null || !permission.Selected)
                 {
                     Connection.Execute($@"
     
