@@ -971,119 +971,103 @@ SELECT count(ATT.[Object]) as count,
         [HttpPost, Route("GetSecondaryNavigationSettings")]
         public JsonNetResult GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)
         {
+            bool execProcedure = true;
+            SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems()};
+
+            //Static nav
             if (model.AssetUid == null)
+            {
+                if (model.ObjectType == SystemObjects.IntersectType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Relationships";
+                    responseModel.MainTabTitle = "Relationship Types";
+                    responseModel.Items.HasAudit = true;
+                    responseModel.Items.HasField = true;
+
+                }
+
+                if (model.ObjectType == SystemObjects.IssueType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.IssueType.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Workflow Actions";
+                    responseModel.MainTabTitle = "Action Types";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if(model.ObjectType == SystemObjects.AttributeType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.AttributeType.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Attributes";
+                    responseModel.MainTabTitle = "Attribute Groups";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.LookupType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.LookupType.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Lookups";
+                    responseModel.MainTabTitle = "Lookup Types";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.ResponsibilityType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.ResponsibilityType.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Responsibilities";
+                    responseModel.MainTabTitle = "Responsibility Types";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.Report.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.Report.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Dashboards";
+                    responseModel.MainTabTitle = "Dashboards";
+                    responseModel.Items.HasAudit = true;
+                }
+
+
+
+            }
+
+            if (execProcedure)
             {
                 if (model.ObjectId != null && model.ObjectType != null)
                 {
                     model.AssetUid = Company.Assets.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId)?.uid;
+
+                    if (model.AssetUid == null)
+                    {
+                        model.AssetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId)?.uid;
+                    }
                 }
 
                 if (model.AssetId != null)
                 {
                     model.AssetUid = Company.Assets.FirstOrDefault(x => x.ID == model.AssetId)?.uid;
                 }
+
+                var response = Company.Query<string>("exec [dbo].[SecondaryNavSettings] @uid, @assetTypeUid , @resourceId, @isAdmin", new { assetTypeUid = model.AssetTypeUid, uid = model.AssetUid, resourceId = Company.CurrentResourceID, isAdmin = Company.CurrentResourceIsAdmin }).ToList();
+                responseModel = Newtonsoft.Json.JsonConvert.DeserializeObject<SecondaryNavigationResponseModel>(string.Join("", response));
             }
 
-            var sql = @"
-DECLARE @assetdata TABLE
-(
-  AssetId int, 
-  AssetTypeId int,
-  Uid uniqueidentifier,
-  Object varchar(50),
-  ObjectType varchar(50),
-  ObjectTypeId int,
-  ObjectId int,
-  DisplayValue nvarchar(max)
-)
 
-DECLARE @navItems TABLE
-(
-  HasAudit bit default(null),
-  HasOwnership bit default(null),
-  HasDashboard bit default(null),
-  HasLineage bit default(null),
-  HasImpact bit default(null),
-  HasRelationship bit default(null),
-  HasFollowers bit default(null),
-  HasWorkflow bit default(null),
-  HasField bit default(null),
-  HasChild bit default(null)
-)
-insert into @navItems values (0,0,0,0,0,0,0,0,0,0)
-
-insert into @assetdata
-select ID,AssetTypeID,@uid, Object,Type,TypeId, ObjectID, DisplayValue from AssetDetail where uid = @uid
-
-declare @assetUid uniqueidentifier;
-declare @assetTypeUid uniqueidentifier;
-
-set @assetUid = (select top 1 uid from @assetdata)
-
-if @assetUid is not null
-begin
-	update @navItems set HasAudit = 1
-
-	--permission bits
-	if @isAdmin = 1
-		begin
-			update @navItems set HasOwnership = 1
-			update @navItems set HasRelationship = 1
-		end
-
-		--dashboard
-	if exists(select a.uid from Asset A 
-				inner join AssetType T on T.ID = A.AssetTypeID
-				inner join Report R on R.ObjectType = A.Object and R.ObjectID = T.ObjectID
-				where A.uid = @assetUid
-	)
-	begin
-		update @navItems set HasDashboard = 1
-	end
-
-	--has workflow
-	if exists(select a.uid from Asset A 
-				inner join AssetType T on T.ID = A.AssetTypeID
-				inner join workflow.EventRegistration WER on WER.Object = T.Object and WER.ObjectID = T.ObjectID
-				inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
-				where A.uid = @assetUid
-	)
-	begin
-		update @navItems set HasWorkflow = 1
-	end
-
-	-- has child
-	if exists(select a.uid from Asset A 
-				inner join [PredicateIntersect] ON	Subject = A.Object and SubjectID = A.ObjectID and PredicateType = 3
-				where A.uid = @assetUid
-	)
-	begin
-		update @navItems set HasChild = 1
-	end
-
-	--has follower
-	if exists(select a.uid from Asset A 
-				inner join [Follow] F ON F.ObjectType = A.Object and F.ObjectID = A.ObjectID
-				where A.uid = @assetUid
-	)
-	begin
-		update @navItems set HasFollowers = 1
-	end
-
-
-	update @navItems set HasLineage = 1
-	update @navItems set HasImpact = 1
-end
-
-select ad.*, JSON_QUERY(Settings.Items) as Items from @assetdata ad
-cross apply (select top 1 * from @navItems for json path,WITHOUT_ARRAY_WRAPPER)Settings(Items)
-for json path,WITHOUT_ARRAY_WRAPPER";
-
-            var response = Company.Query<string>(sql, new { typeUid = model.AssetTypeUid, uid = model.AssetUid, resourceId = Company.CurrentResourceID, isAdmin = Company.CurrentResourceIsAdmin }).ToList();
-            var result = Newtonsoft.Json.JsonConvert.DeserializeObject<SecondaryNavigationResponseModel>(string.Join("", response));
             return new JsonNetResult
             {
-                Data = result,
+                Data = responseModel,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -1105,8 +1089,9 @@ for json path,WITHOUT_ARRAY_WRAPPER";
             public string Object { get; set; }
             public string ObjectType { get; set; }
             public int ObjectTypeId { get; set; }
-            public string ObjectID { get; set; }
+            public int ObjectID { get; set; }
             public string DisplayValue { get; set; }
+            public string MainTabTitle { get; set; }
             public SecondaryNavItems Items { get; set; }
 
         }

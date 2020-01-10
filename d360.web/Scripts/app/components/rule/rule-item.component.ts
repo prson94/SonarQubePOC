@@ -113,14 +113,8 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 'Rule',
                 this.ruleType.ID));
 
-            this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
-                this.secondaryNavService.setCurrentArea(this.rule.Name, icon, 'Definition');
-                this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, 'Rule', this.rule.ID, false, this.ruleType.HasWorkflow, this.rule.UID));
-                this.secondaryNavService.showItem(new SecondaryNavItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Rule/${this.rule.UID}`, null, 6));
-                this.secondaryNavService.showItem(new SecondaryNavItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Rule/${this.rule.ID}`, null, 31));
-                this.secondaryNavService.showItem(new SecondaryNavItem('Actions', 'Actions', null, `/sidebar/actions/Rule/${this.rule.ID}`, null, 26));
+            this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID, this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
             });
-            this.secondaryNavService.showHeader(true);
 
         });
     }
@@ -139,7 +133,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 
                 this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId).then(p => {
                     this.clearSidebar();
-                    this.setCommonSecondaryNavTabs(true, this.hasPermission(Permission.ReadResponsibilities), false, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
+                    this.buildSecondaryNavigation(this.rule.UID);
                 });
                 this.isLoading = false;
             });

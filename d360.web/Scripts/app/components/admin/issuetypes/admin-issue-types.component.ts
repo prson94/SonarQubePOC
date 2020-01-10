@@ -113,8 +113,6 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
         this.tabTitle = 'Action Types';
         this.setCommonItems();
         this.theDeleteCallback = this.deleteIssueType.bind(this);
-        this.setCommonSecondaryNavTabs(true);
-        this.selectedItemChange();
     }
 
     ngOnInit() {
@@ -138,9 +136,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
             });
     }
     selectedItemChange() {
-        if (this.auditSidebar && this.selected) {
-            this.auditSidebar.url = `/sidebar/audit/IssueType/${this.issueTypes.length != 0 ? this.selected.ID : -1}`;
-        }
+        this.buildSecondaryNavigationForObject(this.selected.ID, 'IssueType');
     }
     private load() {
         this.isLoading = true;

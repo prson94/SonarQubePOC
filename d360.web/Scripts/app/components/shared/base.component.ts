@@ -243,16 +243,20 @@ export class BaseComponent {
                     'Field Definitions',
                     'fields',
                     ['fa-drivers-license-o'],
-                    '/sidebar/fields', null, 1);
+                    `/sidebar/fields/${this.objectType}/${this.objectID}`, null, 1);
                 this.secondaryNavService.showItem(this.fieldNav);
             }
 
             if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
+                var urlPart = 'ownership';
+                if (this.objectType == 'ReferenceItemType')
+                    urlPart = 'responsibilities';
+
                 this.ownershipSidebar = new SecondaryNavItem(
                     'Responsibilities',
-                    'ownership',
+                    urlPart,
                     ['fa-user'],
-                    `/sidebar/ownership/${this.assetID}`, null, 25
+                    `/sidebar/${urlPart}/${this.assetID}`, null, 25
                 );
                 this.secondaryNavService.showItem(this.ownershipSidebar);
             }
@@ -319,7 +323,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.childSidebar);
             }
 
-            if (this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy') {
+            if (this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule') {
                 this.scoreSidebar = new SecondaryNavItem(
                     'Scoring',
                     'Scoring',
@@ -554,10 +558,6 @@ export class BaseComponent {
         this.buildSecondaryNavigation(null, objectId, object);
     }
 
-    buildSecondaryNavigationForAssetTypeUid(assetTypeUid: string) {
-        this.buildSecondaryNavigation(null, null, null, null, assetTypeUid);
-    }
-
     buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid : string = null) {
         console.log("Building secondary navigation!");
 
@@ -577,6 +577,10 @@ export class BaseComponent {
         if (assetTypeUid)
             data.AssetTypeUid = assetTypeUid;
 
+        if (!assetUid && !assetId && !assetTypeUid && !objectId) {
+            return;
+        }
+
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe(r => {
             this.assetID = r.AssetId;
             this.assetTypeID = r.AssetTypeId;
@@ -585,18 +589,18 @@ export class BaseComponent {
             this.objectID = r.ObjectID;
 
             var areaName = r.DisplayValue;
-            var tabTitle = "Definition";
+            var mainTabTitle = r.MainTabTitle;
             var area = "";
 
-            this.secondaryNavService.setLocalHomeUrl("/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID);
+            area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Attributes', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
+                .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
 
-            if (this.objectType.toLowerCase() == "policy") {
-                this.secondaryNavService.setLocalHomeUrl("/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + ";hierarchyID=" + this.objectID);
-            }
+
+            this.SetHomeURL(r, areaName);
 
             this.secondaryNavService.clearItems();
             this.secondaryNavService.clearButtons();
-            this.secondaryNavService.setCurrentArea(areaName, area === 'Configuration' ? 'fa-sliders' : "fa-cog", tabTitle);
+            this.secondaryNavService.setCurrentArea(areaName, area === 'Configuration' ? 'fa-sliders' : "fa-cog", mainTabTitle);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, this.assetTypeID, this.objectType, this.objectID, false, r.Items.HasWorkflow, this.uid));
             this.secondaryNavService.showHeader(true);
 
@@ -604,6 +608,49 @@ export class BaseComponent {
 
             this.activateComponent();
         });
+    }
+
+    private SetHomeURL(r: any, areaName: any) {
+        this.secondaryNavService.setLocalHomeUrl("/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID);
+        if (this.objectType.toLowerCase() == "policy") {
+            this.secondaryNavService.setLocalHomeUrl("/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + ";hierarchyID=" + this.objectID);
+        }
+        if (this.objectType.toLowerCase() == "rule") {
+            this.secondaryNavService.setLocalHomeUrl("/quality/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID);
+        }
+        if (this.objectType.toLowerCase() == "referenceitemtype") {
+            this.secondaryNavService.setLocalHomeUrl("/reference;referenceListId=" + this.objectID);
+        }
+        if (this.objectType.toLowerCase() == "artifacttype" && areaName == 'Business Assets') {
+            this.secondaryNavService.setLocalHomeUrl("/admin/assets/BusinessAsset");
+        }
+        if (this.objectType.toLowerCase() == "artifacttype" && areaName == 'Technical Assets') {
+            this.secondaryNavService.setLocalHomeUrl("/admin/assets/TechnicalAsset");
+        }
+        if (this.objectType.toLowerCase() == "taxonomytype") {
+            this.secondaryNavService.setLocalHomeUrl("/admin/taxonomies");
+        }
+        if (this.objectType.toLowerCase() == "policy") {
+            this.secondaryNavService.setLocalHomeUrl("/admin/policies");
+        }
+        if (this.objectType.toLowerCase() == "intersecttype") {
+            this.secondaryNavService.setLocalHomeUrl("/admin/relationships");
+        }
+        if (this.objectType.toLowerCase() == "issuetype") {
+            this.secondaryNavService.setLocalHomeUrl("/admin/issuetypes");
+        }
+        if (this.objectType.toLowerCase() == "attributetype") {
+            this.secondaryNavService.setLocalHomeUrl("/admin/attributes");
+        }
+        if (this.objectType.toLowerCase() == "lookuptype") {
+            this.secondaryNavService.setLocalHomeUrl("/admin/lookups");
+        }
+        if (this.objectType.toLowerCase() == "responsibilitytype") {
+            this.secondaryNavService.setLocalHomeUrl("/admin/responsibilities");
+        }
+        if (this.objectType.toLowerCase() == "report") {
+            this.secondaryNavService.setLocalHomeUrl("/admin/dashboard");
+        }
     }
 
     private activateComponent() {

@@ -79,7 +79,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
         this.sub = this.route.params.subscribe(params => {
-            this.canReadSelectedType = false;            
+            this.canReadSelectedType = false;
 
             //load default perms
             this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
@@ -102,7 +102,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
                             });
                         });
-                        this.buildSecondaryNavigationForAssetTypeUid(this.selectedReferenceItemType.AssetTypeUID);
+                        this.buildSecondaryNavigationForObject(this.selectedReferenceListId, 'ReferenceItemType');
                     });
             }
         });
@@ -129,7 +129,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         itemsGrid.load();
     }
 
-    private changeFormMode(formMode:FormMode) {
+    private changeFormMode(formMode: FormMode) {
         if (formMode == FormMode.Default)
             this.showDefault = true;
         else
@@ -140,7 +140,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.selectedReferenceItemType = e;
         this.selectedReferenceListId = e.ID;
         this.setSecondaryNavItems();
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.ID}`);        
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.ID}`);
     }
 
     setSecondaryNavItems() {
@@ -163,7 +163,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         }
 
         if (this.authenticationService.isAdmin && this.fieldNav) {
-            
+
             this.fieldNav.icons = ['fa-drivers-license-o'];
             this.fieldNav.tag = 'fields'
             this.fieldNav.title = 'Field Definitions'
@@ -174,7 +174,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         }
 
         if (this.authenticationService.isAdmin && this.ownershipSidebar) {
-            
+
             this.ownershipSidebar.icons = ['fa-bars'];
             this.ownershipSidebar.tag = 'responsibilities'
             this.ownershipSidebar.title = 'Responsibilities'
