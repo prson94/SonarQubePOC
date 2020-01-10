@@ -18,6 +18,7 @@ using System.Net;
 using System.IO;
 using System.Threading.Tasks;
 using d360.core.resources;
+using Newtonsoft.Json.Linq;
 
 namespace d360.web.Controllers
 {
@@ -972,7 +973,7 @@ SELECT count(ATT.[Object]) as count,
         public JsonNetResult GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)
         {
             bool execProcedure = true;
-            SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems()};
+            SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems() };
 
             //Static nav
             if (model.AssetUid == null)
@@ -999,7 +1000,7 @@ SELECT count(ATT.[Object]) as count,
                     responseModel.Items.HasAudit = true;
                 }
 
-                if(model.ObjectType == SystemObjects.AttributeType.ToString())
+                if (model.ObjectType == SystemObjects.AttributeType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.AttributeType.ToString();
@@ -1062,6 +1063,19 @@ SELECT count(ATT.[Object]) as count,
 
                 var response = Company.Query<string>("exec [dbo].[SecondaryNavSettings] @uid, @assetTypeUid , @resourceId, @isAdmin", new { assetTypeUid = model.AssetTypeUid, uid = model.AssetUid, resourceId = Company.CurrentResourceID, isAdmin = Company.CurrentResourceIsAdmin }).ToList();
                 responseModel = Newtonsoft.Json.JsonConvert.DeserializeObject<SecondaryNavigationResponseModel>(string.Join("", response));
+
+                if (responseModel.Object == "Artifact")
+                {
+                    responseModel.Artifact = Company.GetPageInformation(SystemObjects.Artifact, responseModel.ObjectID);
+                }
+
+                if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
+                {
+                    var apiCtrlr = new D3SApiController(this.Community, this.Company,null, null);
+                    apiCtrlr.Request = new System.Net.Http.HttpRequestMessage();
+                    responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
+                }
+
             }
 
 
@@ -1079,6 +1093,7 @@ SELECT count(ATT.[Object]) as count,
             public int? AssetId { get; set; }
             public Guid? AssetUid { get; set; }
             public Guid? AssetTypeUid { get; set; }
+            public bool PreloadData { get; set; }
         }
 
         public class SecondaryNavigationResponseModel
@@ -1092,8 +1107,10 @@ SELECT count(ATT.[Object]) as count,
             public int ObjectID { get; set; }
             public string DisplayValue { get; set; }
             public string MainTabTitle { get; set; }
+            public string TypeName { get; set; }
             public SecondaryNavItems Items { get; set; }
-
+            public JObject Artifact { get; set; }
+            public dynamic PreloadData { get; set; }
         }
 
         public class SecondaryNavItems

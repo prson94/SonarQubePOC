@@ -191,14 +191,14 @@ export class SiteMenuService extends BaseObservableService {
             );
     }
 
-    getSecondaryNav(data: SecondaryNavPostModel) {
+    getSecondaryNav(data: SecondaryNavPostModel, preloadTreeData = false) {
         let options = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json'
             })
         }
 
-        return this.http.post('navigation/GetSecondaryNavigationSettings',data, options)
+        return this.http.post(`navigation/GetSecondaryNavigationSettings?preloadData=${preloadTreeData}`, data, options)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

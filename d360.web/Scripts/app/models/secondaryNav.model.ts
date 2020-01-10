@@ -111,4 +111,5 @@ export class SecondaryNavPostModel {
     AssetId: number;
     AssetUid: string;
     AssetTypeUid: string;
+    PreloadData: boolean;
 }

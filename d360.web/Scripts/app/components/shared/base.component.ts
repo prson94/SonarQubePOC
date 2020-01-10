@@ -16,6 +16,9 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { AssetTypeClass } from '../../models/asset.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteMenuService } from '../../services/site-menu.service';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { OnDestroy } from '@angular/core';
+import { Policy } from '../../models/policy.model';
 
 declare var CompanySettings;
 
@@ -30,6 +33,9 @@ export class BaseComponent {
     objectID: number;
     objectType: string;
     objectName: string;
+    public preloadedTreeData: any[] = [];
+    public baseCrumbs: Breadcrumb[] = [];
+    public baseTreeNodeArray: TreeNode[] = [];
 
     // sidebar
     sidebarSubscription: Subscription;
@@ -414,6 +420,95 @@ export class BaseComponent {
         return `/${this.uid}`;
     }
 
+    private findSelectedTreeNodeBase(id: number): TreeNode {
+        const nodes: TreeNode[] = [];
+
+        // add root nodes
+        for (let rNode of this.baseTreeNodeArray) {
+            nodes.push(rNode);
+        }
+
+        // do a breadth first search for the given treenode
+        if (nodes.length == 0) {
+            return;
+        }
+
+        let node = nodes[0];
+
+        while (node) {
+            if (node.data.id && node.data.id == id) {
+                return node;
+            }
+
+            // push children
+            if (node.children) {
+                for (let cNode of node.children) {
+                    nodes.push(cNode);
+                }
+            }
+
+            // remove this node
+            nodes.splice(0, 1);
+
+            if (nodes.length == 0) {
+                return null;
+            }
+
+            node = nodes[0];
+        }
+    }
+
+    private checkParentBase(policyItem: Policy, policies: Policy[], policyTypeId: number) {
+        console.log(policyItem);
+        if (policyItem.ParentID > 0 && policies) {
+            let parentAr = policies.filter(x => x.ID == policyItem.ParentID);
+            console.log(parentAr);
+            let parent: Policy;
+            if (parentAr.length > 0) {
+                parent = parentAr[0];
+                let crumb = new Breadcrumb(parent.DisplayValue,
+                    SiteUrlHelpers.getObjectUrl('POLICY', parent.ID, policyTypeId),
+                    true,
+                    'Policy',
+                    parent.ID,
+                    this.buildTreeNodeArrayBase(policies, parent.ParentID),
+                    this.findSelectedTreeNodeBase(parent.ID), false, false)
+                this.baseCrumbs.unshift(crumb);
+                this.checkParentBase(parent, policies, policyTypeId);
+            }
+        } else {
+            this.baseCrumbs.forEach(x => this.breadcrumbsService.showBreadcrumb(x));
+        }
+    }
+
+    public buildTreeNodeArrayBase(
+        policies: Policy[],
+        Parent?: number,
+        includeChildren?: boolean
+    ): TreeNode[] {
+        // find the root items then
+        let rootNodes = policies.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
+
+        if (rootNodes.length == 0) {
+            return null;
+        }
+
+        const res: TreeNode[] = [];
+
+        for (let root of rootNodes) {
+            res.push({
+                label: root.DisplayValue,
+                expanded: true,
+                data: {
+                    id: root.ID
+                },
+                children: (includeChildren ? this.buildTreeNodeArrayBase(policies, root.ID) : null) // recursively find its children
+            });
+        }
+
+        return res;
+    }
+
     // This is generally overloaded to show hide in your own class.
     protected showHideBreadcrumbItem(activatedItem: SecondaryNavItem) {
     }
@@ -558,10 +653,11 @@ export class BaseComponent {
         this.buildSecondaryNavigation(null, objectId, object);
     }
 
-    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid : string = null) {
+    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null) {
         console.log("Building secondary navigation!");
 
         var data = new SecondaryNavPostModel();
+        data.PreloadData = false;
         if (assetUid)
             data.AssetUid = assetUid;
 
@@ -577,9 +673,16 @@ export class BaseComponent {
         if (assetTypeUid)
             data.AssetTypeUid = assetTypeUid;
 
+        if (!this.preloadedTreeData || this.preloadedTreeData.length == 0) {
+            //This will have effect only on pages that need populate tree to create breadcrumbs (model, policy)
+            data.PreloadData = true;
+        }
+
         if (!assetUid && !assetId && !assetTypeUid && !objectId) {
             return;
         }
+
+        
 
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe(r => {
             this.assetID = r.AssetId;
@@ -590,13 +693,26 @@ export class BaseComponent {
 
             var areaName = r.DisplayValue;
             var mainTabTitle = r.MainTabTitle;
+            if (r.PreloadData) {
+                this.preloadedTreeData = r.PreloadData;
+            }
             var area = "";
 
             area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Attributes', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
                 .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
 
+            var homeUrl = this.getUrl(r, areaName);
+            this.secondaryNavService.setLocalHomeUrl(homeUrl);
 
-            this.SetHomeURL(r, areaName);
+            if (this.objectType.toLowerCase() == 'artifact') {
+                this.setArtifactBreadcrumbs(r);
+            }
+            else if (this.objectType.toLowerCase() == 'policy') {
+                this.setPolicyBreadcrumbs(r);
+            }
+            else {
+                this.SetCommonBreadcrumbs(r, area, homeUrl);
+            }
 
             this.secondaryNavService.clearItems();
             this.secondaryNavService.clearButtons();
@@ -610,47 +726,64 @@ export class BaseComponent {
         });
     }
 
-    private SetHomeURL(r: any, areaName: any) {
-        this.secondaryNavService.setLocalHomeUrl("/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID);
+    private SetCommonBreadcrumbs(data, area, url) {
+        var adminHeading = '';
+
+        if (data.DisplayValue == 'Responsibilities') {
+            adminHeading = "Security";
+        }
+
+        this.breadcrumbsService.clearBreadcrumbs();
+        this.breadcrumbsService.showBreadcrumb(new Breadcrumb(area));
+        if (adminHeading)
+            this.breadcrumbsService.showBreadcrumb(new Breadcrumb(adminHeading));
+
+        this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue, url));
+        this.setBrowserTitle(this.breadcrumbsService.getTitleService(), data.DisplayValue);
+    }
+
+    private getUrl(r: any, areaName: any) {
         if (this.objectType.toLowerCase() == "policy") {
-            this.secondaryNavService.setLocalHomeUrl("/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + ";hierarchyID=" + this.objectID);
+            return "/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + ";hierarchyID=" + this.objectID;
         }
         if (this.objectType.toLowerCase() == "rule") {
-            this.secondaryNavService.setLocalHomeUrl("/quality/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID);
+            return "/quality/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID;
         }
         if (this.objectType.toLowerCase() == "referenceitemtype") {
-            this.secondaryNavService.setLocalHomeUrl("/reference;referenceListId=" + this.objectID);
+            return "/reference;referenceListId=" + this.objectID;
         }
         if (this.objectType.toLowerCase() == "artifacttype" && areaName == 'Business Assets') {
-            this.secondaryNavService.setLocalHomeUrl("/admin/assets/BusinessAsset");
+            return "/admin/assets/BusinessAsset";
         }
         if (this.objectType.toLowerCase() == "artifacttype" && areaName == 'Technical Assets') {
-            this.secondaryNavService.setLocalHomeUrl("/admin/assets/TechnicalAsset");
+            return "/admin/assets/TechnicalAsset";
         }
         if (this.objectType.toLowerCase() == "taxonomytype") {
-            this.secondaryNavService.setLocalHomeUrl("/admin/taxonomies");
+            return "/admin/taxonomies";
         }
-        if (this.objectType.toLowerCase() == "policy") {
-            this.secondaryNavService.setLocalHomeUrl("/admin/policies");
+        if (this.objectType.toLowerCase() == "policytype") {
+            return "/admin/policies";
         }
         if (this.objectType.toLowerCase() == "intersecttype") {
-            this.secondaryNavService.setLocalHomeUrl("/admin/relationships");
+            return "/admin/relationships";
         }
         if (this.objectType.toLowerCase() == "issuetype") {
-            this.secondaryNavService.setLocalHomeUrl("/admin/issuetypes");
+            return "/admin/issuetypes";
         }
         if (this.objectType.toLowerCase() == "attributetype") {
-            this.secondaryNavService.setLocalHomeUrl("/admin/attributes");
+            return "/admin/attributes";
         }
         if (this.objectType.toLowerCase() == "lookuptype") {
-            this.secondaryNavService.setLocalHomeUrl("/admin/lookups");
+            return "/admin/lookups";
         }
         if (this.objectType.toLowerCase() == "responsibilitytype") {
-            this.secondaryNavService.setLocalHomeUrl("/admin/responsibilities");
+            return "/admin/responsibilities";
         }
         if (this.objectType.toLowerCase() == "report") {
-            this.secondaryNavService.setLocalHomeUrl("/admin/dashboard");
+            return "/admin/dashboard";
         }
+
+        return "/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID;
     }
 
     private activateComponent() {
@@ -680,5 +813,145 @@ export class BaseComponent {
                 break;
             default: break;
         }
+    }
+
+    private setArtifactBreadcrumbs(data) {
+        var artifact = data.Artifact;
+
+        let folderName: string = '#Business';
+
+        if (artifact.Class == AssetTypeClass.TechnicalAsset) {
+            folderName = '#Technical';
+        }
+        this.breadcrumbsService.getFolderTitle(folderName).then(res => {
+            this.breadcrumbsService.clearBreadcrumbs();
+
+            var folderTitle = res;
+            var area = res;
+
+            let index = 0;
+            this.breadcrumbsService
+                .getAreaName('ArtifactType', data.Artifact.Breadcrumbs[0] ? this.GetIDFromUrl(data.Artifact.Breadcrumbs[0].Url) : data.Artifact.AssetTypeID)
+                .subscribe(result => {
+                    var currentAreaName = result;
+                    let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
+
+                    this.breadcrumbsService.clearBreadcrumbs();
+                    this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.Artifact.AssetTypeID, currentFolderName).subscribe(res => {
+                        this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, 'Definition');
+                    });
+                    let areaName: string = currentAreaName ? currentAreaName : folderTitle;
+                    let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}`;
+                    if (areaName == "Technical Assets") {
+                        areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
+                    }
+                    else {
+                        areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
+                    }
+                    let areaBreadcrumb = new Breadcrumb(
+                        areaName,
+                        areaLink,
+                        false
+                    );
+                    this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
+
+                    for (let breadcrumb of data.Artifact.Breadcrumbs) {
+                        index++;
+
+                        if (index == data.Artifact.Breadcrumbs.length) {
+                            //last item in the breadcrumb
+                            this
+                                .breadcrumbsService
+                                .showBreadcrumb(
+                                    new Breadcrumb(
+                                        breadcrumb.Name,
+                                        breadcrumb.Url,
+                                        false,
+                                        'Artifact',
+                                        data.Artifact.AssetTypeID,
+                                        null,
+                                        null,
+                                        false,
+                                        breadcrumb.TypeName !== undefined,
+                                        breadcrumb.TypeName,
+                                        'ArtifactType',
+                                        this.GetIDFromUrl(breadcrumb.TypeUrl),
+                                        breadcrumb.TypeUrl
+                                    )
+                                )
+                                ;
+                        } else {
+                            this
+                                .breadcrumbsService
+                                .showBreadcrumb(
+                                    new Breadcrumb(
+                                        breadcrumb.Name,
+                                        breadcrumb.Url,
+                                        false,
+                                        'Artifact',
+                                        this.GetIDFromUrl(breadcrumb.Url),
+                                        null,
+                                        null,
+                                        false,
+                                        breadcrumb.TypeName !== undefined,
+                                        breadcrumb.TypeName,
+                                        'ArtifactType',
+                                        this.GetIDFromUrl(breadcrumb.TypeUrl),
+                                        breadcrumb.TypeUrl
+                                    )
+                                )
+                                ;
+                        }
+                    }
+                });
+        });
+
+
+    }
+
+    private setPolicyBreadcrumbs(data) {
+        this.breadcrumbsService
+            .getAreaName('PolicyType', data.ObjectTypeId)
+            .subscribe(result => {
+                this.baseCrumbs = [];
+                var currentAreaName = result;
+                this.breadcrumbsService.getFolderTitle('#Policy').then((res) => {
+                    this.breadcrumbsService.clearBreadcrumbs();
+                    let areaBreadcrumb = new Breadcrumb(
+                        currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
+                    );
+                    this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
+
+                    this.breadcrumbsService.showBreadcrumb(
+                        new Breadcrumb(
+                            data.TypeName,
+                            SiteUrlHelpers.getObjectUrl('PolicyType', data.ObjectTypeId), undefined, 'POLICYTYPE', data.ObjectTypeId, undefined, undefined, true
+                        )
+                    );
+
+                    this.setObjectInfo('Policy', data.ObjectId, data.DisplayValue, data.AssetID, undefined, data.Uid);
+
+                    var selected = this.preloadedTreeData.find(x => x.AssetID == data.AssetId);
+                    if (selected && selected.ID > 0) {
+                        this.setObjectInfo('Policy', selected.ID, selected.DisplayValue, selected.AssetID, undefined, selected.Uid);
+                        this.checkParentBase(selected, this.preloadedTreeData, data.ObjectTypeId);
+                        this.breadcrumbsService.showBreadcrumb(
+                            new Breadcrumb(
+                                selected.DisplayValue,
+                                SiteUrlHelpers.getObjectUrl('PolicyType', selected.ID),
+                                true,
+                                'Policy',
+                                selected.ID,
+                                this.buildTreeNodeArrayBase(this.preloadedTreeData, selected.ParentID),
+                                this.findSelectedTreeNodeBase(selected.ID)));
+                    }
+
+
+                });
+            });
+    }
+
+    private GetIDFromUrl(url: string) {
+        return +url.split("/")[url.split.length - 1];
     }
 }

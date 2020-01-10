@@ -20,7 +20,7 @@ export class ArtifactBaseComponent extends BaseComponent {
         super();
         this.secondaryNavService = secondaryNavService;
         this.webAnalyticsService = webAnalyticsService;
-        //headerBreadcrumbService.getFolderTitle('#Business').then(res => { this.folderTitle = res; });
+        this.breadcrumbsService = headerBreadcrumbService;
         this.secondaryNavService.showHeader(true);
     }        
     

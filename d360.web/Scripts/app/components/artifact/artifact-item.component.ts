@@ -78,7 +78,6 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
 
     ngOnDestroy() {
         this.sub.unsubscribe();
-        this.currentAreaNameSubscription.unsubscribe();
         this.clearSidebar();
     }
 
@@ -96,27 +95,11 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
                 artifact => {
                     this.artifact = artifact;
 
-                    let folderName: string = '#Business';
-
-                    if (artifact.Class == AssetTypeClass.TechnicalAsset) {
-                        folderName = '#Technical';
-                    }
-
-                    this.headerBreadcrumbService.getFolderTitle(folderName).then(res => {
-                        this.headerBreadcrumbService.clearBreadcrumbs();
-
-                        this.folderTitle = res;
-                        this.area = res;
-
-                        this.buildBreadcrumb();
-                    });
-
                     this.buildSecondaryNavigation(this.artifact.Uid);
 
                     this.setBrowserTitle(this.titleService, this.artifact.DisplayValue);
 
                     this.loadItemSurvey(id);
-                    this.buildBreadcrumb();
                 },
                 err => {
                     this.router.navigate([SiteUrlHelpers.SITE_URL_HOME_ROOT]);
@@ -146,88 +129,6 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
             });
     }
 
-    private buildBreadcrumb() {
-        let index = 0;
-        this.currentAreaNameSubscription =
-            this.headerBreadcrumbService
-                .getAreaName('ArtifactType', this.artifact.Breadcrumbs[0] ? this.GetIDFromUrl(this.artifact.Breadcrumbs[0].Url) : this.artifactTypeId)
-                .subscribe(result => {
-                    this.currentAreaName = result;
-                    let currentFolderName = this.currentAreaName ? this.currentAreaName : this.folderTitle;
-
-                    this.headerBreadcrumbService.clearBreadcrumbs();
-                    this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactTypeId, currentFolderName).subscribe(res => {
-                        this.secondaryNavService.setCurrentArea(this.artifact.DisplayValue, res, 'Definition');
-                    });
-                    let areaName: string = this.currentAreaName ? this.currentAreaName : this.folderTitle;
-                    let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}`;
-                    if (areaName == "Technical Assets") {
-                        areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
-                    }
-                    else {
-                        areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
-                    }
-                    let areaBreadcrumb = new Breadcrumb(
-                        areaName,
-                        areaLink,
-                        false
-                    );
-                    this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
-
-                    for (let breadcrumb of this.artifact.Breadcrumbs) {
-                        index++;
-
-                        if (index == this.artifact.Breadcrumbs.length) {
-                            //last item in the breadcrumb
-                            this
-                                .headerBreadcrumbService
-                                .showBreadcrumb(
-                                    new Breadcrumb(
-                                        breadcrumb.Name,
-                                        breadcrumb.Url,
-                                        false,
-                                        'Artifact',
-                                        this.artifactTypeId,
-                                        null,
-                                        null,
-                                        false,
-                                        breadcrumb.TypeName !== undefined,
-                                        breadcrumb.TypeName,
-                                        'ArtifactType',
-                                        this.GetIDFromUrl(breadcrumb.TypeUrl),
-                                        breadcrumb.TypeUrl
-                                    )
-                                )
-                                ;
-                        } else {
-                            this
-                                .headerBreadcrumbService
-                                .showBreadcrumb(
-                                    new Breadcrumb(
-                                        breadcrumb.Name,
-                                        breadcrumb.Url,
-                                        false,
-                                        'Artifact',
-                                        this.GetIDFromUrl(breadcrumb.Url),
-                                        null,
-                                        null,
-                                        false,
-                                        breadcrumb.TypeName !== undefined,
-                                        breadcrumb.TypeName,
-                                        'ArtifactType',
-                                        this.GetIDFromUrl(breadcrumb.TypeUrl),
-                                        breadcrumb.TypeUrl
-                                    )
-                                )
-                                ;
-                        }
-                    }
-                });
-    }
-
-    private GetIDFromUrl(url: string) {
-        return +url.split("/")[url.split.length - 1];
-    }
     private completeSurvey() {
         this.showSurvey = false;
         var index = this.messages.findIndex(x => x.data == 'Survey');

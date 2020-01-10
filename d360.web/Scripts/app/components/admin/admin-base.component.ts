@@ -23,6 +23,7 @@ export class AdminBaseComponent extends BaseComponent {
     constructor(protected headerBreadcrumbService: HeaderBreadcrumbService, protected titleService: Title, secondaryNavService?: SecondaryNavService) {
         super();
         this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = headerBreadcrumbService;
     }
 
     setCommonItems() {
@@ -36,12 +37,12 @@ export class AdminBaseComponent extends BaseComponent {
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.adminHeading));     
         
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));
+        this.setBrowserTitle(this.titleService, this.areaName);
         this.secondaryNavService.clearItems();
         this.secondaryNavService.clearButtons();
         this.secondaryNavService.setCurrentArea(this.areaName, this.area === 'Configuration' ? 'fa-sliders' : "fa-cog", this.tabTitle);
         this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(null,null,null,null,true));
         this.secondaryNavService.showHeader(true);
-        this.setBrowserTitle(this.titleService, this.areaName);
     }       
 
 
