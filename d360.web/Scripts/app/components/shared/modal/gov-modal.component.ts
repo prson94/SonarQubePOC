@@ -21,7 +21,7 @@ export class D3SModal implements OnChanges {
     private display: boolean = false;
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.isVisible.previousValue != changes.isVisible.currentValue) {
+        if (changes.isVisible !== undefined && (changes.isVisible.previousValue != changes.isVisible.currentValue)) {
             if (changes.isVisible.currentValue) {
                 this.showPopUp();
             }
