@@ -341,14 +341,14 @@ export class BaseComponent {
 
                 this.commentsSidebar = new SecondaryNavItem(
                     'Comments', 'Comments', ['fa-comments'],
-                    `/sidebar/comments/${this.objectType}/${this.assetID}`, null, 33
+                    `/sidebar/comments/${this.objectType}/${this.objectID}`, null, 33
                 );
 
                 this.secondaryNavService.showItem(this.commentsSidebar);
 
                 this.actionsSidebar = new SecondaryNavItem(
                     'Actions', 'Actions', null,
-                    `/sidebar/actions/${this.objectType}/${this.assetID}`, null, 27
+                    `/sidebar/actions/${this.objectType}/${this.objectID}`, null, 27
                 );
                 this.secondaryNavService.showItem(this.actionsSidebar);
             }
@@ -709,7 +709,7 @@ export class BaseComponent {
                 .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
 
             var homeUrl = this.getUrl(r, areaName);
-            console.log(this.objectType);
+
             this.secondaryNavService.setLocalHomeUrl(homeUrl);
 
             if (this.objectType.toLowerCase() == 'artifact') {
@@ -764,10 +764,10 @@ export class BaseComponent {
 
     private getUrl(r: any, areaName: any) {
         if (this.objectType.toLowerCase() == "policy") {
-            return "/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + ";hierarchyID=" + this.objectID;
+            return "/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + ";hierarchyId=" + this.objectID;
         }
         if (this.objectType.toLowerCase() == "taxonomy") {
-            return "/policy/" + r.ObjectTypeId + ";hierarchyID=" + this.objectID;
+            return "/model/" + r.ObjectTypeId + ";hierarchyId=" + this.objectID;
         }
         if (this.objectType.toLowerCase() == "rule") {
             return "/quality/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID;
@@ -811,6 +811,7 @@ export class BaseComponent {
 
     private activateComponent() {
         var componentName = this.constructor.name;
+        console.log(componentName);
         switch (componentName) {
             case "ScoreComponent": this.scoreSidebar.active = true;
                 break;
@@ -833,6 +834,8 @@ export class BaseComponent {
             case "AuditComponent": this.auditSidebar.active = true;
                 break;
             case "ChildrenComponent": this.childSidebar.active = true;
+                break;
+            case "FieldDefinitionComponent": this.fieldNav.active = true;
                 break;
             default: break;
         }

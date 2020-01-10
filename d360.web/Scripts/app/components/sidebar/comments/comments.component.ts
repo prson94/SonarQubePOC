@@ -49,7 +49,7 @@ export class CommentsComponent extends BaseComponent implements OnInit, OnDestro
             this.isLoading = false;
             this.showBoard = true;
             //ObjectId here is actually assetid!
-            this.buildSecondaryNavigationForAssetID(this.objectId, this.objectType);
+            this.buildSecondaryNavigationForObject(this.objectId, this.objectType);
         });
     }
 
