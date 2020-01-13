@@ -7100,7 +7100,8 @@ select	I.[Uid],
 		case when I.Subject = @type and I.SubjectID = @id then IT.ObjectID else IT.SubjectID end as TypeID,
 		AST.Name as TypeName,
         IA.uid as ObjectUid,
-		T.HasTechnicalRelationships
+		T.HasTechnicalRelationships,
+        case when I.Subject = @type and I.SubjectID = @id then cast(1 as bit) else cast(0 as bit) end as IsSubject
         {assetColumns}
 from	[Intersect] I
         inner join IntersectType IT on IT.ID = I.IntersectTypeID
@@ -7113,8 +7114,7 @@ from	[Intersect] I
 					from	[Intersect]
 					where	Subject = 'Intersect' and SubjectID = I.ID) T
 where	(
-        (I.Subject = @type  and I.SubjectID = @id) or
-        (I.Object = @type and I.ObjectID = @id)
+        (I.Subject = @type  and I.SubjectID = @id) {(includeInverse ? " or (I.Object = @type  and I.ObjectID = @id) " : "")}
         )
         and I.IntersectTypeID = {intersectTypeID} ";
             }
@@ -7150,7 +7150,8 @@ select	I.[Uid],
 		IT.Object Type,
 		IT.ObjectID TypeID,
 		AST.Name as TypeName,
-		T.HasTechnicalRelationships
+		T.HasTechnicalRelationships,
+        case when I.Subject = @type and I.SubjectID = @id then cast(1 as bit) else cast(0 as bit) end as IsSubject
         {assetColumns}
 from	[Intersect] I
 		inner join IntersectType IT on IT.ID = I.IntersectTypeID
@@ -7207,7 +7208,8 @@ select	I.[Uid],
 		IT.Subject as Type,
 		IT.SubjectID as TypeID,
 		AST.Name as TypeName,
-		T.HasTechnicalRelationships
+		T.HasTechnicalRelationships,
+        case when I.Subject = @type and I.SubjectID = @id then cast(1 as bit) else cast(0 as bit) end as IsSubject
         {assetColumns}
 from    [Intersect] I 
         inner join IntersectType IT on IT.ID = I.IntersectTypeID 
