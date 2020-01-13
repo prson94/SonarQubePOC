@@ -165,7 +165,6 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
 
     private selectPolicyHierarchy(selectedHierarchyId: number): Promise<any> {
-        console.log(selectedHierarchyId);
         if (selectedHierarchyId > 0) {
             const selArray = this.policies.filter(x => x.ID == selectedHierarchyId);
 

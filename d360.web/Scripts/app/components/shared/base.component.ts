@@ -74,6 +74,8 @@ export class BaseComponent {
     protected webAnalyticsService: WebAnalyticsService = null;
     protected breadcrumbsService: HeaderBreadcrumbService = null;
 
+    private getSecondaryNavigationSub: Subscription;
+
     protected setBrowserTitle(tileService: Title, area: string) {
         tileService.setTitle(`${CompanySettings.BrowserTitlePrefix} - ${area}`);
     }
@@ -459,23 +461,21 @@ export class BaseComponent {
     }
 
     //generic method used for objectName = Policy/Model
-    private checkParentBase(item: any, arr: any[], policyTypeId: number, objectName: string) {
-
+    private checkParentBase(item: any, arr: any[], typeId: number, objectName: string) {
         if (item.ParentID > 0 && arr) {
             let parentAr = arr.filter(x => x.ID == item.ParentID);
-            console.log(parentAr);
             let parent: any;
             if (parentAr.length > 0) {
                 parent = parentAr[0];
                 let crumb = new Breadcrumb(parent.DisplayValue,
-                    SiteUrlHelpers.getObjectUrl(objectName.toUpperCase(), parent.ID, policyTypeId),
+                    SiteUrlHelpers.getObjectUrl(objectName.toUpperCase(), parent.ID, typeId),
                     true,
                     objectName,
                     parent.ID,
                     this.buildTreeNodeArrayBase(arr, parent.ParentID),
                     this.findSelectedTreeNodeBase(parent.ID), false, false)
                 this.baseCrumbs.unshift(crumb);
-                this.checkParentBase(parent, arr, policyTypeId, objectName);
+                this.checkParentBase(parent, arr, typeId, objectName);
             }
         } else {
             this.baseCrumbs.forEach(x => this.breadcrumbsService.showBreadcrumb(x));
@@ -483,12 +483,12 @@ export class BaseComponent {
     }
 
     public buildTreeNodeArrayBase(
-        policies: Policy[],
+        inputArr: any[],
         Parent?: number,
         includeChildren?: boolean
     ): TreeNode[] {
         // find the root items then
-        let rootNodes = policies.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
+        let rootNodes = inputArr.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
 
         if (rootNodes.length == 0) {
             return null;
@@ -503,7 +503,7 @@ export class BaseComponent {
                 data: {
                     id: root.ID
                 },
-                children: (includeChildren ? this.buildTreeNodeArrayBase(policies, root.ID) : null) // recursively find its children
+                children: (includeChildren ? this.buildTreeNodeArrayBase(inputArr, root.ID) : null) // recursively find its children
             });
         }
 
@@ -654,8 +654,16 @@ export class BaseComponent {
         this.buildSecondaryNavigation(null, objectId, object);
     }
 
+    private setLoadedKey(_key: string) {
+        localStorage.setItem('loadedNavItem', _key);
+    }
+    private getLoadedKey(): string {
+        return localStorage.getItem('loadedNavItem');
+    }
+
+    private loadedNavKey: string = '';
+
     buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null) {
-        console.log("Building secondary navigation!");
 
         var data = new SecondaryNavPostModel();
         data.PreloadData = false;
@@ -683,17 +691,21 @@ export class BaseComponent {
             return;
         }
 
+        var _key = JSON.stringify(data);
+        if (this.loadedNavKey === _key)
+            return;
 
+        this.loadedNavKey = _key;
 
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe(r => {
-            this.clearSidebar();
-            this.breadcrumbsService.clearBreadcrumbs();
-
             this.assetID = r.AssetId;
             this.assetTypeID = r.AssetTypeId;
             this.uid = r.Uid;
             this.objectType = r.Object;
             this.objectID = r.ObjectID;
+
+            this.clearSidebar();
+            this.breadcrumbsService.clearBreadcrumbs();
 
             var areaName = r.DisplayValue;
             var mainTabTitle = r.MainTabTitle;
@@ -743,7 +755,7 @@ export class BaseComponent {
             this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild);
 
             this.activateComponent();
-        });
+        })
     }
 
     private SetCommonBreadcrumbs(data, area, url) {
@@ -764,46 +776,46 @@ export class BaseComponent {
 
     private getUrl(r: any, areaName: any) {
         if (this.objectType.toLowerCase() == "policy") {
-            return "/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + ";hierarchyId=" + this.objectID;
+            return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${r.ObjectTypeId};hierarchyId=${this.objectID}`;
         }
         if (this.objectType.toLowerCase() == "taxonomy") {
-            return "/model/" + r.ObjectTypeId + ";hierarchyId=" + this.objectID;
+            return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${r.ObjectTypeId};hierarchyId=${this.objectID}`;
         }
         if (this.objectType.toLowerCase() == "rule") {
-            return "/quality/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID;
+            return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${r.ObjectTypeId}/${this.objectID}`;
         }
         if (this.objectType.toLowerCase() == "referenceitemtype") {
             return "/reference;referenceListId=" + this.objectID;
         }
         if (this.objectType.toLowerCase() == "artifacttype" && areaName == 'Business Assets') {
-            return "/admin/assets/BusinessAsset";
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
         }
         if (this.objectType.toLowerCase() == "artifacttype" && areaName == 'Technical Assets') {
-            return "/admin/assets/TechnicalAsset";
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
         }
         if (this.objectType.toLowerCase() == "taxonomytype") {
-            return "/admin/taxonomies";
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`;
         }
         if (this.objectType.toLowerCase() == "policytype") {
-            return "/admin/policies";
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`;
         }
         if (this.objectType.toLowerCase() == "intersecttype") {
-            return "/admin/relationships";
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`;
         }
         if (this.objectType.toLowerCase() == "issuetype") {
-            return "/admin/issuetypes";
+            return `admin/${SiteUrlHelpers.SITE_URL_ACTIONS_ROOT}`;
         }
         if (this.objectType.toLowerCase() == "attributetype") {
-            return "/admin/attributes";
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`;
         }
         if (this.objectType.toLowerCase() == "lookuptype") {
-            return "/admin/lookups";
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`;
         }
         if (this.objectType.toLowerCase() == "responsibilitytype") {
-            return "/admin/responsibilities";
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`;
         }
         if (this.objectType.toLowerCase() == "report") {
-            return "/admin/dashboard";
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`;
         }
 
         return "/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID;
@@ -811,7 +823,6 @@ export class BaseComponent {
 
     private activateComponent() {
         var componentName = this.constructor.name;
-        console.log(componentName);
         switch (componentName) {
             case "ScoreComponent": this.scoreSidebar.active = true;
                 break;
@@ -863,72 +874,73 @@ export class BaseComponent {
                     let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
 
                     this.breadcrumbsService.clearBreadcrumbs();
-                    this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.Artifact.AssetTypeID, currentFolderName).subscribe(res => {
+                    this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.ObjectTypeId, currentFolderName).subscribe(res => {
                         this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, 'Definition');
-                    });
-                    let areaName: string = currentAreaName ? currentAreaName : folderTitle;
-                    let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}`;
-                    if (areaName == "Technical Assets") {
-                        areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
-                    }
-                    else {
-                        areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
-                    }
-                    let areaBreadcrumb = new Breadcrumb(
-                        areaName,
-                        areaLink,
-                        false
-                    );
-                    this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
-
-                    for (let breadcrumb of data.Artifact.Breadcrumbs) {
-                        index++;
-
-                        if (index == data.Artifact.Breadcrumbs.length) {
-                            //last item in the breadcrumb
-                            this
-                                .breadcrumbsService
-                                .showBreadcrumb(
-                                    new Breadcrumb(
-                                        breadcrumb.Name,
-                                        breadcrumb.Url,
-                                        false,
-                                        'Artifact',
-                                        data.Artifact.AssetTypeID,
-                                        null,
-                                        null,
-                                        false,
-                                        breadcrumb.TypeName !== undefined,
-                                        breadcrumb.TypeName,
-                                        'ArtifactType',
-                                        this.GetIDFromUrl(breadcrumb.TypeUrl),
-                                        breadcrumb.TypeUrl
-                                    )
-                                )
-                                ;
-                        } else {
-                            this
-                                .breadcrumbsService
-                                .showBreadcrumb(
-                                    new Breadcrumb(
-                                        breadcrumb.Name,
-                                        breadcrumb.Url,
-                                        false,
-                                        'Artifact',
-                                        this.GetIDFromUrl(breadcrumb.Url),
-                                        null,
-                                        null,
-                                        false,
-                                        breadcrumb.TypeName !== undefined,
-                                        breadcrumb.TypeName,
-                                        'ArtifactType',
-                                        this.GetIDFromUrl(breadcrumb.TypeUrl),
-                                        breadcrumb.TypeUrl
-                                    )
-                                )
-                                ;
+                        let areaName: string = currentAreaName ? currentAreaName : folderTitle;
+                        let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}`;
+                        if (areaName == "Technical Assets") {
+                            areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
                         }
-                    }
+                        else {
+                            areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
+                        }
+                        let areaBreadcrumb = new Breadcrumb(
+                            areaName,
+                            areaLink,
+                            false
+                        );
+                        this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
+
+                        for (let breadcrumb of data.Artifact.Breadcrumbs) {
+                            index++;
+
+                            if (index == data.Artifact.Breadcrumbs.length) {
+                                //last item in the breadcrumb
+                                this
+                                    .breadcrumbsService
+                                    .showBreadcrumb(
+                                        new Breadcrumb(
+                                            breadcrumb.Name,
+                                            breadcrumb.Url,
+                                            false,
+                                            'Artifact',
+                                            data.Artifact.AssetTypeID,
+                                            null,
+                                            null,
+                                            false,
+                                            breadcrumb.TypeName !== undefined,
+                                            breadcrumb.TypeName,
+                                            'ArtifactType',
+                                            this.GetIDFromUrl(breadcrumb.TypeUrl),
+                                            breadcrumb.TypeUrl
+                                        )
+                                    )
+                                    ;
+                            } else {
+                                this
+                                    .breadcrumbsService
+                                    .showBreadcrumb(
+                                        new Breadcrumb(
+                                            breadcrumb.Name,
+                                            breadcrumb.Url,
+                                            false,
+                                            'Artifact',
+                                            this.GetIDFromUrl(breadcrumb.Url),
+                                            null,
+                                            null,
+                                            false,
+                                            breadcrumb.TypeName !== undefined,
+                                            breadcrumb.TypeName,
+                                            'ArtifactType',
+                                            this.GetIDFromUrl(breadcrumb.TypeUrl),
+                                            breadcrumb.TypeUrl
+                                        )
+                                    )
+                                    ;
+                            }
+                        }
+                    });
+
                 });
         });
 
@@ -941,6 +953,17 @@ export class BaseComponent {
         var objectTypeName = objectName + "Type";
         this.breadcrumbsService.clearBreadcrumbs();
 
+        this.breadcrumbsService.breadcrumbTreeSource$.subscribe(
+            id => {
+                if (objectName.toLowerCase() == 'policy') {
+                    this.breadcrumbsService.reRouteFromBreadcrumbs(`${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
+                }
+                if (objectName.toLowerCase() == 'taxonomy') {
+                    this.breadcrumbsService.reRouteFromBreadcrumbs(`${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
+                }
+            }
+        );
+
         this.breadcrumbsService
             .getAreaName(objectTypeName, data.ObjectTypeId)
             .subscribe(result => {
@@ -948,15 +971,15 @@ export class BaseComponent {
                 var currentAreaName = result;
 
                 this.breadcrumbsService.getFolderTitle('#' + (objectName == 'Taxonomy' ? 'Models' : objectName)).then((res) => {
+                    this.breadcrumbsService.clearBreadcrumbs();
 
                     var folderTitle = res;
                     let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
 
-                    this.breadcrumbsService.getAssetFolderIcon(objectTypeName, data.AssetTypeID, currentFolderName).subscribe(res => {
+                    this.breadcrumbsService.getAssetFolderIcon(objectTypeName, data.ObjectTypeId, currentFolderName).subscribe(res => {
                         this.secondaryNavService.setCurrentArea(data.DisplayValue, res, 'Definition');
                     });
 
-                    this.breadcrumbsService.clearBreadcrumbs();
                     let areaBreadcrumb = new Breadcrumb(
                         currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
                     );
@@ -985,17 +1008,16 @@ export class BaseComponent {
                                 this.findSelectedTreeNodeBase(selected.ID)));
                     }
 
-
                 });
             });
     }
 
 
     private setRuleBreadcrumbs(data) {
-        console.log(data);
         this.breadcrumbsService
             .getAreaName('RuleType', data.ObjectTypeId)
             .subscribe(result => {
+
                 var currentAreaName = result;
                 this.breadcrumbsService.getFolderTitle('#Data Quality').then((res) => {
                     this.breadcrumbsService.clearBreadcrumbs();
