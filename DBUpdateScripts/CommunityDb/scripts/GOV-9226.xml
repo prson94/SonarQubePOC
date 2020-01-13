@@ -12,19 +12,19 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF (NOT EXISTS(SELECT Top 1 [FieldName] FROM [dbo].[Setting] WHERE [FieldName] = 'MaxExcelExportRows'))
+IF (NOT EXISTS(SELECT Top 1 [FieldName] FROM [dbo].[Setting] WHERE [ID] = 71))
 BEGIN
-	Insert INTO Setting (FieldName,Name,Description,DefaultValue)
-	VALUES('MaxExcelExportRows','Maximum Excel Export Rows', 'This is the maximum number of items able to be exported in an excel spreadsheet.',10000)
+	Insert INTO Setting (ID,FieldName,Name,Description,DefaultValue)
+	VALUES(71,'MaxExcelExportRows','Maximum Excel Export Rows', 'This is the maximum number of items able to be exported in an excel spreadsheet.',10000)
 END 
 
 		]]>
     </sql>
 	<rollback>
 	<![CDATA[	
-IF (EXISTS(SELECT Top 1 [FieldName] FROM [dbo].[Setting] WHERE [FieldName] = 'MaxExcelExportRows'))
+IF (EXISTS(SELECT Top 1 [FieldName] FROM [dbo].[Setting] WHERE WHERE [ID] = 71))
 BEGIN
-	DELETE FROM Setting WHERE [FieldName] = 'MaxExcelExportRows'
+	DELETE FROM Setting WHERE WHERE [ID] = 71
 END 
 ]]>
 	</rollback>
