@@ -53,9 +53,6 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     policyType: PolicyType;
     selected: Policy;
     routeParamsSubscription: any;
-    private currentAreaNameSubscription: any;
-    private currentAreaName: string;
-    treeSub: any;
 
     private showSocialScoreBar = true;
 
@@ -86,36 +83,15 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             if (!hierarchyId) {
                 hierarchyId = +params['hierarchyId'] || 0;
             }
-            this.headerBreadcrumbService.clearCurrentObjectInfo();
-            if (hierarchyId != 0) {
-                this.headerBreadcrumbService.setCurrentObjectInfo('Policy', hierarchyId);
-            } else {
-                this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', newPolicyTypeId);
-            }
-            this.setObjectInfo('Policy', hierarchyId);
-
-            this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
-                id => {
-                    this.showHierarchy(id);
-                }
-            );
 
             if (this.policyTypeId != newPolicyTypeId) {
                 this.policyTypeId = newPolicyTypeId;
 
                 this.isLoading = true;
-                console.log(hierarchyId);
                 this.load(hierarchyId).then(
                     () => this.isLoading = false
                 );
-            } else {
-                this.headerBreadcrumbService.popLastBreadcrumb();
-
-                this.selectPolicyHierarchy(hierarchyId).then(
-                    p => {
-                    }
-                );
-            }
+            } 
 
         });
 
@@ -125,7 +101,6 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
     ngOnDestroy() {
         this.clearSidebar();
         this.routeParamsSubscription.unsubscribe();
-        this.treeSub.unsubscribe();
     }
 
     buildBreadcrumb() {
@@ -190,10 +165,5 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         this.buildSecondaryNavigation(this.selected.Uid);
 
         return Promise.resolve(null);
-    }
-
-    private showHierarchy(id: number) {
-        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${this.policyTypeId};hierarchyId=${id}`);
-        this.buildBreadcrumb();
     }
 }

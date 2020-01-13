@@ -88,24 +88,13 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             if (!hierarchyId)
                 hierarchyId = params['hierarchyId'] ? +params['hierarchyId'] : 0;
 
-            if (hierarchyId != 0)
-                this.headerBreadcrumbService.setCurrentObjectInfo('Taxonomy', hierarchyId);
-            else
-                this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', newModelId);
-            this.setObjectInfo('Taxonomy', hierarchyId);
             if (this.modelId != newModelId) {
                 this.modelId = newModelId;
                 this.isLoading = true;
                 this.load(hierarchyId);
 
                 this.isLoading = false;
-            } else {
-                // pop last breadcrumb
-                this.headerBreadcrumbService.popLastBreadcrumb();
-                this.selectModelHierarchy(hierarchyId).then(n => {
-                    this.clearSidebar();
-                });
-            }
+            } 
 
         });
 

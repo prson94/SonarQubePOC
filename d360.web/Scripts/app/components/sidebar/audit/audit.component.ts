@@ -67,8 +67,10 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                             }
                         }
                 );
+                let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
 
-                this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+                if (reloadNav)
+                    this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
             });
     }
 

@@ -1085,6 +1085,23 @@ SELECT count(ATT.[Object]) as count,
 
             }
 
+            if(!Company.CurrentResourceIsAdmin)
+            {
+                if (model.AssetUid != null)
+                {
+                    var permissions = Company.GetPermissions(responseModel.AssetId, responseModel.AssetTypeId);
+                    if(permissions.Any(x=> x.ID == Permission.ReadAsset))
+                    {
+                        responseModel.Items.HasOwnership = true;
+                    }
+
+                    if(permissions.Any(x => x.ID == Permission.ReadRelationships))
+                    {
+                        responseModel.Items.HasRelationship = true;
+                    }
+                }
+            }
+
 
             return new JsonNetResult
             {
