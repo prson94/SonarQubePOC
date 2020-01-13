@@ -135,8 +135,8 @@ export class WorkflowService extends BaseObservableService {
 
     //#region diagram
 
-    public getWorkflowDiagram(id: number, version?: number, filteredObject?: string, filteredObjectId?: number): Observable<WorkflowDiagramModel> {
-        let uri = `services/workflow/diagram/${id}${version != null ? '?version=' + version : ''}`
+    public getWorkflowDiagram(id: number,uid:string, version?: number, filteredObject?: string, filteredObjectId?: number): Observable<WorkflowDiagramModel> {
+        let uri = `services/workflow/diagram/${id}/${uid}${version != null ? '?version=' + version : ''}`
 
         if (filteredObject != null && filteredObjectId != null)
             uri += `${version == null ? '?' : '&'}filteredObject=${filteredObject}&filteredObjectId=${filteredObjectId}`
@@ -310,11 +310,11 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    cloneWorkflowDiagramModel(id: number): Observable<number> {
+    cloneWorkflowDiagramModel(uid: string): Observable<string> {
         //returns workflowtype newly created id
-        return this.http.post('services/workflow/diagram/clone', { ID: id })
+        return this.http.post('services/workflow/diagram/clone', { UID:uid })
             .pipe(
-                map(response => <number>response),
+                map(response => <string>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -335,18 +335,18 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    deleteWorkflowType(id: number): Observable<number> {
-        return this.http.delete(`services/workflow/type/${id}/delete`)
+    deleteWorkflowType(id: number, uid: string): Observable<number> {
+        return this.http.delete(`services/workflow/type/${id}/${uid}/delete`)
             .pipe(
                 map(response => <number>response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    getWorkflowTypeModel(id: number): Observable<WorkflowDiagramModel> {
-        if (id == null || id < 1)
+    getWorkflowTypeModel(id: number,uid:string): Observable<WorkflowDiagramModel> {
+        if ((id == null || id < 1) && (uid==null  || uid == "00000000-0000-0000-0000-000000000000")) 
             return of(null);
-        return this.http.get(`services/workflow/type/${id}`)
+        return this.http.get(`services/workflow/type/${id}/${uid}`)
             .pipe(
             map(response => <WorkflowDiagramModel>response),
                 catchError(err => this.handleError(err))

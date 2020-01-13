@@ -50,10 +50,10 @@ import { Observable } from 'rxjs';
                 </td>
                 <td>
                     <div class="RowTools">
-                        <a style="cursor:pointer;" (click)="onEdit(item.Uid)"><i class="fa fa-pencil"></i></a> 
+                        <a style="cursor:pointer;" (click)="onEditClick.emit({ uid: item.Uid, isClone: false })"><i class="fa fa-pencil"></i></a> 
                         <a style="cursor:pointer;" (click)="cloneWorkflow(item.Uid)"><i class="fa fa-copy"></i></a> 
-                        <a style="cursor:pointer;" (click)="onDelete(item.Uid)"><i class="fa fa-trash-o"></i></a>    
-                        <a style="cursor:pointer;" (click)="onView(item.Uid)"><i class="fa fa-eye"></i></a>    
+                        <a style="cursor:pointer;" (click)="onDeleteClick.emit(item.Uid)"><i class="fa fa-trash-o"></i></a>    
+                        <a style="cursor:pointer;" (click)="onViewClick.emit(item.Uid)"><i class="fa fa-eye"></i></a>    
                         <a style="cursor:pointer;" (click)="onNavigate(item.Uid)"><i class="fa fa-usb"></i></a>                                      
                     </div>
                 </td>
@@ -107,45 +107,19 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
     cloneWorkflow(uid) {
 
         this.isLoading = true
-        this.workflowService.getWorkflowTypeId(uid).pipe(
-            map((x: number) => {
-               // this.isLoading = false;
-                debugger;
-                this.workflowService.cloneWorkflowDiagramModel(x)
-                    .subscribe(id => {
-                        this.isLoading = false;
-                        this.onEditClick.emit({ ID: id, isClone: true });
-                    })
-            })
-        ).subscribe();
+        this.workflowService.cloneWorkflowDiagramModel(uid)
+            .subscribe(x => {
+                this.isLoading = false;
+                this.onEditClick.emit({ uid: x, isClone: true });
+            });
 
     }
 
-    onDelete(uid:string) {
-        debugger;
-        this.isLoading = true;
-        this.workflowService.getWorkflowTypeId(uid).subscribe(
-            x => this.onDeleteClick.emit(x)
-        );
-    }
-    onEdit(uid: string) {
-        debugger;
-        this.isLoading = true;
-        this.workflowService.getWorkflowTypeId(uid).subscribe(
-            x => this.onEditClick.emit({ ID: x, isClone: false })
-        );
-    }
+  
 
-    onView(uid: string) {
-        debugger;
-        this.isLoading = true;
-        this.workflowService.getWorkflowTypeId(uid).subscribe(
-            x => this.onViewClick.emit(x)
-        );
-    }
+    
 
     onNavigate(uid: string) {
-        debugger;
         this.isLoading = true;
         this.workflowService.getWorkflowTypeId(uid).subscribe(
             x => this.navigate(x)
@@ -162,7 +136,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                     this.workflowService.getAdminTypes()
                         .subscribe(r => {
                             let workflowItems: WorkflowListItem[] = [];
-                            debugger
+                           
                            
                             r.filter(x=>x.State == 'Active' || x.State== 'InActive').forEach(x => {
                                 let workflowItem: WorkflowListItem = new WorkflowListItem();
