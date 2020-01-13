@@ -43,6 +43,10 @@ namespace d360.core.entities
         [DataMember]
         public Guid? UID { get; set; }
 
+        public DateTime? CompletedOn { get; set; }
+
+        public int? CompletedBy { get; set; }
+
         public EventObjectInfo GetEventObjectInfo()
         {
             return new EventObjectInfo

@@ -12,6 +12,7 @@ import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { SharedDeleteFormModule } from '../delete.form';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { TakeSurveyModule } from '../survey/take-survey.module';
+import { PipesModule } from '../../../pipes/pipes.module';
 
 
 @NgModule({
@@ -25,6 +26,7 @@ import { TakeSurveyModule } from '../survey/take-survey.module';
         SharedDeleteFormModule,
         SiteModalModule,
         TakeSurveyModule,
+        PipesModule,
     ],
     declarations: [
         RightSidebarItemComponent,

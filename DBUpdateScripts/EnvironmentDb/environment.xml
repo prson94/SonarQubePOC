@@ -394,4 +394,12 @@
   <include file="scripts/GOV-9194.xml"/>  <!-- update [graph].[GetLineageByAsset] : add IsSubjectInTransformation to response -->
   <include file="scripts/GOV-9221.xml"/>  <!-- script to create Uid index for graph.AssetEdge -->
   <include file="scripts/GOV-9247.xml"/>  <!-- script to create missing [reporting].[RuleImplementations_Results], [reporting].[RuleImplementations_ResultQualifiers] views -->
+
+  <!-- Sprint 2 2020 Start-->
+  <include file="scripts/GOV-9133.xml"/> <!-- Set database COMPATIBILITY_LEVEL to 140-->
+  <include file="scripts/GOV-8946.xml"/>
+  <include file="scripts/GOV-9276.xml"/>  <!-- script to create CompletedOn and CompletedBy on dbo.Issue + prepopulating old records -->
+  <include file="scripts/GOV-9202.xml"/> <!-- script to create index for table FusionAttribute and RuleResult-->
+  <include file="scripts/GOV-8975.xml"/> <!-- Change URL on export to "asset/<Uid>" format-->
+  <include file="scripts/GOV-9154.xml"/> <!-- Add ProcessingStartedOn column to api.Execution table -->
 </databaseChangeLog>

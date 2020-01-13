@@ -107,18 +107,20 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
         private route: ActivatedRoute,
         private router: Router,
         secondaryNavService: SecondaryNavService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
         protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
         private headerActionsService: HeaderActionsService,
         protected workflowService: WorkflowService
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = headerBreadcrumbService;
     }
 
     ngOnInit() {
         this.showHideFollow(false);
-        this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Workflow Item Status'));
+        this.breadcrumbsService.clearCurrentObjectInfo();
+        this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Workflow Item Status'));
 
         this.setBrowserTitle(this.titleService, 'Workflow Item Status');
 
@@ -151,6 +153,8 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
                 if (res && res.Workflow && res.Workflow.ID)
                     this.workflowTypeId = res.Workflow.ID;
                 this.isLoading = false;
+
+                this.checkSecondaryNavLocalStorage();
             });
     }
 

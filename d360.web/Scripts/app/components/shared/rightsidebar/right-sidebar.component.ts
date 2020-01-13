@@ -95,10 +95,12 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                         
                     }
                     window.setTimeout(() => {
+                        let isActionItemWorkflow = event.url.toLowerCase().indexOf('workflow/details/') !== -1;
                         this.items.forEach((item => {
-                            if (item.url === event.url) {
+                            if (item.url === event.url
+                                || (isActionItemWorkflow && item.url.toLowerCase().indexOf('sidebar/actions/') !== -1)) {
                                 item.active = true;
-                                this.secondaryNavService.setLocalActiveItem(item);
+                                this.secondaryNavService.setLocalActiveItem(item);                                
                             } else {
                                 item.active = false;
                             }
@@ -116,6 +118,13 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.load();
     }
 
+    filterScoringTabHasNoValue = (tab: SecondaryNavItem) => {
+        if (tab.title === "Scoring")
+            if (this.statistics && (this.statistics.Score === undefined))
+                return false;
+        return true;
+    }
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['menuOpen'])
             return;
@@ -123,7 +132,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.load();
         }
     }
-
+    
     checkSize() {
         if (this.tabScroller && this.tabScroller.length > 0) {
             let maxWidth = this.tabScroller.first.nativeElement.parentElement.getBoundingClientRect().right;
