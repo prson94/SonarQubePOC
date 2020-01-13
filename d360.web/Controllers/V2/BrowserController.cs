@@ -39,45 +39,6 @@ namespace d360.web.Controllers.V2
 
         #region Internal Classes For GetAssetLineage Endpoint
 
-        internal class RawResultList2
-        {
-            public int Hop { get; set; }
-            public string Key { get; set; }
-            public string ParentKey { get; set; }
-            public string Back { get; set; }
-            public string Fore { get; set; }
-            public string Icon { get; set; }
-            public int HierarchyLevel { get; set; }
-            public int AssetTypeID { get; set; }
-            public Guid AssetTypeUid { get; set; }
-            public long AssetID { get; set; }
-            public Guid AssetUid { get; set; }
-            public string DisplayValue { get; set; }
-            public AssetTypeClass Class { get; set; }
-            public string AssetTypeName { get; set; }
-            public GetAssetLineagePostModelDirection Reveal { get; set; }
-            public string RelationCounts { get; set; }
-            public bool UseAsTransformation { get; set; }
-            public bool IsSubjectInTransformation { get; set; }
-
-        }
-
-        internal class RawResultList3
-        {
-            public int Hop { get; set; }
-            public Guid Uid { get; set; }
-            public Guid subjectUid { get; set; }
-            public string subjectKey { get; set; }
-            public long subjectId { get; set; }
-            public Guid objectUid { get; set; }
-            public string objectKey { get; set; }
-            public long objectId { get; set; }
-            public int predicateId { get; set; }
-            public Guid predicateUid { get; set; }
-            public string predicate { get; set; }
-            public PredicateType predicateType { get; set; }
-        }
-
         internal class HopNodeResult
         {
             public Guid assetUid { get; set; }
@@ -92,9 +53,10 @@ namespace d360.web.Controllers.V2
             public Guid assetTypeUid { get; set; }
             public AssetTypeClass @class { get; set; }
             public string displayValue { get; set; }
-            public GetAssetLineagePostModelDirection reveal { get; set; }
+            public AssetBrowserApiHopDirection reveal { get; set; }
             public string relationCounts { get; set; }
             public bool useAsTransformation { get; set; }
+            public bool isSubjectInTransformation { get; set; }
             public bool isLeaf { get; set; }
 
         }
@@ -118,115 +80,49 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
-        private void recurse(List<RawResultList2> hierarchies, IAssetBrowserLineageApiItemModel current)
+        private void recurse(AssetBrowserLineageApiResponseModel model, List<HopNodeResult> hierarchies, IAssetBrowserLineageApiItemModel current, int multiplier)
         {
-            if (hierarchies.Any(h => h.ParentKey == current.key))
-            {
-                foreach (var h in hierarchies.Where(h => h.ParentKey == current.key))
-                {
-                    // For badging in browser.
-                    var relationCounts = new List<AssetBrowserLineageApiItemRelationCountModel>();
-                    if (!string.IsNullOrEmpty(h.RelationCounts))
-                    {
-                        relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
-                    }
-                    
-                    var child = new AssetBrowserLineageApiItemModel { 
-                        hop = h.Hop, key = h.Key, assetUid = h.AssetUid, assetTypeId = h.AssetTypeID, assetTypeUid = h.AssetTypeUid,
-                        backColor = h.Back, foreColor = h.Fore, icon = h.Icon, 
-                        @class = h.Class, displayValue = h.DisplayValue, 
-                        reveal = h.Reveal, relationCounts = relationCounts, useAsTransformation = h.UseAsTransformation, isSubjectInTransformation = h.IsSubjectInTransformation  };
-
-                    recurse(hierarchies, child);
-
-                    if (current.items == null)
-                    {
-                        current.items = new List<AssetBrowserLineageApiItemModel>();
-                    }
-                    current.items.Add(child);
-                }
-            }
-        }
-
-        private AssetBrowserLineageApiResponseModel buildResponseModel(List<RawResultList2> hierarchies, List<RawResultList3> relationships)
-        {
-            var model = new AssetBrowserLineageApiResponseModel();
-
-            foreach (var h in hierarchies.Where(i => string.IsNullOrEmpty(i.ParentKey)))
+            foreach (var h in hierarchies.Where(h => h.parentKey == current.key && h.key != current.key))
             {
                 // For badging in browser.
                 var relationCounts = new List<AssetBrowserLineageApiItemRelationCountModel>();
-                if (!string.IsNullOrEmpty(h.RelationCounts))
+                if (!string.IsNullOrEmpty(h.relationCounts))
                 {
-                    relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.RelationCounts);
+                    relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.relationCounts);
                 }
 
-                var current = new AssetBrowserLineageApiItemModel { hop = h.Hop, key = h.Key, assetUid = h.AssetUid, assetTypeId = h.AssetTypeID, assetTypeUid= h.AssetTypeUid, backColor = h.Back, foreColor = h.Fore, icon = h.Icon, @class = h.Class, displayValue = h.DisplayValue, reveal = h.Reveal, relationCounts = relationCounts, useAsTransformation = h.UseAsTransformation, isSubjectInTransformation = h.IsSubjectInTransformation };
-                recurse(hierarchies, current);
-                model.assets.Add(current);
-            }
-
-            model.intersects = relationships.Select(r => new AssetBrowserLineageApiRelationshipModel
-            {
-                backColor = "",
-                foreColor = "",
-                icon = "",
-                intersectUid = r.Uid,
-                objectUid = r.objectUid,
-                objectKey = r.objectKey,
-                predicate = r.predicate,
-                predicateId = r.predicateId,
-                predicateUid = r.predicateUid,
-                predicateType = r.predicateType,
-                subjectUid = r.subjectUid,
-                subjectKey = r.subjectKey
-            }).ToList();
-
-            return model;
-        }
-
-        private void recurse(List<HopNodeResult> hierarchies, IAssetBrowserLineageApiItemModel current)
-        {
-            if (hierarchies.Any(h => h.parentKey == current.key))
-            {
-                foreach (var h in hierarchies.Where(h => h.parentKey == current.key))
+                var child = new AssetBrowserLineageApiItemModel
                 {
-                    // For badging in browser.
-                    var relationCounts = new List<AssetBrowserLineageApiItemRelationCountModel>();
-                    if (!string.IsNullOrEmpty(h.relationCounts))
-                    {
-                        relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.relationCounts);
-                    }
+                    key = h.key,
+                    parentKey = h.parentKey,
+                    assetUid = h.assetUid,
+                    assetTypeId = h.assetTypeID,
+                    assetTypeUid = h.assetTypeUid,
+                    backAmount = ((multiplier <= 4) ? multiplier : 4) * .2,
+                    backColor = h.back,
+                    foreAmount = 0,
+                    foreColor = h.fore,
+                    icon = h.icon,
+                    @class = h.@class,
+                    displayValue = h.displayValue,
+                    reveal = h.reveal,
+                    relationCounts = relationCounts,
+                    useAsTransformation = h.useAsTransformation,
+                    isSubjectInTransformation = h.isSubjectInTransformation
+                };
 
-                    var child = new AssetBrowserLineageApiItemModel
-                    {
-                        hop = 0,
-                        key = h.key,
-                        assetUid = h.assetUid,
-                        assetTypeId = h.assetTypeID,
-                        assetTypeUid = h.assetTypeUid,
-                        backColor = h.back,
-                        foreColor = h.fore,
-                        icon = h.icon,
-                        @class = h.@class,
-                        displayValue = h.displayValue,
-                        reveal = h.reveal,
-                        relationCounts = relationCounts,
-                        useAsTransformation = h.useAsTransformation
-                    };
+                recurse(model, hierarchies, child, multiplier+1);
 
-                    recurse(hierarchies, child);
-
-                    if (current.items == null)
-                    {
-                        current.items = new List<AssetBrowserLineageApiItemModel>();
-                    }
-                    current.items.Add(child);
+                if (current.items == null)
+                {
+                    current.items = new List<AssetBrowserLineageApiItemModel>();
                 }
+                current.items.Add(child);
+                //model.assets.Add(child);
             }
         }
 
-        private AssetBrowserLineageApiResponseModel buildResponseModel(List<HopNodeResult> hierarchies, List<HopLinkResult> relationships)
+        private AssetBrowserLineageApiResponseModel buildResponseModel(List<HopNodeResult> hierarchies, List<HopLinkResult> relationships, int multiplier)
         {
             var model = new AssetBrowserLineageApiResponseModel();
 
@@ -239,8 +135,24 @@ namespace d360.web.Controllers.V2
                     relationCounts = JsonConvert.DeserializeObject<List<AssetBrowserLineageApiItemRelationCountModel>>(h.relationCounts);
                 }
 
-                var current = new AssetBrowserLineageApiItemModel { hop = 0, key = h.key, assetUid = h.assetUid, assetTypeId = h.assetTypeID, assetTypeUid = h.assetTypeUid, backColor = h.back, foreColor = h.fore, icon = h.icon, @class = h.@class, displayValue = h.displayValue, reveal = h.reveal, relationCounts = relationCounts, useAsTransformation = h.useAsTransformation };
-                recurse(hierarchies, current);
+                var current = new AssetBrowserLineageApiItemModel { 
+                    key = h.key, 
+                    assetUid = h.assetUid, 
+                    assetTypeId = h.assetTypeID, 
+                    assetTypeUid = h.assetTypeUid,
+                    backAmount = ((multiplier <= 4) ? multiplier : 4) * .2,
+                    backColor = h.back, 
+                    foreAmount = 0,
+                    foreColor = h.fore, 
+                    icon = h.icon, 
+                    @class = h.@class, 
+                    displayValue = h.displayValue, 
+                    reveal = h.reveal, 
+                    relationCounts = relationCounts, 
+                    useAsTransformation = h.useAsTransformation, 
+                    isSubjectInTransformation = h.isSubjectInTransformation 
+                };
+                recurse(model, hierarchies, current, multiplier + 1);
                 model.assets.Add(current);
             }
 
@@ -283,30 +195,31 @@ namespace d360.web.Controllers.V2
             HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerRequestExample(typeof(GetAssetLineagePostModel), typeof(GetAssetLineagePostModelExample)),
+            SwaggerRequestExample(typeof(AssetBrowserApiHopRequestModel), typeof(GetAssetLineagePostModelExample)),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserLineageApiResponseModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetLineage(GetAssetLineagePostModel criteria)
+        public async Task<HttpResponseMessage> GetAssetBrowserHop(AssetBrowserApiHopRequestModel criteria)
         {
             try
             {
-                string HopSalt;
-                var sql = "";
-                var model = new HopModel();
-
                 Func<string> generateSalt = delegate ()
                 {
                     Random random = new Random();
                     const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
                     return new string(Enumerable.Repeat(chars, 25).Select(s => s[random.Next(s.Length)]).ToArray());
                 };
+                
+                var model = new HopModel {
+                    links = new List<HopLinkResult>(),
+                    nodes = new List<HopNodeResult>()
+                };
 
                 // Create initial salt value for Hop 0.
-                HopSalt = generateSalt();
+                string HopSalt = generateSalt();
 
-                Func<string, string> hashKey = delegate (string input)
+                string hashKey(string input)
                 {
                     string returnValue = "";
 
@@ -315,137 +228,81 @@ namespace d360.web.Controllers.V2
                     returnValue = returnValue.Substring(2, returnValue.Length - 3);
 
                     return returnValue;
-                };
+                }
 
-                Func<bool, List<GetAssetImpactSourceItemPostModel>, string, Task<HopModel>> getHop = async delegate (bool resetSalt, List<GetAssetImpactSourceItemPostModel> hopAssets, string direction)
+                async Task<HopModel> getHop(List<AssetBrowserApiHopAssetRequestModel> hopAssets, string direction)
                 {
                     var hopModel = new HopModel();
 
-                    if (resetSalt)
-                    {
-                        HopSalt = generateSalt();
-                    }
-
-                    var reader = await Company.QueryMultipleAsync(@"exec graph.GetHop @assets, @HopSalt, @direction", new
+                    var reader = await Company.QueryMultipleAsync(@"exec graph.GetHop @assets, @hopSalt, @direction, @predicateUid", new
                     {
                         assets = hopAssets.AsTableValuedParameter(
                             "dbo.AssetBrowserImpactTable",
                             new List<string>() { "Key", "Uid" }
                             ),
                         HopSalt,
-                        direction
+                        direction,
+                        predicateUid = criteria.PredicateUid
                     }, timeout: 60);
 
                     hopModel.nodes = reader.Read<HopNodeResult>().ToList();
                     hopModel.links = reader.Read<HopLinkResult>().ToList();
 
                     return hopModel;
-                };
-
-                if (!criteria.IsReveal)
-                {
-                    sql = @"";
                 }
 
-                if (criteria.Hops <= 0 || criteria.Hops > 15)
+                // Check to see if keys are populated on incoming assets. If not, populate with auto-generated salt.
+                criteria.Assets.ForEach(a =>
                 {
-                    criteria.Hops = 3;
-                }
+                    if (string.IsNullOrEmpty(a.Key))
+                    {
+                        a.Key = hashKey($"{HopSalt}|{a.Uid}");
+                    }
+                });
 
-                var assets = criteria.AssetUids.Select(a => new GetAssetImpactSourceItemPostModel { Key = hashKey($"{HopSalt}|{a}"), Uid = a }).ToList();
-                if (!criteria.IsReveal) 
+                if (criteria.Direction == AssetBrowserApiHopDirection.None && criteria.PredicateUid.HasValue)
                 {
-                    model = await getHop(false, assets, "");
-                    assets = model.nodes.Where(n => n.isLeaf).Select(n => new GetAssetImpactSourceItemPostModel { Key = n.key, Uid = n.assetUid }).ToList();
+                    // This is an IMPACT call.
+                    model = await getHop(criteria.Assets, "I");
                 }
-
-                var backwardAssets = assets;
-                var forwardAssets = assets;
-                for (int i = 0; i < criteria.Hops; i++)
+                else 
                 {
-                    var backModel = await getHop((i > 0), backwardAssets, "B");
-                    var forwardModel = await getHop((i > 0), forwardAssets, "F");
+                    // This is a LINEAGE call.
+                    if (criteria.IsInitial)
+                    {
+                        model = await getHop(criteria.Assets, "");
+                    }
 
-                    backwardAssets = backModel.nodes.Where(n => n.isLeaf).Select(n => new GetAssetImpactSourceItemPostModel { Key = n.key, Uid = n.assetUid }).ToList();
-                    forwardAssets = forwardModel.nodes.Where(n => n.isLeaf).Select(n => new GetAssetImpactSourceItemPostModel { Key = n.key, Uid = n.assetUid }).ToList();
+                    if (criteria.Hops <= 0 || criteria.Hops > 15)
+                    {
+                        criteria.Hops = 3;
+                    }
 
-                    model.links.AddRange(backModel.links);
-                    model.links.AddRange(forwardModel.links);
-                    model.nodes.AddRange(backModel.nodes);
-                    model.nodes.AddRange(forwardModel.nodes);
+                    var backwardAssets = criteria.Assets;
+                    var forwardAssets = criteria.Assets;
+                    for (int i = 0; i < criteria.Hops; i++)
+                    {
+                        HopSalt = generateSalt(); // We have multiple hops, so we should reset the salt after each hop.
+                        var backModel = await getHop(backwardAssets, "B");
+                        var forwardModel = await getHop(forwardAssets, "F");
+
+                        backwardAssets = backModel.nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
+                        forwardAssets = forwardModel.nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
+
+                        model.links.AddRange(backModel.links);
+                        model.links.AddRange(forwardModel.links);
+                        model.nodes.AddRange(backModel.nodes);
+                        model.nodes.AddRange(forwardModel.nodes);
+                    }
                 }
-
-                //var reader = await Company.QueryMultipleAsync(@"exec graph.GetLineageByAsset @assets, @IsReveal, @StartHop, @direction, @hops", new { 
-                //    assets = criteria.AssetUids.AsTableValuedParameter<Guid>(
-                //        "dbo.UidTable", 
-                //        new List<string>() {"Uid"}
-                //        ), 
-                //    criteria.IsReveal,
-                //    criteria.StartHop,
-                //    direction = (int)criteria.Direction, 
-                //    hops = (criteria.Hops > 0) ? criteria.Hops : 1 
-                //}, timeout: 60);
-
-                //var hierarchies = reader.Read<RawResultList2>().ToList();
-                //var relationships = reader.Read<RawResultList3>().ToList();
-
-                //return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(hierarchies, relationships));
-                return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(model.nodes, model.links));
+                
+                return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(model.nodes, model.links, 0));
             }
             catch (Exception ex)
             {
                 return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
             }
         }
-
-        /// <summary>
-        /// Retrieves impact relationships for the specified set of assets.
-        /// </summary>
-        /// <remarks>
-        /// While this endpoint is used primarily by the Govern Asset Browser tool, external callers may find some data within this endpoint useful.
-        /// </remarks>
-        /// <param name="criteria">
-        /// An object containing:
-        /// 1. Assets: A set of assets (Uid and unique Key value) you want to retrieve impacts for. 
-        /// 2. PredicateUid: The Uid of the predicate you are getting impacted relationships for.
-        /// 3. StartHop: A starting point, which will be used to generate unique key values that are used in the Asset Browser UI.
-        /// </param>
-        /// <returns>An object containing impacts results, as well as an HTTP status code and message.</returns>
-        [
-            Route("impacts"),
-            HttpPost,
-            MapToApiVersion("2.0"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerRequestExample(typeof(GetAssetImpactsPostModel), typeof(GetAssetImpactsPostModelExample)),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserLineageApiResponseModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
-        ]
-        public async Task<HttpResponseMessage> GetAssetImpacts(GetAssetImpactsPostModel criteria)
-        {
-            try
-            {
-                var reader = await Company.QueryMultipleAsync(@"exec graph.GetImpactRelationshipsByAssets @assets, @PredicateUid, @StartHop", new
-                {
-                    assets = criteria.Assets.AsTableValuedParameter(
-                        "dbo.AssetBrowserImpactTable",
-                        new List<string>() { "Key", "Uid" }
-                        ),
-                    criteria.PredicateUid,
-                    criteria.StartHop
-                }, timeout: 60);
-
-                var hierarchies = reader.Read<RawResultList2>().OrderBy(i => i.Hop).ThenBy(i => i.HierarchyLevel).ToList();
-                var relationships = reader.Read<RawResultList3>().OrderBy(i => i.Hop).ToList();
-
-                return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(hierarchies, relationships));
-            }
-            catch (Exception ex)
-            {
-                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-            }
-        }
-
 
         #region Internal Classes For GetDiagramAsset Endpoint
 

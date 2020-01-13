@@ -9,7 +9,6 @@ import {
 import { Observable } from 'rxjs';
 
 import {
-    AssetBrowserLineageApiRequestModel,
     AssetBrowserLineageApiResponseModel,
     AssetBrowserTranslation,
     AssetBrowserTranslationNode,
@@ -18,10 +17,10 @@ import {
     AssetBrowserLineageApiRelationshipModel,
     AssetBrowserDiagramAsset,
     AssetBrowserTranslationRelationCount,
-    AssetBrowserDirection,
-    AssetBrowserImpactApiRequestModel,
+    AssetBrowserApiHopDirection,
     FilterAncestryMode,
-    FilterSelectionsModel
+    FilterSelectionsModel,
+    AssetBrowserApiHopRequestModel
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -66,7 +65,7 @@ export class BrowserService extends BaseObservableService {
     * @returns A deep models with hierarchical assets and relationships between them.
     */
     public getAssetLineage(
-        model: AssetBrowserLineageApiRequestModel
+        model: AssetBrowserApiHopRequestModel
     ): Observable<AssetBrowserLineageApiResponseModel> {
         const url = `api/v2/browser`;
 
@@ -123,10 +122,10 @@ export class BrowserService extends BaseObservableService {
     * @returns A deep models with hierarchical assets and relationships between them.
     */
     public getAssetImpacts(
-        model: AssetBrowserImpactApiRequestModel
+        model: AssetBrowserApiHopRequestModel
     ): Observable<AssetBrowserLineageApiResponseModel> {
-        const url = `api/v2/browser/impacts`;
-
+        const url = `api/v2/browser`;
+        model.Direction = AssetBrowserApiHopDirection.None;
         return this.http.post(url, model).pipe(
             map(response => response),
             catchError(err => this.handleError(err))
@@ -155,7 +154,7 @@ export class BrowserService extends BaseObservableService {
 
         try {
             model.assets.forEach(a => {
-                this.loadTranslationChildNodes(translationModel, model.intersects, a, null, a.backColor, a.foreColor, 0);
+                this.loadTranslationChildNodes(translationModel, model.intersects, a, null, a.backColor, a.foreColor); // a.parentKey instead of null value in the paremeter to the left?
             });
         } catch (e) {
             console.log(e);
@@ -317,19 +316,15 @@ export class BrowserService extends BaseObservableService {
         current: AssetBrowserLineageApiItemModel,
         parentKey: string,
         backColor: string,
-        foreColor: string, 
-        multiplier: number) {
+        foreColor: string) {
 
         // Create the current node.
-        let currentNode: AssetBrowserTranslationNode = this.createTranslationNode(current, parentKey, backColor, foreColor, multiplier);
-
-        //Instantiate new multiplier as we do not want to impact the parent's multiplier.
-        let newMultiplier: number = multiplier + 1;
+        let currentNode: AssetBrowserTranslationNode = this.createTranslationNode(current, parentKey, backColor, foreColor);
 
         if (current.items) {
             current.items.forEach(a => {
                 // Recurse
-                this.loadTranslationChildNodes(translationModel, intersects, a, current.key, backColor, foreColor, newMultiplier);
+                this.loadTranslationChildNodes(translationModel, intersects, a, current.key, backColor, foreColor);
             });
         }
 
@@ -346,8 +341,7 @@ export class BrowserService extends BaseObservableService {
         a: AssetBrowserLineageApiItemModel,
         parentKey: string,
         backColor: string,
-        foreColor: string, 
-        multiplier: number): AssetBrowserTranslationNode {
+        foreColor: string): AssetBrowserTranslationNode {
         let n: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
 
         a.relationCounts.forEach(rC => {
@@ -360,15 +354,15 @@ export class BrowserService extends BaseObservableService {
             n.relations.push(assetBrowserTranslationRelationCount);
         });
 
-        n.showReveal = AssetBrowserDirection[a.reveal] as any; //convert string from API to enum value
+        n.showReveal = AssetBrowserApiHopDirection[a.reveal] as any; //convert string from API to enum value
         n.hop = a.hop;
         n.assetUid = a.assetUid;
         n.assetTypeId = a.assetTypeId;
         n.class = AssetTypeClass[a.class] as any; //convert string from API to enum value
         n.back = backColor;
-        n.backAmount = ((multiplier <= 4) ? multiplier : 4) * .2;
+        n.backAmount = a.backAmount;
         n.fore = (foreColor) ? foreColor : "#404040";
-        n.foreAmount = 0;//((multiplier <= 4) ? multiplier : 4) * .2;
+        n.foreAmount = a.foreAmount;
         n.icon = this.getIconUnicode(a.icon, n.class);
         n.isGroup = (a.items && a.items.length > 0);
         n.key = a.key;
