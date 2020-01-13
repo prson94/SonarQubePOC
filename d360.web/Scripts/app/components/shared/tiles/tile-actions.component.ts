@@ -55,7 +55,8 @@ export class TileActionsComponent implements OnInit, OnChanges {
     @Input() hasUser: boolean = false;
     @Input() hasView: boolean = false;
     @Input() hasNewWindow: boolean = false;
-
+    @Input() isExportDisabled: boolean = false;
+    @Input() exportDisabledMessage: string = 'Export Disabled';
     @Input() hasMenu: boolean = false;
     @Input() menuItems: MenuItem[] = [];
     @Output() menuClick = new EventEmitter();

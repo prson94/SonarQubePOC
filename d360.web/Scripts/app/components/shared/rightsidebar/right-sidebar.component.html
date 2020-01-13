@@ -3,7 +3,7 @@
         <img class="icon" *ngIf="!IsIcon(area.icon)" [src]="GetURL(area.icon)" height="20" width="20" />
         <i *ngIf="IsIcon(area.icon)" [class]="'icon fa ' + area.icon"></i>
         <h1 title="{{area.title ? area.title: 'D3S'}}">{{area.title ? area.title: 'D3S'}}</h1>
-        <span #badge *ngIf="statistics && statistics.Score != null;else noScore" class="d3s-icon large-icon clickable"
+        <span #badge *ngIf="statistics && statistics.Score != null" class="d3s-icon large-icon clickable"
               title="{{lastCalculatedMessage()}}"
               (click)="OpenScoring()"
               [ngClass]="{
@@ -14,12 +14,6 @@
             <d3s-dynamic-percentage [percentage]="statistics?.Score"></d3s-dynamic-percentage>
             <span class="text">{{statistics?.Score}}%</span>
         </span>
-        <ng-template #noScore>
-            <span #noScoreBadge (click)="OpenScoring()" *ngIf="currentObject && !currentObject?.isType" title="Governance Score not yet calculated" class="d3s-icon large-icon clickable">
-                <d3s-dynamic-percentage [percentage]="0"></d3s-dynamic-percentage>
-                <span class="text">N/A</span>
-            </span>
-        </ng-template>
         <span *ngIf="showStatus" class="d3s-icon large-icon" [style.background-color]="getCertificationStatusColor(status)">
             <i class="fa fa-certificate"></i>
             <span class="text">{{status}}</span>
@@ -80,7 +74,7 @@
                 <button class="tab" [ngClass]="{'selected':AllClosed()}" (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">{{area.tabTitle}}</button>
                 <button class="tab"
                         [ngClass]="{'selected':item.active}"
-                        *ngFor="let item of items; trackBy: trackById"
+                        *ngFor="let item of items | genericFilter: filterScoringTabHasNoValue; trackBy: trackById;"
                         (click)="itemClicked(item);">
                     {{item.title}}
                     <span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span>
