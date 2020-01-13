@@ -22,7 +22,7 @@ END
     </sql>
 	<rollback>
 	<![CDATA[	
-IF (EXISTS(SELECT Top 1 [FieldName] FROM [dbo].[Setting] WHERE WHERE [ID] = 71))
+IF (EXISTS(SELECT Top 1 [FieldName] FROM [dbo].[Setting] WHERE [ID] = 71))
 BEGIN
 	DELETE FROM Setting WHERE [ID] = 71
 END 
