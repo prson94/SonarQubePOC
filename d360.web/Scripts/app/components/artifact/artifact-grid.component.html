@@ -4,6 +4,8 @@
                       [hasExport]="!artifactType.HasCustomExportTemplates"
                       [hasCustomExport]="artifactType.HasCustomExportTemplates"
                       (addClick)="add()"
+                      [isExportDisabled]="!canExportRecords()"
+                      [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
                       (customExportClick)="customExport()"
                       (exportClick)="export(false)"
                       [hasFilterMode]="true"
@@ -62,7 +64,7 @@
     (filterChanged)="filterGridData(dt)"
   ></d3s-artifact-column-filter>
   <d3s-artifact-custom-export
-    *ngIf="showCustomExport"
+    *ngIf="showCustomExport && canExportRecords()"
     (closeClick)="showCustomExport = false"
     [artifactType]="artifactType"
     [sortOrder]="stateService.artifactTypeFilters.sortOrder"
