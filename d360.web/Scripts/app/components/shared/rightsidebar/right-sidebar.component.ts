@@ -118,6 +118,13 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.load();
     }
 
+    filterScoringTabHasNoValue = (tab: SecondaryNavItem) => {
+        if (tab.title === "Scoring")
+            if (this.statistics && (this.statistics.Score === undefined))
+                return false;
+        return true;
+    }
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['menuOpen'])
             return;
@@ -125,7 +132,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             this.load();
         }
     }
-
+    
     checkSize() {
         if (this.tabScroller && this.tabScroller.length > 0) {
             let maxWidth = this.tabScroller.first.nativeElement.parentElement.getBoundingClientRect().right;
