@@ -185,35 +185,4 @@ drop procedure if exists [dbo].[SecondaryNavSettings]
 ]]>
     </rollback>
   </changeSet>
-
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-CREATE OR ALTER VIEW [reporting].[RuleImplementations_Results] AS 
-select	RI.RuleID,
-		R.Threshold,
-		RI.ID as RuleImplementationID,
-		coalesce(RI.Name, 'Implementation ' + cast(RI.ID as nvarchar)) as RuleImplementation,
-		RR.ID as RuleResultID,
-		RR.EffectiveDate,
-		RR.CreatedOn,
-		RR.RunDate,
-		RR.RowsPassed,
-		RR.RowsFailed,
-		RR.PassFraction,
-		RR.FailFraction,
-		RR.Passed
-from	RuleResult RR
-		inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
-		inner join [Rule] R on R.ID = RI.RuleID
-]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-  DROP VIEW [reporting].[RuleImplementations_Results]
-]]>
-    </rollback>
-  </changeSet>
 </databaseChangeLog>
