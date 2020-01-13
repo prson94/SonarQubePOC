@@ -15,13 +15,13 @@
 IF (NOT EXISTS(SELECT Top 1 [Name] FROM [dbo].[Predicate] WHERE [Name] = 'Represents in'))
 BEGIN
 INSERT INTO [dbo].[Predicate](Name,Inverse,Type,IsSystem,Code,Uid)
-Values('Represents in','Represented by',13,1,13,NEWID())
+Values('Represents in','Represented by',13,0,13,NEWID())
 END
 
 IF (NOT EXISTS(SELECT Top 1 [Name] FROM [dbo].[Predicate] WHERE [Name] = 'Flows to'))
 BEGIN
 INSERT INTO [dbo].[Predicate](Name,Inverse,Type,IsSystem,Code,Uid)
-Values('Flows to','Flowed from',12,1,14,NEWID())
+Values('Flows to','Flowed from',12,0,14,NEWID())
 END
 
 		]]>
