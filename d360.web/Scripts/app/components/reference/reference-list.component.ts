@@ -7,7 +7,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ReferenceItemType } from '../../models/reference.model';
-import { SecondaryNavItem } from '../../models/secondaryNav.model';
+import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { ReferenceService } from '../../services/reference.service';
 import { UriBasedService } from '../../services/uri-based.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -145,6 +145,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     }
 
     setSecondaryNavItems() {
+        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(null,null,null,null,true,null,null));
         if (this.auditSidebar) {
             this.auditSidebar.url = `/sidebar/audit/ReferenceItemType/${this.selectedReferenceListId}`;
         }

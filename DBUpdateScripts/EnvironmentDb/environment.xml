@@ -398,6 +398,8 @@
   <!-- Sprint 2 2020 Start-->
   <include file="scripts/GOV-9133.xml"/> <!-- Set database COMPATIBILITY_LEVEL to 140-->
   <include file="scripts/GOV-8946.xml"/>
+  <include file="scripts/GOV-9276.xml"/>  <!-- script to create CompletedOn and CompletedBy on dbo.Issue + prepopulating old records -->
   <include file="scripts/GOV-9202.xml"/> <!-- script to create index for table FusionAttribute and RuleResult-->
+  <include file="scripts/GOV-8975.xml"/> <!-- Change URL on export to "asset/<Uid>" format-->
   <include file="scripts/GOV-9290.xml"/> <!-- add [dbo].[SecondaryNavSettings] procedure-->
 </databaseChangeLog>

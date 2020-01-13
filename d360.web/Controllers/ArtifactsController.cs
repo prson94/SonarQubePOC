@@ -101,7 +101,7 @@ namespace d360.web.Controllers
                 }
             }
 
-            var results = await Company.GetDynamicAssets(assetType.ID, filters, 0, 0, sortDataField, sortOrder, filter, false, false, false);
+            var results = await Company.GetDynamicAssets(assetType.ID, filters, 0, 0, sortDataField, sortOrder, filter, false, false, false, true);
 
             var data = results.Results.ToList();
 

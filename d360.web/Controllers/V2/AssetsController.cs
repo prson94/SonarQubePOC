@@ -1257,7 +1257,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"Invalid AseetUid provided, no asset exists with the specified uid.",
+                        Message = $"Invalid AssetUid provided, no asset exists with the specified uid.",
                         Success = false
                     };
 

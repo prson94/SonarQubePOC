@@ -165,6 +165,10 @@ export class TagView extends BaseComponent implements OnInit {
             this.existingTag = true;
             this.messagesService.showError('Error', "Tag must be as least 1 character long in length");
         }
+        if (this.tagNoSpaces.length > 100) {
+            this.existingTag = true;
+            this.messagesService.showError('Error', "Tag must be less then 100 characters in length");
+        }
         if (!this.existingTag) {
             this.tagService.doesTagExist(event)
                 .subscribe(result => {

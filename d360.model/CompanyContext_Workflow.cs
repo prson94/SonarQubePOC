@@ -869,6 +869,20 @@ namespace d360.model
 
                 if (item == null) throw new Exception("ERROR - CANNOT FIND THE WORKFLOW INSTANCE THAT WE NEED TO MARK AS COMPLETED");
 
+                if(item.Object == SystemObjects.Issue.ToString() && item.ObjectID > 0)
+                {
+                    var issue = Issues.FirstOrDefault(x => x.ID == item.ObjectID);
+                    if(issue != null)
+                    {
+                        if(issue.CompletedOn == null && issue.CompletedBy == null)
+                        {
+                            issue.CompletedOn = DateTime.UtcNow;
+                            issue.CompletedBy = CurrentResourceID;
+                        }
+                    }
+
+                }
+
                 item.CompletedBy = CurrentResourceID;
                 item.CompletedOn = DateTime.UtcNow;
                 SaveChanges();
