@@ -337,6 +337,9 @@ namespace d360.web.Controllers.V2
             {
                 var queryParams = Request.GetQueryNameValuePairs();
 
+               if  (!this.IsValidGuid(queryParams,"uid")){
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid uid is passed in the request"));
+                }
                 var results = await this.membershipRepository.GetGroups(queryParams);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
@@ -351,6 +354,23 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
 
+        }
+
+
+        private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
+        {
+            bool isValid = true;
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == paramName.ToLower()))
+            {
+                Guid uid;
+                var uidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == paramName.ToLower()).Value;
+                if (Guid.TryParse(uidString, out uid))
+                    isValid = true;
+                else
+                    isValid = false;
+
+            }
+            return isValid;
         }
 
     }

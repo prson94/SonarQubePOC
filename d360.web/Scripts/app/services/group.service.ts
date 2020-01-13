@@ -36,7 +36,6 @@ export class GroupService extends BaseObservableService implements IGroupService
     }
 
     getGroups(): Observable<any> {
-        debugger;
         return this.http.get('api/v2/membership/groups')
             .pipe(
             map(x => <any>x),

@@ -33,7 +33,6 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        debugger
         for (let p in changes) {
             if (p == 'groupId' || p =='groupUid') {
                 this.formMode = FormMode.Default;

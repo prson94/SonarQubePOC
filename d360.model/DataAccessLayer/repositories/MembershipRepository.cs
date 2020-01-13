@@ -40,7 +40,7 @@ namespace d360.model.DataAccessLayer
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "name"))
                 {
                   
-                    var name = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "name").Value;
+                    var name = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "name").Value.Trim();
                     if (!string.IsNullOrEmpty(name))
                     {
 
@@ -56,13 +56,13 @@ namespace d360.model.DataAccessLayer
             inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
             left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
             left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
-                {whereStatements} ";
+                {whereStatements}  order by G.Name  ";
 
             var countSql = $@"Select count(*) from [Group] G
             inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
             left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
             left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
-                {whereStatements} ";
+                {whereStatements}  ";
 
             var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
             var count = countResults.First();
