@@ -1021,7 +1021,7 @@ namespace d360.web.Controllers
                 updateCompanySetting(settings, 59, formModel.WorkflowDigestEmailEnabled.ToString().ToLower());
                 updateCompanySetting(settings, 60, Math.Abs(formModel.MaxDropdownItems).ToString());
                 updateCompanySetting(settings, 61, formModel.WriteActionDescription.ToString().ToLower());
-                updateCompanySetting(settings, 60, Math.Abs(formModel.MaxExcelExportRows).ToString());
+                updateCompanySetting(settings, 71, Math.Abs(formModel.MaxExcelExportRows).ToString());
                 #endregion
 
                 #region IP
