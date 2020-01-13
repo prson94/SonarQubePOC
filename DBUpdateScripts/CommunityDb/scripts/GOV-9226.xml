@@ -24,7 +24,7 @@ END
 	<![CDATA[	
 IF (EXISTS(SELECT Top 1 [FieldName] FROM [dbo].[Setting] WHERE WHERE [ID] = 71))
 BEGIN
-	DELETE FROM Setting WHERE WHERE [ID] = 71
+	DELETE FROM Setting WHERE [ID] = 71
 END 
 ]]>
 	</rollback>
