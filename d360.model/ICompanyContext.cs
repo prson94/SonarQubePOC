@@ -327,5 +327,6 @@ namespace d360.model
         List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600);
         List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);
         string GetIconText(string assetName);
+        void SetApiExecutionProcessingStartTime(Guid ExecutionId);
     }
 }
