@@ -12,7 +12,7 @@
             stripComments="false">
       <![CDATA[
       insert into [metrics].[Allocation] (ScoreType, AssetTypeUid)
-	      select 
+	      select distinct
   		    1 as ScoreType,
 	  	    ma.AssetTypeUid as AssetTypeUid
 	      from metrics.Asset ma where not exists ( select 1 from [metrics].[Allocation] a where a.AssetTypeUid = ma.AssetTypeUid and a.ScoreType = 1)
