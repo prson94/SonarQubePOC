@@ -947,7 +947,12 @@ a.Action {
         color: @rgba-primary-2;
     }
 }
-
+.actions-disabled {
+    a.Action {
+        color: @rgba-primary-2;
+        cursor: default;
+    }
+}
 
 /* error message for required fields etc on dynamic field editor*/
 .errorMessage {
@@ -5803,7 +5808,6 @@ a.mid-blue {
         left: 10px;
     }
 }
-
 
 .help-box {
     color: gray;

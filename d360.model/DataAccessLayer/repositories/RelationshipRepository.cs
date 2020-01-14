@@ -82,7 +82,10 @@ namespace d360.model.DataAccessLayer
             if (whereConditions.Count > 0)
                 whereClause = $"WHERE {string.Join(" AND ", whereConditions)}";
 
-            return await companyContext.QueryAsync<PredicateApiViewModel>($@"select 
+            var currentLineageversion = communityContext.GetCompanySettingByKey<int>("LineageVersion");
+
+
+            var allPredicates = await companyContext.QueryAsync<PredicateApiViewModel>($@"select 
                                                                              P.Uid,
                                                                              P.Name,
                                                                              P.Inverse,
@@ -96,6 +99,7 @@ namespace d360.model.DataAccessLayer
                                                                             outer apply(select top 1 id from IntersectType where PredicateID = P.Id)Usage
                                                                             {whereClause}          
                                                                             order by[Type], Name", dbArgs);
+            return allPredicates.Where(x => x.Type.AsInfoModel().LineageVersionsSupported.Contains(currentLineageversion));
         }
 
         public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
