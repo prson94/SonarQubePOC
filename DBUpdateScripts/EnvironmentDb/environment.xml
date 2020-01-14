@@ -404,4 +404,5 @@
   <include file="scripts/GOV-8975.xml"/> <!-- Change URL on export to "asset/<Uid>" format-->
   <include file="scripts/GOV-9154.xml"/> <!-- Add ProcessingStartedOn column to api.Execution table -->
   <include file="scripts/GOV-9319.xml"/> <!-- script to add score type column to metric.asset table-->
+  <include file="scripts/GOV-9320.xml"/> <!-- script to add metric allocation table-->
 </databaseChangeLog>
