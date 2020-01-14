@@ -829,6 +829,20 @@ insert into #MvLookupValues (ItemNumber, FieldTypeID, [RawValue])
 				inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
 				cross apply string_split(T.FieldValue, ',') MV;
 
+
+drop table if exists #RelevantLookupValues;
+create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
+
+insert into #RelevantLookupValues 
+select		top 100 percent
+			T.FieldTypeID,
+			FLV.[Text],
+			FLV.[Value]
+from		#LookupValues T
+			inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
+			cross apply string_split(T.FieldValue, ',') MV 
+			inner join FieldLookupValue FLV on FLV.FieldTypeID = T.FieldTypeID;
+
 update	T
 set		T.Value = S.Value
 from	#MvLookupValues T
@@ -841,7 +855,7 @@ from	#MvLookupValues T
 					from		#LookupValues T
 								inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
 								cross apply string_split(T.FieldValue, ',') MV 
-								inner join FieldLookupValue S on S.FieldTypeID = T.FieldTypeID and S.[Text] = MV.value
+								inner join #RelevantLookupValues S on S.FieldTypeID = T.FieldTypeID and S.[Text] = MV.value
 					group by	T.ItemNumber, T.FieldTypeID, S.Value, S.[Text]
 					order by	T.ItemNumber, T.FieldTypeID, S.[Text]	
 		) S on S.ItemNumber = T.ItemNumber and S.FieldTypeID = T.FieldTypeID and S.[Text] = T.[RawValue];
