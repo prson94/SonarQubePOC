@@ -3,9 +3,9 @@ import { BaseComponent } from '../../shared/base.component';
 import { WorkflowListItem, ChangeTypeInfo, WorkflowChangeType } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { Router } from '@angular/router';
-import { map, switchMap } from 'rxjs/operators';
+import { map} from 'rxjs/operators';
 import { State } from '../../../models/asset.model';
-import { Observable } from 'rxjs';
+
 
 
 @Component({
