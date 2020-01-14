@@ -25,6 +25,8 @@ declare var CompanySettings;
 export class BaseComponent {
     public isLoading = false;
     public gridStateStorage: string = 'session';
+    public maxExportRows = CompanySettings.MaxExcelExportRows;
+    
 
     // current object info
     uid: string;

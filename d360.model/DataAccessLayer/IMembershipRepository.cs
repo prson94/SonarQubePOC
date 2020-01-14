@@ -1,0 +1,14 @@
+﻿using d360.core.entities.Membership;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace d360.model.DataAccessLayer
+{
+    public interface  IMembershipRepository
+    {
+      Task<GroupApiModels>  GetGroups(IEnumerable<KeyValuePair<string, string>> queryParams);
+    }
+}

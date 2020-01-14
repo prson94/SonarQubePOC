@@ -31,6 +31,9 @@ namespace d360.core.entities.Metric
         [DataMember]
         public string Description { get; set; }
 
+        [DataMember]
+        public ScoreType ScoreType { get; set; } = ScoreType.Governance;
+
         [IgnoreDataMember, ForeignKey("ParentUid")]
         public virtual MetricAsset Parent { get; set; }
 

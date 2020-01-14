@@ -1305,6 +1305,8 @@ from	IntersectType I
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
 
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.Object, at.ObjectID, ChangeType.Delete);
 
@@ -2065,6 +2067,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
 
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (executionItemDupes.Any())
             {
@@ -2667,6 +2672,9 @@ where   ExecutionID = @ExecutionID
             const string METHOD_NAME = "ImportAssets";
             bool isLog = import.Count() > 1;
             var results = new List<DatabaseBulkAssetResult>();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (dupes.Any())
             {
@@ -3758,6 +3766,8 @@ select [uid] from #ParentChildRelationships",
             if (rt.Predicate.Type == PredicateType.Transformation)
                 checkCircularRelationships = true;
 
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             //check if trigger workflows is set to true and there are actually no workflows
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), rt.ID, null);
 
@@ -4262,6 +4272,8 @@ end",
             var results = new List<DatabaseBulkRelationshipResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), it.ID, ChangeType.Delete);
@@ -4891,6 +4903,9 @@ where   ER.ExecutionID = @ExecutionID
         {
 
             List<AssetCrossReferenceResult> bulkResult = new List<AssetCrossReferenceResult>();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             #region Build data tables for bulk load
 
             var table = new DataTable();
@@ -5779,6 +5794,10 @@ where   ER.ExecutionID = @ExecutionID
 
             return results;
         }
-
+        public void SetApiExecutionProcessingStartTime(Guid ExecutionId)
+        {
+            Query<int>("update api.Execution set ProcessingStartedOn = @startedOn where ExecutionId = @ExecutionId",
+                new { startedOn = DateTime.UtcNow, ExecutionId }).FirstOrDefault();
+        }
     }
 }

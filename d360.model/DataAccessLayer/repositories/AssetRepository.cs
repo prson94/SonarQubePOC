@@ -1104,7 +1104,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                ResourceID = CompanyContext.CurrentResourceID,
+                ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.DeleteAssetTypes
             };
 
@@ -1127,7 +1127,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                ResourceID = CompanyContext.CurrentResourceID,
+                ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.DeleteAssets,
                 SendWorkflowEvents = sendWorkflowEvents
             };
@@ -1161,7 +1161,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                ResourceID = CompanyContext.CurrentResourceID,
+                ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.PutAssets,
                 SendWorkflowEvents = sendWorkflowEvents
             };
@@ -1187,7 +1187,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                ResourceID = CompanyContext.CurrentResourceID,
+                ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.PostAssets,
                 SendWorkflowEvents = sendWorkflowEvents
             };
