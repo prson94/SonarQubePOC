@@ -2,6 +2,7 @@
 var webpack = require('webpack');
 var path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 // Webpack Config
 var webpackConfig = {
@@ -16,7 +17,25 @@ var webpackConfig = {
     },
     output: {
         path: __dirname + '/scripts/dist/',
-        publicPath: './scripts/dist/'
+        publicPath: './scripts/dist/',        
+        filename: '[name].bundle.js',
+        chunkFilename: '[id].chunk.js'
+    },
+
+    optimization: {
+        runtimeChunk: false,
+        splitChunks: {
+            cacheGroups: {
+                default: false,               
+                vendor: {
+                    test: /node_modules/,
+                    chunks: 'initial',
+                    name: 'vendor',
+                    enforce: true,
+                    filename: '[name].bundle.js'
+                },
+            }
+        }
     },
 
     plugins: [
