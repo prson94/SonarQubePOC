@@ -15,7 +15,26 @@ var webpackConfig = {
 
     output: {
         path: __dirname + '/scripts/dist/',
-        publicPath: './scripts/dist/'
+        publicPath: './scripts/dist/',
+        filename: '[name].bundle.js',
+        chunkFilename: '[id].[hash].chunk.js'
+    },
+
+    optimization: {
+        noEmitOnErrors: true,
+        runtimeChunk: false,
+        splitChunks: {
+            cacheGroups: {
+                default: false,                
+                vendor: {
+                    test: /node_modules/,
+                    chunks: 'initial',
+                    name: 'vendor',
+                    enforce: true,
+                    filename: '[name].bundle.js'
+                },
+            }
+        }
     },
 
     plugins: [
@@ -25,7 +44,7 @@ var webpackConfig = {
             /@angular(\\|\/)core(\\|\/)fesm5/,
             path.resolve(__dirname, '../src')
         ),
-
+               
       new webpack.DefinePlugin({
           __BUILD_DATE: JSON.stringify(new Date().toLocaleString()),
       }),
@@ -53,8 +72,7 @@ var defaultConfig = {
         chunkFilename: '[id].chunk.js'
     },
 
-    resolve: {
-        //root: [path.join(__dirname, '/scripts/app/')],
+    resolve: {        
         extensions: ['.ts', '.js']
     },
 
