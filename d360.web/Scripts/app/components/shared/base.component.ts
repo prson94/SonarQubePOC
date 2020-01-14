@@ -26,7 +26,7 @@ export class BaseComponent {
     public isLoading = false;
     public gridStateStorage: string = 'session';
     public maxExportRows = CompanySettings.MaxExcelExportRows;
-    
+
 
     // current object info
     uid: string;
@@ -648,6 +648,16 @@ export class BaseComponent {
         return hasValue;
     }
 
+    private setLoadedKey(_key: string) {
+        localStorage.setItem('loadedNavItem', _key);
+    }
+    private invalidateKey() {
+        localStorage.setItem('loadedNavItem', '{"AssetId":"","AssetTypeIdb":"","Uid":"","Object":"","ObjectId":""}');
+    }
+    private getLoadedKey(): string {
+        return localStorage.getItem('loadedNavItem');
+    }
+
     buildSecondaryNavigationForAssetID(assetId: number, object: string) {
         this.buildSecondaryNavigation(null, null, object, assetId);
     }
@@ -656,21 +666,34 @@ export class BaseComponent {
         this.buildSecondaryNavigation(null, objectId, object);
     }
 
-    private setLoadedKey(_key: string) {
-        localStorage.setItem('loadedNavItem', _key);
-    }
-    private getLoadedKey(): string {
-        return localStorage.getItem('loadedNavItem');
-    }
+    private isSidebarLoadedForCurrentObject(loadData: SecondaryNavPostModel): boolean {
 
-    private loadedNavKey: string = '';
+        //this is fullpage refresh, invalidate key to recreate navigation
+        if (!this.secondaryNavService["isSidebarCreated"]) {
+            this.invalidateKey();
+            return false;
+        }
+
+        var currentData = JSON.parse(this.getLoadedKey());
+        console.log(currentData);
+        console.log(loadData);
+        if (loadData.ObjectType == currentData.Object && loadData.ObjectId == currentData.ObjectId)
+            return true;
+
+        if (loadData.AssetUid == currentData.Uid)
+            return true;
+
+        if (loadData.AssetId == currentData.AssetId)
+            return true;
+
+        return false;
+    }
 
     buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null) {
-
         var data = new SecondaryNavPostModel();
         data.PreloadData = false;
-        if (assetUid)
-            data.AssetUid = assetUid;
+        if (assetUid != null)
+            data.AssetUid = assetUid.toString().toLowerCase();
 
         if (objectId)
             data.ObjectId = objectId;
@@ -689,15 +712,13 @@ export class BaseComponent {
             data.PreloadData = true;
         }
 
-        if (!assetUid && !assetId && !assetTypeUid && !objectId) {
+        if (assetUid == null && !assetId && !assetTypeUid && !objectId) {
             return;
         }
 
-        var _key = JSON.stringify(data);
-        if (this.loadedNavKey === _key)
+        if (this.isSidebarLoadedForCurrentObject(data)) {
             return;
-
-        this.loadedNavKey = _key;
+        }
 
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe(r => {
             this.assetID = r.AssetId;
@@ -705,6 +726,9 @@ export class BaseComponent {
             this.uid = r.Uid;
             this.objectType = r.Object;
             this.objectID = r.ObjectID;
+
+            var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
+            this.setLoadedKey(_key);
 
             this.clearSidebar();
             this.breadcrumbsService.clearBreadcrumbs();
@@ -722,7 +746,7 @@ export class BaseComponent {
             area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Attributes', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
                 .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
 
-            var homeUrl = this.getUrl(r, areaName);
+            var homeUrl = SiteUrlHelpers.getUrl(r.Object, r.ObjectID, r.ObjectTypeId, areaName);
 
             this.secondaryNavService.setLocalHomeUrl(homeUrl);
 
@@ -752,9 +776,9 @@ export class BaseComponent {
             this.secondaryNavService.clearButtons();
             this.secondaryNavService.setCurrentArea(areaName, area === 'Configuration' ? 'fa-sliders' : "fa-cog", mainTabTitle);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, this.assetTypeID, this.objectType, this.objectID, false, r.Items.HasWorkflow, this.uid));
-            this.secondaryNavService.showHeader(true);
 
             this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild);
+            this.secondaryNavService.showHeader(true);
 
             this.activateComponent();
         })
@@ -774,53 +798,6 @@ export class BaseComponent {
 
         this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue, url));
         this.setBrowserTitle(this.breadcrumbsService.getTitleService(), data.DisplayValue);
-    }
-
-    private getUrl(r: any, areaName: any) {
-        if (this.objectType.toLowerCase() == "policy") {
-            return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${r.ObjectTypeId};hierarchyId=${this.objectID}`;
-        }
-        if (this.objectType.toLowerCase() == "taxonomy") {
-            return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${r.ObjectTypeId};hierarchyId=${this.objectID}`;
-        }
-        if (this.objectType.toLowerCase() == "rule") {
-            return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${r.ObjectTypeId}/${this.objectID}`;
-        }
-        if (this.objectType.toLowerCase() == "referenceitemtype") {
-            return "/reference;referenceListId=" + this.objectID;
-        }
-        if (this.objectType.toLowerCase() == "artifacttype" && areaName == 'Business Assets') {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
-        }
-        if (this.objectType.toLowerCase() == "artifacttype" && areaName == 'Technical Assets') {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
-        }
-        if (this.objectType.toLowerCase() == "taxonomytype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`;
-        }
-        if (this.objectType.toLowerCase() == "policytype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`;
-        }
-        if (this.objectType.toLowerCase() == "intersecttype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`;
-        }
-        if (this.objectType.toLowerCase() == "issuetype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ACTIONS_ROOT}`;
-        }
-        if (this.objectType.toLowerCase() == "attributetype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`;
-        }
-        if (this.objectType.toLowerCase() == "lookuptype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`;
-        }
-        if (this.objectType.toLowerCase() == "responsibilitytype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`;
-        }
-        if (this.objectType.toLowerCase() == "report") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`;
-        }
-
-        return "/" + this.objectType.toLowerCase() + "/" + r.ObjectTypeId + "/" + this.objectID;
     }
 
     private activateComponent() {

@@ -154,7 +154,6 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             this.loadItemSurvey(this.modelId);
 
             this.setBrowserTitle(this.titleService, this.model.Name);
-            this.clearSidebar();
         }
         );
     }

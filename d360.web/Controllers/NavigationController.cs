@@ -1040,6 +1040,15 @@ SELECT count(ATT.[Object]) as count,
                     responseModel.Items.HasAudit = true;
                 }
 
+                if (model.ObjectType == SystemObjects.FusionType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.FusionType.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Fusion";
+                    responseModel.MainTabTitle = "Fusion Types";
+                    responseModel.Items.HasAudit = true;
+                }
 
 
             }
@@ -1071,7 +1080,7 @@ SELECT count(ATT.[Object]) as count,
 
                 if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
                 {
-                    var apiCtrlr = new D3SApiController(this.Community, this.Company,null, null);
+                    var apiCtrlr = new D3SApiController(this.Community, this.Company, null, null);
                     apiCtrlr.Request = new System.Net.Http.HttpRequestMessage();
                     responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
                 }
@@ -1085,17 +1094,17 @@ SELECT count(ATT.[Object]) as count,
 
             }
 
-            if(!Company.CurrentResourceIsAdmin)
+            if (!Company.CurrentResourceIsAdmin)
             {
                 if (model.AssetUid != null)
                 {
                     var permissions = Company.GetPermissions(responseModel.AssetId, responseModel.AssetTypeId);
-                    if(permissions.Any(x=> x.ID == Permission.ReadAsset))
+                    if (permissions.Any(x => x.ID == Permission.ReadAsset))
                     {
                         responseModel.Items.HasOwnership = true;
                     }
 
-                    if(permissions.Any(x => x.ID == Permission.ReadRelationships))
+                    if (permissions.Any(x => x.ID == Permission.ReadRelationships))
                     {
                         responseModel.Items.HasRelationship = true;
                     }
@@ -1109,47 +1118,5 @@ SELECT count(ATT.[Object]) as count,
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-
-        public class SecondaryNavigationPostModel
-        {
-            public int? ObjectId { get; set; }
-            public string ObjectType { get; set; }
-            public int? AssetId { get; set; }
-            public Guid? AssetUid { get; set; }
-            public Guid? AssetTypeUid { get; set; }
-            public bool PreloadData { get; set; }
-        }
-
-        public class SecondaryNavigationResponseModel
-        {
-            public int AssetId { get; set; }
-            public int AssetTypeId { get; set; }
-            public Guid Uid { get; set; }
-            public string Object { get; set; }
-            public string ObjectType { get; set; }
-            public int ObjectTypeId { get; set; }
-            public int ObjectID { get; set; }
-            public string DisplayValue { get; set; }
-            public string MainTabTitle { get; set; }
-            public string TypeName { get; set; }
-            public SecondaryNavItems Items { get; set; }
-            public JObject Artifact { get; set; }
-            public dynamic PreloadData { get; set; }
-        }
-
-        public class SecondaryNavItems
-        {
-            public bool HasAudit { get; set; }
-            public bool HasOwnership { get; set; }
-            public bool HasDashboard { get; set; }
-            public bool HasLineage { get; set; }
-            public bool HasImpact { get; set; }
-            public bool HasRelationship { get; set; }
-            public bool HasFollowers { get; set; }
-            public bool HasWorkflow { get; set; }
-            public bool HasField { get; set; }
-            public bool HasChild { get; set; }
-        }
-
     }
 }

@@ -56,6 +56,7 @@ export class SecondaryNavService {
         this.secondaryNavState.currentState.currentObject = currentObject;
         this.saveSecondaryNavState(this.secondaryNavState);
         this.currentObjectSource.next(currentObject);
+        this.isSidebarCreated = true;
     }
 
     clearCurrentObject() {

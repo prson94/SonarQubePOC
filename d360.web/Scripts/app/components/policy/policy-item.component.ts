@@ -158,7 +158,6 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
         this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicy, this.selected.ID).then(
             p => {
-                this.clearSidebar();
             }
         );
 
