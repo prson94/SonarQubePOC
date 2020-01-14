@@ -1483,7 +1483,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 var orderDirection = "";
                 var offsetSql = "";
                 var pageNum = -1;
-                var pageSize = -1;
+                var pageSize = 200;
 
                 if(queryParams.Any(x=> x.Key == "_direction"))
                 {
