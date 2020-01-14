@@ -2,12 +2,12 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ReferenceItemType } from '../../models/reference.model';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { ReferenceService } from '../../services/reference.service';
 import { UriBasedService } from '../../services/uri-based.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -59,7 +59,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     private canRemoveReferenceItem: boolean = false;
 
     constructor(
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private route: ActivatedRoute,
         private router: Router,
         private permissionsService: PermissionsService,
@@ -70,7 +70,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         private uriBasedService: UriBasedService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -103,71 +103,13 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
                                 this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
                                     this.clearSidebar();
-                                    this.rightSidebarService.setCurrentArea(res, icon, 'Reference Lists');
-                                    this.rightSidebarService.clearCurrentObject();
-                                    this.setCommonRightSideBar(true, false, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true);
+                                    this.secondaryNavService.setCurrentArea(res, icon, 'Reference Lists');
+                                    this.secondaryNavService.clearCurrentObject();
+                                    this.setCommonSecondaryNavTabs(true, true, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true, true);
 
+                                    this.setSecondaryNavItems();
 
-                                    if (this.auditSidebar) {
-                                        this.auditSidebar.hasDynamicUrl = true;
-                                        this.auditSidebar.dynamicUrlCallback = (() => {
-                                            return `/sidebar/audit/ReferenceItemType/${this.selectedReferenceListId}`
-                                        });
-                                    }
-
-                                    if (this.impactSidebar) {
-                                        this.impactSidebar.hasDynamicUrl = true;
-                                        this.impactSidebar.orderPriority = 2;
-                                        this.impactSidebar.dynamicUrlCallback = (() => {
-                                            return `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceListId}`
-                                        });
-                                    }
-
-                                    if (this.relationsSidebar) {
-                                        this.relationsSidebar.hasDynamicUrl = true;
-                                        this.relationsSidebar.orderPriority = 3;
-                                        this.relationsSidebar.dynamicUrlCallback = (() => {
-                                            return `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceListId}`
-                                        });
-                                    }
-
-                                    if (this.monitorSidebar) {
-                                        this.monitorSidebar.hasDynamicUrl = true;
-                                        this.monitorSidebar.dynamicUrlCallback = (() => {
-                                            return `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceListId}`
-                                        });
-                                    }
-
-                                    if (this.authenticationService.isAdmin) {
-                                        let fields = new RightSidebarItem()
-                                        fields.hasDynamicUrl = true;
-                                        fields.icons = ['fa-drivers-license-o'];
-                                        fields.tag = 'fields'
-                                        fields.title = 'Field Definitions'
-                                        fields.url = '/sidebar/fields'
-                                        fields.orderPriority = 1;
-                                        fields.dynamicUrlCallback = (() => {
-                                            return `/sidebar/fields/ReferenceItemType/${this.selectedReferenceListId}`
-                                        });
-
-                                        this.rightSidebarService.showItem(fields);
-                                    }
-
-                                    if (this.authenticationService.isAdmin) {
-                                        let permissions = new RightSidebarItem()
-                                        permissions.hasDynamicUrl = true;
-                                        permissions.icons = ['fa-bars'];
-                                        permissions.tag = 'responsibilities'
-                                        permissions.title = 'Responsibilities'
-                                        permissions.url = '/sidebar/responsibilities'
-                                        permissions.orderPriority = 4;
-                                        permissions.dynamicUrlCallback = (() => {
-                                            return `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`
-                                        });
-                                        this.rightSidebarService.showItem(permissions);
-                                    }
-
-                                    this.rightSidebarService.showHeader(true);      
+                                    this.secondaryNavService.showHeader(true);      
                                 });
                             });
                         });
@@ -208,6 +150,49 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     changeType(e: any) {
         this.selectedReferenceItemType = e;
         this.selectedReferenceListId = e.ID;
+        this.setSecondaryNavItems();
         this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.ID}`);        
+    }
+
+    setSecondaryNavItems() {
+        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(null,null,null,null,true,null,null));
+        if (this.auditSidebar) {
+            this.auditSidebar.url = `/sidebar/audit/ReferenceItemType/${this.selectedReferenceListId}`;
+        }
+
+        if (this.impactSidebar) {
+            this.impactSidebar.orderPriority = 2;
+            this.impactSidebar.url = `/sidebar/visualization/impact/ReferenceItemType/${this.selectedReferenceListId}`;
+        }
+
+        if (this.relationsSidebar) {
+            this.relationsSidebar.orderPriority = 3;
+            this.relationsSidebar.url = `/sidebar/relationships/ReferenceItemType/${this.selectedReferenceListId}`;
+        }
+
+        if (this.monitorSidebar) {
+            this.monitorSidebar.url = `/sidebar/workflowmonitor/ReferenceItemType/${this.selectedReferenceListId}`;
+        }
+
+        if (this.authenticationService.isAdmin && this.fieldNav) {
+            
+            this.fieldNav.icons = ['fa-drivers-license-o'];
+            this.fieldNav.tag = 'fields'
+            this.fieldNav.title = 'Field Definitions'
+            this.fieldNav.url = '/sidebar/fields'
+            this.fieldNav.orderPriority = 1;
+            this.fieldNav.url = `/sidebar/fields/ReferenceItemType/${this.selectedReferenceListId}`;
+
+        }
+
+        if (this.authenticationService.isAdmin && this.ownershipSidebar) {
+            
+            this.ownershipSidebar.icons = ['fa-bars'];
+            this.ownershipSidebar.tag = 'responsibilities'
+            this.ownershipSidebar.title = 'Responsibilities'
+            this.ownershipSidebar.url = '/sidebar/responsibilities'
+            this.ownershipSidebar.orderPriority = 4;
+            this.ownershipSidebar.url = `/sidebar/responsibilities/${this.selectedReferenceItemType.AssetTypeID}`;
+        }
     }
 };

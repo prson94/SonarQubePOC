@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>false</UseIISExpress>
+    <UseIISExpress>true</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -427,9 +427,14 @@
     </Content>
     <Content Include="Content\font-awesome.min.css" />
     <Content Include="Content\images\aboutLogo.png" />
+    <Content Include="Content\images\govern-small-white.png" />
+    <Content Include="Content\images\govern-small-white.svg" />
+    <Content Include="Content\images\govern-small.png" />
+    <Content Include="Content\images\govern-small.svg" />
+    <Content Include="Content\images\govern.png" />
+    <Content Include="Content\images\govern.svg" />
     <Content Include="Content\images\home.background.new.png" />
     <Content Include="Content\images\home.background.png" />
-    <Content Include="Content\images\logo.new.color.png" />
     <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\images\logo.old.png" />
     <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.svg" />
@@ -1481,6 +1486,7 @@
     <TypeScriptCompile Include="Scripts\app\models\tooltip-info.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\workflowmonitor.model.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\array-to-selectitem.pipe.ts" />
+    <TypeScriptCompile Include="Scripts\app\pipes\generic-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\metric-condition-disabled-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\responsibilitytypeallocation-filter.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\permission-filter.pipe.ts" />
@@ -1655,7 +1661,7 @@
     <TypeScriptCompile Include="Scripts\app\models\load.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\Dropdown.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\resource.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\rightsidebar.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\secondaryNav.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\score.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\site-menu.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\social.model.ts" />

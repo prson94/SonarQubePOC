@@ -1,4 +1,3 @@
-﻿
 <div class="asset-browser-window-header">
     <div class="asset-browser-window-header-name">Add Lineage</div>
     <div class="clearfix"></div>
@@ -7,7 +6,7 @@
         <!--<button class="{{editorType == 'RelatedAssets' ? 'selected' : ''}}" (click)="changeEditorType('RelatedAssets')">Related Assets</button>-->
     </div>
 </div>
-<div class="asset-browser-window-content asset-browser-window-content-padded">
+<div class="asset-browser-window-content asset-browser-window-content-padded {{isAddTransformationVisible ? 'popup-opened' : ''}}">
     
     <div class="browser-relationship-editor">
         <div class="errorMessage" *ngIf="topWarningMessage.length > 0">
@@ -122,9 +121,9 @@
         </div>
 
         <div class="help-box">
-            <span class="help-title">
+            <span class="help-title" id="lineageChain" (mouseenter)="lineageChainMouseEnter($event)">
                 <i class="fa fa-info-circle"></i>&nbsp;&nbsp;What is a lineage chain?
-                <span class="help-text">
+                <span class="help-text" [style.top.px]="helpTextTop">
                     <span class="h-title">What is a lineage chain?</span>
                     <span class="desc">Create new lineage relationship and update diagram then set up another hop in the lineage sequence being defined
                     </span>

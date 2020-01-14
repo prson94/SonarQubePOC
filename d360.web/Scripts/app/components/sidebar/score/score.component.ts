@@ -1,6 +1,8 @@
 ﻿import { Component, OnInit, Input, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 
 
 @Component({
@@ -28,7 +30,16 @@ export class ScoreComponent extends BaseComponent implements OnInit, OnDestroy {
     hasCloseButton: boolean = false;
     showBoard: boolean = false;
 
-    constructor(private route: ActivatedRoute, private router: Router) { super(); }
+    constructor(
+        private route: ActivatedRoute,
+        private router: Router,
+        secondaryNavService: SecondaryNavService,
+        breadcrumbService: HeaderBreadcrumbService
+    ) {
+        super();
+        this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
+    }
 
     ngOnInit() {
 
@@ -42,6 +53,7 @@ export class ScoreComponent extends BaseComponent implements OnInit, OnDestroy {
             this.isLoading = false;
             this.showBoard = true;
         });
+        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

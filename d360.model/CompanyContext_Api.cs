@@ -237,6 +237,31 @@ where	ExecutionID = @executionID
             new { executionID }, commandTimeout: timeout);
         }
 
+        private void LogAssetPermissionErrors(Guid executionID, AssetType at, Permission p, bool isInsert, string apiTableName, int timeout = 3600)
+        {
+            if (string.IsNullOrEmpty(apiTableName))
+            {
+                throw new ApplicationException("Endpoint logic is misconfigured, and is missing an API table name.");
+            }
+            if (!CurrentResourceIsAdmin && isInsert && p == Permission.ModifyAsset)
+            {
+                PermissionInfo permission = this.GetTypePermissions(at.Object, at.ObjectID).Where(x => x.ID == Permission.ModifyAsset).SingleOrDefault();
+                if (permission == null || !permission.Selected)
+                {
+                    Connection.Execute($@"
+    
+	                update	T
+	                set		T.Success = 0,
+			                T.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to add this asset.'
+	                from    api.{apiTableName} T
+			                inner join api.Execution E on E.ExecutionID = T.ExecutionID 
+											                where  E.ExecutionID = @executionID 
+											                and T.AssetID is  null
+                            ", new { executionID }, commandTimeout: timeout);
+                }
+            
+            }
+        }
         private void LogAssetPermissionErrors(Guid executionID, AssetType at, Permission p, string apiTableName, int timeout = 3600)
         {
             if (string.IsNullOrEmpty(apiTableName))
@@ -335,7 +360,7 @@ from	{targetTable} T
         private void LogRelationshipErrors(Guid executionID, string obj, int objID, string errorPrefix, int timeout = 3600, bool lookupFieldsPassedByValue = false)
         {
             string targetTable = (obj != "IntersectType") ? "api.ExecutionAsset" : "api.ExecutionRelationship";
-            string assetJoin = lookupFieldsPassedByValue ? "AD.ObjectID = cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
+            string assetJoin = lookupFieldsPassedByValue ? "AD.ObjectID = try_cast(V.[value] as int)" : "AD.DisplayValue = V.[value]";
 
             Connection.Execute($@"
                     update	T
@@ -475,7 +500,6 @@ using       (
                     and A.ItemNumber between @beginItemNumber and @endItemNumber 
                     and (F.Ignore = 0 or F.Ignore is null)
                     and FT.Type != 'Relationship'
-                    and IsNull(F.FieldValue, '') != '' 
             ) as S 
 on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
 {(shouldCheckExistingFieldValues ? " when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId " : " ")}
@@ -490,7 +514,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
         private void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
         {
 
-            string assetJoin = resolveRelationshipOnObjectId ? "S.ObjectID = cast(V.[value] as int)" : "S.DisplayValue = V.[value]";
+            string assetJoin = resolveRelationshipOnObjectId ? "S.ObjectID = try_cast(V.[value] as int)" : "S.DisplayValue = V.[value]";
 
 
             Connection.Execute($@"
@@ -1281,6 +1305,8 @@ from	IntersectType I
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
 
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.Object, at.ObjectID, ChangeType.Delete);
 
@@ -2041,6 +2067,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
 
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (executionItemDupes.Any())
             {
@@ -2643,6 +2672,9 @@ where   ExecutionID = @ExecutionID
             const string METHOD_NAME = "ImportAssets";
             bool isLog = import.Count() > 1;
             var results = new List<DatabaseBulkAssetResult>();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (dupes.Any())
             {
@@ -2994,17 +3026,17 @@ where   ExecutionID = @ExecutionID
                         string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
                         string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
                         string keyComparisonUpdateStatement = $@"
-update  T 
-set     T.Success = 0, 
-        T.Message = {keyErrorMessage}
-from    api.ExecutionAsset T 
-        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and S.AssetID <> T.AssetID and T.AssetID is not null; 
+                            update  T 
+                            set     T.Success = 0, 
+                                    T.Message = {keyErrorMessage}
+                            from    api.ExecutionAsset T 
+                                    inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and S.AssetID <> T.AssetID and T.AssetID is not null; 
 
-update  T 
-set     T.Success = 0, 
-        T.Message = {keyErrorMessage}
-from    api.ExecutionAsset T 
-        inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and T.AssetID is null; ";
+                            update  T 
+                            set     T.Success = 0, 
+                                    T.Message = {keyErrorMessage}
+                            from    api.ExecutionAsset T 
+                                    inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and T.AssetID is null; ";
 
                         if (at.Object == "FusionAttributeType")
                         {
@@ -3112,8 +3144,8 @@ group by    A.ID;";
 select		A.ID,
 			utility.GetHash(cast(@ID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
 from		Asset A 
-			inner join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
-			inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+			left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+			left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
 			inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 			left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
 where		A.AssetTypeID = @ID
@@ -3169,6 +3201,7 @@ from	api.ExecutionAsset T
 
                         // Validate permissions
                         LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, "ExecutionAsset");
+                        LogAssetPermissionErrors(execution.ExecutionID, at, Permission.ModifyAsset, isInsert, "ExecutionAsset");
                         this.AITrackTrace(client, execution, METHOD_NAME, "LogAssetPermissionErrors -  Permission.ModifyAsset- ExecutionAsset", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
 
@@ -3321,7 +3354,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
     {insertGraphAssetNode}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> 1", sw.ElapsedMilliseconds, isLog);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, $"AssetTypeClass.FusionAttribute >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 else
                                                 {
@@ -3408,7 +3441,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
     {insertGraphAssetNode}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow, @object }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> 1", sw.ElapsedMilliseconds, isLog);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, $"AssetTypeClass.Policy - BusinessAsset >> TechnicalAsset >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 else
                                                 {
@@ -3465,7 +3498,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString(), R = CurrentResourceID, D = DateTime.UtcNow },
                                                     transaction: trans,
                                                     commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Rule >> api.ExecutionAsset >> 1", sw.ElapsedMilliseconds, isLog);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, $"AssetTypeClass.Rule >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 else
                                                 {
@@ -3521,7 +3554,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
                                                         {updateAssetInfoOnExecutionRecordsSql}",
                                                     new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow, at.ObjectID, AssetTypeID = at.ID, NonExistentUid = Guid.NewGuid().ToString() }, transaction: trans, commandTimeout: timeout);
-                                                    this.AITrackTrace(client, execution, METHOD_NAME, "AssetTypeClass.Reference >> api.ExecutionAsset >> 1", sw.ElapsedMilliseconds, isLog);
+                                                    this.AITrackTrace(client, execution, METHOD_NAME, $"AssetTypeClass.Reference >> api.ExecutionAsset >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                                 }
                                                 else
                                                 {
@@ -3603,34 +3636,34 @@ create table #ParentChildRelationships([operation] varchar(10),[uid] uniqueident
 select [uid] from #ParentChildRelationships",
                                             new { beginItemNumber, endItemNumber, execution.ExecutionID, R = CurrentResourceID, D = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout)
                                             .ToList();
-                                            this.AITrackTrace(client, execution, METHOD_NAME, "Parent/Child Relationship >> graph.AssetEdge >> 1", sw.ElapsedMilliseconds, isLog);
+                                            this.AITrackTrace(client, execution, METHOD_NAME, $"Parent/Child Relationship >> graph.AssetEdge >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         }
 
                                         #endregion
                                         sw.Restart();
                                         var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, !isInsert);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, "MergeFields >> 1", sw.ElapsedMilliseconds, isLog);
+                                        this.AITrackTrace(client, execution, METHOD_NAME, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         sw.Restart();
                                         ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, "ImportRelationships >> 1", sw.ElapsedMilliseconds, isLog);
+                                        this.AITrackTrace(client, execution, METHOD_NAME, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         if (jsonFieldTypes.Count > 0)
                                         {
                                             sw.Restart();
                                             MergeJsonFieldProperties(execution.ExecutionID, trans, jsonFieldTypes, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, fieldJsonPropertyLoadLimitToTopLevel);
-                                            this.AITrackTrace(client, execution, METHOD_NAME, "MergeJsonFieldProperties >> 1", sw.ElapsedMilliseconds, isLog);
+                                            this.AITrackTrace(client, execution, METHOD_NAME, $"MergeJsonFieldProperties >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         }
 
                                         // Must execute BEFORE the Success flag is updated below.
                                         sw.Restart();
                                         MergeAssetDisplayValues(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, "MergeAssetDisplayValues >> 1", sw.ElapsedMilliseconds, isLog);
+                                        this.AITrackTrace(client, execution, METHOD_NAME, $"MergeAssetDisplayValues >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
 
                                         //Delete all field without value ONLY do this if there are lookup fields AND this is an update.
                                         if (hasLookupFieldTypes && !isInsert)
                                         {
                                             sw.Restart();
                                             DeleteEmptyAssetListFieldByApiExecutionUid(execution.ExecutionID, trans, beginItemNumber, endItemNumber, timeout);
-                                            this.AITrackTrace(client, execution, METHOD_NAME, "DeleteEmptyAssetListFieldByApiExecutionUid >> 1", sw.ElapsedMilliseconds, isLog);
+                                            this.AITrackTrace(client, execution, METHOD_NAME, $"DeleteEmptyAssetListFieldByApiExecutionUid >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         }
 
                                         sw.Restart();
@@ -3732,6 +3765,8 @@ select [uid] from #ParentChildRelationships",
             bool checkCircularRelationships = false;
             if (rt.Predicate.Type == PredicateType.Transformation)
                 checkCircularRelationships = true;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             //check if trigger workflows is set to true and there are actually no workflows
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), rt.ID, null);
@@ -4237,6 +4272,8 @@ end",
             var results = new List<DatabaseBulkRelationshipResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), it.ID, ChangeType.Delete);
@@ -4866,6 +4903,9 @@ where   ER.ExecutionID = @ExecutionID
         {
 
             List<AssetCrossReferenceResult> bulkResult = new List<AssetCrossReferenceResult>();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             #region Build data tables for bulk load
 
             var table = new DataTable();
@@ -5754,6 +5794,10 @@ where   ER.ExecutionID = @ExecutionID
 
             return results;
         }
-
+        public void SetApiExecutionProcessingStartTime(Guid ExecutionId)
+        {
+            Query<int>("update api.Execution set ProcessingStartedOn = @startedOn where ExecutionId = @ExecutionId",
+                new { startedOn = DateTime.UtcNow, ExecutionId }).FirstOrDefault();
+        }
     }
 }

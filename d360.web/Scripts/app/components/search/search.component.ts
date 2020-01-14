@@ -8,7 +8,7 @@ import { TypeaheadSearchService } from '../../services/typeahead-search.service'
 import { SearchStateService } from './search-state.service';
 import { SearchResultsObject, SearchCategories, AdvancedSearchFilter, SearchAggregationFilter } from '../../models/search-result.model';
 import { CurrentCompanySettings } from '../../static/company-settings'
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { CheckTreeNode } from '../shared/small-widgets/check-tree/checktreenode';
 
 declare var CompanySettings;
@@ -60,11 +60,11 @@ export class SearchComponent extends BaseComponent implements OnInit {
     constructor(private route: ActivatedRoute,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected rightSidebarService: RightSidebarService,
+        protected secondaryNavService: SecondaryNavService,
         private searchStateService: SearchStateService,
         private typeaheadSearchService: TypeaheadSearchService) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -73,11 +73,11 @@ export class SearchComponent extends BaseComponent implements OnInit {
         this.headerBreadcrumbService.clearBreadcrumbs();
         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Search Results'));
 
-        this.rightSidebarService.clearItems();
-        this.rightSidebarService.clearButtons();
-        this.rightSidebarService.clearCurrentObject();
-        this.rightSidebarService.setCurrentArea('Search Results', 'fa-search', null);
-        this.rightSidebarService.showHeader(false);
+        this.secondaryNavService.clearItems();
+        this.secondaryNavService.clearButtons();
+        this.secondaryNavService.clearCurrentObject();
+        this.secondaryNavService.setCurrentArea('Search Results', 'fa-search', null);
+        this.secondaryNavService.showHeader(false);
         this.searchStateService.advancedFilters = [];
 
         this.sub = this.route.queryParams.subscribe(params => {
@@ -86,7 +86,8 @@ export class SearchComponent extends BaseComponent implements OnInit {
             if (params['types'] != undefined) {
                 this.searchTypes = params['types'].split(',').filter((x): x is string => x.length > 0);
             }
-            this.searchStateService.loadState(this.isExactMatch ? `'${this.searchText}'` : this.searchText, this.searchTypes);
+            let keepFilter = params['f'] ? (params['f'] == 1 ? true : false) : false;
+            this.searchStateService.loadState(this.isExactMatch ? `'${this.searchText}'` : this.searchText, this.searchTypes, keepFilter);
             if (params['explain'] != undefined) {
                 this.searchStateService.setExplain(params['explain'] == 'please');
             }

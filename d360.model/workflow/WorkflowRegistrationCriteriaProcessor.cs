@@ -10,7 +10,7 @@ namespace d360.model.workflow
 {
     public static class WorkflowRegistrationCriteriaProcessor
     {
-        public static bool Evaluate(CompanyContext context, string @object, int objectId, string criteria, long itemId = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1)
+        public static bool Evaluate(ICompanyContext context, string @object, int objectId, string criteria, long itemId = -1, List<int> changedFields = null, string issueObject = "", int issueObjectId = -1)
         {
             if (string.IsNullOrEmpty(criteria)) return true; // null criteria means all objects are applicable
 
@@ -49,7 +49,7 @@ namespace d360.model.workflow
         /// <param name="context"></param>
         /// <param name="object"></param>
         /// <param name="objectId"></param>
-        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, CompanyContext context, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, bool satisfyAll = true)
+        private static bool EvaluateObject(List<WorkflowCriteriaExpressionModel> expression, ICompanyContext context, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null, bool satisfyAll = true)
         {
 
             //If there are no conditions object is eligible for workflow
@@ -58,10 +58,9 @@ namespace d360.model.workflow
 
             //since field and object events come in separately, we need to skip eval in some cases to prevent duplicate runs
             //1. There is a change condition on the workflow, and no change fields are present: Ignore the initial object event and wait for the field event to come in
-            //2. There is not a change condition on the workflow and change fields are present: Ignore the fields event, the object event was already processed
             bool hasChangeCondition = expression.Any(e => e.Operator == core.enums.Workflow.CriteriaOperator.Changed);
+            
             if (satisfyAll && hasChangeCondition && !changedFields.Any()) return false;
-            if (satisfyAll && !hasChangeCondition && changedFields.Any()) return false;
 
             var fields = context.Fields.Where(x => x.ObjectID == objectId && x.ObjectType == @object);
 
@@ -77,7 +76,9 @@ namespace d360.model.workflow
 
         private static bool EvaluateField(ICompanyContext context, WorkflowCriteriaExpressionModel item, IQueryable<Field> fields, string @object, int objectId, long itemId, string issueObjectType = "", int issueObjectTypeId = -1, List<int> changedFields = null)
         {
-            if (item.FieldTypeId > 0)
+            // If evaluated field is not part of changed fields return false
+            // With this, we avoid triggering workflow again on plain save where field meets condition but is not changed
+            if (changedFields != null && item.FieldTypeId > 0)
             {
                 var value = fields.Where(x => x.FieldTypeID == item.FieldTypeId).FirstOrDefault();
 
@@ -98,6 +99,7 @@ namespace d360.model.workflow
             }            
             else if ((item.ContextualFieldID ?? "").ToLower() == "requestedon")
             {
+
                 var requestedOn = context.GetById<ShoppingCart>(objectId).RequestedOn;
                 if (!item.IsValueMatch(requestedOn.ToString())) return false;
             }

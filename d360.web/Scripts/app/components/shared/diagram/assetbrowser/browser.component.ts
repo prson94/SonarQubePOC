@@ -32,6 +32,8 @@ import { setTimeout } from 'core-js';
 import { AssetTypeClass } from '../../../../models/asset.model';
 import { Observable } from 'rxjs';
 import { PredicatesService } from '../../../../services/predicates.service';
+import { SecondaryNavService } from '../../../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
 
 declare var window: any;
 
@@ -118,9 +120,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         private myElement: ElementRef,
         private browserService: BrowserService,
         protected permissionsService: PermissionsService,
+        secondaryNavService: SecondaryNavService,
+        breadcrumbService: HeaderBreadcrumbService,
         private cdRef: ChangeDetectorRef
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
     }
 
     public ngOnInit() {
@@ -135,6 +141,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             { icon: 'fa fa-refresh', title: 'Refresh' }
         );
         this.initializeDiagram();
+        this.checkSecondaryNavLocalStorage();
     }
 
     public ngAfterViewInit() {
@@ -189,6 +196,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let image_data = this.diagram.makeImageData({
             scale: 1,
             returnType: "blob",
+            background: "#fff", 
             callback: (image_data) => this.savePngButtonClickCallback(image_data, this.assetUid)
         });
     }
@@ -380,8 +388,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return "fa " + icon;
     }
 
-    protected scoreBetween(value: number, start: number, end: number) : boolean {
-        if (value) {
+    protected scoreBetween(value: number, start: number, end: number): boolean {
+        if (value !== null && value !== undefined) {
             return +value >= start && +value <= end;
         }
         return false;
@@ -455,7 +463,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.hideIndividualNode(g.data as AssetBrowserTranslationNode, g);
                 }
                 else {
-                    this.unhideNode(g.data as AssetBrowserTranslationNode);
+                    if (this.filterModel.SelectedAssetTypes.findIndex(v => { return v == (g.data as AssetBrowserTranslationNode).assetTypeId; }) == -1) {
+                        this.unhideNode(g.data as AssetBrowserTranslationNode);
+                    }
                 }
             }
         });
@@ -672,6 +682,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 n.showIcon = this.filterModel.DisplayIcons;
                 let x = dm.findNodeDataForKey(n.key);
                 if (x == null) {
+                    //handle case where appended lineage reveals that a leaf node is
+                    //now a parent of another node deeper in the hierarchy
+                    if (n.group != null) {
+                        let r = dm.findNodeDataForKey(n.group);
+                        if (r != null) {
+                            if (r.isGroup != true) {
+                                dm.removeNodeData(r);
+                                r.isGroup = true;
+                                r.template = "Group"
+                                dm.addNodeData(r);
+                            }
+                        }
+                    }
+
                     dm.addNodeData(n);
                 }
             });
@@ -800,15 +824,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 this.browserService.getAssetLineage(model)
                     .subscribe(response => {
-
                         response.assets.forEach(a => {
-                            if (this.responseModel.assets.find(r => r.assetUid == a.assetUid) == null) {
+                            if (this.responseModel.assets.find(r => r.key == a.key) == null) {
                                 this.responseModel.assets.push(a);
                             }
                         });
 
                         response.intersects.forEach(i => {
-                            if (this.responseModel.intersects.find(r => r.intersectUid == i.intersectUid) == null) {
+                            if (this.responseModel.intersects.find(r => r.subjectKey == i.subjectKey && r.objectKey == i.objectKey) == null) {
                                 this.responseModel.intersects.push(i);
                             }
                         });
@@ -847,6 +870,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.fromRefresh = true;
         this.populateDiagram().subscribe(bComplete => {
             this.fromRefresh = false;
+            this.hideDeselectedAssetTypes();
+            this.hideDeselectedPredicates();
         });
     }
 
@@ -1232,15 +1257,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.hideIndividualNode(node, group);
                 }
                 else { //hide upstream or downstream
-
-                    this.diagram.startTransaction('hide');
-
                     let subgraph = this.findSubGraph(group.key, direction);
 
                     if (subgraph == null || subgraph.nodes.length < 1)
                         return; //nothing to hide
                     if (subgraph.nodes.length == 1 && subgraph.nodes[0].template == "HiddenData")
                         return; //subgraph already hidden
+
+                    this.diagram.startTransaction('hide');
 
                     let hideNode = new AssetBrowserTranslationNode();
 
@@ -1291,6 +1315,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         asset.Uid = g.data.assetUid;
                         asset.Key = g.data.key
                         requestModel.Assets.push(asset);
+
+                        //add immediate parent
+                        let p = this.diagram.model.nodeDataArray.find(n => n.key == g.data.group);
+                        let a = new AssetBrowserImpactApiAssetRequestModel();
+                        if (p != null) {
+                            a.Uid = p.assetUid;
+                            a.Key = p.key
+                            requestModel.Assets.push(a);
+                        }
                     }
                 })
             }
@@ -1318,7 +1351,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.parseData(translationModel, true);
 
                     this.hideDeselectedAssetTypes();
-                    this.hideDeselectedPredicates();
+                    this.hideDeselectedPredicates(); 
                 });
         }
     }

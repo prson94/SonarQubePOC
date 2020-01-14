@@ -1,4 +1,4 @@
-﻿import * as _ from 'lodash';
+import * as _ from 'lodash';
 import { Number, setTimeout } from 'core-js';
 import {
     ChangeDetectionStrategy,
@@ -28,6 +28,7 @@ import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
+import { JsonCoreResult } from '../../../models/jsonresult.model';
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -72,6 +73,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() isModalVisible: boolean = false;
     private savingInProgress: boolean = false;
     private consolidateToTag: any;
+    private isInError: boolean = false;
+    private isInErrorMessage: string = "";
 
     form: FormGroup;
 
@@ -138,6 +141,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
 
     private load() {
+        this.isInErrorMessage = '';
+        this.isInError = false;
         if (this.selection != undefined) {
             this.editedItem = _.cloneDeep(this.selection);
             this.action = this.copy ? "Copy" : this.action;
@@ -161,7 +166,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         this.isLoading = true;
         if (this.useTypeUidForDefinition) {
-            this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid).subscribe(result => { this.handleEditor(result); });
+            this.editorDefinitionService.getEditorDefinitionUid(this.objectTypeUid)
+                .subscribe(result => {
+                    this.handleEditor(result);
+                });
         } else {
             this.editorDefinitionService.getEditorDefinition(
                 id,
@@ -173,78 +181,90 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 this.createParams,
                 this.editParams,
                 this.action
-            ).subscribe(result => {this.handleEditor(result);});
+            ).subscribe(result => {
+                this.handleEditor(result);
+            });
         }
     }
 
     handleEditor(result: EditorField[]) {
-        let previousCategory = null;
-        let currentCategory = null;
-        let rows = [];
-        let firstRow = true;
 
-        this.isLoading = false;
-        this.categories = [];
-
-        result = _.orderBy(result, [field => field.Category ? field.Category.toLowerCase() : ''], ['asc']);
-        this.fields = result;
-
-        this.fields.forEach(f => {
-            if (this.copy == true && f.FieldName == "Name") {
-                f.Value = "";
-            }
-
-            currentCategory = f.Category;
-
-            if (firstRow) {
-                previousCategory = f.Category;
-                firstRow = false;
-            }
-
-            if (previousCategory != currentCategory) {
-                let category = new EditorCategory();
-                category.name = previousCategory;
-                category.rows = rows;
-                this.categories.push(category);
-                previousCategory = currentCategory;
-                rows = [];
-            }
-
-            if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
-                if (f.Value) {
-                    /* checkbox doesnt work binding to a string */
-                    f.Value = (f.Value.toUpperCase() == "TRUE" ? true : false);
-                }
-                else {
-                    f.Value = false;
-                }
-            }
-
-            let r = rows.find(r => r.Row == (f.Row || 0));
-            if (r) {
-                r.Fields.push(f);
-            } else {
-                let n = new EditorRow();
-
-                n.Row = f.Row;
-                n.Fields.push(f);
-                rows.push(n);
-            }
-        });
-
-        let category = new EditorCategory();
-        category.name = currentCategory;
-        category.rows = rows;
-        this.categories.push(category);
-
-        this.fore = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
-        this.back = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');
-
-        if (this.fore != null && this.back != null) {
-            this.hasIconFields = true;
+        if ((result as any).type && (result as any).type == "error") {
+            this.isInErrorMessage = (result as any).message;
+            this.isInError = true;
+            this.isLoading = false;
         }
+        else {
+            this.isInErrorMessage = '';
+            this.isInError = false;
+            let previousCategory = null;
+            let currentCategory = null;
+            let rows = [];
+            let firstRow = true;
 
-        this.form = this.toFormGroup(this.fields);
+            this.isLoading = false;
+            this.categories = [];
+
+            result = _.orderBy(result, [field => field.Category ? field.Category.toLowerCase() : ''], ['asc']);
+            this.fields = result;
+
+            this.fields.forEach(f => {
+                if (this.copy == true && f.FieldName == "Name") {
+                    f.Value = "";
+                }
+
+                currentCategory = f.Category;
+
+                if (firstRow) {
+                    previousCategory = f.Category;
+                    firstRow = false;
+                }
+
+                if (previousCategory != currentCategory) {
+                    let category = new EditorCategory();
+                    category.name = previousCategory;
+                    category.rows = rows;
+                    this.categories.push(category);
+                    previousCategory = currentCategory;
+                    rows = [];
+                }
+
+                if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
+                    if (f.Value) {
+                        /* checkbox doesnt work binding to a string */
+                        f.Value = (f.Value.toUpperCase() == "TRUE" ? true : false);
+                    }
+                    else {
+                        f.Value = false;
+                    }
+                }
+
+                let r = rows.find(r => r.Row == (f.Row || 0));
+                if (r) {
+                    r.Fields.push(f);
+                } else {
+                    let n = new EditorRow();
+
+                    n.Row = f.Row;
+                    n.Fields.push(f);
+                    rows.push(n);
+                }
+            });
+
+            let category = new EditorCategory();
+            category.name = currentCategory;
+            category.rows = rows;
+            this.categories.push(category);
+
+            this.fore = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
+            this.back = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');
+
+            if (this.fore != null && this.back != null) {
+                this.hasIconFields = true;
+            }
+
+            this.form = this.toFormGroup(this.fields);
+        }
         this.ref.markForCheck();
         setTimeout(() => {
             this.focusToFirst();
@@ -271,7 +291,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                 group[field.FieldName + '_Name'] = new FormControl(name || '');
                 group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
-            } else if (field.FieldType == "Date" || field.FieldType == "DateTime") {
+            } else if (field.FieldType == "DateTime") {
                 if (field.Value != null) {
                     let date = new Date(field.Value);
                     date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
@@ -528,9 +548,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         this.assetService.saveAsset(this.objectTypeUid, asset)
             .subscribe(res => {
+                event.Success = res.Success;
+
                 if (res.Success) {
                     let msg = asset.Uid ? 'Successfully updated' : 'Successfully added';
-                    this.showMessageForApiResult(this.messagesService, res, msg);
+                    this.showMessageForApiResult(this.messagesService, res, msg); 
                     if (res.uid) {
                         event.assetUid = res.uid;
                         event.assetTypeUid = this.objectTypeUid;
@@ -538,7 +560,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     this.saveClick.emit(event);
                 }
                 else {
-                    this.showMessageForApiResult(this.messagesService, res);
+                    this.showMessageForApiResult(this.messagesService, res); 
+                    this.isLoading = false;
+                    this.saveClick.emit(event);
                 }
 
             });

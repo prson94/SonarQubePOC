@@ -13,7 +13,7 @@ import {Permission} from '../../models/responsibility-type.model';
 
 import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
 import {PoliciesService} from '../../services/policies.service';
-import {RightSidebarService} from '../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../services/right-sidebar.service';
 import {HeaderActionsService} from '../../services/header-actions.service';
 import {PermissionsService} from '../../services/permissions.service';
 
@@ -21,7 +21,7 @@ import {BaseComponent} from '../shared/base.component';
 
 import {StringConstants} from '../../static/string-constants';
 import {SiteUrlHelpers} from '../../static/site-url-helpers';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 
 declare var CompanySettings;
 
@@ -68,11 +68,11 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         private policiesService: PoliciesService,
         private route: ActivatedRoute,
         private router: Router,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private permissionsService: PermissionsService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -157,7 +157,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                         this.buildTreeNodeArray(this.policies, this.selected.ParentID),
                         this.findSelectedTreeNode(this.selected.ID)));
                 this.headerBreadcrumbService.getAssetFolderIcon('PolicyType', this.policyTypeId,areaBreadcrumb.text).subscribe(icon => {
-                    this.setCommonRightSideBar(
+                    this.setCommonSecondaryNavTabs(
                         true,
                         this.hasPermission(Permission.ReadResponsibilities),
                         false,
@@ -166,12 +166,12 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
                         this.hasPermission(Permission.ReadRelationships),
                         true
                     );
-                    this.rightSidebarService.showHeader(true);
-                    this.rightSidebarService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
-                    this.rightSidebarService.setCurrentObject('PolicyType', this.policyType.ID, 'Policy', this.selected.ID, false, this.selected.HasWorkflow, this.selected.Uid);
-                    this.rightSidebarService.showItem(new RightSidebarItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Policy/${this.selected.Uid}`, null, 6));
-                    this.rightSidebarService.showItem(new RightSidebarItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Policy/${this.selected.ID}`, null, 31));
-                    this.rightSidebarService.showItem(new RightSidebarItem('Actions', 'Actions', null, `/sidebar/actions/Policy/${this.selected.ID}`, null, 26));
+                    this.secondaryNavService.showHeader(true);
+                    this.secondaryNavService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
+                    this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('PolicyType', this.policyType.ID, 'Policy', this.selected.ID, false, this.selected.HasWorkflow, this.selected.Uid));
+                    this.secondaryNavService.showItem(new SecondaryNavItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Policy/${this.selected.Uid}`, null, 6));
+                    this.secondaryNavService.showItem(new SecondaryNavItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Policy/${this.selected.ID}`, null, 31));
+                    this.secondaryNavService.showItem(new SecondaryNavItem('Actions', 'Actions', null, `/sidebar/actions/Policy/${this.selected.ID}`, null, 26));
                 });
             }
         });
@@ -283,7 +283,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
         this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicy, this.selected.ID).then(
             p => {
                 this.clearSidebar();
-                this.setCommonRightSideBar(
+                this.setCommonSecondaryNavTabs(
                     true,
                     this.hasPermission(Permission.ReadResponsibilities),
                     false,

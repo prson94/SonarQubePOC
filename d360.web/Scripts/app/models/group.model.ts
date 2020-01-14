@@ -4,12 +4,12 @@ import {Observable} from "rxjs";
 
 export interface IGroupService {
     getGroupList(): Observable<GroupSearchResultModel[]>;
-    getGroupResourceList(id: number): Observable<GroupResourceInfo[]>;
-    getGroup(id: number): Observable<GroupEditorModel>;
+    getGroupResourceList(id: string): Observable<any>;
+    getGroup(id: number,uid:string): Observable<GroupEditorModel>;
     putGroup(group: Group): Observable<JsonResult>;
     postGroup(group: Group): Observable<JsonResult>;
     deleteGroup(id: number): Observable<JsonResult>;
-    postResourceGroup(resourceGroup: ResourceGroup[]): Observable<JsonResult>;
+    postResourceGroup(resourceGroupInfo: ResourceGroupInfo): Observable<JsonResult>;
     deleteResourceGroup(groupID: number, resourceID: number): Observable<JsonResult>;
     getGroupUserList(id: number, pagenum: number, pagesize: number, sortDataField: string, sortOrder: string): Observable<JsonResult>;
 }
@@ -20,6 +20,18 @@ export class GroupSearchResultModel {
     Name: string;
     NumberOfMembers: number;
     IsMember: boolean;
+}
+
+export class GroupApiModel {
+    Uid: string;
+    Name: string;
+    PrimaryOwnerUid: string;
+    SecondaryOwnerUid: string;
+}
+
+export class GroupApiModels {
+    Items: GroupApiModel[];
+    Total: Number;
 }
 
 export class GroupResourceInfo {
@@ -49,6 +61,10 @@ export class ResourceGroup {
     IsOwner: boolean;
 }
 
+export class ResourceGroupInfo {
+    ResourceGroups: ResourceGroup[];
+    GroupGuid: string;
+}
 export class GroupEditorModel {
     group: Group;
     resourceList: SelectItem[];

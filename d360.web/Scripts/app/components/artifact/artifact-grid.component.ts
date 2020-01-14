@@ -118,13 +118,15 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 search => observableOf(search).pipe(delay(500))
             )
         )
-            .subscribe(
+            .subscribe( 
                 data => {
                     this.doSimpleSearch(me.dt, me.isLoading);
                 }
             );
     }
-
+    canExportRecords() {
+        return this.totalRecords <= this.maxExportRows;
+    }
     get showGridSimpleFilter(): boolean {
         return this.stateService.artifactTypeFilters.showSimpleFilter;
     }

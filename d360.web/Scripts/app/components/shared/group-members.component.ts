@@ -1,5 +1,5 @@
 ﻿import {Input, Output, Component, OnChanges, SimpleChange} from '@angular/core';
-import {GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup} from '../../models/group.model';
+import {GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup, ResourceGroupInfo} from '../../models/group.model';
 import {GroupService} from '../../services/group.service';
 import {FormMode, FormHelper, SelectItem} from '../../models/form.model';
 import {BaseComponent} from '../shared/base.component';
@@ -18,6 +18,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     @Input() groupId: number;
     @Input() groupName: string;
     @Input() title: string = 'Members';
+    @Input() groupUid: string;
     field: EditorField;
     private groupItems = new Array<GroupResourceInfo>();
     private selectedRow = new GroupResourceInfo();
@@ -33,7 +34,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            if (p == 'groupId') {
+            if (p == 'groupId' || p =='groupUid') {
                 this.formMode = FormMode.Default;
                 this.load();
             }
@@ -42,17 +43,18 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     }
 
     load(): void {
-        if (!this.groupId) {
+        if (!this.groupId && this.groupId==0 && !this.groupUid) {
             return;
         }
+
         this.field = new EditorField();
-        this.field.TypeaheadUri = `form/GetGroupUserList?id=${this.groupId}`;
+        this.field.TypeaheadUri = `form/GetGroupUserList?id=${this.groupId}&uid=${this.groupUid}`;
         this.field.FieldName = "resources";
         this.field.MultiSelect = true;
         this.isLoading = true;
-        this.groupService.getGroupResourceList(this.groupId).subscribe(
+        this.groupService.getGroupResourceList(this.groupUid).subscribe(
             d => {
-                this.groupItems = d;
+                this.groupItems = d.items;
                 if (this.groupItems.length > 0) {
                     this.selectedRow = this.groupItems[0];
                 }
@@ -86,7 +88,11 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
             this.isLoading = false;
         }
 
-        this.groupService.postResourceGroup(resources).subscribe(
+        let resourceGroupInfo = new ResourceGroupInfo();
+        resourceGroupInfo.GroupGuid = this.groupUid;
+        resourceGroupInfo.ResourceGroups = resources;
+
+        this.groupService.postResourceGroup(resourceGroupInfo).subscribe(
             r => {
                 this.load();
                 this.formMode = FormMode.Default;
@@ -100,7 +106,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     add(): void {
         this.isLoading = true;
         this.field = new EditorField();
-        this.field.TypeaheadUri = `form/GetGroupUserList?id=${this.groupId}`;
+        this.field.TypeaheadUri = `form/GetGroupUserList?id=${this.groupId}&uid=${this.groupUid}`;
         this.field.FieldName = "resources";
         this.field.MultiSelect = true;
         this.formMode = FormMode.Adding;

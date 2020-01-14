@@ -2,6 +2,7 @@
 var webpack = require('webpack');
 var path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 // Webpack Config
 var webpackConfig = {
@@ -16,7 +17,25 @@ var webpackConfig = {
     },
     output: {
         path: __dirname + '/scripts/dist/',
-        publicPath: './scripts/dist/'
+        publicPath: './scripts/dist/',        
+        filename: '[name].bundle.js',
+        chunkFilename: '[id].chunk.js'
+    },
+
+    optimization: {
+        runtimeChunk: false,
+        splitChunks: {
+            cacheGroups: {
+                default: false,               
+                vendor: {
+                    test: /node_modules/,
+                    chunks: 'initial',
+                    name: 'vendor',
+                    enforce: true,
+                    filename: '[name].bundle.js'
+                },
+            }
+        }
     },
 
     plugins: [
@@ -24,8 +43,8 @@ var webpackConfig = {
         new webpack.ContextReplacementPlugin(
             // The (\\|\/) piece accounts for path separators in *nix and Windows
             /@angular(\\|\/)core(\\|\/)fesm5/,
-            path.resolve(__dirname, '../src')
-        ),
+            path.resolve(__dirname, '../scripts/app')
+        ),        
         new webpack.DefinePlugin({
             __BUILD_DATE: JSON.stringify(new Date().toLocaleString()),
         }),
@@ -45,8 +64,13 @@ var webpackConfig = {
             // .ts files for TypeScript
             { test: /\.ts$/, loaders: ['awesome-typescript-loader?configFileName=scripts/app/tsconfig.json', 'angular2-template-loader', 'angular2-router-loader'], exclude: [/\.(spec|e2e)\.ts$/] },
             { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
-            { test: /\.html$/, loader: 'raw-loader' }
-        ]
+            { test: /\.html$/, loader: 'raw-loader' },
+            {
+                // Hide import warnings
+                test: /[\/\\]@angular[\/\\]core[\/\\].+\.js$/,
+                parser: { system: true }
+            }
+        ],
     }
 
 };

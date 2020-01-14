@@ -15,6 +15,7 @@ namespace d360.model.DataAccessLayer
         TagApiModel CreateTag(TagApiUpsertModel model);
         TagApiModel UpdateTag(Guid uid, TagApiUpsertModel model, Tag tag);
         bool DoesTagExists(string value);
+        bool DoesTagExists(Guid tagUid);
         bool DoesTagExists(Guid tagUid, TagApiUpsertModel model);
         Tag GetTagByUid(Guid uid);
         Tag GetTagByName(string name);

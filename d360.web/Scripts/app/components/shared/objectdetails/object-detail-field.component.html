@@ -30,7 +30,7 @@
                 </ng-container>
                 <ng-container *ngSwitchCase="'datetime'">
                     <div class="FieldDisplayContent">
-                        <div>{{(field.Value | date:'medium')}}</div>
+                        <div>{{(field.Value | utcDate |  date:'medium')}}</div>
                     </div>
                 </ng-container>
                 <ng-container *ngSwitchCase="'bool'">

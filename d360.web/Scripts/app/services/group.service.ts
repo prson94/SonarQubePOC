@@ -9,7 +9,9 @@ import {
     GroupResourceInfo,
     Group,
     GroupEditorModel,
-    ResourceGroup
+    ResourceGroup,
+    GroupApiModels,
+    ResourceGroupInfo
 } from '../models/group.model';
 import {JsonResult} from '../models/jsonresult.model';
 import {CountObject} from '../models/resource.model';
@@ -33,16 +35,30 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
-    getGroupResourceList(id: number): Observable<GroupResourceInfo[]> {
-        return this.http.get(`api/groups/${id}/resources`).pipe(
+    getGroups(): Observable<any> {
+        return this.http.get('api/v2/membership/groups')
+            .pipe(
+            map(x => <any>x),
+                catchError(err=>this.handleError(err))
+            );
+    }
+    getGroupResourceList(uid: string): Observable<any> {
+        return this.http.get(`api/v2/membership/groups/${uid}/members?_pageSize=100000`).pipe(
             map(response => <GroupResourceInfo[]>response),
             catchError(err => this.handleError(err))
         );
     }
 
-    getGroup(id: number): Observable<GroupEditorModel> {
-        return this.http.get(`form/Group?id=${id}`).pipe(
-            map(response => <GroupEditorModel>response),
+    getGroupUid(id: number): Observable<any> {
+        return this.http.get(`api/v2/membership/groups/${id}`).pipe(
+            map(response => <GroupResourceInfo[]>response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    getGroup(id: number,uid:string): Observable<any> {
+        return this.http.get(`form/Group?id=${id}&uid=${uid}`).pipe(
+            map(response => <any>response),
             catchError(err => this.handleError(err))
         );
     }
@@ -68,8 +84,8 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
-    postResourceGroup(resourceGroups: ResourceGroup[]): Observable<JsonResult> {
-        return this.http.post('form/ResourceGroup', resourceGroups).pipe(
+    postResourceGroup(resourceGroupInfo: ResourceGroupInfo): Observable<JsonResult> {
+        return this.http.post('form/ResourceGroup', resourceGroupInfo).pipe(
             map(response => <JsonResult>response),
             catchError(err => this.handleError(err))
         );

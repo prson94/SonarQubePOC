@@ -79,7 +79,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The Asset ID is the unique identifier for this asset across all Data3Sixty assets..
+        ///   Looks up a localized string similar to The Asset ID is the unique identifier for this asset across all Data360 assets..
         /// </summary>
         public static string AssetId_Description {
             get {
@@ -97,7 +97,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The date that this item was created in Data3Sixty..
+        ///   Looks up a localized string similar to The date that this item was created in Data360..
         /// </summary>
         public static string CreatedOn_Description {
             get {
@@ -241,7 +241,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to To enable the promotion rule, check the enabled check box.  This will enable the promotion rule within Data3Sixty..
+        ///   Looks up a localized string similar to To enable the promotion rule, check the enabled check box.  This will enable the promotion rule within Data360..
         /// </summary>
         public static string FusionPromotionEnable_ToolTip {
             get {
@@ -592,7 +592,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The name of this rule within Data3Sixty..
+        ///   Looks up a localized string similar to The name of this rule within Data360..
         /// </summary>
         public static string RuleName_Description {
             get {
@@ -727,7 +727,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The UID is the unique identifier for this item across all of Data3Sixty..
+        ///   Looks up a localized string similar to The UID is the unique identifier for this item across all of Data360..
         /// </summary>
         public static string UID_Description {
             get {
@@ -745,7 +745,7 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The date that this item was last modified in Data3Sixty..
+        ///   Looks up a localized string similar to The date that this item was last modified in Data360..
         /// </summary>
         public static string UpdatedOn_Description {
             get {

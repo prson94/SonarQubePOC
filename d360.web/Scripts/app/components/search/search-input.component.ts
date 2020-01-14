@@ -1,15 +1,10 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChange } from '@angular/core';
+import { Component, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { SelectItem } from 'primeng/api';
 import { SearchService } from '../../services/search.service';
 import { TypeaheadSearchService } from '../../services/typeahead-search.service';
 import { SearchResult, AdvancedSearchFilter } from '../../models/search-result.model';
-import { DropdownOption } from '../../models/dropdown.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SubscriptionLike as ISubscription } from 'rxjs';
-import { SettingsHelper } from '../../models/settings.model';
-import { StringConstants } from '../../static/string-constants';
 
 declare var CompanySettings;
 @Component({
@@ -18,20 +13,20 @@ declare var CompanySettings;
                     <div class="field grow mr10">
                         <d3s-header-typeahead-search 
                                   [additionalCssClasses]="'gov-search'" 
-                                  [autocompletePlaceholder]="'Please enter search terms?'"
+                                  [autocompletePlaceholder]="'What are you looking for?'"
                                   [searchOptions]="searchTypes"
                                   [defaultValue]="searchText"
-                                  [isExactMatch]="isExactMatch">
+                                  [isExactMatch]="isExactMatch"
+                                  [keepFilter]="true">
                         </d3s-header-typeahead-search>
                     </div>
-                    <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match Whole Words</span></label>
-                    <p-multiSelect [options]="searchObjectTypes" [ngModel]="searchTypes" (ngModelChange)="searchTypes=$event;searchTypesChange.emit(searchTypes);"></p-multiSelect>
+                    <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match exact phrase</span></label>
                 </div>
               `,
     providers: [SearchService, TypeaheadSearchService],
 })
 
-export class SearchInputComponent extends BaseComponent implements OnDestroy, OnInit {
+export class SearchInputComponent extends BaseComponent implements OnDestroy {
     @Input() isExactMatch: boolean = true;
     @Output() isExactMatchChange = new EventEmitter();
 
@@ -50,13 +45,6 @@ export class SearchInputComponent extends BaseComponent implements OnDestroy, On
     private searchSub: ISubscription;
     private autocompleteLoading: boolean = false;
 
-    private searchObjectTypes: SelectItem[] = SettingsHelper.getSearchTypesList().map((set) => {
-        return {
-            label: set.title,
-            value: set.value
-        }
-    });
-        
     private simpleSearchID: number = 0;
     private autocompleteResultSize: number = 20;
 
@@ -65,17 +53,6 @@ export class SearchInputComponent extends BaseComponent implements OnDestroy, On
 
     constructor(private router: Router, private searchService: SearchService, private typeaheadSearchService: TypeaheadSearchService) {
         super();
-    }
-
-    ngOnInit() {
-        if (CompanySettings) {
-            if (CompanySettings.FusionEnabled == 'false') {
-                this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'FusionAttributes' && x.value != 'FusionType');
-            }
-            if (CompanySettings.FusionEnabled == 'true') {
-                this.searchObjectTypes = this.searchObjectTypes.filter(x => x.value != 'TechnicalAsset');
-            }
-        }
     }
 
     ngOnDestroy(): void {

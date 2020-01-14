@@ -1,9 +1,9 @@
 ﻿import { Input, Component, OnInit, OnDestroy, Output } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
-//import { RightSidebarItem } from '../../../models/rightsidebar.model';
+//import { RightSidebarItem } from '../../../models/secondaryNav.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model'; 
 import { MetricsService } from '../../../services/metrics.service'; 
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -35,17 +35,17 @@ export class AdminAnalyticsComponent extends AdminBaseComponent implements OnIni
     private selectedMetric = null;
 
     constructor(
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         protected messagesService: MessagesObservableService,
         private metricsService: MetricsService, 
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Scoring";
         this.tabTitle = 'Scoring';
         this.setCommonItems();
-        this.setCommonRightSideBar(false);
-        //this.rightSidebarService.showItem(new RightSidebarItem('Measures', 'measures',['fa-balance-scale'], '/admin/analytics/measures' ))
+        this.setCommonSecondaryNavTabs(false);
+        //this.secondaryNavService.showItem(new RightSidebarItem('Measures', 'measures',['fa-balance-scale'], '/admin/analytics/measures' ))
 
     }
 

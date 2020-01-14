@@ -17,8 +17,8 @@ namespace d360.model.workflow
         private static string EMAIL_MESSAGE_BODY = "MessageBodyTemplate";
         private static string EMAIL_MESSAGE_SUBJECT = "MessageSubjectTemplate";
         private static string EMAIL_INCLUDE_RESPONSES = "IncludePreviousFormResponses";
-        private static string MISSING_SUBJECT_VALUE = "Data3Sixty - Workflow Email notification (missing subject)";
-        private static string MISSING_BODY_VALUE = "Data3Sixty - Workflow Email (missing body).  You are receiving this email due to a Data3Sixty workflow with an email task.  The task has been improperly configured so it doesnt have any email content";
+        private static string MISSING_SUBJECT_VALUE = "Data360 - Workflow Email notification (missing subject)";
+        private static string MISSING_BODY_VALUE = "Data360 - Workflow Email (missing body).  You are receiving this email due to a Data360 workflow with an email task.  The task has been improperly configured so it doesnt have any email content";
         private static string FIELD_UPDATE_SETTINGS = "FieldUpdate";
         private static string RELATIONSHIP_UPDATE_SETTINGS = "RelationshipUpdate";
         private static string FIELD_SETTINGS = "Field";

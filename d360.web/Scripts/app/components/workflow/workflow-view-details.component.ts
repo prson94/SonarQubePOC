@@ -3,7 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { WorkflowService } from '../../services/workflow.service';
 import { StepType, WorkflowActivityType } from '../../models/workflow.model';
@@ -106,19 +106,21 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
+        headerBreadcrumbService: HeaderBreadcrumbService,
         protected titleService: Title,
-        protected headerBreadcrumbService: HeaderBreadcrumbService,
         private headerActionsService: HeaderActionsService,
         protected workflowService: WorkflowService
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = headerBreadcrumbService;
     }
 
     ngOnInit() {
         this.showHideFollow(false);
-        this.headerBreadcrumbService.clearCurrentObjectInfo();
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb('Workflow Item Status'));
+        this.breadcrumbsService.clearCurrentObjectInfo();
+        this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Workflow Item Status'));
 
         this.setBrowserTitle(this.titleService, 'Workflow Item Status');
 
@@ -151,6 +153,8 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
                 if (res && res.Workflow && res.Workflow.ID)
                     this.workflowTypeId = res.Workflow.ID;
                 this.isLoading = false;
+
+                this.checkSecondaryNavLocalStorage();
             });
     }
 

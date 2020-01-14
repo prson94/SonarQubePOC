@@ -20,15 +20,15 @@ declare var CompanySettings;
                         <span *ngIf="result?.Icon" class="d3s-icon large-icon title-icon"><i class="fa {{result?.Icon}}"></i></span>
                         <span *ngIf="result?.ImageUrl" class="d3s-icon large-icon title-icon"><img [src]="result.ImageUrl" /></span> 
                         <span (click)="navigateLink()" class="name"><span class="inner" [innerHtml]="result?.Name"></span></span>
-                        <span #badge *ngIf="scoreAndStatus && scoreAndStatus.Score;else noScore" class="d3s-icon large-icon"
+                        <span #badge *ngIf="searchDetails && searchDetails.Score;else noScore" class="d3s-icon large-icon"
                               title="{{lastCalculatedMessage()}}"
                               [ngClass]="{
                                                     'fail':scoreBetween(0,49),
                                                     'ok':scoreBetween(50,89),
                                                     'good':scoreBetween(90,1000)
                                                 }">
-			                <d3s-dynamic-percentage [percentage]="scoreAndStatus?.Score"></d3s-dynamic-percentage>
-			                <span class="text">{{scoreAndStatus?.Score}}%</span>
+			                <d3s-dynamic-percentage [percentage]="searchDetails?.Score"></d3s-dynamic-percentage>
+			                <span class="text">{{searchDetails?.Score}}%</span>
 		                </span>
 		                <span *ngIf="showStatus" class="d3s-icon large-icon" [style.background-color]="getCertificationStatusColor(status)">
 			                <i class="fa fa-certificate"></i>
@@ -43,6 +43,9 @@ declare var CompanySettings;
                     </span>
                     <span class="category">
                         {{result?.Group}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
+                    </span>
+                    <span class="asset-path" *ngIf="searchDetails && searchDetails?.Path">
+                        {{formattedPath}}
                     </span>
                     <span class="description" *ngIf="result?.Description" [innerHtml]="result.Description"></span>
                     <div *ngIf="result?.Tags" class="tags tagsnomanagewidth">
@@ -59,11 +62,14 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     @Input() result: SearchFullResult;
     private lastCalculatedDate: number;
     private showStatus: boolean = false;
+    private showPath: boolean = false;
     private status: string;
+    private path: string;
     showShoppingCart = false;
     private obj: string;
     private objID: number;
-    private scoreAndStatus: any;
+    private searchDetails: any;
+    private formattedPath: string;
 
     parseTagResult(tags: any[]) {
         return tags.map(tag => { return { uid: tag.Uid, Value: tag.Value }; });
@@ -101,20 +107,39 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
 
     private loadDetails() {
         if (this.result.Uid) {
-            this.objectStatisticsService.getScoreAndStatus(this.result.Uid).subscribe(
+            this.objectStatisticsService.getSearchDetails(this.result.Uid).subscribe(
                 result => {
-                    this.scoreAndStatus = result;
-                    if (this.scoreAndStatus && this.scoreAndStatus.Status) {
-                        this.status = this.scoreAndStatus.Status; 
+                    this.searchDetails = result;
+                    if (this.searchDetails && this.searchDetails.Status) {
+                        this.status = this.searchDetails.Status; 
                         this.showStatus = true;
                     } else {
                         this.showStatus = false;
+                    }
+                    if (this.searchDetails && this.searchDetails.Path) {
+                        this.formattedPath = this.formatPath(this.searchDetails.Path);
+                        this.showPath = true;
+                    } else {
+                        this.showPath = false;
                     }
                     this.ref.markForCheck();
                 }
             );  
         }
 
+    }
+
+    private formatPath(Path: string): string {
+        let res = Path;
+        if (Path[0] == "[") {
+            res = res.substr(1, Path.length - 1);
+        }
+        if (Path[Path.length - 1] == "]") {
+            res = res.substr(0, Path.length - 2);
+        }
+        res = res.replace(/(\]\.\[)+/g, " / ");
+
+        return res;
     }
 
     private navigateLink() {
@@ -129,8 +154,8 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     scoreBetween(start, end) {
-        if (this.scoreAndStatus && this.scoreAndStatus.Score) {
-            return this.scoreAndStatus.Score >= start && this.scoreAndStatus.Score <= end;
+        if (this.searchDetails && this.searchDetails.Score) {
+            return this.searchDetails.Score >= start && this.searchDetails.Score <= end;
         }
     }
 
@@ -139,10 +164,10 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     }
 
     private lastCalculatedMessage() {
-        if (!this.scoreAndStatus.EffectiveDate) {
+        if (!this.searchDetails.EffectiveDate) {
             return "Governance Score not yet calculated";
         }
-        var diff = new Date(Date.now() - Date.parse(this.scoreAndStatus.EffectiveDate));
+        var diff = new Date(Date.now() - Date.parse(this.searchDetails.EffectiveDate));
 
         var years = diff.getUTCFullYear() - 1970;
 

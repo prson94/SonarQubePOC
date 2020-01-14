@@ -2,7 +2,7 @@
 import { NgForm } from '@angular/forms';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { ReportsService } from '../../../services/reports.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Report, ReportType } from '../../../models/report.model';
 import { Title } from '@angular/platform-browser';
@@ -22,7 +22,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showEditor && !showDelete && !showCredentials">
                                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                                <p-table #dt [value]="reports" selectionMode="single" [globalFilterFields]="['Name','DisplayType']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
+                                <p-table #dt [value]="reports" selectionMode="single" [globalFilterFields]="['Name','DisplayType']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected" (onRowSelect)="selectedItemChange()">
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th [pSortableColumn]="'Name'">
@@ -126,19 +126,20 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     powerBiUser: string;
     powerBiPassword: string;
 
-    constructor(private stateService: StateService, rightSidebarService: RightSidebarService, protected reportsService: ReportsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);        
+    constructor(private stateService: StateService, secondaryNavService: SecondaryNavService, protected reportsService: ReportsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, secondaryNavService);        
         this.areaName = "Dashboards";
         this.tabTitle = 'Dashboards'
         this.setCommonItems();
-        this.setCommonRightSideBar();
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/Report/${this.selected.ID}`
-            });
-        }
+        this.setCommonSecondaryNavTabs();
+        this.selectedItemChange();
         this.theDeleteCallback = this.deleteReport.bind(this);
+    }
+    
+    selectedItemChange() {
+        if (this.auditSidebar && this.selected) {
+            this.auditSidebar.url = `/sidebar/audit/Report/${this.selected.ID}`;
+        }
     }
 
     ngOnInit() {
@@ -154,11 +155,12 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
         this.reportsService.getReports().subscribe(result => {
             this.isLoading = false;
             for (var report of result) {
-                if (report.ReportType == 'sagacity') report.DisplayType = 'Data3Sixty Foundation';
+                if (report.ReportType == 'sagacity') report.DisplayType = 'Data360 DQ+';
                 else report.DisplayType = report.ReportType;
             }
             this.reports = result;            
             this.selected = (this.reports.length > 0 ? this.reports[0] : null);
+            this.selectedItemChange();
         });
     }
 
@@ -178,6 +180,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                 if (result.type != 'error') {
                     this.selected = this.reports.length > 0 ? this.reports[0] : null;
                     this.reports.splice(this.findReportIndex(id), 1);
+                    this.selectedItemChange();
                 }
 
                 this.stateService.reloadLeftNavMenu();
@@ -202,7 +205,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                     this.reports[this.findReportIndex(event.report.ID)] = event.report;
                 }
 
-                if (event.report.ReportType == 'sagacity') event.report.DisplayType = 'Data3Sixty Foundation';
+                if (event.report.ReportType == 'sagacity') event.report.DisplayType = 'Data360 DQ+';
                 else event.report.DisplayType = event.report.ReportType;
                 
                 if (result.type == "error") {
@@ -212,6 +215,7 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
                 }
                 this.isLoading = false;
                 this.selected = event.report;
+                this.selectedItemChange();
 
                 this.stateService.reloadLeftNavMenu();
             });
@@ -221,12 +225,14 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
         this.showEditor = false;
         if (this.selected == null) {
             this.selected = this.reports.length > 0 ? this.reports[0] : null;
+            this.selectedItemChange();
         }
     }
 
     add() {
         this.showEditor = true;
         this.selected = null;
+        this.selectedItemChange();
     }
 
     private isBasicReport(report: Report): boolean {        

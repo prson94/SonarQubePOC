@@ -517,12 +517,12 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Removes the specified relationship types based on the provided relationship type Uid(s). When Cascade=true, the call deletes all relationships based on this type. When false, it triggers an error message stating that there are existing relationships.
         /// </summary>
-        /// <param name="relationshiptypes"></param>
+        /// <param name="relationshiptypes">The list of relationship types for deletion.</param>
         /// <returns>>An HTTP status code and message.</returns>
         [
            HttpDelete,
            Route("types"),
-           SwaggerRequestExample(typeof(RelationshipTypeDelete), typeof(RelationshipTypeDeleteExample)),
+           SwaggerRequestExample(typeof(RelationshipTypeDelete),typeof(RelationshipTypeDeleteExample)),
            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the relationship type", typeof(ErrorResponse)),

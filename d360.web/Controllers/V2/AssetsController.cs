@@ -186,6 +186,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_subjectUid", "The Uid of the subject side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_objectUid", "The Uid of the object side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "Filter by provided asset Uid. Multiple asset Uids can be provided delimited by comma", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -292,7 +293,6 @@ namespace d360.web.Controllers.V2
             }
 
         }
-
 
 
         /// <summary>
@@ -796,6 +796,54 @@ namespace d360.web.Controllers.V2
             return Company.GetAssetStatusAndScore(assetUid);
         }
 
+        /// <summary>
+        /// Get field types for the given asset type Uid
+        /// </summary>
+        /// <param name="assetUid">The Uid of the asset type</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("searchDetails/{assetUid}"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = false)
+        ]
+        public async Task<IHttpActionResult> GetAssetsSearchDetailsAsync(Guid assetUid)
+        {
+            var prefix = "Assets.GetAssetsSearchDetailsAsync => ";
+            var errorMessage = "";
+            AssetType type = new AssetType();
+            Asset asset = new Asset();
+            try
+            {
+                asset = AssetRepository.GetAssetByUID(assetUid);
+                if(asset != null)
+                {
+                    var res = await AssetRepository.GetAssetDetails(asset) as object;
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res )));
+
+                }
+                else
+                {
+                    type = AssetRepository.GetAssetTypeByUID(assetUid);
+                    if(type == null)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, string.Format("No Asset or AsssetType found for Guid [{0}]",assetUid), errorMessage));
+
+                    var res  = await AssetRepository.GetAssetTypeDetails(type) as object;
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res )));
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
 
         #region Batch
 
@@ -981,6 +1029,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
+               
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
@@ -1209,7 +1258,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"Invalid AseetUid provided, no asset exists with the specified uid.",
+                        Message = $"Invalid AssetUid provided, no asset exists with the specified uid.",
                         Success = false
                     };
 

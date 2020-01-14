@@ -19,7 +19,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
                         </div>
                         <div class="mega-item-title" [ngStyle]="{'text-indent': getSubIndent()}" [innerHTML]="highlight() | safeHtml"></div>
                         <div *ngIf="count > 0" class="d3s-badge pull-right">{{count}}</div>
-                        <ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span style="line-height: 25px;" class="fa fa-home"></span></ng-container>
+                        <ng-container *ngIf="item.IsHomePage">&nbsp;&nbsp;<span class="fa fa-home home-icon"></span></ng-container>
                     </div>
                 </a>
                 <div *ngIf="displayChild">

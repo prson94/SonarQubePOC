@@ -33,6 +33,7 @@ export class HeaderBreadcrumbService extends BaseObservableService{
     private breadcrumbTreeSource = new Subject<number>();
     private breadcrumbPopLastSource = new Subject<boolean>();
     private currentObjectInfoSource = new Subject<any>();
+    private buildFromStorageSource = new Subject<Breadcrumb[]>();
 
     // Observable streams
     breadcrumbs$ = this.breadcrumbSource.asObservable();
@@ -40,6 +41,7 @@ export class HeaderBreadcrumbService extends BaseObservableService{
     breadcrumbTreeSource$ = this.breadcrumbTreeSource.asObservable();
     breadcrumbPopLastSource$ = this.breadcrumbPopLastSource.asObservable();
     currentObjectInfo$ = this.currentObjectInfoSource.asObservable();
+    buildFromStorage$ = this.buildFromStorageSource.asObservable();
 
     currentObject: any;
 
@@ -71,6 +73,15 @@ export class HeaderBreadcrumbService extends BaseObservableService{
 
     popLastBreadcrumb() {
         this.breadcrumbPopLastSource.next(true);
+    }
+    saveBreacrumbsToStorage(crumbs: Breadcrumb[]) {
+        localStorage.setItem("Header_Breadcrumbs", JSON.stringify([...crumbs]));
+    }
+    getBreadcrumbsFromStorage(): Breadcrumb[]  {
+        return JSON.parse(localStorage.getItem("Header_Breadcrumbs"));
+    }
+    buildFromStorage() {
+        this.buildFromStorageSource.next(this.getBreadcrumbsFromStorage());
     }
 
     getAreaName(objectType: string, objectId: number): Observable<string> {

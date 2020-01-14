@@ -3,14 +3,14 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FusionService } from '../../services/fusion.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { PermissionsService } from '../../services/permissions.service';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { FusionConfigurationDetails, FusionAttributeType, Fusion  } from '../../models/fusion.model';
 import { FusionStructureTreeComponent} from './fusion-structure-tree.component';
 import { FusionAttributeFilter } from '../../models/fusion-attribute.model';
-import { RightSidebarItem } from '../../models/rightsidebar.model';
+import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { AuthenticationService } from '../../services/authentication.service';
@@ -49,13 +49,13 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             private route: ActivatedRoute,
             private router: Router,
             private fusionService: FusionService,
-            protected rightSidebarService: RightSidebarService,
+            protected secondaryNavService: SecondaryNavService,
             protected titleService: Title,
             protected permissionsService: PermissionsService,
             private authenticationService: AuthenticationService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
@@ -103,12 +103,12 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     }
 
     private setRightSideBar(hasDashboard: boolean, isManual: boolean) {
-        this.rightSidebarService.clearItems();
-        this.setCommonRightSideBar(false, true, hasDashboard);
+        this.secondaryNavService.clearItems();
+        this.setCommonSecondaryNavTabs(false, true, hasDashboard);
 
-        this.rightSidebarService.showItem(new RightSidebarItem('History', 'fusionhistory', ['fa-archive'], `/fusion/history/${this.fusionId}`));
+        this.secondaryNavService.showItem(new SecondaryNavItem('History', 'fusionhistory', ['fa-archive'], `/fusion/history/${this.fusionId}`));
 
-        if (isManual) this.rightSidebarService.showItem(new RightSidebarItem('Load Data', 'fusionload', ['fa-file-excel-o'], `/fusion/manual/load/${this.fusionId}`));           
+        if (isManual) this.secondaryNavService.showItem(new SecondaryNavItem('Load Data', 'fusionload', ['fa-file-excel-o'], `/fusion/manual/load/${this.fusionId}`));           
     }
     
     private buildBreadcrumb() {  
@@ -132,8 +132,8 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             }
             this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).subscribe(icon => {
                 this.setRightSideBar(this.fusion.HasDashboards, this.fusion.Manual);
-                this.rightSidebarService.setCurrentArea(areaBreadcrumb.text, icon, 'Configuration');
-                this.rightSidebarService.showHeader(true);
+                this.secondaryNavService.setCurrentArea(areaBreadcrumb.text, icon, 'Configuration');
+                this.secondaryNavService.showHeader(true);
             });
         });
     }

@@ -2,7 +2,7 @@
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { WorkflowIssueType } from '../../../models/workflow.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { WorkflowService } from '../../../services/workflow.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { Title } from '@angular/platform-browser';
@@ -20,7 +20,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                             <d3s-loading [isLoading]="isLoading"></d3s-loading>
                             <span *ngIf="!isLoading && !showEditor && !showDelete">
                                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                                <p-table #dt [value]="issueTypes" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Description']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
+                                <p-table #dt [value]="issueTypes" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Description']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected" (onRowSelect)="selectedItemChange()">
                                     <ng-template pTemplate="header">
                                         <tr>
                                             <th [pSortableColumn]="'Name'">
@@ -106,21 +106,15 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     showDelete: boolean = false;
     theDeleteCallback: Function;
 
-    constructor(rightSidebarService: RightSidebarService, private workflowService: WorkflowService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+    constructor(secondaryNavService: SecondaryNavService, private workflowService: WorkflowService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Workflow Actions";
         this.adminHeading = "Workflow Actions";
         this.tabTitle = 'Action Types';
         this.setCommonItems();
         this.theDeleteCallback = this.deleteIssueType.bind(this);
-        this.setCommonRightSideBar(true);
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                var issueId = this.issueTypes.length != 0 ? this.selected.ID : -1;
-                return `/sidebar/audit/IssueType/${issueId}`
-            });
-        }
+        this.setCommonSecondaryNavTabs(true);
+        this.selectedItemChange();
     }
 
     ngOnInit() {
@@ -143,13 +137,18 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
                 this.showDelete = false;
             });
     }
-
+    selectedItemChange() {
+        if (this.auditSidebar && this.selected) {
+            this.auditSidebar.url = `/sidebar/audit/IssueType/${this.issueTypes.length != 0 ? this.selected.ID : -1}`;
+        }
+    }
     private load() {
         this.isLoading = true;
         this.workflowService.getAdminWorkflowIssueTypes()
             .subscribe(result => {
                 this.issueTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
                 this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
+                this.selectedItemChange();
                 this.isLoading = false;
             });
     }

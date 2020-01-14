@@ -20,9 +20,10 @@ import { Breadcrumb } from '../../models/breadcrumb.model';
 import { Rule, RuleType } from '../../models/rule.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
-import { RightSidebarService } from '../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 
 @Component({
     selector: 'd3s-rule-list',
@@ -54,10 +55,10 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         private headerActionsService: HeaderActionsService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
-        rightSidebarService: RightSidebarService
+        secondaryNavService: SecondaryNavService
     ) {
         super();
-        this.rightSidebarService = rightSidebarService;
+        this.secondaryNavService = secondaryNavService;
     }
 
     get globalFilterFields(): string[] {
@@ -99,11 +100,11 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                             true));
 
                         this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
-                            this.rightSidebarService.setCurrentArea(this.ruleType.Name, icon, 'Rules');
-                            this.rightSidebarService.setCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true);
-                            this.setCommonRightSideBar(false, false, this.ruleType.HasDashboards);
+                            this.secondaryNavService.setCurrentArea(this.ruleType.Name, icon, 'Rules');
+                            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true));
+                            this.setCommonSecondaryNavTabs(false, false, this.ruleType.HasDashboards);
                         });
-                        this.rightSidebarService.showHeader(true);
+                        this.secondaryNavService.showHeader(true);
                     });
                     this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
                     this.loadRules();

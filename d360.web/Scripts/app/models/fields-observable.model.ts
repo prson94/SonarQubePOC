@@ -118,7 +118,6 @@ export class FieldType {
     AllowMultipleValues: boolean;
     SortOrder: number;
     Fields: Field[];
-    FieldTypeFusionLookupDefinitions: FieldTypeFusionLookupDefinition[];
     FieldTypeRelationLookupDefinitions: FieldTypeRelationLookupDefinition[];
     ParentFieldTypeID: number;
     Increment: number;
@@ -145,7 +144,6 @@ export class FieldTypeFusionItemEditorModel {
     TargetFusionAttributeType: string;
     HideHeader: boolean;
     HideFooter: boolean;
-    DisplayFields: string[] | FieldTypeFusionLookupDisplayField[] = new Array<string>();
 
     TargetFusionAttributeTypes: SelectItem[] = new Array<SelectItem>();
     FusionDisplayFields: SelectItem[] = new Array<SelectItem>();
@@ -193,17 +191,6 @@ export class FieldTypeRelationItemEditorModel {
     selectedIntersectName: string;
 }
 
-export class FieldTypeFusionLookupDefinition {
-    ID: number;
-    SourceFusionAttributeTypeID: number;
-    TargetFusionAttributeTypeID: number;
-    FieldTypeID: number;
-    ReferenceType: number;
-    HideHeader: boolean;
-    HideFooter: boolean;
-    FieldTypeFusionLookupDisplayFields: FieldTypeFusionLookupDisplayField[];
-}
-
 export class FieldTypeRelationLookupDefinition {
     ID: number;
     IntersectTypeID: number;
@@ -227,15 +214,6 @@ export class FieldTypeRelationLookupDisplayField {
     FieldTypeRelationLookupDefinition: FieldTypeRelationLookupDefinition;
 }
 
-export class FieldTypeFusionLookupDisplayField {
-    ID: number;
-    FieldTypeFusionLookupDefinitionID: number;
-    FieldTypeID: number;
-    FieldTypeName: string;
-    FieldTypeFusionLookupDefinition: FieldTypeFusionLookupDefinition;
-    Show: boolean;
-    value: string;
-}
 
 export class Lookups {
     DataTypes: SelectItem[];

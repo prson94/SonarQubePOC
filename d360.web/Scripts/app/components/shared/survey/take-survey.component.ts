@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, Input, Output, EventEmitter, OnInit, AfterViewInit, ChangeDetectorRef, OnChanges, SimpleChanges } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { SurveysService } from '../../../services/surveys.service';
 import { BaseComponent } from '../../shared/base.component';
@@ -12,7 +12,8 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
     templateUrl: 'take-survey.component.html'
 })
 
-export class TakeSurveyComponent extends BaseComponent implements AfterViewInit {
+export class TakeSurveyComponent extends BaseComponent implements OnChanges {
+
     @Input() surveyType: SurveyType;
 
     @Output() surveyComplete = new EventEmitter();
@@ -39,8 +40,14 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit 
         super();
     }
 
-    ngAfterViewInit(): void {
-        this.load();
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.surveyType && (changes.surveyType.previousValue !== changes.surveyType.currentValue)) {
+            if (changes.surveyType.currentValue) {
+                this.questionDetails = [];
+                this.questions = [];
+                this.load();
+            }
+        }  
     }
 
     private load() {
@@ -49,6 +56,7 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit 
         this.surveysService.getSurveyTypeQuestions(this.surveyType)
             .subscribe(result => {
                 this.questions = result;
+                this.questionDetails = [];
                 if (this.questions.length > 0) {
                     this.loadQuestionDetails(this.questions[0]);
                 }
@@ -57,9 +65,10 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit 
     }
 
     private loadQuestionDetails(question: SurveyQuestionType) {
-        var array = this.questionDetails.filter(x => x.ID == question.ID);
-        if (array.length > 0) {
-            this.currentQuestion = array[0];
+        let questions = [ ...this.questionDetails ];
+        var localQuestionDetails = questions.filter(x => x.ID == question.ID);
+        if (localQuestionDetails.length > 0) {
+            this.currentQuestion = localQuestionDetails[0];
             this.ref.markForCheck();
         }
         else {
@@ -70,11 +79,16 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit 
                     for (let option of this.currentQuestion.Items) {
                         option.IsChecked = false;
                     }
-                    this.questionDetails.push(result);
+                    if (questions.indexOf(result) === -1)
+                        questions.push(result);
+                    this.updateQuestions(questions);
                     this.isLoading = false;
                     this.ref.markForCheck();
                 });
         }
+    }
+    updateQuestions(q) {
+        this.questionDetails = q;
     }
 
     private closeDialog() {
@@ -88,7 +102,10 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit 
     private onSubmit() {
         if (!this.isValid()) return;
         this.submitting = true;
+        this.currentQuestion = null;
         this.surveysService.saveSurveyResponse(this.questionDetails, this.surveyType.ID, this.objectType, this.objectID).subscribe(res => {
+            this.questionDetails = [];
+            this.questions = [];
             this.submitting = false
             this.surveyComplete.emit(res);
         });
@@ -125,10 +142,6 @@ export class TakeSurveyComponent extends BaseComponent implements AfterViewInit 
         }
 
         this.loadQuestionDetails(this.questions[--this.currentQuestionIndex]);
-    }
-
-    private selectRadioValue(event, option) {
-        //console.log(event);
     }
 }
 

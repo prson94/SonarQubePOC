@@ -48,6 +48,16 @@ namespace d360.extensions
         public List<FieldBoost> FieldBoosters { get; set; }
     }
 
+    public class QueryLimitation
+    {
+        public QueryLimitation()
+        {
+            AggregationFilters = new List<AggregationFilter>();
+        }
+        public List<AggregationFilter> AggregationFilters { get; set; }
+        public bool HideData3SixtyUsers { get; set; } = false;
+    }
+
     public class IndexTypeList
     {
 
@@ -229,9 +239,9 @@ namespace d360.extensions
         /// <exception cref="SearchResultsException"></exception>
         IndexResults GetSearchResultsWithCategory(int companyID, int resourceID, string phrase, int size, int from, List<IndexTypeList> categories, string group = "", string type = "", string advancedFilterJSON = "");
 
-        IndexResults GetSearchResultsWithAggregation(int companyID, int resourceID, QueryRequest queryRequest, List<IndexTypeList> categories);
+        IndexResults GetSearchResultsWithAggregation(int companyID, int resourceID, QueryRequest queryRequest, List<IndexTypeList> categories, QueryLimitation queryLimit);
 
-        IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, int size = 10, string type = "");
+        IEnumerable<TypeaheadResult> GetTypeaheadResults(int companyID, int resourceID, string phrase, QueryLimitation queryLimit, int size = 10, string type = "");
         
         IndexResults GetSearchResults(int companyID, int resourceID, string phrase, int size, int from, string group = "");
 

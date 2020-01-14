@@ -23,8 +23,13 @@ export class TagService extends BaseObservableService {
             catchError(err => this.handleError(err)));
     }
 
-    getTagsList(): Observable<TagType[]> {
+    getTagsList(getAll: boolean = true): Observable<TagType[]> {
         let url = `api/v2/tags`;
+
+        if (getAll) {
+            url += "?getAll=true";
+        }
+
         return this.http.get(url)
             .pipe(map(response => <any>response),
                 map(items => <TagType[]>items.items),

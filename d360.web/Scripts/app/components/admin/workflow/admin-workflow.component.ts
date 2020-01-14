@@ -1,6 +1,6 @@
 ﻿import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { RightSidebarService } from '../../../services/right-sidebar.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
@@ -23,8 +23,8 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
     private workflow: WorkflowDiagramModel;
     private cloneWorkflow:boolean=false;
 
-    constructor(rightSidebarService: RightSidebarService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+    constructor(secondaryNavService: SecondaryNavService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
+        super(headerBreadcrumbService, titleService, secondaryNavService);
     }
 
     ngOnInit() {

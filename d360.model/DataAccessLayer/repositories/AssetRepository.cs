@@ -373,6 +373,26 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(value, out includeSegments);
             }
 
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
+            {
+                var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
+                if (!string.IsNullOrEmpty(simpleFilter))
+                {
+                    simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
+
+                    dbArgs.Add("@simpleFilter", simpleFilter);
+                    
+                    List<string> simpleFilters = new List<string>();
+                    foreach(var ft in fieldTypes.Where(x=> x.IsListable == true))
+                    {
+                        simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+                    }
+
+                    whereStatements.Add($"({string.Join(" or ", simpleFilters)})");
+                }
+            }
+
+
             var whereSql = "";
             if (whereStatements.Any())
                 whereSql = $"where {string.Join(" and ", whereStatements)}";
@@ -1104,7 +1124,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                ResourceID = CompanyContext.CurrentResourceID,
+                ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.DeleteAssetTypes
             };
 
@@ -1127,7 +1147,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                ResourceID = CompanyContext.CurrentResourceID,
+                ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.DeleteAssets,
                 SendWorkflowEvents = sendWorkflowEvents
             };
@@ -1161,7 +1181,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                ResourceID = CompanyContext.CurrentResourceID,
+                ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.PutAssets,
                 SendWorkflowEvents = sendWorkflowEvents
             };
@@ -1187,7 +1207,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                ResourceID = CompanyContext.CurrentResourceID,
+                ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.PostAssets,
                 SendWorkflowEvents = sendWorkflowEvents
             };
@@ -1286,6 +1306,51 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 return Guid.Empty;
             return asset.uid;
         }
+
+
+        public async Task<dynamic> GetAssetDetails(Asset asset)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@typeUid", asset.AssetType.uid.ToString());
+            dbArgs.Add("@assetUid", asset.uid.ToString());
+            dbArgs.Add("@id", asset.ID);
+
+            var sql = $@"
+                select
+	                A.[UID] as [uid],
+                    COALESCE(f.FormattedValue, ft.DefaultFormattedValue) as Status,
+                    cast(S.Value * 100 as int) as 'Score',
+                    S.EffectiveDate as 'EffectiveDate',  
+	                Node.Path 
+                from Asset A
+                inner join AssetType AT on AT.ID = A.AssetTypeID and AT.UID = @typeUid
+                left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
+                left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
+                left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
+                left join metrics.Score S on AssetUid = @assetUid and EffectiveDate <= getutcdate()
+                WHERE A.ID = @id
+            ";
+
+            var res = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
+            return res;
+        }
+
+        public async Task<dynamic> GetAssetTypeDetails(AssetType type)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@typeUid", type.uid.ToString());
+            var sql = $@"
+                    SELECT
+                        A.[uid]
+                        ,P.[Path]
+                    FROM AssetType A
+                        cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+                        where       A.[State] = 1 and A.Uid = @typeUid
+                    ";
+
+            return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
+        }
+
 
         #region Private
         private void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns)
@@ -1418,7 +1483,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 var orderDirection = "";
                 var offsetSql = "";
                 var pageNum = -1;
-                var pageSize = -1;
+                var pageSize = 200;
 
                 if(queryParams.Any(x=> x.Key == "_direction"))
                 {
@@ -1458,7 +1523,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                                 }
                                 else if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "code")
                                 {
-                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"RI.Code {orderDirection} ";
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"A.Code {orderDirection} ";
                                 }
                                 else
                                 {
@@ -1612,7 +1677,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     return "";
             }
         }
-
 
         #endregion
 

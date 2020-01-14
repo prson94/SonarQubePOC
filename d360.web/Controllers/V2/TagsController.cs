@@ -66,12 +66,12 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Retrieves a list of all tags defined in Govern.
+        /// Retrieves a list of all tags.
         /// </summary>                
         [
             HttpGet, MapToApiVersion("2.0"), Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("uid", "The Uid of a specific tag to return.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "A full list of tags.", typeof(List<TagApiModelWrapper>)),
@@ -97,7 +97,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes a tag from Govern.
+        /// Deletes a tag based on the provided Uid.
         /// </summary>
         /// <param name="tagUid">The uid of the tag to be removed.</param>
         /// <param name="cascade">Cascade, if true a tag that is applied to an asset will be deleted along with the association.  If false a tag that is in use will not be deleted.  The default is false for the cascade setting.</param>
@@ -112,6 +112,9 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult DeleteById(Guid tagUid, bool cascade = false)
         {
+            if (!tagRepository.DoesTagExists(tagUid))
+                return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", $"Tag with uid {tagUid} not found.");
+
             if (!tagRepository.IsAuthorizedToEditTag(tagUid))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
 
@@ -133,7 +136,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Adds a tag to Govern with the properties provided in the model.
+        /// Adds a tag with the properties provided in the model.
         /// </summary>        
         /// <param name="model">The tag to be created.</param>
         /// <returns>The created tag.</returns>
@@ -192,6 +195,9 @@ namespace d360.web.Controllers.V2
         ]
         public IHttpActionResult Put(Guid tagUid, TagApiUpsertModel model)
         {
+            if (!tagRepository.DoesTagExists(tagUid))
+                return errorMessageResponse(HttpStatusCode.NotFound, "Error updating tag", $"Tag with uid {tagUid} not found.");
+
             if (!tagRepository.IsAuthorizedToEditTag(tagUid))
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
@@ -225,7 +231,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Allows you to remove a tags based on tag lists.
+        /// Allows you to remove tags based on a tag list.
         /// </summary>
         /// <remarks>
         /// Use the cascade flag set to true to delete a tag that is applied to an asset that tag will be deleted along with the association.  If false a tag that is in use will not be deleted.  The default is false for the cascade setting.
@@ -244,6 +250,9 @@ namespace d360.web.Controllers.V2
 
             foreach (var item in model)
             {
+                if (!tagRepository.DoesTagExists(item.uid))
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error removing tag", $"Tag with uid {item.uid} not found.");
+
                 if (!tagRepository.IsAuthorizedToEditTag(item.uid))
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
             }
@@ -543,7 +552,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <param name="tag">The tag to be created.</param>
-        [HttpPost, 
+        [HttpPost,
         Route("exists"),
         ApiExplorerSettings(IgnoreApi = true)]
         public IHttpActionResult DoesTagExist(TagApiModel tag)

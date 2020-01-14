@@ -1,0 +1,61 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="kmcnamee" id="GOV-9247-resultquals">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+CREATE OR ALTER VIEW [reporting].[RuleImplementations_ResultQualifiers] AS 
+select	q.RuleResultID, 
+		qt.Name as QualifierName, 
+		q.Value as QualifierValue
+from	RuleResultQualifier q
+		inner join RuleResultQualifierType qt on qt.ID = q.RuleResultQualifierTypeID
+
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+  DROP VIEW [reporting].[RuleImplementations_ResultQualifiers]
+]]>
+    </rollback>
+  </changeSet>
+
+  <changeSet author="kmcnamee" id="GOV-9247-ruleresults">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+CREATE OR ALTER VIEW [reporting].[RuleImplementations_Results] AS 
+select	RI.RuleID,
+		R.Threshold,
+		RI.ID as RuleImplementationID,
+		coalesce(RI.Name, 'Implementation ' + cast(RI.ID as nvarchar)) as RuleImplementation,
+		RR.ID as RuleResultID,
+		RR.EffectiveDate,
+		RR.CreatedOn,
+		RR.RunDate,
+		RR.RowsPassed,
+		RR.RowsFailed,
+		RR.PassFraction,
+		RR.FailFraction,
+		RR.Passed
+from	RuleResult RR
+		inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
+		inner join [Rule] R on R.ID = RI.RuleID
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+  DROP VIEW [reporting].[RuleImplementations_Results]
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

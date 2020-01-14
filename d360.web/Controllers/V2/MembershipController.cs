@@ -1,5 +1,7 @@
 ﻿using d360.core.entities;
+using d360.core.entities.Membership;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -14,6 +16,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Description;
 using static d360.core.entities.Resource;
 namespace d360.web.Controllers.V2
 {
@@ -26,10 +29,13 @@ namespace d360.web.Controllers.V2
     public class MembershipController : BaseV2ApiController
     {
         ICompanyContext _company;
-        public MembershipController(ICommunityContext community, ICompanyContext company)
+        IMembershipRepository membershipRepository;
+        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository)
             : base(community, company)
         {
             _company = company;
+            this.membershipRepository = membershipRepository;
+            
         }
         /// <summary>
         /// Retrieves a list of users.
@@ -190,10 +196,19 @@ namespace d360.web.Controllers.V2
             string whereSql = "";
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
-            string selectSql = $"select gr.uid, gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, gr.IsAdministrator, gr.LastLoggedInOn, case gr.State " +
-                $" when 1 then 'Active'" +
-                $"when 2 then 'InActive'" +
-                $"when 3 then 'Deleted' end as State ";
+            string selectSql = $@"select gr.uid, 
+                gr.ResourceID, gr.FirstName, gr.LastName, gr.Email, 
+                gr.IsAdministrator, gr.LastLoggedInOn, 
+                case 
+                    when g.PrimaryOwnerResourceID = gr.ResourceID then 'Primary' 
+                    when g.SecondaryOwnerResourceID = gr.ResourceID then 'Secondary' 
+                    else null end 
+                as [Owner],
+                case gr.State 
+                    when 1 then 'Active' 
+                    when 2 then 'InActive'
+                    when 3 then 'Deleted' end 
+                as State ";
             string countSql = @"
                            select count(*)
                                    from[reporting].[Global_Resource] as gr
@@ -285,5 +300,78 @@ namespace d360.web.Controllers.V2
             model.total = count.FirstOrDefault();
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
+
+        [
+           HttpGet,
+           MapToApiVersion("2.0"),
+           Route("groups/{groupId:int}"),
+           ApiExplorerSettings(IgnoreApi = true)
+       ]
+        public async Task<HttpResponseMessage> GetGroupUid(int groupId)
+        {
+            string sql = $"SELECT uid FROM[dbo].[Asset] where Object = 'Group' and ObjectID =" + groupId;
+
+            var results = await Company.QueryAsync<dynamic>(sql);
+            return Request.CreateResponse(HttpStatusCode.OK, results);
+        }
+
+        /// <summary>
+        /// Retrieves a list of groups
+        /// </summary>
+        /// <returns></returns>
+        [
+    HttpGet,
+    Route("groups"),
+    SwaggerResponse(HttpStatusCode.OK, "", typeof(GroupApiModels)),
+    SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+    SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
+    SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false)
+    
+]
+        public async Task<IHttpActionResult> GetGroups()
+        {
+            var prefix = "Membership.GetGroups => ";
+
+            try
+            {
+                var queryParams = Request.GetQueryNameValuePairs();
+
+               if  (!this.IsValidGuid(queryParams,"uid")){
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid uid is passed in the request"));
+                }
+                var results = await this.membershipRepository.GetGroups(queryParams);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix } 
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+
+        }
+
+
+        private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
+        {
+            bool isValid = true;
+            if (queryParams.ToList().Any(q => q.Key.ToLower() == paramName.ToLower()))
+            {
+                Guid uid;
+                var uidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == paramName.ToLower()).Value;
+                if (Guid.TryParse(uidString, out uid))
+                    isValid = true;
+                else
+                    isValid = false;
+
+            }
+            return isValid;
+        }
+
     }
 }

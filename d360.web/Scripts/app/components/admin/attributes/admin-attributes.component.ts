@@ -1,7 +1,7 @@
 ﻿import {Component} from '@angular/core';
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {AttributeTypeService} from '../../../services/attribute-type.service';
-import {RightSidebarService} from '../../../services/right-sidebar.service';
+import {SecondaryNavService} from '../../../services/right-sidebar.service';
 import {AdminBaseComponent} from '../admin-base.component';
 import {AttributeType} from '../../../models/attribute-type.model';
 import {TreeNode} from 'primeng/api';
@@ -25,27 +25,28 @@ export class AdminAttributesComponent extends AdminBaseComponent {
     parentID: number = 0;
 
     constructor(
-        rightSidebarService: RightSidebarService,
+        secondaryNavService: SecondaryNavService,
         private attributeTypeService: AttributeTypeService,
         protected messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title
     ) {
-        super(headerBreadcrumbService, titleService, rightSidebarService);
+        super(headerBreadcrumbService, titleService, secondaryNavService);
 
         this.areaName = "Attributes";
         this.tabTitle = 'Attribute Groups';
         this.setCommonItems();
-        this.setCommonRightSideBar(true);
+        this.setCommonSecondaryNavTabs(true);
 
-        if (this.auditSidebar) {
-            this.auditSidebar.hasDynamicUrl = true;
-            this.auditSidebar.dynamicUrlCallback = (() => {
-                return `/sidebar/audit/AttributeType/${this.selected.data.ID}`
-            });
-        }
+        this.selectedItemChange();
 
         this.theDeleteCallback = this.deleteAttributeType.bind(this);
+    }
+
+    selectedItemChange() {
+        if (this.auditSidebar && this.selected) {
+            this.auditSidebar.url = `/sidebar/audit/AttributeType/${this.selected.data.ID}`;
+        }
     }
 
     ngOnInit() {
@@ -65,6 +66,7 @@ export class AdminAttributesComponent extends AdminBaseComponent {
             .subscribe(result => {
                 this.attributes = this.formTree(result);
                 this.selected = this.attributes.length > 0 ? this.attributes[0] : null;
+                this.selectedItemChange();
                 this.isLoading = false;
             });
     }

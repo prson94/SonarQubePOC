@@ -48,6 +48,11 @@
                 The maximum number of items to show in a dropdown list before enabling typeahead search.
             </div>
             <input type="number" min="0" [(ngModel)]="companySettings.MaxDropdownItems" style="width: 95%" /> <br />
+            <div class="FieldName">Maximum Number of Excel Export Items</div>
+            <div class="directions">
+                The maximum number of items able to be exported in an excel spreadsheet.
+            </div>
+            <input type="number" min="0" [(ngModel)]="companySettings.MaxExcelExportRows" style="width: 95%" /> <br />
         </div>
         <div class="tile tile-detail">
             <header>Workflow</header>
@@ -62,7 +67,7 @@
         <div class="tile tile-detail">
             <header>Search</header>
             <div class="directions">
-                Specify the default value for the initially selected list of object types to search when a user performs a simple search from the Data3Sixty global search functionality.
+                Specify the default value for the initially selected list of object types to search when a user performs a simple search from the Data360 global search functionality.
             </div>
             <ul>
                 <li *ngFor="let searchType of searchTypes;let i=index">
@@ -70,14 +75,14 @@
                 </li>
             </ul>
             <div class="directions">
-                Specify if the option 'Match Whole Words' is checked by default.   If selected the 'Match Whole Words' option is checked by default and the search will look for whole words entered in the search criteria.  If unselected the option will not be checked, but the user can still check it when searching.
+                Specify if the option 'Match exact phrase' is checked by default.   If selected the 'Match exact phrase' option is checked by default and the search will look for the exact phrase entered in the search criteria.  If unselected the option will not be checked, but the user can still check it once on the Search Results Page
             </div>
-            <input type="checkbox" [(ngModel)]="companySettings.EnableSearchExactMatch" />Enable 'Match Whole Words' by default
+            <input type="checkbox" [(ngModel)]="companySettings.EnableSearchExactMatch" />Enable 'Match exact phrase' by default
         </div>
         <div class="tile tile-detail">
             <header>Default Route</header>
             <div class="directions">
-                Specify the default route users will be redirected to when logging into Data3Sixty (ex: /artifact/1). Leave blank to use the default value.
+                Specify the default route users will be redirected to when logging into Data360 (ex: /artifact/1). Leave blank to use the default value.
             </div>
             <div>
                 <input type="text" [ngModel]="companySettings.DefaultRoute" (ngModelChange)="companySettings.DefaultRoute = $event; validateRoute();" style="width: 95%" />

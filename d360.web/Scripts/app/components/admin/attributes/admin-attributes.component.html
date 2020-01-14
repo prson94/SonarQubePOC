@@ -13,6 +13,7 @@
                                        style="width: 100%;margin-bottom:10px;"
                                        type="text">
                                 <p-treeTable [(selection)]="selected"
+                                             (onNodeSelect)="selectedItemChange()"
                                              [value]="attributes | treeSearch: searchValue:'Name'"
                                              dataKey="ID"
                                              selectionMode="single">

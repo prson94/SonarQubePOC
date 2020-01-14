@@ -132,6 +132,7 @@ namespace d360.web.Models
 
         public int LineageVersion { get; set; } = 1;
         public bool FusionEnabled { get; set; } = true;
+        public int MaxExcelExportRows { get; set; }
 
     }
 
@@ -754,6 +755,7 @@ namespace d360.web.Models
 
     public enum GetAssetLineagePostModelDirection
     { 
+        None = 0,
         Forward = 1,
         Backward = 2,
         Both = 3

@@ -1,0 +1,156 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="tklok" id="GOV-6465-V2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+ALTER TRIGGER [dbo].[Nym_AfterUpsert]
+   ON  [dbo].[Nym] 
+   AFTER INSERT, UPDATE
+AS 
+	SET NOCOUNT ON;
+	declare @ot varchar(50) = 'Synonym'
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
+        select	'ObjectIndex',
+				case 
+					when D.ID is not null then 'U'
+					else 'A'
+				end, 
+				@ot, 
+				I.ID,
+				A.ID as AssetID
+		from	inserted I
+				left join deleted D on D.ID = I.ID
+				left outer join [dbo].[Asset] A on I.[Object] = A.[Object] and I.[ObjectID] = a.[ObjectID];
+GO
+
+ALTER TRIGGER [dbo].[Intersect_AfterInsert]
+	ON [dbo].[Intersect]
+	FOR INSERT
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
+        select 'Add', [queue].WriteIndexXml('', I.Subject, I.SubjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
+		left outer join [dbo].[Asset] A on I.[Subject] = A.[Object] and I.[SubjectID] = a.[ObjectID];
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
+        select 'Add', [queue].WriteIndexXml('', I.Object, I.ObjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
+		left outer join [dbo].[Asset] A on I.[Object] = A.[Object] and I.[ObjectID] = a.[ObjectID];
+END
+GO
+
+ALTER TRIGGER [dbo].[Intersect_AfterUpdate]
+	ON [dbo].[Intersect]
+	FOR UPDATE
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
+        select 'Add', [queue].WriteIndexXml('', I.Subject, I.SubjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
+		left outer join [dbo].[Asset] A on I.[Subject] = A.[Object] and I.[SubjectID] = a.[ObjectID];
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
+        select 'Add', [queue].WriteIndexXml('', I.Object, I.ObjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
+		left outer join [dbo].[Asset] A on I.[Object] = A.[Object] and I.[ObjectID] = a.[ObjectID];
+END
+GO
+DROP TRIGGER  IF EXISTS [dbo].[Intersect_AfterDelete]
+GO
+
+CREATE TRIGGER [dbo].[Intersect_AfterDelete]
+   ON  [dbo].[Intersect] 
+   AFTER DELETE
+AS 
+	SET NOCOUNT ON;
+	declare @ot varchar(50) = 'Intersect'
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select	'ObjectIndex',
+				'D', 
+				@ot, 
+				ID
+		from	deleted;
+GO
+
+ALTER TABLE [dbo].[Intersect] ENABLE TRIGGER [Intersect_AfterDelete]
+GO
+
+
+
+		]]>
+    </sql>
+	<rollback>
+	    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+ALTER TRIGGER [dbo].[Nym_AfterUpsert]
+   ON  [dbo].[Nym] 
+   AFTER INSERT, UPDATE
+AS 
+	SET NOCOUNT ON;
+	declare @ot varchar(50) = 'Synonym'
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select	'ObjectIndex',
+				case 
+					when D.ID is not null then 'U'
+					else 'A'
+				end, 
+				@ot, 
+				I.ID
+		from	inserted I
+				left join deleted D on D.ID = I.ID;
+GO
+
+ALTER TRIGGER [dbo].[Intersect_AfterInsert]
+	ON [dbo].[Intersect]
+	FOR INSERT
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', Subject, SubjectID, UpdatedBy), 'Intersect', ID from inserted;
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'Intersect', ID from inserted;
+END
+GO
+
+ALTER TRIGGER [dbo].[Intersect_AfterUpdate]
+	ON [dbo].[Intersect]
+	FOR UPDATE
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', Subject, SubjectID, UpdatedBy), 'Intersect', ID from inserted;
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'Intersect', ID from inserted;
+END
+GO
+DROP TRIGGER  IF EXISTS [dbo].[Intersect_AfterDelete]
+GO
+
+		]]>
+		</sql>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

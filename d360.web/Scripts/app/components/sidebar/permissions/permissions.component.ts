@@ -1,8 +1,10 @@
-﻿import { Component, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { AuthenticationService } from '../../../services/authentication.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 
 @Component({
     selector: 'd3s-permissions',
@@ -19,7 +21,7 @@ import { AuthenticationService } from '../../../services/authentication.service'
     providers: [ObjectDetailService]
 })
 
-export class PermissionsComponent extends BaseComponent implements OnInit, OnDestroy {
+export class PermissionsComponent extends BaseComponent implements OnInit, OnDestroy, AfterViewInit {
     private sub: any;
     assetTypeId: number;    
     title: string;
@@ -27,19 +29,29 @@ export class PermissionsComponent extends BaseComponent implements OnInit, OnDes
     constructor(private objectDetailService: ObjectDetailService,
         private route: ActivatedRoute,
         private router: Router,
-        private authenticationService: AuthenticationService
+        private authenticationService: AuthenticationService,
+        secondaryNavService: SecondaryNavService,
+        breadcrumbService: HeaderBreadcrumbService
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
     }
 
     ngOnInit() {
-        if (!this.authenticationService.isAdmin) {            
-            this.router.navigateByUrl('/home');
-        }
         this.sub = this.route.params.subscribe(params => {
             this.assetTypeId = +params['assetTypeId'];
    
         });
+        this.checkSecondaryNavLocalStorage();
+    }
+     
+    ngAfterViewInit(): void {
+        window.setTimeout(() => {
+            if (!this.authenticationService.isAdmin) {            
+                this.router.navigateByUrl('/home');
+            }
+        }, 200);
     }
 
     ngOnDestroy() {

@@ -44,7 +44,7 @@ namespace d360.model
 		case 
 			when L.[Action] = 'M' and L.ObjectID = 0 then 'Group Membership'
 			when L.[Action] = 'M' and L.ObjectID = 1 then 'Users'
-            when L.[Action] = 'P' then coalesce(C_D.[Name], '[Deleted]') 
+            when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[Deleted]')  
 			else coalesce(C_D.[Name], 'Default') 
 		end as ObjectName,
 		L.Notes,
@@ -822,7 +822,7 @@ order by	ColumnIndex", new { id });
 
         public async Task BulkLoadAssets(Load load, IAssetRepository repository)
         {
-            const int timeout = 600;
+            const int timeout = 3600;
 
             if (load == null)
                 throw new ArgumentNullException("load cannot be null");
@@ -988,14 +988,14 @@ where I.LoadID = @id ", new { id = load.ID, assetType.ObjectID }, timeout: timeo
 
                 if (putAssets.Any())
                 {
-                    var execution = getApiExecution(putAssets.Count, new BulkLoadExecutionFields_Assets { AssetTypeUid = assetTypeUid, LoadID = load.ID });
+                    var execution = getApiExecution(load, putAssets.Count);
                     ApiExecutionInfo executionInfo = await repository.PutBulkAssets(assetTypeUid, putAssets, execution, false);
                     load.PutExecutionID = executionInfo.ExecutionID;
                 }
 
                 if (postAssets.Any())
                 {
-                    var execution = getApiExecution(postAssets.Count, new BulkLoadExecutionFields_Assets { AssetTypeUid = assetTypeUid, LoadID = load.ID });
+                    var execution = getApiExecution(load, postAssets.Count);
                     ApiExecutionInfo executionInfo = await repository.PostBulkAssets(postAssets, execution, false);
                     load.PostExecutionID = executionInfo.ExecutionID;
                 }
@@ -1009,20 +1009,25 @@ where I.LoadID = @id ", new { id = load.ID, assetType.ObjectID }, timeout: timeo
             }
         }
 
-        internal ApiExecution getApiExecution(int total = 0, object fields = null, int error = 0, int processed = 0)
+        internal ApiExecution getApiExecution(Load load, int total)
         {
-
+            
             var execution = new ApiExecution
             {
                 ExecutionID = Guid.NewGuid(),
                 StartedOn = DateTime.UtcNow,
                 Route = null,
                 Method = null,
-                ResourceID = CurrentResourceID,
+                ResourceID = load.UpdatedBy ?? 0,
                 Total = total,
-                Fields = fields == null ? "" : JsonConvert.SerializeObject(fields),
-                Error = error,
-                Processed = processed
+                Fields = load.AssetTypeUid.HasValue ? JsonConvert.SerializeObject(
+                    new BulkLoadExecutionFields_Assets 
+                    { 
+                        AssetTypeUid = (Guid)load.AssetTypeUid, 
+                        LoadID = load.ID 
+                    }) : null,
+                Error = 0,
+                Processed = 0
             };
 
             return execution;
