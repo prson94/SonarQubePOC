@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="GOV-9320">
+  <changeSet author="kmcnamee" id="GOV-9320-a">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -18,6 +18,7 @@
 	          [ScoreType] int NOT NULL,
 	          [AssetTypeUid] uniqueidentifier NOT NULL,
 	          [OverrideName] [nvarchar](250) NULL,
+			      [State] int NOT NULL CONSTRAINT [DF_MetricAllocation_State]  DEFAULT ((1)),	  
 	          [CreatedOn] [datetime] NOT NULL CONSTRAINT DF_MetricAllocation_CreatedOn DEFAULT  getutcdate(),
 	          [CreatedBy] [int] NOT NULL CONSTRAINT DF_MetricAllocation_CreatedBy DEFAULT(0),
 	          [UpdatedOn] [datetime] NOT NULL CONSTRAINT DF_MetricAllocation_UpdatedOn DEFAULT getutcdate(),
@@ -27,7 +28,7 @@
 	           ScoreType ASC
               )
           )
-      END
+END
 ]]>
     </sql>
     <rollback>
