@@ -15,6 +15,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 
 export class GroupForm implements OnInit, OnChanges, FormEvents {
     @Input() id: number;
+    @Input() uid: string;
     @Input() title: string = "Edit Group";
     @Output() onComplete = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
@@ -44,7 +45,7 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            if (p == 'id') {
+            if (p == 'id' || p=='uid') {
                 this.load();
                 this.initialItem = _.cloneDeep(this.model);
             }
@@ -53,7 +54,10 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
 
     private load(): void {
         this.isLoading = true;
-        this.groupService.getGroup(this.id).subscribe(
+        if (!this.id) this.id= 0;
+        if (!this.uid) this.uid = "";
+
+        this.groupService.getGroup(this.id,this.uid).subscribe(
             d => {
                 this.model = d;
 
@@ -74,7 +78,7 @@ export class GroupForm implements OnInit, OnChanges, FormEvents {
 
     private save(): void {
         this.isLoading = true;
-        if (this.id > 0) {
+        if (this.id > 0 || this.uid) {
             this.groupService.putGroup(this.model.group).subscribe(
                 r => {
                     if (r.type == 'confirm') {

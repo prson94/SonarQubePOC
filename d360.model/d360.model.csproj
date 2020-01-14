@@ -112,6 +112,7 @@
     </Compile>
     <Compile Include="CompanyContext_MarkitLineage.cs" />
     <Compile Include="DataAccessLayer\IIssueRepository.cs" />
+    <Compile Include="DataAccessLayer\IMembershipRepository.cs" />
     <Compile Include="DataAccessLayer\IRelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\IFusionRepository.cs" />
     <Compile Include="DataAccessLayer\IResourceRepository.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="DataAccessLayer\repositories\AssetRepository.cs" />
     <Compile Include="DataAccessLayer\IAssetRepository.cs" />
     <Compile Include="DataAccessLayer\ISurveyRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\MembershipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\MetricsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\RelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResourceRepository.cs" />

@@ -56,7 +56,7 @@ export class GroupItemComponent extends BaseComponent implements OnInit {
             this.logAction('open', 'Group', this.groupId);
             this.isLoading = true;
 
-            this.groupService.getGroup(this.groupId).subscribe(
+            this.groupService.getGroup(this.groupId,"").subscribe(
                 group => {
                     this.model = group;
                     this.headerBreadcrumbService.clearBreadcrumbs();
