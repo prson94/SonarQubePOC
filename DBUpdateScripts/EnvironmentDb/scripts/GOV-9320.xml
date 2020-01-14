@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="kmcnamee" id="GOV-9320-a">
+  <changeSet author="kmcnamee" id="GOV-9320-b">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -14,7 +14,7 @@
       IF NOT EXISTS(SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND  TABLE_NAME = 'Allocation')
       BEGIN        
           CREATE TABLE [metrics].[Allocation](
-	          [Uid] uniqueidentifier NOT NULL,
+	          [Uid] uniqueidentifier NOT NULL CONSTRAINT [DF_MetricAllocation_uid]  DEFAULT (newid()),
 	          [ScoreType] int NOT NULL,
 	          [AssetTypeUid] uniqueidentifier NOT NULL,
 	          [OverrideName] [nvarchar](250) NULL,
@@ -28,7 +28,7 @@
 	           ScoreType ASC
               )
           )
-END
+ END
 ]]>
     </sql>
     <rollback>
