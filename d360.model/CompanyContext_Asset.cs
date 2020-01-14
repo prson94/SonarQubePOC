@@ -37,6 +37,11 @@ namespace d360.model
 
         #region Engine Methods
 
+        public string GetEscapedFilterString(string filter)
+        {
+            return wildcardValue(escapeForSQLLike(filter), false);
+        }
+
         private string wildcardValue(string value, bool isContains = true)
         {
             value = value.Replace("*", "%").Replace("?", "_");
