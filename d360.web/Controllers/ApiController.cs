@@ -5118,9 +5118,6 @@ where    A.RuleID = @id", new { id });
         [Route("{type}/{id:int}/status")]
         public string GetObjectStatus(SystemObjects type, int id)
         {
-            if (type == SystemObjects.Tag)
-                return null;
-
             var objectDetail = Company.GetObjectDetail(type.ToString(), id);
             //check if there is a status field for this type
             var fieldType = Company.FieldTypes.Where(x => x.Object == objectDetail.Type && x.ObjectID == objectDetail.TypeID && string.Compare(x.FriendlyName, "Status", true) == 0).FirstOrDefault();
