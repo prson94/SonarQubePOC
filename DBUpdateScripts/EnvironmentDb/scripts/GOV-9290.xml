@@ -143,7 +143,7 @@ begin
 		if exists(select a.uid from Asset A 
 					inner join AssetType T on T.ID = A.AssetTypeID
 					inner join workflow.EventRegistration WER on WER.Object = T.Object and WER.ObjectID = T.ObjectID
-					inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1
+					inner join workflow.Type WT on WER.TypeID = WT.ID and WT.PublishedVersionID is not null and WT.[State] = 1 and WER.ChangeType = 8 
 					where A.uid = @assetUid
 		)
 		begin

@@ -22,6 +22,7 @@ import { BaseComponent } from '../shared/base.component';
 import { StringConstants } from '../../static/string-constants';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
+import { Subscribable, Subscription } from 'rxjs';
 
 declare var CompanySettings;
 
@@ -79,12 +80,11 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             // if hierarchyId is passed via alternative route to workaround
             // bug with router escaping ; = and other chars.
             let hierarchyId = +params['id'];
-
             if (!hierarchyId) {
                 hierarchyId = +params['hierarchyId'] || 0;
             }
 
-            if (this.policyTypeId != newPolicyTypeId) {
+            if (this.policyTypeId != newPolicyTypeId || (this.selected == undefined || this.selected.ID != hierarchyId)) {
                 this.policyTypeId = newPolicyTypeId;
 
                 this.isLoading = true;

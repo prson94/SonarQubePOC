@@ -88,13 +88,13 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             if (!hierarchyId)
                 hierarchyId = params['hierarchyId'] ? +params['hierarchyId'] : 0;
 
-            if (this.modelId != newModelId) {
+            if (this.modelId != newModelId || (this.selected == undefined || this.selected.ID != hierarchyId)) {
                 this.modelId = newModelId;
                 this.isLoading = true;
                 this.load(hierarchyId);
 
                 this.isLoading = false;
-            } 
+            }
 
         });
 

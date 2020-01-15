@@ -675,8 +675,6 @@ export class BaseComponent {
         }
 
         var currentData = JSON.parse(this.getLoadedKey());
-        console.log(currentData);
-        console.log(loadData);
         if (loadData.ObjectType == currentData.Object && loadData.ObjectId == currentData.ObjectId)
             return true;
 
@@ -872,7 +870,7 @@ export class BaseComponent {
 
                         for (let breadcrumb of data.Artifact.Breadcrumbs) {
                             index++;
-
+                   
                             if (index == data.Artifact.Breadcrumbs.length) {
                                 //last item in the breadcrumb
                                 this
@@ -883,7 +881,7 @@ export class BaseComponent {
                                             breadcrumb.Url,
                                             false,
                                             'Artifact',
-                                            data.Artifact.AssetTypeID,
+                                            data.ObjectTypeId,
                                             null,
                                             null,
                                             false,
@@ -935,10 +933,10 @@ export class BaseComponent {
         this.breadcrumbsService.breadcrumbTreeSource$.subscribe(
             id => {
                 if (objectName.toLowerCase() == 'policy') {
-                    this.breadcrumbsService.reRouteFromBreadcrumbs(`${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
+                    this.breadcrumbsService.reRouteFromBreadcrumbs(`/${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
                 }
                 if (objectName.toLowerCase() == 'taxonomy') {
-                    this.breadcrumbsService.reRouteFromBreadcrumbs(`${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
+                    this.breadcrumbsService.reRouteFromBreadcrumbs(`/${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
                 }
             }
         );
