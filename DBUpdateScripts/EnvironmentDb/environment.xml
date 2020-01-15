@@ -406,4 +406,5 @@
   <include file="scripts/GOV-9319.xml"/> <!-- script to add score type column to metric.asset table-->
   <include file="scripts/GOV-9320.xml"/> <!-- script to add metric allocation table-->
   <include file="scripts/GOV-9137.xml"/> <!-- AssetBrowser procedure adds and drops -->
+  <include file="scripts/GOV-9345.xml"/> <!-- script to add create metric allocations from existing scores-->
 </databaseChangeLog>
