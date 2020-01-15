@@ -963,7 +963,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private findSubGraph(startKey: string, direction: AssetBrowserApiHopDirection): AssetBrowserTranslation {
         let subgraph = new AssetBrowserTranslation();
 
-        subgraph.nodes = [];
+        subgraph.nodes = []; 
         subgraph.links = [];
 
         let node = this.diagram.findNodeForKey(startKey);
