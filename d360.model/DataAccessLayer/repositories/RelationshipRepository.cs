@@ -437,6 +437,7 @@ from	IntersectType I
         {
             return companyContext.Query<dynamic>(
                 @"select 
+                    UID,
                     ID,
                     [Subject], 
                     SubjectID, 

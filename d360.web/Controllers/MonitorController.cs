@@ -202,6 +202,8 @@ where   A.RuleImplementationID = @id";
             document.SetCellValue(1, 6, "Started");
             document.SetCellValue(1, 7, "Completed");
             document.SetCellValue(1, 8, "Status");
+            document.SetCellValue(1, 9, "Workflow Instance UID");
+            
 
             #endregion
 
@@ -226,6 +228,7 @@ where   A.RuleImplementationID = @id";
                 document.SetCellStyle(rowIndex, 7, style1);
 
                 document.SetCellValue(rowIndex, 8, row.Status ?? "");
+                document.SetCellValue(rowIndex, 9, row.UID.ToString() ?? "");
 
             }
 
@@ -382,7 +385,7 @@ where   A.RuleImplementationID = @id";
 
 
             var groupby = @"group by wi.id,wt.name, wi.startedOn,wi.CompletedOn,wi.[object],wi.objectid,cod.id,ass.id, wi.startedOn, wi.CompletedOn,
-		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],ITypeName.Name, assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId)";
+		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],ITypeName.Name, assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId), wi.Uid";
 
             var fromSql = @"		from [workflow].[type] wt 
                                 inner join [workflow].[version] wv on (wt.id = wv.typeid) 
@@ -430,7 +433,8 @@ where   A.RuleImplementationID = @id";
                         assettype.Object as ObjectType,
                         assettype.ObjectID as ObjectTypeID,
                         coalesce(cod.Object, ass.Object) as Object,
-                        coalesce(cod.objectID, ass.ObjectID) as ObjectID  
+                        coalesce(cod.objectID, ass.ObjectID) as ObjectID,
+                        wi.Uid as UID
                         {fromSql}
                         {assignedSql}
                         {whereSql} 

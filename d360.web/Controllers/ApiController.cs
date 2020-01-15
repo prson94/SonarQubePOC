@@ -7936,7 +7936,7 @@ where	Type = 'ReferenceItemType'
 
             var colIndex = 0;
 
-            document.SetCellValue(1, ++colIndex, "Asset ID");
+            
             document.SetCellValue(1, ++colIndex, "Code");
 
             //add parents for this ref list
@@ -7951,6 +7951,8 @@ where	Type = 'ReferenceItemType'
                 document.SetCellValue(1, ++colIndex, field.FriendlyName ?? "");
             }
 
+            document.SetCellValue(1, ++colIndex, "Asset UID");
+            document.SetCellValue(1, ++colIndex, "Asset ID");
 
             #endregion
 
@@ -7959,8 +7961,7 @@ where	Type = 'ReferenceItemType'
             {
                 var dataColIndex = 0;
                 rowIndex++;
-
-                document.SetCellValue(rowIndex, ++dataColIndex, row.AssetID ?? "");
+                
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Code ?? "");
 
                 var rowDict = ((IDictionary<string, object>)row);
@@ -7986,6 +7987,9 @@ where	Type = 'ReferenceItemType'
                         SetCellValue(document, rowIndex, ++dataColIndex, field.Type, value);
                     }
                 }
+
+                document.SetCellValue(rowIndex, ++dataColIndex, row.UID.ToString() ?? "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.AssetID ?? "");
             }
 
             #endregion

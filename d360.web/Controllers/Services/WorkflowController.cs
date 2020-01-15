@@ -3453,6 +3453,7 @@ order by wi.StartedOn desc";
             document.SetCellValue(1, ++colIndex, "Assignee");
             document.SetCellValue(1, ++colIndex, "Date Started");
             document.SetCellValue(1, ++colIndex, "Date Completed");
+            document.SetCellValue(1, ++colIndex, "Workflow Step UID");
 
             #endregion
 
@@ -3471,6 +3472,7 @@ order by wi.StartedOn desc";
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Assignee ?? "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.StartedOn != null ? row.StartedOn.ToShortDateString() : "");
                 document.SetCellValue(rowIndex, ++dataColIndex, row.CompletedOn != null ? row.CompletedOn.ToShortDateString() : "");
+                document.SetCellValue(rowIndex, ++dataColIndex, row.UID.ToString() ?? "");
             }
 
             #endregion

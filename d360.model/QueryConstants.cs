@@ -1609,7 +1609,8 @@ select
 				end as IsIssueType,
 				I.[Object],
 				I.ObjectID,
-                E.TypeID
+                E.TypeID,
+				IST.Uid as UID
             from 
             workflow.ItemStep IST
             inner join workflow.Item I on I.ID = IST.ItemID
