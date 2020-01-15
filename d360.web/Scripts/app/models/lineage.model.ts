@@ -434,7 +434,7 @@ export class AssetBrowserTranslationRelationCount {
     predicate: string;
     predicateId: number;
     predicateUid: string;
-    direction: AssetBrowserDirection;
+    direction: AssetBrowserApiHopDirection;
     count: number;
 }
 
@@ -466,8 +466,9 @@ export class AssetBrowserTranslationNode {
     class: AssetTypeClass;
     subgraph: any;
     showIcon: boolean;
-    showReveal: AssetBrowserDirection;
+    showReveal: AssetBrowserApiHopDirection;
     relations: AssetBrowserTranslationRelationCount[] = new Array();
+    ignoredPredicates: string[] = new Array();
 }
 
 export class AssetBrowserTranslation {
@@ -479,28 +480,22 @@ export class AssetBrowserTranslation {
 
 // #region Asset Browser : Request
 
-export enum AssetBrowserDirection {
+export enum AssetBrowserApiHopDirection {
     None = 0,
     Forward = 1,
     Backward = 2,
     Both = 3
 }
 
-export class AssetBrowserLineageApiRequestModel {
-    AssetUids: string[];
-    IsReveal: boolean;
-    StartHop: number;
-    Direction: AssetBrowserDirection;
-    Hops: number;
-}
-
-export class AssetBrowserImpactApiRequestModel {
-    Assets: AssetBrowserImpactApiAssetRequestModel[];
+export class AssetBrowserApiHopRequestModel {
+    Assets: AssetBrowserApiHopAssetRequestModel[];
+    Direction: AssetBrowserApiHopDirection;
     PredicateUid: string;
-    StartHop: number;
+    Hops: number;
+    IsInitial: boolean;
 }
 
-export class AssetBrowserImpactApiAssetRequestModel {
+export class AssetBrowserApiHopAssetRequestModel {
     Uid: string;
     Key: string;
 }
@@ -513,7 +508,7 @@ export class AssetBrowserLineageApiItemRelationCountModel {
     Predicate: string;
     PredicateId: number;
     PredicateUid: string;
-    Direction: AssetBrowserDirection;
+    Direction: AssetBrowserApiHopDirection;
     Count: number;
 }
 
@@ -522,12 +517,16 @@ export class AssetBrowserLineageApiItemModel {
     assetUid: string;
     assetTypeId: number;
     key: string;
+    parentKey: string;
+    salt: string;
     displayValue: string;
     backColor: string;
+    backAmount: number;
     foreColor: string;
+    foreAmount: number;
     icon: string;
     class: AssetTypeClass;
-    reveal: AssetBrowserDirection;
+    reveal: AssetBrowserApiHopDirection;
     items: AssetBrowserLineageApiItemModel[];
     relationCounts: AssetBrowserLineageApiItemRelationCountModel[];
 }

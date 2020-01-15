@@ -2761,6 +2761,7 @@ where   ExecutionID = @ExecutionID
                     int? intersectTypeID = null;
                     CurrentExecutionLocationModel currentLocation = null;
                     bool hasLookupFieldTypes = false;
+                    bool hasRelationshipFieldTypes = false;
                     List<AssetFieldTypeUpdate> fieldTypeUpdates = new List<AssetFieldTypeUpdate>();
 
                     try
@@ -2784,6 +2785,7 @@ where   ExecutionID = @ExecutionID
                         jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
                         requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
                         hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
+                        hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
                         this.AITrackTrace(client, execution, METHOD_NAME, "Get field types", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
                         #region Generate data sets
@@ -3658,8 +3660,13 @@ select [uid] from #ParentChildRelationships",
                                         var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, !isInsert);
                                         this.AITrackTrace(client, execution, METHOD_NAME, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         sw.Restart();
-                                        ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+
+                                        if (hasRelationshipFieldTypes)
+                                        {
+                                            ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
+                                            this.AITrackTrace(client, execution, METHOD_NAME, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                        }
+
                                         if (jsonFieldTypes.Count > 0)
                                         {
                                             sw.Restart();

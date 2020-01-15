@@ -23,9 +23,12 @@ namespace d360.model.validators
             bool fieldsHaveErrors = false;
             var fieldsHaveErrorsList = new List<string>();
             var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
+            int maxNamelength = 250;
 
             foreach (var field in model.Fields)
             {
+                #region Name Validation
+                
                 if (!nameRegex.IsMatch(field.Name ?? ""))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
@@ -34,6 +37,32 @@ namespace d360.model.validators
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot be [{field.Name.Trim().ToUpper()}].");
                 }
+                if(field.Name.Length> maxNamelength)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot exceed {maxNamelength} characters.");
+                }
+
+                #endregion
+
+                #region FriendlyName Validation
+
+                if (String.IsNullOrWhiteSpace(field.FriendlyName))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field FriendlyName", $"FriendlyName is a required field.");
+                }
+
+                if (!IsFieldNameAllowed(field.FriendlyName.Trim()))
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field FriendlyName", $"FriendlyName cannot be [{field.FriendlyName.Trim().ToUpper()}].");
+                }
+
+                if (field.FriendlyName.Length > maxNamelength)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field FriendlyName", $"FriendlyName cannot exceed {maxNamelength} characters.");
+                }
+
+                #endregion
+
                 if (!field.Type.IsOnlyOneTypeModelDefined())
                 {
                     fieldsHaveErrors = true;

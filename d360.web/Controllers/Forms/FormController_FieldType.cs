@@ -845,6 +845,8 @@ namespace d360.web.Controllers
                 dataTypeOptions = dataTypeOptions.Where(x => x.value != "FusionLookup").ToList();
             }
 
+            dataTypeOptions = dataTypeOptions.Where(x => x.value != "FilteredLookup").ToList();
+
             var jsonFieldType = new Dictionary<string, string>()
             {
                 { "Boolean", "bit" },
