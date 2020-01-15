@@ -1209,17 +1209,41 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// GETs all execution records, including the results for the execution.
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("executions"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of all execution statuses.", typeof(IEnumerable<ApiExecutionStatusModel>))
+        ]
+        public async Task<IHttpActionResult> GetExecutions()
+        {
+            var items = AssetRepository.GetExecutionItems();
+
+            return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            items
+                        )
+                    )   
+                );
+        }
+
         #endregion
 
-        #region AssetTag
-        /// <summary>
-        /// Creates association between an existing asset and an existing tag.
-        /// </summary>
-        /// <remarks>
-        /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
-        /// </remarks>
-        /// <param name="assetTags">Collection of assets and tags to associate.</param>
-        /// <returns>An HTTP status code and message.</returns>
+            #region AssetTag
+            /// <summary>
+            /// Creates association between an existing asset and an existing tag.
+            /// </summary>
+            /// <remarks>
+            /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
+            /// </remarks>
+            /// <param name="assetTags">Collection of assets and tags to associate.</param>
+            /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
             Route("tags"),

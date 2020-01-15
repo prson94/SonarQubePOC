@@ -1250,6 +1250,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return CompanyContext.Filter<ApiExecution>(i => i.ExecutionID == executionUid).SingleOrDefault();
         }
 
+        public IEnumerable<ApiExecution> GetExecutionItems()
+        {
+            return CompanyContext.ApiExecutions;
+        }
+
         public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx")
         {
             var style = CompanyContext.GetAssetTypeStyle(assetTypeId);

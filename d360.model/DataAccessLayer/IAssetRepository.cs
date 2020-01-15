@@ -32,6 +32,7 @@ namespace d360.model.DataAccessLayer
         AssetType GetAssetTypeByUidAndClass(Guid assetTypeUid, AssetTypeClass @class);
         AssetType GetAssetTypeByModel(AssetTypeUpsert model);
         ApiExecution GetExecutionItemByUid(Guid executionUid);
+        IEnumerable<ApiExecution> GetExecutionItems();
         void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor,string icon, string objectName = "Tx");
         bool DoesAssetExists(Guid uid);
         bool IsReachedTransformationLimit(AssetTypeUpsert model);
