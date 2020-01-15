@@ -34,6 +34,8 @@ import { Observable } from 'rxjs';
 import { PredicatesService } from '../../../../services/predicates.service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
+import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 
 declare var window: any;
 
@@ -119,6 +121,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     constructor(
         private myElement: ElementRef,
         private browserService: BrowserService,
+        private router: Router,
         protected permissionsService: PermissionsService,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
@@ -196,7 +199,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let image_data = this.diagram.makeImageData({
             scale: 1,
             returnType: "blob",
-            background: "#fff", 
+            background: "#fff",
             callback: (image_data) => this.savePngButtonClickCallback(image_data, this.assetUid)
         });
     }
@@ -284,7 +287,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (!nodeExists) {
                 thisPredicateTypeNode = {
                     label: p.Type,
-                    data: 'F'+p.TypeId, 
+                    data: 'F'+p.TypeId,
                     children: []
                 };
             }
@@ -1351,7 +1354,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.parseData(translationModel, true);
 
                     this.hideDeselectedAssetTypes();
-                    this.hideDeselectedPredicates(); 
+                    this.hideDeselectedPredicates();
                 });
         }
     }
@@ -1501,6 +1504,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             { areaBackground: "#ffffff", background: "#ffffff" },
             this.g(
                 "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Navigate to", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+                { click: (e, obj) => this.navigateTo(e, obj) }
+            ),
+            this.g(
+                "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenuShowDetails }),
                 {
                     click: (e, obj) => {
@@ -1525,7 +1533,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Forward) } 
+                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Forward) }
             )//,
             //this.g(
             //    "ContextMenuButton",
@@ -1533,6 +1541,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             //    { click: function (e, obj) { alert("Not yet implemented") } }
             //)
         );
+    }
+
+    private assetUidRedirect: string = '';
+    private navigateTo(e, obj) {
+        //this.router.navigate([SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, obj.part.data.assetUid]);
+        this.assetUidRedirect = obj.part.data.assetUid;
+        this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
+            this.router.navigate([SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, 'browser', this.assetUidRedirect]);
+        });
     }
 
     private createTooltip(): go.Adornment {
@@ -1921,13 +1938,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private createDefaultLink(): go.Link {
         return this.g(
             go.Link, {
-                routing: go.Link.AvoidsNodes,
-                corner: 5,
-                relinkableFrom: false,
-                relinkableTo: false,
-                click: (e, obj) => this.highlightPath(e, obj as any),
-                zOrder: 1000
-            },
+            routing: go.Link.AvoidsNodes,
+            corner: 5,
+            relinkableFrom: false,
+            relinkableTo: false,
+            click: (e, obj) => this.highlightPath(e, obj as any),
+            zOrder: 1000
+        },
             // the whole link panel
             this.g(go.Shape,
                 { stroke: this.linkBackColor, strokeWidth: 1 },
@@ -1937,7 +1954,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("stroke", "hasProperties", (h) => (h ? "black" : this.linkBackColor))
             ), // the link shape
             this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
-            this.g(go.Panel, "Auto",  
+            this.g(go.Panel, "Auto",
                 this.g(
                     go.Shape,
                     {
