@@ -150,7 +150,8 @@ namespace igx.UnitTests.ValidatorTests
                         IsPartOfKey = true
                     }
                 },
-                Name = "test"
+                Name = "test",
+                FriendlyName = "Test"
             });
 
 
@@ -181,7 +182,8 @@ namespace igx.UnitTests.ValidatorTests
 
                     }
                 },
-                Name = "test"
+                Name = "test",
+                FriendlyName = "Test"
             });
 
 
@@ -210,7 +212,8 @@ namespace igx.UnitTests.ValidatorTests
                         IsPartOfKey = true,
                     }
                 },
-                Name = "test"
+                Name = "test",
+                FriendlyName = "Test"
             });
             model.Fields.Add(new FieldTypeApiEditModel()
             {
@@ -220,7 +223,8 @@ namespace igx.UnitTests.ValidatorTests
                     {
                     }
                 },
-                Name = "test"
+                Name = "test",
+                FriendlyName = "Test2"
             });
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
@@ -268,7 +272,8 @@ namespace igx.UnitTests.ValidatorTests
                         IsPartOfKey = true,
                     }
                 },
-                Name = "test"
+                Name = "test",
+                FriendlyName = "Test"
             });
             model.Fields.Add(new FieldTypeApiEditModel()
             {
@@ -278,7 +283,8 @@ namespace igx.UnitTests.ValidatorTests
                     {
                     }
                 },
-                Name = "test_good"
+                Name = "test_good",
+                FriendlyName = "Test Good"
             });
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
 
