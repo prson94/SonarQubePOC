@@ -15,7 +15,7 @@
 			SET IMPLICIT_TRANSACTIONS OFF
 			begin
 					Declare @Existing_Comp_level tinyint,
-							@Required_Comp_level tinyint = 140,
+							@Required_Comp_level tinyint = 150,
 							@database_name		 nvarchar(128),
 							@sqlstmt			 nvarchar(2000),
 							@Error				 int=0;
@@ -46,5 +46,10 @@
 			SET IMPLICIT_TRANSACTIONS ON
     ]]>
     </sql>
+    <rollback>
+      <![CDATA[
+
+]]>
+    </rollback>
   </changeSet>
 </databaseChangeLog>
