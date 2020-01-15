@@ -328,5 +328,6 @@ namespace d360.model
         List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);
         string GetIconText(string assetName);
         void SetApiExecutionProcessingStartTime(Guid ExecutionId);
+        string GetEscapedFilterString(string filter);
     }
 }

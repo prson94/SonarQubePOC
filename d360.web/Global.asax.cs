@@ -53,6 +53,7 @@ namespace d360.web
             builder.RegisterType<MetricsRepository>().As<IMetricsRepository>().InstancePerRequest();
             builder.RegisterType<ResponsibilityRepository>().As<IResponsibilityRepository>().InstancePerRequest();
             builder.RegisterType<SurveyRepository>().As<ISurveyRepository>().InstancePerRequest();
+            builder.RegisterType<MembershipRepository>().As<IMembershipRepository>().InstancePerRequest();
 
 
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()

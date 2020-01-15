@@ -17,6 +17,7 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Threading.Tasks;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
@@ -339,6 +340,28 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
 
+        }
+
+        [HttpGet,
+            Route("type/{uid}/id"),
+            ApiExplorerSettings(IgnoreApi = true),
+             SwaggerResponse(HttpStatusCode.OK, "", typeof(Int32))
+            ]
+        public IHttpActionResult GetWorkflowtypeId(Guid uid)
+        {
+            var prefix = "Workflow.GetWorkflowtypeId => ";
+            var errorMessage = "";
+            try {
+               var result = this.workflowRepository.GetWorkflowTypeByUID(uid);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result.ID));
+            } catch (Exception ex) {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix  }
+                });
+                return this.errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage);
+            }
+            
         }
 
     }

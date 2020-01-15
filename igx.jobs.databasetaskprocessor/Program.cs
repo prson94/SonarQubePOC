@@ -213,7 +213,7 @@ namespace igx.jobs.databasetaskprocessor
 	                                        ,c.Name as 'SynonymFor'
 	                                        ,s.[Object] as 'SynonymForObject'
 	                                        ,s.[ObjectID] as 'SynonymForObjectID'
-	                                        ,dbo.GenerateObjectUrl(s.[Object], c.ObjectTypeID, s.[ObjectID]) as 'Url'
+	                                        ,dbo.GenerateObjectUrl(s.[Object], c.ObjectTypeID, s.[ObjectID], 0x0, 0) as 'Url'
 	                                        ,c.ObjectTypeName as 'SynonymForObjectType'	
                                             ,p.Name as 'PredicateName'    
                                             ,s.ID as 'ID'                

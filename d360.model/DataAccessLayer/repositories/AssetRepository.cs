@@ -373,6 +373,26 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(value, out includeSegments);
             }
 
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
+            {
+                var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
+                if (!string.IsNullOrEmpty(simpleFilter))
+                {
+                    simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
+
+                    dbArgs.Add("@simpleFilter", simpleFilter);
+                    
+                    List<string> simpleFilters = new List<string>();
+                    foreach(var ft in fieldTypes.Where(x=> x.IsListable == true))
+                    {
+                        simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+                    }
+
+                    whereStatements.Add($"({string.Join(" or ", simpleFilters)})");
+                }
+            }
+
+
             var whereSql = "";
             if (whereStatements.Any())
                 whereSql = $"where {string.Join(" and ", whereStatements)}";
@@ -1104,7 +1124,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                ResourceID = CompanyContext.CurrentResourceID,
+                ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.DeleteAssetTypes
             };
 
@@ -1127,7 +1147,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                ResourceID = CompanyContext.CurrentResourceID,
+                ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.DeleteAssets,
                 SendWorkflowEvents = sendWorkflowEvents
             };
@@ -1161,7 +1181,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                ResourceID = CompanyContext.CurrentResourceID,
+                ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.PutAssets,
                 SendWorkflowEvents = sendWorkflowEvents
             };
@@ -1187,7 +1207,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 CompanyID = CompanyContext.CurrentCompanyID,
                 CompanyDomainPrefix = CompanyContext.CurrentCompanyDomain,
                 ExecutionID = Guid.NewGuid(),
-                ResourceID = CompanyContext.CurrentResourceID,
+                ResourceID = execution.ResourceID,
                 Action = ApiExecutionAction.PostAssets,
                 SendWorkflowEvents = sendWorkflowEvents
             };
@@ -1463,7 +1483,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 var orderDirection = "";
                 var offsetSql = "";
                 var pageNum = -1;
-                var pageSize = -1;
+                var pageSize = 200;
 
                 if(queryParams.Any(x=> x.Key == "_direction"))
                 {

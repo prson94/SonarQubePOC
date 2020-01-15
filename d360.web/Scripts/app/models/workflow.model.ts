@@ -305,6 +305,28 @@ export class WorkflowForm {
     AllowReassignResource: boolean;
 }
 
+export class WorkflowTypeItem {
+    WorkflowTypeUid: string;
+    ActionTypeUid: string;
+    ActionType: string;
+    AssetTypeUid: string;
+    AssetType: string;
+    RelationshipTypeUid: string;
+    RelationshipType: string;
+    Name: string;
+    State: string;
+    ChangeType: string;
+    Description: string;
+    Type: string;
+    PublishedVersionUid: string;
+    PublishedVersion: string;
+    CreatedOn: string;
+    UpdatedOn: string;
+    CreatedBy: string;
+    UpdatedBy: string;
+
+
+}
 export class WorkflowListItem {
     ID: number;
     CreatedOn: string;
@@ -319,6 +341,9 @@ export class WorkflowListItem {
     VersionID: number;
     ItemID: number;
     ChangeTypeName: string;
+    State: State;
+    Type: string;
+    Uid: string;
 }
 
 export class WorkflowEventRegistration {

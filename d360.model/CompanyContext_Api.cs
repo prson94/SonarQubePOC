@@ -829,6 +829,20 @@ insert into #MvLookupValues (ItemNumber, FieldTypeID, [RawValue])
 				inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
 				cross apply string_split(T.FieldValue, ',') MV;
 
+
+drop table if exists #RelevantLookupValues;
+create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
+
+insert into #RelevantLookupValues 
+select		top 100 percent
+			T.FieldTypeID,
+			FLV.[Text],
+			FLV.[Value]
+from		#LookupValues T
+			inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
+			cross apply string_split(T.FieldValue, ',') MV 
+			inner join FieldLookupValue FLV on FLV.FieldTypeID = T.FieldTypeID;
+
 update	T
 set		T.Value = S.Value
 from	#MvLookupValues T
@@ -841,7 +855,7 @@ from	#MvLookupValues T
 					from		#LookupValues T
 								inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
 								cross apply string_split(T.FieldValue, ',') MV 
-								inner join FieldLookupValue S on S.FieldTypeID = T.FieldTypeID and S.[Text] = MV.value
+								inner join #RelevantLookupValues S on S.FieldTypeID = T.FieldTypeID and S.[Text] = MV.value
 					group by	T.ItemNumber, T.FieldTypeID, S.Value, S.[Text]
 					order by	T.ItemNumber, T.FieldTypeID, S.[Text]	
 		) S on S.ItemNumber = T.ItemNumber and S.FieldTypeID = T.FieldTypeID and S.[Text] = T.[RawValue];
@@ -2747,6 +2761,7 @@ where   ExecutionID = @ExecutionID
                     int? intersectTypeID = null;
                     CurrentExecutionLocationModel currentLocation = null;
                     bool hasLookupFieldTypes = false;
+                    bool hasRelationshipFieldTypes = false;
                     List<AssetFieldTypeUpdate> fieldTypeUpdates = new List<AssetFieldTypeUpdate>();
 
                     try
@@ -2770,6 +2785,7 @@ where   ExecutionID = @ExecutionID
                         jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
                         requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
                         hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
+                        hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
                         this.AITrackTrace(client, execution, METHOD_NAME, "Get field types", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
                         #region Generate data sets
@@ -3644,8 +3660,13 @@ select [uid] from #ParentChildRelationships",
                                         var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, !isInsert);
                                         this.AITrackTrace(client, execution, METHOD_NAME, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         sw.Restart();
-                                        ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+
+                                        if (hasRelationshipFieldTypes)
+                                        {
+                                            ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
+                                            this.AITrackTrace(client, execution, METHOD_NAME, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                        }
+
                                         if (jsonFieldTypes.Count > 0)
                                         {
                                             sw.Restart();

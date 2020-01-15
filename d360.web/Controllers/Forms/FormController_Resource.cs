@@ -476,17 +476,23 @@ namespace d360.web.Controllers
 
 
         [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("ResourceGroup"), Route("ResourceGroup")]
-        public JsonResult PostResourceGroup(ResourceGroup[] model)
+        public JsonResult PostResourceGroup(ResourceGroupInfo model)
         {
             try
             {
-                if (!Company.HasAssetPermission(SystemObjects.Group, model[0].GroupID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                var id = Company.Filter<Asset>(x => x.uid == model.GroupGuid).SingleOrDefault().ObjectID;
+                foreach (var m in model.ResourceGroups)
+                    m.GroupID = id;
 
-                foreach (var m in model)
+                if (!Company.HasAssetPermission(SystemObjects.Group, model.ResourceGroups[0].GroupID, Permission.ModifyAsset))
+                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+                
+                
+
+                foreach (var m in model.ResourceGroups)
                     Company.Add(m);
 
-                return jsonSuccess("User successfully assigned.", model[0].ResourceID.ToString(), "add", HttpStatusCode.Created);
+                return jsonSuccess("User successfully assigned.", model.ResourceGroups[0].ResourceID.ToString(), "add", HttpStatusCode.Created);
             }
             catch (BaseException ex)
             {
@@ -501,8 +507,11 @@ namespace d360.web.Controllers
 
 
         [HttpGet, Route("GetGroupUserList"), NonNullableParameters]
-        public JsonNetResult GetGroupUserList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter)
+        public JsonNetResult GetGroupUserList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter,Guid? uid)
         {
+
+            if (uid.HasValue && uid.Value != Guid.Empty)
+                id = Company.Filter<Asset>(x => x.uid == uid).SingleOrDefault().ObjectID;
 
             string querySql;
             var dbArgs = new Dapper.DynamicParameters();
@@ -550,10 +559,13 @@ namespace d360.web.Controllers
         #region Group : Delete User
 
         [HttpDelete, ActionName("ResourceGroup"), Route("ResourceGroup"), NonNullableParameters]
-        public JsonResult DeleteResourceGroup(int groupID, int resourceID)
+        public JsonResult DeleteResourceGroup(int groupID, int resourceID,Guid? groupUid)
         {
             try
             {
+                if (groupUid.HasValue && groupUid.Value != Guid.Empty)
+                    groupID = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
+
                 if (!Company.HasAssetPermission(SystemObjects.Group, groupID, Permission.ModifyAsset))
                     return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
@@ -606,8 +618,10 @@ namespace d360.web.Controllers
         }
 
         [HttpDelete, Route("DeleteGroupByID"), NonNullableParameters]
-        public JsonResult DeleteGroupByID(int id)
+        public JsonResult DeleteGroupByID(int id,Guid? uid)
         {
+            if (uid.HasValue && uid.Value != Guid.Empty)
+                id = Company.Filter<Asset>(x => x.uid == uid).SingleOrDefault().ObjectID;
             var form = new FormCollection();
             form.Add("ID", id.ToString());
             return DeleteGroup(form);
@@ -703,10 +717,12 @@ namespace d360.web.Controllers
         }
 
         [HttpGet, ActionName("Group"), Route("Group"), NonNullableParameters]
-        public JsonNetResult GetGroup(int id)
+        public JsonNetResult GetGroup(int id,Guid? uid)
         {
             var group = new Group();
             var resourceList = new List<SelectListItem>();
+            if (uid.HasValue && uid.Value != Guid.Empty)
+                id = Company.Filter<Asset>(x => x.uid == uid).SingleOrDefault().ObjectID;
 
             if (id == 0)
             {

@@ -82,7 +82,10 @@ namespace d360.model.DataAccessLayer
             if (whereConditions.Count > 0)
                 whereClause = $"WHERE {string.Join(" AND ", whereConditions)}";
 
-            return await companyContext.QueryAsync<PredicateApiViewModel>($@"select 
+            var currentLineageversion = communityContext.GetCompanySettingByKey<int>("LineageVersion");
+
+
+            var allPredicates = await companyContext.QueryAsync<PredicateApiViewModel>($@"select 
                                                                              P.Uid,
                                                                              P.Name,
                                                                              P.Inverse,
@@ -96,6 +99,7 @@ namespace d360.model.DataAccessLayer
                                                                             outer apply(select top 1 id from IntersectType where PredicateID = P.Id)Usage
                                                                             {whereClause}          
                                                                             order by[Type], Name", dbArgs);
+            return allPredicates.Where(x => x.Type.AsInfoModel().LineageVersionsSupported.Contains(currentLineageversion));
         }
 
         public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
@@ -463,7 +467,7 @@ from	IntersectType I
                 " and f.objectid = @id  ) as PivotData " +
                 "PIVOT (max(FormattedValue) FOR FriendlyName IN (" + customColumnName + ") ) AS PivotResult) " +
                 "select i.ID, i.[Subject],i.SubjectID, i.SubjectName, i.SubjectTypeName, i.[Object], " +
-                "i.ObjectID, i.ObjectName, i.ObjectTypeName, i.PredicateName , " + CteColumnName +
+                "i.ObjectID, i.ObjectName, i.ObjectTypeName, i.PredicateName , i.SubjectUid, i.ObjectUid, " + CteColumnName +
                 " from  intersectdetail as i left join CTE  on CTE.ObjectID =i.id where intersecttypeid=@id ";
             var models = companyContext.Query<dynamic>(sql, new { id = id });
             return models;

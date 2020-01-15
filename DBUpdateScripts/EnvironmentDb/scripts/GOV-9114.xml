@@ -1,0 +1,43 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Bhoward" id="GOV-9226">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF (NOT EXISTS(SELECT Top 1 [Name] FROM [dbo].[Predicate] WHERE [Name] = 'Represents in'))
+BEGIN
+INSERT INTO [dbo].[Predicate](Name,Inverse,Type,IsSystem,Code,Uid)
+Values('Represents in','Represented by',13,0,13,NEWID())
+END
+
+IF (NOT EXISTS(SELECT Top 1 [Name] FROM [dbo].[Predicate] WHERE [Name] = 'Flows to'))
+BEGIN
+INSERT INTO [dbo].[Predicate](Name,Inverse,Type,IsSystem,Code,Uid)
+Values('Flows to','Flowed from',12,0,14,NEWID())
+END
+
+		]]>
+    </sql>
+	<rollback>
+	<![CDATA[	
+IF (EXISTS(SELECT Top 1 [Name] FROM [dbo].[Predicate] WHERE [Name] = 'Represents in'))
+BEGIN
+DELETE FROM [dbo].[Predicate] WHERE [Name] = 'Represents in'
+END
+
+IF (EXISTS(SELECT Top 1 [Name] FROM [dbo].[Predicate] WHERE [Name] = 'Flows to'))
+BEGIN
+DELETE FROM [dbo].[Predicate] WHERE [Name] = 'Flows to'
+END
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

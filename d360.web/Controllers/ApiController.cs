@@ -2707,8 +2707,8 @@ order by    rnk, [Name]";
                                 {
                                     DisplayColumn = $@"
     case 
-        when {tbPrefix}.Value is not null then [dbo].GenerateObjectUrl({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID)
-        when {tbtPrefix}.DefaultValue is not null then [dbo].GenerateObjectUrl({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID) 
+        when {tbPrefix}.Value is not null then [dbo].GenerateObjectUrl({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID, 0x0, 0)
+        when {tbtPrefix}.DefaultValue is not null then [dbo].GenerateObjectUrl({tbtPrefix}.[LookupObjectType], {tbtPrefix}.LookupObjectID, {tbtPrefix}.LookupObjectID, 0x0, 0) 
         else '' 
     end",
                                     datafield = $"{dataField}_Url"
