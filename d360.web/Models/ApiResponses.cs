@@ -85,50 +85,10 @@ namespace d360.web.Models
 
     #region Asset Browser
 
-    public class AssetBrowserLineageApiRelationshipModel
-    {
-        public Guid intersectUid { get; set; }
-        public Guid subjectUid { get; set; }
-        public string subjectKey { get; set; }
-        public Guid objectUid { get; set; }
-        public string objectKey { get; set; }
-        public string predicate { get; set; }
-        public int predicateId { get; set; }
-        public Guid predicateUid { get; set; }
-        public PredicateType predicateType { get; set; }
-        public string backColor { get; set; }
-        public string foreColor { get; set; }
-        public string icon { get; set; }
-    }
-
-    public class AssetBrowserLineageApiItemRelationCountAssetModel
-    {
-        public Guid Uid { get; set; }
-    }
-
-    public class AssetBrowserLineageApiItemRelationCountModel
-    {
-        public string Predicate { get; set; }
-        public int PredicateId { get; set; }
-        public Guid PredicateUid { get; set; }
-        public AssetBrowserApiHopDirection Direction { get; set; }
-        public int Count { get; set; }
-    }
-
-    public interface IAssetBrowserLineageApiItemModel
-    {
-        int assetTypeId { get; set; }
-        Guid assetUid { get; set; }
-        string displayValue { get; set; }
-        AssetBrowserApiHopDirection reveal { get; set; }
-        string key { get; set; }
-        string parentKey { get; set; }
-        List<AssetBrowserLineageApiItemRelationCountModel> relationCounts { get; set; }
-        List<AssetBrowserLineageApiItemModel> items { get; set; }
-    }
+    #region Asset
 
     [DataContract]
-    public class AssetBrowserLineageApiItemModel : IAssetBrowserLineageApiItemModel
+    public class AssetBrowserAssetModel
     {
         [DataMember]
         public int hop { get; set; }
@@ -163,16 +123,93 @@ namespace d360.web.Models
         [DataMember]
         public AssetBrowserApiHopDirection reveal { get; set; }
         [DataMember]
-        public List<AssetBrowserLineageApiItemRelationCountModel> relationCounts { get; set; }
+        public List<AssetBrowserOwnerCountModel> ownerCounts { get; set; }
         [DataMember]
-        public List<AssetBrowserLineageApiItemModel> items { get; set; }
+        public List<AssetBrowserAssetRelationCountModel> relationCounts { get; set; }
+        [DataMember]
+        public List<AssetBrowserAssetModel> items { get; set; }
     }
 
-    public class AssetBrowserLineageApiResponseModel
+    public class AssetBrowserAssetsModel
     {
-        public List<AssetBrowserLineageApiItemModel> assets { get; set; } = new List<AssetBrowserLineageApiItemModel>();
-        public List<AssetBrowserLineageApiRelationshipModel> intersects { get; set; } = new List<AssetBrowserLineageApiRelationshipModel>();
+        public List<AssetBrowserAssetModel> assets { get; set; } = new List<AssetBrowserAssetModel>();
+        public List<AssetBrowserAssetRelationModel> assetRelations { get; set; } = new List<AssetBrowserAssetRelationModel>();
     }
+
+    public class AssetBrowserAssetRelationCountModel
+    {
+        public string Predicate { get; set; }
+        public int PredicateID { get; set; }
+        public Guid PredicateUid { get; set; }
+        public AssetBrowserApiHopDirection Direction { get; set; }
+        public int Count { get; set; }
+    }
+
+    public class AssetBrowserAssetRelationModel
+    {
+        public Guid intersectUid { get; set; }
+        public Guid subjectUid { get; set; }
+        public string subjectKey { get; set; }
+        public Guid objectUid { get; set; }
+        public string objectKey { get; set; }
+        public string predicate { get; set; }
+        public int predicateId { get; set; }
+        public Guid predicateUid { get; set; }
+        public PredicateType predicateType { get; set; }
+        public string backColor { get; set; }
+        public string foreColor { get; set; }
+        public string icon { get; set; }
+    }
+
+    #endregion
+
+    #region Owner
+
+    [DataContract]
+    public class AssetBrowserOwnerModel
+    {
+        [DataMember]
+        public string key { get; set; }
+        [DataMember]
+        public string displayValue { get; set; }
+        [DataMember]
+        public string backColor { get; set; }
+        [DataMember]
+        public string foreColor { get; set; }
+        [DataMember]
+        public string icon { get; set; }
+        
+        [DataMember]
+        public Guid assetUid { get; set; }
+        
+        [DataMember]
+        public Guid resourceUid { get; set; }
+    }
+
+    public class AssetBrowserOwnersModel
+    {
+        public List<AssetBrowserOwnerModel> owners { get; set; } = new List<AssetBrowserOwnerModel>();
+        public List<AssetBrowserAssetRelationModel> ownerRelations { get; set; } = new List<AssetBrowserAssetRelationModel>();
+    }
+
+    public class AssetBrowserOwnerCountModel
+    {
+        public string ResponsibilityType { get; set; }
+        public int ResponsibilityTypeID { get; set; }
+        public int Count { get; set; }
+    }
+
+    public class AssetBrowserOwnerRelationModel
+    {
+        public Guid assetUid { get; set; }
+        public Guid ownerUid { get; set; }
+        public string assetKey { get; set; }
+        public string ownerKey { get; set; }
+        public string backColor { get; set; }
+        public string foreColor { get; set; }
+    }
+
+    #endregion
 
     #endregion
 }

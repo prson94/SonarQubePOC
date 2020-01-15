@@ -781,6 +781,16 @@ namespace d360.web.Models
     }
 
     [DataContract]
+    public class AssetBrowserApiOwnerHopRequestModel
+    {
+        [DataMember]
+        public List<AssetBrowserApiHopAssetRequestModel> Assets { get; set; }
+
+        [DataMember]
+        public int ResponsibilityTypeId { get; set; }
+    }
+
+    [DataContract]
     public class AssetBrowserApiHopAssetRequestModel
     {
         [DataMember]
