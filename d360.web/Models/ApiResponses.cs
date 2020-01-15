@@ -111,18 +111,18 @@ namespace d360.web.Models
         public string Predicate { get; set; }
         public int PredicateId { get; set; }
         public Guid PredicateUid { get; set; }
-        public GetAssetLineagePostModelDirection Direction { get; set; }
+        public AssetBrowserApiHopDirection Direction { get; set; }
         public int Count { get; set; }
     }
 
     public interface IAssetBrowserLineageApiItemModel
     {
-        int hop { get; set; }
         int assetTypeId { get; set; }
         Guid assetUid { get; set; }
         string displayValue { get; set; }
-        GetAssetLineagePostModelDirection reveal { get; set; }
+        AssetBrowserApiHopDirection reveal { get; set; }
         string key { get; set; }
+        string parentKey { get; set; }
         List<AssetBrowserLineageApiItemRelationCountModel> relationCounts { get; set; }
         List<AssetBrowserLineageApiItemModel> items { get; set; }
     }
@@ -141,11 +141,17 @@ namespace d360.web.Models
         [DataMember]
         public string key { get; set; }
         [DataMember]
+        public string parentKey { get; set; }
+        [DataMember]
         public string displayValue { get; set; }
         [DataMember]
         public string backColor { get; set; }
         [DataMember]
+        public double backAmount { get; set; }
+        [DataMember]
         public string foreColor { get; set; }
+        [DataMember]
+        public double foreAmount { get; set; }
         [DataMember]
         public string icon { get; set; }
         [DataMember]
@@ -155,7 +161,7 @@ namespace d360.web.Models
         [DataMember]
         public AssetTypeClass @class { get; set; }
         [DataMember]
-        public GetAssetLineagePostModelDirection reveal { get; set; }
+        public AssetBrowserApiHopDirection reveal { get; set; }
         [DataMember]
         public List<AssetBrowserLineageApiItemRelationCountModel> relationCounts { get; set; }
         [DataMember]
