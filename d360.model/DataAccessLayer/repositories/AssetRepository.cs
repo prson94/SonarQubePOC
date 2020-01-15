@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 using d360.core.helpers;
 using d360.core.resources;
 using System.Xml.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace d360.model.DataAccessLayer
 {
@@ -1250,9 +1251,104 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return CompanyContext.Filter<ApiExecution>(i => i.ExecutionID == executionUid).SingleOrDefault();
         }
 
-        public IEnumerable<ApiExecution> GetExecutionItems()
+        public async Task<APIExecutionAPIModelResult> GetExecutionItems(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            return CompanyContext.ApiExecutions;
+            int pageNum = 1;
+            int pageSize = 200;
+            string orderDirection = "asc";
+            string orderBySql = "";
+            string offsetSql = "";
+            if (queryParams.Any(x => x.Key == "_direction"))
+            {
+                string[] allowedDirections = new string[] { "asc", "desc" };
+                var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+                orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
+            }
+            
+            if (!queryParams.Any(p => p.Key == "_order"))
+            {
+                var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
+                orderBySql = $" order by Ex.[ExecutionID] {orderDirection} ";
+            }
+            else
+            {
+                var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
+                orderBySql = $" order by {orderByCol} {orderDirection} ";
+            }
+
+            if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum",StringComparison.OrdinalIgnoreCase)).Value, out pageNum))
+                    if (pageNum < 1) pageNum = 1;
+
+            if (queryParams.Any(x => x.Key.Equals("_pageSize",StringComparison.OrdinalIgnoreCase)))
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out pageSize))
+                    if (pageSize < 1) pageSize = 1;
+           
+            if (pageSize > 0 || pageNum > 0)
+            {
+                if (pageSize < 1) pageSize = 1;
+                if (pageNum < 1) pageNum = 1;
+            
+                offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
+            }          
+
+
+            var sql = $@"
+                        SELECT Ex.[ExecutionID]
+                              ,GR.[uid] as ResourceUid
+	                          ,CONCAT(GR.[FirstName],' ', GR.[LastName]) as [Resource]
+                              ,[Total]
+                              ,[Processed]
+                              ,[Error]
+	                          ,ERR.[Message] as ErrorMessage
+                              ,[ProcessingStartedOn] as StartedOn
+                              ,[CompletedOn]
+                              ,[Method]
+                              ,[Route]
+                              ,[Fields]
+                          FROM [api].[Execution] Ex
+                          INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID  
+                          LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID] 
+                          {orderBySql}
+                          {offsetSql}
+                        ";
+            var countSQL = $@"
+                        SELECT count(*)
+                          FROM [api].[Execution] Ex
+                          INNER JOIN [reporting].[Global_Resource] GR on GR.ResourceID = Ex.ResourceID 
+                          LEFT JOIN [api].[ExecutionAssetError] ERR on ERR.[ExecutionID] = Ex.[ExecutionID]
+                        ";
+            var executions = await CompanyContext.QueryAsync<dynamic>(sql);
+            var count = await CompanyContext.QueryAsync<int>(countSQL);
+
+            var items = executions.Select(x =>
+            {
+                var f = string.IsNullOrEmpty(x.Fields) ? "{}" : x.Fields;
+                return new APIExecutionAPIModel
+                {
+                    CompletedOn = x.CompletedOn,
+                    Error = x.Error,
+                    ErrorMessage = x.ErrorMessage,
+                    ExecutionID = x.ExecutionID,
+                    Fields = JObject.Parse(f),
+                    Method = x.Method,
+                    Processed = x.Processed,
+                    Resource = x.Resource,
+                    ResourceUid = x.ResourceUid,
+                    Route = x.Route,
+                    StartedOn = x.StartedOn,
+                    Total = x.Total
+                };
+            });
+            var resultsModel = new APIExecutionAPIModelResult
+            {
+                items = items,
+                total = count.FirstOrDefault(),
+                pageNum = pageNum,
+                pageSize = pageSize
+            };
+
+            return resultsModel;
         }
 
         public void UpsertAssetStyle(int assetTypeId, string foreColor, string backColor, string icon, string objectName = "Tx")

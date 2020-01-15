@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using System.Collections.Generic;
 
 namespace d360.core.entities
 {
@@ -75,5 +76,28 @@ namespace d360.core.entities
     public class ApiExecutionFields_DeletePredicates
     {
         public Guid PredicateUid { get; set; }
+    }
+
+
+    public class APIExecutionAPIModelResult : PagedApiBaseViewModel
+    {
+        [DataMember]
+        public IEnumerable<APIExecutionAPIModel> items { get; set; }
+    }
+
+    public class APIExecutionAPIModel
+    {
+        public Guid ExecutionID { get; set; }
+        public Guid ResourceUid { get; set; }
+        public string Resource { get; set; }
+        public int Total { get; set; }
+        public int Processed { get; set; }
+        public int Error { get; set; }
+        public string ErrorMessage { get; set; }
+        public DateTime StartedOn { get; set; }
+        public DateTime? CompletedOn { get; set; }
+        public string Method { get; set; }
+        public string Route { get; set; }
+        public dynamic Fields { get; set; }
     }
 }

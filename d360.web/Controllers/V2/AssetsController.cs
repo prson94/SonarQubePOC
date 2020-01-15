@@ -1176,12 +1176,12 @@ namespace d360.web.Controllers.V2
                 catch
                 {
                 }
-
+                var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
                 var statusModel = new ApiExecutionStatusModel
                 {
                     CompletedOn = dbExecutionItem.CompletedOn,
                     Error = dbExecutionItem.Error,
-                    Fields = Newtonsoft.Json.Linq.JObject.Parse(dbExecutionItem.Fields),
+                    Fields = Newtonsoft.Json.Linq.JObject.Parse(f),
                     Processed = dbExecutionItem.Processed,
                     StartedOn = dbExecutionItem.StartedOn,
                     Total = dbExecutionItem.Total,
@@ -1217,17 +1217,23 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("executions"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of all execution statuses.", typeof(IEnumerable<ApiExecutionStatusModel>))
+            SwaggerResponse(HttpStatusCode.OK, "A list of all execution statuses.", typeof(APIExecutionAPIModelResult)),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by Giud.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+
         ]
         public async Task<IHttpActionResult> GetExecutions()
         {
-            var items = AssetRepository.GetExecutionItems();
 
+            var queryParams = Request.GetQueryNameValuePairs();
+            var executions = await AssetRepository.GetExecutionItems(queryParams);
             return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
                         Request.CreateResponse(
                             HttpStatusCode.OK,
-                            items
+                            executions
                         )
                     )   
                 );
