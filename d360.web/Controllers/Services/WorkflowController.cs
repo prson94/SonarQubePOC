@@ -264,10 +264,14 @@ order by wi.StartedOn desc";
         /// </summary>
         /// <param name="id">The ID of the workflow record to retrieve status for.</param>
         /// <param name="version">Version</param>
+        /// <param name="uid"></param>
         /// <returns></returns>
-        [Route("diagram/{id:int}")]
-        public WorkflowDiagramModel GetWorkflowDiagram(int id, int? version = null)
+        [Route("diagram/{id:int}/{uid:Guid}")]
+        public WorkflowDiagramModel GetWorkflowDiagram(int id, Guid? uid,int? version = null)
         {
+            if (id==0 && uid.HasValue && uid.Value != Guid.Empty)
+                id = Company.Filter<core.entities.Workflow.Type>(i => i.UID == uid.Value).SingleOrDefault().ID;
+
             var nodes = Company.Query<WorkflowDiagramNode>(QueryConstants.WorkflowDiagramNodes, new { id, version }).ToList();
             var links = Company.Query<WorkflowDiagramLink>(QueryConstants.WorkflowDiagramLinks, new { id, version }).ToList();
             var type = Company.WorkflowTypes.Find(id);
@@ -1333,16 +1337,22 @@ order by wi.StartedOn desc";
             return Request.CreateResponse(HttpStatusCode.OK, types);
         }
 
-        [Route("type/{id:int}"), HttpGet]
-        public HttpResponseMessage GetWorkflowType(int id)
+        [Route("type/{id:int}/{uid:Guid}"), HttpGet]
+        public HttpResponseMessage GetWorkflowType(int id,Guid? uid)
         {
-            var type = Company.WorkflowTypes.Find(id);
+            core.entities.Workflow.Type type;
+            if (id==0 && uid.HasValue && uid.Value != Guid.Empty)
+                type = Company.Filter<core.entities.Workflow.Type>(i => i.UID == uid.Value).SingleOrDefault();
+            else
+                type = Company.WorkflowTypes.Find(id);
+
+
             if (type == null || (type.State != core.enums.State.Active && type.State != core.enums.State.InActive))
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {id} could not be found");
 
 
             var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
-            var model = GetWorkflowDiagram(id, currentVersion?.Version);
+            var model = GetWorkflowDiagram(id, uid,currentVersion?.Version);
 
             model.Type = type;
             model.CurrentVersion = currentVersion;
@@ -1389,9 +1399,9 @@ order by wi.StartedOn desc";
         {
             try
             {
-                var otype = Company.WorkflowTypes.Find(workflowType.ID);
+                var otype = Company.Filter<core.entities.Workflow.Type>(i => i.UID == workflowType.UID).SingleOrDefault();
                 if (otype == null || (otype.State != core.enums.State.Active && otype.State != core.enums.State.InActive))
-                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type id {workflowType.ID} could not be found");
+                    return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type Uid {workflowType.UID} could not be found");
 
                 //Workflow type creation
 
@@ -1411,7 +1421,7 @@ order by wi.StartedOn desc";
                 Company.SaveChanges();
 
                 var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == otype.ID).OrderByDescending(v => v.Version).First();
-                var omodel = GetWorkflowDiagram(workflowType.ID, currentVersion?.Version);
+                var omodel = GetWorkflowDiagram(0, workflowType.UID, currentVersion?.Version);
 
                 var @version = new WorkflowVersion();
                 @version.ID = 0;
@@ -1536,7 +1546,7 @@ order by wi.StartedOn desc";
 
 
 
-                return Request.CreateResponse(HttpStatusCode.OK, @type.ID);
+                return Request.CreateResponse(HttpStatusCode.OK, @type.UID);
 
             }
             catch (Exception e)
@@ -2155,10 +2165,14 @@ order by wi.StartedOn desc";
         }
 
 
-        [Route("type/{id:int}/delete")]
-        public HttpResponseMessage DeleteWorkflow(int id)
+        [Route("type/{id:int}/{uid:Guid}/delete")]
+        public HttpResponseMessage DeleteWorkflow(int id,Guid? uid)
         {
-            var type = Company.WorkflowTypes.Find(id);
+            core.entities.Workflow.Type type;
+            if (uid.HasValue && uid.Value != Guid.Empty)
+                type= Company.Filter<core.entities.Workflow.Type>(i => i.UID == uid.Value).SingleOrDefault();
+            else
+                 type = Company.WorkflowTypes.Find(id);
 
             if (type == null)
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type ID {id} could not be found");
