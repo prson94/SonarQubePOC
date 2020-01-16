@@ -9,6 +9,7 @@ using d360.core;
 using d360.core.entities;
 using d360.core.entities.Contracts;
 using d360.core.entities.Metric;
+using d360.core.entities.Scoring;
 using d360.core.entities.Views;
 using d360.core.entities.Workflow;
 using d360.core.enums;
@@ -165,6 +166,8 @@ namespace d360.model
         DbSet<WorkflowVersion> WorkflowVersions { get; set; }
         DbSet<WorkflowVersionStep> WorkflowVersionSteps { get; set; }
         DbSet<WorkflowVersionStepTransition> WorkflowVersionStepTransitions { get; set; }
+        DbSet<Allocation> Allocations { get; set; }
+
 
         event EventHandler<AssetsPartiallyProcessedEventArgs> AssetsPartiallyProcessed;
         event EventHandler<RelationshipsPartiallyProcessedEventArgs> RelationshipsPartiallyProcessed;
