@@ -38,6 +38,7 @@ namespace igx.UnitTests.Core
         public static List<dynamic> GetExcelModel()
         {
             dynamic data = new ExpandoObject();
+            data.UID = Guid.Empty;
             data.ID = 1;
             data.Subject = "";
             data.SubjectID = 1;
