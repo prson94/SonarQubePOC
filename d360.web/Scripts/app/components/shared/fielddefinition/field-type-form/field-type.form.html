@@ -25,6 +25,7 @@
                             <input required
                                    name="friendlyname"
                                    pInputText
+                                   maxlength="250"
                                    type="text"
                                    [(ngModel)]="model.FieldType.FriendlyName"
                                    style="width: 98%; display: block;"
@@ -65,6 +66,7 @@
                             </div>
                             <input required
                                    name="name"
+                                   maxlength="250"
                                    pInputText
                                    type="text"
                                    [(ngModel)]="model.FieldType.Name"
@@ -81,6 +83,7 @@
                             <input name="category"
                                    pInputText
                                    type="text"
+                                   maxlength="250"
                                    [(ngModel)]="model.FieldType.Category"
                                    style="width: 98%; display: block;" />
                         </div>
@@ -985,6 +988,7 @@
                     </div>
                     <textarea pInputTextarea
                               autoResize="'true'"
+                              maxlength="4000"
                               [(ngModel)]="model.FieldType.DisplayDescription"
                               [ngModelOptions]="{standalone: true}"></textarea>
                 </div>
@@ -995,6 +999,7 @@
                     </div>
                     <textarea pInputTextarea
                               autoResize="'true'"
+                              maxlength="4000"
                               [(ngModel)]="model.FieldType.FormDescription"
                               [ngModelOptions]="{standalone: true}"></textarea>
                 </div>
