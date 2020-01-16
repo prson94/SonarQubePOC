@@ -429,7 +429,14 @@ export class SourceRuleSource {
 
 // #region Asset Browser : Translation
 
-export class AssetBrowserTranslationRelationCount {
+export class AssetBrowserTranslationOwnerCount {
+    key: string;
+    responsibilityType: string;
+    responsibilityTypeId: number;
+    count: number;
+}
+
+export class AssetBrowserTranslationRelationCount { 
     key: string;
     predicate: string;
     predicateId: number;
@@ -467,6 +474,7 @@ export class AssetBrowserTranslationNode {
     subgraph: any;
     showIcon: boolean;
     showReveal: AssetBrowserApiHopDirection;
+    owners: AssetBrowserTranslationOwnerCount[] = new Array();
     relations: AssetBrowserTranslationRelationCount[] = new Array();
     ignoredPredicates: string[] = new Array();
 }
@@ -487,6 +495,11 @@ export enum AssetBrowserApiHopDirection {
     Both = 3
 }
 
+export class AssetBrowserApiOwnerHopRequestModel {
+    Assets: AssetBrowserApiHopAssetRequestModel[];
+    ResponsibilityTypeId: number;
+}
+
 export class AssetBrowserApiHopRequestModel {
     Assets: AssetBrowserApiHopAssetRequestModel[];
     Direction: AssetBrowserApiHopDirection;
@@ -504,15 +517,69 @@ export class AssetBrowserApiHopAssetRequestModel {
 
 // #region Asset Browser : Response
 
-export class AssetBrowserLineageApiItemRelationCountModel {
-    Predicate: string;
-    PredicateId: number;
-    PredicateUid: string;
-    Direction: AssetBrowserApiHopDirection;
+// Core View Model
+export class AssetBrowserModel {
+    focalAssetUid: string;
+    assets: AssetBrowserAssetModel[];
+    assetRelations: AssetBrowserAssetRelationModel[];
+    owners: AssetBrowserOwnerModel[];
+    ownerRelations: AssetBrowserOwnerRelationModel[];
+
+    clear() {
+        this.assets = new Array();
+        this.assetRelations = new Array();
+        this.owners = new Array();
+        this.ownerRelations = new Array();
+    }
+}
+
+export class AssetBrowserGenericRelationModel {
+    from: string;
+    to: string;
+}
+
+// Ownership Models
+export class AssetBrowserOwnerCountModel {
+    ResponsibilityType: string;
+    ResponsibilityTypeID: number;
     Count: number;
 }
 
-export class AssetBrowserLineageApiItemModel {
+export class AssetBrowserOwnerRelationModel {
+    assetUid: string;
+    assetKey: string;
+    ownerUid: string;
+    ownerKey: string;
+    backColor: string;
+    foreColor: string;
+}
+
+export class AssetBrowserOwnersModel {
+    responsibilityType: string;
+    responsibilityTypeId: number;
+    fromKey: string;
+    owners: AssetBrowserOwnerModel[];
+    ownerRelations: AssetBrowserOwnerRelationModel[];
+}
+
+export class AssetBrowserOwnerModel {
+    key: string;
+    resourceUid: string;
+    displayValue: string;
+    icon: string;
+    backColor: string;
+    foreColor: string;
+}
+
+// Item Models
+
+export class AssetBrowserAssetsModel {
+    focalAssetUid: string;
+    assets: AssetBrowserAssetModel[];
+    assetRelations: AssetBrowserAssetRelationModel[];
+}
+
+export class AssetBrowserAssetModel {
     hop: number;
     assetUid: string;
     assetTypeId: number;
@@ -527,11 +594,22 @@ export class AssetBrowserLineageApiItemModel {
     icon: string;
     class: AssetTypeClass;
     reveal: AssetBrowserApiHopDirection;
-    items: AssetBrowserLineageApiItemModel[];
-    relationCounts: AssetBrowserLineageApiItemRelationCountModel[];
+    items: AssetBrowserAssetModel[];
+    ownerCounts: AssetBrowserOwnerCountModel[];
+    relationCounts: AssetBrowserAssetRelationCountModel[];
 }
 
-export class AssetBrowserLineageApiRelationshipModel {
+// Relationship Models
+
+export class AssetBrowserAssetRelationCountModel {
+    Predicate: string;
+    PredicateID: number;
+    PredicateUid: string;
+    Direction: AssetBrowserApiHopDirection;
+    Count: number;
+}
+
+export class AssetBrowserAssetRelationModel {
     intersectUid: string;
     subjectUid: string;
     subjectKey: string;
@@ -544,12 +622,6 @@ export class AssetBrowserLineageApiRelationshipModel {
     backColor: string;
     foreColor: string;
     icon: string;
-}
-
-export class AssetBrowserLineageApiResponseModel {
-    focalAssetUid: string;
-    assets: AssetBrowserLineageApiItemModel[];
-    intersects: AssetBrowserLineageApiRelationshipModel[];
 }
 
 // #endregion Response
