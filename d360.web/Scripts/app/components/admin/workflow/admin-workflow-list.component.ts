@@ -39,7 +39,7 @@ import { State } from '../../../models/asset.model';
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item >
-            <tr (dblclick)="onEditClick.emit({ ID: item.ID, isClone: false })" [pSelectableRow]="item">
+            <tr (dblclick)="onEditClick.emit({ uid: item.Uid, isClone: false })" [pSelectableRow]="item">
                 <td *ngFor="let col of columns" [ngSwitch]="col.type" class="break-wrap">
                     <span *ngSwitchCase="'text'">{{item[col.datafield]}}</span>
                     <span *ngSwitchCase="'date'">{{item[col.datafield] | date:'shortDate'}}</span>
