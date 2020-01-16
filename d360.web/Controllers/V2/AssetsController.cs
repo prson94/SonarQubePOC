@@ -1139,6 +1139,76 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// GETs the status of an execution record, including the results for the execution.
+        /// </summary>
+        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("executions/{executionUid:Guid}/status"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of assets.", typeof(ApiExecutionStatusModel)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your status was not found.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionUid)
+        {
+            var prefix = "Assets.GetExecutionStatus => ";
+            var errorMessage = "";
+
+            try
+            {
+                ApiExecution dbExecutionItem = AssetRepository.GetExecutionItemByUid(executionUid);
+
+                if (dbExecutionItem == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
+                }
+
+                var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionUid };
+
+                List<DatabaseBulkAssetResult> results = null;
+                try
+                {
+                    var resultsJson = Storage.GetFileContentsAsString(info.StorageFolder, info.ResponseFileName);
+                    results = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(resultsJson);
+                }
+                catch
+                {
+                }
+                var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
+                var statusModel = new ApiExecutionStatusModel
+                {
+                    CompletedOn = dbExecutionItem.CompletedOn,
+                    Error = dbExecutionItem.Error,
+                    Fields = Newtonsoft.Json.Linq.JObject.Parse(f),
+                    Processed = dbExecutionItem.Processed,
+                    StartedOn = dbExecutionItem.StartedOn,
+                    Total = dbExecutionItem.Total,
+                    Results = results
+                };
+
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            statusModel
+                        )
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "ExecutionUid", executionUid.ToString() }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
         #endregion
 
             #region AssetTag

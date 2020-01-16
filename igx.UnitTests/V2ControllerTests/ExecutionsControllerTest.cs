@@ -42,42 +42,5 @@ namespace igx.UnitTests.V2ControllerTests
             Assert.True(responseMessage.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
         }
 
-        [Theory]
-        [InlineData(DataConstants.InvalidGUID)]
-        [InlineData(DataConstants.ValidGUID)]
-        public void GetExecutionStatus(string uid)
-        {
-            var executionUid = Guid.Parse(uid);
-            bool isGoodUID = uid == DataConstants.ValidGUID;
-            Task<IHttpActionResult> actionResult;
-            Task<HttpResponseMessage> responseMessageResult;
-
-            if (!isGoodUID)
-            {
-                actionResult = executionsController.GetExecutionStatus(executionUid);
-                responseMessageResult = actionResult.Result.ExecuteAsync(new System.Threading.CancellationToken());
-
-                Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.NotFound, XMsg.BadResponseCode);
-            }
-            if (isGoodUID)
-            {
-                actionResult = executionsController.GetExecutionStatus(executionUid);
-                responseMessageResult = actionResult.Result.ExecuteAsync(new System.Threading.CancellationToken());
-                var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
-                var data = JsonConvert.DeserializeObject<JObject>(str);
-
-                Assert.True(responseMessageResult.Result.IsSuccessStatusCode, XMsg.BadResponseCode);
-                Assert.True(data != null, XMsg.InvalidJSON);
-
-                var importantFields = new List<string>() { "CompletedOn", "Error", "Fields", "Processed", "StartedOn", "Total", "Results" };
-                foreach (var field in importantFields)
-                {
-                    Assert.True(data.GetValue(field) != null, $"{field} missing from response!");
-                }
-
-            }
-
-        }
-
     }
 }
