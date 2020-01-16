@@ -32,6 +32,9 @@ namespace d360.core.entities
         public string ErrorMessage { get; set; }
 
         [DataMember]
+        public DateTime ProcessingStartedOn { get; set; }
+
+        [DataMember]
         public DateTime StartedOn { get; set; }
 
         [DataMember]
@@ -94,6 +97,7 @@ namespace d360.core.entities
         public int Processed { get; set; }
         public int Error { get; set; }
         public string ErrorMessage { get; set; }
+        public DateTime ProcessingStartedOn { get; set; }
         public DateTime StartedOn { get; set; }
         public DateTime? CompletedOn { get; set; }
         public string Method { get; set; }

@@ -1301,7 +1301,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                               ,[Processed]
                               ,[Error]
 	                          ,ERR.[Message] as ErrorMessage
-                              ,[ProcessingStartedOn] as StartedOn
+                              ,[ProcessingStartedOn] 
+                              ,[StartedOn] 
                               ,[CompletedOn]
                               ,[Method]
                               ,[Route]
@@ -1333,6 +1334,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     Fields = JObject.Parse(f),
                     Method = x.Method,
                     Processed = x.Processed,
+                    ProcessingStartedOn = x.ProcessingStartedOn,
                     Resource = x.Resource,
                     ResourceUid = x.ResourceUid,
                     Route = x.Route,

@@ -826,66 +826,6 @@ namespace d360.web.Controllers.V2
             }
         }
 
-
-        /// <summary>
-        /// GETs the status of an execution record, including the results for the execution.
-        /// </summary>
-        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
-        /// <returns></returns>
-        [
-            HttpGet,
-            Route("executions/{executionUid:Guid}/status"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of relationships.", typeof(ApiExecutionStatusModel)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-        ]
-        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionUid)
-        {
-            var prefix = "Relationships.GetExecutionStatus => ";
-            var errorMessage = "";
-
-            try
-            {
-                var dbExecutionItem = AssetRepository.GetExecutionItemByUid(executionUid);
-
-                if (dbExecutionItem == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
-                }
-
-                var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionUid };
-
-                List<DatabaseBulkAssetResult> results = RelationshipRepository.GetBulkResults(info);
-
-                var statusModel = new ApiExecutionStatusModel
-                {
-                    CompletedOn = dbExecutionItem.CompletedOn,
-                    Error = dbExecutionItem.Error,
-                    Fields = Newtonsoft.Json.Linq.JObject.Parse(dbExecutionItem.Fields),
-                    Processed = dbExecutionItem.Processed,
-                    StartedOn = dbExecutionItem.StartedOn,
-                    Total = dbExecutionItem.Total,
-                    Results = results
-                };
-                return await Task.FromResult<IHttpActionResult>(
-                    ResponseMessage(
-                        Request.CreateResponse(
-                            HttpStatusCode.OK,
-                            statusModel
-                        )
-                    )
-                );
-            }
-            catch (Exception ex)
-            {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
-            }
-        }
-
         #endregion
 
 

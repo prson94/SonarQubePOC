@@ -17,10 +17,11 @@ using d360.web.Models;
 using d360.core.queue;
 using d360.extensions;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace d360.web.Controllers.V2
 {
-    [ApiExplorerSettings(IgnoreApi = true)]
+    
     [
     ApiVersion("2.0"),
     RoutePrefix("api/v{version:apiVersion}/executions"), Authorize
@@ -31,11 +32,13 @@ namespace d360.web.Controllers.V2
 
         IAssetRepository AssetRepository;
         IStorageProvider Storage;
-        public ExecutionsController(ICommunityContext community, ICompanyContext company, IAssetRepository repository, IStorageProvider storage)
+        IRelationshipRepository RelationshipRepository;
+        public ExecutionsController(ICommunityContext community, ICompanyContext company, IAssetRepository repository, IStorageProvider storage, IRelationshipRepository relationshipRepository)
             : base(community, company)
         {
             Storage = storage;
             AssetRepository = repository;
+            RelationshipRepository = relationshipRepository;
         }
 
         #endregion
@@ -47,6 +50,7 @@ namespace d360.web.Controllers.V2
         /// <returns></returns>
         [
             HttpGet,
+            Route(""),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of all execution statuses.", typeof(APIExecutionAPIModelResult)),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
@@ -115,6 +119,7 @@ namespace d360.web.Controllers.V2
                     Fields = Newtonsoft.Json.Linq.JObject.Parse(f),
                     Processed = dbExecutionItem.Processed,
                     StartedOn = dbExecutionItem.StartedOn,
+                    ProcessingStartedOn = dbExecutionItem.ProcessingStartedOn,
                     Total = dbExecutionItem.Total,
                     Results = results
                 };
@@ -139,6 +144,67 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
+
+        /// <summary>
+        /// GETs the status of an execution record, including the results for the execution.
+        /// </summary>
+        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("relationships/{executionUid:Guid}/status"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of relationships.", typeof(ApiExecutionStatusModel)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetRelationshipsExecutionStatus(Guid executionUid)
+        {
+            var prefix = "Relationships.GetRelationshipsExecutionStatus => ";
+            var errorMessage = "";
+
+            try
+            {
+                var dbExecutionItem = AssetRepository.GetExecutionItemByUid(executionUid);
+
+                if (dbExecutionItem == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
+                }
+
+                var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionUid };
+
+                List<DatabaseBulkAssetResult> results = RelationshipRepository.GetBulkResults(info);
+
+                var statusModel = new ApiExecutionStatusModel
+                {
+                    CompletedOn = dbExecutionItem.CompletedOn,
+                    Error = dbExecutionItem.Error,
+                    Fields = Newtonsoft.Json.Linq.JObject.Parse(dbExecutionItem.Fields),
+                    Processed = dbExecutionItem.Processed,
+                    StartedOn = dbExecutionItem.StartedOn,
+                    ProcessingStartedOn = dbExecutionItem.ProcessingStartedOn,
+                    Total = dbExecutionItem.Total,
+                    Results = results
+                };
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            statusModel
+                        )
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
 
         #endregion
     }
