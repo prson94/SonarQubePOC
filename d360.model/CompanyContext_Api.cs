@@ -2297,6 +2297,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
         public List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600)
         {
             var results = new List<RelationshipTypeResult>();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (dupes.Any())
             {
@@ -2426,6 +2429,10 @@ where   ExecutionID = @ExecutionID
         public List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600)
         {
             var results = new List<RelationshipTypeResult>();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (dupes.Any())
             {
@@ -2551,6 +2558,9 @@ where   ExecutionID = @ExecutionID
         public List<RelationshipTypeResult> DeleteRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeDelete> import, int timeout = 3600)
         {
             var results = new List<RelationshipTypeResult>();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (dupes.Any())
             {
@@ -5021,6 +5031,8 @@ where   ER.ExecutionID = @ExecutionID
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
 
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (executionItemDupes.Any())
             {
@@ -5224,6 +5236,9 @@ where   ER.ExecutionID = @ExecutionID
             var results = new List<PredicateUpsertResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
 
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             var predDupes = import.GroupBy(x => x.Name + x.Type).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
@@ -5565,6 +5580,8 @@ where   ER.ExecutionID = @ExecutionID
             var results = new List<ResponsibilityTypeUpsertResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
             var nameDupes = import.GroupBy(i => i.Name).Where(i => i.Count() > 1).Select(i => new { Name = i.Key, Count = i.Count() }).ToList();
