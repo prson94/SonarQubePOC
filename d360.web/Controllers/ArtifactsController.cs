@@ -690,6 +690,8 @@ where   A.Type = 'ArtifactType'
                 return (string)((row as IDictionary<string, object>)["Url"]);
             else if (field != null && field.Name == "ID")
                 return (string)((row as IDictionary<string, object>)["ID"].ToString());
+            else if (field != null && field.Name == "UID")
+                return (string)((row as IDictionary<string, object>)["Uid"].ToString());
             return "";
         }
 
