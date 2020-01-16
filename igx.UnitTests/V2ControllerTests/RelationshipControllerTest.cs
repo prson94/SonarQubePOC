@@ -408,6 +408,29 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
+        public async void GetExecutionStatus()
+        {
+
+            var actionResult = relationshipsController.GetExecutionStatus(Guid.Parse(DataConstants.ValidGUID));
+
+            var result = await actionResult.Result.ExecuteAsync(new CancellationToken());
+            var str = await result.Content.ReadAsStringAsync();
+
+            Assert.True(result.IsSuccessStatusCode);
+            Assert.True(result.StatusCode == HttpStatusCode.OK);
+            Assert.True(!string.IsNullOrEmpty(str));
+            var data = JsonConvert.DeserializeObject<JObject>(str);
+            Assert.True(data.GetValue("CompletedOn").ToString() != null);
+            Assert.True(data.GetValue("Error").ToString() != null);
+            Assert.True(data.GetValue("Fields").ToString() != null);
+            Assert.True(data.GetValue("Processed").ToString() != null);
+            Assert.True(data.GetValue("StartedOn").ToString() != null);
+            Assert.True(data.GetValue("Total").ToString() != null);
+            Assert.True(data.GetValue("Results").ToString() != null);
+
+        }
+
+        [Fact]
         public async void DeleteRelationships()
         {
 

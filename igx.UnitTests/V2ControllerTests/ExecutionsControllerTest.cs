@@ -9,7 +9,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using Xunit;
@@ -24,7 +23,7 @@ namespace igx.UnitTests.V2ControllerTests
         internal ExecutionsController executionsController;
         public ExecutionsControllerTest()
         {
-            this.executionsController = new ExecutionsController(GetCommunity(), GetCompany(), GetAssetRepository(), GetStorage(), GetRelationshipRepository())
+            this.executionsController = new ExecutionsController(GetCommunity(), GetCompany(), GetAssetRepository(), GetStorage())
             {
                 Request = new HttpRequestMessage(),
                 Configuration = new HttpConfiguration()
@@ -56,14 +55,14 @@ namespace igx.UnitTests.V2ControllerTests
             if (!isGoodUID)
             {
                 actionResult = executionsController.GetExecutionStatus(executionUid);
-                responseMessageResult = actionResult.Result.ExecuteAsync(new CancellationToken());
+                responseMessageResult = actionResult.Result.ExecuteAsync(new System.Threading.CancellationToken());
 
                 Assert.True(responseMessageResult.Result.StatusCode == HttpStatusCode.NotFound, XMsg.BadResponseCode);
             }
             if (isGoodUID)
             {
                 actionResult = executionsController.GetExecutionStatus(executionUid);
-                responseMessageResult = actionResult.Result.ExecuteAsync(new CancellationToken());
+                responseMessageResult = actionResult.Result.ExecuteAsync(new System.Threading.CancellationToken());
                 var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
                 var data = JsonConvert.DeserializeObject<JObject>(str);
 
@@ -77,28 +76,6 @@ namespace igx.UnitTests.V2ControllerTests
                 }
 
             }
-        }
-
-        [Fact]
-        public async void GetRelationshipsExecutionStatus()
-        {
-
-            var actionResult = executionsController.GetRelationshipsExecutionStatus(Guid.Parse(DataConstants.ValidGUID));
-
-            var result = await actionResult.Result.ExecuteAsync(new CancellationToken());
-            var str = await result.Content.ReadAsStringAsync();
-
-            Assert.True(result.IsSuccessStatusCode);
-            Assert.True(result.StatusCode == HttpStatusCode.OK);
-            Assert.True(!string.IsNullOrEmpty(str));
-            var data = JsonConvert.DeserializeObject<JObject>(str);
-            Assert.True(data.GetValue("CompletedOn").ToString() != null);
-            Assert.True(data.GetValue("Error").ToString() != null);
-            Assert.True(data.GetValue("Fields").ToString() != null);
-            Assert.True(data.GetValue("Processed").ToString() != null);
-            Assert.True(data.GetValue("StartedOn").ToString() != null);
-            Assert.True(data.GetValue("Total").ToString() != null);
-            Assert.True(data.GetValue("Results").ToString() != null);
 
         }
 
