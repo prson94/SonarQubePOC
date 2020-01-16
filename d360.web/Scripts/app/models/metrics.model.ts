@@ -1,4 +1,5 @@
 ﻿import { FieldType } from "./fields.model";
+import { State } from "./asset.model";
 
 export class MetricAssetViewModel {
     Uid: string;
@@ -110,4 +111,21 @@ export class Condition {
     operatorName: string;
     andOrName: string;
 }
+
+
+export class Allocation {
+    uid: string;
+    assetClassName: string;
+    assetTypeUid: string;
+    assetTypePath: string;
+    scoreType: ScoreType;
+    state: State;
+}
+
+export enum ScoreType {
+    Governance = 1,
+    DataQuality = 2,
+    Perceptional = 3
+}
+
 

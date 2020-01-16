@@ -884,6 +884,9 @@ order by A.ID, FT.SortOrder", new { id, attribute });
         [HttpGet, Route("tooltipdatabyuid/{uid}")]
         public JsonResult GetTooltipDataByUid(Guid uid)
         {
+            var queryParams = Request.QueryString;
+
+
             var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
             if (asset != null)
                 return GetTooltipData(asset.ObjectID, asset.Object);

@@ -74,7 +74,7 @@ export class PreviewTooltipComponent {
         if (!this.data) {
             //get object properties for the tooltip
             if (this.uid) {
-                this.toolTipService.getTooltipInfoByUid(this.uid)
+                this.toolTipService.getTooltipInfoByUid(this.uid, this.objectType)
                     .subscribe(res => {
                         if (!res.ShowTooltip || !this.pending) {
                             this.active = false;
