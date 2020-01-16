@@ -119,6 +119,7 @@
     <Compile Include="DataAccessLayer\IResponsibilityRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\FusionRepository.cs" />
     <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
+    <Compile Include="DataAccessLayer\IScoringRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\IssueRepository.cs" />
     <Compile Include="DataAccessLayer\ITagRepository.cs" />
     <Compile Include="DataAccessLayer\IWorkflowRepository.cs" />
@@ -132,6 +133,7 @@
     <Compile Include="DataAccessLayer\repositories\RelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResourceRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResponsibilityRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\ScoringRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\SurveyRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\TagRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\FieldsRepository.cs" />
