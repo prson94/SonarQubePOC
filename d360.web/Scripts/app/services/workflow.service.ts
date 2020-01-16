@@ -107,11 +107,11 @@ export class WorkflowService extends BaseObservableService {
     }
 
     getAdminWorkflowIssueTypes(): Observable<WorkflowIssueType[]> {
-        return this.http.get('api/adminissuetypes')
+        return this.http.get('/api/v2/actions/types')
             .pipe(
                 map(response => <WorkflowIssueType[]>response),
                 catchError(err=>this.handleError(err))
-            );
+            );  
     }
 
     deleteWorkflowIssueType(id: number): Observable<JsonResult> {
