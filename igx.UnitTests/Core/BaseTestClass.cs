@@ -309,8 +309,12 @@ namespace igx.UnitTests
             mock.Setup(x => x.XrefExists(It.IsAny<AssetCrossReference>()))
                 .Returns((AssetCrossReference xref) => xref.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(true) : Task.FromResult(false));
 
-            mock.Setup(x => x.PostBulkCrossReference(It.IsAny<List<AssetCrossReference>>()))
-                 .Returns((List<AssetCrossReference> xRefList) => xRefList.Any(x => x.uid == Guid.Parse(DataConstants.InvalidGUID)) ? Task.FromResult(false) : Task.FromResult(true));
+            mock.Setup(x => x.PostBulkCrossReference(It.IsAny<List<AssetCrossReference>>(), It.IsAny<ApiExecution>()))
+                 .Returns((List<AssetCrossReference> xRefList, object o2) => {
+                     if (xRefList.Count == 0) return null;
+                     else return new List<AssetCrossReferenceResult>() { };
+                 });
+
 
             mock.Setup(x => x.PutCrossReference(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<AssetCrossReference>())).
                 Returns((Guid uid, string s1, string s2, AssetCrossReference xRef) => xRef.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(0) : Task.FromResult(1));
