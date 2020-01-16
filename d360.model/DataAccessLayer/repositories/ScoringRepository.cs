@@ -53,7 +53,7 @@ namespace d360.model.DataAccessLayer
             return allocations;
         }
 
-        public AllocationApiGetModel PostAllocation(AllocationApiUpsertModel model, ref Allocation alloc)
+        public AllocationApiGetModel PostAllocation(AllocationApiUpsertModel model, ref ScoreTypeAllocation alloc)
         {
             if (alloc != null)
             {
@@ -64,12 +64,12 @@ namespace d360.model.DataAccessLayer
             }
             else
             {
-                alloc = new Allocation();
+                alloc = new ScoreTypeAllocation();
                 alloc.AssetTypeUid = model.assetTypeUid.Value;
                 alloc.ScoreType = model.scoreType.Value;
                 alloc.CreatedBy = alloc.UpdatedBy = companyContext.CurrentResourceID;
                 alloc.CreatedOn = alloc.UpdatedOn = DateTime.UtcNow;
-                companyContext.Allocations.Add(alloc);
+                companyContext.ScoreTypeAllocations.Add(alloc);
                 companyContext.SaveChanges();
 
             }
@@ -94,7 +94,7 @@ namespace d360.model.DataAccessLayer
             return allocation;
         }
 
-        public AllocationApiGetModel UpdateAllocation(AllocationApiUpsertModel model, Allocation alloc)
+        public AllocationApiGetModel UpdateAllocation(AllocationApiUpsertModel model, ScoreTypeAllocation alloc)
         {
             alloc.AssetTypeUid = model.assetTypeUid.Value;
             alloc.ScoreType = model.scoreType.Value;
@@ -123,7 +123,7 @@ namespace d360.model.DataAccessLayer
             return allocation;
         }
 
-        public void DeleteAllocation(Allocation alloc)
+        public void DeleteAllocation(ScoreTypeAllocation alloc)
         {
             alloc.UpdatedBy = companyContext.CurrentResourceID;
             alloc.UpdatedOn = DateTime.UtcNow;
@@ -132,24 +132,24 @@ namespace d360.model.DataAccessLayer
         }
 
 
-        public bool HasActiveMeasures(Allocation alloc)
+        public bool HasActiveMeasures(ScoreTypeAllocation alloc)
         {
             return companyContext.MetricAssets.Any(x => x.State == State.Active && x.AssetTypeUid == alloc.AssetTypeUid && x.ScoreType == alloc.ScoreType);
         }
 
-        public bool DoesAllocationExists(Guid allocationUid, AllocationApiUpsertModel model)
+        public bool DoesAllocationExist(Guid allocationUid, AllocationApiUpsertModel model)
         {
-            return companyContext.Allocations.Any(x => x.Uid != allocationUid && x.AssetTypeUid == model.assetTypeUid && x.ScoreType == model.scoreType);
+            return companyContext.ScoreTypeAllocations.Any(x => x.Uid != allocationUid && x.AssetTypeUid == model.assetTypeUid && x.ScoreType == model.scoreType);
         }
 
-        public Allocation GetAllocationByUid(Guid allocationUid)
+        public ScoreTypeAllocation GetAllocationByUid(Guid allocationUid)
         {
-            return companyContext.Allocations.FirstOrDefault(x => x.Uid == allocationUid);
+            return companyContext.ScoreTypeAllocations.FirstOrDefault(x => x.Uid == allocationUid);
         }
 
-        public Allocation GetAllocationByModel(AllocationApiUpsertModel model)
+        public ScoreTypeAllocation GetAllocationByModel(AllocationApiUpsertModel model)
         {
-            return companyContext.Allocations.FirstOrDefault(x => x.AssetTypeUid == model.assetTypeUid && x.ScoreType == model.scoreType);
+            return companyContext.ScoreTypeAllocations.FirstOrDefault(x => x.AssetTypeUid == model.assetTypeUid && x.ScoreType == model.scoreType);
         }
     }
 }

@@ -166,7 +166,7 @@ namespace d360.model
         DbSet<WorkflowVersion> WorkflowVersions { get; set; }
         DbSet<WorkflowVersionStep> WorkflowVersionSteps { get; set; }
         DbSet<WorkflowVersionStepTransition> WorkflowVersionStepTransitions { get; set; }
-        DbSet<Allocation> Allocations { get; set; }
+        DbSet<ScoreTypeAllocation> ScoreTypeAllocations { get; set; }
 
 
         event EventHandler<AssetsPartiallyProcessedEventArgs> AssetsPartiallyProcessed;

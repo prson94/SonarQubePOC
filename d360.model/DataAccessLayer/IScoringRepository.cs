@@ -6,13 +6,13 @@ namespace d360.model.DataAccessLayer
 {
     public interface IScoringRepository
     {
-        void DeleteAllocation(Allocation alloc);
-        bool DoesAllocationExists(Guid allocationUid, AllocationApiUpsertModel model);
-        Allocation GetAllocationByModel(AllocationApiUpsertModel model);
-        Allocation GetAllocationByUid(Guid allocationUid);
+        void DeleteAllocation(ScoreTypeAllocation alloc);
+        bool DoesAllocationExist(Guid allocationUid, AllocationApiUpsertModel model);
+        ScoreTypeAllocation GetAllocationByModel(AllocationApiUpsertModel model);
+        ScoreTypeAllocation GetAllocationByUid(Guid allocationUid);
         List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams);
-        bool HasActiveMeasures(Allocation alloc);
-        AllocationApiGetModel PostAllocation(AllocationApiUpsertModel model, ref Allocation alloc);
-        AllocationApiGetModel UpdateAllocation(AllocationApiUpsertModel model, Allocation alloc);
+        bool HasActiveMeasures(ScoreTypeAllocation alloc);
+        AllocationApiGetModel PostAllocation(AllocationApiUpsertModel model, ref ScoreTypeAllocation alloc);
+        AllocationApiGetModel UpdateAllocation(AllocationApiUpsertModel model, ScoreTypeAllocation alloc);
     }
 }
