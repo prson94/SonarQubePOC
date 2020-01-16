@@ -253,5 +253,40 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error deleting allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
             }
         }
+
+        /// <summary>
+        /// Get a list of asset types that have not been allocated to the provided score type.
+        /// </summary>
+        /// <param name="scoreType">The score type to get asset types with no allocations.</param>
+        /// <returns>List of asset types that have not been allocated to the provided score type.</returns>
+        [
+            HttpGet,
+            Route("unallocatedAssetTypes/{scoreType}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "Returns the list of asset types.", typeof(List<AllocationApiGetUnallocatedAssetTypeModel>)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetUnallocatedAssetTypesForScoreType(string scoreType)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Unauthorized, "Error retrieving unallocated asset types", "You are not authorized to perform this action.");
+                }
+                        
+                if(!Enum.TryParse(scoreType, true,out ScoreType sc))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error retrieving unallocated asset types", $"Invalid score type: {scoreType} provided, please provide a valid score type.");
+                }
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, await ScoringRepository.GetUnallocatedAssetTypes(sc)));
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+            }
+        }
     }
 }
