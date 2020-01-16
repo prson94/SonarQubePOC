@@ -244,7 +244,7 @@ namespace d360.model
         public DbSet<AuditField> AuditFields { get; set; }
 
         public DbSet<Audit> Audits { get; set; }
-        public DbSet<Allocation> Allocations { get; set; }
+        public DbSet<ScoreTypeAllocation> ScoreTypeAllocations { get; set; }
 
         #endregion
 

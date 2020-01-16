@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 namespace d360.core.entities.Scoring
 {
     [DataContract(Namespace = NAMESPACE), Table("Allocation", Schema = "metrics")]
-    public class Allocation : BaseCreatedAndUpdatedObject
+    public class ScoreTypeAllocation : BaseCreatedAndUpdatedObject
     {
         [DataMember, Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Uid { get; set; }

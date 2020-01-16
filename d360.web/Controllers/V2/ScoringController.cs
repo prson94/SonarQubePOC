@@ -94,7 +94,7 @@ namespace d360.web.Controllers.V2
             HttpPost,
             Route("allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding allocation.", typeof(AllocationApiGetModel)),
+            SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding allocation.", typeof(AllocationApiGetModel)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset type was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to insert this allocation is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
@@ -121,12 +121,12 @@ namespace d360.web.Controllers.V2
 
                 List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule };
                 if (assetType == null)
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error adding allocation", $"AssetType with uid {model.assetTypeUid} does not exists.");
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error adding allocation", $"AssetType with uid {model.assetTypeUid} does not exist.");
 
                 if (!allowedClasses.Contains(assetType.Class))
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"Asset type has invalid class.");
 
-                Allocation alloc = ScoringRepository.GetAllocationByModel(model);
+                ScoreTypeAllocation alloc = ScoringRepository.GetAllocationByModel(model);
 
                 if (alloc != null && alloc.State == State.Active)
                 {
@@ -135,7 +135,7 @@ namespace d360.web.Controllers.V2
 
                 AllocationApiGetModel allocation = ScoringRepository.PostAllocation(model, ref alloc);
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocation));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, allocation));
             }
             catch
             {
@@ -166,10 +166,10 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.Unauthorized, "Error updating allocation", "You are not authorized to perform this action.");
                 }
 
-                Allocation alloc = ScoringRepository.GetAllocationByUid(allocationUid);
+                ScoreTypeAllocation alloc = ScoringRepository.GetAllocationByUid(allocationUid);
 
                 if (alloc == null)
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error updating allocation", $"Allocation with uid {allocationUid} does not exists");
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error updating allocation", $"Allocation with uid {allocationUid} does not exist");
 
                 if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"You have not provided valid assetTypeUid");
@@ -183,12 +183,12 @@ namespace d360.web.Controllers.V2
 
                 List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule };
                 if (assetType == null)
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error updating allocation", $"AssetType with uid {model.assetTypeUid} does not exists");
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error updating allocation", $"AssetType with uid {model.assetTypeUid} does not exist");
 
                 if (!allowedClasses.Contains(assetType.Class))
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Asset type has invalid class");
 
-                bool alreadyExists = ScoringRepository.DoesAllocationExists(allocationUid, model);
+                bool alreadyExists = ScoringRepository.DoesAllocationExist(allocationUid, model);
 
                 if (alreadyExists)
                 {
@@ -236,7 +236,7 @@ namespace d360.web.Controllers.V2
                 var alloc = ScoringRepository.GetAllocationByUid(allocationUid);
 
                 if (alloc == null)
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error deleting allocation", $"Allocation with uid {allocationUid} does not exists");
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error deleting allocation", $"Allocation with uid {allocationUid} does not exist");
 
                 var hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
                 if (hasActiveMeasures)
