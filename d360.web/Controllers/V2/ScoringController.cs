@@ -263,7 +263,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("unallocatedAssetTypes/{scoreType}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "Returns the list of asset types.", typeof(List<AllocationApiGetUnallocatedAssetTypeModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "Returns a list of asset types that are not yet allocated to the score type provided.", typeof(List<AllocationApiGetUnallocatedAssetTypeModel>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
