@@ -327,7 +327,7 @@ namespace d360.web.Controllers.V2
     SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
     SwaggerParameter("Uid", "Uid of the group.", DataType = "string", ParameterType = "query", Required = false),
     SwaggerParameter("Name", "Name of the group", DataType = "string", ParameterType = "query", Required = false)
-    
+
 ]
         public async Task<IHttpActionResult> GetGroups()
         {
@@ -337,7 +337,7 @@ namespace d360.web.Controllers.V2
             {
                 var queryParams = Request.GetQueryNameValuePairs();
 
-               if  (!this.IsValidGuid(queryParams,"uid")){
+                if  (!this.IsValidGuid(queryParams,"uid")){
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid uid is passed in the request"));
                 }
                 var results = await this.membershipRepository.GetGroups(queryParams);
@@ -348,12 +348,37 @@ namespace d360.web.Controllers.V2
             {
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", prefix } 
+                    { "Endpoint Method", prefix }
                 });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
+        }
 
+
+        /// <summary>
+        /// Deletes a member form a group
+        /// </summary>
+        /// <param name="groupUid">The unique identifier of the Group.</param>
+        /// <param name="resourceUid">The unique identifier of the resource.</param>
+        [
+            HttpDelete,
+            Route("groups/{groupUid:Guid}/{resourceUid:Guid}"),
+            SwaggerResponse(HttpStatusCode.OK, "Success"),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist."),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.")
+
+        ]
+        public async Task<HttpResponseMessage> DeleteGroupMember(Guid groupUid,Guid resourceUid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+
+            var res = await Company.Database.Connection.ExecuteAsync("delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID", new { resource = resourceUid, group = groupUid });
+
+            if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
+
+            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
         }
 
 
