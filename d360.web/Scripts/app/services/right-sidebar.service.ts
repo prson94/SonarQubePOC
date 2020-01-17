@@ -4,6 +4,7 @@ import { SecondaryNavItem, DynamicButton, AssetAction, SecondaryNavCurrentObject
 import { AssetTypeClass } from '../models/asset.model';
 import { BaseComponent } from '../components/shared/base.component';
 import { SiteMenuService } from './site-menu.service';
+import { PlatformLocation } from '@angular/common'
 
 declare var CompanySettings: any;
 
@@ -23,8 +24,12 @@ export class SecondaryNavService {
     private homeUrlChangeSource = new Subject<string>();
     private rebuildHeaderSource = new Subject<any>();
     private secondaryNavState: SecondaryNavState;
-    constructor(private siteMenuService: SiteMenuService) {
+
+    constructor(private siteMenuService: SiteMenuService, location: PlatformLocation) {
         this.secondaryNavState = new SecondaryNavState();
+        location.onPopState(() => {
+            this.isSidebarCreated = false;
+        });
     }
     // Observable streams
     rightSidebar$ = this.rightSidebarSource.asObservable();
