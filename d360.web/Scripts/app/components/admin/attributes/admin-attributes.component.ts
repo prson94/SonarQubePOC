@@ -32,21 +32,11 @@ export class AdminAttributesComponent extends AdminBaseComponent {
         titleService: Title
     ) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-
-        this.areaName = "Attributes";
-        this.tabTitle = 'Attribute Groups';
-        this.setCommonItems();
-        this.setCommonSecondaryNavTabs(true);
-
-        this.selectedItemChange();
-
         this.theDeleteCallback = this.deleteAttributeType.bind(this);
     }
 
     selectedItemChange() {
-        if (this.auditSidebar && this.selected) {
-            this.auditSidebar.url = `/sidebar/audit/AttributeType/${this.selected.data.ID}`;
-        }
+        this.buildSecondaryNavigationForObject(this.selected.data.ID, 'AttributeType');
     }
 
     ngOnInit() {

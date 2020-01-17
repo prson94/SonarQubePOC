@@ -34,9 +34,12 @@ export class MonitorWorkflowComponent extends BaseComponent implements OnInit {
         this.sub = this.route.params.subscribe(params => {
             this.objectID = +params['objectId'];
             this.objectType = params['objectType'];
-        });
 
-        this.checkSecondaryNavLocalStorage();
+            let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
+
+            if (reloadNav)
+                this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+        });
     }
 
     ngOnDestroy() {

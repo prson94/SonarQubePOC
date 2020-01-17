@@ -1,5 +1,5 @@
 import { Title } from '@angular/platform-browser';
-import { SecondaryNavItem } from '../../models/secondaryNav.model';
+import { SecondaryNavItem, SecondaryNavCurrentObject, SecondaryNavPostModel } from '../../models/secondaryNav.model';
 import { PermissionsService } from '../../services/permissions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
@@ -13,6 +13,12 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { TreeNode } from 'primeng/api';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { AssetTypeClass } from '../../models/asset.model';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { SiteMenuService } from '../../services/site-menu.service';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { OnDestroy, OnInit } from '@angular/core';
+import { Policy } from '../../models/policy.model';
 
 declare var CompanySettings;
 
@@ -20,7 +26,7 @@ export class BaseComponent {
     public isLoading = false;
     public gridStateStorage: string = 'session';
     public maxExportRows = CompanySettings.MaxExcelExportRows;
-    
+
 
     // current object info
     uid: string;
@@ -29,6 +35,9 @@ export class BaseComponent {
     objectID: number;
     objectType: string;
     objectName: string;
+    public preloadedTreeData: any[] = [];
+    public baseCrumbs: Breadcrumb[] = [];
+    public baseTreeNodeArray: any[] = [];
 
     // sidebar
     sidebarSubscription: Subscription;
@@ -41,6 +50,12 @@ export class BaseComponent {
     relationsSidebar: SecondaryNavItem;
     monitorSidebar: SecondaryNavItem;
     fieldNav: SecondaryNavItem;
+    dashboardSidebar: SecondaryNavItem;
+    followersSidebar: SecondaryNavItem;
+    childSidebar: SecondaryNavItem;
+    scoreSidebar: SecondaryNavItem;
+    commentsSidebar: SecondaryNavItem;
+    actionsSidebar: SecondaryNavItem;
     // tabs
 
     lineageShowUsageOnly = false;
@@ -60,6 +75,8 @@ export class BaseComponent {
     protected secondaryNavService: SecondaryNavService = null;
     protected webAnalyticsService: WebAnalyticsService = null;
     protected breadcrumbsService: HeaderBreadcrumbService = null;
+
+    private getSecondaryNavigationSub: Subscription;
 
     protected setBrowserTitle(tileService: Title, area: string) {
         tileService.setTitle(`${CompanySettings.BrowserTitlePrefix} - ${area}`);
@@ -138,9 +155,9 @@ export class BaseComponent {
 
     /*end permissions functionality*/
 
-    
 
-    checkSecondaryNavLocalStorage(checkLocal?: boolean ) {
+
+    checkSecondaryNavLocalStorage(checkLocal?: boolean) {
         if (this.secondaryNavService) {
             this.buildLocalStorage();
             this.secondaryNavService.rebuildHeader$.subscribe(res => {
@@ -148,10 +165,10 @@ export class BaseComponent {
                     window.setTimeout(() => {
                         this.buildLocalStorage();
                     }, 250);
-                    
+
                 }
             });
-        } 
+        }
     }
     buildLocalStorage() {
         let currentObject = this.secondaryNavService.getLocalCurrentObject();
@@ -160,7 +177,7 @@ export class BaseComponent {
         let currentTab = this.secondaryNavService.getLocalActiveItem();
         let homeUrl = this.secondaryNavService.getLocalHomeUrl();
         let crumbs = this.breadcrumbsService.getBreadcrumbsFromStorage();
-        if (currentObject && currentArea && tabs.length > 0&& currentTab && homeUrl) {
+        if (currentObject && currentArea && tabs.length > 0 && currentTab && homeUrl) {
             this.secondaryNavService.clearItems();
             this.secondaryNavService.setCurrentObject(currentObject);
             this.secondaryNavService.setCurrentArea(currentArea.title, currentArea.icon, currentArea.tabTitle);
@@ -187,7 +204,8 @@ export class BaseComponent {
         hasRelationships?: boolean,
         hasFollowers?: boolean,
         hasMonitor?: boolean,
-        hasField?: boolean
+        hasField?: boolean,
+        hasChild?: boolean
     ) {
         if (this.secondaryNavService) {
             this.clearSidebar();
@@ -235,29 +253,33 @@ export class BaseComponent {
                     'Field Definitions',
                     'fields',
                     ['fa-drivers-license-o'],
-                    '/sidebar/fields', null, 1);
+                    `/sidebar/fields/${this.objectType}/${this.objectID}`, null, 1);
                 this.secondaryNavService.showItem(this.fieldNav);
             }
 
             if (hasOwnership && CompanySettings.ShowOwnersSidebar != 'false') {
+                var urlPart = 'ownership';
+                if (this.objectType == 'ReferenceItemType')
+                    urlPart = 'responsibilities';
+
                 this.ownershipSidebar = new SecondaryNavItem(
                     'Responsibilities',
-                    'ownership',
+                    urlPart,
                     ['fa-user'],
-                    `/sidebar/ownership/${this.assetID}`, null, 25
+                    `/sidebar/${urlPart}/${this.assetID}`, null, 25
                 );
                 this.secondaryNavService.showItem(this.ownershipSidebar);
             }
 
             if (hasDashboard) {
-                this.secondaryNavService.showItem(
-                    new SecondaryNavItem(
-                        'Dashboards',
-                        'dashboards',
-                        ['fa-tachometer'],
-                        `/dashboard${this.objectContextUrl()}`, null, 5
-                    )
+                this.dashboardSidebar = new SecondaryNavItem(
+                    'Dashboards',
+                    'dashboards',
+                    ['fa-tachometer'],
+                    `/dashboard${this.objectContextUrl()}`, null, 5
                 );
+
+                this.secondaryNavService.showItem(this.dashboardSidebar);
             }
 
             if (hasImpact && CompanySettings.ShowImpactSidebar != 'false' && CompanySettings.LineageVersion != 3) {
@@ -281,14 +303,13 @@ export class BaseComponent {
             }
 
             if (hasFollowers && CompanySettings.ShowFollowersSidebar != 'false') {
-                this.secondaryNavService.showItem(
-                    new SecondaryNavItem(
-                        'Followers',
-                        'followers',
-                        ['fa-bookmark-o'],
-                        `/sidebar/followers${this.objectContextUrl()}`, null, 35
-                    )
+                this.followersSidebar = new SecondaryNavItem(
+                    'Followers',
+                    'followers',
+                    ['fa-bookmark-o'],
+                    `/sidebar/followers${this.objectContextUrl()}`, null, 35
                 );
+                this.secondaryNavService.showItem(this.followersSidebar);
             }
 
             if (hasMonitor) {
@@ -299,6 +320,41 @@ export class BaseComponent {
                     `/sidebar/workflowmonitor${this.objectContextUrl()}`, null, 30
                 );
                 this.secondaryNavService.showItem(this.monitorSidebar);
+            }
+
+            if (hasChild) {
+                this.childSidebar = new SecondaryNavItem(
+                    'Children',
+                    'children',
+                    ['fa-sitemap'],
+                    `/sidebar/children${this.objectContextUrl()}`
+                );
+
+                this.secondaryNavService.showItem(this.childSidebar);
+            }
+
+            if (this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule') {
+                this.scoreSidebar = new SecondaryNavItem(
+                    'Scoring',
+                    'Scoring',
+                    ['fa-sitemap'],
+                    `/sidebar/score/${this.objectType}/${this.uid}`, null, 7
+                );
+
+                this.secondaryNavService.showItem(this.scoreSidebar);
+
+                this.commentsSidebar = new SecondaryNavItem(
+                    'Comments', 'Comments', ['fa-comments'],
+                    `/sidebar/comments/${this.objectType}/${this.objectID}`, null, 33
+                );
+
+                this.secondaryNavService.showItem(this.commentsSidebar);
+
+                this.actionsSidebar = new SecondaryNavItem(
+                    'Actions', 'Actions', null,
+                    `/sidebar/actions/${this.objectType}/${this.objectID}`, null, 27
+                );
+                this.secondaryNavService.showItem(this.actionsSidebar);
             }
 
             this.sidebarSubscription = this.secondaryNavService.rightSidebarClicked$.subscribe(
@@ -366,6 +422,94 @@ export class BaseComponent {
         }
 
         return `/${this.uid}`;
+    }
+
+    private findSelectedTreeNodeBase(id: number): TreeNode {
+        const nodes: TreeNode[] = [];
+
+        // add root nodes
+        for (let rNode of this.baseTreeNodeArray) {
+            nodes.push(rNode);
+        }
+
+        // do a breadth first search for the given treenode
+        if (nodes.length == 0) {
+            return;
+        }
+
+        let node = nodes[0];
+
+        while (node) {
+            if (node.data.id && node.data.id == id) {
+                return node;
+            }
+
+            // push children
+            if (node.children) {
+                for (let cNode of node.children) {
+                    nodes.push(cNode);
+                }
+            }
+
+            // remove this node
+            nodes.splice(0, 1);
+
+            if (nodes.length == 0) {
+                return null;
+            }
+
+            node = nodes[0];
+        }
+    }
+
+    //generic method used for objectName = Policy/Model
+    private checkParentBase(item: any, arr: any[], typeId: number, objectName: string) {
+        if (item.ParentID > 0 && arr) {
+            let parentAr = arr.filter(x => x.ID == item.ParentID);
+            let parent: any;
+            if (parentAr.length > 0) {
+                parent = parentAr[0];
+                let crumb = new Breadcrumb(parent.DisplayValue,
+                    SiteUrlHelpers.getObjectUrl(objectName.toUpperCase(), parent.ID, typeId),
+                    true,
+                    objectName,
+                    parent.ID,
+                    this.buildTreeNodeArrayBase(arr, parent.ParentID),
+                    this.findSelectedTreeNodeBase(parent.ID), false, false)
+                this.baseCrumbs.unshift(crumb);
+                this.checkParentBase(parent, arr, typeId, objectName);
+            }
+        } else {
+            this.baseCrumbs.forEach(x => this.breadcrumbsService.showBreadcrumb(x));
+        }
+    }
+
+    public buildTreeNodeArrayBase(
+        inputArr: any[],
+        Parent?: number,
+        includeChildren?: boolean
+    ): TreeNode[] {
+        // find the root items then
+        let rootNodes = inputArr.filter(x => (Parent != undefined ? x.ParentID == Parent : !x.ParentID));
+
+        if (rootNodes.length == 0) {
+            return null;
+        }
+
+        const res: TreeNode[] = [];
+
+        for (let root of rootNodes) {
+            res.push({
+                label: root.DisplayValue,
+                expanded: true,
+                data: {
+                    id: root.ID
+                },
+                children: (includeChildren ? this.buildTreeNodeArrayBase(inputArr, root.ID) : null) // recursively find its children
+            });
+        }
+
+        return res;
     }
 
     // This is generally overloaded to show hide in your own class.
@@ -443,7 +587,7 @@ export class BaseComponent {
             failed.forEach(f => {
                 messagesService.showError('Error', f.Message);
             });
-        } 
+        }
     }
 
     showHttpErrorMessage(messagesService: MessagesObservableService, err: HttpErrorResponse) {
@@ -504,4 +648,382 @@ export class BaseComponent {
         return hasValue;
     }
 
+    private setLoadedKey(_key: string) {
+        localStorage.setItem('loadedNavItem', _key);
+    }
+    private invalidateKey() {
+        localStorage.setItem('loadedNavItem', '{"AssetId":"","AssetTypeIdb":"","Uid":"","Object":"","ObjectId":""}');
+    }
+    private getLoadedKey(): string {
+        return localStorage.getItem('loadedNavItem');
+    }
+
+    buildSecondaryNavigationForAssetID(assetId: number, object: string) {
+        this.buildSecondaryNavigation(null, null, object, assetId);
+    }
+
+    buildSecondaryNavigationForObject(objectId: number, object: string) {
+        this.buildSecondaryNavigation(null, objectId, object);
+    }
+
+    private isSidebarLoadedForCurrentObject(loadData: SecondaryNavPostModel): boolean {
+
+        //this is fullpage refresh, invalidate key to recreate navigation
+        if (!this.secondaryNavService["isSidebarCreated"]) {
+            this.invalidateKey();
+            return false;
+        }
+
+        var currentData = JSON.parse(this.getLoadedKey());
+        if (loadData.ObjectType == currentData.Object && loadData.ObjectId == currentData.ObjectId)
+            return true;
+
+        if (loadData.AssetUid == currentData.Uid)
+            return true;
+
+        if (loadData.AssetId == currentData.AssetId)
+            return true;
+
+        return false;
+    }
+
+    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null) {
+        var data = new SecondaryNavPostModel();
+        data.PreloadData = false;
+        if (assetUid != null)
+            data.AssetUid = assetUid.toString().toLowerCase();
+
+        if (objectId)
+            data.ObjectId = objectId;
+
+        if (objectType)
+            data.ObjectType = objectType;
+
+        if (assetId)
+            data.AssetId = assetId;
+
+        if (assetTypeUid)
+            data.AssetTypeUid = assetTypeUid;
+
+        if (!this.preloadedTreeData || this.preloadedTreeData.length == 0) {
+            //This will have effect only on pages that need populate tree to create breadcrumbs (model, policy)
+            data.PreloadData = true;
+        }
+
+        if (assetUid == null && !assetId && !assetTypeUid && !objectId) {
+            return;
+        }
+
+        if (this.isSidebarLoadedForCurrentObject(data)) {
+            return;
+        }
+
+        this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe(r => {
+            this.assetID = r.AssetId;
+            this.assetTypeID = r.AssetTypeId;
+            this.uid = r.Uid;
+            this.objectType = r.Object;
+            this.objectID = r.ObjectID;
+
+            var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
+            this.setLoadedKey(_key);
+
+            this.clearSidebar();
+            this.breadcrumbsService.clearBreadcrumbs();
+
+            var areaName = r.DisplayValue;
+            var mainTabTitle = r.MainTabTitle;
+            if (r.PreloadData) {
+                this.preloadedTreeData = r.PreloadData;
+                if (r.PreloadData.Data) {
+                    this.preloadedTreeData = r.PreloadData.Data;
+                }
+            }
+            var area = "";
+
+            area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Attributes', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
+                .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
+
+            var homeUrl = SiteUrlHelpers.getUrl(r.Object, r.ObjectID, r.ObjectTypeId, areaName);
+
+            this.secondaryNavService.setLocalHomeUrl(homeUrl);
+
+            if (this.objectType.toLowerCase() == 'artifact') {
+                this.setArtifactBreadcrumbs(r);
+            }
+            else if (this.objectType.toLowerCase() == 'policy') {
+                this.setTreeBreadcrumbs(r, 'Policy');
+            }
+            else if (this.objectType.toLowerCase() == 'taxonomy') {
+                this.setTreeBreadcrumbs(r, 'Taxonomy');
+            }
+            else if (this.objectType.toLowerCase() == 'rule') {
+                this.setRuleBreadcrumbs(r);
+            }
+            else if (this.objectType.toLowerCase() == 'referenceitemtype') {
+                this.breadcrumbsService.clearBreadcrumbs();
+
+                this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Reference Lists', homeUrl));
+                this.setBrowserTitle(this.breadcrumbsService.getTitleService(), 'Reference Lists');
+            }
+            else {
+                this.SetCommonBreadcrumbs(r, area, homeUrl);
+            }
+
+            this.secondaryNavService.clearItems();
+            this.secondaryNavService.clearButtons();
+            this.secondaryNavService.setCurrentArea(areaName, area === 'Configuration' ? 'fa-sliders' : "fa-cog", mainTabTitle);
+            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, this.assetTypeID, this.objectType, this.objectID, false, r.Items.HasWorkflow, this.uid));
+
+            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild);
+            this.secondaryNavService.showHeader(true);
+
+            this.activateComponent();
+        })
+    }
+
+    private SetCommonBreadcrumbs(data, area, url) {
+        var adminHeading = '';
+
+        if (data.DisplayValue == 'Responsibilities') {
+            adminHeading = "Security";
+        }
+
+        this.breadcrumbsService.clearBreadcrumbs();
+        this.breadcrumbsService.showBreadcrumb(new Breadcrumb(area));
+        if (adminHeading)
+            this.breadcrumbsService.showBreadcrumb(new Breadcrumb(adminHeading));
+
+        this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue, url));
+        this.setBrowserTitle(this.breadcrumbsService.getTitleService(), data.DisplayValue);
+    }
+
+    private activateComponent() {
+        var componentName = this.constructor.name;
+        switch (componentName) {
+            case "ScoreComponent": this.scoreSidebar.active = true;
+                break;
+            case "DashboardComponent": this.dashboardSidebar.active = true;
+                break;
+            case "BrowserComponent": this.lineageSidebar.active = true;
+                break;
+            case "RelationshipsComponent": this.relationsSidebar.active = true;
+                break;
+            case "OwnershipComponent": this.ownershipSidebar.active = true;
+                break;
+            case "ActionsComponent": this.actionsSidebar.active = true;
+                break;
+            case "MonitorWorkflowComponent": this.monitorSidebar.active = true;
+                break;
+            case "CommentsComponent": this.commentsSidebar.active = true;
+                break;
+            case "FollowersComponent": this.followersSidebar.active = true;
+                break;
+            case "AuditComponent": this.auditSidebar.active = true;
+                break;
+            case "ChildrenComponent": this.childSidebar.active = true;
+                break;
+            case "FieldDefinitionComponent": this.fieldNav.active = true;
+                break;
+            default: break;
+        }
+    }
+
+    private setArtifactBreadcrumbs(data) {
+        var artifact = data.Artifact;
+
+        let folderName: string = '#Business';
+
+        if (artifact.Class == AssetTypeClass.TechnicalAsset) {
+            folderName = '#Technical';
+        }
+        this.breadcrumbsService.getFolderTitle(folderName).then(res => {
+            this.breadcrumbsService.clearBreadcrumbs();
+
+            var folderTitle = res;
+            var area = res;
+
+            let index = 0;
+            this.breadcrumbsService
+                .getAreaName('ArtifactType', data.Artifact.Breadcrumbs[0] ? this.GetIDFromUrl(data.Artifact.Breadcrumbs[0].Url) : data.Artifact.AssetTypeID)
+                .subscribe(result => {
+                    var currentAreaName = result;
+                    let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
+
+                    this.breadcrumbsService.clearBreadcrumbs();
+                    this.breadcrumbsService.getAssetFolderIcon('ArtifactType', data.ObjectTypeId, currentFolderName).subscribe(res => {
+                        this.secondaryNavService.setCurrentArea(data.Artifact.DisplayValue, res, 'Definition');
+                        let areaName: string = currentAreaName ? currentAreaName : folderTitle;
+                        let areaLink: string = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}`;
+                        if (areaName == "Technical Assets") {
+                            areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
+                        }
+                        else {
+                            areaLink += `/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
+                        }
+                        let areaBreadcrumb = new Breadcrumb(
+                            areaName,
+                            areaLink,
+                            false
+                        );
+                        this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
+
+                        for (let breadcrumb of data.Artifact.Breadcrumbs) {
+                            index++;
+                   
+                            if (index == data.Artifact.Breadcrumbs.length) {
+                                //last item in the breadcrumb
+                                this
+                                    .breadcrumbsService
+                                    .showBreadcrumb(
+                                        new Breadcrumb(
+                                            breadcrumb.Name,
+                                            breadcrumb.Url,
+                                            false,
+                                            'Artifact',
+                                            data.ObjectTypeId,
+                                            null,
+                                            null,
+                                            false,
+                                            breadcrumb.TypeName !== undefined,
+                                            breadcrumb.TypeName,
+                                            'ArtifactType',
+                                            this.GetIDFromUrl(breadcrumb.TypeUrl),
+                                            breadcrumb.TypeUrl
+                                        )
+                                    )
+                                    ;
+                            } else {
+                                this
+                                    .breadcrumbsService
+                                    .showBreadcrumb(
+                                        new Breadcrumb(
+                                            breadcrumb.Name,
+                                            breadcrumb.Url,
+                                            false,
+                                            'Artifact',
+                                            this.GetIDFromUrl(breadcrumb.Url),
+                                            null,
+                                            null,
+                                            false,
+                                            breadcrumb.TypeName !== undefined,
+                                            breadcrumb.TypeName,
+                                            'ArtifactType',
+                                            this.GetIDFromUrl(breadcrumb.TypeUrl),
+                                            breadcrumb.TypeUrl
+                                        )
+                                    )
+                                    ;
+                            }
+                        }
+                    });
+
+                });
+        });
+
+
+    }
+
+    //used for policy/model
+    private setTreeBreadcrumbs(data, objectName: string) {
+        var selected = this.preloadedTreeData.find(x => x.ID == data.ObjectID);
+        var objectTypeName = objectName + "Type";
+        this.breadcrumbsService.clearBreadcrumbs();
+
+        this.breadcrumbsService.breadcrumbTreeSource$.subscribe(
+            id => {
+                if (objectName.toLowerCase() == 'policy') {
+                    this.breadcrumbsService.reRouteFromBreadcrumbs(`/${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
+                }
+                if (objectName.toLowerCase() == 'taxonomy') {
+                    this.breadcrumbsService.reRouteFromBreadcrumbs(`/${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${data.ObjectTypeId};hierarchyId=${id}`);
+                }
+            }
+        );
+
+        this.breadcrumbsService
+            .getAreaName(objectTypeName, data.ObjectTypeId)
+            .subscribe(result => {
+                this.baseCrumbs = [];
+                var currentAreaName = result;
+
+                this.breadcrumbsService.getFolderTitle('#' + (objectName == 'Taxonomy' ? 'Models' : objectName)).then((res) => {
+                    this.breadcrumbsService.clearBreadcrumbs();
+
+                    var folderTitle = res;
+                    let currentFolderName = currentAreaName ? currentAreaName : folderTitle;
+
+                    this.breadcrumbsService.getAssetFolderIcon(objectTypeName, data.ObjectTypeId, currentFolderName).subscribe(res => {
+                        this.secondaryNavService.setCurrentArea(data.DisplayValue, res, 'Definition');
+                    });
+
+                    let areaBreadcrumb = new Breadcrumb(
+                        currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
+                    );
+                    this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
+
+                    this.breadcrumbsService.showBreadcrumb(
+                        new Breadcrumb(
+                            data.TypeName,
+                            SiteUrlHelpers.getObjectUrl(objectTypeName, data.ObjectTypeId), undefined, objectTypeName.toUpperCase(), data.ObjectTypeId, undefined, undefined, true
+                        )
+                    );
+
+                    this.setObjectInfo(objectName, data.ObjectId, data.DisplayValue, data.AssetID, undefined, data.Uid);
+
+                    if (selected && selected.ID > 0) {
+                        this.setObjectInfo(objectName, selected.ID, selected.DisplayValue, selected.AssetID, undefined, selected.Uid);
+                        this.checkParentBase(selected, this.preloadedTreeData, data.ObjectTypeId, objectName);
+                        this.breadcrumbsService.showBreadcrumb(
+                            new Breadcrumb(
+                                selected.DisplayValue,
+                                SiteUrlHelpers.getObjectUrl(objectTypeName, selected.ID),
+                                true,
+                                objectName,
+                                selected.ID,
+                                this.buildTreeNodeArrayBase(this.preloadedTreeData, selected.ParentID),
+                                this.findSelectedTreeNodeBase(selected.ID)));
+                    }
+
+                });
+            });
+    }
+
+
+    private setRuleBreadcrumbs(data) {
+        this.breadcrumbsService
+            .getAreaName('RuleType', data.ObjectTypeId)
+            .subscribe(result => {
+
+                var currentAreaName = result;
+                this.breadcrumbsService.getFolderTitle('#Data Quality').then((res) => {
+                    this.breadcrumbsService.clearBreadcrumbs();
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(currentAreaName ? currentAreaName : res, undefined));//SiteUrlHelpers.SITE_URL_RULE_ROOT
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.TypeName, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${data.ObjectTypeId}`,
+                        undefined,
+                        'RuleType',
+                        data.ObjectTypeId,
+                        undefined,
+                        undefined,
+                        true));
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue,
+                        SiteUrlHelpers.getObjectUrl('RULEIMPLEMENTATION', data.ObjectId, data.ObjectTypeId),
+                        true,
+                        'Rule',
+                        data.ObjectId));
+
+                    this.breadcrumbsService.getAssetFolderIcon('RuleType', data.ObjectTypeId, currentAreaName ? currentAreaName : res).subscribe(icon => {
+                        this.secondaryNavService.setCurrentArea(data.DisplayValue, icon, 'Definition');
+
+                    });
+
+                });
+            });
+
+    }
+
+
+    private GetIDFromUrl(url: string) {
+        return +url.split("/")[url.split.length - 1];
+    }
 }

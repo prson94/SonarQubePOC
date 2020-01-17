@@ -21,7 +21,7 @@ export class DiagramComponent extends BaseComponent implements OnInit, OnDestroy
 
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
-            this.objectID = +params['objectId']; // (+) converts string 'id' to a number            
+            this.objectID = +params['objectId']; // (+) converts string 'id' to a number       
         });
     }
 

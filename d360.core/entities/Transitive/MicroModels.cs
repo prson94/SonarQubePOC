@@ -1,4 +1,5 @@
 ﻿using d360.core.enums;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -402,6 +403,48 @@ namespace d360.core.entities
         public int ObjectID { get; set; }
 
         public Guid Uid { get; set; }
+    }
+
+
+    public class SecondaryNavigationPostModel
+    {
+        public int? ObjectId { get; set; }
+        public string ObjectType { get; set; }
+        public int? AssetId { get; set; }
+        public Guid? AssetUid { get; set; }
+        public Guid? AssetTypeUid { get; set; }
+        public bool PreloadData { get; set; }
+    }
+
+    public class SecondaryNavigationResponseModel
+    {
+        public int AssetId { get; set; }
+        public int AssetTypeId { get; set; }
+        public Guid Uid { get; set; }
+        public string Object { get; set; }
+        public string ObjectType { get; set; }
+        public int ObjectTypeId { get; set; }
+        public int ObjectID { get; set; }
+        public string DisplayValue { get; set; }
+        public string MainTabTitle { get; set; }
+        public string TypeName { get; set; }
+        public SecondaryNavItems Items { get; set; }
+        public JObject Artifact { get; set; }
+        public dynamic PreloadData { get; set; }
+    }
+
+    public class SecondaryNavItems
+    {
+        public bool HasAudit { get; set; }
+        public bool HasOwnership { get; set; }
+        public bool HasDashboard { get; set; }
+        public bool HasLineage { get; set; }
+        public bool HasImpact { get; set; }
+        public bool HasRelationship { get; set; }
+        public bool HasFollowers { get; set; }
+        public bool HasWorkflow { get; set; }
+        public bool HasField { get; set; }
+        public bool HasChild { get; set; }
     }
 
 }

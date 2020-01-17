@@ -6,6 +6,7 @@ import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
+import { SecondaryNavPostModel } from '../models/secondaryNav.model';
 
 @Injectable()
 export class SiteMenuService extends BaseObservableService {
@@ -188,5 +189,19 @@ export class SiteMenuService extends BaseObservableService {
                 map(response => <any[]>response),
                 catchError(err => this.handleError(err))
             );
+    }
+
+    getSecondaryNav(data: SecondaryNavPostModel, preloadTreeData = false) {
+        let options = {
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json'
+            })
+        }
+
+        return this.http.post(`navigation/GetSecondaryNavigationSettings?preloadData=${preloadTreeData}`, data, options)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+        );
     }
 }
