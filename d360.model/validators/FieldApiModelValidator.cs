@@ -24,14 +24,15 @@ namespace d360.model.validators
 
             bool actionIsReplaceAndKeySelected = (model.Action == FieldTypesApiEditAction.Merge); //If set to merge we can set to true and skip this step.
             bool fieldsHaveErrors = false;
-            var fieldsHaveErrorsList = new List<string>();            
+            var fieldsHaveErrorsList = new List<string>();
+            List<ValidationResult> validationResults = new List<ValidationResult>();
+            bool isValid = true;
 
             foreach (var field in model.Fields)
             {
                 #region Basic field Model validation
-
-                List<ValidationResult> validationResults = new List<ValidationResult>();
-                bool isValid = Validator.TryValidateObject(field, new ValidationContext(field, serviceProvider: null, items: null), validationResults, true);
+                
+                isValid = Validator.TryValidateObject(field, new ValidationContext(field, serviceProvider: null, items: null), validationResults, true);
                 if (!isValid)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Invalid Field {validationResults.First().MemberNames.First()}", validationResults.First().ErrorMessage);
