@@ -37,6 +37,11 @@ namespace d360.model
 
         #region Engine Methods
 
+        public string GetEscapedFilterString(string filter)
+        {
+            return wildcardValue(escapeForSQLLike(filter), false);
+        }
+
         private string wildcardValue(string value, bool isContains = true)
         {
             value = value.Replace("*", "%").Replace("?", "_");
@@ -99,7 +104,7 @@ namespace d360.model
         /// <summary>
         /// This is the stored procedure version of getting both the count and paged assets with relevant dynamic fields.
         /// </summary>
-        public async Task<AssetResults> GetDynamicAssets(int assetTypeId, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null, bool apiNamesInOutput = false, bool listableFieldsOnly = true, bool pagingEnabled = true)
+        public async Task<AssetResults> GetDynamicAssets(int assetTypeId, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null, bool apiNamesInOutput = false, bool listableFieldsOnly = true, bool pagingEnabled = true, bool useAssetUrl = false)
         {
             var results = new AssetResults
             {
@@ -254,9 +259,10 @@ namespace d360.model
             parameters.Add("apiNamesInOutput", apiNamesInOutput);
             parameters.Add("listableFieldsOnly", listableFieldsOnly);
             parameters.Add("pagingEnabled", pagingEnabled);
+            parameters.Add("useAssetUrl", useAssetUrl);
 
             using (var multi = await QueryMultipleAsync(
-                "exec GetDynamicAssets @assetTypeId, @userId, @filter, @apiNamesInOutput, @listableFieldsOnly, @pagingEnabled, @pageNumber, @pageSize, @sortField, @sortDirection, @filters",
+                "exec GetDynamicAssets @assetTypeId, @userId, @filter, @apiNamesInOutput, @listableFieldsOnly, @pagingEnabled, @pageNumber, @pageSize, @sortField, @sortDirection, @filters, @useAssetUrl",
                 parameters))
             {
                 results.Count = multi.Read<int>().First();

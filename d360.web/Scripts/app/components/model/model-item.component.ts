@@ -47,7 +47,6 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     private currentAreaName: string;
     treeSub: any;
     model: Model;
-    modelHierarchy: ModelHierarchy[] = [];
     selected: ModelHierarchy;
     modelId: number;
     treeNodeArray: TreeNode[] = [];
@@ -68,6 +67,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = headerBreadcrumbService;
     }
 
     ngOnInit() {
@@ -88,23 +88,12 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
             if (!hierarchyId)
                 hierarchyId = params['hierarchyId'] ? +params['hierarchyId'] : 0;
 
-            if (hierarchyId != 0)
-                this.headerBreadcrumbService.setCurrentObjectInfo('Taxonomy', hierarchyId);
-            else
-                this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', newModelId);
-            this.setObjectInfo('Taxonomy', hierarchyId);
-            if (this.modelId != newModelId) {
+            if (this.modelId != newModelId || (this.selected == undefined || this.selected.ID != hierarchyId)) {
                 this.modelId = newModelId;
                 this.isLoading = true;
                 this.load(hierarchyId);
 
                 this.isLoading = false;
-            } else {
-                // pop last breadcrumb
-                this.headerBreadcrumbService.popLastBreadcrumb();
-                this.selectModelHierarchy(hierarchyId).then(n => {
-                    this.clearSidebar();
-                });
             }
 
         });
@@ -121,51 +110,7 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
     private buildBreadcrumb() {
         if (this.selected) {
-            this.setObjectInfo('Taxonomy', this.selected.ID, this.selected.DisplayValue, this.selected.AssetID, undefined, this.selected.Uid);
-
-            this.headerBreadcrumbService.getFolderTitle("#Models").then((res) => {
-                this.crumbs = [];
-                this.headerBreadcrumbService.getAssetFolderIcon('TaxonomyType', this.modelId, this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
-                    this.lineageShowUsageOnly = true;
-                    this.setCommonSecondaryNavTabs(true, this.hasPermission(Permission.ReadResponsibilities), (this.selected != null ? this.selected.HasDashboards : false), true, true, this.hasPermission(Permission.ReadRelationships), true, true);
-                    this.secondaryNavService.setCurrentArea(this.selected.DisplayValue, icon, 'Definition');
-                    this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('TaxonomyType', this.model.ID, 'Taxonomy', this.selected.ID, false, this.selected.HasWorkflow, this.selected.Uid));
-                    this.secondaryNavService.showItem(new SecondaryNavItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Taxonomy/${this.selected.Uid}`, null, 6));
-                    this.secondaryNavService.showItem(new SecondaryNavItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Taxonomy/${this.selected.ID}`, null, 31));
-                    this.secondaryNavService.showItem(new SecondaryNavItem('Actions', 'Actions', null, `/sidebar/actions/Taxonomy/${this.selected.ID}`, null, 26));
-                });
-                this.secondaryNavService.showHeader(true);
-
-                this.headerBreadcrumbService.clearBreadcrumbs();
-                let areaBreadcrumb = new Breadcrumb(
-                    this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`
-                );
-                this.headerBreadcrumbService.showBreadcrumb(areaBreadcrumb);
-                this.headerBreadcrumbService.showBreadcrumb(
-                    new Breadcrumb(this.model.Name,
-                        SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID),
-                        undefined,
-                        'TAXONOMYTYPE',
-                        this.model.ID,
-                        undefined,
-                        undefined,
-                        true,
-                        false
-                    ));
-
-                if (this.selected && this.selected.ID > 0) {
-                    this.checkParent(this.selected);
-                    this.headerBreadcrumbService.showBreadcrumb(
-                        new Breadcrumb(this.selected.DisplayValue,
-                            undefined,
-                            true,
-                            'Taxonomy',
-                            this.selected.ID,
-                            this.buildTreeNodeArray(this.modelHierarchy, this.selected.ParentID, false),
-                            this.findSelectedTreeNode(this.selected.ID),
-                            false));
-                }
-            });
+            this.buildSecondaryNavigation(this.selected.Uid);
         }
     }
 
@@ -181,14 +126,14 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
     private selectModelHierarchy(selectedHierarchyId: number): Promise<void> {
         if (selectedHierarchyId > 0) {
-            let selArray = this.modelHierarchy.filter(x => x.ID == selectedHierarchyId);
+            let selArray = this.preloadedTreeData.filter(x => x.ID == selectedHierarchyId);
             if (selArray.length > 0) this.selected = selArray[0];
             else {
                 //console.log("ERROR INVALID SELECTED HIERARCHY ID SPECIFIED.", selectedHierarchyId);
-                this.selected = (this.modelHierarchy.length && this.modelHierarchy.length > 0) ? this.modelHierarchy[0] : null;
+                this.selected = (this.preloadedTreeData.length && this.preloadedTreeData.length > 0) ? this.preloadedTreeData[0] : null;
             }
         } else {
-            this.selected = (this.modelHierarchy.length && this.modelHierarchy.length > 0) ? this.modelHierarchy[0] : null;
+            this.selected = (this.preloadedTreeData.length && this.preloadedTreeData.length > 0) ? this.preloadedTreeData[0] : null;
         }
 
         this.assetID = this.selected.AssetID;
@@ -197,38 +142,18 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
         this.buildBreadcrumb();
         return Promise.resolve(null);
     }
-    private checkParent(modelItem: ModelHierarchy) {
-        if (modelItem.ParentID > 0 && this.modelHierarchy) {
-            let parentAr = this.modelHierarchy.filter(x => x.ID == modelItem.ParentID);
-            let parent: ModelHierarchy;
-            if (parentAr.length > 0) {
-                parent = parentAr[0];
-                let crumb = new Breadcrumb(parent.DisplayValue,
-                    SiteUrlHelpers.getObjectUrl('TAXONOMY', parent.ID, this.modelId),
-                    true,
-                    'Taxonomy',
-                    parent.ID,
-                    this.buildTreeNodeArray(this.modelHierarchy, parent.ParentID, false),
-                    this.findSelectedTreeNode(parent.ID), false)
-                this.crumbs.unshift(crumb);
-                this.checkParent(parent);
-            }
-        } else {
-            this.crumbs.forEach(x => this.headerBreadcrumbService.showBreadcrumb(x));
-        }
-    }
+
     private loadModelHierarchy(modelId: number, selectedHierarchyId: number): void {
         this.modelsService.getModelHierarchy(modelId).subscribe(result => {
-            this.modelHierarchy = result;
+            this.preloadedTreeData = result;
 
-            this.treeNodeArray = this.buildTreeNodeArray(this.modelHierarchy);
+            this.treeNodeArray = this.buildTreeNodeArray(this.preloadedTreeData);
 
             this.selectModelHierarchy(selectedHierarchyId);
             this.messages = []; //clear any messages for this model
             this.loadItemSurvey(this.modelId);
 
             this.setBrowserTitle(this.titleService, this.model.Name);
-            this.clearSidebar();
         }
         );
     }

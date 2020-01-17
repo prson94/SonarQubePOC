@@ -186,6 +186,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_subjectUid", "The Uid of the subject side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_objectUid", "The Uid of the object side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "Filter by provided asset Uid. Multiple asset Uids can be provided delimited by comma", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -1175,12 +1176,12 @@ namespace d360.web.Controllers.V2
                 catch
                 {
                 }
-
+                var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
                 var statusModel = new ApiExecutionStatusModel
                 {
                     CompletedOn = dbExecutionItem.CompletedOn,
                     Error = dbExecutionItem.Error,
-                    Fields = Newtonsoft.Json.Linq.JObject.Parse(dbExecutionItem.Fields),
+                    Fields = Newtonsoft.Json.Linq.JObject.Parse(f),
                     Processed = dbExecutionItem.Processed,
                     StartedOn = dbExecutionItem.StartedOn,
                     Total = dbExecutionItem.Total,
@@ -1210,15 +1211,15 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
-        #region AssetTag
-        /// <summary>
-        /// Creates association between an existing asset and an existing tag.
-        /// </summary>
-        /// <remarks>
-        /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
-        /// </remarks>
-        /// <param name="assetTags">Collection of assets and tags to associate.</param>
-        /// <returns>An HTTP status code and message.</returns>
+            #region AssetTag
+            /// <summary>
+            /// Creates association between an existing asset and an existing tag.
+            /// </summary>
+            /// <remarks>
+            /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
+            /// </remarks>
+            /// <param name="assetTags">Collection of assets and tags to associate.</param>
+            /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
             Route("tags"),
@@ -1257,7 +1258,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"Invalid AseetUid provided, no asset exists with the specified uid.",
+                        Message = $"Invalid AssetUid provided, no asset exists with the specified uid.",
                         Success = false
                     };
 

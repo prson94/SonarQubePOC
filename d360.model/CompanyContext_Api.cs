@@ -243,9 +243,10 @@ where	ExecutionID = @executionID
             {
                 throw new ApplicationException("Endpoint logic is misconfigured, and is missing an API table name.");
             }
-            if (!CurrentResourceIsAdmin)
+            if (!CurrentResourceIsAdmin && isInsert && p == Permission.ModifyAsset)
             {
-                if (isInsert && p == Permission.ModifyAsset && !this.HasAssetTypePermission(at.Object, at.ObjectID, Permission.ModifyAsset))
+                PermissionInfo permission = this.GetTypePermissions(at.Object, at.ObjectID).Where(x => x.ID == Permission.ModifyAsset).SingleOrDefault();
+                if (permission == null || !permission.Selected)
                 {
                     Connection.Execute($@"
     
@@ -828,6 +829,20 @@ insert into #MvLookupValues (ItemNumber, FieldTypeID, [RawValue])
 				inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
 				cross apply string_split(T.FieldValue, ',') MV;
 
+
+drop table if exists #RelevantLookupValues;
+create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
+
+insert into #RelevantLookupValues 
+select		top 100 percent
+			T.FieldTypeID,
+			FLV.[Text],
+			FLV.[Value]
+from		#LookupValues T
+			inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
+			cross apply string_split(T.FieldValue, ',') MV 
+			inner join FieldLookupValue FLV on FLV.FieldTypeID = T.FieldTypeID;
+
 update	T
 set		T.Value = S.Value
 from	#MvLookupValues T
@@ -840,7 +855,7 @@ from	#MvLookupValues T
 					from		#LookupValues T
 								inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
 								cross apply string_split(T.FieldValue, ',') MV 
-								inner join FieldLookupValue S on S.FieldTypeID = T.FieldTypeID and S.[Text] = MV.value
+								inner join #RelevantLookupValues S on S.FieldTypeID = T.FieldTypeID and S.[Text] = MV.value
 					group by	T.ItemNumber, T.FieldTypeID, S.Value, S.[Text]
 					order by	T.ItemNumber, T.FieldTypeID, S.[Text]	
 		) S on S.ItemNumber = T.ItemNumber and S.FieldTypeID = T.FieldTypeID and S.[Text] = T.[RawValue];
@@ -1303,6 +1318,8 @@ from	IntersectType I
             var dt = DateTime.UtcNow;
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(at.Object, at.ObjectID, ChangeType.Delete);
@@ -2064,6 +2081,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
 
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (executionItemDupes.Any())
             {
@@ -2277,6 +2297,9 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
         public List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600)
         {
             var results = new List<RelationshipTypeResult>();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (dupes.Any())
             {
@@ -2406,6 +2429,10 @@ where   ExecutionID = @ExecutionID
         public List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600)
         {
             var results = new List<RelationshipTypeResult>();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (dupes.Any())
             {
@@ -2531,6 +2558,9 @@ where   ExecutionID = @ExecutionID
         public List<RelationshipTypeResult> DeleteRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeDelete> import, int timeout = 3600)
         {
             var results = new List<RelationshipTypeResult>();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue && i.ExecutionItemUid.Value != Guid.Empty).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (dupes.Any())
             {
@@ -2666,6 +2696,9 @@ where   ExecutionID = @ExecutionID
             const string METHOD_NAME = "ImportAssets";
             bool isLog = import.Count() > 1;
             var results = new List<DatabaseBulkAssetResult>();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (dupes.Any())
             {
@@ -2738,6 +2771,7 @@ where   ExecutionID = @ExecutionID
                     int? intersectTypeID = null;
                     CurrentExecutionLocationModel currentLocation = null;
                     bool hasLookupFieldTypes = false;
+                    bool hasRelationshipFieldTypes = false;
                     List<AssetFieldTypeUpdate> fieldTypeUpdates = new List<AssetFieldTypeUpdate>();
 
                     try
@@ -2761,6 +2795,7 @@ where   ExecutionID = @ExecutionID
                         jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
                         requiredFieldTypeNames = fieldTypes.Where(f => f.IsRequired && string.IsNullOrEmpty(f.DefaultValue)).Select(f => f.Name).ToList();
                         hasLookupFieldTypes = fieldTypes.Any(f => f.Type == DataType.Lookup.ToString());
+                        hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
                         this.AITrackTrace(client, execution, METHOD_NAME, "Get field types", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
                         #region Generate data sets
@@ -3635,8 +3670,13 @@ select [uid] from #ParentChildRelationships",
                                         var transationFieldUpdates = MergeFields(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, sendWorkflowEvents, timeout, !isInsert);
                                         this.AITrackTrace(client, execution, METHOD_NAME, $"MergeFields >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
                                         sw.Restart();
-                                        ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
-                                        this.AITrackTrace(client, execution, METHOD_NAME, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+
+                                        if (hasRelationshipFieldTypes)
+                                        {
+                                            ImportRelationships(execution.ExecutionID, trans, "api.ExecutionAsset", "A.Object", "A.ObjectID", beginItemNumber, endItemNumber, timeout, lookupFieldsPassedByValue);
+                                            this.AITrackTrace(client, execution, METHOD_NAME, $"ImportRelationships >> {currentLoop}", sw.ElapsedMilliseconds, isLog);
+                                        }
+
                                         if (jsonFieldTypes.Count > 0)
                                         {
                                             sw.Restart();
@@ -3756,6 +3796,8 @@ select [uid] from #ParentChildRelationships",
             bool checkCircularRelationships = false;
             if (rt.Predicate.Type == PredicateType.Transformation)
                 checkCircularRelationships = true;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             //check if trigger workflows is set to true and there are actually no workflows
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), rt.ID, null);
@@ -4261,6 +4303,8 @@ end",
             var results = new List<DatabaseBulkRelationshipResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             //check if trigger workflows is set to true and there are actually no workflows in which case shut off triggering of workflows
             sendWorkflowEvents = sendWorkflowEvents && TypeHasWorkflows(SystemObjects.IntersectType.ToString(), it.ID, ChangeType.Delete);
@@ -4890,6 +4934,9 @@ where   ER.ExecutionID = @ExecutionID
         {
 
             List<AssetCrossReferenceResult> bulkResult = new List<AssetCrossReferenceResult>();
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             #region Build data tables for bulk load
 
             var table = new DataTable();
@@ -4983,6 +5030,8 @@ where   ER.ExecutionID = @ExecutionID
             var results = new List<PredicateDeleteResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             if (executionItemDupes.Any())
@@ -5187,6 +5236,9 @@ where   ER.ExecutionID = @ExecutionID
             var results = new List<PredicateUpsertResult>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
 
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
             var predDupes = import.GroupBy(x => x.Name + x.Type).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
@@ -5529,6 +5581,8 @@ where   ER.ExecutionID = @ExecutionID
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
 
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             var uidDupes = import.GroupBy(i => i.Uid).Where(i => i.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
             var nameDupes = import.GroupBy(i => i.Name).Where(i => i.Count() > 1).Select(i => new { Name = i.Key, Count = i.Count() }).ToList();
             if (uidDupes.Any() && execution.Method == "PUT")
@@ -5778,6 +5832,10 @@ where   ER.ExecutionID = @ExecutionID
 
             return results;
         }
-
+        public void SetApiExecutionProcessingStartTime(Guid ExecutionId)
+        {
+            Query<int>("update api.Execution set ProcessingStartedOn = @startedOn where ExecutionId = @ExecutionId",
+                new { startedOn = DateTime.UtcNow, ExecutionId }).FirstOrDefault();
+        }
     }
 }

@@ -133,7 +133,6 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         this.areaName = "Rules";
         this.setCommonItems();
         this.theDeleteCallback = this.deleteRuleType.bind(this);
-        this.setCommonSecondaryNavTabs(false, false, false);
     }
 
     ngOnInit() {

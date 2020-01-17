@@ -122,6 +122,7 @@
     <Compile Include="entities\Issue\IssueType.cs" />
     <Compile Include="entities\Issue\IssueTypeApiModel.cs" />
     <Compile Include="entities\Issue\IssueTypeRelation.cs" />
+    <Compile Include="entities\Membership\GroupApiModel.cs" />
     <Compile Include="entities\Metric\MetricApiViewModels.cs" />
     <Compile Include="entities\Metric\MetricAsset.cs" />
     <Compile Include="entities\Metric\MetricAssetVersion.cs" />
@@ -147,6 +148,8 @@
     <Compile Include="entities\Relation\RelationshipApiModels.cs" />
     <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\ResourcePasswordReset.cs" />
+    <Compile Include="entities\Scoring\Scoring.cs" />
+    <Compile Include="entities\Scoring\ScoringApiModels.cs" />
     <Compile Include="entities\Security\AssetResponsibilitiesModel.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeAllocationViewModel.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationOverrideItem.cs" />
@@ -305,6 +308,7 @@
     <Compile Include="enums\ClientState.cs" />
     <Compile Include="enums\CompanyResourceState.cs" />
     <Compile Include="enums\IntegrationResolutionType.cs" />
+    <Compile Include="enums\ScoreType.cs" />
     <Compile Include="enums\State.cs" />
     <Compile Include="enums\ContractType.cs" />
     <Compile Include="enums\TypeIdentifierInfoModelType.cs" />

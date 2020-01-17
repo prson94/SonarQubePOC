@@ -9,6 +9,7 @@ using d360.core;
 using d360.core.entities;
 using d360.core.entities.Contracts;
 using d360.core.entities.Metric;
+using d360.core.entities.Scoring;
 using d360.core.entities.Views;
 using d360.core.entities.Workflow;
 using d360.core.enums;
@@ -165,6 +166,8 @@ namespace d360.model
         DbSet<WorkflowVersion> WorkflowVersions { get; set; }
         DbSet<WorkflowVersionStep> WorkflowVersionSteps { get; set; }
         DbSet<WorkflowVersionStepTransition> WorkflowVersionStepTransitions { get; set; }
+        DbSet<ScoreTypeAllocation> ScoreTypeAllocations { get; set; }
+
 
         event EventHandler<AssetsPartiallyProcessedEventArgs> AssetsPartiallyProcessed;
         event EventHandler<RelationshipsPartiallyProcessedEventArgs> RelationshipsPartiallyProcessed;
@@ -249,7 +252,7 @@ namespace d360.model
         AssetDetail GetParentObject(int id, SystemObjects obj);
         AssetType GetParentType(int id, SystemObjects obj);
         List<PermissionInfo> GetPermissions(long assetId, int assetTypeId);
-        Task<AssetResults> GetDynamicAssets(int assetTypeId, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null, bool apiNamesInOutput = false, bool listableFieldsOnly = true, bool pagingEnabled = true);        
+        Task<AssetResults> GetDynamicAssets(int assetTypeId, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null, bool apiNamesInOutput = false, bool listableFieldsOnly = true, bool pagingEnabled = true, bool useAssetUrl = false);
         Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");        
         IEnumerable<dynamic> GetReportQueryResults(int reportTileID, SystemObjects type, int id);
@@ -327,5 +330,7 @@ namespace d360.model
         List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600);
         List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(ApiExecution execution, List<ResponsibilityTypeUpsertModel> import, int timeout = 3600);
         string GetIconText(string assetName);
+        void SetApiExecutionProcessingStartTime(Guid ExecutionId);
+        string GetEscapedFilterString(string filter);
     }
 }

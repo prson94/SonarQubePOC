@@ -81,7 +81,8 @@ namespace igx.UnitTests.ValidatorTests
                     Tag = new FieldTypeDataTypeTagApiViewModel()
 
                 },
-                Name = "test"
+                Name = "test",
+                FriendlyName = "Test"
             });
 
             List<string> allTypes = new List<string>() {
@@ -135,7 +136,8 @@ namespace igx.UnitTests.ValidatorTests
                     Tag = new FieldTypeDataTypeTagApiViewModel()
 
                 },
-                Name = "test"
+                Name = "test",
+                FriendlyName = "Test"
             });
 
             var fieldTypes = new List<FieldType>() { new FieldType() { Type = "Tag", Name = "test" } };
@@ -187,7 +189,8 @@ namespace igx.UnitTests.ValidatorTests
                     Tag = new FieldTypeDataTypeTagApiViewModel()
 
                 },
-                Name = "test"
+                Name = "test",
+                FriendlyName = "Test"
             });
 
             var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);

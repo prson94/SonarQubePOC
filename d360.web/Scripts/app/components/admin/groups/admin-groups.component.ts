@@ -4,7 +4,7 @@ import {Breadcrumb} from '../../../models/breadcrumb.model';
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {AdminBaseComponent} from '../admin-base.component';
 import {GroupService} from '../../../services/group.service';
-import {GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel} from '../../../models/group.model';
+import {GroupSearchResultModel, Group, ResourceGroup, GroupEditorModel, GroupApiModel} from '../../../models/group.model';
 import {FormMode} from '../../../models/form.model';
 import {Title} from '@angular/platform-browser';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
@@ -20,8 +20,8 @@ import { MessagesObservableService } from '../../../services/messages-observable
 
 export class AdminGroupsComponent extends AdminBaseComponent {
 
-    private selectedRow: GroupSearchResultModel;
-    private groupItems: GroupSearchResultModel[];
+    private selectedRow: GroupApiModel;
+    private groupItems: GroupApiModel[];
     private formMode: FormMode = FormMode.Default;
     private FormMode = FormMode;
 
@@ -46,9 +46,9 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     load() {
         this.isLoading = true;
 
-        this.groupService.getGroupList().subscribe(
+        this.groupService.getGroups().subscribe(
             d => {
-                this.groupItems = d;
+                this.groupItems = d.items;
                 this.selectedRow = this.groupItems[0];
 
                 this.isLoading = false;
@@ -60,8 +60,8 @@ export class AdminGroupsComponent extends AdminBaseComponent {
         this.formMode = FormMode.Adding;
     }
 
-    edit(id: number) {
-        this.selectedRow = this.groupItems.find(i => i.ID == id);
+    edit(Uid: string) {
+        this.selectedRow = this.groupItems.find(i => i.Uid == Uid);
         this.formMode = FormMode.Editing;
     }
 
@@ -69,8 +69,8 @@ export class AdminGroupsComponent extends AdminBaseComponent {
         this.formMode = FormMode.Default;
     }
 
-    delete(id: number) {
-        this.selectedRow = this.groupItems.find(i => i.ID == id);
+    delete(Uid: string) {
+        this.selectedRow = this.groupItems.find(i => i.Uid == Uid);
         this.formMode = FormMode.Deleting;
     }
 

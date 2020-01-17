@@ -1,0 +1,49 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Tomislav Duric" id="GOV-9154">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+IF NOT EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'ProcessingStartedOn'
+          AND Object_ID = Object_ID(N'api.Execution'))
+BEGIN
+    ALTER TABLE [api].[Execution] ADD ProcessingStartedOn datetime null
+END
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+IF EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'ProcessingStartedOn'
+          AND Object_ID = Object_ID(N'api.Execution'))
+BEGIN
+    ALTER TABLE [api].[Execution] DROP COLUMN ProcessingStartedOn
+END
+]]>
+    </rollback>
+  </changeSet>
+  <changeSet author="Tomislav Duric" id="GOV-9154-FillData-V2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+UPDATE [api].[Execution] SET ProcessingStartedOn = StartedOn
+WHERE ProcessingStartedOn IS NULL
+]]>
+    </sql>
+    <rollback>
+      <![CDATA[
+
+]]>
+    </rollback>
+  </changeSet>
+</databaseChangeLog>

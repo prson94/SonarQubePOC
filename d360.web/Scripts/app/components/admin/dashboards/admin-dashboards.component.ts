@@ -128,18 +128,11 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
 
     constructor(private stateService: StateService, secondaryNavService: SecondaryNavService, protected reportsService: ReportsService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);        
-        this.areaName = "Dashboards";
-        this.tabTitle = 'Dashboards'
-        this.setCommonItems();
-        this.setCommonSecondaryNavTabs();
-        this.selectedItemChange();
         this.theDeleteCallback = this.deleteReport.bind(this);
     }
     
     selectedItemChange() {
-        if (this.auditSidebar && this.selected) {
-            this.auditSidebar.url = `/sidebar/audit/Report/${this.selected.ID}`;
-        }
+        this.buildSecondaryNavigationForObject(this.selected.ID, 'Report');
     }
 
     ngOnInit() {

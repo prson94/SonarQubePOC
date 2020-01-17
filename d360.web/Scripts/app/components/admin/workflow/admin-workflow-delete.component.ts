@@ -23,7 +23,8 @@ import * as _ from 'lodash';
 })
 
 export class AdminWorkflowDeleteComponent extends BaseComponent implements OnInit {
-    @Input() id: number;
+    @Input() id: number=0;
+    @Input() uid: string = "00000000-0000-0000-0000-000000000000";
     @Output() onCancel = new EventEmitter();
     @Output() onSuccess = new EventEmitter();
     @Output() onComplete = new EventEmitter();
@@ -39,7 +40,7 @@ export class AdminWorkflowDeleteComponent extends BaseComponent implements OnIni
 
     delete() {
         this.isLoading = true;
-        this.workflowService.deleteWorkflowType(this.id)
+        this.workflowService.deleteWorkflowType(this.id,this.uid)
             .subscribe(r => {
                 this.onSuccess.emit();
                 this.onComplete.emit();

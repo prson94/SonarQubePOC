@@ -661,13 +661,13 @@ from	IntersectType I
                         var relationInfo = Company.Query<dynamic>("select T.ID as IntersectTypeID, A.Object, A.ObjectID from IntersectType T left join AssetType A on A.uid = @uid where T.uid = @intersectUid"
                             , new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid }).SingleOrDefault();
 
-                        if (relationInfo == null || i.Direction == null || i.RelationType == null)
+                        if (relationInfo == null || i.RelationType == null)
                         {
                             hasDefinitionError = true;
                             return;
                         }
 
-                        relation.Direction = (FieldTypeComplexLookupRelationDirection)i.Direction;
+                        relation.Direction = i.Direction ?? FieldTypeComplexLookupRelationDirection.Both;
                         relation.IntersectTypeID = relationInfo.IntersectTypeID;
                         relation.Object = relationInfo.Object;
                         relation.ObjectID = relationInfo.ObjectID;
@@ -712,6 +712,7 @@ from	IntersectType I
 
                         
                         var field = new FieldTypeComplexLookupDefinitionField();
+                        var isRelatedItem = i.FieldTypeName.StartsWith("Related Item.");
                         var fieldInfo = Company.Query<dynamic>(@"
                             select coalesce(F.ID, 0) as FieldTypeID, T.Object, T.ObjectID 
                             from AssetType T 
@@ -719,7 +720,7 @@ from	IntersectType I
                             new { name = i.FieldTypeName, uid = i.AssetTypeUid }).SingleOrDefault();
 
                         //invalid uid
-                        if (!relatedItemUids.Contains(i.AssetTypeUid) || fieldInfo == null)
+                        if ((isRelatedItem && !relatedItemUids.Contains(i.AssetTypeUid)) || fieldInfo == null)
                         {
                             hasDefinitionError = true;
                             return;
