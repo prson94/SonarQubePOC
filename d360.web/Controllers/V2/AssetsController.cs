@@ -69,7 +69,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("classes"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes.", typeof(List<AssetTypeClassInfo>)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes. The Generic and ReferenceItemType class types are used internally, and are not intended for use in general data requests.", typeof(List<AssetTypeClassInfo>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public HttpResponseMessage GetAssetTypeClassesAsync()
@@ -96,7 +96,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// GET a list of asset types.
         /// </summary>
-        /// <param name="Class">Allows for filtering the Asset type's by Class.</param>
+        /// <param name="Class">Allows for filtering the Asset type's by Class.The Generic and ReferenceItemType class types are used internally, and are not intended for use in general data requests.</param>
         /// <param name="assetTypeUid">Filter by Asset type UID.</param>
         /// <param name="FusionTypeUID">Filter by Fusion type UID. Only applicable for FusionQuery and FusionAttribute classes.</param>
         /// <returns></returns>
