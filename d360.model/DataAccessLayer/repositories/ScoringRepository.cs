@@ -20,6 +20,7 @@ namespace d360.model.DataAccessLayer
         public List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             List<string> whereStatements = new List<string>();
+
             var dbArgs = new DynamicParameters();
 
             foreach (var kp in queryParams)
@@ -32,9 +33,52 @@ namespace d360.model.DataAccessLayer
                         whereStatements.Add("AL.[state] = @state");
                         dbArgs.Add("@state", stateValue);
                         break;
+
+                    case "assetclassname":
+                        var classList = AssetTypeClass.Generic.GetAsList();
+                        var filteredClasses = classList.Where(x => x.Name.ToLower().Contains(kp.Value.Trim().ToLower())).Select(x => x.ID);
+                        whereStatements.Add("AT.class in @filteredClasses");
+                        dbArgs.Add("@filteredClasses", filteredClasses);
+                        break;
+
+                    case "assettypepath":
+                        whereStatements.Add("P.[Path] like @pathname");
+                        dbArgs.Add("@pathname", "%" + kp.Value.Trim() + "%");
+                        break;
+
+                    case "scoretype":
+                        var sc = kp.Value.Trim();
+                        var scoretypeInfos = ScoreType.DataQuality.GetAsList();
+                        var filteredScoreTypes = scoretypeInfos.Where(x => x.Name.ToLower().Contains(kp.Value.Trim().ToLower())).Select(x => x.ID);
+                        whereStatements.Add("AL.scoreType in @filteredScoreTypesGlobal");
+                        dbArgs.Add("@filteredScoreTypesGlobal", filteredScoreTypes);
+                        break;
+
+                    case "global":
+                        List<string> globalFilters = new List<string>();
+                        var classListGlobal = AssetTypeClass.Generic.GetAsList();
+                        var filteredClassesGlobal = classListGlobal.Where(x => x.Name.ToLower().Contains(kp.Value.Trim().ToLower())).Select(x => x.ID);
+                        globalFilters.Add("AT.class in @filteredClassesGlobal");
+                        dbArgs.Add("@filteredClassesGlobal", filteredClassesGlobal);
+
+                        globalFilters.Add("P.[Path] like @pathnameGlobal");
+                        dbArgs.Add("@pathnameGlobal", "%" + kp.Value.Trim() + "%");
+
+                        var scGlobal = kp.Value.Trim();
+                        var scoretypeInfosGlobal = ScoreType.DataQuality.GetAsList();
+                        var filteredScoreTypesGlobal = scoretypeInfosGlobal.Where(x => x.Name.ToLower().Contains(kp.Value.Trim().ToLower())).Select(x => x.ID);
+                        globalFilters.Add("AL.scoreType in @filteredScoreTypesGlobal");
+                        dbArgs.Add("@filteredScoreTypesGlobal", filteredScoreTypesGlobal);
+
+                        whereStatements.Add($"({string.Join(" or ", globalFilters)})");
+
+                        break;
+
                     default: break;
                 }
             }
+
+
             string sqlWhere = whereStatements.Count > 0 ? " where " + string.Join(" and ", whereStatements) : "";
             var sql = $@"select 
 	                        AL.uid,
@@ -42,10 +86,15 @@ namespace d360.model.DataAccessLayer
 	                        AL.assettypeuid,
 	                        P.[Path] as assetTypePath,
 	                        AL.scoreType,
-	                        AL.[state]
+	                        AL.[state],
+                            case 
+                                when Measures.F > 0 then 1
+								else 0
+							end as hasMeasure
                         from metrics.Allocation AL
 	                        inner join AssetType AT on AT.uid = AL.assettypeuid                                    
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
+                            cross apply (select count(*) from metrics.Asset where State = 1 and AssetTypeUid = AL.AssetTypeUid and ScoreType = AL.ScoreType)Measures(F)
                         {sqlWhere}
                         ";
 

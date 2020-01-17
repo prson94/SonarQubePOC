@@ -26,12 +26,18 @@
             </div>
         </div>
         <div class="action-bar">
-            <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
-            <span class="grow"></span>
-            <button class="button primary {{deletingInProgress ? 'loading' : ''}}" (click)="delete()" [disabled]="isLoading">
-                {{deleteButtonText ? deleteButtonText : 'Delete'}}
-                <span class="loader"><span class="spinner light"></span></span>
-            </button>
+            <ng-container *ngIf="!hideDeleteButton">
+                <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
+                <span class="grow"></span>
+                <button class="button primary {{deletingInProgress ? 'loading' : ''}}" (click)="delete()" [disabled]="isLoading">
+                    {{deleteButtonText ? deleteButtonText : 'Delete'}}
+                    <span class="loader"><span class="spinner light"></span></span>
+                </button>
+            </ng-container>
+            <ng-container *ngIf="hideDeleteButton">
+                <span class="grow"></span>
+                <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
+            </ng-container>
         </div>
 
     </d3s-modal>

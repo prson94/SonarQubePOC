@@ -17,17 +17,24 @@ import { Table } from 'primeng/table';
 export class AdminMetricAssetTypeListComponent extends BaseComponent implements OnInit {
 
     private allocations: ScoreTypeAllocationFormatted[] = [];
-    private selection: ScoreTypeAllocationFormatted;
+    private selection: ScoreTypeAllocationFormatted = new ScoreTypeAllocationFormatted();
 
+    private showDelete = false;
+    public theDeleteCallback: Function;
+
+    private showEdit = false;
+    private editTitle = 'Add Score';
 
     @ViewChild('dt', { static: false }) dt: Table;
 
     constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
         super();
+
     }
 
     ngOnInit() {
         this.load();
+        this.theDeleteCallback = this.deleteAllocation.bind(this);
     }
 
     load() {
@@ -43,6 +50,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
                     formatted.scoreType = this.getScoreTypeFriendlyName(x.scoreType);
                     formatted.state = x.state;
                     formatted.uid = x.uid;
+                    formatted.hasMeasure = x.hasMeasure;
                     this.allocations.push(formatted);
                 })
                 this.isLoading = false;
@@ -75,6 +83,41 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
 
     private export() {
         this.allocationService.export(this.dt.filters);
+    }
+
+    private add() {
+        this.editTitle = 'Add Score';
+        this.selection = new ScoreTypeAllocationFormatted();
+        this.showEdit = true;
+    }
+
+    private doDelete(item) {
+        this.showDelete = true;
+        this.selection = item;
+    }
+    private doEdit(item) {
+        this.editTitle = 'Edit Score';
+        this.showEdit = true;
+        this.selection = item;
+    }
+
+    private deleteAllocation($event) {
+        this.allocationService.deleteAllocationByUid($event.uid).
+            subscribe(result => {
+                this.showMessageForResult(this.messagesService, result, "Allocation successfully deleted!");
+                this.load();
+                this.showDelete = false;
+
+            }, err => { this.showMessageForResult(this.messagesService, err); this.showDelete = false; });
+    }
+
+    private onSaveCancel() {
+        this.showEdit = false;
+    }
+
+    private onSave() {
+        this.showEdit = false;
+        this.load();
     }
 
 };

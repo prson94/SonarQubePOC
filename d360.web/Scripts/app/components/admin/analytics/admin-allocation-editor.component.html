@@ -1,0 +1,13 @@
+﻿<div class="content">
+    <div class="row">
+       empty
+    </div>
+</div>
+<div class="action-bar">
+    <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
+    <span class="grow"></span>
+    <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="isLoading">
+        {{savingInProgress ? '' : 'Save'}}
+        <span class="loader"><span class="spinner light"></span></span>
+    </button>
+</div>

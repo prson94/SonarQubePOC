@@ -39,6 +39,8 @@ import {SimpleAccordionModule} from '../../shared/simple-accordion.part';
 import {ErrorNotifyInterceptor} from '../../../http-interceptors/error-notify-interceptor';
 import {DirectivesModule} from '../../../directives/directives.module';
 import {GovernRequestInterceptor} from "../../../http-interceptors/govern-request.interceptor";
+import { SiteModalModule } from '../../shared/modal/gov-modal.module';
+import { AdminAllocationEditorComponent } from './admin-allocation-editor.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -75,6 +77,7 @@ import {GovernRequestInterceptor} from "../../../http-interceptors/govern-reques
         SimpleAccordionModule,
         TooltipModule,
         DirectivesModule,
+        SiteModalModule
     ],
     declarations: [
         AdminAnalyticsComponent,
@@ -82,7 +85,8 @@ import {GovernRequestInterceptor} from "../../../http-interceptors/govern-reques
         AdminMetricConditionListComponent,
         AdminMetricConditionEditorComponent,
         AdminMetricEditorComponent,
-        AdminMetricListComponent
+        AdminMetricListComponent,
+        AdminAllocationEditorComponent
     ],
     providers: [
         {

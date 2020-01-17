@@ -27,6 +27,7 @@ namespace d360.core.entities.Scoring
         [DataMember]
         [JsonConverter(typeof(StringEnumConverter))]
         public State state { get; set; } = State.Active;
+        public bool hasMeasure { get; set; }
     }
 
     public class AllocationApiUpsertModel

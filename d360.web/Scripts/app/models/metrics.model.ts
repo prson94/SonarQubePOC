@@ -120,6 +120,7 @@ export class ScoreTypeAllocation {
     assetTypePath: string;
     scoreType: ScoreType;
     state: State;
+    hasMeasure: boolean;
 }
 
 export class ScoreTypeAllocationFormatted {
@@ -129,6 +130,7 @@ export class ScoreTypeAllocationFormatted {
     assetTypePath: string;
     scoreType: string;
     state: State;
+    hasMeasure: boolean;
 }
 
 export enum ScoreType {
