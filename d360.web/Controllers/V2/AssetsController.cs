@@ -807,7 +807,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = false)
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetAssetsSearchDetailsAsync(Guid assetUid)
         {
