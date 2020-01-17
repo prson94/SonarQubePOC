@@ -63,6 +63,18 @@ namespace d360.model.validators
 
                 #endregion
 
+                #region Category Validation
+
+                if(field.Category!=null)
+                {
+                    if (field.Category.Length > maxNamelength)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Category", $"Category cannot exceed {maxNamelength} characters.");
+                    }
+                }
+
+                #endregion
+
                 if (!field.Type.IsOnlyOneTypeModelDefined())
                 {
                     fieldsHaveErrors = true;
