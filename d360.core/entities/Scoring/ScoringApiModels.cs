@@ -38,4 +38,17 @@ namespace d360.core.entities.Scoring
         [DataMember]
         public ScoreType? scoreType { get; set; }
     }
+
+    public class AllocationApiGetUnallocatedAssetTypeModel
+    {
+        [DataMember]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public AssetTypeClass assetTypeClass { get; set; }
+
+        [DataMember]
+        public Guid? assetTypeUid { get; set; }
+
+        [DataMember]
+        public string assetTypePath { get; set; }
+    }
 }

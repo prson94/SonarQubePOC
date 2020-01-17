@@ -200,5 +200,39 @@ namespace d360.model.DataAccessLayer
         {
             return companyContext.ScoreTypeAllocations.FirstOrDefault(x => x.AssetTypeUid == model.assetTypeUid && x.ScoreType == model.scoreType);
         }
+
+        public async Task<List<AllocationApiGetUnallocatedAssetTypeModel>> GetUnallocatedAssetTypes(ScoreType scoreType)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@scoreType", (int)scoreType);
+
+            dbArgs.Add("@supportedAssetClasses",
+                new List<int>
+                {
+                    (int)AssetTypeClass.BusinessAsset,
+                    (int)AssetTypeClass.TechnicalAsset,
+                    (int)AssetTypeClass.Model,
+                    (int)AssetTypeClass.Policy,
+                    (int)AssetTypeClass.Rule,
+                    (int)AssetTypeClass.User,
+                    (int)AssetTypeClass.Reference,
+                }
+            );
+
+            var sql = $@"select 
+	                        att.[uid] as assetTypeUid,
+	                        atp.Path as assetTypePath,
+	                        att.Class as assetTypeClass
+                        from
+	                        [dbo].[assettype] att
+	                        cross apply [dbo].[GetAssetTypeTextPathById](att.id,'/') atp
+                        where 
+	                        att.class in @supportedAssetClasses
+		                        and
+	                        not exists (select 1 from [metrics].Allocation a where a.[state] = 1 and a.assettypeuid = att.[uid] and a.scoretype = @scoreType)";
+
+            return  (await companyContext.QueryAsync<AllocationApiGetUnallocatedAssetTypeModel>(sql, dbArgs)).ToList();
+            
+        }
     }
 }
