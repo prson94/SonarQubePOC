@@ -27,6 +27,7 @@ namespace d360.model.validators
             var fieldsHaveErrorsList = new List<string>();
             List<ValidationResult> validationResults = new List<ValidationResult>();
             bool isValid = true;
+            int maxNamelength = 250;
 
             foreach (var field in model.Fields)
             {
