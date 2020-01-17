@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.validators;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -16,49 +17,44 @@ namespace d360.model.validators
         public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, bool areFusionFieldsAllowed = true, List<FieldType> existingFieldTypes = null)
         {
             var baseValidation = BaseModelValidation(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
+            
+            
             if (baseValidation.StatusCode != HttpStatusCode.OK)
                 return baseValidation;
 
             bool actionIsReplaceAndKeySelected = (model.Action == FieldTypesApiEditAction.Merge); //If set to merge we can set to true and skip this step.
             bool fieldsHaveErrors = false;
             var fieldsHaveErrorsList = new List<string>();
-            var nameRegex = new System.Text.RegularExpressions.Regex("^[a-zA-Z][a-zA-Z0-9_-]+$");
+            List<ValidationResult> validationResults = new List<ValidationResult>();
+            bool isValid = true;
             int maxNamelength = 250;
 
             foreach (var field in model.Fields)
             {
+                #region Basic field Model validation
+                
+                isValid = Validator.TryValidateObject(field, new ValidationContext(field, serviceProvider: null, items: null), validationResults, true);
+                if (!isValid)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Invalid Field {validationResults.First().MemberNames.First()}", validationResults.First().ErrorMessage);
+                }
+                
+                #endregion
+
                 #region Name Validation
                 
-                if (!nameRegex.IsMatch(field.Name ?? ""))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
-                }
                 if (!IsFieldNameAllowed(field.Name.Trim()))
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot be [{field.Name.Trim().ToUpper()}].");
-                }
-                if(field.Name.Length> maxNamelength)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Field name cannot exceed {maxNamelength} characters.");
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Name cannot be [{field.Name.Trim().ToUpper()}].");
                 }
 
                 #endregion
 
-                #region FriendlyName Validation
-
-                if (String.IsNullOrWhiteSpace(field.FriendlyName))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field FriendlyName", $"FriendlyName is a required field.");
-                }
+                #region FriendlyName Validation                
 
                 if (!IsFieldNameAllowed(field.FriendlyName.Trim()))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field FriendlyName", $"FriendlyName cannot be [{field.FriendlyName.Trim().ToUpper()}].");
-                }
-
-                if (field.FriendlyName.Length > maxNamelength)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field FriendlyName", $"FriendlyName cannot exceed {maxNamelength} characters.");
                 }
 
                 #endregion
@@ -194,7 +190,7 @@ namespace d360.model.validators
         }
 
         private static WorkHttpStatus BaseModelValidation(BaseFieldTypesApiModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel)
-        {
+        {           
             if (model == null)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "No model found", "You did not provide a valid model. Please check your request and try again.");

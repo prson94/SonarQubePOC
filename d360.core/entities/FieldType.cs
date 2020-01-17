@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
@@ -665,8 +665,13 @@ namespace d360.core.entities
     public class FieldTypeApiEditModel
     {
         [DataMember]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "{0} is a required field")]
+        [MaxLength(250, ErrorMessage = "{0} cannot exceed {1} characters.")]
+        [RegularExpression("^[a-zA-Z][a-zA-Z0-9_-]+$", ErrorMessage = "{0} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.")]
         public string Name { get; set; }
-        [DataMember]
+        [DataMember]        
+        [Required(AllowEmptyStrings = false, ErrorMessage = "{0} is a required field")]
+        [MaxLength(250, ErrorMessage = "{0} cannot exceed {1} characters.")]
         public string FriendlyName { get; set; }
         [DataMember]
         public string Category { get; set; }
