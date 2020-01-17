@@ -142,7 +142,8 @@ from	FollowDetail F
 			    when 'G' then 'Via Group'
 			    when 'O' then 'Via Organization'
 			    else ''
-		    end as Via
+		    end as Via,
+            A.Uid as UID
 		from 
 		    ResponsibilityDetail RD 
 		    inner join AssetType T on T.ObjectID = RD.TypeID and T.Object = RD.Type and T.Object = @type and T.ObjectID = @id
@@ -161,9 +162,11 @@ from	FollowDetail F
 			        when 'G' then 'Via Group'
 			        when 'O' then 'Via Organization'
 			        else ''
-		        end as Via
+		        end as Via,
+                A.Uid as UID
         from	ResponsibilityDetail RD
                 cross apply [dbo].GetAssetTextPathById(RD.AssetID, ' / ') TP
+                inner join Asset A on A.ID = RD.AssetID
 		        inner join AssetType T on T.Object = RD.Type and T.ObjectID = RD.TypeID and RD.ResourceID = @resourceID and T.Object = @type and T.ObjectID = @id
         where  {(responsibilityTypeId.HasValue && responsibilityTypeId > 0 ? " ResponsibilityTypeID = @responsibilityTypeId and " : "")} 
             RD.AssetID != 0 and RD.ApplyToType = 0 and RD.IsVisible = 1";
@@ -174,10 +177,11 @@ from	FollowDetail F
 
             #region Header
 
-            document.SetCellValue(1, 1, "Role");
-            document.SetCellValue(1, 2, "Asset ID");
-            document.SetCellValue(1, 3, "Name");
-            document.SetCellValue(1, 4, "Via");
+            document.SetCellValue(1, 1, "Role");            
+            document.SetCellValue(1, 2, "Name");
+            document.SetCellValue(1, 3, "Via");
+            document.SetCellValue(1, 4, "Asset UID");
+            document.SetCellValue(1, 5, "Asset ID");
 
             #endregion
 
@@ -185,10 +189,11 @@ from	FollowDetail F
             foreach (var item in query)
             {
                 r++;
-                document.SetCellValue(r, 1, item.ResponsibilityType);
-                document.SetCellValue(r, 2, item.AssetID);
-                document.SetCellValue(r, 3, item.Path);
-                document.SetCellValue(r, 4, item.Via);
+                document.SetCellValue(r, 1, item.ResponsibilityType);                
+                document.SetCellValue(r, 2, item.Path);
+                document.SetCellValue(r, 3, item.Via);
+                document.SetCellValue(r, 4, item.UID.ToString());
+                document.SetCellValue(r, 5, item.AssetID);
             }
 
             query = null;
@@ -355,7 +360,8 @@ from	FollowDetail F
                             {columns}
 		                    A.ID,
                             A.ID as ResourceID,
-                            A.FirstName + ' ' + A.LastName as FullName 
+                            A.FirstName + ' ' + A.LastName as FullName,
+                            A.UID
                     from    (
                             select	FirstName,
 		                            LastName,
@@ -363,7 +369,8 @@ from	FollowDetail F
 		                            LastLoggedInOn,
                                     case State when 1 then 'Active' else 'Inactive' end as [State],
                                     case IsAdministrator when 1 then 'True' else 'False' end as [IsAdministrator],
-                                    ResourceID as ID
+                                    ResourceID as ID,
+                                    uid as UID
                             from	reporting.Global_Resource
                                     where State <> @excludeStatus {hideData3SixtySql}
                             ) A 
@@ -412,6 +419,7 @@ from	FollowDetail F
             fields.Add(new GridColumn { text = d360.core.resources.Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", columntype = "date" });
             fields.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = "bool" });
             fields.Add(new GridColumn { text = d360.core.resources.Fields.Status_Name, datafield = "State", columntype = "string" });
+            fields.Add(new GridColumn { text = "User UID", datafield = "UID", columntype = "string" });
 
             var document = new SLDocument();
             document.AddWorksheet("Users");
