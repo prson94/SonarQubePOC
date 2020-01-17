@@ -1,6 +1,8 @@
 ﻿using d360.core.entities.Scoring;
+using d360.core.enums;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
@@ -14,5 +16,6 @@ namespace d360.model.DataAccessLayer
         bool HasActiveMeasures(ScoreTypeAllocation alloc);
         AllocationApiGetModel PostAllocation(AllocationApiUpsertModel model, ref ScoreTypeAllocation alloc);
         AllocationApiGetModel UpdateAllocation(AllocationApiUpsertModel model, ScoreTypeAllocation alloc);
+        Task<List<AllocationApiGetUnallocatedAssetTypeModel>> GetUnallocatedAssetTypes(ScoreType scoreType);
     }
 }
