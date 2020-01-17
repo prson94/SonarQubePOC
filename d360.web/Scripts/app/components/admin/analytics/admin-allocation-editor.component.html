@@ -1,6 +1,8 @@
 ﻿<div class="content">
     <div class="row">
-       empty
+        <select (change)="scoreTypeChange($event)">
+            <option [value]="scType.value" *ngFor="let scType of ddlScoreTypes">{{scType.text}}</option>
+        </select>
     </div>
 </div>
 <div class="action-bar">

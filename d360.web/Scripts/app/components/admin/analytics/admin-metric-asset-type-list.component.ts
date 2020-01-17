@@ -16,8 +16,11 @@ import { Table } from 'primeng/table';
 
 export class AdminMetricAssetTypeListComponent extends BaseComponent implements OnInit {
 
+    private _loadedAllocations: ScoreTypeAllocation[];
+    private selection: ScoreTypeAllocation = new ScoreTypeAllocation();
+
+    //This one will hold data but with formatted enums to friendly string (for readability and search)
     private allocations: ScoreTypeAllocationFormatted[] = [];
-    private selection: ScoreTypeAllocationFormatted = new ScoreTypeAllocationFormatted();
 
     private showDelete = false;
     public theDeleteCallback: Function;
@@ -42,6 +45,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         this.allocationService.getAllocations()
             .subscribe(r => {
                 this.allocations = [];
+                this._loadedAllocations = r;
                 r.forEach(x => {
                     let formatted: ScoreTypeAllocationFormatted = new ScoreTypeAllocationFormatted();
                     formatted.assetClassName = this.getClassFriendlyName(x.assetClassName);
@@ -87,18 +91,22 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
 
     private add() {
         this.editTitle = 'Add Score';
-        this.selection = new ScoreTypeAllocationFormatted();
+        this.selection = new ScoreTypeAllocation();
         this.showEdit = true;
     }
 
-    private doDelete(item) {
+    private doDelete(item: ScoreTypeAllocationFormatted) {
         this.showDelete = true;
-        this.selection = item;
+        this.selection = this.getAllocationByUid(item.uid);
     }
-    private doEdit(item) {
+    private doEdit(item: ScoreTypeAllocationFormatted) {
         this.editTitle = 'Edit Score';
         this.showEdit = true;
-        this.selection = item;
+        this.selection = this.getAllocationByUid(item.uid);
+    }
+
+    private getAllocationByUid(uid: string): ScoreTypeAllocation {
+        return this._loadedAllocations.find(x => x.uid == uid);
     }
 
     private deleteAllocation($event) {
