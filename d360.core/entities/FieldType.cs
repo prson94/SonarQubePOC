@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
