@@ -1,5 +1,5 @@
 ﻿import { FieldType } from "./fields.model";
-import { State } from "./asset.model";
+import { State, AssetTypeClass } from "./asset.model";
 
 export class MetricAssetViewModel {
     Uid: string;
@@ -113,12 +113,21 @@ export class Condition {
 }
 
 
-export class Allocation {
+export class ScoreTypeAllocation {
+    uid: string;
+    assetClassName: AssetTypeClass;
+    assetTypeUid: string;
+    assetTypePath: string;
+    scoreType: ScoreType;
+    state: State;
+}
+
+export class ScoreTypeAllocationFormatted {
     uid: string;
     assetClassName: string;
     assetTypeUid: string;
     assetTypePath: string;
-    scoreType: ScoreType;
+    scoreType: string;
     state: State;
 }
 

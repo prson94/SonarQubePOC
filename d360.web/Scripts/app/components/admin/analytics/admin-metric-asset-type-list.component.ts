@@ -1,11 +1,12 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
-import { Item, Allocation, ScoreType } from '../../../models/metrics.model';
+import { Item, ScoreTypeAllocation, ScoreType, ScoreTypeAllocationFormatted } from '../../../models/metrics.model';
 import { FormMode } from '../../../models/form.model';
 import { AssetTypeMetricModel, AssetTypeClass } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
+import { Table } from 'primeng/table';
 
 @Component({
     selector: 'd3s-admin-metric-asset-type-list',
@@ -15,8 +16,12 @@ import { AllocationService } from '../../../services/allocations.service';
 
 export class AdminMetricAssetTypeListComponent extends BaseComponent implements OnInit {
 
-    private allocations: Allocation[] = [];
-    private selection: Allocation;
+    private allocations: ScoreTypeAllocationFormatted[] = [];
+    private selection: ScoreTypeAllocationFormatted;
+
+
+    @ViewChild('dt', { static: false }) dt: Table;
+
     constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
         super();
     }
@@ -29,8 +34,17 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         this.isLoading = true;
         this.allocationService.getAllocations()
             .subscribe(r => {
-                this.allocations = r;
-                console.log(this.allocations);
+                this.allocations = [];
+                r.forEach(x => {
+                    let formatted: ScoreTypeAllocationFormatted = new ScoreTypeAllocationFormatted();
+                    formatted.assetClassName = this.getClassFriendlyName(x.assetClassName);
+                    formatted.assetTypePath = x.assetTypePath;
+                    formatted.assetTypeUid = x.assetTypeUid;
+                    formatted.scoreType = this.getScoreTypeFriendlyName(x.scoreType);
+                    formatted.state = x.state;
+                    formatted.uid = x.uid;
+                    this.allocations.push(formatted);
+                })
                 this.isLoading = false;
             });
     }
@@ -57,6 +71,10 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
             default:
                 return sct.toString();
         }
+    }
+
+    private export() {
+        this.allocationService.export(this.dt.filters);
     }
 
 };
