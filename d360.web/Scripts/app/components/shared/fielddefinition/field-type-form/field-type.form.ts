@@ -17,11 +17,9 @@ import {
 
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
 import { ObjectDetailService } from '../../../../services/object-detail.service';
-
 import { BaseComponent } from '../../../shared/base.component';
-
 import { FormHelpers } from '../../../../static/form-helpers';
-import { Observable, Subscription, observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
 
@@ -41,8 +39,7 @@ import { MessagesObservableService } from '../../../../services/messages-observa
 
             .display-table-title {
                 text-align: center;
-                width: 100%;
-                font-family: "Roboto", Tahoma !important;
+                width: 100%;                
                 text-transform: uppercase;
                 color: #5c5e60 !important;
                 font-size: 1rem;
@@ -292,8 +289,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (this.model.RelationItems != null && this.model.RelationItems.length) {
             for (let i = 0; i < this.model.RelationItems.length; i++) {
                 let item = this.model.RelationItems[i];
-                let last = (i == 0) ? null : this.model.RelationItems[i - 1];
-
+                
                 if (i == 0) {
                     this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
                         o => {
@@ -993,8 +989,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private changeRel(index: number): Observable<any> {
         let item = this.model.RelationItems[index];
-        let last = (index == 0) ? null : this.model.RelationItems[index - 1];
-
+        
         let params = [];
         if (item.selectedRelationItemID) {
             params = item.selectedRelationItemID.split('|');
@@ -1074,94 +1069,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             other.DisplayOrder = sum - total;
         }
     }
-
-    private changeLegacyRef(): Observable<any> {
-        this.childIntersectDisabled = (this.model.RelationItem.ReferenceType.toString() || '1') == '1';
-        this.model.RelationItem.DisplayFields = [];
-
-        if (this.model.RelationItem.selectedRelationItemID != null) {
-            let params = this.model.RelationItem.selectedRelationItemID.split('|');
-
-            this.model.RelationItem.IntersectType = parseInt(params[0]);
-            this.model.RelationItem.Object = params[1];
-            this.model.RelationItem.ObjectID = parseInt(params[2]);
-            this.model.RelationItem.Direction = parseInt(params[3]);
-        }
-
-        if (this.model.RelationItem.IntersectType != null && !this.childIntersectDisabled) {
-            this.childIntersectsLoading = true;
-
-            return this.fieldsService.getRelationLookupChildIntersectTypes(this.model.RelationItem.IntersectType)
-                .pipe(map(
-                    r => {
-                        this.childIntersectTypes = r;
-                        this.childIntersectsLoading = false;
-                    }
-                ));
-        } else if (this.childIntersectDisabled) {
-            return this.changeLegacyChild();
-        } else {
-            return Observable.create();
-        }
-    }
-
-    private changeLegacyChild(): Observable<any> {
-        let intersectType = this.model.RelationItem.IntersectType;
-        let type = this.model.RelationItem.Object;
-        let id = this.model.RelationItem.ObjectID;
-
-        if (this.model.RelationItem.ReferenceType.toString() != '1') { //not self ref
-            let params = this.model.RelationItem.selectedChildIntersectType.split('|');
-
-            intersectType = parseInt(params[0]);
-            type = params[1];
-            id = parseInt(params[2]);
-        }
-
-        if (intersectType && id && type) {
-            let item = this.model.RelationItem;
-
-            item.DisplayFields = [];
-
-            return this.fieldsService.getRelationLookupDisplayFields(id, type, intersectType)
-                .pipe(map(
-                    r => {
-                        r.forEach(
-                            i => {
-                                let params = i.value.split('|');
-                                let d = new FieldTypeItemDisplayFieldEditorModel();
-
-                                d.FieldTypeID = parseInt(params[0]);
-                                d.FieldTypeName = params[1];
-                                d.Show = false;
-                                d.FilterValue = "";
-                                d.SortOrder = null;
-                                d.value = i.value;
-
-                                let e = item.DisplayFields.find(j => j.FieldTypeID == d.FieldTypeID && j.FieldTypeName == d.FieldTypeName);
-
-                                if (e != null) {
-                                    e.Show = true;
-                                    e.value = i.value;
-                                } else {
-                                    item.DisplayFields.push(d);
-                                }
-                            }
-                        );
-
-                        let s = [];
-                        for (let i = 1; i <= item.DisplayFields.length; i++) {
-                            item.DisplayFields[i - 1].DisplayOrder = i;
-                            s.push({ id: i, text: i });
-                        }
-                        item.SortOrderList = s;
-                    }
-                ));
-        } else {
-            return Observable.create();
-        }
-    }
-
+        
     private changeFilteredLookup(): Observable<any> {
         if (this.filteredLookup == null || this.filteredLookup == '') {
             this.filteredLookupDisplayFields = [];
