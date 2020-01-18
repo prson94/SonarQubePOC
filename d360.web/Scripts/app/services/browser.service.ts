@@ -153,7 +153,7 @@ export class BrowserService extends BaseObservableService {
         const url = `api/v2/browser/filters`;
 
         return this.http.get(url).pipe(
-            map((response: FilterSelectionsModel) => new FilterSelectionsModel(response.AssetTypeOptions, response.PredicateOptions)),
+            map((response: FilterSelectionsModel) => new FilterSelectionsModel(response.AssetTypeOptions, response.PredicateOptions, response.ResponsibilityTypeOptions)),
             catchError(err => this.handleError(err))
         );
     }
@@ -210,6 +210,7 @@ export class BrowserService extends BaseObservableService {
             ownersNode.key = baseKey;
             ownersNode.text = model.responsibilityType;
             ownersNode.template = "Owners";
+            ownersNode.responsibilityTypeId = model.responsibilityTypeId;
             translationModel.nodes.push(ownersNode); 
 
             model.owners.forEach(a => {

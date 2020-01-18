@@ -460,6 +460,7 @@ export class AssetBrowserTranslationNode {
     hop: number;
     assetUid: string;
     assetTypeId: number;
+    responsibilityTypeId: number;
     key: string;
     group: string;
     isGroup: boolean;
@@ -696,6 +697,12 @@ export class AssetBrowserPredicateFilterModel {
     Type: string;
 }
 
+export class AssetBrowserResponsibilityTypeFilterModel {
+    Id: number;
+    Uid: number;
+    Name: string;
+}
+
 export class AssetBrowserFilterModel {
     AncestryMode: FilterAncestryMode = FilterAncestryMode.AllAncestors;
     DisplayBadges: boolean = true;
@@ -704,16 +711,20 @@ export class AssetBrowserFilterModel {
     NumberOfHops: number = 3;
     SelectedAssetTypes: number[] = [];
     SelectedPredicates: number[] = [];
+    SelectedResponsibilityTypes: number[] = [];
 }
 
 export class FilterSelectionsModel {
     AssetTypeOptions: AssetBrowserAssetTypeFilterModel[];
     PredicateOptions: AssetBrowserPredicateFilterModel[];
+    ResponsibilityTypeOptions: AssetBrowserResponsibilityTypeFilterModel[];
+
     AncestryOptions: SelectItem[] = [
         { value: FilterAncestryMode.AllAncestors, label: 'Show all parents/owners' },
         { value: FilterAncestryMode.DirectAncestor, label: 'Show direct parent/owner' }//,
         //{ value: FilterAncestryMode.NoAncestor, label: 'Show no parents/owners' }
     ];
+
     HopOptions: SelectItem[] = [
         { label: 'One', value: 1 },
         { label: 'Two', value: 2 },
@@ -724,11 +735,19 @@ export class FilterSelectionsModel {
 
     FilterAssetTypes: TreeNode[] = [];
     FilterPredicates: TreeNode[] = [];
+    FilterResponsibilityTypes: TreeNode[] = [];
 
-    constructor(assetTypes: AssetBrowserAssetTypeFilterModel[], predicates: AssetBrowserPredicateFilterModel[]) {
+    constructor(assetTypes: AssetBrowserAssetTypeFilterModel[], predicates: AssetBrowserPredicateFilterModel[], responsibilityTypes: AssetBrowserResponsibilityTypeFilterModel[]) {
         this.AssetTypeOptions = assetTypes;
         this.PredicateOptions = predicates;
+        this.ResponsibilityTypeOptions = responsibilityTypes;
     }
+}
+
+export class LoadedFilterTypesModel {
+    AssetTypes: number[] = [];
+    Predicates: number[] = [];
+    ResponsibilityTypes: number[] = [];
 }
 
 //#endregion
