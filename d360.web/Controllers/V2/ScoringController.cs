@@ -36,7 +36,7 @@ namespace d360.web.Controllers.V2
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/scoring"),
         Authorize,
-        ApiExplorerSettings(IgnoreApi = false)
+        ApiExplorerSettings(IgnoreApi = true)
     ]
     public class ScoringController : BaseV2ApiController
     {
