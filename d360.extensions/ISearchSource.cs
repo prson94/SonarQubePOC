@@ -53,9 +53,14 @@ namespace d360.extensions
         public QueryLimitation()
         {
             AggregationFilters = new List<AggregationFilter>();
+            ResourceGroupIDs = new List<int>();
+            ResourceOrgIDs = new List<int>();
         }
         public List<AggregationFilter> AggregationFilters { get; set; }
         public bool HideData3SixtyUsers { get; set; } = false;
+        public int ResourceID { get; set; }
+        public List<int> ResourceGroupIDs { get; set; }
+        public List<int> ResourceOrgIDs { get; set; }
     }
 
     public class IndexTypeList
