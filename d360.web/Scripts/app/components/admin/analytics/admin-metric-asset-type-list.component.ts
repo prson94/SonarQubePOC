@@ -32,7 +32,8 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
 
     constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
         super();
-
+        this.selection = new ScoreTypeAllocation();
+        this.selection.scoreType = ScoreType.Governance;
     }
 
     ngOnInit() {
@@ -92,6 +93,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
     private add() {
         this.editTitle = 'Add Score';
         this.selection = new ScoreTypeAllocation();
+        this.selection.scoreType = ScoreType.Governance;
         this.showEdit = true;
     }
 

@@ -41,6 +41,7 @@ import {DirectivesModule} from '../../../directives/directives.module';
 import {GovernRequestInterceptor} from "../../../http-interceptors/govern-request.interceptor";
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { AdminAllocationEditorComponent } from './admin-allocation-editor.component';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 
 @NgModule({
     imports: [CommonModule,
@@ -65,6 +66,7 @@ import { AdminAllocationEditorComponent } from './admin-allocation-editor.compon
         SpinnerModule,
         TreeTableModule,
         TableModule,
+        AutoCompleteModule,
 
         //d3s        
         CoreModule,

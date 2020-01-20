@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewChild, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
-import { Item, ScoreTypeAllocation, ScoreType, ScoreTypeAllocationFormatted, ScoreTypeLabel } from '../../../models/metrics.model';
+import { Item, ScoreTypeAllocation, ScoreType, ScoreTypeAllocationFormatted } from '../../../models/metrics.model';
 import { FormMode } from '../../../models/form.model';
 import { AssetTypeMetricModel, AssetTypeClass } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -20,36 +20,64 @@ export class AdminAllocationEditorComponent implements OnChanges, OnInit {
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
 
+    private currentAllocationUid: string;
+
     private savingInProgress: boolean = false;
 
     private ddlScoreTypes: any[] = [];
+    private ddlAssetTypes: any[] = [];
 
     constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
-
-    }
-
-    ngOnChanges(change: SimpleChanges) {
-        if (change.selection && change.selection.currentValue != change.selection.previousValue) {
-            console.log("test");
-        }
-    }
-
-    scoreTypeChange($event) {
-        console.log($event);
-        console.log(this.selection);
+        this.selection = new ScoreTypeAllocation();
+        this.selection.scoreType = ScoreType.Governance;
     }
 
     ngOnInit() {
-        this.prepareData();
+        this.initialData();
+        this.populateAssetTypesDDL();
     }
 
-    private prepareData() {
-        this.ddlScoreTypes.push({ value: ScoreType.DataQuality, text: ScoreTypeLabel.get(ScoreType.DataQuality) });
-        this.ddlScoreTypes.push({ value: ScoreType.Governance, text: ScoreTypeLabel.get(ScoreType.Governance) });
-        this.ddlScoreTypes.push({ value: ScoreType.Perceptional, text: ScoreTypeLabel.get(ScoreType.Perceptional)});
+    ngOnChanges(change: SimpleChanges) {
+        if (change.currentAllocationUid && change.currentAllocationUid.currentValue != change.currentAllocationUid.previousValue) {
 
-        console.log(this.ddlScoreTypes);
-        console.log("preparing data");
+            this.populateAssetTypesDDL();
+        }
+        this.currentAllocationUid = this.selection.uid;
+    }
+
+    scoreTypeChange($event) {
+        this.populateAssetTypesDDL();
+    }
+
+    private populateAssetTypesDDL() {
+        this.allocationService.getunallocatedAssetTypes(this.selection.scoreType)
+            .subscribe(data => {
+                data.forEach(item => {
+                    this.ddlAssetTypes.push({ value: item.assetTypeUid, label: this.getClassFriendlyName(item.assetTypeClass) + ' > ' + item.assetTypePath });
+                })
+                this.ddlAssetTypes = this.ddlAssetTypes.sort(x => x.text);
+            });
+    }
+
+
+
+    private initialData() {
+        this.ddlScoreTypes.push({ value: ScoreType.Governance, label: "Governance" });
+
+        //Uncomment in 2020-sprint-3
+        //this.ddlScoreTypes.push({ value: ScoreType.DataQuality, label: "Data Quality" });
+        //this.ddlScoreTypes.push({ value: ScoreType.Perceptional, label: "Perceptional" });
+    }
+
+    getClassFriendlyName(atc: AssetTypeClass): string {
+        switch (atc.toString()) {
+            case 'BusinessAsset':
+                return 'Business Asset';
+            case 'TechnicalAsset':
+                return 'Technical Asset';
+            default:
+                return atc.toString();
+        }
     }
 
     private cancel() {
@@ -59,7 +87,7 @@ export class AdminAllocationEditorComponent implements OnChanges, OnInit {
 
     private save() {
         console.log("save");
-        this.onSave.emit();
+        console.log(this.selection);
     }
 
 };

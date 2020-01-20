@@ -60,7 +60,7 @@ export class GroupForm {
 }
 
 export class MapForm {
-    Map: MetricMap;
+    Map: Map;
     Items: Item[] = [];
     ObjectTypes: any[] = [];
     Conditions: Condition[] = [];
@@ -83,7 +83,7 @@ export class Item {
     SourceID: string;
 }
 
-export class MetricMap {
+export class Map {
     ID: number;
     GroupID: number;
     ItemID: number;
@@ -139,10 +139,5 @@ export enum ScoreType {
     Perceptional = 3
 }
 
-export const ScoreTypeLabel = new Map<number, string>([
-    [ScoreType.Governance, 'Governance'],
-    [ScoreType.DataQuality, 'Data Quality'],
-    [ScoreType.Perceptional, 'Perceptional']
-]);
 
 

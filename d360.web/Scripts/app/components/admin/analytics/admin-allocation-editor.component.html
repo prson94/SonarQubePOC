@@ -1,8 +1,28 @@
 ﻿<div class="content">
     <div class="row">
-        <select (change)="scoreTypeChange($event)">
-            <option [value]="scType.value" *ngFor="let scType of ddlScoreTypes">{{scType.text}}</option>
-        </select>
+        <div class="col s12 ng-star-inserted">
+            <div class="FieldName">
+                <span>Score Type&nbsp;</span>
+            </div>
+            <p-dropdown [options]="ddlScoreTypes" (onChange)="scoreTypeChange($event)" [(ngModel)]="selection.scoreType" [style]="{'width':'70%'}">
+                <ng-template let-item pTemplate="selectedItem">
+                    <span>{{item.label}}</span>
+                </ng-template>
+            </p-dropdown>
+        </div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col s12 ng-star-inserted">
+            <div class="FieldName">
+                <span>Asset Type&nbsp;</span>
+            </div>
+            <p-dropdown [options]="ddlAssetTypes" [(ngModel)]="selection.assetTypeUid" [style]="{'width':'70%'}" filter="true">
+                <ng-template let-item pTemplate="selectedItem">
+                    <span>{{item.label}}</span>
+                </ng-template>
+            </p-dropdown>
+        </div>
     </div>
 </div>
 <div class="action-bar">
