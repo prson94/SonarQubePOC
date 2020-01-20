@@ -37,6 +37,21 @@ export class AllocationService extends BaseObservableService {
 
     }
 
+    public save(allocation: ScoreTypeAllocation): Observable<any> {
+        let url = `api/v2/scoring/allocations`;
+        if (allocation.uid == undefined) {
+            return this.http.post(url, allocation)
+                .pipe(map(response => <any>response),
+                    catchError(err => this.handleError(err, true)));
+        }
+        else {
+            return this.http.put(url + "/" + allocation.uid, allocation)
+                .pipe(map(response => <any>response),
+                    catchError(err => this.handleError(err, true)));
+        }
+
+    }
+
     public export(filters: any) {
         var queryString = '?' + Object.keys(filters).map(key => key + '=' + filters[key].value).join('&');
 

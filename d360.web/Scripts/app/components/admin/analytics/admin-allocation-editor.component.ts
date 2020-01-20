@@ -1,12 +1,9 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewChild, SimpleChanges } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { MetricsService } from '../../../services/metrics.service';
-import { Item, ScoreTypeAllocation, ScoreType, ScoreTypeAllocationFormatted } from '../../../models/metrics.model';
-import { FormMode } from '../../../models/form.model';
-import { AssetTypeMetricModel, AssetTypeClass } from '../../../models/asset.model';
+import { ScoreTypeAllocation, ScoreType } from '../../../models/metrics.model';
+import { AssetTypeClass } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
-import { Table } from 'primeng/table';
 
 @Component({
     selector: 'd3s-admin-allocation-editor',
@@ -14,13 +11,12 @@ import { Table } from 'primeng/table';
     providers: [AllocationService]
 })
 
-export class AdminAllocationEditorComponent implements OnChanges, OnInit {
+export class AdminAllocationEditorComponent extends BaseComponent implements OnChanges, OnInit {
 
     @Input() selection: ScoreTypeAllocation = new ScoreTypeAllocation();
+    @Input() disabled: boolean = false;
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
-
-    private currentAllocationUid: string;
 
     private savingInProgress: boolean = false;
 
@@ -28,21 +24,17 @@ export class AdminAllocationEditorComponent implements OnChanges, OnInit {
     private ddlAssetTypes: any[] = [];
 
     constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
+        super();
         this.selection = new ScoreTypeAllocation();
         this.selection.scoreType = ScoreType.Governance;
     }
 
     ngOnInit() {
         this.initialData();
-        this.populateAssetTypesDDL();
     }
 
     ngOnChanges(change: SimpleChanges) {
-        if (change.currentAllocationUid && change.currentAllocationUid.currentValue != change.currentAllocationUid.previousValue) {
-
-            this.populateAssetTypesDDL();
-        }
-        this.currentAllocationUid = this.selection.uid;
+        this.populateAssetTypesDDL();
     }
 
     scoreTypeChange($event) {
@@ -52,10 +44,18 @@ export class AdminAllocationEditorComponent implements OnChanges, OnInit {
     private populateAssetTypesDDL() {
         this.allocationService.getunallocatedAssetTypes(this.selection.scoreType)
             .subscribe(data => {
+                this.ddlAssetTypes = [];
                 data.forEach(item => {
                     this.ddlAssetTypes.push({ value: item.assetTypeUid, label: this.getClassFriendlyName(item.assetTypeClass) + ' > ' + item.assetTypePath });
                 })
-                this.ddlAssetTypes = this.ddlAssetTypes.sort(x => x.text);
+
+                if (this.selection.uid) {
+                    this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, label: this.getClassFriendlyName(this.selection.assetClassName) + ' > ' + this.selection.assetTypePath });
+                }
+                this.ddlAssetTypes = this.ddlAssetTypes.sort((a, b) => a.label.localeCompare(b.label));
+
+                this.ddlAssetTypes = [{ value: null, label: 'Select Asset Type' }, ...this.ddlAssetTypes];
+
             });
     }
 
@@ -81,13 +81,35 @@ export class AdminAllocationEditorComponent implements OnChanges, OnInit {
     }
 
     private cancel() {
-        console.log("cancel");
         this.onCancel.emit();
     }
 
     private save() {
-        console.log("save");
-        console.log(this.selection);
+        var item = new ScoreTypeAllocation();
+        if (this.selection.uid)
+            item.uid = this.selection.uid;
+
+        item.assetTypeUid = this.selection.assetTypeUid;
+        item.scoreType = this.selection.scoreType;
+        this.savingInProgress = true;
+        this.allocationService.save(item)
+            .subscribe(res => {
+                this.selection = new ScoreTypeAllocation();
+                this.savingInProgress = false;
+                if (res.type && res.type == "error")
+                    return;
+
+                let msg: string = '';
+                if (this.selection.uid == undefined) {
+                    msg = `Allocation succesfully created`;
+                }
+                else {
+                    msg = `Allocation succesfully updated`;
+                }
+                this.messagesService.showInfoMessage('Success', msg);
+
+                this.onSave.emit(res);
+            });
     }
 
 };

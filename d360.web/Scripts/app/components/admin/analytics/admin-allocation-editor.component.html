@@ -4,7 +4,7 @@
             <div class="FieldName">
                 <span>Score Type&nbsp;</span>
             </div>
-            <p-dropdown [options]="ddlScoreTypes" (onChange)="scoreTypeChange($event)" [(ngModel)]="selection.scoreType" [style]="{'width':'70%'}">
+            <p-dropdown [disabled]="disabled" [options]="ddlScoreTypes" (onChange)="scoreTypeChange($event)" [(ngModel)]="selection.scoreType" [style]="{'width':'70%'}">
                 <ng-template let-item pTemplate="selectedItem">
                     <span>{{item.label}}</span>
                 </ng-template>
@@ -17,18 +17,22 @@
             <div class="FieldName">
                 <span>Asset Type&nbsp;</span>
             </div>
-            <p-dropdown [options]="ddlAssetTypes" [(ngModel)]="selection.assetTypeUid" [style]="{'width':'70%'}" filter="true">
+            <p-dropdown [disabled]="disabled" [options]="ddlAssetTypes" [(ngModel)]="selection.assetTypeUid" [style]="{'width':'70%'}" filter="true">
                 <ng-template let-item pTemplate="selectedItem">
                     <span>{{item.label}}</span>
                 </ng-template>
             </p-dropdown>
         </div>
     </div>
+
+    <div *ngIf="disabled" class="warningMessage">
+        This allocation cannot be edited as there are measures related to this allocation.
+    </div>
 </div>
 <div class="action-bar">
-    <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
+    <button class="button" (click)="cancel()" [disabled]="savingInProgress">Cancel</button>
     <span class="grow"></span>
-    <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="isLoading">
+    <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="savingInProgress || !selection.assetTypeUid || disabled">
         {{savingInProgress ? '' : 'Save'}}
         <span class="loader"><span class="spinner light"></span></span>
     </button>

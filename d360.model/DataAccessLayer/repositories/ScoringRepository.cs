@@ -17,6 +17,19 @@ namespace d360.model.DataAccessLayer
         {
             this.companyContext = companyContext;
         }
+
+        public List<AssetTypeClass> AllowedClassesForScoreType()
+        {
+            return new List<AssetTypeClass>
+                {
+                    AssetTypeClass.BusinessAsset,
+                    AssetTypeClass.TechnicalAsset,
+                    AssetTypeClass.Model,
+                    AssetTypeClass.Policy,
+                    AssetTypeClass.Rule
+                };
+        }
+
         public List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             List<string> whereStatements = new List<string>();
@@ -206,18 +219,7 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             dbArgs.Add("@scoreType", (int)scoreType);
 
-            dbArgs.Add("@supportedAssetClasses",
-                new List<int>
-                {
-                    (int)AssetTypeClass.BusinessAsset,
-                    (int)AssetTypeClass.TechnicalAsset,
-                    (int)AssetTypeClass.Model,
-                    (int)AssetTypeClass.Policy,
-                    (int)AssetTypeClass.Rule,
-                    (int)AssetTypeClass.User,
-                    (int)AssetTypeClass.Reference,
-                }
-            );
+            dbArgs.Add("@supportedAssetClasses", AllowedClassesForScoreType().Select(x => (int)x));
 
             var sql = $@"select 
 	                        att.[uid] as assetTypeUid,
@@ -231,8 +233,8 @@ namespace d360.model.DataAccessLayer
 		                        and
 	                        not exists (select 1 from [metrics].Allocation a where a.[state] = 1 and a.assettypeuid = att.[uid] and a.scoretype = @scoreType)";
 
-            return  (await companyContext.QueryAsync<AllocationApiGetUnallocatedAssetTypeModel>(sql, dbArgs)).ToList();
-            
+            return (await companyContext.QueryAsync<AllocationApiGetUnallocatedAssetTypeModel>(sql, dbArgs)).ToList();
+
         }
     }
 }

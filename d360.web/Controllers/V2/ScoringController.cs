@@ -121,7 +121,7 @@ namespace d360.web.Controllers.V2
 
                 var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid.Value);
 
-                List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule };
+                List<AssetTypeClass> allowedClasses = ScoringRepository.AllowedClassesForScoreType();
                 if (assetType == null)
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error adding allocation", $"AssetType with uid {model.assetTypeUid} does not exist.");
 
@@ -183,7 +183,7 @@ namespace d360.web.Controllers.V2
 
                 var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid.Value);
 
-                List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule };
+                List<AssetTypeClass> allowedClasses = ScoringRepository.AllowedClassesForScoreType();
                 if (assetType == null)
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error updating allocation", $"AssetType with uid {model.assetTypeUid} does not exist");
 

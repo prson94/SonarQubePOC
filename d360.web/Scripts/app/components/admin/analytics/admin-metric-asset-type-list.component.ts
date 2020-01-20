@@ -1,12 +1,12 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewChild } from '@angular/core';
+﻿import { Input, Component, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { MetricsService } from '../../../services/metrics.service';
-import { Item, ScoreTypeAllocation, ScoreType, ScoreTypeAllocationFormatted } from '../../../models/metrics.model';
-import { FormMode } from '../../../models/form.model';
-import { AssetTypeMetricModel, AssetTypeClass } from '../../../models/asset.model';
+import { ScoreTypeAllocation, ScoreType, ScoreTypeAllocationFormatted } from '../../../models/metrics.model';
+import { AssetTypeClass } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
 import { Table } from 'primeng/table';
+import { Router } from '@angular/router';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-admin-metric-asset-type-list',
@@ -30,7 +30,10 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
 
     @ViewChild('dt', { static: false }) dt: Table;
 
-    constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
+    constructor(private allocationService: AllocationService,
+        protected messagesService: MessagesObservableService,
+        private router: Router
+    ) {
         super();
         this.selection = new ScoreTypeAllocation();
         this.selection.scoreType = ScoreType.Governance;
@@ -130,4 +133,10 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         this.load();
     }
 
+
+    private openMeasures(event: ScoreTypeAllocationFormatted) {
+        var alloc = this.getAllocationByUid(event.uid);
+        var url = `${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${alloc.assetTypeUid}/${alloc.scoreType}`;
+        console.log(url);
+    }
 };

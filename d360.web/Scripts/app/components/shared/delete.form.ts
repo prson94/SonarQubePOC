@@ -22,6 +22,7 @@ export class DeleteForm implements OnChanges {
     @Input() itemId: number;
     @Input() items: any[];
     @Input() hideDeleteButton: boolean = false;
+    @Input() modalCssClasses: string = 'modal-delete-form';
     @Output() onDeleteComplete = new EventEmitter();
     @Output() onDeleteSuccess = new EventEmitter();
     @Output() onDeleteFail = new EventEmitter();
