@@ -357,7 +357,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Deletes a member form a group
+        /// Deletes the specified user from the specified group.
         /// </summary>
         /// <param name="groupUid">The unique identifier of the Group.</param>
         /// <param name="resourceUid">The unique identifier of the resource.</param>
@@ -374,7 +374,7 @@ namespace d360.web.Controllers.V2
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
 
-            var res = await Company.Database.Connection.ExecuteAsync("delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID", new { resource = resourceUid, group = groupUid });
+            var res = await Company.Database.Connection.ExecuteAsync("delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID", new { resource = resourceUid, group = groupUid });
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
 
