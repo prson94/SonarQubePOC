@@ -27,7 +27,6 @@ namespace d360.model.validators
             var fieldsHaveErrorsList = new List<string>();
             List<ValidationResult> validationResults = new List<ValidationResult>();
             bool isValid = true;
-            int maxNamelength = 250;
 
             foreach (var field in model.Fields)
             {
@@ -55,18 +54,6 @@ namespace d360.model.validators
                 if (!IsFieldNameAllowed(field.FriendlyName.Trim()))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field FriendlyName", $"FriendlyName cannot be [{field.FriendlyName.Trim().ToUpper()}].");
-                }
-
-                #endregion
-
-                #region Category Validation
-
-                if(field.Category!=null)
-                {
-                    if (field.Category.Length > maxNamelength)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Category", $"Category cannot exceed {maxNamelength} characters.");
-                    }
                 }
 
                 #endregion
