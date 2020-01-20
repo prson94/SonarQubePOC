@@ -412,29 +412,6 @@ namespace d360.model
             return result;
         }
 
-        public List<AllocationPossibility> GetTypes()
-        {
-            var list = Database.Connection.Query<AllocationPossibility>(@"
-select	Object as ObjectType, 
-		ObjectID as ObjectTypeID, 
-		case Object
-			when 'ArtifactType' then 'Artifacts :: '
-			when 'TaxonomyType' then 'Models :: '
-			when 'PolicyType' then 'Policies :: '
-			when 'RuleType' then 'Rules :: '
-		end + Name as Name
-from	AssetType
-where	Class in (1,2,6,7)
-union
-select	'GroupType' as ObjectType, 1 as ObjectTypeID, 'Group' as Name
-union
-select	'ResourceType' as ObjectType, 1 as ObjectTypeID, 'User' as Name ").ToList();
-
-            list = list.OrderBy(i => i.Name).ToList();
-
-            return list;
-        }
-
 
         public async Task<List<IntersectTypeApiViewModel>> GetIntersectTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
         {
