@@ -226,8 +226,7 @@ namespace d360.model
         Follow GetFollowingParent(SystemObjects type, int objectID, int? resourceID);
         string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue);
         Dictionary<string, object> GetFusionAsDictionary(int id);
-        List<FusionOwnerOption> GetFusionOwnerOptions();
-        //List<FusionPromotionOption> GetFusionPromotionOptions();
+        List<FusionOwnerOption> GetFusionOwnerOptions();        
         IntersectType GetHierarchyIntersectType(SystemObjects objectType, int subjectId, int objectId, PredicateType predicateType = PredicateType.InterTypeHierarchy);
         string GetIntersectTypeName(IntersectType intersectType);
         List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? subject = null, int? subjectID = null, SystemObjects? @object = null, int? objectID = null, int? predicateID = null, List<AssetTypeClass> limitToClasses = null);
@@ -256,8 +255,7 @@ namespace d360.model
         Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");        
         IEnumerable<dynamic> GetReportQueryResults(int reportTileID, SystemObjects type, int id);
-        List<PermissionInfo> GetTypePermissions(string type, int typeID);
-        List<AllocationPossibility> GetTypes();
+        List<PermissionInfo> GetTypePermissions(string type, int typeID);        
         string GetUserHomePage();
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID);
         bool HasAssetDefaultReadPermission(string type, int id, Permission permission = Permission.ReadAsset);
