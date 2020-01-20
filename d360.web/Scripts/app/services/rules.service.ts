@@ -178,4 +178,13 @@ export class RulesService extends BaseObservableService {
         } else
             return this.putDynamic(this.http, 'ruleimplementation', implementation);
     }
+
+    exportRules(uid: string){
+        this.http.get(`api/v2/scoring/ExportRules/${uid}`, { responseType: "blob" }).pipe(
+            map((response) => {
+                this.downloadFile(response);
+            }),
+            catchError(err => this.handleError(err))
+        ).subscribe();
+    }
 }

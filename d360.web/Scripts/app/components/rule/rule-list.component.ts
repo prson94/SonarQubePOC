@@ -87,6 +87,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                 .subscribe(result => {
                     this.isLoading = false;
                     this.ruleType = result;
+                    console.log(this.ruleType.AssetTypeUID);
                     this.setObjectInfo('RuleType', this.ruleType.ID);
                     this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();
@@ -154,6 +155,10 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
             return ($event.order * result);
         });
+    }
+
+    private exportRules() {
+        this.rulesService.exportRules(this.ruleType.AssetTypeUID);
     }
 
     private loadRules() {

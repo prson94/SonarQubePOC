@@ -1,29 +1,26 @@
-﻿using d360.core.entities;
-using d360.core.entities.Metric;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Scoring;
 using d360.core.enums;
 using d360.extensions;
 using d360.model;
+using d360.model.DataAccessLayer;
+using d360.web.Filters;
 using d360.web.Models;
+using Dapper;
 using Microsoft.Web.Http;
-using Newtonsoft.Json;
+using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-using d360.core;
-using d360.web.Filters;
-using d360.core.exceptions;
-using d360.model.DataAccessLayer;
-using d360.model.validators;
-using d360.core.entities.Scoring;
-using Dapper;
 
 namespace d360.web.Controllers.V2
 {
@@ -34,7 +31,7 @@ namespace d360.web.Controllers.V2
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/scoring"),
         Authorize,
-        ApiExplorerSettings(IgnoreApi = true)
+        ApiExplorerSettings(IgnoreApi = false)
     ]
     public class ScoringController : BaseV2ApiController
     {
@@ -288,5 +285,183 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
             }
         }
+
+        /// <summary>
+        /// Get a list of asset types that have not been allocated to the provided score type.
+        /// </summary>
+        /// <param name="uid">The score type to get asset types with no allocations.</param>
+        /// <returns>List of asset types that have not been allocated to the provided score type.</returns>
+        [
+            HttpGet,
+            Route("ExportRules/{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "Returns an excel sheet with all the rules.", typeof(List<AllocationApiGetUnallocatedAssetTypeModel>)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetExportRules(string uid)
+        {
+            try
+            {
+                Guid guid = Guid.Empty;
+                DynamicParameters dbArgs = new DynamicParameters();
+                string selectSql = @"
+                        SELECT 
+		                        RT.[Name],
+		                        R.Threshold,
+		                        A.ID as 'AssetID',
+		                        A.uid as 'AssetUid',
+		                        AT.uid as 'AssetTypeUid',
+		                        a.UpdatedOn,
+		                        A.CreatedOn
+	                         ";
+
+                string joinsSql = "  ";
+
+                string whereSQL = "WHERE AT.uid = @uid";
+                dbArgs.Add("uid", uid);
+
+                List<string> fieldColumns = new List<string>();
+                List<string> fieldJoins = new List<string>();
+
+                var document = createExcelBaseDocument(null, "BaseRuleDoc");
+                if (!Guid.TryParse(uid, out guid) || guid == Guid.Empty) 
+                {
+                    return errorMessageResponse(
+                        HttpStatusCode.BadRequest, 
+                        "Invalid Guid", $"Please provide a valid Guid");
+                }
+
+                var typesToAvoid = new List<string>() {
+                    DataType.Attribute.ToString(),
+                    DataType.ComplexRelationLookup.ToString(),
+                    DataType.DataTableSelect.ToString(),
+                    DataType.FilteredLookup.ToString(),
+                    DataType.OwnershipLookup.ToString()
+                };
+                var assetType = AssetRepository.GetAssetTypeByUID(guid);
+                var fieldTypes = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID).ToList()
+                                    .Where(x => !typesToAvoid.Contains(x.Type)).ToList();
+
+                getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+                foreach (var col in fieldColumns)
+                {
+                    selectSql += "," + col;
+                }
+
+                foreach (var join in fieldTypes)
+                {
+                    string fieldJoin = "left join Field F" + join.ID + " on F" + join.ID + ".FieldTypeID =" + join.ID + " and F" + join.ID + ".[ObjectType] = 'Rule' and F" + join.ID + ".[ObjectID] = R.ID ";
+                    joinsSql += fieldJoin;
+                }
+                var sql = $@"
+                            {selectSql}
+                            FROM dbo.[Rule] R
+                                                                    LEFT JOIN dbo.RuleType RT on R.RuleTypeID = RT.ID
+                                                                    INNER JOIN[dbo].Asset A on A.Object = 'Rule' and A.ObjectID = R.ID
+                                                                    inner JOIN[dbo].AssetType AT on AT.ID = a.AssetTypeID
+                            {joinsSql} 
+                            {whereSQL}";
+
+                var results = await Company.QueryAsync<dynamic>(sql, new { uid });
+
+                fieldTypes.Add(new FieldType { Type = "string", Name = "AssetID", FriendlyName = "Asset UID" });
+                fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Asset ID" });
+                //fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+                fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
+                
+                //set row headers
+                int index = 1;
+                int rowNumber = 1;
+                foreach (var field in fieldTypes)
+                {
+                    document.SetCellValue(1, index++, (string)field.FriendlyName);
+                }
+
+                foreach (var row in results)
+                {
+                    index = 1;
+                    rowNumber++;
+
+                    foreach (var field in fieldTypes)
+                    {
+                        var val = getRowFieldValue(row, field);
+                        SetSpreadsheetValueFromField(document, rowNumber, index, field, val);
+                        index++;
+                    }
+                }
+
+                var stream = new MemoryStream();
+                document.SaveAs(stream);
+                var result = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent(stream.GetBuffer())
+                };
+                result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                var response = ResponseMessage(result);
+
+                return response;
+            }
+            catch(Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"{ex.Message}");
+            }
+        }
+        private string getRowFieldValue(dynamic row, FieldType field)
+        {
+            if (field != null && field.ID > 0)
+                return (((row as IDictionary<string, object>)[field.Name]) ?? "").ToString();
+            else if (field != null && field.Name == "Parent")
+                return (string)((row as IDictionary<string, object>)["Parent"]);
+            else if (field != null && field.Name == "Url")
+                return (string)((row as IDictionary<string, object>)["Url"]);
+            else if (field != null && field.Name == "ID")
+                return (string)((row as IDictionary<string, object>)["ID"].ToString());
+            else if (field != null && field.Name == "UID")
+                return (string)((row as IDictionary<string, object>)["Uid"].ToString());
+            else if (field != null && field.Name == "Threshold")
+                return (string)((row as IDictionary<string, object>)["Threshold"].ToString());
+            return "";
+        }
+        private void SetSpreadsheetValueFromField(SLDocument document, int rowIndex, int columnIndex, FieldType field, string value)
+        {
+            switch ((field.Type ?? "").ToUpper())
+            {
+                case "DECIMAL":
+                    double dVal = 0;
+                    if (double.TryParse(value, out dVal))
+                        document.SetCellValue(rowIndex, columnIndex, dVal);
+                    else
+                        document.SetCellValue(rowIndex, columnIndex, value);
+                    break;
+                case "NUMBER":
+                    int intVal = 0;
+                    if (int.TryParse(value, out intVal))
+                        document.SetCellValue(rowIndex, columnIndex, intVal);
+                    else
+                        document.SetCellValue(rowIndex, columnIndex, value);
+                    break;
+                case "DATE":
+                    if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
+                    {
+                        document.SetCellValue(rowIndex, columnIndex, dateVal);
+
+                        SLStyle style = document.CreateStyle();
+                        style.FormatCode = "m/d/yyyy";
+                        document.SetCellStyle(rowIndex, columnIndex, style);
+                    }
+                    break;
+                default:
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(value + "");
+                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+                    if (txt.StartsWith("="))
+                        txt = "'" + txt;
+                    document.SetCellValue(rowIndex, columnIndex, txt);
+                    break;
+            }
+        }
+
     }
 }

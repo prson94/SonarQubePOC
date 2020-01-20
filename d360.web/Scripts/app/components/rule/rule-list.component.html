@@ -5,7 +5,7 @@
             <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">
                 <div class="col s12">
                     <header>
-                        <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="showAddRule()" hasFilterMode="true" [(filterMode)]="showSimpleFilter">
+                        <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="showAddRule()" [hasExport]="true" (exportClick)="exportRules()" hasFilterMode="true" [(filterMode)]="showSimpleFilter">
                         </d3s-tile-actions>
                     </header>
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
