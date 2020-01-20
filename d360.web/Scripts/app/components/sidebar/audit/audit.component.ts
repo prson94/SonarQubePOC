@@ -66,10 +66,12 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                                 this.objectName = res.Name ? res.Name : res.DisplayValue;
                             }
                         }
-                    );
-            });
+                );
+                let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
 
-        this.checkSecondaryNavLocalStorage();
+                if (reloadNav)
+                    this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+            });
     }
 
     ngOnDestroy() {

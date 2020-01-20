@@ -29,9 +29,8 @@ export class ImpactComponent extends BaseComponent implements OnInit, OnDestroy 
         this.sub = this.route.params.subscribe(params => {
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
+            this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
         });
-
-        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

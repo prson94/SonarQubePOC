@@ -299,18 +299,21 @@ namespace d360.web.Controllers.V2
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             int index = 1;
-            document.SetCellValue(1, index++, "Intersect ID");
+            
             document.SetCellValue(1, index++, "Subject Type");
-            document.SetCellValue(1, index++, "Subject ID");
-            document.SetCellValue(1, index++, "Subject UID");
             document.SetCellValue(1, index++, "Subject Name");
             document.SetCellValue(1, index++, "Subject Type Name");
             document.SetCellValue(1, index++, "Predicate");
-            document.SetCellValue(1, index++, "Object Type");
-            document.SetCellValue(1, index++, "Object ID");
-            document.SetCellValue(1, index++, "Object UID");
+            document.SetCellValue(1, index++, "Object Type");                      
             document.SetCellValue(1, index++, "Object Name");
             document.SetCellValue(1, index++, "Object Type Name");
+
+            document.SetCellValue(1, index++, "Relationship UID");
+            document.SetCellValue(1, index++, "Intersect ID");            
+            document.SetCellValue(1, index++, "Subject UID");
+            document.SetCellValue(1, index++, "Subject ID");
+            document.SetCellValue(1, index++, "Object UID");
+            document.SetCellValue(1, index++, "Object ID");
 
             foreach (var col in customColumns)
             {
@@ -322,18 +325,23 @@ namespace d360.web.Controllers.V2
             {
                 index = 1;
                 rowNumber++;
-                document.SetCellValue(rowNumber, index++, (int)row.ID);
-                document.SetCellValue(rowNumber, index++, (string)row.Subject);
-                document.SetCellValue(rowNumber, index++, (int)row.SubjectID);
-                document.SetCellValue(rowNumber, index++, row.SubjectUid.ToString());
+                
+                document.SetCellValue(rowNumber, index++, (string)row.Subject);                
                 document.SetCellValue(rowNumber, index++, (string)row.SubjectName);
                 document.SetCellValue(rowNumber, index++, (string)row.SubjectTypeName);
                 document.SetCellValue(rowNumber, index++, (string)row.PredicateName);
                 document.SetCellValue(rowNumber, index++, (string)row.Object);
-                document.SetCellValue(rowNumber, index++, (int)row.ObjectID);
-                document.SetCellValue(rowNumber, index++, row.ObjectUid.ToString());
                 document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
                 document.SetCellValue(rowNumber, index++, (string)row.ObjectTypeName);
+
+                document.SetCellValue(rowNumber, index++, row.UID.ToString());
+                document.SetCellValue(rowNumber, index++, (int)row.ID);
+                document.SetCellValue(rowNumber, index++, row.SubjectUid.ToString());
+                document.SetCellValue(rowNumber, index++, (int)row.SubjectID);
+                document.SetCellValue(rowNumber, index++, row.ObjectUid.ToString());
+                document.SetCellValue(rowNumber, index++, (int)row.ObjectID);
+
+
 
                 foreach (var col in customColumns)
                 {
@@ -517,12 +525,12 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Removes the specified relationship types based on the provided relationship type Uid(s). When Cascade=true, the call deletes all relationships based on this type. When false, it triggers an error message stating that there are existing relationships.
         /// </summary>
-        /// <param name="relationshiptypes"></param>
+        /// <param name="relationshiptypes">The list of relationship types for deletion.</param>
         /// <returns>>An HTTP status code and message.</returns>
         [
            HttpDelete,
            Route("types"),
-           SwaggerRequestExample(typeof(RelationshipTypeDelete), typeof(RelationshipTypeDeleteExample)),
+           SwaggerRequestExample(typeof(RelationshipTypeDelete),typeof(RelationshipTypeDeleteExample)),
            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the relationship type", typeof(ErrorResponse)),

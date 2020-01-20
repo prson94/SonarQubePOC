@@ -60,7 +60,7 @@ export class MonitorFilterComponent extends BaseComponent implements OnInit {
                     i.label = i.State == State.InActive ? i.Name + " ( Inactive )" : i.Name;
                     i.value = i.ID.toString();
                 });
-
+          
                 
                 if (this.selectAll) {
                     this.selection = [];

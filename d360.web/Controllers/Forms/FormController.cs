@@ -849,7 +849,7 @@ namespace d360.web.Controllers
             model.WorkflowDigestEmailEnabled = (settings.Any(i => i.SettingID == 59) ? bool.Parse(settings.Single(i => i.SettingID == 59).Value) : false);
             model.MaxDropdownItems = (settings.Any(i => i.SettingID == 60) ? Int32.Parse(settings.Single(i => i.SettingID == 60).Value) : 10000);
             model.WriteActionDescription = (settings.Any(i => i.SettingID == 61) ? bool.Parse(settings.Single(i => i.SettingID == 61).Value) : true);
-
+            model.MaxExcelExportRows = (settings.Any(i => i.SettingID == 71) ? Int32.Parse(settings.Single(i => i.SettingID == 71).Value) : 10000);
             model.CurrentCompanyIconPath = (settings.Any(i => i.SettingID == 3) ? settings.Single(i => i.SettingID == 3).Value : "");
             model.CurrentCompanyLogoPath = (settings.Any(i => i.SettingID == 2) ? settings.Single(i => i.SettingID == 2).Value : "");
             if (settings.Any(i => i.SettingID == 4))
@@ -1021,7 +1021,7 @@ namespace d360.web.Controllers
                 updateCompanySetting(settings, 59, formModel.WorkflowDigestEmailEnabled.ToString().ToLower());
                 updateCompanySetting(settings, 60, Math.Abs(formModel.MaxDropdownItems).ToString());
                 updateCompanySetting(settings, 61, formModel.WriteActionDescription.ToString().ToLower());
-
+                updateCompanySetting(settings, 71, Math.Abs(formModel.MaxExcelExportRows).ToString());
                 #endregion
 
                 #region IP

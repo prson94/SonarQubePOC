@@ -69,7 +69,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("classes"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes.", typeof(List<AssetTypeClassInfo>)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type classes. The Generic and ReferenceItemType class types are used internally, and are not intended for use in general data requests.", typeof(List<AssetTypeClassInfo>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public HttpResponseMessage GetAssetTypeClassesAsync()
@@ -96,7 +96,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// GET a list of asset types.
         /// </summary>
-        /// <param name="Class">Allows for filtering the Asset type's by Class.</param>
+        /// <param name="Class">Allows for filtering the Asset type's by Class.The Generic and ReferenceItemType class types are used internally, and are not intended for use in general data requests.</param>
         /// <param name="assetTypeUid">Filter by Asset type UID.</param>
         /// <param name="FusionTypeUID">Filter by Fusion type UID. Only applicable for FusionQuery and FusionAttribute classes.</param>
         /// <returns></returns>
@@ -186,6 +186,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_subjectUid", "The Uid of the subject side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_objectUid", "The Uid of the object side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "Filter by provided asset Uid. Multiple asset Uids can be provided delimited by comma", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -806,7 +807,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = false)
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetAssetsSearchDetailsAsync(Guid assetUid)
         {
@@ -1175,12 +1176,12 @@ namespace d360.web.Controllers.V2
                 catch
                 {
                 }
-
+                var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
                 var statusModel = new ApiExecutionStatusModel
                 {
                     CompletedOn = dbExecutionItem.CompletedOn,
                     Error = dbExecutionItem.Error,
-                    Fields = Newtonsoft.Json.Linq.JObject.Parse(dbExecutionItem.Fields),
+                    Fields = Newtonsoft.Json.Linq.JObject.Parse(f),
                     Processed = dbExecutionItem.Processed,
                     StartedOn = dbExecutionItem.StartedOn,
                     Total = dbExecutionItem.Total,
@@ -1210,15 +1211,15 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
-        #region AssetTag
-        /// <summary>
-        /// Creates association between an existing asset and an existing tag.
-        /// </summary>
-        /// <remarks>
-        /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
-        /// </remarks>
-        /// <param name="assetTags">Collection of assets and tags to associate.</param>
-        /// <returns>An HTTP status code and message.</returns>
+            #region AssetTag
+            /// <summary>
+            /// Creates association between an existing asset and an existing tag.
+            /// </summary>
+            /// <remarks>
+            /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
+            /// </remarks>
+            /// <param name="assetTags">Collection of assets and tags to associate.</param>
+            /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
             Route("tags"),
@@ -1257,7 +1258,7 @@ namespace d360.web.Controllers.V2
                 {
                     result = new AssetTagSuccessApiModel()
                     {
-                        Message = $"Invalid AseetUid provided, no asset exists with the specified uid.",
+                        Message = $"Invalid AssetUid provided, no asset exists with the specified uid.",
                         Success = false
                     };
 

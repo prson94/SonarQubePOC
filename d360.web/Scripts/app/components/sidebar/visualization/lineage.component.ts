@@ -42,8 +42,9 @@ export class LineageComponent extends BaseComponent implements OnInit, OnDestroy
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
             this.usageOnly = params['showUsageOnly'] == '1';
+            this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+
         });
-        this.checkSecondaryNavLocalStorage();
     }
 
     ngOnDestroy() {

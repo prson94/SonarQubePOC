@@ -32,6 +32,9 @@ namespace d360.model
 
         public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution)
         {
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
             //Set effective date for any results that do not have a date set.
             model.ForEach(m => {
                 if (!m.EffectiveDate.HasValue)

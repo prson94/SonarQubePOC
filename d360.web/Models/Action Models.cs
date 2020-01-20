@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using d360.core.entities;
+using System;
+using System.Collections.Generic;
 
 
 namespace d360.web.Models
@@ -13,4 +15,12 @@ namespace d360.web.Models
 
         public List<ToolbarItemNg> Items { get; set; } = new List<ToolbarItemNg>();
     }
+
+    public class ResourceGroupInfo
+    {
+        public ResourceGroup[] ResourceGroups { get; set; }
+        public Guid GroupGuid { get; set; }
+    }
 }
+
+

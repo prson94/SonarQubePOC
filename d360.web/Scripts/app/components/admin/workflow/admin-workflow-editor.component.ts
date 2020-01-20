@@ -31,6 +31,7 @@ declare var CompanySettings;
 
 export class AdminWorkflowEditorComponent extends BaseComponent implements OnInit, OnDestroy, AfterViewChecked {
     @Input() id: number = 0;
+    @Input() uid: string = "00000000-0000-0000-0000-000000000000";
     @Input() model: WorkflowDiagramModel;
     @Output() onClose = new EventEmitter();
     @Output() onSave = new EventEmitter();
@@ -93,7 +94,7 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
     private close() {
         this.isLoading = true;
         if (this.isClone) {
-            this.workflowService.deleteWorkflowType(this.id)
+            this.workflowService.deleteWorkflowType(this.id, this.uid)
                 .subscribe(r => {
                     this.isLoading = false;
                     this.messageService.showInfoMessage("Workflow not saved.", "");
@@ -113,12 +114,12 @@ export class AdminWorkflowEditorComponent extends BaseComponent implements OnIni
         this.isLoading = true;
         this.workflowService.getChangeTypes()
             .pipe(map(r => { this.changesTypes = r; }))
-            .pipe(concatMap(() => this.workflowService.getWorkflowTypeModel(this.id)
+            .pipe(concatMap(() => this.workflowService.getWorkflowTypeModel(this.id,this.uid)
                 .pipe(
                     map(r => {
-                        if (this.id > 0 && this.model == null && r != null)
-                            this.model = r;
-
+                    if ((this.id > 0 || (this.uid && this.uid != "00000000-0000-0000-0000-000000000000")) && this.model == null && r != null)
+                        this.model = r;
+                            
                         //create initial model and settings if needed
                         if (this.model == null)
                             this.model = new WorkflowDiagramModel();

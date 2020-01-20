@@ -24,7 +24,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     adminType: string = "Artifacts";
     addClassName: string;
     selectedRow: TreeNode;
-    private sub: any; 
+    private sub: any;
     isAdding = false;
     isEditing = false;
     isDeleting = false;
@@ -46,7 +46,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         headerBreadcrumbService: HeaderBreadcrumbService,
         private artifactsService: ArtifactTypeService,
         titleService: Title,
-        protected messagesService: MessagesObservableService        
+        protected messagesService: MessagesObservableService
     ) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
         this.theDeleteCallback = this.deleteArtifactType.bind(this);
@@ -70,23 +70,12 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
 
             this.tabTitle = `${singularLabel}s`;
             this.formTitle = `Edit ${singularLabel}`;
-            this.setHeaderAndSidebars();
             this.load();
         });
     }
 
-    setHeaderAndSidebars() {
-        this.areaName = this.assetTypeClass == AssetTypeClass.BusinessAsset ? "Business Assets" : "Technical Assets";
-        this.setCommonItems();
-
-        this.setObjectInfo('ArtifactType', -1);
-        this.setCommonSecondaryNavTabs(true);
-    }
-
     selectedItemChange() {
-        if (this.auditSidebar && this.selectedRow) {
-            this.auditSidebar.url = `/sidebar/audit/ArtifactType/${this.selectedRow.data.ID}`;
-        }
+        this.buildSecondaryNavigationForObject(this.selectedRow.data.ID, this.objectType);
     }
 
     ngOnDestroy() {
@@ -97,10 +86,10 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.isLoading = true;
         this.artifactsService.getArtifactTypeTree(this.assetTypeClass)
             .subscribe(data => {
-                this.artifactTypes = data;  
+                this.artifactTypes = data;
                 if (selectionId <= 0) {
                     this.selectedRow = this.artifactTypes[0];
-                } else {                    
+                } else {
                     this.selectedRow = this.artifactsService.findArtifactType(this.artifactTypes, selectionId);
                 }
                 this.selectedItemChange();
@@ -122,8 +111,8 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.isDeleting = false;
     }
 
-    add(id: number) {  
-        
+    add(id: number) {
+
         if (id == 0) {
             this.editorModel = { data: { ID: 0 } };
         } else {
@@ -143,11 +132,11 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.load();
     }
 
-    actionComplete(e: any, type: string = ''): void {        
+    actionComplete(e: any, type: string = ''): void {
         this.isAdding = false;
         this.isEditing = false;
         this.isDeleting = false;
-        this.load(e.id?(e.id-0):0);
+        this.load(e.id ? (e.id - 0) : 0);
         this.stateService.reloadLeftNavMenu();
     }
 
@@ -156,7 +145,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
             this.showMessageForResult(this.messagesService, result);
             this.isDeleting = false;
             this.load();
-            this.stateService.reloadLeftNavMenu(); 
+            this.stateService.reloadLeftNavMenu();
         })
     }
 

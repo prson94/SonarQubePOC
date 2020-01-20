@@ -139,7 +139,7 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
     }
     selectedItemChange() {
         if (this.auditSidebar && this.selected) {
-            this.auditSidebar.url = `/sidebar/audit/PolicyType/${this.selected.ID}`;
+            this.auditSidebar.url = `/sidebar/audit/PolicyType/${this.selected.ID};isAdminPage=false`;
         }
     }
     ngOnDestroy() {

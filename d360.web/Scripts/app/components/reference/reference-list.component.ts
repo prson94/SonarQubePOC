@@ -7,7 +7,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ReferenceItemType } from '../../models/reference.model';
-import { SecondaryNavItem } from '../../models/secondaryNav.model';
+import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { ReferenceService } from '../../services/reference.service';
 import { UriBasedService } from '../../services/uri-based.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -71,6 +71,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = headerBreadcrumbService;
     }
 
     ngOnInit() {
@@ -79,7 +80,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
         this.sub = this.route.params.subscribe(params => {
-            this.canReadSelectedType = false;            
+            this.canReadSelectedType = false;
 
             //load default perms
             this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
@@ -100,20 +101,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                                 this.headerBreadcrumbService.clearBreadcrumbs();
                                 this.headerBreadcrumbService.clearCurrentObjectInfo();
                                 this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
-
-                                this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
-                                    this.clearSidebar();
-                                    this.secondaryNavService.setCurrentArea(res, icon, 'Reference Lists');
-                                    this.secondaryNavService.clearCurrentObject();
-                                    this.setCommonSecondaryNavTabs(true, true, false, false, true, this.hasPermission(Permission.ReadRelationships), false, true, true);
-
-                                    this.setSecondaryNavItems();
-
-                                    this.secondaryNavService.showHeader(true);      
-                                });
                             });
                         });
-                           
+                        this.buildSecondaryNavigationForObject(this.selectedReferenceListId, 'ReferenceItemType');
                     });
             }
         });
@@ -140,7 +130,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         itemsGrid.load();
     }
 
-    private changeFormMode(formMode:FormMode) {
+    private changeFormMode(formMode: FormMode) {
         if (formMode == FormMode.Default)
             this.showDefault = true;
         else
@@ -151,10 +141,11 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.selectedReferenceItemType = e;
         this.selectedReferenceListId = e.ID;
         this.setSecondaryNavItems();
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.ID}`);        
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.ID}`);
     }
 
     setSecondaryNavItems() {
+        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(null,null,null,null,true,null,null));
         if (this.auditSidebar) {
             this.auditSidebar.url = `/sidebar/audit/ReferenceItemType/${this.selectedReferenceListId}`;
         }
@@ -174,7 +165,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         }
 
         if (this.authenticationService.isAdmin && this.fieldNav) {
-            
+
             this.fieldNav.icons = ['fa-drivers-license-o'];
             this.fieldNav.tag = 'fields'
             this.fieldNav.title = 'Field Definitions'
@@ -185,7 +176,7 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         }
 
         if (this.authenticationService.isAdmin && this.ownershipSidebar) {
-            
+
             this.ownershipSidebar.icons = ['fa-bars'];
             this.ownershipSidebar.tag = 'responsibilities'
             this.ownershipSidebar.title = 'Responsibilities'
