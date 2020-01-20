@@ -172,11 +172,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.currentResouceID = +CurrentResourceID;
         this.subscription = this.secondaryNavService.rightSidebar$.subscribe(
             item => {
-
-                if (item.title === "Scoring" && (!this.statistics || !this.statistics.Score)) {
-                    return;
-                }
-
                 this.items.push(item);
                 this.items = _.sortBy(this.items, 'orderPriority'); this.emitChanges();
                 this.secondaryNavService.setLocalCurrentTabs([...this.items]);

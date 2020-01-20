@@ -340,7 +340,6 @@
     <Compile Include="Controllers\V2\WorkflowController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
-    <Compile Include="Controllers\Services\EventsController.cs" />
     <Compile Include="Controllers\Services\Obsolete\RelationshipsController.cs" />
     <Compile Include="Controllers\Services\FusionController.cs" />
     <Compile Include="Controllers\ApiController.cs" />
@@ -712,7 +711,6 @@
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\model\model-item-structure.component.html" />
     <Content Include="Scripts\app\components\policy\policy-item-structure.component.html" />
-    <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.component.css" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
     <Content Include="Scripts\app\components\shared\modal\gov-modal.component.html" />

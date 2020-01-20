@@ -132,7 +132,7 @@ namespace igx.UnitTests.ValidatorTests
         {
             var model = new TagApiUpsertModel()
             {
-                Value = string.Join("", Enumerable.Repeat(0, 251).Select(n => (char)new Random().Next(127)))
+                Value = GetRandomString(101)
             };
             Guid guid = new Guid();
 
