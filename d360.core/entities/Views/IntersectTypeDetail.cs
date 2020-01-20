@@ -36,7 +36,8 @@ namespace d360.core.entities
         [DataMember]
         public string SubjectIconText { get; set; }
 
-
+        [DataMember]
+        public int SubjectAssetTypeID { get; set; }
 
         [DataMember, Key, Column(Order = 4, TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
@@ -59,6 +60,8 @@ namespace d360.core.entities
         [DataMember]
         public string ObjectIconText { get; set; }
 
+        [DataMember]
+        public int ObjectAssetTypeID { get; set; }
 
 
         [DataMember]
