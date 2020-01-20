@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Contracts;
+using d360.core.entities.Scoring;
 using d360.core.entities.Views;
 using d360.core.enums;
 using d360.core.enums.Workflow;
@@ -243,6 +244,7 @@ namespace d360.model
         public DbSet<AuditField> AuditFields { get; set; }
 
         public DbSet<Audit> Audits { get; set; }
+        public DbSet<ScoreTypeAllocation> ScoreTypeAllocations { get; set; }
 
         #endregion
 
@@ -683,7 +685,8 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 ";
             #endregion
 
-            return await Database.Connection.QueryAsync<FieldFilterModel>(sql, new {
+            return await Database.Connection.QueryAsync<FieldFilterModel>(sql, new
+            {
                 SourceType = new Dapper.DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = type.ToString() },
                 SourceTypeID = id
             });
@@ -741,7 +744,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                 cardinalityCheckSQL += " and I.Id not in  (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.ObjectCardinality = 1 and Subject = {0} and SubjectID = {1} and I.Id is null)";
             }
 
-            string formattedCardinalityCheck = string.Format(cardinalityCheckSQL, $"'{obj.Replace("Type","")}'", "AD.[ObjectId]");
+            string formattedCardinalityCheck = string.Format(cardinalityCheckSQL, $"'{obj.Replace("Type", "")}'", "AD.[ObjectId]");
 
             countSql = $@"select count(*) from AssetDetail AD with (nolock) 
                     inner join IntersectType IT on IT.Id = @intersectTypeID
@@ -1303,7 +1306,8 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             return Query<dynamic>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = type.ToString(), objectId = id }).Any();
         }
 
-        public AssetDetail GetParentObject(int id, SystemObjects obj) {
+        public AssetDetail GetParentObject(int id, SystemObjects obj)
+        {
             //string type = "";
             var predicateType = PredicateType.InterTypeHierarchy;
 
@@ -2113,7 +2117,8 @@ where	I.ID is null";
 
             var comments =
                 Query<CommentDetail>("GetCommentDetailsByType @type, @id, @skip, @take, @dateStart, @dateEnd, @commentTypeID, @searchPhrase",
-                new {
+                new
+                {
                     type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true },
                     id = id,
                     skip = skip,
@@ -2299,17 +2304,21 @@ where	I.ID is null";
 
             modelBuilder.Entity<core.entities.Rule>().Property(x => x.Threshold).HasPrecision(4, 3);
 
-            modelBuilder.Entity<Fusion>().HasMany<Asset>(i => i.FusionOwners).WithMany(i => i.OwnedFusions).Map(i => {
+            modelBuilder.Entity<Fusion>().HasMany<Asset>(i => i.FusionOwners).WithMany(i => i.OwnedFusions).Map(i =>
+            {
                 i.MapLeftKey("FusionID").MapRightKey("AssetID").ToTable("FusionOwner");
             });
-            modelBuilder.Entity<Question>().HasMany<QuestionTypeOption>(i => i.QuestionTypeOptions).WithMany(i => i.Questions).Map(i => {
+            modelBuilder.Entity<Question>().HasMany<QuestionTypeOption>(i => i.QuestionTypeOptions).WithMany(i => i.Questions).Map(i =>
+            {
                 i.MapLeftKey("QuestionID").MapRightKey("QuestionTypeOptionID").ToTable("QuestionOption");
             });
-            modelBuilder.Entity<MapRule>().HasMany<MapRuleItem>(i => i.MapRuleItems).WithMany(i => i.MapRules).Map(i => {
+            modelBuilder.Entity<MapRule>().HasMany<MapRuleItem>(i => i.MapRuleItems).WithMany(i => i.MapRules).Map(i =>
+            {
                 i.MapLeftKey("MapRuleID").MapRightKey("MapRuleItemID").ToTable("MapRuleItemMapRule");
             });
 
-            modelBuilder.Entity<Map>().HasMany<MapItem>(i => i.MapItems).WithMany(i => i.Maps).Map(i => {
+            modelBuilder.Entity<Map>().HasMany<MapItem>(i => i.MapItems).WithMany(i => i.Maps).Map(i =>
+            {
                 i.MapLeftKey("MapID").MapRightKey("MapItemID").ToTable("MapItemMap");
             });
 
@@ -2375,7 +2384,8 @@ where	I.ID is null";
 
             if (fields != null && fields.Count > 0)
             {
-                fields.ForEach(i => {
+                fields.ForEach(i =>
+                {
                     i.ObjectID = entity.ID;
                 });
                 AddOrUpdateFields(fields);
@@ -2422,7 +2432,8 @@ where	I.ID is null";
 
             if (fields != null)
             {
-                fields.ForEach(i => {
+                fields.ForEach(i =>
+                {
                     i.ObjectID = asset.ObjectID;
                 });
                 AddOrUpdateFields(fields);
@@ -2436,14 +2447,14 @@ where	I.ID is null";
 
         public void CreateOrUpdateDisplayValue(long assetId, string objectType = "", int objectId = -1)
         {
-            Database.Connection.Execute("exec GenerateAssetDisplayValue @assetID, @objType,@objId", new { assetID = assetId, objId = objectId, objType = new DbString { Value = objectType.Replace("Type",""), IsFixedLength = true, Length = 20, IsAnsi = true } }, null, 2400);
+            Database.Connection.Execute("exec GenerateAssetDisplayValue @assetID, @objType,@objId", new { assetID = assetId, objId = objectId, objType = new DbString { Value = objectType.Replace("Type", ""), IsFixedLength = true, Length = 20, IsAnsi = true } }, null, 2400);
         }
 
         public void CreateOrUpdateTypeDisplayValuesAsync(int objectTypeId, string objectType)
         {
             //check if assettype is part of custom folder, if so, update its value
             var navSiteItem = SiteNav.FirstOrDefault(x => x.Object == objectType && x.ObjectID == objectTypeId && x.ParentID != null);
-            if(navSiteItem != null)
+            if (navSiteItem != null)
             {
                 var assetTypeName = AssetTypes.FirstOrDefault(x => x.Object == objectType && x.ObjectID == objectTypeId)?.Name;
                 if (!string.IsNullOrEmpty(assetTypeName))
@@ -2508,18 +2519,19 @@ where	I.ID is null";
         private void AddQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
         {
             // if assettype id is specified lookup object type info as workflow subscriber still works off object objectid...
-            if(item.AssetTypeID > 0 && item.ObjectTypeID <= 0)
+            if (item.AssetTypeID > 0 && item.ObjectTypeID <= 0)
             {
                 var assetType = AssetTypes.FirstOrDefault(x => x.ID == item.AssetTypeID);
 
-                if(assetType != null)
+                if (assetType != null)
                 {
-                    item.ObjectType = (SystemObjects)(Enum.Parse(typeof(SystemObjects),assetType.Object));
+                    item.ObjectType = (SystemObjects)(Enum.Parse(typeof(SystemObjects), assetType.Object));
                     item.ObjectTypeID = assetType.ObjectID;
                 }
             }
 
-            events.Add(new EventInfo {
+            events.Add(new EventInfo
+            {
                 CompanyID = CurrentCompanyID,
                 DomainPrefix = CurrentCompanyDomain,
                 ResourceID = CurrentResourceID,
@@ -2610,7 +2622,7 @@ where	I.ID is null";
                     // Need to determine if this field value has changed if not we dont want to tell workflow
                     // added items have not changed from the previous value so ignore.
                     // please dont run a query for each modified field if there are 10 we are running 10 queries.  Do one query.
-                    if(entry.State != EntityState.Added)
+                    if (entry.State != EntityState.Added)
                     {
                         fieldsToCheckForChanges.Add(field);
                     }
@@ -2850,7 +2862,7 @@ select @err";
                 if (entry.Entity is AssetType)
                 {
                     var o = entry.Entity as AssetType;
-                    if (string.IsNullOrEmpty(o.Name.Trim()))   throw new ArgumentException(Messages.Error_Name_Required);
+                    if (string.IsNullOrEmpty(o.Name.Trim())) throw new ArgumentException(Messages.Error_Name_Required);
 
 
 
@@ -3081,7 +3093,7 @@ select @err";
             }
 
             // create events for the objects this needs to be done after save changes so we have new objects id's
-            if(IsEventingEnabled) CreateEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities, changedFields);
+            if (IsEventingEnabled) CreateEventsForObjectsRequiringTracking(modifiedEventEntities, addedEventEntities, deletedEventEntities, changedFields);
 
             return returnValue;
         }
@@ -3174,7 +3186,7 @@ select @err";
             switch (type)
             {
                 case "Rule":
-                    if(ruleMeansEvent)
+                    if (ruleMeansEvent)
                         type = "Event";
                     else
                         fieldTypeRelationType += "Type";
@@ -3212,7 +3224,7 @@ select @err";
                             var isTaxonomyType = (relationFieldInfo.Object == SystemObjects.TaxonomyType.ToString());
                             var isPolicyType = (relationFieldInfo.Object == SystemObjects.PolicyType.ToString());
                             var isArtifactType = (relationFieldInfo.Object == SystemObjects.ArtifactType.ToString());
-                            var useAssetTable = isPolicyType || isTaxonomyType|| isArtifactType;
+                            var useAssetTable = isPolicyType || isTaxonomyType || isArtifactType;
                             var useAssetTypeTable = isReferenceItemType;
 
                             var tableName = relationFieldInfo.Object.Replace("Type", "");
@@ -3233,9 +3245,10 @@ select @err";
                             joins += relationFieldInfo.IsSubject ? $" {name}_T.Subject = '{type.Replace("Type", "")}' and {name}_T.SubjectID = {idColumn}" : $" {name}_T.Object = '{type.Replace("Type", "")}' and {name}_T.ObjectID = {idColumn}";
                             if (!useAssetTable && !useAssetTypeTable)
                             {
-                                joins +=  $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
+                                joins += $" left join [{tableName}] {name}_OT on {name}_OT.{typeIDColumnName} = {relationFieldInfo.ObjectID} AND ";
                                 joins += $"{name}_OT.ID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
-                            }else if (useAssetTypeTable)
+                            }
+                            else if (useAssetTypeTable)
                             {
                                 joins += $" left join [AssetType] {name}_OT on ";
                                 joins += $" {name}_OT.ObjectId = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");

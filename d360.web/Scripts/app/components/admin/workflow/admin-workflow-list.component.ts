@@ -1,9 +1,12 @@
 ﻿import { Component, NgZone, OnInit, Output, EventEmitter } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
-import { WorkflowListItem, ChangeTypeInfo } from '../../../models/workflow.model';
+import { WorkflowListItem, ChangeTypeInfo, WorkflowChangeType } from '../../../models/workflow.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { Router } from '@angular/router';
-import { map } from 'rxjs/operators';
+import { map} from 'rxjs/operators';
+import { State } from '../../../models/asset.model';
+
+
 
 @Component({
     selector: 'd3s-admin-workflow-list',
@@ -36,7 +39,7 @@ import { map } from 'rxjs/operators';
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item >
-            <tr (dblclick)="onEditClick.emit({ ID: item.ID, isClone: false })" [pSelectableRow]="item">
+            <tr (dblclick)="onEditClick.emit({ uid: item.Uid, isClone: false })" [pSelectableRow]="item">
                 <td *ngFor="let col of columns" [ngSwitch]="col.type" class="break-wrap">
                     <span *ngSwitchCase="'text'">{{item[col.datafield]}}</span>
                     <span *ngSwitchCase="'date'">{{item[col.datafield] | date:'shortDate'}}</span>
@@ -47,11 +50,11 @@ import { map } from 'rxjs/operators';
                 </td>
                 <td>
                     <div class="RowTools">
-                        <a style="cursor:pointer;" (click)="onEditClick.emit({ID:item.ID,isClone:false})"><i class="fa fa-pencil"></i></a> 
-                        <a style="cursor:pointer;" (click)="cloneWorkflow(item.ID)"><i class="fa fa-copy"></i></a> 
-                        <a style="cursor:pointer;" (click)="onDeleteClick.emit(item.ID)"><i class="fa fa-trash-o"></i></a>    
-                        <a style="cursor:pointer;" (click)="onViewClick.emit(item.ID)"><i class="fa fa-eye"></i></a>    
-                        <a style="cursor:pointer;" (click)="navigate(item.ID)"><i class="fa fa-usb"></i></a>                                      
+                        <a style="cursor:pointer;" (click)="onEditClick.emit({ uid: item.Uid, isClone: false })"><i class="fa fa-pencil"></i></a> 
+                        <a style="cursor:pointer;" (click)="cloneWorkflow(item.Uid)"><i class="fa fa-copy"></i></a> 
+                        <a style="cursor:pointer;" (click)="onDeleteClick.emit(item.Uid)"><i class="fa fa-trash-o"></i></a>    
+                        <a style="cursor:pointer;" (click)="onViewClick.emit(item.Uid)"><i class="fa fa-eye"></i></a>    
+                        <a style="cursor:pointer;" (click)="onNavigate(item.Uid)"><i class="fa fa-usb"></i></a>                                      
                     </div>
                 </td>
             </tr>
@@ -101,15 +104,28 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
         this.load();
     }
 
-    cloneWorkflow(id) {
+    cloneWorkflow(uid) {
 
-        this.isLoading = true;
-        this.workflowService.cloneWorkflowDiagramModel(id)
-            .subscribe(id => {
+        this.isLoading = true
+        this.workflowService.cloneWorkflowDiagramModel(uid)
+            .subscribe(x => {
                 this.isLoading = false;
-                this.onEditClick.emit({ ID: id, isClone: true });
-            })
+                this.onEditClick.emit({ uid: x, isClone: true });
+            });
+
     }
+
+  
+
+    
+
+    onNavigate(uid: string) {
+        this.isLoading = true;
+        this.workflowService.getWorkflowTypeId(uid).subscribe(
+            x => this.navigate(x)
+        );
+    }
+
     load() {
         this.isLoading = true;
 
@@ -119,7 +135,25 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                 map(() =>
                     this.workflowService.getAdminTypes()
                         .subscribe(r => {
-                            this.items = r;
+                            let workflowItems: WorkflowListItem[] = [];
+                           
+                           
+                            r.filter(x=>x.State == 'Active' || x.State== 'InActive').forEach(x => {
+                                let workflowItem: WorkflowListItem = new WorkflowListItem();
+
+                                workflowItem.Name = x.Name;
+                                workflowItem.TypeName = x.ActionTypeUid ? x.ActionType : x.AssetType ? x.AssetType : x.RelationshipType;
+                                workflowItem.ChangeType = WorkflowChangeType[x.ChangeType];
+                                workflowItem.State = State[x.State];
+                                workflowItem.Type = x.Type;
+                                workflowItem.UpdatedOn = x.UpdatedOn;
+                                workflowItem.UpdatedBy = x.UpdatedBy;
+                                workflowItem.Published = x.PublishedVersionUid ? `Verion ${x.PublishedVersion} Published` : `Unpublished`;
+                                workflowItem.Uid = x.WorkflowTypeUid;
+                                workflowItems.push(workflowItem);
+
+                            });
+                            this.items = workflowItems;
                             if (this.items.length > 0) {
                                 this.selection = this.items[0];
                             }
@@ -129,9 +163,11 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                         })),
                 map(() => this.isLoading = false))
             .subscribe();
+            
     }
 
-    navigate(id: string) {
+    navigate(id: number) {
         this.router.navigateByUrl(`/monitor/type/${id}?tab=monitor`);
     }
 }
+

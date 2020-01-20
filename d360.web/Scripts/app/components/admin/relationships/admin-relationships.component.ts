@@ -24,27 +24,17 @@ export class AdminRelationshipsComponent extends AdminBaseComponent implements O
     
     constructor(secondaryNavService: SecondaryNavService, protected messagesService: MessagesObservableService, headerBreadcrumbService: HeaderBreadcrumbService,  titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);        
-        this.areaName = "Relationships";
-        this.tabTitle = "Relationship Types";
-        this.setCommonItems();
-        this.setCommonSecondaryNavTabs(true, null, null, null, null, null, null, null, true);
     }
 
     selectedItemChange(event) {
         this.selected = event;
-        if (this.auditSidebar && this.selected) {
-            this.auditSidebar.url = `/sidebar/audit/IntersectType/${this.selected.Id}`;
-        }
-        if (this.fieldNav && this.selected) {
-            this.fieldNav.url = `/sidebar/fields/IntersectType/${this.selected.Id}`;
-        }       
+
+        this.buildSecondaryNavigationForObject(this.selected.Id, 'IntersectType');
+
     }
 
     ngOnDestroy() {
         this.clearSidebar();
     }
 
-    protected showHideBreadcrumbItem(activatedItem: SecondaryNavItem) {
-        //if (activatedItem.tag == 'roles') this.isRolesVisible = !this.isRolesVisible; 
-    }
 }

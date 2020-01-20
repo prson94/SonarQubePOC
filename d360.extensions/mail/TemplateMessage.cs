@@ -16,7 +16,7 @@ namespace d360.extensions.mail
 
             message.AddTo(toEmail, toName);
             message.FromEmail = "no-reply@data3sixty.com";
-            message.FromName = "Data3Sixty";
+            message.FromName = "Data360";
 
             message.Subject = subject;
 

@@ -146,18 +146,10 @@ export class AdminLookupsComponent extends AdminBaseComponent implements OnInit,
         titleService: Title
     ) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
-
-        this.areaName = "Lookups";
-        this.tabTitle = 'Lookup Types'
-        this.setCommonItems();
-        this.setCommonSecondaryNavTabs(true);
-        this.selectedItemChange();
         
     }
     selectedItemChange() {
-        if (this.auditSidebar && this.selectedLookup) {
-            this.auditSidebar.url = `/sidebar/audit/LookupType/${this.selectedLookup.ID}`;
-        }
+        this.buildSecondaryNavigationForObject(this.selectedLookup.ID, 'LookupType');
     }
     ngOnInit() {
         this.theDeleteCallback = this.deleteLookup.bind(this);

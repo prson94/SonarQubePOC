@@ -30,7 +30,7 @@ END
 ]]>
     </rollback>
   </changeSet>
-  <changeSet author="Tomislav Duric" id="GOV-9154-FillData">
+  <changeSet author="Tomislav Duric" id="GOV-9154-FillData-V2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"

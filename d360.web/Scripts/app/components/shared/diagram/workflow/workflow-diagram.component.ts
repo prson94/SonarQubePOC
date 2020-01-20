@@ -55,6 +55,7 @@ declare var window: any;
 })
 export class WorkflowDiagramComponent extends DiagramBaseComponent implements OnInit, OnChanges {
     @Input() id: number = 0;
+    @Input() uid: string = "00000000-0000-0000-0000-000000000000";
     @Input() model: WorkflowDiagramModel;
     @Input() version: number = null;
     @Input() readonly: boolean = true;
@@ -159,6 +160,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         //without a version we just load the most recent one
         // isIdAndCurrentIdNotEqualToPrevious || isVesionAndCurrentVersionNotEqualToPrevious
         else if ((changes['id'] != null && changes['id'].currentValue != changes['id'].previousValue) ||
+            (changes['uid'] != null && changes['uid'].currentValue != changes['uid'].previousValue) ||
             (changes['version'] != null && changes['version'].currentValue != changes['version'].previousValue)) {
             if (this.diagram != null && this.diagram.div != null) {
                 this.diagram.div = null;
@@ -337,14 +339,14 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
 
         //if we don't have at least an id at this point, there's nothing we can do
-        if (this.id == null) {
+        if (this.id == null && this.uid == "00000000-0000-0000-0000-000000000000") {
             this.isLoading = false;
             return of();
         }
 
         this.isLoading = true;
 
-        return this.workflowService.getWorkflowDiagram(this.id, this.version, this.filteredObject, this.filteredObjectId)
+        return this.workflowService.getWorkflowDiagram(this.id,this.uid, this.version, this.filteredObject, this.filteredObjectId)
             .pipe(
                 map(r => {
                     this.model = r;

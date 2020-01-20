@@ -5,15 +5,15 @@
             <div *ngSwitchCase="PageMode.Default" class="tile tile-detail">
                 <d3s-admin-workflow-list 
                                              (onViewClick)="viewReadOnlyDiagram($event)" 
-                                             (onDeleteClick)="currentID = $event; workflow = null; mode = PageMode.Delete;" 
-                                             (onEditClick)="currentID = $event.ID;cloneWorkflow=$event.isClone; workflow = null; mode = PageMode.Editor"
+                                             (onDeleteClick)="currentUid = $event; workflow = null; mode = PageMode.Delete;" 
+                                             (onEditClick)="currentUid = $event.uid;cloneWorkflow=$event.isClone; workflow = null; mode = PageMode.Editor"
                                              (onAddClick)="add()"></d3s-admin-workflow-list>
             </div>
             <div *ngSwitchCase="PageMode.ReadOnlyDiagram">
-                <d3s-workflow-diagram [id]="currentID" readonly="true" hasClose="true" (onCloseClick)="closeEditor()"></d3s-workflow-diagram>
+                <d3s-workflow-diagram [uid]="currentUid" readonly="true" hasClose="true" (onCloseClick)="closeEditor()"></d3s-workflow-diagram>
             </div>
             <div *ngSwitchCase="PageMode.Editor">
-                <d3s-admin-workflow-editor [id]="currentID" (onClose)="mode = PageMode.Default" (onSave)="save($event);" [model]="workflow" [isClone]="cloneWorkflow" (onWorkflowNameChange)="cloneWorkflow=$event"></d3s-admin-workflow-editor>
+                <d3s-admin-workflow-editor [uid]="currentUid" (onClose)="mode = PageMode.Default" (onSave)="save($event);" [model]="workflow" [isClone]="cloneWorkflow" (onWorkflowNameChange)="cloneWorkflow=$event"></d3s-admin-workflow-editor>
             </div>
             <div *ngSwitchCase="PageMode.DiagramEditor">
                 <d3s-workflow-diagram 
@@ -27,7 +27,7 @@
                 </d3s-workflow-diagram>
             </div>
             <div *ngSwitchCase="PageMode.Delete" class="tile tile-detail">
-                <d3s-admin-workflow-delete [id]="currentID" (onSuccess)="mode = PageMode.Default" (onCancel)="mode = PageMode.Default"></d3s-admin-workflow-delete>
+                <d3s-admin-workflow-delete [uid]="currentUid" (onSuccess)="mode = PageMode.Default" (onCancel)="mode = PageMode.Default"></d3s-admin-workflow-delete>
             </div>
         </div>
     </div>

@@ -18,6 +18,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
     private mode: PageMode = PageMode.Default;
     PageMode = PageMode;
     private currentID: number = 1;
+    private currentUid: string = "00000000-0000-0000-0000-000000000000";
     private newWorkflowID: number = 0;
     private workflow: WorkflowDiagramModel;
     private cloneWorkflow:boolean=false;
@@ -35,7 +36,7 @@ export class AdminWorkflowComponent extends AdminBaseComponent implements OnInit
     }
 
     viewReadOnlyDiagram(e: any) {
-        this.currentID = e;
+        this.currentUid = e;
         this.workflow = null;
         this.mode = PageMode.ReadOnlyDiagram;
     }

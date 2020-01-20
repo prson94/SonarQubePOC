@@ -3,6 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../../shared/base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { SiteMenuService } from '../../../services/site-menu.service';
 
 
 @Component({
@@ -53,7 +54,7 @@ export class ScoreComponent extends BaseComponent implements OnInit, OnDestroy {
             this.isLoading = false;
             this.showBoard = true;
         });
-        this.checkSecondaryNavLocalStorage();
+        this.buildSecondaryNavigation(this.uid);
     }
 
     ngOnDestroy() {
