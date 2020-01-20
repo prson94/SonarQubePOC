@@ -311,10 +311,6 @@ export class BrowserService extends BaseObservableService {
             fl.back = "#cccccc";
             fl.from = forward ? rootKey : currentKey;
             fl.fromPort = "R";
-            // Need to remove this logic. 
-            fl.impacts = new Array();
-            fl.impacts = fl.impacts.concat(fl.impacts, rootNodeUids);
-            fl.impacts = fl.impacts.concat(fl.impacts, currentNodeUids);
             fl.to = forward ? currentKey : rootKey;
             fl.toPort = "L;"
 
@@ -432,6 +428,8 @@ export class BrowserService extends BaseObservableService {
 
         a.ownerCounts.forEach(oC => {
             let assetBrowserTranslationOwnerCount: AssetBrowserTranslationOwnerCount = new AssetBrowserTranslationOwnerCount();
+            assetBrowserTranslationOwnerCount.key = a.key + '-O-' + oC.ResponsibilityTypeID.toString();
+            assetBrowserTranslationOwnerCount.expanded = false;
             assetBrowserTranslationOwnerCount.count = oC.Count;
             assetBrowserTranslationOwnerCount.responsibilityType = oC.ResponsibilityType;
             assetBrowserTranslationOwnerCount.responsibilityTypeId = oC.ResponsibilityTypeID;
@@ -440,6 +438,8 @@ export class BrowserService extends BaseObservableService {
 
         a.relationCounts.forEach(rC => {
             let assetBrowserTranslationRelationCount: AssetBrowserTranslationRelationCount = new AssetBrowserTranslationRelationCount();
+            assetBrowserTranslationRelationCount.key = a.key + '-R-' + rC.PredicateID.toString();
+            assetBrowserTranslationRelationCount.expanded = false;
             assetBrowserTranslationRelationCount.count = rC.Count;
             assetBrowserTranslationRelationCount.direction = rC.Direction;
             assetBrowserTranslationRelationCount.predicate = rC.Predicate;
