@@ -48,7 +48,6 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
         this.route.params.subscribe(
             params => {
                 this.assetID = +params['assetID'];
-
                 this.objectDetailService.getAsset(this.assetID).subscribe(
                     res => {
                         if (res.Type == "FusionType") {
@@ -62,10 +61,13 @@ export class OwnershipComponent extends BaseComponent implements OnInit {
                         } else {
                             this.objectName = res.DisplayValue;
                         }
+                        let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
+
+                        if (reloadNav)
+                            this.buildSecondaryNavigation(null, +res["ObjectID"], res["Object"]);
                     }
                 );
             }
         );
-        this.checkSecondaryNavLocalStorage();
     }
 }

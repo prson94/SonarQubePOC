@@ -92,25 +92,12 @@ namespace d360.web.Models
     {
         public object GetExamples()
         {
-            return new GetAssetLineagePostModel
+            return new AssetBrowserApiHopRequestModel
             {
-                Direction = GetAssetLineagePostModelDirection.Both,
-                Hops = 3,
-                IsReveal = false,
-                StartHop = 0,
-                AssetUids = new List<Guid>() { Guid.Empty }
-            };
-        }
-    }
-
-    public class GetAssetImpactsPostModelExample : IExamplesProvider
-    {
-        public object GetExamples()
-        {
-            return new GetAssetImpactsPostModel
-            {
-                StartHop = 0,
-                Assets = new List<GetAssetImpactSourceItemPostModel>() { new GetAssetImpactSourceItemPostModel { Key = "textkey", Uid = Guid.Empty } }
+                Direction = AssetBrowserApiHopDirection.Both,
+                Hops = 3, 
+                PredicateUid = Guid.Empty,
+                Assets = new List<AssetBrowserApiHopAssetRequestModel>() { new AssetBrowserApiHopAssetRequestModel { Uid = Guid.Empty } }
             };
         }
     }

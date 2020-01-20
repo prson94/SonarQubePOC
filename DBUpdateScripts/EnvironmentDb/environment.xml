@@ -402,7 +402,12 @@
   <include file="scripts/GOV-9202.xml"/> <!-- script to create index for table FusionAttribute and RuleResult-->
   <include file="scripts/GOV-9114.xml"/> <!-- script to create two new system predicates-->
   <include file="scripts/GOV-8975.xml"/> <!-- Change URL on export to "asset/<Uid>" format-->
+  <include file="scripts/GOV-9290.xml"/> <!-- add [dbo].[SecondaryNavSettings] procedure-->
   <include file="scripts/GOV-9154.xml"/> <!-- Add ProcessingStartedOn column to api.Execution table -->
   <include file="scripts/GOV-9319.xml"/> <!-- script to add score type column to metric.asset table-->
   <include file="scripts/GOV-9320.xml"/> <!-- script to add metric allocation table-->
+  <include file="scripts/GOV-9137.xml"/> <!-- AssetBrowser procedure adds and drops -->
+  <include file="scripts/GOV-9067.xml"/> <!-- AssetBrowser procedure - add owner badge data -->
+  <include file="scripts/GOV-9345.xml"/> <!-- script to add create metric allocations from existing scores-->
+  <include file="scripts/GOV-9085.xml"/> <!-- IGC - Proc Updates -->
 </databaseChangeLog>

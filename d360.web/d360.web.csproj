@@ -319,6 +319,7 @@
     <Compile Include="Controllers\V2\ErrorsController.cs" />
     <Compile Include="Controllers\V2\ExportTemplatesController.cs" />
     <Compile Include="Controllers\V2\Filter\CompanyStateValidator.cs" />
+    <Compile Include="Controllers\V2\ExecutionsController.cs" />
     <Compile Include="Controllers\V2\Filter\ModelValidation.cs" />
     <Compile Include="Controllers\V2\FusionController.cs" />
     <Compile Include="Controllers\V2\ActionsController.cs" />
@@ -326,6 +327,7 @@
     <Compile Include="Controllers\V2\HealthController.cs" />
     <Compile Include="Controllers\V2\LineageController.cs" />
     <Compile Include="Controllers\V2\MembershipController.cs" />
+    <Compile Include="Controllers\V2\ScoringController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
     <Compile Include="Controllers\V2\ProfilesController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
@@ -338,7 +340,6 @@
     <Compile Include="Controllers\V2\WorkflowController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
     <Compile Include="Controllers\Services\WorkflowController.cs" />
-    <Compile Include="Controllers\Services\EventsController.cs" />
     <Compile Include="Controllers\Services\Obsolete\RelationshipsController.cs" />
     <Compile Include="Controllers\Services\FusionController.cs" />
     <Compile Include="Controllers\ApiController.cs" />
@@ -710,7 +711,6 @@
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
     <Content Include="Scripts\app\components\model\model-item-structure.component.html" />
     <Content Include="Scripts\app\components\policy\policy-item-structure.component.html" />
-    <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.component.css" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
     <Content Include="Scripts\app\components\shared\modal\gov-modal.component.html" />

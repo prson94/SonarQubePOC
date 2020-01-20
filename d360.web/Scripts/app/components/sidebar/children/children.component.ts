@@ -63,9 +63,9 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
             this.objectType = params['objectType'];
 
             this.load();
-        });
 
-        this.checkSecondaryNavLocalStorage();
+            this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
+        });
     }
 
     ngOnDestroy() {

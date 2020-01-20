@@ -1,6 +1,12 @@
 import { Injectable } from '@angular/core';
 import {Subject} from 'rxjs';
 import { SecondaryNavItem, DynamicButton, AssetAction, SecondaryNavCurrentObject, SecondaryNavState, NavState } from '../models/secondaryNav.model';
+import { AssetTypeClass } from '../models/asset.model';
+import { BaseComponent } from '../components/shared/base.component';
+import { SiteMenuService } from './site-menu.service';
+import { PlatformLocation } from '@angular/common'
+
+declare var CompanySettings: any;
 
 @Injectable()
 export class SecondaryNavService {
@@ -18,8 +24,12 @@ export class SecondaryNavService {
     private homeUrlChangeSource = new Subject<string>();
     private rebuildHeaderSource = new Subject<any>();
     private secondaryNavState: SecondaryNavState;
-    constructor() {
+
+    constructor(private siteMenuService: SiteMenuService, location: PlatformLocation) {
         this.secondaryNavState = new SecondaryNavState();
+        location.onPopState(() => {
+            this.isSidebarCreated = false;
+        });
     }
     // Observable streams
     rightSidebar$ = this.rightSidebarSource.asObservable();
@@ -35,6 +45,11 @@ export class SecondaryNavService {
     homeUrlChange$ = this.homeUrlChangeSource.asObservable();
     rebuildHeader$ = this.rebuildHeaderSource.asObservable();
 
+    private isSidebarCreated: boolean = false;
+
+    getSiteMenuService(): SiteMenuService {
+        return this.siteMenuService;
+    }
 
     setCurrentArea(area: string, icon: string, title: string) {
         this.currentAreaSource.next({ title: area, icon: icon, tabTitle: title });
@@ -46,6 +61,7 @@ export class SecondaryNavService {
         this.secondaryNavState.currentState.currentObject = currentObject;
         this.saveSecondaryNavState(this.secondaryNavState);
         this.currentObjectSource.next(currentObject);
+        this.isSidebarCreated = true;
     }
 
     clearCurrentObject() {

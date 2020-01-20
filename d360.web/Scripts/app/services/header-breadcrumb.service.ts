@@ -11,6 +11,8 @@ import { Promise } from 'core-js';
 import { resolve } from 'url';
 import { AssetStyleService } from './asset-style.service';
 import { AssetTypeStyle } from '../models/asset-type-style.model';
+import { Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 
 
 @Injectable()
@@ -19,8 +21,10 @@ export class HeaderBreadcrumbService extends BaseObservableService{
 
     constructor(
         private http: HttpClient,
+        private router: Router,
         messagesService: MessagesObservableService,
         sitenavservice: SiteMenuService,
+        private titleService: Title,
         private assetStyleService: AssetStyleService
     ) {
         super(messagesService);
@@ -48,7 +52,11 @@ export class HeaderBreadcrumbService extends BaseObservableService{
 
     SiteNavItemsCache: SiteNav[];
     // Service message commands
-    
+
+    reRouteFromBreadcrumbs(url: string) {
+        this.router.navigateByUrl(url);
+    }
+
     clearCurrentObjectInfo() {
         this.currentObject = { type: null, id: null };
         this.currentObjectInfoSource.next({ type: null, id: null });
@@ -179,5 +187,9 @@ export class HeaderBreadcrumbService extends BaseObservableService{
             }
         });
         return from(promise);
+    }
+
+    getTitleService(): Title {
+        return this.titleService;
     }
 }

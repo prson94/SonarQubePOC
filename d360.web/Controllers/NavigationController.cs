@@ -18,6 +18,7 @@ using System.Net;
 using System.IO;
 using System.Threading.Tasks;
 using d360.core.resources;
+using Newtonsoft.Json.Linq;
 
 namespace d360.web.Controllers
 {
@@ -55,7 +56,8 @@ namespace d360.web.Controllers
             }
 
             if (nodes != null)
-                nodes.ForEach(n => {
+                nodes.ForEach(n =>
+                {
                     n.ShouldDisplay = features.Any(f => f.Feature == n.Feature);
                     n.NavigationItems = (string.IsNullOrEmpty(n.Items)) ?
                         new List<NavigationItem>() :
@@ -141,7 +143,7 @@ namespace d360.web.Controllers
                     var record = Company.GetById<SiteNav>(d.ID);
                     Company.Delete(record);
                 });
-                item.SortOrder = Company.SiteNav.Max(i=> i.SortOrder) + 1;
+                item.SortOrder = Company.SiteNav.Max(i => i.SortOrder) + 1;
                 Company.Add(item);
                 Company.SaveChanges();
                 message = "Folder item added successfully.";
@@ -390,7 +392,8 @@ namespace d360.web.Controllers
                     try
                     {
                         Storage.DeleteFile(constants.COMPANY_RESOURCES_FOLDER, originalImage);
-                    }catch {}
+                    }
+                    catch { }
                 }
 
                 if (!string.IsNullOrEmpty(folder.IconPayload))
@@ -439,7 +442,7 @@ namespace d360.web.Controllers
         }
 
         [HttpPut, Route("SiteNavFolderMove"), NonNullableParameters]
-        public JsonNetResult SiteNavFolderMove(int targetFolderId,int adjacentFolderId)
+        public JsonNetResult SiteNavFolderMove(int targetFolderId, int adjacentFolderId)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return jsonNetException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
@@ -501,7 +504,7 @@ namespace d360.web.Controllers
 
 
         [HttpGet, Route("permissions/get/list")]
-        public JsonNetResult GetSiteNavPermissionList(int id , int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter)
+        public JsonNetResult GetSiteNavPermissionList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter)
         {
             var dbArgs = new Dapper.DynamicParameters();
             var hideUsersSql = "";
@@ -521,7 +524,7 @@ namespace d360.web.Controllers
 							where r.[State] = 1 and  not exists (select 1 from SiteNavPermission where object='Resource' and objectId=r.ResourceID and siteNavId =@id) "
                             + hideUsersSql +
                         ") as Sub";
-                   
+
 
             if (!string.IsNullOrEmpty(gbfilter))
             {
@@ -532,8 +535,8 @@ namespace d360.web.Controllers
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
             var sql = string.Format(@"select * from ({0}) A", querySql);
 
-          
-           dbArgs.Add("id", id);
+
+            dbArgs.Add("id", id);
 
             countSql = applyFilteringSuffixBind(countSql, Request, dbArgs);
             int totalCount = Company.Query<int>(countSql, dbArgs).First();
@@ -544,10 +547,10 @@ namespace d360.web.Controllers
 
             var query = Company.Query<dynamic>(sql, dbArgs);
 
-           
+
             return new JsonNetResult
             {
-                Data = new { total= totalCount, results = query },
+                Data = new { total = totalCount, results = query },
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
@@ -865,8 +868,8 @@ order by	f.SortOrder";
                 ignoreObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
             }
 
-            if(ignoreObjects.Count > 0)
-                ignoreObjectTypeSQL = $" AND ATT.[Object] not in ({string.Join(",", ignoreObjects.Select(o => "'"+o+"'"))})";
+            if (ignoreObjects.Count > 0)
+                ignoreObjectTypeSQL = $" AND ATT.[Object] not in ({string.Join(",", ignoreObjects.Select(o => "'" + o + "'"))})";
 
             string sql = $@"
 SELECT count(ATT.[Object]) as count, 
@@ -883,8 +886,8 @@ SELECT count(ATT.[Object]) as count,
 		ATT.Name
 		Order By ATT.Name
 ";
-          var ItemCounts = await Company.QueryAsync<dynamic>(sql, 
-              new { ResourceID = Company.CurrentResourceID });
+            var ItemCounts = await Company.QueryAsync<dynamic>(sql,
+                new { ResourceID = Company.CurrentResourceID });
 
             return new JsonNetResult
             {
@@ -897,7 +900,7 @@ SELECT count(ATT.[Object]) as count,
         public async Task<JsonNetResult> GetItemCount(string url)
         {
             int count = 0;
-            string type = ""; 
+            string type = "";
             int id = 0;
             var urlElements = url.Split('-');
             type = urlElements[0];
@@ -936,7 +939,7 @@ SELECT count(ATT.[Object]) as count,
                 return string.Empty;
             }
             // Return char and concat substring.  
-            return string.Format("{0}{1}{2}",char.ToUpper(s[0]), s.Substring(1), "Type");
+            return string.Format("{0}{1}{2}", char.ToUpper(s[0]), s.Substring(1), "Type");
         }
         #endregion
 
@@ -966,5 +969,154 @@ SELECT count(ATT.[Object]) as count,
             return items;
         }
 
+        [HttpPost, Route("GetSecondaryNavigationSettings")]
+        public JsonNetResult GetSecondaryNavigationSettings(SecondaryNavigationPostModel model)
+        {
+            bool execProcedure = true;
+            SecondaryNavigationResponseModel responseModel = new SecondaryNavigationResponseModel() { Items = new SecondaryNavItems() };
+
+            //Static nav
+            if (model.AssetUid == null)
+            {
+                if (model.ObjectType == SystemObjects.IntersectType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Relationships";
+                    responseModel.MainTabTitle = "Relationship Types";
+                    responseModel.Items.HasAudit = true;
+                    responseModel.Items.HasField = true;
+
+                }
+
+                if (model.ObjectType == SystemObjects.IssueType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.IssueType.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Workflow Actions";
+                    responseModel.MainTabTitle = "Action Types";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.AttributeType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.AttributeType.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Attributes";
+                    responseModel.MainTabTitle = "Attribute Groups";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.LookupType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.LookupType.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Lookups";
+                    responseModel.MainTabTitle = "Lookup Types";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.ResponsibilityType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.ResponsibilityType.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Responsibilities";
+                    responseModel.MainTabTitle = "Responsibility Types";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.Report.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.Report.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Dashboards";
+                    responseModel.MainTabTitle = "Dashboards";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.FusionType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.FusionType.ToString();
+                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.DisplayValue = "Fusion";
+                    responseModel.MainTabTitle = "Fusion Types";
+                    responseModel.Items.HasAudit = true;
+                }
+
+
+            }
+
+            if (execProcedure)
+            {
+                if (model.ObjectId != null && model.ObjectType != null)
+                {
+                    model.AssetUid = Company.Assets.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId)?.uid;
+
+                    if (model.AssetUid == null)
+                    {
+                        model.AssetTypeUid = Company.AssetTypes.FirstOrDefault(x => x.Object == model.ObjectType && x.ObjectID == model.ObjectId)?.uid;
+                    }
+                }
+
+                if (model.AssetId != null)
+                {
+                    model.AssetUid = Company.Assets.FirstOrDefault(x => x.ID == model.AssetId)?.uid;
+                }
+
+                var response = Company.Query<string>("exec [dbo].[SecondaryNavSettings] @uid, @assetTypeUid , @resourceId, @isAdmin", new { assetTypeUid = model.AssetTypeUid, uid = model.AssetUid, resourceId = Company.CurrentResourceID, isAdmin = Company.CurrentResourceIsAdmin }).ToList();
+                responseModel = Newtonsoft.Json.JsonConvert.DeserializeObject<SecondaryNavigationResponseModel>(string.Join("", response));
+
+                if (responseModel.Object == "Artifact")
+                {
+                    responseModel.Artifact = Company.GetPageInformation(SystemObjects.Artifact, responseModel.ObjectID);
+                }
+
+                if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
+                {
+                    var apiCtrlr = new D3SApiController(this.Community, this.Company, null, null);
+                    apiCtrlr.Request = new System.Net.Http.HttpRequestMessage();
+                    responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
+                }
+
+
+                if (responseModel.Object == SystemObjects.Taxonomy.ToString() && model.PreloadData)
+                {
+                    var apiCtrlr = new TaxonomyController(this.Community, this.Company);
+                    responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.ObjectTypeId);
+                }
+
+            }
+
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                if (model.AssetUid != null)
+                {
+                    var permissions = Company.GetPermissions(responseModel.AssetId, responseModel.AssetTypeId);
+                    if (permissions.Any(x => x.ID == Permission.ReadAsset))
+                    {
+                        responseModel.Items.HasOwnership = true;
+                    }
+
+                    if (permissions.Any(x => x.ID == Permission.ReadRelationships))
+                    {
+                        responseModel.Items.HasRelationship = true;
+                    }
+                }
+            }
+
+
+            return new JsonNetResult
+            {
+                Data = responseModel,
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
     }
 }

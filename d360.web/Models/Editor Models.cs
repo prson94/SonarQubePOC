@@ -753,7 +753,7 @@ namespace d360.web.Models
 
     #region Asset Browser
 
-    public enum GetAssetLineagePostModelDirection
+    public enum AssetBrowserApiHopDirection
     { 
         None = 0,
         Forward = 1,
@@ -762,36 +762,40 @@ namespace d360.web.Models
     }
 
     [DataContract]
-    public class GetAssetLineagePostModel
+    public class AssetBrowserApiHopRequestModel
     {
         [DataMember]
-        public List<Guid> AssetUids { get; set; }
+        public List<AssetBrowserApiHopAssetRequestModel> Assets { get; set; }
+
         [DataMember]
-        public bool IsReveal { get; set; }
+        public AssetBrowserApiHopDirection Direction { get; set; } = AssetBrowserApiHopDirection.Both;
+        
         [DataMember]
-        public int StartHop { get; set; }
-        [DataMember]
-        public GetAssetLineagePostModelDirection Direction { get; set; } = GetAssetLineagePostModelDirection.Both;
+        public Guid? PredicateUid { get; set; }
+        
         [DataMember]
         public int Hops { get; set; } = 3;
+
+        [DataMember]
+        public bool IsInitial { get; set; } = false;
     }
 
     [DataContract]
-    public class GetAssetImpactsPostModel
+    public class AssetBrowserApiOwnerHopRequestModel
     {
         [DataMember]
-        public List<GetAssetImpactSourceItemPostModel> Assets { get; set; }
+        public List<AssetBrowserApiHopAssetRequestModel> Assets { get; set; }
+
         [DataMember]
-        public Guid PredicateUid { get; set; }
-        [DataMember]
-        public int StartHop { get; set; }
+        public int ResponsibilityTypeId { get; set; }
     }
 
     [DataContract]
-    public class GetAssetImpactSourceItemPostModel
+    public class AssetBrowserApiHopAssetRequestModel
     {
         [DataMember]
         public Guid Uid { get; set; }
+        
         [DataMember]
         public string Key { get; set; }
     }
