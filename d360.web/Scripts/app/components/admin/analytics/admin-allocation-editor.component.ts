@@ -1,0 +1,115 @@
+﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { BaseComponent } from '../../shared/base.component';
+import { ScoreTypeAllocation, ScoreType } from '../../../models/metrics.model';
+import { AssetTypeClass } from '../../../models/asset.model';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { AllocationService } from '../../../services/allocations.service';
+
+@Component({
+    selector: 'd3s-admin-allocation-editor',
+    templateUrl: 'admin-allocation-editor.component.html',
+    providers: [AllocationService]
+})
+
+export class AdminAllocationEditorComponent extends BaseComponent implements OnChanges, OnInit {
+
+    @Input() selection: ScoreTypeAllocation = new ScoreTypeAllocation();
+    @Input() disabled: boolean = false;
+    @Output() onCancel = new EventEmitter();
+    @Output() onSave = new EventEmitter();
+
+    private savingInProgress: boolean = false;
+
+    private ddlScoreTypes: any[] = [];
+    private ddlAssetTypes: any[] = [];
+
+    constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
+        super();
+        this.selection = new ScoreTypeAllocation();
+        this.selection.scoreType = ScoreType.Governance;
+    }
+
+    ngOnInit() {
+        this.initialData();
+    }
+
+    ngOnChanges(change: SimpleChanges) {
+        this.populateAssetTypesDDL();
+    }
+
+    scoreTypeChange($event) {
+        this.populateAssetTypesDDL();
+    }
+
+    private populateAssetTypesDDL() {
+        this.allocationService.getunallocatedAssetTypes(this.selection.scoreType)
+            .subscribe(data => {
+                this.ddlAssetTypes = [];
+                data.forEach(item => {
+                    this.ddlAssetTypes.push({ value: item.assetTypeUid, label: this.getClassFriendlyName(item.assetTypeClass) + ' > ' + item.assetTypePath });
+                })
+
+                if (this.selection.uid) {
+                    this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, label: this.getClassFriendlyName(this.selection.assetClassName) + ' > ' + this.selection.assetTypePath });
+                }
+                this.ddlAssetTypes = this.ddlAssetTypes.sort((a, b) => a.label.localeCompare(b.label));
+
+                this.ddlAssetTypes = [{ value: null, label: 'Select Asset Type' }, ...this.ddlAssetTypes];
+
+            });
+    }
+
+
+
+    private initialData() {
+        this.ddlScoreTypes.push({ value: ScoreType.Governance, label: "Governance" });
+
+        //Uncomment in 2020-sprint-3
+        //this.ddlScoreTypes.push({ value: ScoreType.DataQuality, label: "Data Quality" });
+        //this.ddlScoreTypes.push({ value: ScoreType.Perceptional, label: "Perceptional" });
+    }
+
+    getClassFriendlyName(atc: AssetTypeClass): string {
+        switch (atc.toString()) {
+            case 'BusinessAsset':
+                return 'Business Asset';
+            case 'TechnicalAsset':
+                return 'Technical Asset';
+            default:
+                return atc.toString();
+        }
+    }
+
+    private cancel() {
+        this.onCancel.emit();
+    }
+
+    private save() {
+        var item = new ScoreTypeAllocation();
+        if (this.selection.uid)
+            item.uid = this.selection.uid;
+
+        item.assetTypeUid = this.selection.assetTypeUid;
+        item.scoreType = this.selection.scoreType;
+        this.savingInProgress = true;
+        this.allocationService.save(item)
+            .subscribe(res => {
+                this.selection = new ScoreTypeAllocation();
+                this.savingInProgress = false;
+                if (res.type && res.type == "error")
+                    return;
+
+                let msg: string = '';
+                if (this.selection.uid == undefined) {
+                    msg = `Allocation succesfully created`;
+                }
+                else {
+                    msg = `Allocation succesfully updated`;
+                }
+                this.messagesService.showInfoMessage('Success', msg);
+
+                this.onSave.emit(res);
+            });
+    }
+
+};
