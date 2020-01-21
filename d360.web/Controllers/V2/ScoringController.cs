@@ -31,7 +31,7 @@ namespace d360.web.Controllers.V2
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/scoring"),
         Authorize,
-        ApiExplorerSettings(IgnoreApi = false)
+        ApiExplorerSettings(IgnoreApi = true)
     ]
     public class ScoringController : BaseV2ApiController
     {
@@ -287,15 +287,15 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Get a list of asset types that have not been allocated to the provided score type.
+        /// Exports the list of Rules.
         /// </summary>
-        /// <param name="uid">The score type to get asset types with no allocations.</param>
-        /// <returns>List of asset types that have not been allocated to the provided score type.</returns>
+        /// <param name="uid">The Uid of the Rule Type.</param>
+        /// <returns>An excel sheet of the rules of the given rule type uid.</returns>
         [
             HttpGet,
-            Route("ExportRules/{uid}"),
+            Route("exportRules/{uid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "Returns an excel sheet with all the rules.", typeof(List<AllocationApiGetUnallocatedAssetTypeModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "Returns an excel sheet with all the rules.", typeof(List<Rule>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]

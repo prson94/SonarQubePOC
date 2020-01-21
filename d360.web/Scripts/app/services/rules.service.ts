@@ -180,7 +180,7 @@ export class RulesService extends BaseObservableService {
     }
 
     exportRules(uid: string,  typeName: string){
-        this.http.get(`api/v2/scoring/ExportRules/${uid}`, { responseType: "blob" }).pipe(
+        this.http.get(`api/v2/scoring/exportRules/${uid}`, { responseType: "blob" }).pipe(
             map((response) => {
                 this.downloadFile(response, );
             }),

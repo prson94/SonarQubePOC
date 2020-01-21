@@ -87,7 +87,6 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                 .subscribe(result => {
                     this.isLoading = false;
                     this.ruleType = result;
-                    console.log(this.ruleType.AssetTypeUID);
                     this.setObjectInfo('RuleType', this.ruleType.ID);
                     this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();
