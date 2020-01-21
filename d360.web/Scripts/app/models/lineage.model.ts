@@ -1,6 +1,8 @@
 ﻿import { AssetTypeClass } from "./asset.model";
 import { SelectItem, TreeNode } from "primeng/api";
 
+//#region Legacy: V2
+
 export class LineageNode {
     key: any;
     assetId: any;
@@ -101,6 +103,7 @@ export class SidebarView {
     currentTab: string;
 }
 
+//#endregion
 
 //#region Enumerations
 
@@ -125,7 +128,7 @@ export enum LineageEditorMode {
 
 //#endregion
 
-//#region Legacy
+//#region Legacy: V1
 
 export class LinkModel {
     id: number = null;
@@ -434,6 +437,7 @@ export class AssetBrowserTranslationOwnerCount {
     responsibilityType: string;
     responsibilityTypeId: number;
     count: number;
+    expanded: boolean;
 }
 
 export class AssetBrowserTranslationRelationCount { 
@@ -443,6 +447,7 @@ export class AssetBrowserTranslationRelationCount {
     predicateUid: string;
     direction: AssetBrowserApiHopDirection;
     count: number;
+    expanded: boolean;
 }
 
 export class AssetBrowserTranslationLink {
@@ -453,7 +458,7 @@ export class AssetBrowserTranslationLink {
     text: string;
     back: string;
     predicateIds: number[];
-    impacts: string[];
+    expandedByBadgeKey: string;
 }
 
 export class AssetBrowserTranslationNode {
@@ -519,6 +524,7 @@ export class AssetBrowserApiHopAssetRequestModel {
 // #region Asset Browser : Response
 
 // Core View Model
+
 export class AssetBrowserModel {
     focalAssetUid: string;
     assets: AssetBrowserAssetModel[];
@@ -540,6 +546,7 @@ export class AssetBrowserGenericRelationModel {
 }
 
 // Ownership Models
+
 export class AssetBrowserOwnerCountModel {
     ResponsibilityType: string;
     ResponsibilityTypeID: number;
