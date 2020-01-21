@@ -3796,6 +3796,9 @@ select [uid] from #ParentChildRelationships",
             bool checkCircularRelationships = false;
             if (rt.Predicate.Type == PredicateType.Transformation)
                 checkCircularRelationships = true;
+            bool checkSemanticRelation = false;
+            if (rt.Predicate.Type == PredicateType.SemanticRelation)
+                checkSemanticRelation = true;
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
@@ -4160,6 +4163,23 @@ end",
                             ", new { execution.ExecutionID, predicateType = rt.Predicate.Type}, commandTimeout: timeout);
                         this.AITrackTrace(client, execution, METHOD_NAME, "  Circular Relationships Validation", sw.ElapsedMilliseconds, isLog);
 
+                    }
+
+                    if (checkSemanticRelation)
+                    {
+                        sw.Restart();
+                        Connection.Execute(@"
+                            update	T
+                            set		T.Message = coalesce(T.Message + '; ', '') + 'Not able to create this relationship because a relationship for this functional type already exists.',
+		                            T.Success = 0
+                            from	api.ExecutionRelationship T
+                                    inner join [Intersect] I on I.[Subject] = T.[Subject] and I.SubjectID = T.SubjectID
+                                    inner join [IntersectType] T on T.ID = I.IntersectTypeID
+                                    inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = @predicateType
+		                            where T.ExecutionId = @ExecutionID 
+                                    and T.IsNew = 1 
+                            ", new { execution.ExecutionID, predicateType = (int)PredicateType.SemanticRelation, intersectTypeID = rt.ID}, commandTimeout: timeout);
+                        this.AITrackTrace(client, execution, METHOD_NAME, "  Semantic Relationships Validation", sw.ElapsedMilliseconds, isLog);
                     }
 
                     generalChecksCompleted = true;
@@ -4686,7 +4706,7 @@ from    [Intersect] T
 
             if (isInsert)
             {
-                Connection.Execute(@"
+                Connection.Execute($@"
 update  api.ExecutionRelationshipType 
 set     Success = 0, 
         Message = 'SubjectUid is missing / incorrect format.' 
@@ -4700,6 +4720,16 @@ set     Success = 0,
 where   ExecutionID = @ExecutionID 
         and Success is null 
         and (ObjectUid is null or ObjectUid = @emptyUid);
+
+update  T
+set     T.Success = 0,
+        T.Message = 'ObjectUid and SubjectUid must be the same for the Semantic Relation predicate type.' 
+from    api.ExecutionRelationshipType T
+        inner join [Predicate] P on P.Uid = T.PredicateUid
+where   T.ExecutionID = @ExecutionID 
+        and T.Success is null 
+        and (T.ObjectUid = T.SubjectUid)
+        and P.[Type] = {(int)PredicateType.SemanticRelation};
 
 update  T
 set     T.Success = 0, 

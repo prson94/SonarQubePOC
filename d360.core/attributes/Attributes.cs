@@ -83,6 +83,16 @@ namespace d360.core
         }
     }
 
+    public class SingleRelationshipByFunctionalTypeAttribute : Attribute
+    {
+        private bool _allowed = true;
+        public bool Allowed { get { return _allowed; } }
+        public SingleRelationshipByFunctionalTypeAttribute(bool allowed)
+        {
+            _allowed = allowed;
+        }
+    }
+
     public class AllowSurveyAttribute : Attribute
     {
         private bool _allowed = true;
