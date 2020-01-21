@@ -4,6 +4,7 @@ using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SpreadsheetLight;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -125,6 +126,16 @@ namespace d360.web.Controllers.V2
                     ");
                     dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
                 }
+                else if (f.Type == "Tag")
+                {
+                    fieldJoins.Add($@"outer apply(
+                        select FormattedValue = STUFF((
+                            select '|' + T.Value from AssetTag AT
+                                inner join Tag T on AT.TagID = T.ID
+                                where AT.AssetID = A.ID
+                            for xml path ('')), 1, 1, '')
+                         ){tableAlias}(FormattedValue) ");
+                }
                 else
                 {
                     fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]");
@@ -234,6 +245,45 @@ namespace d360.web.Controllers.V2
             }
 
             return document;
+        }
+
+        internal void SetSpreadsheetValueFromField(SLDocument document, int rowIndex, int columnIndex, FieldType field, string value)
+        {
+            switch ((field.Type ?? "").ToUpper())
+            {
+                case "DECIMAL":
+                    double dVal = 0;
+                    if (double.TryParse(value, out dVal))
+                        document.SetCellValue(rowIndex, columnIndex, dVal);
+                    else
+                        document.SetCellValue(rowIndex, columnIndex, value);
+                    break;
+                case "NUMBER":
+                    int intVal = 0;
+                    if (int.TryParse(value, out intVal))
+                        document.SetCellValue(rowIndex, columnIndex, intVal);
+                    else
+                        document.SetCellValue(rowIndex, columnIndex, value);
+                    break;
+                case "DATE":
+                    if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
+                    {
+                        document.SetCellValue(rowIndex, columnIndex, dateVal);
+
+                        SLStyle style = document.CreateStyle();
+                        style.FormatCode = "m/d/yyyy";
+                        document.SetCellStyle(rowIndex, columnIndex, style);
+                    }
+                    break;
+                default:
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(value + "");
+                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+                    if (txt.StartsWith("="))
+                        txt = "'" + txt;
+                    document.SetCellValue(rowIndex, columnIndex, txt);
+                    break;
+            }
         }
     }
 }

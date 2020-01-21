@@ -307,13 +307,13 @@ namespace d360.web.Controllers.V2
                 DynamicParameters dbArgs = new DynamicParameters();
                 string selectSql = @"
                         SELECT 
-		                        RT.[Name],
-		                        R.Threshold,
-		                        A.ID as 'AssetID',
+		                        A.ID as 'ID',
 		                        A.uid as 'AssetUid',
 		                        AT.uid as 'AssetTypeUid',
-		                        a.UpdatedOn,
-		                        A.CreatedOn
+		                        R.Threshold,
+		                        A.UpdatedOn,
+		                        A.CreatedOn,
+                                'asset/' +  + CAST(A.uid as varchar(36)) as 'Url'
 	                         ";
 
                 string joinsSql = "  ";
@@ -350,35 +350,36 @@ namespace d360.web.Controllers.V2
                     selectSql += "," + col;
                 }
 
-                foreach (var join in fieldTypes)
+                foreach (var join in fieldJoins)
                 {
-                    string fieldJoin = "left join Field F" + join.ID + " on F" + join.ID + ".FieldTypeID =" + join.ID + " and F" + join.ID + ".[ObjectType] = 'Rule' and F" + join.ID + ".[ObjectID] = R.ID ";
-                    joinsSql += fieldJoin;
+                    joinsSql += join ;
                 }
                 var sql = $@"
                             {selectSql}
                             FROM dbo.[Rule] R
                                                                     LEFT JOIN dbo.RuleType RT on R.RuleTypeID = RT.ID
-                                                                    INNER JOIN[dbo].Asset A on A.Object = 'Rule' and A.ObjectID = R.ID
-                                                                    inner JOIN[dbo].AssetType AT on AT.ID = a.AssetTypeID
+                                                                    INNER JOIN [dbo].Asset A on A.Object = 'Rule' and A.ObjectID = R.ID
+                                                                    INNER JOIN [dbo].AssetType AT on AT.ID = a.AssetTypeID
                             {joinsSql} 
                             {whereSQL}";
 
                 var results = await Company.QueryAsync<dynamic>(sql, new { uid });
 
-                fieldTypes.Add(new FieldType { Type = "string", Name = "AssetID", FriendlyName = "Asset UID" });
-                fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Asset ID" });
-                //fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
-                fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
-                
-                //set row headers
+
+                //set row headers and non dynamic field columns
+                fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+                fieldTypes.Insert(1, new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
+                fieldTypes.Insert(0, new FieldType { Type = "string", Name = "AssetTypeUid", FriendlyName = "Asset Type UID" });
+                fieldTypes.Insert(0, new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Asset UID" });
+                fieldTypes.Insert(0, new FieldType { Type = "Number", Name = "ID", FriendlyName = "ID" });
+
                 int index = 1;
                 int rowNumber = 1;
                 foreach (var field in fieldTypes)
                 {
                     document.SetCellValue(1, index++, (string)field.FriendlyName);
                 }
-
+                //set values into columns
                 foreach (var row in results)
                 {
                     index = 1;
@@ -398,7 +399,7 @@ namespace d360.web.Controllers.V2
                 {
                     Content = new ByteArrayContent(stream.GetBuffer())
                 };
-                result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+                result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
                 var response = ResponseMessage(result);
 
                 return response;
@@ -412,55 +413,17 @@ namespace d360.web.Controllers.V2
         {
             if (field != null && field.ID > 0)
                 return (((row as IDictionary<string, object>)[field.Name]) ?? "").ToString();
-            else if (field != null && field.Name == "Parent")
-                return (string)((row as IDictionary<string, object>)["Parent"]);
-            else if (field != null && field.Name == "Url")
-                return (string)((row as IDictionary<string, object>)["Url"]);
+            else if (field != null && field.Name == "AssetTypeUid")
+                return (string)((row as IDictionary<string, object>)["AssetTypeUid"]).ToString();
+            else if (field != null && field.Name == "AssetUid")
+                return (string)((row as IDictionary<string, object>)["AssetUid"]).ToString();
             else if (field != null && field.Name == "ID")
-                return (string)((row as IDictionary<string, object>)["ID"].ToString());
-            else if (field != null && field.Name == "UID")
-                return (string)((row as IDictionary<string, object>)["Uid"].ToString());
+                return (row as IDictionary<string, object>)["ID"].ToString();
             else if (field != null && field.Name == "Threshold")
                 return (string)((row as IDictionary<string, object>)["Threshold"].ToString());
+            else if (field != null && field.Name == "Url")
+                return (string)((row as IDictionary<string, object>)["Url"].ToString());
             return "";
-        }
-        private void SetSpreadsheetValueFromField(SLDocument document, int rowIndex, int columnIndex, FieldType field, string value)
-        {
-            switch ((field.Type ?? "").ToUpper())
-            {
-                case "DECIMAL":
-                    double dVal = 0;
-                    if (double.TryParse(value, out dVal))
-                        document.SetCellValue(rowIndex, columnIndex, dVal);
-                    else
-                        document.SetCellValue(rowIndex, columnIndex, value);
-                    break;
-                case "NUMBER":
-                    int intVal = 0;
-                    if (int.TryParse(value, out intVal))
-                        document.SetCellValue(rowIndex, columnIndex, intVal);
-                    else
-                        document.SetCellValue(rowIndex, columnIndex, value);
-                    break;
-                case "DATE":
-                    if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
-                    {
-                        document.SetCellValue(rowIndex, columnIndex, dateVal);
-
-                        SLStyle style = document.CreateStyle();
-                        style.FormatCode = "m/d/yyyy";
-                        document.SetCellStyle(rowIndex, columnIndex, style);
-                    }
-                    break;
-                default:
-                    var doc = new HtmlAgilityPack.HtmlDocument();
-                    doc.LoadHtml(value + "");
-                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
-                    if (txt.StartsWith("="))
-                        txt = "'" + txt;
-                    document.SetCellValue(rowIndex, columnIndex, txt);
-                    break;
-            }
         }
 
     }
