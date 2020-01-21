@@ -102,55 +102,27 @@ namespace d360.model.DataAccessLayer
         }
 
 
-        public async Task<bool> PostBulkCrossReference(List<AssetCrossReference> models)
+        public IEnumerable<AssetCrossReferenceResult> PostBulkCrossReference(List<AssetCrossReference> models,ApiExecution execution)
         {
-            if (CompanyContext.Database.Connection.State != ConnectionState.Open)
-                CompanyContext.Database.Connection.Open();
-            // bcp the records in
-            using (var bulkCopy = new SqlBulkCopy((CompanyContext.Database.Connection) as SqlConnection))
+            CompanyContext.Add(execution);
+            List<AssetCrossReferenceResult> results = null;
+            try
             {
-                bulkCopy.BatchSize = models.Count;
-                bulkCopy.DestinationTableName = "AssetCrossReference";
-                bulkCopy.BulkCopyTimeout = 300;
+                results = CompanyContext.ImportCrossReferences(execution, models);
 
-                var table = new DataTable();
-                var columnName = "uid";
-                table.Columns.Add(columnName, typeof(Guid));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                columnName = "DataSource";
-                table.Columns.Add(columnName, typeof(string));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                columnName = "Type";
-                table.Columns.Add(columnName, typeof(string));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                columnName = "ExternalID";
-                table.Columns.Add(columnName, typeof(string));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                columnName = "FieldHash";
-                table.Columns.Add(columnName, typeof(string));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                foreach (var item in models)
-                {
-                    var row = table.NewRow();
-
-                    row["uid"] = item.uid;
-                    row["DataSource"] = item.DataSource;
-                    row["Type"] = item.Type;
-                    row["ExternalID"] = item.ExternalID;
-                    row["FieldHash"] = item.FieldHash;
-
-                    table.Rows.Add(row);
-                }
-
-                await bulkCopy.WriteToServerAsync(table);
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
             }
-
-            return true;
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+            return results;
         }
 
         public async Task<int> PutCrossReference(Guid uid, string dataSource, string type, AssetCrossReference model)
@@ -199,7 +171,7 @@ namespace d360.model.DataAccessLayer
 
         }
 
-        public async Task<ApiExecutionInfo> PostBulkCrossReference(List<AssetCrossReference> crossReferences, ApiExecution execution, bool sendWorkflowEvents = true)
+        public async Task<ApiExecutionInfo> PostBatchCrossReference(List<AssetCrossReference> crossReferences, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
             {

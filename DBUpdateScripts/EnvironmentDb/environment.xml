@@ -409,5 +409,8 @@
   <include file="scripts/GOV-9137.xml"/> <!-- AssetBrowser procedure adds and drops -->
   <include file="scripts/GOV-9067.xml"/> <!-- AssetBrowser procedure - add owner badge data -->
   <include file="scripts/GOV-9345.xml"/> <!-- script to add create metric allocations from existing scores-->
+  <include file="scripts/GOV-7360.xml"/> <!-- add AssetTypeIDs to IntersectTypeDetail view-->
   <include file="scripts/GOV-9085.xml"/> <!-- IGC - Proc Updates -->
+  <include file="scripts/GOV-9095.xml"/> <!-- Performance fixes to [dbo].[GetDynamicAssets] and added TVF [utility].[FieldDetails] -->
+  <include file="scripts/GOV-9231.xml"/> <!-- Remove unused database objects -->
 </databaseChangeLog>

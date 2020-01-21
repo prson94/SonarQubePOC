@@ -82,7 +82,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_RULES = 'rules';
     static SITE_URL_ADMIN_SURVEYS = 'surveys';
     static SITE_URL_ADMIN_TAGS = 'tags';
-    static SITE_URL_ADMIN_ANALYTICS = 'analytics';
+    static SITE_URL_ADMIN_SCORING = 'scoring';
     static SITE_URL_ADMIN_DASHBOARDS = 'dashboard';
     static SITE_URL_ADMIN_GROUPS = 'groups';
     static SITE_URL_ADMIN_RESPONSIBILITIES = 'responsibilities';
