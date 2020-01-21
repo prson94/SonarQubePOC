@@ -3,7 +3,6 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
-//import { RightSidebarItem } from '../../../models/secondaryNav.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { MetricsService } from '../../../services/metrics.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
