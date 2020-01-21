@@ -1759,6 +1759,8 @@
         display: block;
         float: left;
         margin-top: 2px;
+        width:189px;
+        height:40px;
     }
 
     .swagger-section #header #logo .logo__title {

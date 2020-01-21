@@ -1,0 +1,76 @@
+﻿
+<header>
+    Allocations
+    <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
+</header>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading">
+
+    <input type="text" pInputText [hidden]="!showSimpleFilter" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter" [ngModel]="dt.filters['global']?.value">
+    <p-table #dt [value]="allocations" selectionMode="single" [globalFilterFields]="['assetClassName','assetTypePath','scoreType']" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selection" (onRowSelect)="onRowSelect($event)">
+        <ng-template pTemplate="header">
+            <tr>
+                <th [pSortableColumn]="'assetClassName'" style="width: 150px">
+                    Asset Class
+                    <d3s-sortIcon [field]="'assetClassName'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="'assetTypePath'">
+                    Asset Type
+                    <d3s-sortIcon [field]="'assetTypePath'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="'scoreType'">
+                    Score Type
+                    <d3s-sortIcon [field]="'scoreType'"></d3s-sortIcon>
+                </th>
+                <th></th>
+            </tr>
+            <tr [hidden]="showSimpleFilter">
+                <th><d3s-column-filter [field]="'assetClassName'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'assetTypePath'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'scoreType'" [datatype]="'text'"></d3s-column-filter></th>
+                <th></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr [pSelectableRow]="item">
+                <td (click)="openMeasures(item)" >{{item.assetClassName}}</td>
+                <td (click)="openMeasures(item)">{{item.assetTypePath}}</td>
+                <td (click)="openMeasures(item)">{{item.scoreType}}</td>
+                <td class="RowTools">
+                    <d3s-preview-tooltip objectType="Allocation" [uid]="item.uid" icon="info"></d3s-preview-tooltip>
+                    &nbsp;&nbsp;&nbsp;
+                    <a style="cursor:pointer;" (click)="doEdit(item);"><i class="fa fa-pencil"></i></a>
+                    <a style="cursor:pointer;" (click)="doDelete(item);"><i class="fa fa-trash-o"></i></a>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
+</div>
+
+
+
+<d3s-delete-form [callback]="theDeleteCallback"
+                 [method]="'callback'"
+                 [items]="selection"
+                 [showAsModal]="true"
+                 [modalTitle]="deletePopupTitle"
+                 [modalCssClasses]="'small-dialog'"
+                 [isModalVisible]="showDelete"
+                 [hideDeleteButton]="selection.hasMeasure"
+                 (onCancel)="showDelete=false;">
+    <div prompt>
+        <ng-container *ngIf="selection.hasMeasure">
+            Unfortunately you are unable to delete a score with measures defined.
+        </ng-container>
+        <ng-container *ngIf="!selection.hasMeasure">
+            Are you sure you want to permanently delete this score?
+        </ng-container>
+    </div>
+
+</d3s-delete-form>
+<d3s-modal [title]="editTitle" additionalClasses="modal-delete-form" (onClose)="onSaveCancel()" [isVisible]="showEdit">
+    <d3s-admin-allocation-editor [disabled]="selection.hasMeasure" [selection]="selection" (onCancel)="showEdit=false;" (onSave)="showEdit=false;load();"></d3s-admin-allocation-editor>
+</d3s-modal>

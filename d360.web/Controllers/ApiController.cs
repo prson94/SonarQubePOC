@@ -3612,7 +3612,10 @@ outer apply (
             {
                 if (ft.LookupObjectType == SystemObjects.IntersectType.ToString() && ft.LookupObjectID.HasValue)
                 {
-                    var intersect = Company.Filter<IntersectDetail>(i => i.IntersectTypeID == ft.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
+                    var intersect = Company.Filter<Intersect>(
+                        i => i.IntersectTypeID == ft.LookupObjectID.Value 
+                            && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id)
+                            )).FirstOrDefault();
                     if (intersect != null)
                     {
                         var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
@@ -3772,7 +3775,7 @@ where    AT.Object = 'ReferenceItemType' and AT.ObjectID= {id}
                             from Asset A 
                             inner join AssetType AST on
                             AST.ID = A.AssetTypeID
-                            where AST.ObjectID = { id} and AST.[Object]='ReferenceItemType'";
+                            where AST.ObjectID = {id} and AST.[Object]='ReferenceItemType'";
             return Company.Query<bool>(sqlQuery).First();
         }
 

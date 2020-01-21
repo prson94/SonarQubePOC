@@ -498,14 +498,20 @@ from	IntersectType I
 
         public List<AllocationPossibility> GetAllocationOptions()
         {
-            var list = Database.Connection.Query<AllocationPossibility>(@"
+            string classList = "1,2,6,7,8,9";
+            if (Community.IsFusionEnabled())
+            {
+                classList += ",3,4";
+            }
+
+            var list = Database.Connection.Query<AllocationPossibility>($@"
 select	T.Object as ObjectType, 
 		T.ObjectID as ObjectTypeID, 
         T.[Class],
         P.[Path] as Name
 from	AssetType T
         cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
-where	T.[Class] in (1,2,3,4,6,7,8,9)").ToList();
+where	T.[Class] in ({classList})").ToList();
 
             list = list.OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
 

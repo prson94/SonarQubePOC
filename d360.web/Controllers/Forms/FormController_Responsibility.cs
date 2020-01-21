@@ -499,7 +499,19 @@ namespace d360.web.Controllers
             if (ignoreObjects.Count > 0)
                 ignoreObjectTypeSQL = $" AND A.Object not in ({string.Join(",", ignoreObjects.Select(o => "'" + o + "'"))})";
 
-            var AllocationOptions = Company.Query<dynamic>($@"
+            string fusionJoinSql = "",
+                   fusionCaseSql = "",
+                   fusionPathSql = "",
+                   classList = "1,2,6,7,8,9";
+            if (Community.IsFusionEnabled())
+            {
+                classList = "1,2,3,4,6,7,8,9";
+                fusionPathSql = "coalesce(FT.Name+ ' / ','') + ";
+                fusionJoinSql = $@" left join FusionAttributeType FA on A.Object = 'FusionAttributeType' and FA.ID = A.ObjectID left join FusionType FT on FT.ID = FA.FusionTypeID ";
+                fusionCaseSql = $@" when 'FusionAttributeType' then 'Fusion Attribute :: ' when 'FusionType' then 'Fusion Type :: ' ";
+            }
+
+var AllocationOptions = Company.Query<dynamic>($@"
 select	cast(0 as bit) as IsUsed,
         A.ID, 
 		A.[Class],
@@ -511,16 +523,12 @@ select	cast(0 as bit) as IsUsed,
 				end
 			when 'TaxonomyType' then 'Model :: '
 			when 'PolicyType' then 'Policy :: '
-			when 'RuleType' then 'Rule :: '
-			when 'FusionAttributeType' then 'Fusion Attribute :: '
-			when 'FusionType' then 'Fusion Type :: '
+			when 'RuleType' then 'Rule :: ' {fusionCaseSql}
 			when 'ReferenceItemType' then 'Reference Item Type :: '
-		end + coalesce(FT.Name+ ' / ','') + P.[Path] as [Path]
+		end + {fusionPathSql}P.[Path] as [Path]
 from	AssetType A
-		cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
-		left join FusionAttributeType FA on A.Object = 'FusionAttributeType' and FA.ID = A.ObjectID
-		left join FusionType FT on FT.ID = FA.FusionTypeID
-where	Class in (1,2,3,4,6,7,8,9) {ignoreObjectTypeSQL}
+		cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P {fusionJoinSql} 
+where	Class in ({classList}) {ignoreObjectTypeSQL}
 order by case Object
 			when 'ArtifactType' then
 				case Class
@@ -529,13 +537,12 @@ order by case Object
 				end
 			when 'TaxonomyType' then 'Model :: '
 			when 'PolicyType' then 'Policy :: '
-			when 'RuleType' then 'Rule :: '
-			when 'FusionAttributeType' then 'Fusion Attribute :: '
-			when 'FusionType' then 'Fusion Type :: '
+			when 'RuleType' then 'Rule :: '  {fusionCaseSql}
 			when 'ReferenceItemType' then 'Reference Item Type :: '
-		end + coalesce(FT.Name+ ' / ','') + P.[Path]
+		end + {fusionPathSql}P.[Path]
 ").ToList();
             var PermissionOptions = Permission.DeleteAsset.GetList();
+
 
             return new JsonNetResult
             {
