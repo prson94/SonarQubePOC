@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.queue;
+using d360.core.enums;
 using d360.core.resources;
 using Dapper;
 using Elasticsearch.Net;
@@ -177,6 +178,15 @@ namespace d360.extensions.search
             "            \"type\": \"keyword\"," +
             "            \"index\": false" +
             "          }," +
+            "          \"NoReadResourceID\": { " +
+            "            \"type\": \"keyword\"" +
+            "          }," +
+            "          \"NoReadGroupID\": { " +
+            "            \"type\": \"keyword\"" +
+            "          }," +
+            "          \"NoReadOrgID\": { " +
+            "            \"type\": \"keyword\"" +
+            "          }," +
             "          \"Data3SixtyUser\": {" +
             "            \"type\": \"boolean\"" +
             "          }" +
@@ -231,16 +241,55 @@ namespace d360.extensions.search
             " inner join [dbo].AssetDisplayValue ObjectAdv on ObjectAdv.AssetID = ObjectAsset.ID " +
             " inner join AssetType ArtType on ObjectAsset.AssetTypeID = ArtType.ID";
 
+        //This responsibility query is used by both the indexer and and databasetaskprocessor jobs so we maintain the core of the query in one place
+        public static string GetAssetResponsibilityQuery()
+        {
+            string sql = $@"SELECT a.id as AssetID, 
+                              rresource.SecurityAsset,
+                              rresource.SecurityAssetID
+                        FROM ResponsibilityTypeRelationRule r
+                        INNER JOIN ResponsibilityTypeRelation rrel ON (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID
+                                                                      AND r.[Object] = rrel.[ObjectType]
+                                                                      AND r.ObjectID = rrel.ObjectID)
+                        INNER JOIN [ResponsibilityRuleResultAsset] rasset ON (r.ID = rasset.RuleID)
+                        INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource ON (r.ID = rresource.RuleID)
+                        INNER JOIN Asset a ON A.AssetTypeID = rasset.AssetTypeID
+                        WHERE rrel.PermissionsBitMask & {(int)Permission.ReadAsset} = 0
+                         AND rasset.AssetID = 0
+                        UNION ALL
+                        SELECT rasset.AssetID,
+                              rresource.SecurityAsset,
+                              rresource.SecurityAssetID
+                        FROM ResponsibilityTypeRelationRule rtrr
+                        INNER JOIN ResponsibilityTypeRelation rrel ON (rtrr.ResponsibilityTypeID = rrel.ResponsibilityTypeID
+                                                                      AND rtrr.[Object] = rrel.[ObjectType]
+                                                                      AND rtrr.ObjectID = rrel.ObjectID)
+                        INNER JOIN [ResponsibilityRuleResultAsset] rasset ON (rtrr.ID = rasset.RuleID)
+                        INNER JOIN [ResponsibilityRuleResultSecurityAsset] rresource ON (rtrr.ID = rresource.RuleID)
+                        WHERE rrel.PermissionsBitMask & {(int)Permission.ReadAsset} = 0
+                         AND rasset.AssetTypeID = 0";
+                return sql;
+        }
+
         protected string SearchServerUrl { get; set; }
 
         public int? IndexFieldLimit { get; set; }
 
         #region Utility methods
 
-        private string CreateDocument(IndexObjectModel item, Boolean forUpdate = false)
+        private static readonly Dictionary<string, string> NoReadMapping =
+        new Dictionary<string, string>
+        {
+            { "R", "NoReadResourceID" },
+            { "G", "NoReadGroupID" },
+            { "O", "NoReadOrgID" },
+        };
+
+        private string CreateDocument(IndexObjectModel item, bool forUpdate = false)
         {
             StringBuilder sb = new StringBuilder();
             Dictionary<string, string> d3sFields = new Dictionary<string, string>();
+            Dictionary<string, string> d3sNoRead = new Dictionary<string, string>();
             Dictionary<string, string> dynamicFields = item.Fields.Where(i => !string.IsNullOrEmpty(i.Value)).ToDictionary(i => i.Key, i => i.Value);
             string[] tags = new string[] { };
             if (item.Tags != null && item.Tags.Any())
@@ -254,6 +303,17 @@ namespace d360.extensions.search
             if (item.AssetTypeUid.HasValue && item.AssetTypeUid != Guid.Empty)
                 d3sFields.Add("AssetTypeUid", item.AssetTypeUid.ToString());
 
+            foreach (KeyValuePair<string, string> entry in NoReadMapping)
+            {
+                string val = "[";
+                if (item.NoRead != null && item.NoRead.ContainsKey(entry.Key) && item.NoRead[entry.Key].Count > 0)
+                {
+                    val += string.Join(",", item.NoRead[entry.Key].ToArray());
+                }
+                val += "]";
+                d3sNoRead.Add(entry.Value, val);
+            }
+
             //For users move Data3SixtyUser from Fields to d3sFields
             if (item.Category == "Resource" && item.AssetType == "User" && dynamicFields.ContainsKey("Data3SixtyUser"))
             {
@@ -263,6 +323,8 @@ namespace d360.extensions.search
 
             sb.Append("{\"" + D3S_FIELD + "\": {");
             sb.Append(string.Join(",", d3sFields.Select(i => "\"" + i.Key + "\": \"" + EscapeValueForDoc(i.Value) + "\"").ToArray()));
+            if(d3sNoRead.Count > 0)
+                sb.Append("," + string.Join(",", d3sNoRead.Select(i => "\"" + i.Key + "\": " + EscapeValueForDoc(i.Value) ).ToArray()));
 
             //In case of update, so if there are no tags, we need to be explicit, so they will be removed (if any) on the document
             if (forUpdate || tags.Count() > 0)
@@ -805,13 +867,16 @@ namespace d360.extensions.search
             Nest.Field fldCategory = new Nest.Field(D3S_FIELD_PREFIX + "Category");
             Nest.Field fldAssetType = new Nest.Field(D3S_FIELD_PREFIX + "AssetType");
             Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
+            Nest.Field fldNoReadResource = new Nest.Field(D3S_FIELD_PREFIX + "NoReadResourceID");
+            Nest.Field fldNoReadGroup = new Nest.Field(D3S_FIELD_PREFIX + "NoReadGroupID");
+            Nest.Field fldNoReadOrg = new Nest.Field(D3S_FIELD_PREFIX + "NoReadOrgID");
 
             string tagSearch = "";
             bool tagMust = false;
             List<QueryContainer> shouldQueries = new List<QueryContainer>();
             List<QueryContainer> mustQueries = new List<QueryContainer>();
-            List<QueryContainer> filterQueries = new List<QueryContainer>();
-            List<QueryContainer> mustNotQueries = new List<QueryContainer>();
+            List<QueryContainer> filterMustQueries = new List<QueryContainer>();
+            List<QueryContainer> filterMustNotQueries = new List<QueryContainer>();
 
             List<Nest.Field> mainFields = new List<Nest.Field>
             {
@@ -978,7 +1043,7 @@ namespace d360.extensions.search
 
                 if (terms.Count() > 0)
                 {
-                    filterQueries.Add(new TermsQuery
+                    filterMustQueries.Add(new TermsQuery
                     {
                         Field = new Nest.Field(fieldname),
                         Terms = terms.ToArray()
@@ -987,9 +1052,24 @@ namespace d360.extensions.search
             }
 
             //Apply limitations
-            if(queryLimit.HideData3SixtyUsers)
+            filterMustNotQueries.Add(new TermQuery
             {
-                mustNotQueries.Add(new BoolQuery {
+                Field = fldNoReadResource,
+                Value = queryLimit.ResourceID
+            });
+            filterMustNotQueries.Add(new TermsQuery
+            {
+                Field = fldNoReadGroup,
+                Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
+            });
+            filterMustNotQueries.Add(new TermsQuery
+            {
+                Field = fldNoReadOrg,
+                Terms = queryLimit.ResourceOrgIDs.Select(i => i.ToString())
+            });
+            if (queryLimit.HideData3SixtyUsers)
+            {
+                filterMustNotQueries.Add(new BoolQuery {
                     Must = new QueryContainer[] {
                             new TermQuery {
                                 Field = fldCategory,
@@ -1018,7 +1098,7 @@ namespace d360.extensions.search
                         fieldname = DYNAMIC_FIELD_PREFIX + limitAggFilter.Field;
                         break;
                 }
-                mustNotQueries.Add(new TermsQuery
+                filterMustNotQueries.Add(new TermsQuery
                 {
                     Field = new Nest.Field(fieldname),
                     Terms = limitAggFilter.Values
@@ -1036,9 +1116,9 @@ namespace d360.extensions.search
                             MinimumShouldMatch = 1
                         }
                     },
-                    MustNot = mustNotQueries,
                     Filter = new QueryContainer[] { new BoolQuery {
-                        Must = filterQueries
+                        Must = filterMustQueries,
+                        MustNot = filterMustNotQueries
                     } }
                 },
                 Highlight = new Highlight
@@ -1206,7 +1286,7 @@ namespace d360.extensions.search
                  * queried using 'match' and the last word will be 'prefix'
                  * For searching tags, an asterisk is appended and a regular 'query_string' query is used 
                  */
-                Queue<string> parts = new Queue<string>(phrase.ToLower().Split(' '));
+            Queue<string> parts = new Queue<string>(phrase.ToLower().Split(' '));
                 tagSearch = EscapeSpecialCharacters(phrase.ToLower()) + (!phrase.EndsWith("*") ? "*" : "");
 
                 while (parts.Count > 1)
