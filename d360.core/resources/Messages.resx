@@ -189,4 +189,7 @@
   <data name="Error_Item_FieldJsonAttributeReferences" xml:space="preserve">
     <value>One or more JSON Attribute fields reference the field you are attempting to remove.</value>
   </data>
+  <data name="Error_Item_FieldRelationDuplicate" xml:space="preserve">
+    <value>A field type using the specified relationship type has already been defined. Only one relationship field type per relationship type is supported.</value>
+  </data>
 </root>

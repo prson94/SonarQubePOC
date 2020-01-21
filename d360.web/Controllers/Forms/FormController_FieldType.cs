@@ -741,7 +741,7 @@ namespace d360.web.Controllers
         }
 
         [Route("FieldType_Lookups"), NonNullableParameters]
-        public JsonNetResult FieldType_Lookups(SystemObjects type, int id, bool isNg = false)
+        public JsonNetResult FieldType_Lookups(SystemObjects type, int id, int fieldtypeid, bool isNg = false)
         {
             #region Load static lists
 
@@ -779,10 +779,19 @@ namespace d360.web.Controllers
                 (i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
             ).ToList();
 
+            IEnumerable<int> LookupObjectIDs = Company.Query<int>("select distinct LookupObjectID from [FieldType] ft " +
+                                                                  "where (Object = @objectType and ObjectID = @objectid) " +
+                                                                  "and (LookupObjectID is not null) and Type = 'Relationship' " +
+                                                                  "and not exists (select 1 from [FieldType] ft2 " +
+                                                                  "                where ft2.id = @ffieldtypeid" +
+                                                                  "                and   ft2.LookupObjectID = ft.LookupObjectID" +
+                                                                  "                and   ft2.LookupObjectID is not null)", new { objectType = sType, objectid = id, ffieldtypeid = fieldtypeid });
+
             var Field_Relationships = allRelationships
-                .Where(x => x.PredicateType != PredicateType.InterTypeHierarchy 
+                .Where(x => x.PredicateType != PredicateType.InterTypeHierarchy
                             && x.Object != SystemObjects.IntersectType.ToString()
-                            && x.Subject != SystemObjects.IntersectType.ToString())
+                            && x.Subject != SystemObjects.IntersectType.ToString()
+                            && !LookupObjectIDs.Contains(x.ID))
                 .Select(i => new
                 {
                     title = ((i.Subject == sType && i.SubjectID == id) ?
