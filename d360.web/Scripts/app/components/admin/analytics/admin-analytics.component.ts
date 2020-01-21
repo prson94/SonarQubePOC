@@ -8,9 +8,9 @@ import { MessagesObservableService } from '../../../services/messages-observable
 @Component({
     selector: 'd3s-admin-analytics-component',
     template: ` <div class="row">
-                    <div class="col s12">
+                    <div class="col l3 m5 s12">
                         <div class="tile tile-detail">
-                            <d3s-admin-metric-asset-type-list></d3s-admin-metric-asset-type-list>
+                            <d3s-admin-metric-asset-type-list (selectionChange)="changeAssetType($event)"></d3s-admin-metric-asset-type-list>
                         </div>
                     </div>
                 <div>

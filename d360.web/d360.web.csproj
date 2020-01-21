@@ -1087,6 +1087,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields.component.ts" />
