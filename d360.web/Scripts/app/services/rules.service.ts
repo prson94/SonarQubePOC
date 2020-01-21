@@ -147,8 +147,8 @@ export class RulesService extends BaseObservableService {
         ).subscribe();
     }
 
-    downloadFile(data: any) {
-        var filename = `Rule Data ${new Date().toDateString()}.xlsx`;
+    downloadFile(data: any, name: string = 'Rule Data') {
+        var filename = `${name} list ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob(data, filename);
         }
@@ -179,10 +179,10 @@ export class RulesService extends BaseObservableService {
             return this.putDynamic(this.http, 'ruleimplementation', implementation);
     }
 
-    exportRules(uid: string){
+    exportRules(uid: string,  typeName: string){
         this.http.get(`api/v2/scoring/ExportRules/${uid}`, { responseType: "blob" }).pipe(
             map((response) => {
-                this.downloadFile(response);
+                this.downloadFile(response, );
             }),
             catchError(err => this.handleError(err))
         ).subscribe();

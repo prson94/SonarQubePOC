@@ -158,7 +158,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     private exportRules() {
-        this.rulesService.exportRules(this.ruleType.AssetTypeUID);
+        this.rulesService.exportRules(this.ruleType.AssetTypeUID, this.ruleType.Name);
     }
 
     private loadRules() {
