@@ -4930,7 +4930,7 @@ where   ER.ExecutionID = @ExecutionID
 
             Connection.Execute(@"Update api.ExecutionAssetCrossReference
                                     Set Success=0,
-                                    Message='Does not contain required fields.' 
+                                    Message='ExternalID is required.' 
                                     Where ExecutionID = @executionID and Success is null and
                                     ( ExternalID is null or TRIM(ExternalID) ='') ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
