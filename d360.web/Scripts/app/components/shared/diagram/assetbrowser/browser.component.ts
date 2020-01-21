@@ -57,7 +57,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     DiagramObjectType = DiagramObjectType;
 
     private requestModel: AssetBrowserApiHopRequestModel;
-    private responseModel: AssetBrowserModel = new AssetBrowserModel(); 
+    private responseModel: AssetBrowserModel = new AssetBrowserModel();
     private revealedKeys: string[] = [];
     private originalAssetUid: string;
     private menuItems: MenuItem[] = [];
@@ -235,6 +235,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.isAddRelationshipWindowVisible = false;
                 this.isInfoWindowVisible = false;
                 this.isFilterWindowVisible = !this.isFilterWindowVisible;
+                localStorage.setItem("isFilterWindowVisible", JSON.stringify(this.isFilterWindowVisible));
                 break;
             case 'info':
                 this.isAddRelationshipWindowVisible = false;
@@ -256,7 +257,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private setFilterWindow(options: FilterSelectionsModel) {
         this.filterSelectionsModel = options;
-
         //#region Asset Types
 
         var assetTypes: TreeNode[] = new Array();
@@ -270,12 +270,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.filterSelectionsModel.AssetTypeOptions.forEach(at => {
             if (classIDs.findIndex(c => c == at.ClassId) > -1) {
 
-                let thisClassNode = assetTypes.find(c => c.data == 'C' +at.ClassId);
+                let thisClassNode = assetTypes.find(c => c.data == 'C' + at.ClassId);
                 let nodeExists: boolean = (thisClassNode != undefined);
                 if (!nodeExists) {
                     thisClassNode = {
                         label: at.Class,
-                        data: 'C'+at.ClassId,
+                        data: 'C' + at.ClassId,
                         children: []
                     };
                 }
@@ -298,12 +298,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //#region Predicates
 
         this.filterSelectionsModel.PredicateOptions.forEach(p => {
-            let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == 'F' +p.TypeId);
+            let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == 'F' + p.TypeId);
             let nodeExists: boolean = (thisPredicateTypeNode != undefined);
             if (!nodeExists) {
                 thisPredicateTypeNode = {
                     label: p.Type,
-                    data: 'F'+p.TypeId,
+                    data: 'F' + p.TypeId,
                     children: []
                 };
             }
@@ -320,19 +320,25 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.selectedFilterPredicates = this.getTreeNodeSelectionNodes(this.filterModel.SelectedPredicates, this.filterSelectionsModel.FilterPredicates);
 
         //#endregion
-
         this.filtersLoading = false;
         this.panelButtonClick('filter');
         this.cdRef.markForCheck();
     }
 
+    private loadFilterOptions(callback: Function = null) {
+        this.filtersLoading = true;
+        this.browserService
+            .getFilterOptions()
+            .subscribe(options => {
+                this.setFilterWindow(options);
+                if (callback)
+                    callback();
+            });
+    }
 
     private filterButtonClick(e) {
         if (this.filterSelectionsModel.AssetTypeOptions.length == 0) {
-            this.filtersLoading = true;
-            this.browserService
-                .getFilterOptions()
-                .subscribe(options => this.setFilterWindow(options));
+            this.loadFilterOptions();
         }
         else {
             this.filtersLoading = false;
@@ -493,11 +499,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (showBadge) {
                     // Check to see if we should ignore this predicate based on previouly revealed badges.
                     if (topLevelNode.ignoredPredicates.findIndex(v => { return v == rC.predicateUid; }) > -1) {
-                        showBadge = false; 
+                        showBadge = false;
                     }
                 }
 
-                this.diagram.model.setDataProperty(rC, "showBadge", showBadge); 
+                this.diagram.model.setDataProperty(rC, "showBadge", showBadge);
             });
             //#endregion
         });
@@ -679,7 +685,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.diagram.nodeTemplateMap.add("MoreData", this.createMoreDataNode());
         this.diagram.nodeTemplateMap.add("HiddenData", this.createHiddenDataNode());
-        
+
         this.diagram.groupTemplateMap.add("Owners", this.createOwnersGroup());
         this.diagram.nodeTemplateMap.add("Owner", this.createOwnerNode());
         this.diagram.nodeTemplate = this.createListItemNode();
@@ -966,7 +972,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private findSubGraph(startKey: string, direction: AssetBrowserApiHopDirection): AssetBrowserTranslation {
         let subgraph = new AssetBrowserTranslation();
 
-        subgraph.nodes = []; 
+        subgraph.nodes = [];
         subgraph.links = [];
 
         let node = this.diagram.findNodeForKey(startKey);
@@ -1096,30 +1102,118 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#region session storage
 
-    private saveState(key: string, data: any) {
-        let dataString = JSON.stringify(data);
-        this.storage.setItem(key, dataString);
-    }
-
-    private loadState(key: string): any {
-        let dataString = this.storage.getItem(key);
-        if (dataString) {
-            return JSON.parse(dataString);
-        }
-        return null;
-    }
-
     private saveFilter() {
-        this.saveState(this.filterKey, this.filterModel);
+        this.setFiltersToStorage();
     }
 
     private loadFilter() {
-        let m = this.loadState(this.filterKey);
-        if (m == null)
-            this.filterModel = new AssetBrowserFilterModel();
-        else
-            this.filterModel = m;
+        this.loadFiltersFromStorage();
     }
+
+    private setFiltersToStorage() {
+        localStorage.setItem("filterModel", JSON.stringify(this.filterModel));
+        localStorage.setItem("isFilterWindowVisible", JSON.stringify(this.isFilterWindowVisible));
+
+        let expandedObjects: string[] = [];
+
+        this.filterSelectionsModel.FilterPredicates.forEach(function (node) {
+            if (node.expanded == true) {
+                expandedObjects.push(node.label + node.data);
+            }
+        });
+
+        this.filterSelectionsModel.FilterAssetTypes.forEach(function (node) {
+            if (node.expanded) {
+                expandedObjects.push(node.label + node.data);
+            }
+        });
+
+
+        this.selectedFilterPredicates.forEach(node => {
+            if (node.children) {
+                node.children.forEach(ch => {
+                    ch.parent = null;
+                });
+            }
+        })
+
+        localStorage.setItem("expandedObjects", JSON.stringify(expandedObjects));
+    }
+
+    private loadFiltersFromStorage() {
+
+        if (JSON.parse(localStorage.getItem("isFilterWindowVisible")) === true) {
+            this.loadFilterOptions(this.applyFilters.bind(this));
+        }
+    }
+
+    private applyFilters() {
+        var filterModel = localStorage.getItem("filterModel");
+
+        if (filterModel)
+            this.filterModel = JSON.parse(filterModel);
+
+        let expandedObjects: string[] = JSON.parse(localStorage.getItem("expandedObjects"));
+        this.filterSelectionsModel.FilterPredicates.forEach(function (node) {
+            var name = node.label + node.data;
+            if (expandedObjects.some(x => x == name)) {
+                node.expanded = true;
+            }
+        });
+
+        this.filterSelectionsModel.FilterAssetTypes.forEach(function (node) {
+            if (expandedObjects.some(x => x == (node.label + node.data))) {
+                node.expanded = true;
+            }
+        });
+
+
+        this.filterSelectionsModel.FilterPredicates.forEach(function (node) {
+        });
+
+        this.selectedFilterPredicates = this.getTreeNodeSelectionNodes(this.filterModel.SelectedPredicates, this.filterSelectionsModel.FilterPredicates);
+        this.selectedFilterAssetTypes = this.getTreeNodeSelectionNodes(this.filterModel.SelectedAssetTypes, this.filterSelectionsModel.FilterAssetTypes);
+
+        var parents = [];
+        this.selectedFilterPredicates.forEach(node => {
+            var item = this.getNodeByLabelAndData(this.filterSelectionsModel.FilterPredicates, node.label, node.data);
+
+            if (item)
+                parents.push(item);
+        });
+        parents.forEach(x => this.selectedFilterPredicates.push(x));
+
+        var parents = [];
+        this.selectedFilterAssetTypes.forEach(node => {
+            var item = this.getNodeByLabelAndData(this.filterSelectionsModel.FilterAssetTypes, node.label, node.data);
+
+            if (item)
+                parents.push(item);
+        });
+        parents.forEach(x => this.selectedFilterAssetTypes.push(x));
+
+
+        this.cdRef.markForCheck();
+    }
+
+    private getNodeByLabelAndData(arr: TreeNode[], label: string, data: any): TreeNode {
+        var ret: TreeNode;
+        arr.forEach(node => {
+            if (node.label == label && node.data == data)
+                ret = node.parent;
+
+            if (node.children) {
+                node.children.forEach(cnode => {
+                    if (cnode.label == label && cnode.data == data) {
+                        ret = node;
+                    }
+                })
+            }
+
+        })
+        return ret;
+    }
+
 
     //#endregion
 
@@ -1239,10 +1333,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.saveFilter();
         this.isLoading = true;
         this.loadingText = "Determining links and meaning...";
-        let assetData = this.browserService.convertResponseModel(this.responseModel, this.filterModel.AncestryMode); 
+        let assetData = this.browserService.convertResponseModel(this.responseModel, this.filterModel.AncestryMode);
         let assetTranslation: AssetBrowserTranslation = this.browserService.translateAssetsResponseModel(assetData);
         this.parseData(assetTranslation);
-         
+
         this.resizeDiagram();
         this.diagram.zoomToFit();
         this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
@@ -1287,6 +1381,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private filterPredicateChange(e) {
+
         this.filterModel.SelectedPredicates = this.getTreeNodeSelectionKeys(e);
         this.saveFilter();
         this.hideDeselectedPredicates();
@@ -1386,7 +1481,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    private unhide(e, obj) { 
+    private unhide(e, obj) {
         if (obj != null && obj.part != null && obj.part.data != null) {
             let node: AssetBrowserTranslationNode = obj.part.data;
             this.unhideNode(node);
@@ -1476,8 +1571,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         let asset = new AssetBrowserApiHopAssetRequestModel();
                         asset.Uid = g.data.assetUid;
                         asset.Key = g.data.key
-                        requestModel.Assets.push(asset); 
-                         
+                        requestModel.Assets.push(asset);
+
                         //add immediate parent
                         //let p = this.diagram.model.nodeDataArray.find(n => n.key == g.data.group);
                         //let a = new AssetBrowserApiHopAssetRequestModel();
@@ -1511,7 +1606,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     let translationModel: AssetBrowserTranslation = this.browserService.translateAssetsResponseModel(response);
                     translationModel.nodes.forEach(n => {
                         // Transfer ignored predicates to the newly created nodes.
-                        existingIgnoredPredicates.forEach(ep => { 
+                        existingIgnoredPredicates.forEach(ep => {
                             n.ignoredPredicates.push(ep);
                         });
                         n.ignoredPredicates.push(relation.predicateUid);
@@ -1651,7 +1746,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         {
                             row: 0,
                             margin: 2,
-                            alignment: go.Spot.Center, 
+                            alignment: go.Spot.Center,
                             editable: false,
                             font: this.fontOwnerBadge,
                             stroke: this.fontOwnerBadgeCountForeColor
@@ -1748,7 +1843,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: (e, obj) => this.hide(e, obj, AssetBrowserDirection.Forward) }
+                { click: (e, obj) => this.hide(e, obj, AssetBrowserApiHopDirection.Forward) }
             )//,
             //this.g(
             //    "ContextMenuButton",
@@ -1760,7 +1855,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private assetUidRedirect: string = '';
     private navigateTo(e, obj) {
-        //this.router.navigate([SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, obj.part.data.assetUid]);
+        this.setFiltersToStorage();
         this.assetUidRedirect = obj.part.data.assetUid;
         this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
             this.router.navigate([SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, 'browser', this.assetUidRedirect]);
@@ -1860,12 +1955,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.Shape,
                         "Rectangle",
                         { strokeWidth: 2, isPanelMain: true },
-                        new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)), 
+                        new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)),
                         new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
                     ),
                     this.g(go.Panel, "Vertical",
                         this.g(
-                            go.Panel, 
+                            go.Panel,
                             "Horizontal",
                             // button next to TextBlock
                             { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
@@ -2135,7 +2230,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             go.Panel,
                             "Horizontal",
                             // button next to TextBlock
-                            { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top, background: this.fontOwnerBadgeLabelBackColor }, 
+                            { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top, background: this.fontOwnerBadgeLabelBackColor },
                             this.g(
                                 "SubGraphExpanderButton",
                                 { alignment: go.Spot.Right, margin: 5 }
@@ -2149,7 +2244,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     alignment: go.Spot.Center,
                                     editable: false,
                                     font: this.fontLabelIcon,
-                                    stroke: '#000000' 
+                                    stroke: '#000000'
                                 },
                                 new go.Binding("text", "icon"),
                                 new go.Binding("visible", "showIcon")
@@ -2211,7 +2306,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("background", "isHighlighted", (h) => (h ? this.selectionPathHighlightColor : this.leafBackColor)).ofObject(),
                 this.g(
                     go.Shape,
-                    { width: 10, height: 0, stroke: "transparent" } 
+                    { width: 10, height: 0, stroke: "transparent" }
                 ),
                 //icon
                 this.g(
