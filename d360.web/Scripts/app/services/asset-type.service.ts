@@ -72,6 +72,17 @@ export class AssetTypeService extends BaseObservableService {
             );
     }
 
+    GetAssetTypeByUid(uid: string): Observable<AssetTypeApiModel & ErrorResponse> {
+        return this
+            .http
+            .get(`api/v2/assets/types?assetTypeUid=${uid}`)
+            .pipe(
+            map((response) => { return <AssetTypeApiModel>response[0] }),
+                catchError(err => this.handleError(err))
+            );
+        //api/v2/assets/types?assetTypeUid=d26936d9-519d-476c-aa6d-0da4fa170052
+    }
+
 
     public postAssetType(model: AssetType)
         : Observable<ApiResult & ErrorResponse> {

@@ -26,7 +26,7 @@ export class AdminBaseComponent extends BaseComponent {
         this.breadcrumbsService = headerBreadcrumbService;
     }
 
-    setCommonItems() {
+    setCommonItems(showAreaAsType: boolean = false, headerOverride: string = null) {
 
         this.area = ['Business Assets','Technical Assets','Artifacts', 'Attributes', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
             .indexOf(this.areaName) !== -1 ? 'Configuration' : "Administration";
@@ -36,11 +36,11 @@ export class AdminBaseComponent extends BaseComponent {
         if (this.adminHeading)
             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.adminHeading));     
         
-        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink));
+        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.areaName, this.areaLink, null, null, null, null, null, showAreaAsType));
         this.setBrowserTitle(this.titleService, this.areaName);
         this.secondaryNavService.clearItems();
         this.secondaryNavService.clearButtons();
-        this.secondaryNavService.setCurrentArea(this.areaName, this.area === 'Configuration' ? 'fa-sliders' : "fa-cog", this.tabTitle);
+        this.secondaryNavService.setCurrentArea(headerOverride ? headerOverride : this.areaName, this.area === 'Configuration' ? 'fa-sliders' : "fa-cog", this.tabTitle);
         this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(null,null,null,null,true));
         this.secondaryNavService.showHeader(true);
     }       
