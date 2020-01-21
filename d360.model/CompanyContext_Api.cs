@@ -1027,7 +1027,15 @@ from	api.ExecutionField T
                     }
                     else if (ot == "ReferenceItemType" && fieldName == "Code")
                     {
-                        success = true;
+                        if((fieldValue ?? "").Length > 250)
+                        {
+                            errorMessages.Add($"The Code field must be 250 characters or less in length.");
+                            success = false;
+                        }
+                        else
+                        {
+                            success = true;
+                        }
                     }
                     else if (ot == "RuleType" && (fieldName == "Threshold" || fieldName == "Status" || fieldName == "Dimension"))
                     {
@@ -4898,17 +4906,50 @@ where   ER.ExecutionID = @ExecutionID
         {
             Connection.Execute(@"Update api.ExecutionAssetCrossReference
                                     Set Success=0,
+                                    Message='Does not contain valid Uid.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    (Uid is null or  UID ='00000000-0000-0000-0000-000000000000' ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+
+            Connection.Execute(@"Update api.ExecutionAssetCrossReference
+                                    Set Success=0,
+                                    Message='DataSource is required.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    ( DataSource is null or Trim(DataSource) ='') ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+
+            Connection.Execute(@"Update api.ExecutionAssetCrossReference
+                                    Set Success=0,
+                                    Message='Type is required.' 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    ([Type] is null  or TRIM([Type]) = '' ) ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+
+            Connection.Execute(@"Update api.ExecutionAssetCrossReference
+                                    Set Success=0,
                                     Message='Does not contain required fields.' 
-                                    Where ExecutionID = @executionID and 
+                                    Where ExecutionID = @executionID and Success is null and
+                                    ( ExternalID is null or TRIM(ExternalID) ='') ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
+
+
+            Connection.Execute(@"Update api.ExecutionAssetCrossReference
+                                    Set Success=0,
+                                    Message='Does not contain required fields.' 
+                                    Where ExecutionID = @executionID and Success is null and
                                     (Uid is null or DataSource is null or [Type] is null or ExternalID is null
                                    or UID ='00000000-0000-0000-0000-000000000000' or Trim(DataSource) ='' or TRIM([Type]) = '' or TRIM(ExternalID) ='') ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
+
 
             Connection.Execute(@"
                         Update  ECR
                         SET Success=0,
                         Message='Asset cross reference already exists'
                         from api.ExecutionAssetCrossReference ECR
-                        Where ECR.ExecutionID = @executionID and exists (Select 1 from AssetCrossReference where UID=ECR.UID and DataSource= ECR.DataSource and
+                        Where ECR.ExecutionID = @executionID and Success is null and exists (Select 1 from AssetCrossReference where UID=ECR.UID and DataSource= ECR.DataSource and
                         [Type]=ECR.[Type] and ExternalID =ECR.ExternalID)",
                         new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 
@@ -4960,9 +5001,9 @@ where   ER.ExecutionID = @ExecutionID
                 row["ExecutionID"] = execution.ExecutionID;
                 row["ItemNumber"] = i++;
                 row["uid"] = item.uid;
-                row["DataSource"] = item.DataSource;
-                row["Type"] = item.Type;
-                row["ExternalID"] = item.ExternalID;
+                row["DataSource"] = item.DataSource != null ? item.DataSource.Trim() : item.DataSource;
+                row["Type"] = item.Type != null ? item.Type.Trim() : item.Type;
+                row["ExternalID"] = item.ExternalID != null ? item.ExternalID.Trim() : item.ExternalID;
                 row["FieldHash"] = item.FieldHash;
 
                 table.Rows.Add(row);

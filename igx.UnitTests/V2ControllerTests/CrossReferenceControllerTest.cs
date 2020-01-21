@@ -134,25 +134,25 @@ namespace igx.UnitTests.V2ControllerTests
             var xRef = new AssetCrossReference();
             var xRefList = new List<AssetCrossReference>() { new AssetCrossReference() { uid = Guid.Parse(DataConstants.ValidGUID) } };
             xRefList.Add(xRef);
-            var res = new List<AssetCrossReference>();
+
+            IHttpActionResult actionResult;
+            Task<HttpResponseMessage> responseMessageResult;
+
             try
             {
-                xRef.uid = Guid.Parse(DataConstants.InvalidGUID);
-                res = await crossReferencesController.PostBulk(xRefList);
-                Assert.True(false, XMsg.ExceptionExpected);
+                actionResult = await crossReferencesController.PostBulk(xRefList);
+                responseMessageResult = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
+                var str = responseMessageResult.Result.Content.ReadAsStringAsync().Result;
+
+                Assert.True(responseMessageResult.Result.IsSuccessStatusCode);
+                AssertJSON.True<List<AssetCrossReferenceResult>>(str);
+
             }
             catch (HttpResponseException ex)
             {
                 Assert.True(ex.Response.StatusCode == System.Net.HttpStatusCode.Conflict, XMsg.BadResponseCode);
             }
 
-
-            xRef.uid = Guid.Parse(DataConstants.ValidGUID);
-            res = await crossReferencesController.PostBulk(xRefList);
-
-
-            Assert.True(res != null, XMsg.NoContent);
-            Assert.True(res.Count == xRefList.Count, "Invalid count!");
         }
         [Fact]
         public async void PutByParams()

@@ -70,7 +70,18 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if ((changes['objectID'] || changes['objectType'] || changes['intersectTypeID'] || changes['targetTypeID']) && (this.objectID != null && this.objectType != null && this.targetType != null && this.targetTypeID != null && this.intersectTypeID != null)) {
+        if ((changes['objectID']
+            || changes['objectType']
+            || changes['intersectTypeID']
+            || changes['targetTypeID']
+            || changes['isSubject'])
+
+            && (this.objectID != null
+                && this.objectType != null
+                && this.targetType != null
+                && this.targetTypeID != null
+                && this.intersectTypeID != null
+                && this.isSubject != null)) {
             this.load();
             this.showTechnical = false;
         }
@@ -105,7 +116,14 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     getData(forceEditorOpen: boolean = false) {
         this.isLoading = true;
-        this.relationshipsService.getObjectRelationships(this.objectType, this.objectID, this.targetType, this.targetTypeID, this.intersectTypeID)
+        this.relationshipsService.getObjectRelationships(
+            this.objectType,
+            this.objectID,
+            this.targetType,
+            this.targetTypeID,
+            this.intersectTypeID,
+            false,
+            !this.isSubject)
             .subscribe(result => {
                 this.relations = result;
                 this.isLoading = false;
