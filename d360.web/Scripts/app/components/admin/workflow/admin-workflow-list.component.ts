@@ -148,7 +148,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                                 workflowItem.Type = x.Type;
                                 workflowItem.UpdatedOn = x.UpdatedOn;
                                 workflowItem.UpdatedBy = x.UpdatedBy;
-                                workflowItem.Published = x.PublishedVersionUid ? `Verion ${x.PublishedVersion} Published` : `Unpublished`;
+                                workflowItem.Published = x.PublishedVersionUid ? `Version ${x.PublishedVersion} Published` : `Unpublished`;
                                 workflowItem.Uid = x.WorkflowTypeUid;
                                 workflowItems.push(workflowItem);
 

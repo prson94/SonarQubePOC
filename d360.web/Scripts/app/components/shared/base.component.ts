@@ -19,6 +19,7 @@ import { SiteMenuService } from '../../services/site-menu.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { OnDestroy, OnInit } from '@angular/core';
 import { Policy } from '../../models/policy.model';
+import { Router } from '@angular/router';
 
 declare var CompanySettings;
 
@@ -648,15 +649,7 @@ export class BaseComponent {
         return hasValue;
     }
 
-    private setLoadedKey(_key: string) {
-        localStorage.setItem('loadedNavItem', _key);
-    }
-    private invalidateKey() {
-        localStorage.setItem('loadedNavItem', '{"AssetId":"","AssetTypeIdb":"","Uid":"","Object":"","ObjectId":""}');
-    }
-    private getLoadedKey(): string {
-        return localStorage.getItem('loadedNavItem');
-    }
+
 
     buildSecondaryNavigationForAssetID(assetId: number, object: string) {
         this.buildSecondaryNavigation(null, null, object, assetId);
@@ -667,14 +660,14 @@ export class BaseComponent {
     }
 
     private isSidebarLoadedForCurrentObject(loadData: SecondaryNavPostModel): boolean {
-
         //this is fullpage refresh, invalidate key to recreate navigation
         if (!this.secondaryNavService["isSidebarCreated"]) {
-            this.invalidateKey();
+            this.secondaryNavService.invalidateKey();
             return false;
         }
 
-        var currentData = JSON.parse(this.getLoadedKey());
+
+        var currentData = JSON.parse(this.secondaryNavService.getLoadedKey());
         if (loadData.ObjectType == currentData.Object && loadData.ObjectId == currentData.ObjectId)
             return true;
 
@@ -726,7 +719,7 @@ export class BaseComponent {
             this.objectID = r.ObjectID;
 
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
-            this.setLoadedKey(_key);
+            this.secondaryNavService.setLoadedKey(_key);
 
             this.clearSidebar();
             this.breadcrumbsService.clearBreadcrumbs();

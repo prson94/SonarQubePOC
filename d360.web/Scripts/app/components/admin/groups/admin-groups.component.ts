@@ -81,7 +81,10 @@ export class AdminGroupsComponent extends AdminBaseComponent {
     }
 
     errorDelete(e: any) {
-        this.messagesService.showError('Error', 'An error occurred');
+        if (e && e.result && e.result.type === "error") 
+            this.messagesService.showError('Error', e.result.message);
+        else
+            this.messagesService.showError('Error', 'An error occurred');
         this.formMode = FormMode.Default;
         this.load();
     }
