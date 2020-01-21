@@ -132,7 +132,7 @@ namespace d360.web.Controllers.V2
 
                 if (alloc != null && alloc.State == State.Active)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"Active allocation with same configuration already exists.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"Score Allocation already exists.");
                 }
 
                 AllocationApiGetModel allocation = ScoringRepository.PostAllocation(model, ref alloc);
@@ -200,7 +200,7 @@ namespace d360.web.Controllers.V2
                 bool hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
                 if (hasActiveMeasures)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Allocation have active measures");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined");
                 }
                 AllocationApiGetModel allocation = ScoringRepository.UpdateAllocation(model, alloc);
 
