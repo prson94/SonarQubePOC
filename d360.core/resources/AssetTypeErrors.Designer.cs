@@ -124,6 +124,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to No valid DisplayFormat provided..
+        /// </summary>
+        public static string InvalidDisplayFormat {
+            get {
+                return ResourceManager.GetString("InvalidDisplayFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid maximum depth. Model level specified must be a value between 1 and 10..
         /// </summary>
         public static string InvalidModelDepth {
@@ -187,7 +196,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Asset type not found based on Uid provided..
+        ///   Looks up a localized string similar to Asset Type not found based on Uid provided..
         /// </summary>
         public static string NotFoundBasedOnUid {
             get {

@@ -40,8 +40,12 @@ namespace d360.core.validators
             if (!SupportedClasses.Contains(model.Class))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.UnsupportedAssetClass);
 
-            if (string.IsNullOrEmpty(model.Name.Trim()))
+            if (string.IsNullOrEmpty(model.Name) || model.Name.Trim() == string.Empty)
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidName} {AssetTypeErrors.CheckRequest}");
+
+            if (string.IsNullOrEmpty(model.DisplayFormat))
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidDisplayFormat} {AssetTypeErrors.CheckRequest}");
+
 
             if (!isInsert)
             {
