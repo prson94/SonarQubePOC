@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="GOV-9133-B">
+  <changeSet author="Puneet Gupta" id="GOV-9133-C">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -15,7 +15,7 @@
 			SET IMPLICIT_TRANSACTIONS OFF
 			begin
 					Declare @Existing_Comp_level tinyint,
-							@Required_Comp_level tinyint = 150,
+							@Required_Comp_level tinyint = 140,
 							@database_name		 nvarchar(128),
 							@sqlstmt			 nvarchar(2000),
 							@Error				 int=0;
