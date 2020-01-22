@@ -1137,6 +1137,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
         })
 
+        console.log(this.filterModel.SelectedPredicates)
+
         localStorage.setItem("expandedObjects", JSON.stringify(expandedObjects));
     }
 
@@ -1168,30 +1170,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
 
 
-        this.filterSelectionsModel.FilterPredicates.forEach(function (node) {
-        });
-
         this.selectedFilterPredicates = this.getTreeNodeSelectionNodes(this.filterModel.SelectedPredicates, this.filterSelectionsModel.FilterPredicates);
         this.selectedFilterAssetTypes = this.getTreeNodeSelectionNodes(this.filterModel.SelectedAssetTypes, this.filterSelectionsModel.FilterAssetTypes);
 
-        var parents = [];
         this.selectedFilterPredicates.forEach(node => {
             var item = this.getNodeByLabelAndData(this.filterSelectionsModel.FilterPredicates, node.label, node.data);
-
-            if (item)
-                parents.push(item);
+            item.expanded = true;
         });
-        parents.forEach(x => this.selectedFilterPredicates.push(x));
 
-        var parents = [];
         this.selectedFilterAssetTypes.forEach(node => {
             var item = this.getNodeByLabelAndData(this.filterSelectionsModel.FilterAssetTypes, node.label, node.data);
-
-            if (item)
-                parents.push(item);
+            item.expanded = true;
         });
-        parents.forEach(x => this.selectedFilterAssetTypes.push(x));
-
 
         this.cdRef.markForCheck();
     }
@@ -1814,7 +1804,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Navigate to", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: (e, obj) => this.navigateTo(e, obj) }
+                { click: (e, obj) => this.navigateTo(e, obj) },
+                new go.Binding("visible", "", function (o) {
+                    return o.part.data.hasAssetReadAccess;
+                }).ofObject()
             ),
             this.g(
                 "ContextMenuButton",
@@ -1857,6 +1850,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private navigateTo(e, obj) {
         this.setFiltersToStorage();
         this.assetUidRedirect = obj.part.data.assetUid;
+
+        if (this.assetUidRedirect == this.assetUid)
+            return;
+
         this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
             this.router.navigate([SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, 'browser', this.assetUidRedirect]);
         });
