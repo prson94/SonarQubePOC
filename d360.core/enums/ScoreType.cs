@@ -25,7 +25,14 @@ namespace d360.core.enums
     {
         public static string GetDisplayName(this ScoreType type)
         {
-            return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<NameAttribute>().Name;
+            try
+            {
+                return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<NameAttribute>().Name;
+            }
+            catch
+            {
+                return type.ToString();
+            }
         }
 
         public static List<ScoreTypeInfo> GetAsList(this ScoreType type)
