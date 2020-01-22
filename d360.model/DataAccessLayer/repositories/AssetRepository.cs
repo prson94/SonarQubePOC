@@ -1268,7 +1268,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             if (!queryParams.Any(p => p.Key == "_order"))
             {
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
-                orderBySql = $" order by Ex.[ExecutionID] {orderDirection} ";
+                orderBySql = $" order by [CompletedOn] {orderDirection} ";
             }
             else
             {
@@ -1288,7 +1288,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
                 if (pageSize < 1) pageSize = 1;
                 if (pageNum < 1) pageNum = 1;
-            
+                if (pageSize > 25000) pageSize = 25000;
+                if (pageNum > 10000) pageNum = 10000;
+
+
                 offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
             }          
 
