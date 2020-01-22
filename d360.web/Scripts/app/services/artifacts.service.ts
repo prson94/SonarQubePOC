@@ -9,8 +9,7 @@ import {SortOrder} from '../models/enums.model';
 import {
     GridFilterExpression,
     GridRelationshipFilterExpression,
-    GridFilterFieldType,
-    GridAttributeFilterExpression,
+    GridFilterFieldType,    
     GridOwnerFilter
 } from '../models/grid-definition.model';
 import {Count} from '../models/counts.model';
@@ -37,8 +36,7 @@ export class ArtifactService extends BaseObservableService {
         sortfield: string,
         sortorder: SortOrder,
         filters?: GridFilterExpression[],
-        relationships?: GridRelationshipFilterExpression[],
-        attributes?: GridAttributeFilterExpression[],
+        relationships?: GridRelationshipFilterExpression[],        
         simpleFilter?: string,
         owner?: GridOwnerFilter
     ): Observable<Artifacts> {
@@ -84,18 +82,7 @@ export class ArtifactService extends BaseObservableService {
             }
             //#endregion
         }
-
-        if (attributes != undefined) {
-
-            uri += '&attcount=' + attributes.length;
-
-            let count = 0;
-            for (let att of attributes) {
-                uri += `&att_typeid_${count}=${att.attributeType}&att_value_${count}=${att.attributeSearchValue}`;
-                count++;
-            }
-        }
-
+        
         if (relationships != undefined) {
 
             uri += '&relcount=' + relationships.length;
@@ -155,8 +142,7 @@ export class ArtifactService extends BaseObservableService {
         sortfield: string,
         sortorder: SortOrder,
         filters?: GridFilterExpression[],
-        relationships?: GridRelationshipFilterExpression[],
-        attributes?: GridAttributeFilterExpression[],
+        relationships?: GridRelationshipFilterExpression[],        
         simpleFilter?: string,
         owner?: GridOwnerFilter
     ) {
@@ -193,15 +179,6 @@ export class ArtifactService extends BaseObservableService {
 
             for (let filter of hidFilters) {
                 uri += `&hidfilterdatafield${count}=${filter.field.replace("Field", "")}&hidfiltercondition${count}=${filter.condition}&hidfiltervalue${count}=${encodeURIComponent(filter.value)}`;
-                count++;
-            }
-        }
-
-        if (attributes != undefined) {
-            uri += '&attcount=' + attributes.length;
-            let count = 0;
-            for (let att of attributes) {
-                uri += `&att_typeid_${count}=${att.attributeType}&att_value_${count}=${att.attributeSearchValue}`;
                 count++;
             }
         }
@@ -343,8 +320,7 @@ export class ArtifactService extends BaseObservableService {
         sortfield: string,
         sortorder: SortOrder,
         filters?: GridFilterExpression[],
-        relationships?: GridRelationshipFilterExpression[],
-        attributes?: GridAttributeFilterExpression[],
+        relationships?: GridRelationshipFilterExpression[],        
         simpleFilter?: string,
         owner?: GridOwnerFilter
     ) {
@@ -384,16 +360,7 @@ export class ArtifactService extends BaseObservableService {
                 count++;
             }
         }
-
-        if (attributes != undefined) {
-            uri += '&attcount=' + attributes.length;
-            let count = 0;
-            for (let att of attributes) {
-                uri += `&att_typeid_${count}=${att.attributeType}&att_value_${count}=${att.attributeSearchValue}`;
-                count++;
-            }
-        }
-
+        
         if (relationships != undefined) {
             uri += '&relcount=' + relationships.length;
             let count = 0;

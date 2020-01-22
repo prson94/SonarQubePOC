@@ -4,7 +4,7 @@ import { ArtifactService } from '../../services/artifacts.service';
 import { ExportTemplateService } from '../../services/export-template.service';
 import { BaseComponent } from '../shared/base.component';
 import { SortOrder } from '../../models/enums.model';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression, GridOwnerFilter } from '../../models/grid-definition.model';
+import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridOwnerFilter } from '../../models/grid-definition.model';
 
 @Component({
     selector: 'd3s-artifact-custom-export',
@@ -30,8 +30,7 @@ export class ArtifactCustomExportComponent extends BaseComponent implements OnIn
     @Input() sortField: string;
     @Input() sortOrder: SortOrder;
     @Input() filters: GridFilterExpression[]
-    @Input() relationships: GridRelationshipFilterExpression[];
-    @Input() attributes: GridAttributeFilterExpression[];
+    @Input() relationships: GridRelationshipFilterExpression[];    
     @Input() simpleFilter: string;
     @Input() owner: GridOwnerFilter;
 
@@ -59,10 +58,10 @@ export class ArtifactCustomExportComponent extends BaseComponent implements OnIn
     }
 
     private doDefaultExport() {
-        this.artifactService.getArtifactsXls(false, this.artifactType, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes, this.simpleFilter, this.owner);
+        this.artifactService.getArtifactsXls(false, this.artifactType, this.sortField, this.sortOrder, this.filters, this.relationships, this.simpleFilter, this.owner);
     }
 
     private doExport(option: AssetTypeExportTemplate) {
-        this.artifactService.getArtifactsCustomXls(option.ID, false, this.artifactType, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes, this.simpleFilter, this.owner);
+        this.artifactService.getArtifactsCustomXls(option.ID, false, this.artifactType, this.sortField, this.sortOrder, this.filters, this.relationships, this.simpleFilter, this.owner);
     }
 };

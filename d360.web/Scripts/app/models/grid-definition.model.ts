@@ -23,11 +23,6 @@ export class GridRelationshipFilterExpression {
     relationshipType: ObjectRelationship;
 }
 
-export class GridAttributeFilterExpression {
-    attributeType: number;
-    attributeSearchValue: string;
-}
-
 export class GridOwnerFilter {
     ownerUsers: string[];
     ownerGroups: string[];
