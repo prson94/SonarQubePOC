@@ -68,7 +68,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                     </ng-template>
                                 </p-table>  
                             </span>
-                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'IssueType'" [title]="'Action Type'" [selection]="selected" (saveClick)="saveIssueType($event)" (closeClick)="closeEditor()"></d3s-dynamic-editor>     
+                            <d3s-dynamic-editor *ngIf="showEditor" [objectID]="selected?.ID" [objectType]="'IssueType'" [title]="'Action Type'" [selection]="selected" (saveClick)="saveIssueType($event)" (closeClick)="closeEditor()" [objectTypeUid]="selected?.Uid"></d3s-dynamic-editor>     
                             <d3s-delete-form *ngIf="showDelete"
                                 [callback]="theDeleteCallback"
                                 [itemId]="selected?.ID"
@@ -137,7 +137,15 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
                 this.showDelete = false;
             });
     }
+
     selectedItemChange() {
+        if (this.selected) {            
+            this.workflowService.getIssueByUID(this.selected.Uid)
+            .subscribe(result => {
+                this.selected.ID = result.ID;
+                this.isLoading = false;
+            });
+        }
         if (this.auditSidebar && this.selected) {
             this.auditSidebar.url = `/sidebar/audit/IssueType/${this.issueTypes.length != 0 ? this.selected.ID : -1}`;
         }

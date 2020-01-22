@@ -20,7 +20,7 @@ namespace d360.model.DataAccessLayer
         }
 
         private Expression<Func<IssueType, IssueTypeApiModel>> 
-            apiModelMapper = x => new IssueTypeApiModel() { Description = x.Description, IsSystem = x.IsSystem, Name = x.Name, UpdatedOn = x.UpdatedOn, Uid = x.uid, ID = x.ID };
+            apiModelMapper = x => new IssueTypeApiModel() { Description = x.Description, IsSystem = x.IsSystem, Name = x.Name, UpdatedOn = x.UpdatedOn, Uid = x.uid };
 
         public async Task<IEnumerable<IssueTypeApiModel>> GetIssueTypes()
         {

@@ -114,6 +114,14 @@ export class WorkflowService extends BaseObservableService {
             );  
     }
 
+    getIssueByUID(uid: string): Observable<WorkflowIssueType> {
+        return this.http.get(`api/IssueType/${uid}`)
+            .pipe(
+                map(response => <WorkflowIssueType>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     deleteWorkflowIssueType(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'ISSUETYPE', id);
     }
