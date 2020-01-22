@@ -128,7 +128,21 @@ namespace d360.model.validators
                     }
                 }
 
-                if(!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
+                #region Min/Max length
+
+                if (field?.Type?.Text?.Validation?.MaximumLength != null && (field?.Type?.Text?.Validation?.MaximumLength % 1) != 0)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"MaximumLength must be a whole number");
+                }
+
+                if (field?.Type?.Text?.Validation?.MinimumLength != null && (field?.Type?.Text?.Validation?.MinimumLength % 1) != 0)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"MinimumLength must be a whole number");
+                }
+                
+                #endregion
+
+                if (!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Fusion field types are not allowed!");
                 }

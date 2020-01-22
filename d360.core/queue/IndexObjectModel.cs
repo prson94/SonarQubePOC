@@ -35,6 +35,8 @@ namespace d360.core.queue
 
         public Dictionary<string, string> Tags { get; set; }
 
+        public Dictionary<string, List<int>> NoRead { get; set; }
+
         /// <summary>
         /// Returns the unique id for this search item
         /// </summary>

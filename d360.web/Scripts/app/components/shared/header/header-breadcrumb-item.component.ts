@@ -121,7 +121,7 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
             panel.style.maxWidth = (window.innerWidth - lineDims.left) + "px";
             if (this.hasClass(parent, 'collapsed-crumb')) {
                 panel.style.left = lineDims.right + "px";
-                this.checkIsToofarRight(searchPanel);
+                this.checkIsToofarRight(searchPanel); 
             }
             this.treeInput.nativeElement.focus();
         }
@@ -148,8 +148,15 @@ export class HeaderBreadcrumbItemComponent implements OnChanges, OnInit, OnDestr
 
     search(event) {
 
-        let q = event.query ? event.query : event;
+        let q: string = event.query ? event.query : event;
         this.searchingTypeahed = true;
+        if (this.breadcrumb.hasPreLoadedTypeAhead()) {
+            this.results = this.breadcrumb.preLoadedTypeAhead.filter(x => x.Name.toLowerCase().indexOf(q.toLowerCase()) !== -1);
+            this.searchingTypeahed = false;
+            this.ref.markForCheck();
+            return;
+        }
+
         if (this.breadcrumb.isType && this.breadcrumb.objectType !== 'Fusion') {
             if (this.breadcrumb.hasParent) {
                 this.typeaheadSearchService.getObjectTypeItemsFromParent(10, q, this.breadcrumb.objectType, this.breadcrumb.objectId).pipe(

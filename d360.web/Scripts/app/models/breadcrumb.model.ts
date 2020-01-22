@@ -1,4 +1,5 @@
 ﻿import { TreeNode } from 'primeng/components/common/api';
+import { SearchResult } from './search-result.model';
 
 export class Breadcrumb {
     text: string = "-";
@@ -15,6 +16,7 @@ export class Breadcrumb {
     parentID: number;
     parentUrl: string;
     show: boolean = true;
+    preLoadedTypeAhead: SearchResult[] = [];
 
     constructor(text?: string,
                 link?: string,
@@ -43,7 +45,9 @@ export class Breadcrumb {
         this.parentID = parentID === undefined ? undefined : parentID;
         this.parentUrl = parentURL === undefined ? undefined : parentURL;
     }
-
+    public hasPreLoadedTypeAhead() {
+        return this.preLoadedTypeAhead && this.preLoadedTypeAhead.length > 0;
+    }
     public hasLink(): boolean {
         return (this.link && this.link.length > 0 && this.active);
     }

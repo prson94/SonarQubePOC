@@ -56,6 +56,13 @@ namespace igx.jobs.indexer
         public string Value { get; set; }
     }
 
+    internal class ResponsibilitySqlModel : IPagedQuerySqlModel
+    {
+        public long AssetID { get; set; }
+        public string SecurityAsset { get; set; }
+        public int SecurityAssetID { get; set; }
+    }
+
     public static class Indexer
     {
         private static int _defaultQueryCommandTimeout = 180;
@@ -664,7 +671,7 @@ from	AttributeDetail AD
         private static IEnumerable<IndexObjectModel> LoadModels(SqlConnection context, int companyID, ElasticSearchSource source)
         {
             var sql = @"
-SELECT	A.ID As AssetID,
+SELECT	A.ID as AssetID,
         A.ObjectID as ID,
 		T.ObjectID as TypeID,
 		D.DisplayValue,
@@ -751,6 +758,7 @@ from    fusion f
         {
             var FieldQuery = new PagedQuery<FieldSqlModel>(context, fieldsSql, new { t = type });
             var TagsQuery = new PagedQuery<TagSqlModel>(context, tagsSql);
+            var ResponsibilityQuery = new PagedQuery<ResponsibilitySqlModel>(context, ElasticSearchSource.GetAssetResponsibilityQuery());
             var list = getDataWithoutFields(context, sql, companyID, source, type, convertToDictionary);
 
             foreach (var item in list)
@@ -764,7 +772,12 @@ from    fusion f
                 {
                     item.Tags = TagsQuery.GetByAssetID(item.AssetID).ToDictionary(x => x.TagUID.ToString(), x => x.Value);
                 }
-
+                var secset = ResponsibilityQuery.GetByAssetID(item.AssetID);
+                item.NoRead = new Dictionary<string, List<int>> {
+                    { "R" , secset.Where(r => r.SecurityAsset == "R").Select(r => r.SecurityAssetID).ToList() },
+                    { "G" , secset.Where(r => r.SecurityAsset == "G").Select(r => r.SecurityAssetID).ToList() },
+                    { "O" , secset.Where(r => r.SecurityAsset == "O").Select(r => r.SecurityAssetID).ToList() }
+                };
                 yield return item;
             }
         }

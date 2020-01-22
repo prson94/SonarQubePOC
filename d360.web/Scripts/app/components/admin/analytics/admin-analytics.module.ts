@@ -39,6 +39,10 @@ import {SimpleAccordionModule} from '../../shared/simple-accordion.part';
 import {ErrorNotifyInterceptor} from '../../../http-interceptors/error-notify-interceptor';
 import {DirectivesModule} from '../../../directives/directives.module';
 import {GovernRequestInterceptor} from "../../../http-interceptors/govern-request.interceptor";
+import { SiteModalModule } from '../../shared/modal/gov-modal.module';
+import { AdminAllocationEditorComponent } from './admin-allocation-editor.component';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -63,6 +67,7 @@ import {GovernRequestInterceptor} from "../../../http-interceptors/govern-reques
         SpinnerModule,
         TreeTableModule,
         TableModule,
+        AutoCompleteModule,
 
         //d3s        
         CoreModule,
@@ -75,6 +80,7 @@ import {GovernRequestInterceptor} from "../../../http-interceptors/govern-reques
         SimpleAccordionModule,
         TooltipModule,
         DirectivesModule,
+        SiteModalModule
     ],
     declarations: [
         AdminAnalyticsComponent,
@@ -82,7 +88,9 @@ import {GovernRequestInterceptor} from "../../../http-interceptors/govern-reques
         AdminMetricConditionListComponent,
         AdminMetricConditionEditorComponent,
         AdminMetricEditorComponent,
-        AdminMetricListComponent
+        AdminMetricListComponent,
+        AdminAllocationEditorComponent,
+        AdminAnalyticsDetailsComponent 
     ],
     providers: [
         {
