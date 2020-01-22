@@ -148,6 +148,8 @@
     <Compile Include="entities\Relation\RelationshipApiModels.cs" />
     <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\ResourcePasswordReset.cs" />
+    <Compile Include="entities\Scoring\Scoring.cs" />
+    <Compile Include="entities\Scoring\ScoringApiModels.cs" />
     <Compile Include="entities\Security\AssetResponsibilitiesModel.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeAllocationViewModel.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationOverrideItem.cs" />

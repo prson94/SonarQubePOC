@@ -18,11 +18,11 @@ namespace d360.model.DataAccessLayer
         Task<IEnumerable<AssetCrossReference>> GetCrossReferenceByType(string type);
         Task<IEnumerable<AssetCrossReference>> GetCrossReferenceByTypeId(string type, string externalId);
         Task<IEnumerable<AssetCrossReference>> GetCrossReferences(IEnumerable<KeyValuePair<string, string>> queryParams);
-        Task<bool> PostBulkCrossReference(List<AssetCrossReference> models);
+        IEnumerable<AssetCrossReferenceResult> PostBulkCrossReference(List<AssetCrossReference> models, ApiExecution execution);
         Task<int> PutCrossReference(Guid uid, AssetCrossReference model);
         Task<int> PutCrossReference(Guid uid, string dataSource, string type, AssetCrossReference model);
         Task<bool> XrefExists(AssetCrossReference model);
-        Task<ApiExecutionInfo> PostBulkCrossReference(List<AssetCrossReference> crossReferences, ApiExecution execution, bool sendWorkflowEvents = true);
+        Task<ApiExecutionInfo> PostBatchCrossReference(List<AssetCrossReference> crossReferences, ApiExecution execution, bool sendWorkflowEvents = true);
         BulkAssetCrossReferenceResult GetExecutionStatus(ApiExecution execution);
     }
 }

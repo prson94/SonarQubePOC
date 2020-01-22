@@ -68,15 +68,12 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                 this.getPolicyTypes();
             }
             this.selectedItemChange();
-            this.setCommonItems();
-            this.setCommonSecondaryNavTabs(true);
         })
     }
 
     selectedItemChange() {
-        if (this.auditSidebar && this.selected) {
-            this.auditSidebar.url = `/sidebar/audit/${this.objectType}/${this.selected.ID}`;
-        }
+        this.buildSecondaryNavigationForObject(this.selected.ID, this.objectType);
+
     }
 
     ngOnInit() {        

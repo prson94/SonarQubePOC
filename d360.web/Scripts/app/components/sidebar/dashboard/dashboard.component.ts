@@ -45,11 +45,9 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
             this.objectType = params['objectType'];
             this.dashboardName = params['name'];
             this.reportID = +params['reportID'];
-            this.loadAvailableDashboards();      
-            
+            this.loadAvailableDashboards();
+            this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
         });
-
-        this.checkSecondaryNavLocalStorage();
     }
 
 

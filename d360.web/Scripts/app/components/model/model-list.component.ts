@@ -115,10 +115,10 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
     }
     selectedItemChange() {
         if (this.auditSidebar && this.selected) {
-            this.auditSidebar.url = `/sidebar/audit/TaxonomyType/${this.selected.ID}`;
+            this.auditSidebar.url = `/sidebar/audit/TaxonomyType/${this.selected.ID};isAdminPage=false`;
         }
         if (this.ownershipSidebar && this.selected) {
-            this.ownershipSidebar.url = `/sidebar/ownership/TaxonomyType/${this.selected.ID}`
+            this.ownershipSidebar.url = `/sidebar/ownership/TaxonomyType/${this.selected.ID};isAdminPage=false`
         }
     }
     ngOnInit() {

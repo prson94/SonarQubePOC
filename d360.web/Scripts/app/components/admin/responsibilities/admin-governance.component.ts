@@ -28,17 +28,13 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         this.areaName = "Responsibilities";
         this.adminHeading = "Security";
         this.tabTitle = 'Responsibility Types';
-        this.setCommonItems();
-        this.setCommonSecondaryNavTabs();
-        this.selectedItemChange();
         this.load();
     }
 
     selectedItemChange() {
-        if (this.auditSidebar && this.selectedRow) {
-            this.auditSidebar.url = `/sidebar/audit/ResponsibilityType/${this.selectedRow.ID}`;
-        }
+        this.buildSecondaryNavigationForObject(this.selectedRow.ID, 'ResponsibilityType');
     }
+
     ngOnDestroy() {
         this.clearSidebar();
     }

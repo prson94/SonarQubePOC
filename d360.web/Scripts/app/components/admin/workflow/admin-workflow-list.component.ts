@@ -39,7 +39,7 @@ import { State } from '../../../models/asset.model';
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item >
-            <tr (dblclick)="onEditClick.emit({ ID: item.ID, isClone: false })" [pSelectableRow]="item">
+            <tr (dblclick)="onEditClick.emit({ uid: item.Uid, isClone: false })" [pSelectableRow]="item">
                 <td *ngFor="let col of columns" [ngSwitch]="col.type" class="break-wrap">
                     <span *ngSwitchCase="'text'">{{item[col.datafield]}}</span>
                     <span *ngSwitchCase="'date'">{{item[col.datafield] | date:'shortDate'}}</span>
@@ -148,7 +148,7 @@ export class AdminWorkflowListComponent extends BaseComponent implements OnInit 
                                 workflowItem.Type = x.Type;
                                 workflowItem.UpdatedOn = x.UpdatedOn;
                                 workflowItem.UpdatedBy = x.UpdatedBy;
-                                workflowItem.Published = x.PublishedVersionUid ? `Verion ${x.PublishedVersion} Published` : `Unpublished`;
+                                workflowItem.Published = x.PublishedVersionUid ? `Version ${x.PublishedVersion} Published` : `Unpublished`;
                                 workflowItem.Uid = x.WorkflowTypeUid;
                                 workflowItems.push(workflowItem);
 

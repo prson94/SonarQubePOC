@@ -82,7 +82,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_RULES = 'rules';
     static SITE_URL_ADMIN_SURVEYS = 'surveys';
     static SITE_URL_ADMIN_TAGS = 'tags';
-    static SITE_URL_ADMIN_ANALYTICS = 'analytics';
+    static SITE_URL_ADMIN_SCORING = 'scoring';
     static SITE_URL_ADMIN_DASHBOARDS = 'dashboard';
     static SITE_URL_ADMIN_GROUPS = 'groups';
     static SITE_URL_ADMIN_RESPONSIBILITIES = 'responsibilities';
@@ -105,6 +105,47 @@ export class SiteUrlHelpers {
         } else {
             return this.SITE_URL_HOME_ROOT;
         }
+    }
+
+    static getUrl(objectType: string, objectId: number, parentId: number, areaName: string) {
+        if (objectType.toLowerCase() == "referenceitemtype") {
+            return "/reference;referenceListId=" + objectId;
+        }
+        if (objectType.toLowerCase() == "artifacttype" && areaName == 'Business Assets') {
+            return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
+        }
+        if (objectType.toLowerCase() == "artifacttype" && areaName == 'Technical Assets') {
+            return `admin/assets/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_TECHNICAL}`;
+        }
+        if (objectType.toLowerCase() == "taxonomytype") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_MODELS}`;
+        }
+        if (objectType.toLowerCase() == "policytype") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_POLICIES}`;
+        }
+        if (objectType.toLowerCase() == "intersecttype") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS}`;
+        }
+        if (objectType.toLowerCase() == "issuetype") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`;
+        }
+        if (objectType.toLowerCase() == "attributetype") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`;
+        }
+        if (objectType.toLowerCase() == "lookuptype") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`;
+        }
+        if (objectType.toLowerCase() == "responsibilitytype") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`;
+        }
+        if (objectType.toLowerCase() == "report") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`;
+        }
+        if (objectType.toLowerCase() == "fusiontype") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_FUSION}`;
+        }
+
+        return SiteUrlHelpers.getObjectUrl(objectType, objectId, parentId);
     }
 
     // getObjectUrl - Generates the url for an object based on its type

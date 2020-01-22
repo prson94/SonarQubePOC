@@ -409,227 +409,302 @@ from	@points O
         public static string FusionAttributeRelationshipAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
         IT.uid,
-		case 
-			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) then IT.[Object]
-			else IT.[Subject]
-		end as [Object],
-		case 
-			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) then IT.[ObjectID]
-			else IT.[SubjectID]
-		end as [ObjectID],		
+		IT.Object,
+		IT.ObjectID,
 		I.[Count],
-		case 
-			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) then IT.[ObjectName] 
-			else IT.SubjectName
-		end + 
-		case 
-			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.FusionAttributeTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
-			when (IT.Object = 'FusionAttributeType' and IT.ObjectID = fa.FusionAttributeTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
-		end as [Name],
-		case 
-			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.FusionAttributeTypeID) then IT.[ObjectCardinality] 
-			else IT.SubjectCardinality
-		end as Cardinality,
-        case
+		IT.Name,
+		IT.Cardinality,
+		case
             when IT.PredicateType in ({0}) then cast(0 as bit)
             else cast(1 as bit)
         end as AllowEditFromRelationshipEditor,
-        case
-            when fa.fusionattributetypeid = IT.SubjectID then 1
-            else 0
-        end as IsSubject,
+		IT.IsSubject,
+		IT.SameSubjectAndObject,
         a.uid as ObjectUid
 from	[dbo].[fusionattribute] fa	
         inner join asset a on a.object ='fusionattribute' and a.objectid = fa.id
-		inner join IntersectTypeDetail IT on ( 
-										(IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) OR 
-										(IT.Object = 'FusionAttributeType' and IT.ObjectID = fa.fusionattributetypeid) 
-									   )
+		cross apply (
+					select 
+			ITD.ID,
+			ITD.UID,
+			ITD.PredicateType,
+				case 
+				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then ITD.[Object]
+				else ITD.[Subject]
+			end as [Object],
+			case 
+				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then ITD.[ObjectID]
+				else ITD.[SubjectID]
+			end as [ObjectID],
+						case 
+				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then ITD.ObjectAssetTypeID
+				else ITD.SubjectAssetTypeID
+			end as ObjectAssetTypeID,	
+			case 
+				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then ITD.[ObjectName] 
+				else ITD.SubjectName
+			end + 
+			case 
+				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then ' [' + coalesce(ITD.PredicateName, 'N/A') + ']'
+				when (ITD.Object = 'FusionAttributeType' and ITD.ObjectID = fa.fusionattributetypeid) then ' [' + coalesce(ITD.PredicateInverse, 'N/A') + ']'
+			end as [Name],
+			case 
+				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then ITD.[ObjectCardinality] 
+				else ITD.SubjectCardinality
+			end as Cardinality,
+			case 
+				when (ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) then cast(1 as bit)
+				else cast(0 as bit)
+			end as IsSubject,
+			cast(0 as bit) as SameSubjectAndObject
+			from IntersectTypeDetail ITD 
+			where	ITD.SubjectAssetTypeID <> ITD.ObjectAssetTypeID 
+					and ((ITD.Subject = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid) 
+						or((ITD.Object = 'FusionAttributeType' and ITD.ObjectID = fa.fusionattributetypeid)))
+			union all
+			select ITD.ID, ITD.[UID], ITD.PredicateType, ITD.[Object], ITD.ObjectID, ITD.ObjectAssetTypeID, ITD.ObjectName + ' [' + coalesce(ITD.PredicateName, 'N/A') + ']' as [Name], ITD.[ObjectCardinality], cast(1 as bit) as IsSubject, cast(1 as bit) as SameSubjectAndObject from IntersectTypeDetail ITD where ITD.[Subject] = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid and ITD.SubjectAssetTypeID = ITD.ObjectAssetTypeID
+			union all
+			select ITD.ID, ITD.[UID], ITD.PredicateType, ITD.[Subject], ITD.SubjectID, ITD.ObjectAssetTypeID, ITD.SubjectName + ' [' + coalesce(ITD.PredicateInverse, 'N/A') + ']' as [Name], ITD.SubjectCardinality, cast(0 as bit) as IsSubject, cast(1 as bit) as SameSubjectAndObject  from IntersectTypeDetail ITD where ITD.[Subject] = 'FusionAttributeType' and ITD.SubjectID = fa.fusionattributetypeid and ITD.SubjectAssetTypeID = ITD.ObjectAssetTypeID
+		) IT
 		cross apply (
 					select	count(1) as [Count]
 					from	[Intersect] 
 					where	IntersectTypeID = IT.ID 
-							and (
-								(Subject = 'FusionAttribute' and SubjectID = @objId) or 
-								(Object = 'FusionAttribute' and ObjectID = @objId)
-								)
+							and 			(
+			 (IT.SameSubjectAndObject = 1 and IT.IsSubject = 1 and ([Subject] = @obj and SubjectID = @objId)) or
+			 (IT.SameSubjectAndObject = 1 and IT.IsSubject = 0 and ([Object] = @obj and ObjectID = @objId)) or
+			 (IT.SameSubjectAndObject = 0 and (([Subject] = @obj and SubjectID = @objId) or ([Object] = @obj and ObjectID = @objId)))
+			)
 					) I
 where	fa.ID = @objId
-order by case 
-			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.fusionattributetypeid) then IT.[ObjectName] 
-			else IT.SubjectName
-		end + 
-		case 
-			when (IT.Subject = 'FusionAttributeType' and IT.SubjectID = fa.FusionAttributeTypeID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
-			when (IT.Object = 'FusionAttributeType' and IT.ObjectID = fa.FusionAttributeTypeID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
-		end
+order by IT.[Name]
 ";
 
         public static string FusionQueryAttributeRelationshipAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
         IT.uid,
-		case 
-			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then IT.[Object]
-			else IT.[Subject]
-		end as [Object],
-		case 
-			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then IT.[ObjectID]
-			else IT.[SubjectID]
-		end as [ObjectID],		
+		IT.Object,
+		IT.ObjectID,
 		I.[Count],
-		case 
-			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then IT.[ObjectName] 
-			else IT.SubjectName
-		end + 
-		case 
-			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
-			when (IT.Object = 'FusionQueryAttributeType' and IT.ObjectID = fa.fusionqueryattributetypeid) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
-		end as [Name],
-		case 
-			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then IT.[ObjectCardinality] 
-			else IT.SubjectCardinality
-		end as Cardinality,
-        case
+		IT.Name,
+		IT.Cardinality,
+		case
             when IT.PredicateType in ({0}) then cast(0 as bit)
             else cast(1 as bit)
         end as AllowEditFromRelationshipEditor,
-        case
-            when fa.fusionqueryattributetypeid = IT.SubjectID then 1
-            else 0
-        end as IsSubject,
+		IT.IsSubject,
+		IT.SameSubjectAndObject,
         a.uid as ObjectUid
 from	[dbo].[fusionQueryattribute] fa	
         inner join Asset A on A.object = 'fusionQueryattribute' and A.objectid = fa.id
-		inner join IntersectTypeDetail IT on ( 
-										(IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) OR 
-										(IT.Object = 'FusionQueryAttributeType' and IT.ObjectID = fa.fusionqueryattributetypeid) 
-									   )
+		cross apply (
+			select 
+			ITD.ID,
+			ITD.UID,
+			ITD.PredicateType,
+				case 
+				when (ITD.Subject = 'FusionQueryAttributeType' and ITD.SubjectID = fa.fusionqueryattributetypeid) then ITD.[Object]
+				else ITD.[Subject]
+			end as [Object],
+			case 
+				when (ITD.Subject = 'FusionQueryAttributeType' and ITD.SubjectID = fa.fusionqueryattributetypeid) then ITD.[ObjectID]
+				else ITD.[SubjectID]
+			end as [ObjectID],
+						case 
+				when (ITD.Subject = 'FusionQueryAttributeType' and ITD.SubjectID = fa.fusionqueryattributetypeid) then ITD.ObjectAssetTypeID
+				else ITD.SubjectAssetTypeID
+			end as ObjectAssetTypeID,	
+			case 
+				when (ITD.Subject = 'FusionQueryAttributeType' and ITD.SubjectID = fa.fusionqueryattributetypeid) then ITD.[ObjectName] 
+				else ITD.SubjectName
+			end + 
+			case 
+				when (ITD.Subject = 'FusionQueryAttributeType' and ITD.SubjectID = fa.fusionqueryattributetypeid) then ' [' + coalesce(ITD.PredicateName, 'N/A') + ']'
+				when (ITD.Object = 'FusionQueryAttributeType' and ITD.ObjectID = fa.fusionqueryattributetypeid) then ' [' + coalesce(ITD.PredicateInverse, 'N/A') + ']'
+			end as [Name],
+			case 
+				when (ITD.Subject = 'FusionQueryAttributeType' and ITD.SubjectID = fa.fusionqueryattributetypeid) then ITD.[ObjectCardinality] 
+				else ITD.SubjectCardinality
+			end as Cardinality,
+			case 
+				when (ITD.Subject = 'FusionQueryAttributeType' and ITD.SubjectID = fa.fusionqueryattributetypeid) then cast(1 as bit)
+				else cast(0 as bit)
+			end as IsSubject,
+			cast(0 as bit) as SameSubjectAndObject
+			from IntersectTypeDetail ITD 
+			where	ITD.SubjectAssetTypeID <> ITD.ObjectAssetTypeID 
+					and ((ITD.Subject = 'FusionQueryAttributeType' and ITD.SubjectID = fa.fusionqueryattributetypeid) 
+						or((ITD.Object = 'FusionQueryAttributeType' and ITD.ObjectID = fa.fusionqueryattributetypeid)))
+			union all
+			select ITD.ID, ITD.[UID], ITD.PredicateType, ITD.[Object], ITD.ObjectID, ITD.ObjectAssetTypeID, ITD.ObjectName + ' [' + coalesce(ITD.PredicateName, 'N/A') + ']' as [Name], ITD.[ObjectCardinality], cast(1 as bit) as IsSubject, cast(1 as bit) as SameSubjectAndObject from IntersectTypeDetail ITD where ITD.[Subject] = 'FusionQueryAttributeType' and ITD.SubjectID = fa.fusionqueryattributetypeid and ITD.SubjectAssetTypeID = ITD.ObjectAssetTypeID
+			union all
+			select ITD.ID, ITD.[UID], ITD.PredicateType, ITD.[Subject], ITD.SubjectID, ITD.ObjectAssetTypeID, ITD.SubjectName + ' [' + coalesce(ITD.PredicateInverse, 'N/A') + ']' as [Name], ITD.SubjectCardinality, cast(0 as bit) as IsSubject, cast(1 as bit) as SameSubjectAndObject  from IntersectTypeDetail ITD where ITD.[Subject] = 'FusionQueryAttributeType' and ITD.SubjectID = fa.fusionqueryattributetypeid and ITD.SubjectAssetTypeID = ITD.ObjectAssetTypeID
+		) IT
 		cross apply (
 					select	count(1) as [Count]
 					from	[Intersect] 
 					where	IntersectTypeID = IT.ID 
-							and (
-								(Subject = 'FusionQueryAttribute' and SubjectID = @objId) or 
-								(Object = 'FusionQueryAttribute' and ObjectID = @objId)
-								)
+							and 			(
+			 (IT.SameSubjectAndObject = 1 and IT.IsSubject = 1 and ([Subject] = @obj and SubjectID = @objId)) or
+			 (IT.SameSubjectAndObject = 1 and IT.IsSubject = 0 and ([Object] = @obj and ObjectID = @objId)) or
+			 (IT.SameSubjectAndObject = 0 and (([Subject] = @obj and SubjectID = @objId) or ([Object] = @obj and ObjectID = @objId)))
+			)
 					) I
 where	fa.ID = @objId
-order by case 
-			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then IT.[ObjectName] 
-			else IT.SubjectName
-		end + 
-		case 
-			when (IT.Subject = 'FusionQueryAttributeType' and IT.SubjectID = fa.fusionqueryattributetypeid) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
-			when (IT.Object = 'FusionQueryAttributeType' and IT.ObjectID = fa.fusionqueryattributetypeid) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
-		end
+order by IT.[Name]
 ";
-        public static string ReferenceListTypeRelationshipsAllCountsWithZero = @"
+        
+		public static string ReferenceListTypeRelationshipsAllCountsWithZero = @"
 select	IT.ID as IntersectTypeID,
         IT.uid,
-		case 
-			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.[Object]
-			else IT.[Subject]
-		end as [Object],
-		case 
-			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.[ObjectID]
-			else IT.[SubjectID]
-		end as [ObjectID],		
+		IT.Object,
+		IT.ObjectID,
 		I.[Count],
-		case 
-			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.[ObjectName] 
-			else IT.SubjectName
-		end + IIF(P.ID is not null, ' [' + P.Name + ']', '') as [Name],
-		case 
-			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.ObjectCardinality
-			else IT.SubjectCardinality
-		end as Cardinality,
-        case
+		IT.Name,
+		IT.Cardinality,
+		case
             when IT.PredicateType in ({0}) then cast(0 as bit)
             else cast(1 as bit)
         end as AllowEditFromRelationshipEditor,
-        case
-            when @objId = IT.SubjectID or (IT.Subject = 'ReferenceItemType' AND IT.SubjectID =0) then 1
-            else 0
-        end as IsSubject,
-        AT.uid as ObjectUid
-from	IntersectTypeDetail IT 
-		left join [Predicate] P on P.ID = IT.PredicateID
+		IT.IsSubject,
+		IT.SameSubjectAndObject,
+        at.uid as ObjectUid
+from	(
+select 
+			ITD.ID,
+			ITD.UID,
+			ITD.PredicateType,
+				case 
+				when (ITD.Subject = 'ReferenceItemType' and ITD.SubjectID = 0) then ITD.[Object]
+				else ITD.[Subject]
+			end as [Object],
+			case 
+				when (ITD.Subject = 'ReferenceItemType' and ITD.SubjectID = 0) then ITD.[ObjectID]
+				else ITD.[SubjectID]
+			end as [ObjectID],
+						case 
+				when (ITD.Subject = 'ReferenceItemType' and ITD.SubjectID = 0) then ITD.ObjectAssetTypeID
+				else ITD.SubjectAssetTypeID
+			end as ObjectAssetTypeID,	
+			case 
+				when (ITD.Subject = 'ReferenceItemType' and ITD.SubjectID = 0) then ITD.[ObjectName] 
+				else ITD.SubjectName
+			end + 
+			case 
+				when (ITD.Subject = 'ReferenceItemType' and ITD.SubjectID = 0) then ' [' + coalesce(ITD.PredicateName, 'N/A') + ']'
+				when (ITD.Object = 'ReferenceItemType' and ITD.ObjectID = 0) then ' [' + coalesce(ITD.PredicateInverse, 'N/A') + ']'
+			end as [Name],
+			case 
+				when (ITD.Subject = 'ReferenceItemType' and ITD.SubjectID = 0) then ITD.[ObjectCardinality] 
+				else ITD.SubjectCardinality
+			end as Cardinality,
+			case 
+				when (ITD.Subject = 'ReferenceItemType' and ITD.SubjectID = 0) then cast(1 as bit)
+				else cast(0 as bit)
+			end as IsSubject,
+			cast(0 as bit) as SameSubjectAndObject
+			from IntersectTypeDetail ITD 
+			where	ITD.SubjectAssetTypeID <> ITD.ObjectAssetTypeID 
+					and ((ITD.Subject = 'ReferenceItemType' and ITD.SubjectID = 0) 
+						or ((ITD.Object = 'ReferenceItemType' and ITD.ObjectID = 0)))
+			union all
+			select ITD.ID, ITD.[UID], ITD.PredicateType, ITD.[Object], ITD.ObjectID, ITD.ObjectAssetTypeID, ITD.ObjectName + ' [' + coalesce(ITD.PredicateName, 'N/A') + ']' as [Name], ITD.[ObjectCardinality], cast(1 as bit) as IsSubject, cast(1 as bit) as SameSubjectAndObject from IntersectTypeDetail ITD where ITD.[Subject] = 'ReferenceItemType' and ITD.SubjectID = 0 and ITD.SubjectAssetTypeID = ITD.ObjectAssetTypeID
+			union all
+			select ITD.ID, ITD.[UID], ITD.PredicateType, ITD.[Subject], ITD.SubjectID, ITD.ObjectAssetTypeID, ITD.SubjectName + ' [' + coalesce(ITD.PredicateInverse, 'N/A') + ']' as [Name], ITD.SubjectCardinality, cast(0 as bit) as IsSubject, cast(1 as bit) as SameSubjectAndObject  from IntersectTypeDetail ITD where ITD.[Subject] = 'ReferenceItemType' and ITD.SubjectID = 0 and ITD.SubjectAssetTypeID = ITD.ObjectAssetTypeID
+		
+) IT 
 		left join AssetType AT on AT.Object = @obj and AT.ObjectID =@objId
 		cross apply (
 					select	count(1) as [Count]
 					from	[Intersect] 
 					where	IntersectTypeID = IT.ID AND [Visible] = 1
 							and (
-								(Subject = @obj and SubjectID = @objId) or 
-								(Object = @obj and ObjectID = @objId)
-								)
+							 (IT.SameSubjectAndObject = 1 and IT.IsSubject = 1 and ([Subject] = @obj and SubjectID = @objId)) or
+							 (IT.SameSubjectAndObject = 1 and IT.IsSubject = 0 and ([Object] = @obj and ObjectID = @objId)) or
+							 (IT.SameSubjectAndObject = 0 and (([Subject] = @obj and SubjectID = @objId) or ([Object] = @obj and ObjectID = @objId)))
+							)
 					) I
-		where
-			 ((IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) OR (IT.Object = 'ReferenceItemType' and IT.ObjectID = 0) 
-									   )
-order by case 
-			when (IT.Subject = 'ReferenceItemType' and IT.SubjectID = 0) then IT.[ObjectName] 
-			else IT.SubjectName
-		end + IIF(P.ID is not null, ' [' + P.Name + ']', '')
+order by IT.[Name]
 ";
 
         public static string ObjectRelationshipAllCountsWithZero = @"
-select  IT.uid,
-        IT.ID as IntersectTypeID,
-        A.uid as ObjectUid,
-		case 
-			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[Object]
-			else IT.[Subject]
-		end as [Object],
-		case 
-			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[ObjectID]
-			else IT.[SubjectID]
-		end as [ObjectID],		
+select	IT.[uid],
+		IT.ID as IntersectTypeID,
+		A.[UID] as ObjectUid, 
+		IT.[Object],
+		IT.ObjectID,
 		I.[Count],
-		case 
-			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[ObjectName] 
-			else IT.SubjectName
-		end + 
-		case 
-			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
-			when (IT.Object = T.Object and IT.ObjectID = T.ObjectID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
-		end as [Name],
-		case 
-			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[ObjectCardinality] 
-			else IT.SubjectCardinality
-		end as Cardinality,
-        case
-            when IT.PredicateType in ({0}) then cast(0 as bit)
-            else cast(1 as bit)
-        end as AllowEditFromRelationshipEditor,
-        case
-            when T.ObjectID = IT.SubjectID then 1
-            else 0
-        end as IsSubject
+		IT.[Name],
+		IT.Cardinality,
+		IT.IsSubject,
+		IT.SameSubjectAndObject,
+		case when IT.PredicateType in ({0}) then
+			cast(0 as bit)
+		else
+			cast(1 as bit)
+		end as AllowEditFromRelationshipEditor
 from	Asset A
-		inner join AssetType T on T.ID = A.AssetTypeID	
-		inner join IntersectTypeDetail IT on ( 
-										(IT.Subject = T.Object and IT.SubjectID = T.ObjectID) OR 
-										(IT.Object = T.Object and IT.ObjectID = T.ObjectID) 
-									   )
+		inner join AssetType T on T.ID = A.AssetTypeID
 		cross apply (
-					select	count(1) as [Count]
-					from	[Intersect] 
-					where	IntersectTypeID = IT.ID AND [Visible] = 1
-							and (
-								(Subject = @obj and SubjectID = @objId) or 
-								(Object = @obj and ObjectID = @objId)
-								)
-					) I
+			select	ITD.ID,
+					ITD.[UID],
+					ITD.PredicateType,
+					case when ITD.SubjectAssetTypeID = T.ID then
+						ITD.[Object]
+					else
+						ITD.[Subject]
+					end as [Object],
+					case when ITD.SubjectAssetTypeID = T.ID then
+						ITD.[ObjectID]
+					else
+						ITD.[SubjectID]
+					end as [ObjectID],
+					case when ITD.SubjectAssetTypeID = T.ID then
+						ITD.ObjectAssetTypeID
+					else
+						ITD.SubjectAssetTypeID
+					end as ObjectAssetTypeID,
+					case when ITD.SubjectAssetTypeID = T.ID then 
+						ITD.[ObjectName] 
+					else 
+						ITD.SubjectName
+					end + 
+					case when ITD.SubjectAssetTypeID = T.ID then  
+						' [' + coalesce(ITD.PredicateName, 'N/A') + ']'
+					else 
+						' [' + coalesce(ITD.PredicateInverse, 'N/A') + ']'
+					end as [Name],
+					case when ITD.SubjectAssetTypeID = T.ID then  
+						ITD.[ObjectCardinality] 
+					else 
+						ITD.SubjectCardinality
+					end as Cardinality,
+					case when ITD.SubjectAssetTypeID = T.ID then
+						cast(1 as bit)
+					else
+						cast(0 as bit)
+					end as IsSubject,
+					cast(0 as bit) as SameSubjectAndObject
+			from	IntersectTypeDetail ITD 
+			where	(ITD.SubjectAssetTypeID = T.ID or ITD.ObjectAssetTypeID = T.ID) and ITD.SubjectAssetTypeID <> ITD.ObjectAssetTypeID
+			union all
+			select ITD.ID, ITD.[UID], ITD.PredicateType, ITD.[Object], ITD.ObjectID, ITD.ObjectAssetTypeID, ITD.ObjectName + ' [' + coalesce(ITD.PredicateName, 'N/A') + ']' as [Name], ITD.[ObjectCardinality], cast(1 as bit) as IsSubject, cast(1 as bit) as SameSubjectAndObject from IntersectTypeDetail ITD where ITD.SubjectAssetTypeID = T.ID and ITD.SubjectAssetTypeID = ITD.ObjectAssetTypeID
+			union all
+			select ITD.ID, ITD.[UID], ITD.PredicateType, ITD.[Subject], ITD.SubjectID, ITD.ObjectAssetTypeID, ITD.SubjectName + ' [' + coalesce(ITD.PredicateInverse, 'N/A') + ']' as [Name], ITD.SubjectCardinality, cast(0 as bit) as IsSubject, cast(1 as bit) as SameSubjectAndObject  from IntersectTypeDetail ITD where ITD.SubjectAssetTypeID = T.ID and ITD.SubjectAssetTypeID = ITD.ObjectAssetTypeID
+
+		) IT
+		cross apply (
+			select count(*) as [Count] from [Intersect]
+			where IT.ID = IntersectTypeID and Visible = 1 and
+			(
+			 (IT.SameSubjectAndObject = 1 and IT.IsSubject = 1 and ([Subject] = @obj and SubjectID = @objId)) or
+			 (IT.SameSubjectAndObject = 1 and IT.IsSubject = 0 and ([Object] = @obj and ObjectID = @objId)) or
+			 (IT.SameSubjectAndObject = 0 and (([Subject] = @obj and SubjectID = @objId) or ([Object] = @obj and ObjectID = @objId)))
+			)
+		) I
 where	A.[Object] = @obj and A.ObjectID = @objId
-order by case 
-			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then IT.[ObjectName] 
-			else IT.SubjectName
-		end + 
-		case 
-			when (IT.Subject = T.Object and IT.SubjectID = T.ObjectID) then ' [' + coalesce(IT.PredicateName, 'N/A') + ']'
-			when (IT.Object = T.Object and IT.ObjectID = T.ObjectID) then ' [' + coalesce(IT.PredicateInverse, 'N/A') + ']'
-		end";
+order by IT.[Name]
+";
 
         
         public static string ObjectRelationshipTypeIDs = @"
@@ -1609,7 +1684,8 @@ select
 				end as IsIssueType,
 				I.[Object],
 				I.ObjectID,
-                E.TypeID
+                E.TypeID,
+				IST.Uid as UID
             from 
             workflow.ItemStep IST
             inner join workflow.Item I on I.ID = IST.ItemID

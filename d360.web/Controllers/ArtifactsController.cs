@@ -44,6 +44,7 @@ namespace d360.web.Controllers
             };
             var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == id);
             var fields = getFieldTypesByObjectType("ArtifactType", id, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
+            fields.Add(new FieldType { Type = "string", Name = "UID", FriendlyName = "Asset UID" });
             fields.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Asset ID" });
             fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
 
@@ -193,7 +194,7 @@ namespace d360.web.Controllers
                 parentSqlJoin = @" outer apply (
 				    select	I.SubjectID as ParentID,
                             ID.DisplayValue,
-                            dbo.GenerateAssetUrl(IA.ID) as ParentUrl
+                            dbo.GenerateObjectUrl(IA.Object, IAT.ObjectID, IA.ObjectID, IA.uid, 1) as ParentUrl
 				    from	[PredicateIntersect] I
                             inner join Asset IA on I.Object = 'Artifact' and I.ObjectID = A.ObjectID and IA.Object = 'Artifact' and IA.ObjectID = I.SubjectID and I.PredicateType = 3
                             inner join AssetType IAT on IAT.ID = IA.AssetTypeID
@@ -207,7 +208,7 @@ namespace d360.web.Controllers
 select	A.ObjectID as ID,
         {parentSqlColumn}
         {columns}
-		dbo.GenerateAssetUrl(A.ID) as Url
+		dbo.GenerateObjectUrl(A.Object, A.AssetTypeID, A.ObjectID, A.uid, 1) as Url
 from	AssetDetail A 
         {parentSqlJoin}
         {joins} 
@@ -689,6 +690,8 @@ where   A.Type = 'ArtifactType'
                 return (string)((row as IDictionary<string, object>)["Url"]);
             else if (field != null && field.Name == "ID")
                 return (string)((row as IDictionary<string, object>)["ID"].ToString());
+            else if (field != null && field.Name == "UID")
+                return (string)((row as IDictionary<string, object>)["Uid"].ToString());
             return "";
         }
 

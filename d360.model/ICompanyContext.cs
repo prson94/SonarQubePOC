@@ -9,6 +9,7 @@ using d360.core;
 using d360.core.entities;
 using d360.core.entities.Contracts;
 using d360.core.entities.Metric;
+using d360.core.entities.Scoring;
 using d360.core.entities.Views;
 using d360.core.entities.Workflow;
 using d360.core.enums;
@@ -165,6 +166,8 @@ namespace d360.model
         DbSet<WorkflowVersion> WorkflowVersions { get; set; }
         DbSet<WorkflowVersionStep> WorkflowVersionSteps { get; set; }
         DbSet<WorkflowVersionStepTransition> WorkflowVersionStepTransitions { get; set; }
+        DbSet<ScoreTypeAllocation> ScoreTypeAllocations { get; set; }
+
 
         event EventHandler<AssetsPartiallyProcessedEventArgs> AssetsPartiallyProcessed;
         event EventHandler<RelationshipsPartiallyProcessedEventArgs> RelationshipsPartiallyProcessed;
@@ -223,8 +226,7 @@ namespace d360.model
         Follow GetFollowingParent(SystemObjects type, int objectID, int? resourceID);
         string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue);
         Dictionary<string, object> GetFusionAsDictionary(int id);
-        List<FusionOwnerOption> GetFusionOwnerOptions();
-        //List<FusionPromotionOption> GetFusionPromotionOptions();
+        List<FusionOwnerOption> GetFusionOwnerOptions();        
         IntersectType GetHierarchyIntersectType(SystemObjects objectType, int subjectId, int objectId, PredicateType predicateType = PredicateType.InterTypeHierarchy);
         string GetIntersectTypeName(IntersectType intersectType);
         List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? subject = null, int? subjectID = null, SystemObjects? @object = null, int? objectID = null, int? predicateID = null, List<AssetTypeClass> limitToClasses = null);
@@ -253,8 +255,7 @@ namespace d360.model
         Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");        
         IEnumerable<dynamic> GetReportQueryResults(int reportTileID, SystemObjects type, int id);
-        List<PermissionInfo> GetTypePermissions(string type, int typeID);
-        List<AllocationPossibility> GetTypes();
+        List<PermissionInfo> GetTypePermissions(string type, int typeID);        
         string GetUserHomePage();
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID);
         bool HasAssetDefaultReadPermission(string type, int id, Permission permission = Permission.ReadAsset);
@@ -271,6 +272,7 @@ namespace d360.model
         List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500);
         List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false);
         List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false);
+        List<AssetCrossReferenceResult> ImportCrossReferences(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600);
         bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID);
         bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID);
         bool IsValidReportingQuery(string statement);

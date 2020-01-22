@@ -123,7 +123,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                                             'Workflow',
                                             'workflowmonitor',
                                             ['fa-usb'],
-                                            `/sidebar/workflowmonitor${this.objectContextUrl()}`));
+                                            `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`));
                             }
                         });
                 });

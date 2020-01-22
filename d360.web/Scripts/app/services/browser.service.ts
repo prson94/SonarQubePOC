@@ -9,18 +9,22 @@ import {
 import { Observable } from 'rxjs';
 
 import {
-    AssetBrowserLineageApiResponseModel,
     AssetBrowserTranslation,
     AssetBrowserTranslationNode,
-    AssetBrowserLineageApiItemModel,
     AssetBrowserTranslationLink,
-    AssetBrowserLineageApiRelationshipModel,
     AssetBrowserDiagramAsset,
     AssetBrowserTranslationRelationCount,
     AssetBrowserApiHopDirection,
     FilterAncestryMode,
     FilterSelectionsModel,
-    AssetBrowserApiHopRequestModel
+    AssetBrowserApiHopRequestModel,
+    AssetBrowserTranslationOwnerCount,
+    AssetBrowserApiOwnerHopRequestModel,
+    AssetBrowserAssetsModel,
+    AssetBrowserAssetModel,
+    AssetBrowserOwnersModel,
+    AssetBrowserAssetRelationModel,
+    AssetBrowserModel
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -66,17 +70,17 @@ export class BrowserService extends BaseObservableService {
     */
     public getAssetLineage(
         model: AssetBrowserApiHopRequestModel
-    ): Observable<AssetBrowserLineageApiResponseModel> {
+    ): Observable<AssetBrowserAssetsModel> {
         const url = `api/v2/browser`;
 
         return this.http.post(url, model).pipe(
             map(response => response),
-            catchError(err => this.handleError(err))
+            catchError(err => this.handleError(err)) 
         );
     }
 
-    private findDirectParents(currentParent: AssetBrowserLineageApiItemModel, nodes: AssetBrowserLineageApiItemModel[], newHierarchy: AssetBrowserLineageApiItemModel[]) {
-        let parent: AssetBrowserLineageApiItemModel;
+    private findDirectParents(currentParent: AssetBrowserAssetModel, nodes: AssetBrowserAssetModel[], newHierarchy: AssetBrowserAssetModel[]) {
+        let parent: AssetBrowserAssetModel;
 
         if (nodes) {
             for (let n of nodes) {
@@ -96,21 +100,16 @@ export class BrowserService extends BaseObservableService {
         }
     }
 
-    public convertResponseModel(model: AssetBrowserLineageApiResponseModel, ancestryMode: FilterAncestryMode): AssetBrowserLineageApiResponseModel {
-        let convertedModel: AssetBrowserLineageApiResponseModel;
+    public convertResponseModel(model: AssetBrowserAssetsModel, ancestryMode: FilterAncestryMode): AssetBrowserAssetsModel {
+        let convertedModel: AssetBrowserAssetsModel = model;
 
         switch (+ancestryMode) {
             case FilterAncestryMode.AllAncestors:
-                convertedModel = model;
                 break;
             case FilterAncestryMode.DirectAncestor:
-                convertedModel = new AssetBrowserLineageApiResponseModel();
-                convertedModel.focalAssetUid = model.focalAssetUid;
-                convertedModel.assets = new Array();
-                convertedModel.intersects = model.intersects;
-
-                this.findDirectParents(null, model.assets, convertedModel.assets);
-
+                let assets: AssetBrowserAssetModel[] = new Array<AssetBrowserAssetModel>();
+                this.findDirectParents(null, model.assets, assets);
+                convertedModel.assets = assets;
                 break;
         }
 
@@ -123,9 +122,23 @@ export class BrowserService extends BaseObservableService {
     */
     public getAssetImpacts(
         model: AssetBrowserApiHopRequestModel
-    ): Observable<AssetBrowserLineageApiResponseModel> {
+    ): Observable<AssetBrowserAssetsModel> {
         const url = `api/v2/browser`;
-        model.Direction = AssetBrowserApiHopDirection.None;
+        model.Direction = AssetBrowserApiHopDirection.None; 
+        return this.http.post(url, model).pipe(
+            map(response => response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    /**
+    * Retrieve results from the Govern API for owners regarding specific assets.
+    * @returns A deep model of owners.
+    */
+    public getAssetOwners(
+        model: AssetBrowserApiOwnerHopRequestModel
+    ): Observable<AssetBrowserOwnersModel> {
+        const url = `api/v2/browser/owners`;
         return this.http.post(url, model).pipe(
             map(response => response),
             catchError(err => this.handleError(err))
@@ -149,19 +162,91 @@ export class BrowserService extends BaseObservableService {
     * Converts a response from the Govern API into a more appropriate representation for the asset browser diagram.
     * @returns A diagram-specific representation for the nodes and links.
     */
-    public translateAssetLineageResponseModel(model: AssetBrowserLineageApiResponseModel): AssetBrowserTranslation {
+    public translateAssetsResponseModel(model: AssetBrowserAssetsModel): AssetBrowserTranslation {
         let translationModel: AssetBrowserTranslation = new AssetBrowserTranslation();
 
         try {
             model.assets.forEach(a => {
-                this.loadTranslationChildNodes(translationModel, model.intersects, a, null, a.backColor, a.foreColor); // a.parentKey instead of null value in the paremeter to the left?
+                this.loadTranslationChildNodes(translationModel, model.assetRelations, a, null, a.backColor, a.foreColor); // a.parentKey instead of null value in the paremeter to the left?
             });
         } catch (e) {
             console.log(e);
         }
 
         try {
-            translationModel.links = this.determineLinkRoots(translationModel, model.intersects);
+            translationModel.links = this.determineLinkRoots(translationModel, model.assetRelations);
+        } catch (e) {
+            console.log(e);
+        }
+
+        return translationModel;
+    }
+
+    /**
+    * Converts a response from the Govern API into a more appropriate representation for the asset browser diagram.
+    * @returns A diagram-specific representation for the nodes and links.
+    */
+    public translateOwnersResponseModel(model: AssetBrowserOwnersModel): AssetBrowserTranslation {
+        let translationModel: AssetBrowserTranslation = new AssetBrowserTranslation();
+
+        let baseKey: string = model.fromKey + '|' + model.responsibilityTypeId;
+
+        try {
+            translationModel.nodes = new Array();
+
+            let ownersNode: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
+
+            ownersNode.showReveal = AssetBrowserApiHopDirection.None;
+            ownersNode.hop = 0;
+            //ownersNode.assetUid = a.assetUid;
+            //ownersNode.assetTypeId = a.assetTypeId;
+            ownersNode.class = AssetTypeClass.Organization; //convert string from API to enum value
+            ownersNode.back = "#FFE5D0";
+            ownersNode.backAmount = 0;
+            ownersNode.fore = "#ffffff";
+            ownersNode.foreAmount = 0;
+            ownersNode.icon = this.getIconUnicode('fa-user', AssetTypeClass.BusinessAsset);
+            ownersNode.isGroup = true;
+            ownersNode.key = baseKey;
+            ownersNode.text = model.responsibilityType;
+            ownersNode.template = "Owners";
+            translationModel.nodes.push(ownersNode); 
+
+            model.owners.forEach(a => {
+                let ownerNode: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
+
+                ownerNode.showReveal = AssetBrowserApiHopDirection.None;
+                ownerNode.hop = 0;
+                ownerNode.assetUid = a.resourceUid;
+                //ownerNode.assetTypeId = a.assetTypeId;
+                ownerNode.class = AssetTypeClass.BusinessAsset; //convert string from API to enum value
+                ownerNode.back = "#000000";
+                ownerNode.backAmount = 0;
+                ownerNode.fore = "#ffffff";
+                ownerNode.foreAmount = 0;
+                ownerNode.icon = this.getIconUnicode(a.icon, AssetTypeClass.BusinessAsset);
+                ownerNode.isGroup = false; 
+                ownerNode.group = baseKey; 
+                ownerNode.key = a.key;
+                ownerNode.template = "Owner";
+                ownerNode.text = a.displayValue;
+                translationModel.nodes.push(ownerNode);
+            });
+        } catch (e) {
+            console.log(e);
+        }
+
+        try {
+            let link = new AssetBrowserTranslationLink();
+
+            link.back = "#cccccc";
+            link.from = baseKey;
+            link.fromPort = "R";
+            link.to = model.fromKey;
+            link.toPort = "L;"
+
+            translationModel.links = new Array();
+            translationModel.links.push(link);
         } catch (e) {
             console.log(e);
         }
@@ -197,7 +282,7 @@ export class BrowserService extends BaseObservableService {
     * @returns A diagram link, if one is required.
     */
     private buildLinkRoot(
-        intersects: AssetBrowserLineageApiRelationshipModel[],
+        assetRelations: AssetBrowserAssetRelationModel[],
         rootKey: string,
         rootNodeUids: string[],
         currentKey: string,
@@ -207,7 +292,7 @@ export class BrowserService extends BaseObservableService {
 
         let fl: AssetBrowserTranslationLink;
 
-        let relevantIntersects = intersects.filter(x => {
+        let relevantIntersects = assetRelations.filter(x => {
             return (forward) ?
                 (rootNodeUids.indexOf(x.subjectKey) >= 0) :
                 (rootNodeUids.indexOf(x.objectKey) >= 0);
@@ -256,7 +341,7 @@ export class BrowserService extends BaseObservableService {
     */
     private determineLinkRoots(
         translationModel: AssetBrowserTranslation,
-        intersects: AssetBrowserLineageApiRelationshipModel[]
+        assetRelations: AssetBrowserAssetRelationModel[]
     ): AssetBrowserTranslationLink[] {
         let links: AssetBrowserTranslationLink[] = new Array();
 
@@ -271,9 +356,9 @@ export class BrowserService extends BaseObservableService {
             this.compileDescendantUidList(rootNode.key, translationModel.nodes, keys);
             keys.push(rootNode.key);
 
-            // 2. Loop through all intersects to see if any apply.
-            let forwardIntersections = intersects.filter(x => { return keys.indexOf(x.subjectKey) >= 0; });
-            let backwardIntersections = intersects.filter(x => { return keys.indexOf(x.objectKey) >= 0; });
+            // 2. Loop through all assetRelations to see if any apply.
+            let forwardIntersections = assetRelations.filter(x => { return keys.indexOf(x.subjectKey) >= 0; });
+            let backwardIntersections = assetRelations.filter(x => { return keys.indexOf(x.objectKey) >= 0; });
 
             // You can ignore this node in loop below.
             ignoredRootKeys.push(rootNode.key);
@@ -312,8 +397,8 @@ export class BrowserService extends BaseObservableService {
     */
     private loadTranslationChildNodes(
         translationModel: AssetBrowserTranslation,
-        intersects: AssetBrowserLineageApiRelationshipModel[],
-        current: AssetBrowserLineageApiItemModel,
+        assetRelations: AssetBrowserAssetRelationModel[],
+        current: AssetBrowserAssetModel,
         parentKey: string,
         backColor: string,
         foreColor: string) {
@@ -324,7 +409,7 @@ export class BrowserService extends BaseObservableService {
         if (current.items) {
             current.items.forEach(a => {
                 // Recurse
-                this.loadTranslationChildNodes(translationModel, intersects, a, current.key, backColor, foreColor);
+                this.loadTranslationChildNodes(translationModel, assetRelations, a, current.key, backColor, foreColor);
             });
         }
 
@@ -338,18 +423,26 @@ export class BrowserService extends BaseObservableService {
     * @returns A diagram node.
     */
     private createTranslationNode(
-        a: AssetBrowserLineageApiItemModel,
+        a: AssetBrowserAssetModel,
         parentKey: string,
         backColor: string,
         foreColor: string): AssetBrowserTranslationNode {
         let n: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
+
+        a.ownerCounts.forEach(oC => {
+            let assetBrowserTranslationOwnerCount: AssetBrowserTranslationOwnerCount = new AssetBrowserTranslationOwnerCount();
+            assetBrowserTranslationOwnerCount.count = oC.Count;
+            assetBrowserTranslationOwnerCount.responsibilityType = oC.ResponsibilityType;
+            assetBrowserTranslationOwnerCount.responsibilityTypeId = oC.ResponsibilityTypeID;
+            n.owners.push(assetBrowserTranslationOwnerCount);
+        }); 
 
         a.relationCounts.forEach(rC => {
             let assetBrowserTranslationRelationCount: AssetBrowserTranslationRelationCount = new AssetBrowserTranslationRelationCount();
             assetBrowserTranslationRelationCount.count = rC.Count;
             assetBrowserTranslationRelationCount.direction = rC.Direction;
             assetBrowserTranslationRelationCount.predicate = rC.Predicate;
-            assetBrowserTranslationRelationCount.predicateId = rC.PredicateId;
+            assetBrowserTranslationRelationCount.predicateId = rC.PredicateID;
             assetBrowserTranslationRelationCount.predicateUid = rC.PredicateUid;
             n.relations.push(assetBrowserTranslationRelationCount);
         });

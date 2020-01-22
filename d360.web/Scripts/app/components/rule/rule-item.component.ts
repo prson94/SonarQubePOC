@@ -49,7 +49,6 @@ declare var CompanySettings;
 
 export class RuleItemComponent extends BaseComponent implements OnInit, OnDestroy {
     private routeParamsSubscription: any;
-    private currentAreaNameSubscription: any;
     private currentAreaName: string;
     private rightSub: any;
     private ruleSub: Subscription;
@@ -72,6 +71,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = headerBreadcrumbService;
     }
 
     ngOnInit() {
@@ -79,11 +79,6 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
             let ruleTypeId = +params['ruleTypeId']; // (+) converts string 'id' to a number    
             let ruleId = +params['ruleId']; // (+) converts string 'id' to a number            
             this.isLoading = true;
-
-            this.currentAreaNameSubscription =
-                this.headerBreadcrumbService
-                    .getAreaName('RuleType', ruleTypeId)
-                    .subscribe(result => { this.currentAreaName = result });
 
             this.load(ruleId);
         });
@@ -93,37 +88,8 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
 
     ngOnDestroy() {
         this.routeParamsSubscription.unsubscribe();
-        this.currentAreaNameSubscription.unsubscribe();
     }
 
-    private buildbreadcrumb() {
-        this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
-            this.headerBreadcrumbService.clearBreadcrumbs();
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, undefined));//SiteUrlHelpers.SITE_URL_RULE_ROOT
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.ruleType.Name, `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${this.ruleType.ID}`,
-                undefined,
-                'RuleType',
-                this.ruleType.ID,
-                undefined,
-                undefined,
-                true));
-            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.rule.Name,
-                SiteUrlHelpers.getObjectUrl('RULEIMPLEMENTATION', this.rule.ID, this.ruleType.ID),
-                true,
-                'Rule',
-                this.ruleType.ID));
-
-            this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
-                this.secondaryNavService.setCurrentArea(this.rule.Name, icon, 'Definition');
-                this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, 'Rule', this.rule.ID, false, this.ruleType.HasWorkflow, this.rule.UID));
-                this.secondaryNavService.showItem(new SecondaryNavItem('Scoring', 'Scoring', ['fa-sitemap'], `/sidebar/score/Rule/${this.rule.UID}`, null, 6));
-                this.secondaryNavService.showItem(new SecondaryNavItem('Comments', 'Comments', ['fa-comments'], `/sidebar/comments/Rule/${this.rule.ID}`, null, 31));
-                this.secondaryNavService.showItem(new SecondaryNavItem('Actions', 'Actions', null, `/sidebar/actions/Rule/${this.rule.ID}`, null, 26));
-            });
-            this.secondaryNavService.showHeader(true);
-
-        });
-    }
     load(ruleId: number) {
         this.ruleSub = this.rulesService.getRule(ruleId)
             .subscribe(result => {
@@ -133,13 +99,12 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 this.messages = []; //clear any messages for this rule
                 this.loadItemSurvey();
 
-                this.rulesService.getRuleType(this.rule.TypeID).subscribe(r => { this.ruleType = r; this.buildbreadcrumb(); });
+                this.rulesService.getRuleType(this.rule.TypeID).subscribe(r => { this.ruleType = r; });
                 this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
                 this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
 
                 this.loadPermissions(this.permissionsService, StringConstants.ObjectRule, ruleId).then(p => {
-                    this.clearSidebar();
-                    this.setCommonSecondaryNavTabs(true, this.hasPermission(Permission.ReadResponsibilities), false, true, true, this.hasPermission(Permission.ReadRelationships), true, true);
+                    this.buildSecondaryNavigation(this.rule.UID);
                 });
                 this.isLoading = false;
             });

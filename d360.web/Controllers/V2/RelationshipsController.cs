@@ -299,18 +299,21 @@ namespace d360.web.Controllers.V2
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             int index = 1;
-            document.SetCellValue(1, index++, "Intersect ID");
+            
             document.SetCellValue(1, index++, "Subject Type");
-            document.SetCellValue(1, index++, "Subject ID");
-            document.SetCellValue(1, index++, "Subject UID");
             document.SetCellValue(1, index++, "Subject Name");
             document.SetCellValue(1, index++, "Subject Type Name");
             document.SetCellValue(1, index++, "Predicate");
-            document.SetCellValue(1, index++, "Object Type");
-            document.SetCellValue(1, index++, "Object ID");
-            document.SetCellValue(1, index++, "Object UID");
+            document.SetCellValue(1, index++, "Object Type");                      
             document.SetCellValue(1, index++, "Object Name");
             document.SetCellValue(1, index++, "Object Type Name");
+
+            document.SetCellValue(1, index++, "Relationship UID");
+            document.SetCellValue(1, index++, "Intersect ID");            
+            document.SetCellValue(1, index++, "Subject UID");
+            document.SetCellValue(1, index++, "Subject ID");
+            document.SetCellValue(1, index++, "Object UID");
+            document.SetCellValue(1, index++, "Object ID");
 
             foreach (var col in customColumns)
             {
@@ -322,18 +325,23 @@ namespace d360.web.Controllers.V2
             {
                 index = 1;
                 rowNumber++;
-                document.SetCellValue(rowNumber, index++, (int)row.ID);
-                document.SetCellValue(rowNumber, index++, (string)row.Subject);
-                document.SetCellValue(rowNumber, index++, (int)row.SubjectID);
-                document.SetCellValue(rowNumber, index++, row.SubjectUid.ToString());
+                
+                document.SetCellValue(rowNumber, index++, (string)row.Subject);                
                 document.SetCellValue(rowNumber, index++, (string)row.SubjectName);
                 document.SetCellValue(rowNumber, index++, (string)row.SubjectTypeName);
                 document.SetCellValue(rowNumber, index++, (string)row.PredicateName);
                 document.SetCellValue(rowNumber, index++, (string)row.Object);
-                document.SetCellValue(rowNumber, index++, (int)row.ObjectID);
-                document.SetCellValue(rowNumber, index++, row.ObjectUid.ToString());
                 document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
                 document.SetCellValue(rowNumber, index++, (string)row.ObjectTypeName);
+
+                document.SetCellValue(rowNumber, index++, row.UID.ToString());
+                document.SetCellValue(rowNumber, index++, (int)row.ID);
+                document.SetCellValue(rowNumber, index++, row.SubjectUid.ToString());
+                document.SetCellValue(rowNumber, index++, (int)row.SubjectID);
+                document.SetCellValue(rowNumber, index++, row.ObjectUid.ToString());
+                document.SetCellValue(rowNumber, index++, (int)row.ObjectID);
+
+
 
                 foreach (var col in customColumns)
                 {
@@ -1043,13 +1051,13 @@ namespace d360.web.Controllers.V2
             #region Header
 
             int index = 1;
-            document.SetCellValue(1, index++, "Id");
-            document.SetCellValue(1, index++, "Uid");
             document.SetCellValue(1, index++, "Subject");
             document.SetCellValue(1, index++, "Subject Class");
             document.SetCellValue(1, index++, "Predicate");
             document.SetCellValue(1, index++, "Object");
             document.SetCellValue(1, index++, "Object Class");
+            document.SetCellValue(1, index++, "UID");
+            document.SetCellValue(1, index++, "Relationship Type Id");            
 
             #endregion
 
@@ -1058,13 +1066,13 @@ namespace d360.web.Controllers.V2
             {
                 index = 1;
                 rowNumber++;
-                document.SetCellValue(rowNumber, index++, row.Id);
-                document.SetCellValue(rowNumber, index++, row.Uid.ToString());
                 document.SetCellValue(rowNumber, index++, row.Subject.Name);
                 document.SetCellValue(rowNumber, index++, row.Subject.Class.ToString());
                 document.SetCellValue(rowNumber, index++, row.Predicate.Name);
                 document.SetCellValue(rowNumber, index++, row.Object.Name);
-                document.SetCellValue(rowNumber, index++, row.Object.Class.ToString());
+                document.SetCellValue(rowNumber, index++, row.Object.Class.ToString());                
+                document.SetCellValue(rowNumber, index++, row.Uid.ToString());
+                document.SetCellValue(rowNumber, index++, row.Id);
             }
 
             #endregion
