@@ -143,11 +143,8 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
                 this.selected.ID = result.ID;
                 this.isLoading = false;
             });
-        }
-        if (this.auditSidebar && this.selected) {
-            this.auditSidebar.url = `/sidebar/audit/IssueType/${this.issueTypes.length != 0 ? this.selected.ID : -1}`;
-        }
-        this.buildSecondaryNavigationForObject(this.selected.ID, 'IssueType');
+            this.buildSecondaryNavigationForObject(this.selected.ID, 'IssueType');
+        }        
     }
     private load() {
         this.isLoading = true;
