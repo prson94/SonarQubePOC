@@ -224,29 +224,32 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Conflict, "One or more asset cross references already exist.", typeof(List<AssetCrossReference>))
 
         ]
-        public async Task<List<AssetCrossReference>> PostBulk(List<AssetCrossReference> models)
+        public async Task<IHttpActionResult> PostBulk(List<AssetCrossReference> models)
         {
+            var prefix = "CrossReferences.PostBulk => ";
+            var errorMessage = "";
+
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
-            bool isExecuted = false;
+
 
             try
             {
-                isExecuted = await crossReferencesRepository.PostBulkCrossReference(models);
+                var execution = getApiExecution(models.Count);
+                var results = crossReferencesRepository.PostBulkCrossReference(models, execution);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
-            catch
+            catch (Exception ex)
             {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>()
+                {
+                    { "Endpoint Method", prefix }
+                });
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
-
-            if (!isExecuted)
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Conflict, "One or more asset cross references already exist."));
-            }
-
-            //return the created items
-
-            return models;
+           
         }
 
 
@@ -457,12 +460,12 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
 
         ]
-        public async Task<IHttpActionResult> PostBulkCrossReferenceAsync(List<AssetCrossReference> crossReferences)
+        public async Task<IHttpActionResult> PostBatchCrossReferenceAsync(List<AssetCrossReference> crossReferences)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to add asset cross reference"));
 
-            var prefix = "CrossReferences.PostBulkCrossReference => ";
+            var prefix = "CrossReferences.PostBatchCrossReferenceAsync => ";
             var errorMessage = "";
             try
             {
@@ -474,7 +477,7 @@ namespace d360.web.Controllers.V2
 
                 var execution = getApiExecution(crossReferences.Count);
 
-                ApiExecutionInfo executionInfo = await crossReferencesRepository.PostBulkCrossReference(crossReferences, execution);
+                ApiExecutionInfo executionInfo = await crossReferencesRepository.PostBatchCrossReference(crossReferences, execution);
 
                 var result = Request.CreateResponse(
                                  HttpStatusCode.OK,

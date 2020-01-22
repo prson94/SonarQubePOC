@@ -178,8 +178,8 @@ export class RelationshipsService extends BaseObservableService {
 
     }
 
-    getObjectRelationships(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, includeInverse: boolean = true): Observable<any> {
-        return this.http.get(`/api/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}?includeInverse=${includeInverse}`)
+    getObjectRelationships(objectType: string, objectId: number, targetType: string, targetTypeId: number, intersectTypeID: number, includeInverse: boolean = true, sourceIsObject: boolean = false): Observable<any> {
+        return this.http.get(`/api/${objectType}/${objectId}/relationships/${targetType}/${targetTypeId}/${intersectTypeID}?includeInverse=${includeInverse}&sourceIsObject=${sourceIsObject}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

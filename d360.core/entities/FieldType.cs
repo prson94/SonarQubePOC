@@ -674,6 +674,7 @@ namespace d360.core.entities
         [MaxLength(250, ErrorMessage = "{0} cannot exceed {1} characters.")]
         public string FriendlyName { get; set; }
         [DataMember]
+        [MaxLength(250, ErrorMessage = "{0} cannot exceed {1} characters.")]
         public string Category { get; set; }
         [DataMember]
         public FieldTypeDataTypeApiViewModel Type { get; set; }
