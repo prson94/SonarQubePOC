@@ -1918,16 +1918,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         document.SetCellStyle(rowIndex, colIndex, style);
                     }
                     break;
-                case "TAG":
-                    if (value != null)
-                    {
-                        var parsed = JsonConvert.DeserializeObject<List<TagDetailItem>>(valueString);
-                        if (parsed != null)
-                        {
-                            document.SetCellValue(rowIndex, colIndex, string.Join("|", parsed.Select(x => x.Value)));
-                        }
-                    }
-                    break;
                 default:
                     if (valueString.StartsWith("="))
                         valueString = "'" + valueString;
