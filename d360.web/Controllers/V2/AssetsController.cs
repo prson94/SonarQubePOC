@@ -27,6 +27,7 @@ using d360.core.validators;
 using System.Web.Http.Description;
 using d360.core.resources;
 using Resources;
+using System.IO;
 
 namespace d360.web.Controllers.V2
 {
@@ -112,7 +113,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null,string FusionTypeUID = null, Guid? assetTypeUid=null)
+        public async Task<HttpResponseMessage> GetAssetTypesAsync(AssetTypeClass? Class = null, string FusionTypeUID = null, Guid? assetTypeUid = null)
         {
             var prefix = "Assets.GetAssetTypesAsync => ";
             var errorMessage = "";
@@ -122,7 +123,7 @@ namespace d360.web.Controllers.V2
                 Guid? fusionTypeGuid = Guid.Empty;
                 if (!string.IsNullOrEmpty(FusionTypeUID))
                 {
-                    if(Class == null || (Class == AssetTypeClass.FusionQuery || Class == AssetTypeClass.FusionAttribute))
+                    if (Class == null || (Class == AssetTypeClass.FusionQuery || Class == AssetTypeClass.FusionAttribute))
                     {
                         fusionTypeGuid = Guid.Parse(FusionTypeUID);
                     }
@@ -132,15 +133,15 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                if(assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
+                if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
                 {
                     var assetType = this.AssetRepository.GetAssetTypeByUID(assetTypeUid.Value);
-                    if(assetType == null)
+                    if (assetType == null)
                         if (assetType == null) return ReturnApiError(HttpStatusCode.BadRequest, AssetTypeErrors.NotFoundGeneric);
                 }
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                var assetTypes = await AssetRepository.GetAssetType(queryParams,Class, fusionTypeGuid,assetTypeUid);
+                var assetTypes = await AssetRepository.GetAssetType(queryParams, Class, fusionTypeGuid, assetTypeUid);
 
                 return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
             }
@@ -169,6 +170,7 @@ namespace d360.web.Controllers.V2
         /// *  If you use the subject asset type Uid as the assetTypeUid value, only use of the objectUid filter is supported.
         /// *  If you use either the subjectUid or objectUid filter, the predicateUid must be included in the request. 
         /// *  If you do not include the predicateUid, any values given in the subjectUid or objectUid field are ignored.
+        /// If the requested content media type is "application/octet-stream", the response will be an excel document with the asset results and the assetTypeUid as the file name.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -176,6 +178,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("{assetTypeUid:Guid}"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(AssetsApiViewModel)),
+            SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
@@ -195,6 +198,8 @@ namespace d360.web.Controllers.V2
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
                 var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));
                 if(!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request"));
@@ -202,9 +207,26 @@ namespace d360.web.Controllers.V2
                 if (!validator.IsValidOrderDirectionGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order direction passed in the request"));
 
-                var results = await AssetRepository.GetAssets(assetTypeUid, queryParams);
+                HttpResponseMessage response;
 
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+                if (isStreamResponse)
+                {
+                    var results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
+
+                    var stream = new MemoryStream();
+                    results.SaveAs(stream);
+                    byte[] bytes = stream.ToArray();
+
+                    response = createFileResponseMessage(HttpStatusCode.OK, $"{assetTypeUid}.xlsx", bytes);
+                }
+                else
+                {
+                    var results = await AssetRepository.GetAssets(assetTypeUid, queryParams);
+                    response = Request.CreateResponse(HttpStatusCode.OK, results);
+                }
+
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
             }
             catch (Exception ex)
             {
