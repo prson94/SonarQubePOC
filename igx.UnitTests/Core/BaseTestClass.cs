@@ -246,7 +246,7 @@ namespace igx.UnitTests
                 }
                 : null);
             mockRepo.Setup(x => x.GetExecutionItems(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
-                .Returns(Task.FromResult(new APIExecutionAPIModelResult { total = 1, pageNum = 1, pageSize = 200 }));
+                .Returns(Task.FromResult(new APIExecutionAPIModelResult { total = 1, pageNum = 1, pageSize = 200, StatusCode = HttpStatusCode.OK}));
 
             mockRepo.Setup(x => x.GetAssetTypeByModel(It.IsAny<AssetTypeUpsert>()))
                 .Returns(new AssetType());
