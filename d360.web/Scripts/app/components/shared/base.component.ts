@@ -210,6 +210,9 @@ export class BaseComponent {
     ) {
         if (this.secondaryNavService) {
             this.clearSidebar();
+
+            var isCommonAsset: boolean = this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule';
+
             if (hasLineage && CompanySettings.ShowLineageSidebar != 'false') {
 
                 let lineageVersion: number = 1;
@@ -272,7 +275,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.ownershipSidebar);
             }
 
-            if (hasDashboard) {
+            if (hasDashboard || isCommonAsset) {
                 this.dashboardSidebar = new SecondaryNavItem(
                     'Dashboards',
                     'dashboards',
@@ -313,7 +316,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.followersSidebar);
             }
 
-            if (hasMonitor) {
+            if (hasMonitor || isCommonAsset) {
                 this.monitorSidebar = new SecondaryNavItem(
                     'Workflow',
                     'monitor',
@@ -334,7 +337,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.childSidebar);
             }
 
-            if (this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule') {
+            if (isCommonAsset) {
                 this.scoreSidebar = new SecondaryNavItem(
                     'Scoring',
                     'Scoring',
@@ -651,12 +654,12 @@ export class BaseComponent {
 
 
 
-    buildSecondaryNavigationForAssetID(assetId: number, object: string) {
-        this.buildSecondaryNavigation(null, null, object, assetId);
+    buildSecondaryNavigationForAssetID(assetId: number, object: string, buildBreadcrumbOverride: Function = null) {
+        this.buildSecondaryNavigation(null, null, object, assetId, null, buildBreadcrumbOverride);
     }
 
-    buildSecondaryNavigationForObject(objectId: number, object: string) {
-        this.buildSecondaryNavigation(null, objectId, object);
+    buildSecondaryNavigationForObject(objectId: number, object: string, buildBreadcrumbOverride: Function = null) {
+        this.buildSecondaryNavigation(null, objectId, object, null, null, buildBreadcrumbOverride);
     }
 
     private isSidebarLoadedForCurrentObject(loadData: SecondaryNavPostModel): boolean {
@@ -680,7 +683,7 @@ export class BaseComponent {
         return false;
     }
 
-    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null) {
+    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null) {
         var data = new SecondaryNavPostModel();
         data.PreloadData = false;
         if (assetUid != null)
@@ -740,27 +743,32 @@ export class BaseComponent {
             var homeUrl = SiteUrlHelpers.getUrl(r.Object, r.ObjectID, r.ObjectTypeId, areaName);
 
             this.secondaryNavService.setLocalHomeUrl(homeUrl);
+            this.breadcrumbsService.setCurrentObjectInfo(r.Object, r.ObjectID);
+            if (buildBreadcrumbOverride == null) {
+                if (this.objectType.toLowerCase() == 'artifact') {
+                    this.setArtifactBreadcrumbs(r);
+                }
+                else if (this.objectType.toLowerCase() == 'policy') {
+                    this.setTreeBreadcrumbs(r, 'Policy');
+                }
+                else if (this.objectType.toLowerCase() == 'taxonomy') {
+                    this.setTreeBreadcrumbs(r, 'Taxonomy');
+                }
+                else if (this.objectType.toLowerCase() == 'rule') {
+                    this.setRuleBreadcrumbs(r);
+                }
+                else if (this.objectType.toLowerCase() == 'referenceitemtype') {
+                    this.breadcrumbsService.clearBreadcrumbs();
 
-            if (this.objectType.toLowerCase() == 'artifact') {
-                this.setArtifactBreadcrumbs(r);
-            }
-            else if (this.objectType.toLowerCase() == 'policy') {
-                this.setTreeBreadcrumbs(r, 'Policy');
-            }
-            else if (this.objectType.toLowerCase() == 'taxonomy') {
-                this.setTreeBreadcrumbs(r, 'Taxonomy');
-            }
-            else if (this.objectType.toLowerCase() == 'rule') {
-                this.setRuleBreadcrumbs(r);
-            }
-            else if (this.objectType.toLowerCase() == 'referenceitemtype') {
-                this.breadcrumbsService.clearBreadcrumbs();
-
-                this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Reference Lists', homeUrl));
-                this.setBrowserTitle(this.breadcrumbsService.getTitleService(), 'Reference Lists');
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Reference Lists', homeUrl));
+                    this.setBrowserTitle(this.breadcrumbsService.getTitleService(), 'Reference Lists');
+                }
+                else {
+                    this.SetCommonBreadcrumbs(r, area, homeUrl);
+                }
             }
             else {
-                this.SetCommonBreadcrumbs(r, area, homeUrl);
+                buildBreadcrumbOverride();
             }
 
             this.secondaryNavService.clearItems();
@@ -863,7 +871,7 @@ export class BaseComponent {
 
                         for (let breadcrumb of data.Artifact.Breadcrumbs) {
                             index++;
-                   
+
                             if (index == data.Artifact.Breadcrumbs.length) {
                                 //last item in the breadcrumb
                                 this
