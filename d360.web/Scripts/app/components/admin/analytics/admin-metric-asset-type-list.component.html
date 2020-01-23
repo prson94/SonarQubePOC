@@ -1,13 +1,12 @@
 ﻿
 <header>
-    Allocations
     <d3s-tile-actions [hasAdd]="true" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter" [hasExport]="true" (exportClick)="export()"></d3s-tile-actions>
 </header>
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
 
     <input type="text" pInputText [hidden]="!showSimpleFilter" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter" [ngModel]="dt.filters['global']?.value">
-    <p-table #dt [value]="allocations" selectionMode="single" [globalFilterFields]="['assetClassName','assetTypePath','scoreType']" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selection" (onRowSelect)="onRowSelect($event)">
+    <p-table #dt class="gov-table" [rowHover]="true" [value]="allocations" selectionMode="single" [globalFilterFields]="['assetClassName','assetTypePath','scoreType']" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selection" (onRowSelect)="onRowSelect($event)">
         <ng-template pTemplate="header">
             <tr>
                 <th [pSortableColumn]="'assetClassName'" style="width: 150px">
@@ -32,13 +31,12 @@
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
-            <tr [pSelectableRow]="item">
-                <td (click)="openMeasures(item)" >{{item.assetClassName}}</td>
+            <tr>
+                <td (click)="openMeasures(item)">{{item.assetClassName}}</td>
                 <td (click)="openMeasures(item)">{{item.assetTypePath}}</td>
                 <td (click)="openMeasures(item)">{{item.scoreType}}</td>
                 <td class="RowTools">
-                    <d3s-preview-tooltip objectType="Allocation" [uid]="item.uid" icon="info"></d3s-preview-tooltip>
-                    &nbsp;&nbsp;&nbsp;
+                    <a style="cursor:pointer;"><i [copy-clipboard]="item.uid" [pTooltip]="'UID: \n' + item.uid + '\n\n (click to copy)\n'" tooltipPosition="top" class="fa fa-info"></i></a>
                     <a style="cursor:pointer;" (click)="doEdit(item);"><i class="fa fa-pencil"></i></a>
                     <a style="cursor:pointer;" (click)="doDelete(item);"><i class="fa fa-trash-o"></i></a>
                 </td>
@@ -71,6 +69,6 @@
     </div>
 
 </d3s-delete-form>
-<d3s-modal [title]="editTitle" additionalClasses="modal-delete-form" (onClose)="onSaveCancel()" [isVisible]="showEdit">
+<d3s-modal [title]="editTitle" additionalClasses="medium-dialog" (onClose)="onSaveCancel()" [isVisible]="showEdit">
     <d3s-admin-allocation-editor [disabled]="selection.hasMeasure" [selection]="selection" (onCancel)="showEdit=false;" (onSave)="showEdit=false;load();"></d3s-admin-allocation-editor>
 </d3s-modal>
