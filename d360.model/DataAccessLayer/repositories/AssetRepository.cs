@@ -1262,6 +1262,14 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
                 string[] allowedDirections = new string[] { "asc", "desc" };
                 var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+                if (!allowedDirections.Contains(order.Trim().ToLower()))
+                {
+                    return new APIExecutionAPIModelResult
+                    {
+                        Message = "Invalid order direction passed in the request",
+                        StatusCode = HttpStatusCode.BadRequest
+                    };
+                }
                 orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
             }
             
@@ -1272,7 +1280,17 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             }
             else
             {
+
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
+                string[] validOrderByFields = { "executionid", "resourceuid", "resource", "total",
+                                                "processed", "error", "errormessage", "processingstartedon",
+                                                "startedon", "completedon", "method", "route", "fields" };
+                if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                    return new APIExecutionAPIModelResult
+                    {
+                        Message = "Invalid order passed in the request",
+                        StatusCode = HttpStatusCode.BadRequest
+                    };
                 orderBySql = $" order by {orderByCol} {orderDirection} ";
             }
 
@@ -1350,7 +1368,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 items = items,
                 total = count.FirstOrDefault(),
                 pageNum = pageNum,
-                pageSize = pageSize
+                pageSize = pageSize,
+                StatusCode = HttpStatusCode.OK
             };
 
             return resultsModel;

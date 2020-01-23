@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
+using System.Net;
 
 namespace d360.core.entities
 {
@@ -83,6 +84,11 @@ namespace d360.core.entities
     {
         [DataMember]
         public IEnumerable<APIExecutionAPIModel> items { get; set; }
+
+        [IgnoreDataMember]
+        public HttpStatusCode StatusCode { get; set; }
+        [IgnoreDataMember]
+        public string Message { get; set; }
     }
 
     public class APIExecutionAPIModel

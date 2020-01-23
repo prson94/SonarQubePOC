@@ -59,7 +59,12 @@ namespace d360.web.Controllers.V2
         {
 
             var queryParams = Request.GetQueryNameValuePairs();
+
             var executions = await AssetRepository.GetExecutionItems(queryParams);
+            if(executions.StatusCode != HttpStatusCode.OK)
+            {
+                return await Task.FromResult(errorMessageResponse(executions.StatusCode, "Invalid request", executions.Message));
+            }
             return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
                         Request.CreateResponse(
