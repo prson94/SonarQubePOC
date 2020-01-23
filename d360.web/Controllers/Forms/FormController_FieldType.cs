@@ -1154,6 +1154,27 @@ offset 0 rows fetch next 25 rows only
                 {
                     throw new ConflictException("Error Occurred!", FieldInfo.FieldReferenceItemListFromRelationship_NeededRelationship);
                 }
+
+                if (model.FieldType.Type == DataType.Relationship.ToString())
+                {
+                    var count1 = Company.Query<int>("select count(1) from [FieldType] ft " +
+                        "  where (Object = @fobjectType and ObjectID = @fobjectid) " +
+                        "  and(LookupObjectID is not null) and Type = 'Relationship' " +
+                        "  and ft.id != @ffieldtypeid " +
+                        "  and ft.LookupObjectID = @fLookupObjectID" +
+                        "  and ft.LookupObjectType = @fLookupObjectType",
+                        new
+                        {
+                            fobjectType = model.FieldType.Object,
+                            fobjectid = model.FieldType.ObjectID,
+                            ffieldtypeid = model.FieldType.ID,
+                            fLookupObjectID = model.FieldType.LookupObjectID,
+                            fLookupObjectType = model.FieldType.LookupObjectType
+                        }).Single();
+                    if (count1 > 0)
+                        throw new ConflictException("Error Occurred!", FieldInfo.Field_RelationShipDuplicate);
+                }
+
                 if (model.FieldType.Type != DataType.Lookup.ToString())
                     model.FieldType.ParentFieldTypeID = 0;
 
@@ -1510,6 +1531,21 @@ offset 0 rows fetch next 25 rows only
                             Company.Fields.Where(x => x.FieldTypeID == ft.ID).Where(x => x.Value.Contains(",")).ToList().Count() > 0)
                 {
                     throw new ConflictException("Error Occurred!", FormInfo.FieldType_List_Error_Multiple_Items_Used);
+                }
+
+                if (model.FieldType.Type == DataType.Relationship.ToString())
+                {
+                    var count1 = Company.Query<int>("select count(1) from [FieldType] ft " +
+                        "  where (Object = @fobjectType and ObjectID = @fobjectid) " +
+                        "  and(LookupObjectID is not null) and Type = 'Relationship' " +
+                        "  and ft.id != @ffieldtypeid " +
+                        "  and ft.LookupObjectID = @fLookupObjectID" +
+                        "  and ft.LookupObjectType = @fLookupObjectType",
+                        new { fobjectType = model.FieldType.Object, fobjectid = model.FieldType.ObjectID, 
+                              ffieldtypeid = model.FieldType.ID, fLookupObjectID = model.FieldType.LookupObjectID, 
+                              fLookupObjectType = model.FieldType.LookupObjectType }).Single();
+                    if (count1 > 0)
+                        throw new ConflictException("Error Occurred!", FieldInfo.Field_RelationShipDuplicate);
                 }
 
                 if (model.FieldType.Type == DataType.RefListRelationship.ToString() && (model.FieldType.LookupObjectType != "IntersectType" || model.FieldType.LookupObjectID == null))
