@@ -1551,7 +1551,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         left join Field F1 on F1.FieldTypeID = {f.LookupObjectFieldTypeID} and F1.AssetID = R1.ID
 						left join Asset R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
                         left join Field F2 on F2.FieldTypeID = {f.LookupObjectFieldTypeID} and F2.AssetID = R2.ID
-                        where I.IntersectTypeID = {f.LookupObjectID}
+                        where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(F1.FormattedValue,F2.FormattedValue) is not null
                     ) {tableAlias}");
                 }
                 else if(f.Type == "Relationship")
@@ -1564,7 +1564,18 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         left join AssetDetail AD1 on AD1.Object = R1.Object and AD1.ObjectID = R1.ObjectId
 						left join Asset R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
                         left join AssetDetail AD2 on AD2.Object = R2.Object and AD2.ObjectID = R2.ObjectId
-                        where I.IntersectTypeID = {f.LookupObjectID}
+                        where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(AD1.DisplayValue,AD2.DisplayValue) is not null
+                    ) {tableAlias}");
+                }
+                else if (f.Type == "RefListRelationship")
+                {
+                    fieldJoins.Add($@"outer apply (
+                        select top 1 
+                           ISNULL(R1.SubjectName,R2.ObjectName) as FormattedValue
+                        from [Intersect] I
+                        left join [IntersectDetail] R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
+						left join [IntersectDetail] R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
+                        where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(R1.SubjectName,R2.ObjectName) is not null
                     ) {tableAlias}");
                 }
                 else if (f.Type == "JsonElement")
