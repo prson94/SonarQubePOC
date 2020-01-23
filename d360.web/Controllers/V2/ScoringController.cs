@@ -114,12 +114,14 @@ namespace d360.web.Controllers.V2
                 if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"You have not provided valid assetTypeUid.");
 
-                if (model.scoreType == null)
+                List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance, ScoreType.Perceptional };
+
+                if (!scoreTypes.Contains(model.scoreType))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"You have not provided valid scoreType.");
                 }
 
-                var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid.Value);
+                var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid);
 
                 List<AssetTypeClass> allowedClasses = ScoringRepository.AllowedClassesForScoreType();
                 if (assetType == null)
@@ -176,12 +178,14 @@ namespace d360.web.Controllers.V2
                 if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"You have not provided valid assetTypeUid");
 
-                if (model.scoreType == null)
+                List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance, ScoreType.Perceptional };
+
+                if (!scoreTypes.Contains(model.scoreType))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"You have not provided valid scoreType");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"You have not provided valid scoreType.");
                 }
 
-                var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid.Value);
+                var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid);
 
                 List<AssetTypeClass> allowedClasses = ScoringRepository.AllowedClassesForScoreType();
                 if (assetType == null)
@@ -243,7 +247,7 @@ namespace d360.web.Controllers.V2
                 var hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
                 if (hasActiveMeasures)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error deleting allocation", $"Allocation have active measures");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined");
                 }
 
                 ScoringRepository.DeleteAllocation(alloc);
@@ -275,7 +279,7 @@ namespace d360.web.Controllers.V2
         {
             var queryParams = Request.GetQueryNameValuePairs();
             queryParams = queryParams.Union(new List<KeyValuePair<string, string>>() { new KeyValuePair<string, string>("_state", "1") });
-            var models =  ScoringRepository.GetAllocations(queryParams);
+            var models = ScoringRepository.GetAllocations(queryParams);
             var document = new SLDocument();
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
@@ -344,8 +348,8 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.Unauthorized, "Error retrieving unallocated asset types", "You are not authorized to perform this action.");
                 }
-                        
-                if(!Enum.TryParse(scoreType, true,out ScoreType sc))
+
+                if (!Enum.TryParse(scoreType, true, out ScoreType sc))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error retrieving unallocated asset types", $"Invalid score type: {scoreType} provided, please provide a valid score type.");
                 }
@@ -358,6 +362,6 @@ namespace d360.web.Controllers.V2
             }
         }
     }
- 
+
 
 }

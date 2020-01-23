@@ -33,10 +33,10 @@ namespace d360.core.entities.Scoring
     public class AllocationApiUpsertModel
     {
         [DataMember]
-        public Guid? assetTypeUid { get; set; }
+        public Guid assetTypeUid { get; set; }
 
         [DataMember]
-        public ScoreType? scoreType { get; set; }
+        public ScoreType scoreType { get; set; }
     }
 
     public class AllocationApiGetUnallocatedAssetTypeModel

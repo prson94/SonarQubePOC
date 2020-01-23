@@ -127,8 +127,8 @@ namespace d360.model.DataAccessLayer
             else
             {
                 alloc = new ScoreTypeAllocation();
-                alloc.AssetTypeUid = model.assetTypeUid.Value;
-                alloc.ScoreType = model.scoreType.Value;
+                alloc.AssetTypeUid = model.assetTypeUid;
+                alloc.ScoreType = model.scoreType;
                 alloc.CreatedBy = alloc.UpdatedBy = companyContext.CurrentResourceID;
                 alloc.CreatedOn = alloc.UpdatedOn = DateTime.UtcNow;
                 companyContext.ScoreTypeAllocations.Add(alloc);
@@ -158,8 +158,8 @@ namespace d360.model.DataAccessLayer
 
         public AllocationApiGetModel UpdateAllocation(AllocationApiUpsertModel model, ScoreTypeAllocation alloc)
         {
-            alloc.AssetTypeUid = model.assetTypeUid.Value;
-            alloc.ScoreType = model.scoreType.Value;
+            alloc.AssetTypeUid = model.assetTypeUid;
+            alloc.ScoreType = model.scoreType;
             alloc.UpdatedBy = companyContext.CurrentResourceID;
             alloc.UpdatedOn = DateTime.UtcNow;
             companyContext.SaveChanges();

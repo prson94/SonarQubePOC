@@ -414,5 +414,6 @@
   <include file="scripts/GOV-4973.xml"/> <!-- Add triggers to ResponsibilityRuleResultAsset_AfterDelete to update index on affected Assets -->
   <include file="scripts/GOV-9095.xml"/> <!-- Performance fixes to [dbo].[GetDynamicAssets] and added TVF [utility].[FieldDetails] -->
   <include file="scripts/GOV-9231.xml"/> <!-- Remove unused database objects -->
+  <include file="scripts/GOV-9416.xml"/> <!-- AssetBrowser procedure - limit relationship badge counts to leaf assets -->
   <include file="scripts/GOV-9112.xml"/> <!-- Update [graph].[GetHop] to return asset read access bit -->
 </databaseChangeLog>

@@ -1056,7 +1056,7 @@ namespace d360.web.Controllers.V2
             document.SetCellValue(1, index++, "Predicate");
             document.SetCellValue(1, index++, "Object");
             document.SetCellValue(1, index++, "Object Class");
-            document.SetCellValue(1, index++, "UID");
+            document.SetCellValue(1, index++, "Relationship Type UID");
             document.SetCellValue(1, index++, "Relationship Type Id");            
 
             #endregion
