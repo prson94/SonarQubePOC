@@ -11,7 +11,7 @@
             splitStatements="true"
             stripComments="false">
       <![CDATA[
-      update assettype set HashValue = null where hashvalue is not null // force reporting views to rebuild and create synonyms that were deleted.
+      update assettype set HashValue = null where hashvalue is not null
 ]]>
     </sql>
   </changeSet>  
