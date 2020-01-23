@@ -247,7 +247,7 @@ namespace d360.web.Controllers.V2
                 var hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
                 if (hasActiveMeasures)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error deleting allocation", $"Allocation have active measures");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined");
                 }
 
                 ScoringRepository.DeleteAllocation(alloc);
