@@ -873,6 +873,7 @@ namespace d360.extensions.search
 
             string tagSearch = "";
             bool tagMust = false;
+            char tagStrategy = 'Q'; // Q(ueryString), (MatchPhrase)P(refix), M(atchPhrase)
             List<QueryContainer> shouldQueries = new List<QueryContainer>();
             List<QueryContainer> mustQueries = new List<QueryContainer>();
             List<QueryContainer> filterMustQueries = new List<QueryContainer>();
@@ -951,6 +952,8 @@ namespace d360.extensions.search
                     case "d3sTags":
                         tagSearch = EscapeSpecialCharacters(fieldFilter.Phrase);
                         tagMust = true;
+                        //If filter is MatchWords, strategy is MatchPhrase. Othewise use MatchPhrasePrefix. If search string contains * use QueryStringQuery
+                        tagStrategy = fieldFilter.MatchWords ? 'M' : tagSearch.Contains("*") ? 'Q' : 'P';
                         continue;
                     case "_type":
                         fld = new Nest.Field(D3S_FIELD_PREFIX + "Category");
@@ -985,15 +988,39 @@ namespace d360.extensions.search
             //Tag query
             if (tagSearch != "")
             {
+                List<QueryContainer> tagQueries = new List<QueryContainer>();
+                switch(tagStrategy)
+                {
+                    case 'P':
+                        tagQueries.Add(new MatchPhrasePrefixQuery {
+                            Field = fldTag,
+                            Query = tagSearch
+                        });
+                        break;
+                    case 'M':
+                        tagQueries.Add(new MatchPhraseQuery
+                        {
+                            Field = fldTag,
+                            Query = tagSearch
+                        });
+                        break;
+                    case 'Q':
+                    default:
+                        tagQueries.Add(new QueryStringQuery
+                        {
+                            DefaultField = fldTag,
+                            Query = tagSearch
+                        });
+                        break;
+
+                }
+
                 NestedQuery tagQuery = new NestedQuery
                 {
                     Path = D3S_FIELD_PREFIX + "Tags",
                     Query = new BoolQuery
                     {
-                        Must = new QueryContainer[] { new QueryStringQuery {
-                                            DefaultField = fldTag,
-                                            Query = tagSearch
-                                        }}
+                        Must = tagQueries
                     },
                     InnerHits = new InnerHits
                     {
@@ -1286,7 +1313,7 @@ namespace d360.extensions.search
                  * queried using 'match' and the last word will be 'prefix'
                  * For searching tags, an asterisk is appended and a regular 'query_string' query is used 
                  */
-            Queue<string> parts = new Queue<string>(phrase.ToLower().Split(' '));
+                Queue<string> parts = new Queue<string>(phrase.ToLower().Split(' '));
                 tagSearch = EscapeSpecialCharacters(phrase.ToLower()) + (!phrase.EndsWith("*") ? "*" : "");
 
                 while (parts.Count > 1)
