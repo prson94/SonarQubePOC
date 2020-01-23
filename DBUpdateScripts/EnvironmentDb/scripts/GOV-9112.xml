@@ -16,7 +16,8 @@ ALTER procedure [graph].[GetHop]
 	@hopSalt varchar(25),
 	@direction char(1), -- (F)orward, (B)ackward, (I)mpact, or '' (Initial)?
 	@predicateUid uniqueidentifier,
-	@resourceId int
+	@resourceId int,
+	@isAdmin bit
 as
 begin
 	set nocount on;
@@ -232,7 +233,7 @@ begin
 				,case 
 					when exists(select * from dbo.AssetTypesUserCantRead(@resourceId) where assettypeid = A.AssetTypeId) then 0
 					when exists(select * from dbo.AssetsByTypeUserCantRead(@resourceId, A.AssetTypeId) where A.id = assetid) then 0
-				else 1
+				else @isAdmin
 				end as HasReadAccess
 		from	cte T
 				cross apply T.Segment.nodes('/path/segment') doc(c)

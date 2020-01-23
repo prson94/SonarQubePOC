@@ -233,7 +233,7 @@ namespace d360.web.Controllers.V2
                 {
                     var hopModel = new HopModel();
 
-                    var reader = await Company.QueryMultipleAsync(@"exec graph.GetHop @assets, @hopSalt, @direction, @predicateUid, @resourceId", new
+                    var reader = await Company.QueryMultipleAsync(@"exec graph.GetHop @assets, @hopSalt, @direction, @predicateUid, @resourceId, @isAdmin", new
                     {
                         assets = hopAssets.AsTableValuedParameter(
                             "dbo.AssetBrowserImpactTable",
@@ -242,7 +242,8 @@ namespace d360.web.Controllers.V2
                         HopSalt,
                         direction,
                         predicateUid = criteria.PredicateUid,
-                        resourceId = Company.CurrentResourceID
+                        resourceId = Company.CurrentResourceID,
+                        isAdmin = Company.CurrentResourceIsAdmin
                     }, timeout: 60);
 
                     hopModel.nodes = reader.Read<HopNodeResult>().ToList();
