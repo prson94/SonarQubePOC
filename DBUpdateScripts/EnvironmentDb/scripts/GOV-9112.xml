@@ -381,8 +381,9 @@ begin
 									),
 									'[]'
 								)
-	from	#nodes R;
-
+	from	#nodes R
+	where	R.IsLeaf = 1;
+    
 	-- Get owner badges
 	update	R
 	set		R.OwnerCounts =	coalesce(
@@ -450,7 +451,7 @@ end
     </sql>
 	<rollback>
 <![CDATA[
-ALTER procedure [graph].[GetHop]
+alter procedure [graph].[GetHop]
 	@assets dbo.AssetBrowserImpactTable readonly,
 	@hopSalt varchar(25),
 	@direction char(1), -- (F)orward, (B)ackward, (I)mpact, or '' (Initial)?
@@ -810,7 +811,8 @@ begin
 									),
 									'[]'
 								)
-	from	#nodes R;
+	from	#nodes R
+	where	R.IsLeaf = 1;
 
 	-- Get owner badges
 	update	R
