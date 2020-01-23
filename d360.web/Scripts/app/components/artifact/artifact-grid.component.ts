@@ -23,8 +23,7 @@ import {
     GridField,
     GridFilterColumn,
     GridFilterExpression,
-    GridRelationshipFilterExpression,
-    GridAttributeFilterExpression
+    GridRelationshipFilterExpression
 } from '../../models/grid-definition.model';
 import {GridDefinitionService} from '../../services/grid-definition.service';
 import { ArtifactService } from '../../services/artifacts.service';
@@ -165,8 +164,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     resetFilters(dt: Table, val) {
         this.stateService.artifactTypeFilters.showSimpleFilter = val;
         this.stateService.artifactTypeFilters.simpleTextFilter = '';
-        this.stateService.artifactTypeFilters.filters = [];
-        this.stateService.artifactTypeFilters.attributes = [];
+        this.stateService.artifactTypeFilters.filters = [];        
         this.stateService.artifactTypeFilters.relationships = [];
         this.stateService.artifactTypeFilters.owners = null;
 
@@ -211,7 +209,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     getData() {        
         this.isLoading = true;
-        this.artifactService.getArtifacts(this.artifactType.AssetTypeID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners).pipe(debounceTime(3000))
+        this.artifactService.getArtifacts(this.artifactType.AssetTypeID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners).pipe(debounceTime(3000))
             .subscribe(result => {
                     this.items = result.results;
                     this.totalRecords = result.total;
@@ -258,7 +256,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     export(listableOnly) {
-        this.artifactService.getArtifactsXls(listableOnly, this.artifactType, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.attributes, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners);
+        this.artifactService.getArtifactsXls(listableOnly, this.artifactType, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships,  this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners);
     }
 
     customExport() {

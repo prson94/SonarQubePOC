@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType, GridAttributeFilterExpression } from '../models/grid-definition.model';
+import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType } from '../models/grid-definition.model';
 import { RuleType, Rule, RuleDetail, RuleImplementation, RuleImplementationDetail, RuleResultPagedResults } from '../models/rule.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { SortOrder } from '../models/enums.model';
@@ -80,7 +80,7 @@ export class RulesService extends BaseObservableService {
         return this.putDynamic(this.http, 'ruletype', ruleType);
     }
     
-    getResultsByRule(id: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, attributes?: GridAttributeFilterExpression, simpleFilter?: string): Observable<RuleResultPagedResults> {
+    getResultsByRule(id: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, simpleFilter?: string): Observable<RuleResultPagedResults> {
         let sortOrderText = sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Descending ? "desc" : "asc");
         let uri = `internal/monitor/rules/${id}/results?pagesize=${pageSize}&pagenum=${pageNumber}&sortDataField=${sortField}&sortOrder=${sortOrderText}`;
 
@@ -117,11 +117,7 @@ export class RulesService extends BaseObservableService {
                 count++;
             }
         }
-
-        if (attributes != undefined) {
-            uri += `&AttributeSearchValue=${attributes.attributeSearchValue}&AttributeType=${attributes.attributeType}`;
-        }
-
+                
         if (relationships != undefined) {
             uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}`;
         }

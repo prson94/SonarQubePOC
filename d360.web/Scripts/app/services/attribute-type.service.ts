@@ -123,35 +123,7 @@ export class AttributeTypeService extends BaseObservableService {
                 catchError(err => this.handleError(err))
             );
     }
-
-    getAttributeTypesForObject(
-        objectType: string,
-        objectId: number
-    ): Observable<AttributeType[]> {
-        return this
-            .http
-            .get(`/api/${objectType}/${objectId}/attributetypefilters`)
-            .pipe(
-                map(response => <AttributeType[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getAttributeFilterValues(
-        objectType: string,
-        objectId: number,
-        attributeId: number
-    ): Observable<string[]> {
-        return this
-            .http
-            .get(`/api/${objectType}/${objectId}/${attributeId}/attributefiltervalues`)
-            .pipe(
-                map(response => response),
-                map((item) => item['Name']),
-                catchError(err => this.handleError(err))
-            );
-    }
-
+    
     deleteAttributeType(
         id: number
     ): Observable<JsonResult> {

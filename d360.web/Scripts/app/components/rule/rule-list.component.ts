@@ -8,8 +8,7 @@ import {
     GridField,
     GridFilterColumn,
     GridFilterExpression,
-    GridRelationshipFilterExpression,
-    GridAttributeFilterExpression
+    GridRelationshipFilterExpression
 } from '../../models/grid-definition.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { RulesService } from '../../services/rules.service';

@@ -5,7 +5,7 @@ import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
 import { Rule, RuleResult, RuleResultPagedResults, RuleResultFilter } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
+import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression  } from '../../models/grid-definition.model';
 import { RuleColumnFilterComponent } from './rule-column-filter.component'
 
 @Component({
@@ -21,7 +21,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                         <div *ngIf="showSimpleFilter">                                                
                             <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
                         </div>
-                        <d3s-rule-column-filter [hidden]="showSimpleFilter" [(attributeFilter)]="attributes" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
+                        <d3s-rule-column-filter [hidden]="showSimpleFilter" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
                         <p-table #dt 
                             [value]="items" 
                             selectionMode="single" 
@@ -119,7 +119,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
     providers: [RulesService],
 })
 
-export class RuleResultsGridComponent extends BaseComponent implements OnInit {
+export class RuleResultsGridComponent extends BaseComponent {
 
     @Input() implementationId: number;
     @Input() showTitle: boolean = true;
@@ -141,7 +141,6 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
     sortOrder: SortOrder = SortOrder.None;
     filters: GridFilterExpression[] = [];
     relationships: GridRelationshipFilterExpression;
-    attributes: GridAttributeFilterExpression;
 
     searchValue: string = "";
     simpleSearchID: number = 0;
@@ -149,10 +148,6 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
 
     constructor(private ruleService: RulesService) {
         super();
-    }
-
-    ngOnInit() {
-
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -183,7 +178,7 @@ export class RuleResultsGridComponent extends BaseComponent implements OnInit {
             }
         }
 
-        this.ruleService.getResultsByRule(this.implementationId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters, this.relationships, this.attributes, this.simpleTextFilter)
+        this.ruleService.getResultsByRule(this.implementationId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters, this.relationships, this.simpleTextFilter)
             .subscribe(res => {
                 this.results = res;
                 if (this.results != null) {
