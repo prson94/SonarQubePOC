@@ -24,6 +24,8 @@ using d360.model.DataAccessLayer;
 using d360.model.validators;
 using d360.core.entities.Scoring;
 using Dapper;
+using d360.web.Models.Attributes;
+using SpreadsheetLight;
 
 namespace d360.web.Controllers.V2
 {
@@ -112,14 +114,16 @@ namespace d360.web.Controllers.V2
                 if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"You have not provided valid assetTypeUid.");
 
-                if (model.scoreType == null)
+                List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance, ScoreType.Perceptional };
+
+                if (!scoreTypes.Contains(model.scoreType))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"You have not provided valid scoreType.");
                 }
 
-                var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid.Value);
+                var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid);
 
-                List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule };
+                List<AssetTypeClass> allowedClasses = ScoringRepository.AllowedClassesForScoreType();
                 if (assetType == null)
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error adding allocation", $"AssetType with uid {model.assetTypeUid} does not exist.");
 
@@ -130,7 +134,7 @@ namespace d360.web.Controllers.V2
 
                 if (alloc != null && alloc.State == State.Active)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"Active allocation with same configuration already exists.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"Score Allocation already exists.");
                 }
 
                 AllocationApiGetModel allocation = ScoringRepository.PostAllocation(model, ref alloc);
@@ -174,14 +178,16 @@ namespace d360.web.Controllers.V2
                 if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"You have not provided valid assetTypeUid");
 
-                if (model.scoreType == null)
+                List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance, ScoreType.Perceptional };
+
+                if (!scoreTypes.Contains(model.scoreType))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"You have not provided valid scoreType");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"You have not provided valid scoreType.");
                 }
 
-                var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid.Value);
+                var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid);
 
-                List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule };
+                List<AssetTypeClass> allowedClasses = ScoringRepository.AllowedClassesForScoreType();
                 if (assetType == null)
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error updating allocation", $"AssetType with uid {model.assetTypeUid} does not exist");
 
@@ -198,7 +204,7 @@ namespace d360.web.Controllers.V2
                 bool hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
                 if (hasActiveMeasures)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Allocation have active measures");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined");
                 }
                 AllocationApiGetModel allocation = ScoringRepository.UpdateAllocation(model, alloc);
 
@@ -246,12 +252,79 @@ namespace d360.web.Controllers.V2
 
                 ScoringRepository.DeleteAllocation(alloc);
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse()));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse() { message = "Allocation succesfully deleted!" }));
             }
             catch
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error deleting allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
             }
+        }
+
+
+        /// <summary>
+        /// GET a list of relationship types.
+        /// </summary>
+        /// <returns>A excel file containing relationships types.</returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            ApiExplorerSettings(IgnoreApi = true),
+            Route("export"),
+            FileDownload,
+            SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
+            SwaggerResponse(HttpStatusCode.OK, "Exported realtionship types to Excel.", typeof(List<PredicateTypeApiViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> ExportAllocationsToExcel()
+        {
+            var queryParams = Request.GetQueryNameValuePairs();
+            queryParams = queryParams.Union(new List<KeyValuePair<string, string>>() { new KeyValuePair<string, string>("_state", "1") });
+            var models = ScoringRepository.GetAllocations(queryParams);
+            var document = new SLDocument();
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
+
+            #region Create the list sheet
+
+            #region Header
+
+            int index = 1;
+            document.SetCellValue(1, index++, "Uid");
+            document.SetCellValue(1, index++, "Asset Class");
+            document.SetCellValue(1, index++, "Asset Type");
+            document.SetCellValue(1, index++, "Asset Type Uid");
+            document.SetCellValue(1, index++, "Score Type");
+
+            #endregion
+
+            int rowNumber = 1;
+            foreach (var row in models)
+            {
+                index = 1;
+                rowNumber++;
+                document.SetCellValue(rowNumber, index++, row.uid.ToString());
+                document.SetCellValue(rowNumber, index++, row.assetClassName.GetDisplayName());
+                document.SetCellValue(rowNumber, index++, row.assetTypePath);
+                document.SetCellValue(rowNumber, index++, row.assetTypeUid.ToString());
+                document.SetCellValue(rowNumber, index++, row.scoreType.GetDisplayName());
+            }
+
+            #endregion
+
+            var stream = new System.IO.MemoryStream();
+            document.SaveAs(stream);
+
+            var result = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(stream.GetBuffer())
+            };
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = string.Format("Relationship Types {0}.xlsx", System.DateTime.Now.ToShortDateString())
+            };
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+            return ResponseMessage(result);
         }
 
         /// <summary>
@@ -275,8 +348,8 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.Unauthorized, "Error retrieving unallocated asset types", "You are not authorized to perform this action.");
                 }
-                        
-                if(!Enum.TryParse(scoreType, true,out ScoreType sc))
+
+                if (!Enum.TryParse(scoreType, true, out ScoreType sc))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error retrieving unallocated asset types", $"Invalid score type: {scoreType} provided, please provide a valid score type.");
                 }
@@ -289,4 +362,6 @@ namespace d360.web.Controllers.V2
             }
         }
     }
+
+
 }

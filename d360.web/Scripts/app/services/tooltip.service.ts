@@ -20,12 +20,12 @@ export class ToolTipService extends BaseObservableService {
     }
     private tooltipsCache: any[] = [];
 
-    getTooltipInfoByUid(uid: string): Observable<TooltipInfo> {
+    getTooltipInfoByUid(uid: string, objectType: string = null): Observable<TooltipInfo> {
         var cachedItem = this.tooltipsCache.find(x => x.uid == uid);
         if (cachedItem)
             return cachedItem.obs;
 
-        var obs = this.http.get(`resources/tooltipdatabyuid/${uid}`)
+        var obs = this.http.get(`resources/tooltipdatabyuid/${uid}?objectType=${objectType}`)
             .pipe(
                 map(response => <TooltipInfo>response),
                 publishReplay(1),

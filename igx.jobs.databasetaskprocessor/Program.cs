@@ -201,9 +201,20 @@ namespace igx.jobs.databasetaskprocessor
                                         }
 
                                         if (indexObject.AssetID > 0)
+                                        {
                                             indexObject.Tags = companyConnection
                                                 .Query<TagSqlModel>("SELECT t.uid AS TagUID, t.Value FROM [dbo].[AssetTag] at INNER JOIN [dbo].[Tag] t ON at.TagID = t.ID WHERE at.AssetID = @i", new { i = indexObject.AssetID })
                                                 .ToDictionary(x => x.TagUID.ToString(), x => x.Value);
+
+                                            IEnumerable<ResponsibilitySqlModel> secset = companyConnection
+                                                .Query<ResponsibilitySqlModel>("SELECT * FROM (" + ElasticSearchSource.GetAssetResponsibilityQuery() + ") q WHERE q.AssetID = @i", new { i = indexObject.AssetID });
+
+                                            indexObject.NoRead = new Dictionary<string, List<int>> {
+                                                { "R" , secset.Where(r => r.SecurityAsset == "R").Select(r => r.SecurityAssetID).ToList() },
+                                                { "G" , secset.Where(r => r.SecurityAsset == "G").Select(r => r.SecurityAssetID).ToList() },
+                                                { "O" , secset.Where(r => r.SecurityAsset == "O").Select(r => r.SecurityAssetID).ToList() }
+                };
+                                        }
                                     }
                                     else if ((detail == null) && (string.Compare(o, "Synonym", true) == 0))
                                     {
@@ -628,5 +639,12 @@ from    [queue].[Task] T
     {
         public Guid TagUID { get; set; }
         public string Value { get; set; }
+    }
+
+    internal class ResponsibilitySqlModel
+    {
+        public long AssetID { get; set; }
+        public string SecurityAsset { get; set; }
+        public int SecurityAssetID { get; set; }
     }
 }

@@ -127,6 +127,11 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     loadMenu() {
         this.siteMenuService.getMenu().subscribe(
             result => {
+
+                // used to enable guard that allows access to administrative routes                                
+                this.authenticationService.isAdmin = result.IsAdmin;
+                this.isAdmin = result.IsAdmin;
+
                 result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
 
                 // add properties we need to add to the burned in menus
@@ -187,10 +192,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     this.buildConfigMenu();
                     this.buildAdminMenu();
                 }
-
-                // used to enable guard that allows access to administrative routes                                
-                this.authenticationService.isAdmin = result.IsAdmin;
-                this.isAdmin = result.IsAdmin;
 
                 this.ref.markForCheck();
             }).add(() => {
@@ -305,7 +306,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.adminMenu.NavigationItems.push({ Name: 'Export Templates', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES}`, IsLink: false, IsHomePage: false, count:null });
 
-        this.adminMenu.NavigationItems.push({ Name: 'Scoring', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ANALYTICS}`, Items: null, IsLink: false, IsHomePage: false, count:null });
+        this.adminMenu.NavigationItems.push({ Name: 'Scoring', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}`, Items: null, IsLink: false, IsHomePage: false, count: null });
 
         this.adminMenu.NavigationItems.push({ Name: 'Dashboards', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
                

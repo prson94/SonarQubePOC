@@ -441,7 +441,7 @@ from	FollowDetail F
             {
                 rowIndex++;
                 colIndex = 1;
-                
+
                 foreach (var f in fields)
                 {
                     var val = (((row as IDictionary<string, object>)[$"{f.datafield}"]) ?? "").ToString();
@@ -892,6 +892,31 @@ order by A.ID, FT.SortOrder", new { id, attribute });
         [HttpGet, Route("tooltipdatabyuid/{uid}")]
         public JsonResult GetTooltipDataByUid(Guid uid)
         {
+            var queryParams = Request.QueryString;
+
+            var objectType = queryParams.Get("objecttype");
+            if (objectType != null)
+            {
+                if (objectType == "Allocation")
+                {
+                    var alloc = Company.ScoreTypeAllocations.FirstOrDefault(x => x.Uid == uid);
+                    return Json(
+                    new
+                    {
+                        ShowTooltip = true,
+                        AssetID = -1,
+                        UID = alloc.Uid,
+                        DisplayName = "",
+                        TypeName = "",
+                        Url = "",
+                        Description = ""
+
+                    },
+                    JsonRequestBehavior.AllowGet);
+                }
+            }
+
+
             var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
             if (asset != null)
                 return GetTooltipData(asset.ObjectID, asset.Object);
@@ -912,7 +937,7 @@ order by A.ID, FT.SortOrder", new { id, attribute });
                         Description = ""
 
                     },
-                    JsonRequestBehavior.AllowGet); 
+                    JsonRequestBehavior.AllowGet);
         }
 
         [HttpGet, Route("TooltipData/{objectType}/{objectID:int}")]
@@ -1094,7 +1119,7 @@ where   RT.Object = @type and RT.ObjectID = @typeID";
                         var tag = Company.Tags.FirstOrDefault(x => x.ID == objectID);
                         int useCount = Company.AssetTags.Count(x => x.TagID == tag.ID);
                         uid = tag.uid.ToString();
-                        res.Add(new FieldTooltipValueModel() {Name="Use count", Value = useCount.ToString() });
+                        res.Add(new FieldTooltipValueModel() { Name = "Use count", Value = useCount.ToString() });
                     }
 
 
