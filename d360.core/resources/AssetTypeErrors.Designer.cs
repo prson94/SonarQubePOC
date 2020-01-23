@@ -178,6 +178,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Icon Style ForeColor and BackColor cannot be the same value..
+        /// </summary>
+        public static string MatchingIconStyle {
+            get {
+                return ResourceManager.GetString("MatchingIconStyle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset Type not found based on Class provided..
         /// </summary>
         public static string NotFoundBasedOnClass {

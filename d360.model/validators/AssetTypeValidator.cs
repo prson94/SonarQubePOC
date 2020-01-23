@@ -125,6 +125,11 @@ namespace d360.core.validators
             if (model.IconStyle == null || !Regex.Match(model.IconStyle.BackColor, ColorRegex, RegexOptions.IgnoreCase).Success || !Regex.Match(model.IconStyle.ForeColor, ColorRegex, RegexOptions.IgnoreCase).Success)
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidStyle} {AssetTypeErrors.CheckRequest}");
 
+            if (model.IconStyle.BackColor !=null && model.IconStyle.BackColor.Equals(model.IconStyle.ForeColor))
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.MatchingIconStyle}");
+            }
+
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
 
