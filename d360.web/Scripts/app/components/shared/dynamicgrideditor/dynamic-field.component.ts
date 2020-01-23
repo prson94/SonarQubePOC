@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
-import { Subject } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 
 import { EditorDropDownItem, EditorField } from '../../../models/editor-field.model';
 
@@ -42,6 +42,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     @Input() objectID: number = null;
     @Input() selectedObject: string;
     @Input() selectedObjectID: number;
+    @Input() editorSubject: Observable<any> = null;
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
@@ -50,6 +51,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private quill;
 
     @Output() listItemChange = new EventEmitter();
+    @Output() relationItemChange = new EventEmitter();
 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     private fieldTooltip: string;
@@ -71,6 +73,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     private filterException: string = '';
     private fieldChangeSub;
+    private editorChangeSub;
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
     private hasCascadeLoaded: boolean = false;
@@ -237,6 +240,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     this.ref.markForCheck();
                 });
 
+        if (this.editorSubject != null) {
+            this.editorSubject.subscribe(res => {
+                this.handleEditorSubject(res);
+            });
+        }
+
         if (this.field.DelayedLoadType == 'Predicate') {
             this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).subscribe(
                 res => {
@@ -359,6 +368,11 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.field.Value = data;
             }
             this.listItemChange.emit({ field: this.field, value: data });
+        }
+        else if (this.field.FieldType == 'Relationship') {
+            console.log({ field: this.field, value: data });
+            this.listItemChange.emit({ field: this.field, value: data });
+            
         } else if (this.field.FieldType == 'Html') {
             this.setEditorContent(data);
             this.field.Value = data;
@@ -616,6 +630,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.field.Value = null;
         }
 
+        this.relationItemChange.emit({ field: this.field, value: null });
         this.form.controls[this.field.FieldName].setValue(this.field.Value);
         this.ref.markForCheck();
     }
@@ -639,5 +654,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         this.typeAheadValue = null;
         this.field.Value = null;
         this.ref.markForCheck();
+    }
+
+    private handleEditorSubject(e: any) {
+        console.log('handleEditorSubject', e);
     }
 }

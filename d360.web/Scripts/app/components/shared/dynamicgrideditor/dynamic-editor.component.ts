@@ -29,6 +29,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { JsonCoreResult } from '../../../models/jsonresult.model';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -83,6 +84,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     categories: EditorCategory[] = [];
     editedItem: any;
+    editorSubject: Subject<any> = new Subject();
     hasDirections: boolean = false;
     hasIconFields = false;
     fore: EditorField;
@@ -228,7 +230,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     previousCategory = currentCategory;
                     rows = [];
                 }
-
+               
                 if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
                     if (f.Value) {
                         /* checkbox doesnt work binding to a string */
@@ -280,6 +282,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 let parts = (field.Value ? field.Value.split("|") : []);
                 let url = "";
                 let name = "";
+                
 
                 if (parts.length == 2) {
                     name = parts[0];
@@ -592,5 +595,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 this.cascadeService.cascadeEvent(editorField.FieldTypeID, value);
             }
         });
+    }
+
+    relationItemChanged(event: any) {
+        console.log('relationItemChanged', event);
+        this.editorSubject.next({ event });
     }
 }
