@@ -362,6 +362,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("exportRules/{uid}"),
+            ApiExplorerSettings(IgnoreApi = true),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns an excel sheet with all the rules.", typeof(List<Rule>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
@@ -392,7 +393,7 @@ namespace d360.web.Controllers.V2
                 List<string> fieldColumns = new List<string>();
                 List<string> fieldJoins = new List<string>();
 
-                var document = createExcelBaseDocument(null, "BaseRuleDoc");
+                var document = createExcelBaseDocument(null, "Items");
                 if (!Guid.TryParse(uid, out guid) || guid == Guid.Empty) 
                 {
                     return errorMessageResponse(
