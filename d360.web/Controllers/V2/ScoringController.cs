@@ -432,7 +432,7 @@ namespace d360.web.Controllers.V2
                             {joinsSql} 
                             {whereSQL}";
 
-                var results = await Company.QueryAsync<dynamic>(sql, new { uid });
+                var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
 
 
                 //set row headers and non dynamic field columns
