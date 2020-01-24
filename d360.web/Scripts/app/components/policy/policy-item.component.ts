@@ -83,6 +83,7 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
             if (!hierarchyId) {
                 hierarchyId = +params['hierarchyId'] || 0;
             }
+            this.headerBreadcrumbService.setCurrentObjectInfo('Policy', hierarchyId); 
 
             if (this.policyTypeId != newPolicyTypeId || (this.selected == undefined || this.selected.ID != hierarchyId)) {
                 this.policyTypeId = newPolicyTypeId;

@@ -8,8 +8,7 @@ import {
     GridField,
     GridFilterColumn,
     GridFilterExpression,
-    GridRelationshipFilterExpression,
-    GridAttributeFilterExpression
+    GridRelationshipFilterExpression
 } from '../../models/grid-definition.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { RulesService } from '../../services/rules.service';
@@ -154,6 +153,10 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
             return ($event.order * result);
         });
+    }
+
+    private exportRules() {
+        this.rulesService.exportRules(this.ruleType.AssetTypeUID, this.ruleType.Name);
     }
 
     private loadRules() {

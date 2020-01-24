@@ -10,11 +10,9 @@
 } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import {RelationshipsService} from '../../services/relationships.service';
-import {AttributeTypeService} from '../../services/attribute-type.service';
 import {ArtifactTypeService} from '../../services/artifact-type.service';
 import {ArtifactType} from '../../models/artifact-type.model';
 import {
-    GridAttributeFilterExpression,
     GridFilterColumn,
     GridFilterExpression,
     GridFilterFieldType,
@@ -29,7 +27,7 @@ import { Observable } from 'rxjs';
 
 @Component({
     selector: 'd3s-artifact-column-filter',
-    providers: [RelationshipsService, AttributeTypeService, ArtifactTypeService],
+    providers: [RelationshipsService, ArtifactTypeService],
     styles: [`
         div.filter {
             padding-bottom: 5px;
@@ -53,17 +51,12 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
     @Input() relationshipFilters: GridRelationshipFilterExpression[] = [];
     @Output() relationshipFiltersChange = new EventEmitter();
-
-    @Input() attributeFilters: GridAttributeFilterExpression[] = [];
-    @Output() attributeFiltersChange = new EventEmitter();
-
+        
     @Input() ownerFilter: GridOwnerFilter = null;
     @Output() ownerFilterChange = new EventEmitter();
 
     relationshipTypes: ObjectRelationship[];
-    connectors: SelectItem[] = [{label: "And", value: "All"}, {label: "Or", value: "Any"}];
-    attributeTypes: AttributeType[];
-    attributeValues: string[];
+    connectors: SelectItem[] = [{label: "And", value: "All"}, {label: "Or", value: "Any"}];    
     ownerValues: SelectItem[] = [];
 
     filterFieldType = FilterFieldType;
@@ -79,18 +72,13 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     };
 
     constructor(
-        private relationshipsService: RelationshipsService,
-        private attributeTypeService: AttributeTypeService,
+        private relationshipsService: RelationshipsService,        
         private artifactTypeService: ArtifactTypeService,
         private ref: ChangeDetectorRef
     ) {
     }
 
-    ngOnInit() {
-        if (this.attributeFilters.length > 0) {
-            this.attributeSelected(this.attributeFilters[0].attributeType);
-        }
-
+    ngOnInit() {        
         if (this.ownerFilter && (this.ownerFilter.ownerGroups || this.ownerFilter.ownerUsers)) {
             this.ownerSelected();
         }
@@ -122,13 +110,12 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 }
             } else if (this.relationshipFilters.length > 0 && !bHasInternalFilters) {
                 // dont clear the relationship filters
-            } else if (this.attributeFilters && this.attributeFilters.length == 0 && !this.ownerFilter && this.relationshipFilters
+            } else if (!this.ownerFilter && this.relationshipFilters
                 && this.relationshipFilters.length == 0 && this.filters && this.filters.length == 0 && this.internalFilters.length == 0) {
 
                 this.resetFilters();
             }
-
-            this.getAttributes();
+                        
             this.getRelationships();
             this.availableFilters.push(this.ownerShipFilter);
         }
@@ -138,8 +125,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
         let hasOwnerFilter = false;
 
         this.filters = [];
-        this.relationshipFilters = [];
-        this.attributeFilters = [];
+        this.relationshipFilters = [];        
         this.ownerFilter = null;
 
         let usedFilters = [];
@@ -157,15 +143,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                     this.filters.push(internalFilter.Data);
                     usedFilters.push(internalFilter.Data.field);
                 }
-            } else if (internalFilter.Type == FilterFieldType.Attribute) {
-                if (usedFilters.indexOf("A" + internalFilter.Data.attributeType) !== -1) {
-                    filterIndicesToRemove.push(currentIndex);
-                }
-                else {
-                    this.attributeFilters.push(internalFilter.Data);
-                    usedFilters.push("A" + internalFilter.Data.attributeType);
-                }
-            } else if (internalFilter.Type == FilterFieldType.Relationship) {
+            }  else if (internalFilter.Type == FilterFieldType.Relationship) {
                 if (usedFilters.indexOf("R" + internalFilter.Data.relationshipType.IntersectTypeID) !== -1) {
                     filterIndicesToRemove.push(currentIndex);
                 }
@@ -202,8 +180,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 this.internalFilters.splice(ix, 1);
             }
         }
-
-        this.attributeFiltersChange.emit(this.attributeFilters);
+                
         this.relationshipFiltersChange.emit(this.relationshipFilters);
         this.ownerFilterChange.emit(this.ownerFilter);
         this.filtersChange.emit(this.filters);
@@ -219,10 +196,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
         this.relationshipFilters.splice(0, this.relationshipFilters.length);
         this.relationshipFiltersChange.emit(this.relationshipFilters);
-
-        this.attributeFilters.splice(0, this.attributeFilters.length);
-        this.attributeFiltersChange.emit(this.attributeFilters);
-
+                
         this.ownerFilter = null;
         this.ownerFilterChange.emit(this.ownerFilter);
 
@@ -281,12 +255,6 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             filter.Type = FilterFieldType.Relationship;
 
             this.loadRelationshipValues(filter.Data).subscribe();
-        } else if (target.Type == FilterFieldType.Attribute) {
-            filter.Data = new GridAttributeFilterExpression();
-            filter.Data.attributeType = target.Data.ID;
-            filter.Type = FilterFieldType.Attribute;
-
-            this.attributeSelected(target.Data.ID);
         } else if (target.Type == FilterFieldType.Owner) {
             filter.Data = [];
             filter.Type = FilterFieldType.Owner;
@@ -347,58 +315,6 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 }
             });
     }
-
-    //#region Attribute Logic
-    private attributeSelected(target) {
-        this.attributeValues = [];
-        this
-            .attributeTypeService
-            .getAttributeFilterValues(
-                'ArtifactType',
-                this.artifactType.ID, target
-            )
-            .subscribe(result => {
-                this.attributeValues = result;
-            });
-    }
-
-    private getAttributes() {
-        try {
-            if (!this.artifactType || this.artifactType.ID <= 0) return;
-
-            this
-                .attributeTypeService
-                .getAttributeTypesForObject(
-                    'ArtifactType',
-                    this.artifactType.ID
-                )
-                .subscribe(result => {
-                    this.attributeTypes = result;
-
-                    for (let attributeType of this.attributeTypes) {
-                        this.availableFilters.push({
-                            Data: attributeType, Name: `${attributeType.Name}`, Type: FilterFieldType.Attribute
-                        });
-                    }
-
-                    if (this.attributeFilters) {
-                        this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Attribute);
-
-                        for (let att of this.attributeFilters) {
-                            this.internalFilters.push({
-                                Type: FilterFieldType.Attribute,
-                                Data: att,
-                                Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Attribute && x.Data.ID == att.attributeType)[0],
-                            });
-                        }
-                    }
-                });
-        } catch (e) {
-            console.log("Error: " + e);
-        }
-    }
-
-    //#endregion
 
     //#region Relationship Logic
 

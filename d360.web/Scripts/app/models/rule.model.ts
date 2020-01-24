@@ -4,7 +4,7 @@
     Description: string;
     HasDashboards: boolean;
     AllowAttributes: boolean; 
-    AssetTypeID: string;
+    AssetTypeUID: string;
     HasWorkflow: boolean;
 }
 

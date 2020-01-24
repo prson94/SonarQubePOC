@@ -210,7 +210,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.fieldsService.getFieldTypeEditor(this.id)
                 .subscribe(ret => {
                     this.getFieldTypeEditorHandler(ret);
-                    this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object)
+                    this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object, this.id)
                         .subscribe(s => {
                             this.getLookupsHandler(s);
                             if (this.id > 0) {
@@ -243,7 +243,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.OwnershipLookupSettings.DisplayAssignmentSource = false;
             this.model.OwnershipLookupSettings.ExpandGroupMembership = true;
 
-            this.fieldsService.getLookups(this.objectID, this.objectType)
+            this.fieldsService.getLookups(this.objectID, this.objectType, this.id)
                 .subscribe(x => {
                     this.getLookupsHandler(x);
                     this.model.FieldType.Type = null; //Set as NULL to allow for selection.
@@ -631,7 +631,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         this.fieldsService.getReferenceTypeHierarchyFields(objectId, this.objectType, this.objectID).subscribe(
             r => {
-                this.listParentFields = r;
+                this.listParentFields = r.map((x) => { return { label: x.label, value: +x.value }; });
 
                 if (this.listParentFields == null || this.listParentFields.length == 0) {
                     this.model.FieldType.ParentFieldTypeID = 0;

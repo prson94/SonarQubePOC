@@ -159,6 +159,9 @@
   <data name="FieldTypeCategory_Name" xml:space="preserve">
     <value>Category</value>
   </data>
+  <data name="Field_RelationShipDuplicate" xml:space="preserve">
+    <value>A field type using the specified relationship type has already been defined. Only one relationship field type per relationship type is supported.</value>
+  </data>
   <data name="FilterEnabled_Description" xml:space="preserve">
     <value>Should this field be displayed in the relevant grid or list within the application?</value>
   </data>

@@ -1,31 +1,27 @@
-﻿using d360.core.entities;
-using d360.core.entities.Metric;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.entities.Scoring;
 using d360.core.enums;
 using d360.extensions;
 using d360.model;
+using d360.model.DataAccessLayer;
+using d360.web.Filters;
 using d360.web.Models;
+using d360.web.Models.Attributes;
+using Dapper;
 using Microsoft.Web.Http;
-using Newtonsoft.Json;
+using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-using d360.core;
-using d360.web.Filters;
-using d360.core.exceptions;
-using d360.model.DataAccessLayer;
-using d360.model.validators;
-using d360.core.entities.Scoring;
-using Dapper;
-using d360.web.Models.Attributes;
-using SpreadsheetLight;
 
 namespace d360.web.Controllers.V2
 {
@@ -247,7 +243,7 @@ namespace d360.web.Controllers.V2
                 var hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
                 if (hasActiveMeasures)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error deleting allocation", $"Allocation have active measures");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined");
                 }
 
                 ScoringRepository.DeleteAllocation(alloc);
@@ -361,6 +357,148 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
             }
         }
+
+        /// <summary>
+        /// Exports the list of Rules.
+        /// </summary>
+        /// <param name="uid">The Uid of the Rule Type.</param>
+        /// <returns>An excel sheet of the rules of the given rule type uid.</returns>
+        [
+            HttpGet,
+            Route("exportRules/{uid}"),
+            ApiExplorerSettings(IgnoreApi = true),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "Returns an excel sheet with all the rules.", typeof(List<Rule>)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetExportRules(string uid)
+        {
+            try
+            {
+                Guid guid = Guid.Empty;
+                DynamicParameters dbArgs = new DynamicParameters();
+                string selectSql = @"
+                        SELECT 
+		                        A.ID as 'ID',
+		                        A.uid as 'AssetUid',
+		                        AT.uid as 'AssetTypeUid',
+		                        R.Threshold,
+		                        A.UpdatedOn,
+		                        A.CreatedOn,
+                                'asset/' +  + CAST(A.uid as varchar(36)) as 'Url'
+	                         ";
+
+                string joinsSql = "  ";
+
+                string whereSQL = "WHERE AT.uid = @uid";
+                dbArgs.Add("uid", uid);
+
+                List<string> fieldColumns = new List<string>();
+                List<string> fieldJoins = new List<string>();
+
+                var document = createExcelBaseDocument(null, "Items");
+                if (!Guid.TryParse(uid, out guid) || guid == Guid.Empty) 
+                {
+                    return errorMessageResponse(
+                        HttpStatusCode.BadRequest, 
+                        "Invalid Guid", $"Please provide a valid Guid");
+                }
+
+                var typesToAvoid = new List<string>() {
+                    DataType.Attribute.ToString(),
+                    DataType.ComplexRelationLookup.ToString(),
+                    DataType.DataTableSelect.ToString(),
+                    DataType.FilteredLookup.ToString(),
+                    DataType.OwnershipLookup.ToString()
+                };
+                var assetType = AssetRepository.GetAssetTypeByUID(guid);
+                var fieldTypes = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID).ToList()
+                                    .Where(x => !typesToAvoid.Contains(x.Type)).ToList();
+
+                getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+                foreach (var col in fieldColumns)
+                {
+                    selectSql += "," + col;
+                }
+
+                foreach (var join in fieldJoins)
+                {
+                    joinsSql += join ;
+                }
+                var sql = $@"
+                            {selectSql}
+                            FROM dbo.[Rule] R
+                                                                    LEFT JOIN dbo.RuleType RT on R.RuleTypeID = RT.ID
+                                                                    INNER JOIN [dbo].Asset A on A.Object = 'Rule' and A.ObjectID = R.ID
+                                                                    INNER JOIN [dbo].AssetType AT on AT.ID = a.AssetTypeID
+                            {joinsSql} 
+                            {whereSQL}";
+
+                var results = await Company.QueryAsync<dynamic>(sql, new { uid });
+
+
+                //set row headers and non dynamic field columns
+                fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+                fieldTypes.Insert(1, new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
+                fieldTypes.Insert(0, new FieldType { Type = "string", Name = "AssetTypeUid", FriendlyName = "Asset Type UID" });
+                fieldTypes.Insert(0, new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Asset UID" });
+                fieldTypes.Insert(0, new FieldType { Type = "Number", Name = "ID", FriendlyName = "ID" });
+
+                int index = 1;
+                int rowNumber = 1;
+                foreach (var field in fieldTypes)
+                {
+                    document.SetCellValue(1, index++, (string)field.FriendlyName);
+                }
+                //set values into columns
+                foreach (var row in results)
+                {
+                    index = 1;
+                    rowNumber++;
+
+                    foreach (var field in fieldTypes)
+                    {
+                        var val = getRowFieldValue(row, field);
+                        SetSpreadsheetValueFromField(document, rowNumber, index, field, val);
+                        index++;
+                    }
+                }
+
+                var stream = new MemoryStream();
+                document.SaveAs(stream);
+                var result = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent(stream.GetBuffer())
+                };
+                result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+                var response = ResponseMessage(result);
+
+                return response;
+            }
+            catch(Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"{ex.Message}");
+            }
+        }
+        private string getRowFieldValue(dynamic row, FieldType field)
+        {
+            if (field != null && field.ID > 0)
+                return (((row as IDictionary<string, object>)[field.Name]) ?? "").ToString();
+            else if (field != null && field.Name == "AssetTypeUid")
+                return (string)((row as IDictionary<string, object>)["AssetTypeUid"]).ToString();
+            else if (field != null && field.Name == "AssetUid")
+                return (string)((row as IDictionary<string, object>)["AssetUid"]).ToString();
+            else if (field != null && field.Name == "ID")
+                return (row as IDictionary<string, object>)["ID"].ToString();
+            else if (field != null && field.Name == "Threshold")
+                return (string)((row as IDictionary<string, object>)["Threshold"].ToString());
+            else if (field != null && field.Name == "Url")
+                return (string)((row as IDictionary<string, object>)["Url"].ToString());
+            return "";
+        }
+
     }
 
 

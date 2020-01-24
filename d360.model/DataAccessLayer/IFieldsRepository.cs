@@ -11,6 +11,7 @@ namespace d360.model.DataAccessLayer
         void DeleteFields(List<FieldType> currentFieldTypes, List<string> fieldNamesToDelete);
         Task<Tuple<FieldTypesApiViewModel, WorkHttpStatus>> GetFieldTypes(IEnumerable<KeyValuePair<string, string>> queryParams);
         List<FieldType> GetFieldTypes(TypeIdentifierInfoModel typeIdentifierInfoModel);
+        List<Tuple<string, Guid>> GetFieldInterSetUID(List<FieldType> ExistingFieldType);
         bool HasExistingItems(TypeIdentifierInfoModel typeIdentifierInfoModel);
         WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel);
         IEnumerable<string> GetCustomFields(SystemObjects objectType, int objectId);
