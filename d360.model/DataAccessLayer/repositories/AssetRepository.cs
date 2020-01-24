@@ -1275,7 +1275,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             
             if (!queryParams.Any(p => p.Key == "_order"))
             {
-                var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
                 orderBySql = $" order by [CompletedOn] {orderDirection} ";
             }
             else
