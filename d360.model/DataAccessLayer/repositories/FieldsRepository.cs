@@ -1321,5 +1321,24 @@ from	IntersectType I
 				inner join field f2 on f2.fieldtypeid = f.id 
 				 where f.[object] = @objectType and f.objectid = @id ", new { objectType = objectType.ToString(), id = objectId});
         }
+        public List<Tuple<string, Guid>> GetFieldInterSetUID(List<FieldType> ExistingFieldType)
+        {
+            var RetValueList = new List<Tuple<string, Guid>>();
+
+            foreach (var field in ExistingFieldType)
+            {
+                if (field.Type == DataType.Relationship.ToString() && field.LookupObjectID != null)
+                {
+                    var intersectType = Company.Filter<IntersectType>(i => i.ID == field.LookupObjectID).SingleOrDefault();
+                    if (intersectType != null)
+                    {
+                        var RetValue = new Tuple<string, Guid>(field.Name, intersectType.uid);
+                        RetValueList.Add(RetValue);
+                    }
+                }
+            }
+
+            return RetValueList;
+        }
     }
 }

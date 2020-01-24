@@ -18,6 +18,8 @@ using d360.core.helpers;
 using d360.core.resources;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
+using System.IO;
+using SpreadsheetLight;
 
 namespace d360.model.DataAccessLayer
 {
@@ -484,6 +486,99 @@ namespace d360.model.DataAccessLayer
             model.total = count;
 
             return model;
+        }
+        public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var results = await GetAssets(uid, queryParams);
+            var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
+            var fields = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).ToList();
+
+            var typesToAvoid = new List<string>() {
+                DataType.Attribute.ToString(),
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.FilteredLookup.ToString(),
+                DataType.OwnershipLookup.ToString()
+            };
+
+            //add default fields
+            fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
+            fields.Add(new FieldType { Type = "string", Name = "Path", FriendlyName = "Path" });
+            fields.Add(new FieldType { Type = "date", Name = "UpdatedOn", FriendlyName = "Updated On" });
+            fields.Add(new FieldType { Type = "date", Name = "CreatedOn", FriendlyName = "Created On" });
+            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset Uid" });
+            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset Id" });
+            fields.Add(new FieldType { Type = "number", Name = "AssetTypeId", FriendlyName = "Asset Type Id" });
+            fields.Add(new FieldType { Type = "string", Name = "AssetTypeUid", FriendlyName = "Asset Type Uid" });
+
+
+            var rowData = results.items.ToList();
+
+            var document = new SLDocument();
+            const string assetSheetName = "Assets";
+            const string apiSheetName = "Api Info";
+
+
+            #region Populate Excel Document
+
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, assetSheetName);
+
+            document.AddWorksheet(apiSheetName);
+            document.SelectWorksheet(apiSheetName);
+
+            document.SetCellValue(1, 1, "pageSize");
+            document.SetCellValue(1, 2, results.pageSize);
+            document.SetCellValue(2, 1, "pageNum");
+            document.SetCellValue(2, 2, results.pageNum);
+            document.SetCellValue(3, 1, "total");
+            document.SetCellValue(3, 2, results.total);
+
+
+            document.SelectWorksheet(assetSheetName);
+
+            int index = 1;
+
+            foreach (var field in fields)
+            {
+                if (typesToAvoid.Contains(field.Type))
+                    continue;
+                document.SetCellValue(1, index++, (string)field.FriendlyName);
+            }
+
+
+            if (rowData == null || rowData.Count == 0)
+            {
+                var s = new MemoryStream();
+                document.SaveAs(s);
+                return document;
+            }
+
+
+            int rowNumber = 1;
+            foreach (var row in rowData)
+            {
+                index = 1;
+                rowNumber++;
+                var rowValues = (row as IDictionary<string, object>);
+
+                foreach (var field in fields)
+                {
+                    if (typesToAvoid.Contains(field.Type))
+                        continue;
+
+                    if (rowValues.ContainsKey(field.Name))
+                    {
+                        var val = rowValues[field.Name];
+                        setCellValueFromField(document, rowNumber, index, field, val);
+                    }
+
+                    index++;
+                }
+            }
+
+            #endregion
+
+            return document;
         }
         public async Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model)
         {
@@ -1262,17 +1357,34 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
                 string[] allowedDirections = new string[] { "asc", "desc" };
                 var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+                if (!allowedDirections.Contains(order.Trim().ToLower()))
+                {
+                    return new APIExecutionAPIModelResult
+                    {
+                        Message = "Invalid order direction passed in the request",
+                        StatusCode = HttpStatusCode.BadRequest
+                    };
+                }
                 orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
             }
             
             if (!queryParams.Any(p => p.Key == "_order"))
             {
-                var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
-                orderBySql = $" order by Ex.[ExecutionID] {orderDirection} ";
+                orderBySql = $" order by [CompletedOn] {orderDirection} ";
             }
             else
             {
+
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
+                string[] validOrderByFields = { "executionid", "resourceuid", "resource", "total",
+                                                "processed", "error", "errormessage", "processingstartedon",
+                                                "startedon", "completedon", "method", "route", "fields" };
+                if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                    return new APIExecutionAPIModelResult
+                    {
+                        Message = "Invalid order passed in the request",
+                        StatusCode = HttpStatusCode.BadRequest
+                    };
                 orderBySql = $" order by {orderByCol} {orderDirection} ";
             }
 
@@ -1288,7 +1400,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
                 if (pageSize < 1) pageSize = 1;
                 if (pageNum < 1) pageNum = 1;
-            
+                if (pageSize > 25000) pageSize = 25000;
+                if (pageNum > 10000) pageNum = 10000;
+
+
                 offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
             }          
 
@@ -1347,7 +1462,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 items = items,
                 total = count.FirstOrDefault(),
                 pageNum = pageNum,
-                pageSize = pageSize
+                pageSize = pageSize,
+                StatusCode = HttpStatusCode.OK
             };
 
             return resultsModel;
@@ -1410,7 +1526,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return asset.uid;
         }
 
-
         public async Task<dynamic> GetAssetDetails(Asset asset)
         {
             var dbArgs = new DynamicParameters();
@@ -1453,6 +1568,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
         }
+
 
 
         #region Private
@@ -1551,7 +1667,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         left join Field F1 on F1.FieldTypeID = {f.LookupObjectFieldTypeID} and F1.AssetID = R1.ID
 						left join Asset R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
                         left join Field F2 on F2.FieldTypeID = {f.LookupObjectFieldTypeID} and F2.AssetID = R2.ID
-                        where I.IntersectTypeID = {f.LookupObjectID}
+                        where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(F1.FormattedValue,F2.FormattedValue) is not null
                     ) {tableAlias}");
                 }
                 else if(f.Type == "Relationship")
@@ -1564,7 +1680,18 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         left join AssetDetail AD1 on AD1.Object = R1.Object and AD1.ObjectID = R1.ObjectId
 						left join Asset R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
                         left join AssetDetail AD2 on AD2.Object = R2.Object and AD2.ObjectID = R2.ObjectId
-                        where I.IntersectTypeID = {f.LookupObjectID}
+                        where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(AD1.DisplayValue,AD2.DisplayValue) is not null
+                    ) {tableAlias}");
+                }
+                else if (f.Type == "RefListRelationship")
+                {
+                    fieldJoins.Add($@"outer apply (
+                        select top 1 
+                           ISNULL(R1.SubjectName,R2.ObjectName) as FormattedValue
+                        from [Intersect] I
+                        left join [IntersectDetail] R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
+						left join [IntersectDetail] R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
+                        where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(R1.SubjectName,R2.ObjectName) is not null
                     ) {tableAlias}");
                 }
                 else if (f.Type == "JsonElement")
@@ -1794,7 +1921,42 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     return "";
             }
         }
+        private void setCellValueFromField(SLDocument document, int rowIndex, int colIndex, FieldType field, object value)
+        {
+            var valueString = value?.ToString() ?? "";
+            switch ((field.Type ?? "").ToUpper())
+            {
+                case "DECIMAL":
+                    double dVal = 0;
+                    if (double.TryParse(valueString, out dVal))
+                        document.SetCellValue(rowIndex, colIndex, dVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "NUMBER":
+                    int intVal = 0;
+                    if (int.TryParse(valueString, out intVal))
+                        document.SetCellValue(rowIndex, colIndex, intVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "DATE":
+                    if (DateTime.TryParse(valueString, out DateTime dateVal))
+                    {
+                        document.SetCellValue(rowIndex, colIndex, dateVal);
 
+                        SLStyle style = document.CreateStyle();
+                        style.FormatCode = "m/d/yyyy";
+                        document.SetCellStyle(rowIndex, colIndex, style);
+                    }
+                    break;
+                default:
+                    if (valueString.StartsWith("="))
+                        valueString = "'" + valueString;
+                    document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+            }
+        }
         #endregion
 
     }

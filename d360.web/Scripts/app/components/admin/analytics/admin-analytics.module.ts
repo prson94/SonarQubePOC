@@ -42,6 +42,7 @@ import {GovernRequestInterceptor} from "../../../http-interceptors/govern-reques
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { AdminAllocationEditorComponent } from './admin-allocation-editor.component';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -88,7 +89,8 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
         AdminMetricConditionEditorComponent,
         AdminMetricEditorComponent,
         AdminMetricListComponent,
-        AdminAllocationEditorComponent
+        AdminAllocationEditorComponent,
+        AdminAnalyticsDetailsComponent 
     ],
     providers: [
         {

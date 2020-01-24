@@ -560,7 +560,14 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             public string Name { get; set; }
             public string Inverse { get; set; }
         }
-        
+
+        internal class AssetBrowserResponsibilityTypeFilterItem
+        {
+            public int Id { get; set; }
+            public Guid Uid { get; set; }
+            public string Name { get; set; }
+        }
+
         #endregion
 
         /// <summary>
@@ -652,7 +659,13 @@ select	Id,
 		[Inverse]
 from	[Predicate]
 where	[Type] in (6,7,9)
-order by [Type], [Name]";
+order by [Type], [Name];
+
+select  Id,
+        [Uid],
+        Name
+from    ResponsibilityType
+order by Name";
                 
                 #endregion
 
@@ -660,8 +673,13 @@ order by [Type], [Name]";
 
                 var assetTypes = reader.Read<AssetBrowserAssetTypeFilterItem>().ToList();
                 var predicates = reader.Read<AssetBrowserPredicateFilterItem>().ToList();
+                var responsibilityTypes = reader.Read<AssetBrowserResponsibilityTypeFilterItem>().ToList();
 
-                return Request.CreateResponse(HttpStatusCode.OK, new { AssetTypeOptions = assetTypes, PredicateOptions = predicates });
+                return Request.CreateResponse(HttpStatusCode.OK, new { 
+                    AssetTypeOptions = assetTypes, 
+                    PredicateOptions = predicates, 
+                    ResponsibilityTypeOptions = responsibilityTypes 
+                });
             }
             catch (Exception ex)
             {

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { SortOrder } from '../models/enums.model';
-import { GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression, GridOwnerFilter } from '../models/grid-definition.model';
+import { GridFilterExpression, GridRelationshipFilterExpression, GridOwnerFilter } from '../models/grid-definition.model';
 import { FusionAttributeFilter } from '../models/fusion-attribute.model';
 
 export class ArtifactTypeFilters {
@@ -11,8 +11,7 @@ export class ArtifactTypeFilters {
     sortField: string = "";
     sortOrder: SortOrder = SortOrder.None;
     filters: GridFilterExpression[] = [];
-    relationships: GridRelationshipFilterExpression[] = [];
-    attributes: GridAttributeFilterExpression[] = [];
+    relationships: GridRelationshipFilterExpression[] = [];    
     owners: GridOwnerFilter;
     showSimpleFilter: boolean = true;
 }

@@ -202,8 +202,12 @@ namespace d360.web.Controllers
 
         private QueryLimitation GetQueryLimitation()
         {
-            QueryLimitation limits = new QueryLimitation();
-
+            QueryLimitation limits = new QueryLimitation
+            {
+                ResourceID = Company.CurrentResourceID,
+                ResourceGroupIDs = Company.ResourceGroups.Where(i => i.ResourceID == Company.CurrentResourceID).Select(i => i.GroupID).ToList(),
+                ResourceOrgIDs = Company.OrganizationResources.Where(r => r.ResourceID == Company.CurrentResourceID && (r.Accepted ?? false)).Select(r => r.OrganizationID).ToList()
+            };
             if (Company.CurrentResourceIsAdmin)
             {
                 if (Community.GetCompanySettings().TryGetValue("HideData3SixtyUsers", out string val))

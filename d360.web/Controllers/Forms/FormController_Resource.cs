@@ -689,6 +689,9 @@ namespace d360.web.Controllers
 
                 Company.Update(existing);
 
+                var assetID = Company.Assets.FirstOrDefault(x => x.Object == "Group" && x.ObjectID == model.ID).ID;
+                Company.CreateOrUpdateDisplayValue(assetID);
+
                 var currentGroupUsers = Company.Filter<ResourceGroup>(i => i.GroupID == model.ID).Select(i => i.ResourceID).ToList();
 
                 if (!currentGroupUsers.Any(o => o == model.PrimaryOwnerResourceID))
