@@ -38,7 +38,7 @@ import { Observable } from 'rxjs';
 import { PredicatesService } from '../../../../services/predicates.service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 
 declare var window: any;
@@ -143,6 +143,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region Control Properties
 
     constructor(
+        private route: ActivatedRoute,
         private myElement: ElementRef,
         private browserService: BrowserService,
         private router: Router,
@@ -169,6 +170,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
         this.initializeDiagram();
         this.checkSecondaryNavLocalStorage();
+
+        this.route.params.subscribe(
+            params => {
+                this.originalAssetUid = params['assetUid']; 
+                this.refreshDiagram();
+            }
+        );
     }
 
     public ngAfterViewInit() {

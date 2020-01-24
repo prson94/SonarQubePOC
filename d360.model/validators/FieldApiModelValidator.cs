@@ -14,7 +14,7 @@ namespace d360.model.validators
     public static class FieldApiModelValidator
     {
 
-        public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, bool areFusionFieldsAllowed = true, List<FieldType> existingFieldTypes = null)
+        public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, bool areFusionFieldsAllowed = true, List<FieldType> existingFieldTypes = null, List<Tuple<string, Guid>> ExistingIntersectID = null)
         {
             var baseValidation = BaseModelValidation(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
             
@@ -128,6 +128,22 @@ namespace d360.model.validators
                     }
                 }
 
+                if (model.AssetTypeUid.HasValue && field.Type.Relationship != null)
+                 {
+                    if (ExistingIntersectID != null)
+                    {
+                        if (ExistingIntersectID.Count() > 0)
+                        {
+                            var duplicateFieldIntersectTypeUid1 =  ExistingIntersectID.Where(f=> f.Item1 != field.Name && f.Item2 == field.Type.Relationship.IntersectTypeUid).Select(f => f.Item1).ToList();
+                            if (duplicateFieldIntersectTypeUid1.Count > 0)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Duplicate relationship on same asset type", $"The following relationship ID are used more than once: {field.Type.Relationship.IntersectTypeUid}. Relationship must be unique on same assettype");
+
+                            }
+                        }
+                    }
+                 }
+
                 #region Min/Max length
 
                 if (field?.Type?.Text?.Validation?.MaximumLength != null && (field?.Type?.Text?.Validation?.MaximumLength % 1) != 0)
@@ -139,7 +155,6 @@ namespace d360.model.validators
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"MinimumLength must be a whole number");
                 }
-                
                 #endregion
 
                 if (!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
@@ -160,6 +175,17 @@ namespace d360.model.validators
             if (duplicateFieldNames.Count > 0)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "Duplicate field names", $"The following field names are used more than once: {string.Join(", ", fieldsHaveErrorsList)}. Field names must be unique.");
+            }
+
+
+            //development area
+            if (model.AssetTypeUid.HasValue)
+            {
+                var duplicateFieldIntersectTypeUid = model.Fields.Where(f => f.Type.Relationship != null).Select(f => f.Type.Relationship.IntersectTypeUid).GroupBy(f => f).Where(f => f.Count() > 1).Select(f => f.Key).ToList();
+                if (duplicateFieldIntersectTypeUid.Count > 0)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Duplicate relationship on same asset type", $"The following relationship ID are used more than once: {string.Join(", ", duplicateFieldIntersectTypeUid)}. Relationship must be unique on same assettype.");
+                }
             }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");

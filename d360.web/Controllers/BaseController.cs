@@ -196,6 +196,19 @@ namespace d360.web.Controllers
             telemetry = null;
         }
 
+        internal HttpResponseMessage createFileResponseMessage(HttpStatusCode status, string fileName, byte[] content)
+        {
+            var response = Request.CreateResponse(status);
+            response.Content = new ByteArrayContent(content);
+            response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment");
+            response.Content.Headers.ContentDisposition.FileName = fileName;
+            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+
+            return response;
+
+        }
+
+
         #region Private Methods
 
         internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "A.ID", string nameColumnOverride = "", bool enableRelationFields = true)
