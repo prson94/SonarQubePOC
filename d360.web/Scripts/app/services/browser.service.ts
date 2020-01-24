@@ -462,7 +462,7 @@ export class BrowserService extends BaseObservableService {
         n.key = a.key;
         n.text = a.displayValue;
         n.hasAssetReadAccess = a.hasAssetReadAccess;
-        n
+        
         if (parentKey && parentKey !== "") {
             n.group = parentKey;
 
