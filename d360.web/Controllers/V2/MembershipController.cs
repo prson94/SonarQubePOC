@@ -378,7 +378,7 @@ namespace d360.web.Controllers.V2
 
             if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
 
-            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
+            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist"));
         }
 
 
