@@ -792,34 +792,31 @@ export class BaseComponent {
     }
 
     private activateComponent() {
-        var componentName = this.constructor.name;
-        switch (componentName) {
-            case "ScoreComponent": this.scoreSidebar.active = true;
-                break;
-            case "DashboardComponent": this.dashboardSidebar.active = true;
-                break;
-            case "BrowserComponent": this.lineageSidebar.active = true;
-                break;
-            case "RelationshipsComponent": this.relationsSidebar.active = true;
-                break;
-            case "OwnershipComponent": this.ownershipSidebar.active = true;
-                break;
-            case "ActionsComponent": this.actionsSidebar.active = true;
-                break;
-            case "MonitorWorkflowComponent": this.monitorSidebar.active = true;
-                break;
-            case "CommentsComponent": this.commentsSidebar.active = true;
-                break;
-            case "FollowersComponent": this.followersSidebar.active = true;
-                break;
-            case "AuditComponent": this.auditSidebar.active = true;
-                break;
-            case "ChildrenComponent": this.childSidebar.active = true;
-                break;
-            case "FieldDefinitionComponent": this.fieldNav.active = true;
-                break;
-            default: break;
+        var currentComponentUrl = '';
+        if (this.breadcrumbsService) {
+            currentComponentUrl = this.breadcrumbsService.getCurrentUrl();
         }
+        var components: SecondaryNavItem[] = [];
+        components.push(this.scoreSidebar);
+        components.push(this.dashboardSidebar);
+        components.push(this.lineageSidebar);
+        components.push(this.relationsSidebar);
+        components.push(this.ownershipSidebar);
+        components.push(this.actionsSidebar);
+        components.push(this.monitorSidebar);
+        components.push(this.commentsSidebar);
+        components.push(this.followersSidebar);
+        components.push(this.auditSidebar);
+        components.push(this.childSidebar);
+        components.push(this.fieldNav);
+
+        components.forEach(cmp => {
+            if (cmp && cmp.url == currentComponentUrl) {
+                cmp.active = true;
+            }
+        });
+
+   
     }
 
     private setArtifactBreadcrumbs(data) {

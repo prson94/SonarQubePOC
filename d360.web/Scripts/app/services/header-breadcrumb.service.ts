@@ -57,6 +57,10 @@ export class HeaderBreadcrumbService extends BaseObservableService{
         this.router.navigateByUrl(url);
     }
 
+    getCurrentUrl(): string {
+        return this.router.url;
+    }
+
     clearCurrentObjectInfo() {
         this.currentObject = { type: null, id: null };
         this.currentObjectInfoSource.next({ type: null, id: null });
@@ -134,13 +138,13 @@ export class HeaderBreadcrumbService extends BaseObservableService{
     }
 
     getAssetFolderIcon(objectType: string, objectID: number, menuID: string): Observable<string> {
-         if (!objectID)
+        if (!objectID)
             return this.getFolderIcon(menuID);
 
 
         var d = forkJoin(this.assetStyleService.getAssetTypeObjectStyle(objectType, objectID), this.getFolderIcon(menuID)).pipe(
-             map(([first, second]) => {
-                 let icon = "fa-folder";;
+            map(([first, second]) => {
+                let icon = "fa-folder";;
                 if (first && first.Icon) {
                     icon = first.Icon;
                 } else {
@@ -150,8 +154,8 @@ export class HeaderBreadcrumbService extends BaseObservableService{
                 return icon;
             }));
 
-        return d;   
-       
+        return d;
+
 
     }
     getFolderIcon(menuID: string):Observable<string> {
