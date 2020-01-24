@@ -155,7 +155,6 @@ namespace d360.model.validators
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"MinimumLength must be a whole number");
                 }
-
                 #endregion
 
                 if (!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)

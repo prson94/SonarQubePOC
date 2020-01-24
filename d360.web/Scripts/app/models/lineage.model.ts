@@ -1,6 +1,8 @@
 ﻿import { AssetTypeClass } from "./asset.model";
 import { SelectItem, TreeNode } from "primeng/api";
 
+//#region Legacy: V2
+
 export class LineageNode {
     key: any;
     assetId: any;
@@ -101,6 +103,7 @@ export class SidebarView {
     currentTab: string;
 }
 
+//#endregion
 
 //#region Enumerations
 
@@ -125,7 +128,7 @@ export enum LineageEditorMode {
 
 //#endregion
 
-//#region Legacy
+//#region Legacy: V1
 
 export class LinkModel {
     id: number = null;
@@ -434,6 +437,7 @@ export class AssetBrowserTranslationOwnerCount {
     responsibilityType: string;
     responsibilityTypeId: number;
     count: number;
+    expanded: boolean;
 }
 
 export class AssetBrowserTranslationRelationCount { 
@@ -443,6 +447,7 @@ export class AssetBrowserTranslationRelationCount {
     predicateUid: string;
     direction: AssetBrowserApiHopDirection;
     count: number;
+    expanded: boolean;
 }
 
 export class AssetBrowserTranslationLink {
@@ -453,13 +458,14 @@ export class AssetBrowserTranslationLink {
     text: string;
     back: string;
     predicateIds: number[];
-    impacts: string[];
+    expandedByBadgeKey: string;
 }
 
 export class AssetBrowserTranslationNode {
     hop: number;
     assetUid: string;
     assetTypeId: number;
+    responsibilityTypeId: number;
     key: string;
     group: string;
     isGroup: boolean;
@@ -518,6 +524,7 @@ export class AssetBrowserApiHopAssetRequestModel {
 // #region Asset Browser : Response
 
 // Core View Model
+
 export class AssetBrowserModel {
     focalAssetUid: string;
     assets: AssetBrowserAssetModel[];
@@ -539,6 +546,7 @@ export class AssetBrowserGenericRelationModel {
 }
 
 // Ownership Models
+
 export class AssetBrowserOwnerCountModel {
     ResponsibilityType: string;
     ResponsibilityTypeID: number;
@@ -696,6 +704,12 @@ export class AssetBrowserPredicateFilterModel {
     Type: string;
 }
 
+export class AssetBrowserResponsibilityTypeFilterModel {
+    Id: number;
+    Uid: number;
+    Name: string;
+}
+
 export class AssetBrowserFilterModel {
     AncestryMode: FilterAncestryMode = FilterAncestryMode.AllAncestors;
     DisplayBadges: boolean = true;
@@ -704,16 +718,20 @@ export class AssetBrowserFilterModel {
     NumberOfHops: number = 3;
     SelectedAssetTypes: number[] = [];
     SelectedPredicates: number[] = [];
+    SelectedResponsibilityTypes: number[] = [];
 }
 
 export class FilterSelectionsModel {
     AssetTypeOptions: AssetBrowserAssetTypeFilterModel[];
     PredicateOptions: AssetBrowserPredicateFilterModel[];
+    ResponsibilityTypeOptions: AssetBrowserResponsibilityTypeFilterModel[];
+
     AncestryOptions: SelectItem[] = [
         { value: FilterAncestryMode.AllAncestors, label: 'Show all parents/owners' },
         { value: FilterAncestryMode.DirectAncestor, label: 'Show direct parent/owner' }//,
         //{ value: FilterAncestryMode.NoAncestor, label: 'Show no parents/owners' }
     ];
+
     HopOptions: SelectItem[] = [
         { label: 'One', value: 1 },
         { label: 'Two', value: 2 },
@@ -724,11 +742,19 @@ export class FilterSelectionsModel {
 
     FilterAssetTypes: TreeNode[] = [];
     FilterPredicates: TreeNode[] = [];
+    FilterResponsibilityTypes: TreeNode[] = [];
 
-    constructor(assetTypes: AssetBrowserAssetTypeFilterModel[], predicates: AssetBrowserPredicateFilterModel[]) {
+    constructor(assetTypes: AssetBrowserAssetTypeFilterModel[], predicates: AssetBrowserPredicateFilterModel[], responsibilityTypes: AssetBrowserResponsibilityTypeFilterModel[]) {
         this.AssetTypeOptions = assetTypes;
         this.PredicateOptions = predicates;
+        this.ResponsibilityTypeOptions = responsibilityTypes;
     }
+}
+
+export class LoadedFilterTypesModel {
+    AssetTypes: number[] = [];
+    Predicates: number[] = [];
+    ResponsibilityTypes: number[] = [];
 }
 
 //#endregion

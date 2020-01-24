@@ -1027,7 +1027,15 @@ from	api.ExecutionField T
                     }
                     else if (ot == "ReferenceItemType" && fieldName == "Code")
                     {
-                        success = true;
+                        if((fieldValue ?? "").Length > 250)
+                        {
+                            errorMessages.Add($"The Code field must be 250 characters or less in length.");
+                            success = false;
+                        }
+                        else
+                        {
+                            success = true;
+                        }
                     }
                     else if (ot == "RuleType" && (fieldName == "Threshold" || fieldName == "Status" || fieldName == "Dimension"))
                     {
@@ -4922,7 +4930,7 @@ where   ER.ExecutionID = @ExecutionID
 
             Connection.Execute(@"Update api.ExecutionAssetCrossReference
                                     Set Success=0,
-                                    Message='Does not contain required fields.' 
+                                    Message='ExternalID is required.' 
                                     Where ExecutionID = @executionID and Success is null and
                                     ( ExternalID is null or TRIM(ExternalID) ='') ", new { executionID = execution.ExecutionID }, commandTimeout: timeout);
 

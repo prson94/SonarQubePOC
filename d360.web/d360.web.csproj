@@ -128,6 +128,10 @@
     <Reference Include="Microsoft.IdentityModel.JsonWebTokens, Version=5.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.JsonWebTokens.5.2.4\lib\net451\Microsoft.IdentityModel.JsonWebTokens.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=5.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.IdentityModel.Logging.5.2.4\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.2.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Tokens.5.2.4\lib\net451\Microsoft.IdentityModel.Tokens.dll</HintPath>
     </Reference>
@@ -644,6 +648,7 @@
     </EmbeddedResource>
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.html" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
@@ -1081,9 +1086,12 @@
     <TypeScriptCompile Include="Scripts\app\app.module.ts" />
     <TypeScriptCompile Include="Scripts\app\app.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-allocation.component.ts" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-allocation-editor.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-allocation-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields.component.ts" />
@@ -1695,6 +1703,7 @@
     <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\messages-observable.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\allocations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\metrics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />

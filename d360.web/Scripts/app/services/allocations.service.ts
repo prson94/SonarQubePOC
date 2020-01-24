@@ -1,0 +1,77 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { JsonResult } from '../models/jsonresult.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreTypeAllocation, ScoreType } from '../models/metrics.model';
+import { AssetTypeMetricModel } from '../models/asset.model';
+import { Observable } from 'rxjs';
+import { MessagesObservableService } from './messages-observable.service';
+import { BaseObservableService } from './baseObservable.service';
+import { map, catchError } from 'rxjs/operators';
+
+
+
+@Injectable()
+export class AllocationService extends BaseObservableService {
+
+    constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
+
+    public getAllocations(): Observable<ScoreTypeAllocation[]> {
+        let url = `/api/v2/scoring/allocations?_state=Active&includeFlags=true`;
+        return this.http.get(url)
+            .pipe(map(response => <ScoreTypeAllocation[]>response),
+                catchError(err => this.handleError(err, true)));
+    }
+
+    public deleteAllocationByUid(uid: string): Observable<any> {
+        let url = `api/v2/scoring/allocations/${uid}`;
+        return this.http.delete(url)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+    }
+
+    public getunallocatedAssetTypes(scoreType: ScoreType): Observable<any[]> {
+        let url = `api/v2/scoring/unallocatedAssetTypes/` + scoreType;
+        return this.http.get(url)
+            .pipe(map(response => <any>response),
+                catchError(err => this.handleError(err, true)));
+
+    }
+
+    public save(allocation: ScoreTypeAllocation): Observable<any> {
+        let url = `api/v2/scoring/allocations`;
+        if (allocation.uid == undefined) {
+            return this.http.post(url, allocation)
+                .pipe(map(response => <any>response),
+                    catchError(err => this.handleError(err, true)));
+        }
+        else {
+            return this.http.put(url + "/" + allocation.uid, allocation)
+                .pipe(map(response => <any>response),
+                    catchError(err => this.handleError(err, true)));
+        }
+
+    }
+
+    public export(filters: any) {
+        var queryString = '?' + Object.keys(filters).map(key => key + '=' + filters[key].value).join('&');
+
+        this.http.get('api/v2/scoring/export' + queryString, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Scores'));
+
+    }
+
+    downloadFile(data: Blob, name: string) {
+        var filename = `${name} ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data, filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data);
+            var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
+    }
+}
