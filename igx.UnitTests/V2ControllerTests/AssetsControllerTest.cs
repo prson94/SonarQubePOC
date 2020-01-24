@@ -596,6 +596,11 @@ namespace igx.UnitTests
             responseMessageResult = await GetResponseForPostAsset(insertItem);
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
 
+            insertItem.IconStyle.BackColor = "#FAB";
+            insertItem.IconStyle.ForeColor = "#FFAABB";
+            responseMessageResult = await GetResponseForPostAsset(insertItem);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+
             insertItem.IconStyle.BackColor = "#000000";
             insertItem.IconStyle.ForeColor = "#FF0000";
             responseMessageResult = await GetResponseForPostAsset(insertItem);
@@ -645,6 +650,11 @@ namespace igx.UnitTests
 
             insertItem.IconStyle.BackColor = "#000000";
             insertItem.IconStyle.ForeColor = "#000000";
+            responseMessageResult = await GetResponseForPutAsset(insertItem);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+
+            insertItem.IconStyle.BackColor = "#FAB";
+            insertItem.IconStyle.ForeColor = "#FFAABB";
             responseMessageResult = await GetResponseForPutAsset(insertItem);
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
 
