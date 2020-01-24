@@ -18,6 +18,8 @@ using d360.core.helpers;
 using d360.core.resources;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
+using System.IO;
+using SpreadsheetLight;
 
 namespace d360.model.DataAccessLayer
 {
@@ -484,6 +486,99 @@ namespace d360.model.DataAccessLayer
             model.total = count;
 
             return model;
+        }
+        public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var results = await GetAssets(uid, queryParams);
+            var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
+            var fields = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).ToList();
+
+            var typesToAvoid = new List<string>() {
+                DataType.Attribute.ToString(),
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.FilteredLookup.ToString(),
+                DataType.OwnershipLookup.ToString()
+            };
+
+            //add default fields
+            fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
+            fields.Add(new FieldType { Type = "string", Name = "Path", FriendlyName = "Path" });
+            fields.Add(new FieldType { Type = "date", Name = "UpdatedOn", FriendlyName = "Updated On" });
+            fields.Add(new FieldType { Type = "date", Name = "CreatedOn", FriendlyName = "Created On" });
+            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset Uid" });
+            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset Id" });
+            fields.Add(new FieldType { Type = "number", Name = "AssetTypeId", FriendlyName = "Asset Type Id" });
+            fields.Add(new FieldType { Type = "string", Name = "AssetTypeUid", FriendlyName = "Asset Type Uid" });
+
+
+            var rowData = results.items.ToList();
+
+            var document = new SLDocument();
+            const string assetSheetName = "Assets";
+            const string apiSheetName = "Api Info";
+
+
+            #region Populate Excel Document
+
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, assetSheetName);
+
+            document.AddWorksheet(apiSheetName);
+            document.SelectWorksheet(apiSheetName);
+
+            document.SetCellValue(1, 1, "pageSize");
+            document.SetCellValue(1, 2, results.pageSize);
+            document.SetCellValue(2, 1, "pageNum");
+            document.SetCellValue(2, 2, results.pageNum);
+            document.SetCellValue(3, 1, "total");
+            document.SetCellValue(3, 2, results.total);
+
+
+            document.SelectWorksheet(assetSheetName);
+
+            int index = 1;
+
+            foreach (var field in fields)
+            {
+                if (typesToAvoid.Contains(field.Type))
+                    continue;
+                document.SetCellValue(1, index++, (string)field.FriendlyName);
+            }
+
+
+            if (rowData == null || rowData.Count == 0)
+            {
+                var s = new MemoryStream();
+                document.SaveAs(s);
+                return document;
+            }
+
+
+            int rowNumber = 1;
+            foreach (var row in rowData)
+            {
+                index = 1;
+                rowNumber++;
+                var rowValues = (row as IDictionary<string, object>);
+
+                foreach (var field in fields)
+                {
+                    if (typesToAvoid.Contains(field.Type))
+                        continue;
+
+                    if (rowValues.ContainsKey(field.Name))
+                    {
+                        var val = rowValues[field.Name];
+                        setCellValueFromField(document, rowNumber, index, field, val);
+                    }
+
+                    index++;
+                }
+            }
+
+            #endregion
+
+            return document;
         }
         public async Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model)
         {
@@ -1431,7 +1526,6 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return asset.uid;
         }
 
-
         public async Task<dynamic> GetAssetDetails(Asset asset)
         {
             var dbArgs = new DynamicParameters();
@@ -1474,6 +1568,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
         }
+
 
 
         #region Private
@@ -1826,7 +1921,42 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     return "";
             }
         }
+        private void setCellValueFromField(SLDocument document, int rowIndex, int colIndex, FieldType field, object value)
+        {
+            var valueString = value?.ToString() ?? "";
+            switch ((field.Type ?? "").ToUpper())
+            {
+                case "DECIMAL":
+                    double dVal = 0;
+                    if (double.TryParse(valueString, out dVal))
+                        document.SetCellValue(rowIndex, colIndex, dVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "NUMBER":
+                    int intVal = 0;
+                    if (int.TryParse(valueString, out intVal))
+                        document.SetCellValue(rowIndex, colIndex, intVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "DATE":
+                    if (DateTime.TryParse(valueString, out DateTime dateVal))
+                    {
+                        document.SetCellValue(rowIndex, colIndex, dateVal);
 
+                        SLStyle style = document.CreateStyle();
+                        style.FormatCode = "m/d/yyyy";
+                        document.SetCellStyle(rowIndex, colIndex, style);
+                    }
+                    break;
+                default:
+                    if (valueString.StartsWith("="))
+                        valueString = "'" + valueString;
+                    document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+            }
+        }
         #endregion
 
     }
