@@ -631,7 +631,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         this.fieldsService.getReferenceTypeHierarchyFields(objectId, this.objectType, this.objectID).subscribe(
             r => {
-                this.listParentFields = r;
+                this.listParentFields = r.map((x) => { return { label: x.label, value: +x.value }; });
 
                 if (this.listParentFields == null || this.listParentFields.length == 0) {
                     this.model.FieldType.ParentFieldTypeID = 0;
