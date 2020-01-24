@@ -142,15 +142,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A field type using the specified relationship type has already been defined. Only one relationship field type per relationship type is supported..
-        /// </summary>
-        public static string Error_Item_FieldRelationDuplicate {
-            get {
-                return ResourceManager.GetString("Error_Item_FieldRelationDuplicate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to One or more relationships reference this item..
         /// </summary>
         public static string Error_Item_RelationshipsReferences {

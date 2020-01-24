@@ -2623,19 +2623,6 @@ where	I.ID is null";
                         case EntityState.Added:
                             if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            if (o.Type == DataType.Relationship.ToString())
-                            {
-                                var count1 = Query<int>("select count(1) from [FieldType] ft " +
-                                                        "  where (Object = @fobjectType and ObjectID = @fobjectid) " +
-                                                        "  and(LookupObjectID is not null) and Type = 'Relationship' " +
-                                                        "  and ft.id != @ffieldtypeid " +
-                                                        "  and ft.LookupObjectID = @fLookupObjectID" +
-                                                        "  and ft.LookupObjectType = @fLookupObjectType",
-                                                        new { fobjectType = o.Object, fobjectid = o.ObjectID, ffieldtypeid = o.ID, fLookupObjectID = o.LookupObjectID, fLookupObjectType = o.LookupObjectType }).Single();
-                                if (count1 > 0)
-                                    throw new ArgumentException(Messages.Error_Item_FieldRelationDuplicate);
-                            }
                             break;
                         case EntityState.Deleted:
                             if (o.Type == DataType.JSON.ToString())
@@ -2648,19 +2635,6 @@ where	I.ID is null";
                         case EntityState.Modified:
                             if (Any<FieldType>(i => i.Object == o.Object && i.ObjectID == o.ObjectID && i.Name == o.Name && i.ID != o.ID))
                                 throw new ArgumentException(Messages.Error_NameTaken);
-
-                            if (o.Type == DataType.Relationship.ToString())
-                            {
-                                var count1 = Query<int>("select count(1) from [FieldType] ft " +
-                                                        "  where (Object = @fobjectType and ObjectID = @fobjectid) " +
-                                                        "  and(LookupObjectID is not null) and Type = 'Relationship' " +
-                                                        "  and ft.id != @ffieldtypeid " +
-                                                        "  and ft.LookupObjectID = @fLookupObjectID" +
-                                                        "  and ft.LookupObjectType = @fLookupObjectType",
-                                                        new { fobjectType = o.Object, fobjectid = o.ObjectID, ffieldtypeid = o.ID, fLookupObjectID = o.LookupObjectID, fLookupObjectType = o.LookupObjectType }).Single();
-                                if (count1 > 0)
-                                    throw new ArgumentException(Messages.Error_Item_FieldRelationDuplicate);
-                            }
                             break;
                     }
                 }
