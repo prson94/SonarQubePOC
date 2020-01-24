@@ -17,8 +17,8 @@ namespace d360.model.validators
         public static WorkHttpStatus ValidateModel(FieldTypesApiEditModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel, bool areFusionFieldsAllowed = true, List<FieldType> existingFieldTypes = null)
         {
             var baseValidation = BaseModelValidation(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel);
-            
-            
+
+
             if (baseValidation.StatusCode != HttpStatusCode.OK)
                 return baseValidation;
 
@@ -31,17 +31,17 @@ namespace d360.model.validators
             foreach (var field in model.Fields)
             {
                 #region Basic field Model validation
-                
+
                 isValid = Validator.TryValidateObject(field, new ValidationContext(field, serviceProvider: null, items: null), validationResults, true);
                 if (!isValid)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, $"Invalid Field {validationResults.First().MemberNames.First()}", validationResults.First().ErrorMessage);
                 }
-                
+
                 #endregion
 
                 #region Name Validation
-                
+
                 if (!IsFieldNameAllowed(field.Name.Trim()))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Field Name", $"Name cannot be [{field.Name.Trim().ToUpper()}].");
@@ -128,18 +128,41 @@ namespace d360.model.validators
                     }
                 }
 
-                #region Min/Max length
+                #region Type Min/Max
 
-                if (field?.Type?.Text?.Validation?.MaximumLength != null && (field?.Type?.Text?.Validation?.MaximumLength % 1) != 0)
+                if (field?.Type?.Text != null)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"MaximumLength must be a whole number");
+                    if (!FieldLengthValid(field.Type.Text.Validation, out string validationErrorMsg))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"{validationErrorMsg}");
+                    }
                 }
 
-                if (field?.Type?.Text?.Validation?.MinimumLength != null && (field?.Type?.Text?.Validation?.MinimumLength % 1) != 0)
+                if (field?.Type?.Html != null)
                 {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"MinimumLength must be a whole number");
+                    if (!FieldLengthValid(field.Type.Html.Validation, out string validationErrorMsg))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"{validationErrorMsg}");
+                    }
                 }
-                
+
+                if (field?.Type?.Number != null)
+                {
+                    if (field.Type.Number.Increment != null && (field.Type.Number.Increment % 1 != 0))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Increment must be a whole number");
+                    }
+
+                    if (field.Type.Number.Validation?.MaximumValue != null && (field.Type.Number.Validation?.MaximumValue % 1) != 0)
+                    {                        
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"MaximumValue must be a whole number"); ;
+                    }
+                    if (field.Type.Number.Validation?.MinimumValue != null && (field.Type.Number.Validation?.MinimumValue % 1) != 0)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"MinimumValue must be a whole number"); ;
+                    }                    
+                }
+
                 #endregion
 
                 if (!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
@@ -191,7 +214,7 @@ namespace d360.model.validators
         }
 
         private static WorkHttpStatus BaseModelValidation(BaseFieldTypesApiModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel)
-        {           
+        {
             if (model == null)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "No model found", "You did not provide a valid model. Please check your request and try again.");
@@ -253,6 +276,25 @@ namespace d360.model.validators
             if (string.IsNullOrEmpty(fieldApiName)) return false;
             List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon" };
             return !disallowedFieldNames.Contains(fieldApiName.ToLower());
+        }
+
+        private static bool FieldLengthValid(FieldTypeDescriptionApiViewModel_ValidationLength validation, out string errMsg)
+        {
+            errMsg = "";
+            if (validation != null)
+            {
+                if (validation?.MaximumLength != null && (validation?.MaximumLength % 1) != 0)
+                {
+                    errMsg = "MaximumLength must be a whole number";
+                    return false;
+                }
+                if (validation?.MinimumLength != null && (validation?.MinimumLength % 1) != 0)
+                {
+                    errMsg = "MinimumLength must be a whole number";
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

@@ -188,7 +188,14 @@ namespace d360.core.entities
         [DataMember]
         public decimal? MaximumLength { get; set; }
     }
-    public class FieldTypeDescriptionApiViewModel_ValidationDecimal: FieldTypeDescriptionApiViewModel_ValidationLength
+    public class FieldTypeDescriptionApiViewModel_ValidationMinMaxValue : FieldTypeDescriptionApiViewModel_Validation
+    {
+        [DataMember]
+        public decimal? MinimumValue { get; set; }
+        [DataMember]
+        public decimal? MaximumValue { get; set; }
+    }
+    public class FieldTypeDescriptionApiViewModel_ValidationDecimal: FieldTypeDescriptionApiViewModel_ValidationMinMaxValue
     {
         [DataMember]
         public short? Precision { get; set; }
@@ -504,7 +511,7 @@ namespace d360.core.entities
         [DataMember]
         public decimal? Increment { get; set; }
         [DataMember]
-        public FieldTypeDescriptionApiViewModel_ValidationLength Validation { get; set; }
+        public FieldTypeDescriptionApiViewModel_ValidationMinMaxValue Validation { get; set; }
     }
 
     public class FieldTypeDataTypeRelationshipApiViewModel : FieldTypeEditableApiViewModel

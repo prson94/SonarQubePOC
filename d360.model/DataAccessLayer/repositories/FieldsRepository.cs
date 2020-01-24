@@ -863,8 +863,8 @@ from	IntersectType I
                     if (f.Type.Decimal.Validation != null)
                     {
                         newFieldType.IsRequired = f.Type.Decimal.Validation.IsRequired;
-                        newFieldType.MaximumLength = f.Type.Decimal.Validation.MaximumLength;
-                        newFieldType.MinimumLength = f.Type.Decimal.Validation.MinimumLength;
+                        newFieldType.MaximumLength = f.Type.Decimal.Validation.MaximumValue;
+                        newFieldType.MinimumLength = f.Type.Decimal.Validation.MinimumValue;
                         newFieldType.Precision = f.Type.Decimal.Validation.Precision;
                     }
                 }
@@ -1087,8 +1087,8 @@ from	IntersectType I
                     if (f.Type.Number.Validation != null)
                     {
                         newFieldType.IsRequired = f.Type.Number.Validation.IsRequired;
-                        newFieldType.MaximumLength = f.Type.Number.Validation.MaximumLength;
-                        newFieldType.MinimumLength = f.Type.Number.Validation.MinimumLength;
+                        newFieldType.MaximumLength = f.Type.Number.Validation.MaximumValue;
+                        newFieldType.MinimumLength = f.Type.Number.Validation.MinimumValue;
                     }
                 }
                 else if (f.Type.Relationship != null)
