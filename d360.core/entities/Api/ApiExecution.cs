@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
+using System.Net;
 
 namespace d360.core.entities
 {
@@ -83,6 +84,11 @@ namespace d360.core.entities
     {
         [DataMember]
         public IEnumerable<APIExecutionAPIModel> items { get; set; }
+
+        [IgnoreDataMember]
+        public HttpStatusCode StatusCode { get; set; }
+        [IgnoreDataMember]
+        public string Message { get; set; }
     }
 
     public class APIExecutionAPIModel
@@ -94,8 +100,8 @@ namespace d360.core.entities
         public int Processed { get; set; }
         public int Error { get; set; }
         public string ErrorMessage { get; set; }
-        public DateTime ProcessingStartedOn { get; set; }
-        public DateTime StartedOn { get; set; }
+        public DateTime? ProcessingStartedOn { get; set; }
+        public DateTime? StartedOn { get; set; }
         public DateTime? CompletedOn { get; set; }
         public string Method { get; set; }
         public string Route { get; set; }

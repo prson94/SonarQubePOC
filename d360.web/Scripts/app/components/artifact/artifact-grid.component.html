@@ -54,8 +54,7 @@
     </d3s-artifact-top-level-filter>
   </div>
   <d3s-artifact-column-filter
-    *ngIf="!showGridSimpleFilter"
-    [(attributeFilters)]="stateService.artifactTypeFilters.attributes"
+    *ngIf="!showGridSimpleFilter"    
     [(ownerFilter)]="stateService.artifactTypeFilters.owners"
     [(relationshipFilters)]="stateService.artifactTypeFilters.relationships"
     [(filters)]="stateService.artifactTypeFilters.filters"
@@ -70,8 +69,7 @@
     [sortOrder]="stateService.artifactTypeFilters.sortOrder"
     [sortField]="stateService.artifactTypeFilters.sortField"
     [filters]="stateService.artifactTypeFilters.filters"
-    [relationships]="stateService.artifactTypeFilters.relationships"
-    [attributes]="stateService.artifactTypeFilters.attributes"
+    [relationships]="stateService.artifactTypeFilters.relationships"    
     [simpleFilter]="stateService.artifactTypeFilters.simpleTextFilter"
     [owner]="stateService.artifactTypeFilters.owners"
   ></d3s-artifact-custom-export>

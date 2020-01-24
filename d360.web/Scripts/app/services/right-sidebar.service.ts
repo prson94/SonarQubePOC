@@ -5,7 +5,7 @@ import { AssetTypeClass } from '../models/asset.model';
 import { BaseComponent } from '../components/shared/base.component';
 import { SiteMenuService } from './site-menu.service';
 import { PlatformLocation } from '@angular/common'
-import { Router, NavigationEnd } from '@angular/router';
+import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 
 declare var CompanySettings: any;
 
@@ -36,6 +36,13 @@ export class SecondaryNavService {
         });
 
         router.events.subscribe((event) => {
+            if (event instanceof NavigationStart) {
+                if (this.router.url.indexOf("dashboard") != -1) {
+                    this.isSidebarCreated = false;
+                    this.invalidateKey();
+                }
+            }
+            
             if (event instanceof NavigationEnd) {
                 var homeUrl = this.secondaryNavState.currentState.currentHome ? this.secondaryNavState.currentState.currentHome : '';
                 

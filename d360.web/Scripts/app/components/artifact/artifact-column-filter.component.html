@@ -27,18 +27,7 @@
                     [options]="connectors"
                     [ngModel]="filter?.Data?.includeType"
                     (ngModelChange)="filter.Data.includeType = $event;"></p-selectButton>
-            </span>
-            <span *ngSwitchCase="filterFieldType.Attribute">
-                <select [name]="'attributeValue_' + index"
-                    style="width:100%;"
-                    placeholder="Choose a value"
-                    [ngModel]="filter?.Data?.attributeSearchValue"
-                    (ngModelChange)="filter.Data.attributeSearchValue = $event">
-                    <option></option>
-                    <option *ngFor="let p of attributeValues"
-                        [value]="p">{{p}}</option>
-                </select>
-            </span>
+            </span>            
             <span *ngSwitchCase="filterFieldType.Owner">
                 <p-multiSelect name="owners"
                     [options]="ownerValues"

@@ -5,7 +5,7 @@ import { BaseComponent } from '../shared/base.component';
 import { Table } from 'primeng/table';
 import { Rule, RuleImplementation, RuleImplementationPagedResults, RuleImplementationFilter } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
+import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../models/grid-definition.model';
 import { RuleColumnFilterComponent } from './rule-column-filter.component'
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { MessagesObservableService } from '../../services/messages-observable.service';
@@ -103,8 +103,7 @@ export class RuleImplementationsGridComponent extends BaseComponent implements O
     sortField: string = "";
     sortOrder: SortOrder = SortOrder.None;
     filters: GridFilterExpression[] = [];
-    relationships: GridRelationshipFilterExpression;
-    attributes: GridAttributeFilterExpression;
+    relationships: GridRelationshipFilterExpression;    
     copy: boolean;
     searchValue: string = "";
     simpleSearchID: number = 0;

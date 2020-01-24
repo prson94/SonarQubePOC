@@ -1,21 +1,18 @@
 ﻿import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange} from '@angular/core';
 import {SelectItem} from 'primeng/api';
 import {RelationshipsService} from '../../services/relationships.service';
-import {AttributeTypeService} from '../../services/attribute-type.service';
-import {
-    GridAttributeFilterExpression,
+import {    
     GridFilterColumn,
     GridFilterExpression,
     GridFilterFieldType,
     GridRelationshipFilterExpression
 } from '../../models/grid-definition.model';
 import {ObjectRelationship} from '../../models/relationship.model';
-import {AttributeType} from '../../models/attribute-type.model';
 import {FilterExpression, FilterField, FilterFieldType} from '../../models/filter-field.model';
 
 @Component({
     selector: 'd3s-rule-column-filter',
-    providers: [RelationshipsService, AttributeTypeService],
+    providers: [RelationshipsService],
     styles: [`
         div.filter {
             padding-bottom: 5px;
@@ -38,15 +35,10 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
 
     @Input() relationshipFilter: GridRelationshipFilterExpression = null;
     @Output() relationshipFilterChange = new EventEmitter();
-
-    @Input() attributeFilter: GridAttributeFilterExpression = null;
-    @Output() attributeFilterChange = new EventEmitter();
-
+        
     relationshipTypes: ObjectRelationship[];
     relationshipValues: SelectItem[] = [];
     connectors: SelectItem[] = [{label: "And", value: "All"}, {label: "Or", value: "Any"}];
-    attributeTypes: AttributeType[];
-    attributeValues: string[];
     filterFieldType = FilterFieldType;
 
     private internalFilters: FilterExpression[] = [];
@@ -54,15 +46,12 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
     private selectedFilter: any;
 
     constructor(
-        private relationshipsService: RelationshipsService,
-        private attributeTypeService: AttributeTypeService
+        private relationshipsService: RelationshipsService        
     ) {
     }
 
     ngOnInit() {
-        if (this.attributeFilter && this.attributeFilter.attributeType) {
-            this.attributeSelected(this.attributeFilter.attributeType);
-        }
+        
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -89,7 +78,6 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
                 }
             }
 
-            this.getAttributes();
             //fetch relationships for this artifacttypeid
             if (!this.relationshipTypes) {
                 this.getRelationshipTypes();
@@ -108,16 +96,10 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
 
         for (let internalFilter of this.internalFilters) {
             if (internalFilter.Type == FilterFieldType.Field) {
-                this.filters.push(internalFilter.Data);
-            } else if (internalFilter.Type == FilterFieldType.Attribute) {
-                this.attributeFilter = internalFilter.Data;
+                this.filters.push(internalFilter.Data);            
             } else if (internalFilter.Type == FilterFieldType.Relationship) {
                 this.relationshipFilter = internalFilter.Data;
             }
-        }
-
-        if (this.attributeFilter) {
-            this.attributeFilterChange.emit(this.attributeFilter);
         }
 
         if (this.relationshipFilter) {
@@ -128,8 +110,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
 
         this.filterChanged.emit({
             filter: this.filters,
-            relationships: this.relationshipFilter,
-            attributes: this.attributeFilter
+            relationships: this.relationshipFilter        
         });
     }
 
@@ -141,9 +122,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
 
         this.relationshipFilter = null;
         this.relationshipFilterChange.emit(this.relationshipFilter);
-
-        this.attributeFilter = null;
-        this.attributeFilterChange.emit(this.attributeFilter);
+                
 
         this.filterChanged.emit({filter: this.filters, relationshipFilter: this.relationshipFilter});
     }
@@ -176,12 +155,6 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
             filter.Type = FilterFieldType.Relationship;
 
             this.loadRelationshipValues(filter.Data.relationshipType);
-        } else if (target.Type == FilterFieldType.Attribute) {
-            filter.Data = new GridAttributeFilterExpression();
-            filter.Data.attributeType = target.Data.ID;
-            filter.Type = FilterFieldType.Attribute;
-
-            this.attributeSelected(target.Data.ID);
         }
     }
 
@@ -189,10 +162,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
         return this.internalFilters.filter(x => x.Type == FilterFieldType.Relationship).length > 1;
     }
 
-    private hasMultipleAttributes() {
-        return this.internalFilters.filter(x => x.Type == FilterFieldType.Attribute).length > 1;
-    }
-
+    
     private addFilter() {
         this.internalFilters.push(new FilterExpression());
     }
@@ -229,21 +199,7 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
             });
         }
     }
-
-    private attributeSelected(target) {
-        this.attributeValues = [];
-        this
-            .attributeTypeService
-            .getAttributeFilterValues(
-                'RuleType',
-                1,
-                target
-            )
-            .subscribe(result => {
-                this.attributeValues = result;
-            });
-    }
-
+        
     private loadRelationshipValues(relationshipType: ObjectRelationship) {
         this.relationshipValues.splice(0, this.relationshipValues.length);
 
@@ -258,34 +214,6 @@ export class RuleColumnFilterComponent implements OnInit, OnChanges {
 
     private addRelationshipFilter() {
         this.relationshipFilter = new GridRelationshipFilterExpression();
-    }
-
-    private getAttributes() {
-        this
-            .attributeTypeService
-            .getAttributeTypesForObject(
-                'RuleType',
-                1
-            )
-            .subscribe(result => {
-                this.attributeTypes = result;
-
-                for (let attributeType of this.attributeTypes) {
-                    this.availableFilters.push({
-                        Data: attributeType, Name: `Attribute - ${attributeType.Name}`, Type: FilterFieldType.Attribute
-                    });
-                }
-
-                if (this.attributeFilter) {
-                    this.internalFilters = this.internalFilters.filter(x => x.Type != FilterFieldType.Attribute);
-
-                    this.internalFilters.push({
-                        Type: FilterFieldType.Attribute,
-                        Data: this.attributeFilter,
-                        Field: this.availableFilters.filter(x => x.Type == FilterFieldType.Attribute && x.Data.ID == this.attributeFilter.attributeType)[0],
-                    });
-                }
-            });
     }
 
     private removeFilter(filter: FilterExpression) {
