@@ -3300,9 +3300,9 @@ button.tab-scroller {
 
                     .ui-dropdown-trigger-icon {
                         top: 4px;
-                        left: initial;
-                        margin-top: initial;
-                        margin-left: initial;
+                        left: auto;
+                        margin-top: auto;
+                        margin-left: auto;
                         height: 24px;
                         width: 24px;
                         background-color: #f1f2f3;
@@ -3340,6 +3340,17 @@ button.tab-scroller {
 
                     &:hover {
                         background-color: #ffef99;
+                    }
+
+                    .option-name {
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        display: inline-block;
+                        max-width: 400px;
+                        overflow: hidden;
+                        direction: rtl;
+                        position: relative;
+                        top: 4px;
                     }
                 }
             }

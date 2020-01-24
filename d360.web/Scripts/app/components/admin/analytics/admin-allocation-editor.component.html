@@ -22,6 +22,15 @@
                     <ng-template let-item pTemplate="selectedItem">
                         <span>{{item.label}}</span>
                     </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <span *ngIf="item.class">
+                            <span class="option-class">{{item.class}}</span>&nbsp;:&nbsp;
+                            <span class="option-name">{{item.name}}</span>
+                        </span>
+                        <span *ngIf="!item.class">
+                            {{item.label}}
+                        </span>
+                    </ng-template>
                 </p-dropdown>
             </div>
         </div>

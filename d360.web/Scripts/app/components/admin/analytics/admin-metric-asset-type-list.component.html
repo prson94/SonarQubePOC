@@ -31,7 +31,7 @@
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-item>
-            <tr>
+            <tr class="{{getClass(item)}}">
                 <td (click)="openMeasures(item)">{{item.assetClassName}}</td>
                 <td (click)="openMeasures(item)">{{item.assetTypePath}}</td>
                 <td (click)="openMeasures(item)">{{item.scoreType}}</td>
@@ -70,5 +70,5 @@
 
 </d3s-delete-form>
 <d3s-modal [title]="editTitle" additionalClasses="medium-dialog" (onClose)="onSaveCancel()" [isVisible]="showEdit">
-    <d3s-admin-allocation-editor [disabled]="selection.hasMeasure" [selection]="selection" (onCancel)="showEdit=false;" (onSave)="showEdit=false;load();"></d3s-admin-allocation-editor>
+    <d3s-admin-allocation-editor [disabled]="selection.hasMeasure" [selection]="selection" (onCancel)="showEdit=false;" (onSave)="showEdit=false;load($event);"></d3s-admin-allocation-editor>
 </d3s-modal>
