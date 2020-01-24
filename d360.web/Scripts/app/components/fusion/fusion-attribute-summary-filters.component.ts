@@ -2,7 +2,7 @@
 import { BaseComponent } from '../shared/base.component';
 import { FusionAttributeService } from '../../services/fusion-attribute.service';
 import { FusionAttributeValueDetails, FusionAttributeFilter } from '../../models/fusion-attribute.model';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridAttributeFilterExpression } from '../../models/grid-definition.model';
+import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression } from '../../models/grid-definition.model';
 import * as _ from 'lodash';
 
 @Component({

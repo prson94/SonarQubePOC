@@ -1262,17 +1262,34 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
                 string[] allowedDirections = new string[] { "asc", "desc" };
                 var order = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_direction").Value;
+                if (!allowedDirections.Contains(order.Trim().ToLower()))
+                {
+                    return new APIExecutionAPIModelResult
+                    {
+                        Message = "Invalid order direction passed in the request",
+                        StatusCode = HttpStatusCode.BadRequest
+                    };
+                }
                 orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
             }
             
             if (!queryParams.Any(p => p.Key == "_order"))
             {
-                var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
-                orderBySql = $" order by Ex.[ExecutionID] {orderDirection} ";
+                orderBySql = $" order by [CompletedOn] {orderDirection} ";
             }
             else
             {
+
                 var orderByCol = queryParams.FirstOrDefault(p => p.Key == "_order").Value;
+                string[] validOrderByFields = { "executionid", "resourceuid", "resource", "total",
+                                                "processed", "error", "errormessage", "processingstartedon",
+                                                "startedon", "completedon", "method", "route", "fields" };
+                if (!validOrderByFields.Contains(orderByCol.ToLower()))
+                    return new APIExecutionAPIModelResult
+                    {
+                        Message = "Invalid order passed in the request",
+                        StatusCode = HttpStatusCode.BadRequest
+                    };
                 orderBySql = $" order by {orderByCol} {orderDirection} ";
             }
 
@@ -1288,7 +1305,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
                 if (pageSize < 1) pageSize = 1;
                 if (pageNum < 1) pageNum = 1;
-            
+                if (pageSize > 25000) pageSize = 25000;
+                if (pageNum > 10000) pageNum = 10000;
+
+
                 offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
             }          
 
@@ -1347,7 +1367,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 items = items,
                 total = count.FirstOrDefault(),
                 pageNum = pageNum,
-                pageSize = pageSize
+                pageSize = pageSize,
+                StatusCode = HttpStatusCode.OK
             };
 
             return resultsModel;

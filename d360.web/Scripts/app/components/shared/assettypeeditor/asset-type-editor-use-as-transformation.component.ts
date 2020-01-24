@@ -21,7 +21,7 @@ import { RelationshipsService } from "../../../services/relationships.service";
 `
 
 })
-export class AssetTypeEditorUseAsTransformationComponent extends BaseComponent implements OnChanges{
+export class AssetTypeEditorUseAsTransformationComponent extends BaseComponent implements OnChanges, OnInit{
     
     
     @Input()
@@ -37,6 +37,10 @@ export class AssetTypeEditorUseAsTransformationComponent extends BaseComponent i
         super();
     } 
 
+    ngOnInit() {
+        this.IsTransformPredicateExists();
+    }
+
     ngOnChanges(changes: SimpleChanges): void {
         if (typeof changes['UseAsTransformation'] !== "undefined" && changes['UseAsTransformation'].firstChange) {
             this.initialValue = changes['UseAsTransformation'].currentValue;
@@ -45,7 +49,7 @@ export class AssetTypeEditorUseAsTransformationComponent extends BaseComponent i
     }
 
     IsTransformPredicateExists() {
-        if (this.initialValue && this.assetTypeId != 0) {
+        if (this.assetTypeId != 0) {
             this.relationshipsService.IsTransformPredicateExists(this.assetTypeId).subscribe(res => {
                 if (res) {
                     setTimeout(() => {

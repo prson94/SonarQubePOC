@@ -1,7 +1,7 @@
 ﻿import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { BaseComponent } from "../shared/base.component";
 import { WorkflowService } from "../../services/workflow.service";
-import { GridFilterColumn, GridFilterExpression, GridAttributeFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
+import { GridFilterColumn, GridFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
 import { WorkflowMonitorService } from '../../services/workflowmonitor.service';
 import { FilterFieldType } from '../../models/filter-field.model';
 import * as _ from 'lodash';
