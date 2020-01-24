@@ -16,7 +16,7 @@ export interface IFieldsObservableService {
 
     getLookupTokens(id: number, type: string): Observable<SelectItem[]>;
 
-    getLookups(id: number, type: string): Observable<Lookups>;
+    getLookups(id: number, type: string, fieldtypeid: number): Observable<Lookups>;
 
     getFormData(id: number): Observable<FieldTypeEditorModel>;
 

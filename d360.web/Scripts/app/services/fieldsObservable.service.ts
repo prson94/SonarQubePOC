@@ -167,11 +167,12 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
     getLookups(
         id: number,
-        type: string
+        type: string,
+        fieldtypeid: number
     ): Observable<Lookups> {
         return this
             .http
-            .get<Lookups>(`form/FieldType_Lookups?id=${id}&type=${type}&isNg=true`)
+            .get<Lookups>(`form/FieldType_Lookups?id=${id}&type=${type}&fieldtypeid=${fieldtypeid}&isNg=true`)
             .pipe(
                 map(response => <any>response),
                 map(
