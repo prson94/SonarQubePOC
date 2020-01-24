@@ -635,9 +635,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
                 if (this.listParentFields == null || this.listParentFields.length == 0) {
                     this.model.FieldType.ParentFieldTypeID = 0;
-                } else {
-                    console.log(r);
-                    console.log(this.model.FieldType.ParentFieldTypeID);
                 }
             }
         );
