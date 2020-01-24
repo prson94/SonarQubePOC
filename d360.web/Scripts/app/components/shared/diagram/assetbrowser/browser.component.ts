@@ -38,7 +38,8 @@ import { Observable } from 'rxjs';
 import { PredicatesService } from '../../../../services/predicates.service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
-import { ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
+import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 
 declare var window: any;
 
@@ -57,7 +58,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     DiagramObjectType = DiagramObjectType;
 
     private requestModel: AssetBrowserApiHopRequestModel;
-    private responseModel: AssetBrowserModel = new AssetBrowserModel(); 
+    private responseModel: AssetBrowserModel = new AssetBrowserModel();
     private revealedKeys: string[] = [];
     private originalAssetUid: string;
     private menuItems: MenuItem[] = [];
@@ -145,6 +146,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         private route: ActivatedRoute,
         private myElement: ElementRef,
         private browserService: BrowserService,
+        private router: Router,
         protected permissionsService: PermissionsService,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
@@ -229,7 +231,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let image_data = this.diagram.makeImageData({
             scale: 1,
             returnType: "blob",
-            background: "#fff", 
+            background: "#fff",
             callback: (image_data) => this.savePngButtonClickCallback(image_data, this.assetUid)
         });
     }
@@ -447,7 +449,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.model.nodeDataArray.forEach((tn: AssetBrowserTranslationNode) => {
 
             if (tn.assetTypeId) {
-                
+
                 if (model.AssetTypes.findIndex(o => { return o == tn.assetTypeId }) == -1) {
                     model.AssetTypes.push(tn.assetTypeId);
                 }
@@ -585,11 +587,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (showBadge) {
                     // Check to see if we should ignore this predicate based on previouly revealed badges.
                     if (topLevelNode.ignoredPredicates.findIndex(v => { return v == rC.predicateUid; }) > -1) {
-                        showBadge = false; 
+                        showBadge = false;
                     }
                 }
 
-                this.diagram.model.setDataProperty(rC, "showBadge", showBadge); 
+                this.diagram.model.setDataProperty(rC, "showBadge", showBadge);
             });
             //#endregion
         });
@@ -602,7 +604,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.links.each(link => {
             let linkData: AssetBrowserTranslationLink = link.data as AssetBrowserTranslationLink;
             if (linkData.predicateIds) {
-                let g: any = this.diagram.findNodeForKey(linkData.from); 
+                let g: any = this.diagram.findNodeForKey(linkData.from);
                 if (g) {
                     if (linkData.predicateIds.filter(l => {
                         return this.filterModel.SelectedPredicates.findIndex(v => { return v == l; }) > -1
@@ -669,12 +671,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }
                 }
                 else {
-                    this.unhideNode(tn);
+                    if (!(this.filterModel.SelectedAssetTypes.findIndex(v => { return v == tn.assetTypeId; }) > -1)) {
+                        this.unhideNode(tn);
+                    }
                 }
             });
 
         if (nodesToHide.length > 0) {
-            nodesToHide.forEach(n => { 
+            nodesToHide.forEach(n => {
                 let group: any = this.diagram.findNodeForKey(n.key);
                 this.hideIndividualNode(n, group);
             });
@@ -691,7 +695,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         hideNode.subgraph = new AssetBrowserTranslation();
         hideNode.template = "HiddenData";
         hideNode.assetTypeId = node.assetTypeId;
-        hideNode.responsibilityTypeId = node.responsibilityTypeId; 
+        hideNode.responsibilityTypeId = node.responsibilityTypeId;
         hideNode.back = node.back;
         hideNode.subgraph.nodes = [];
         hideNode.subgraph.links = [];
@@ -836,7 +840,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.diagram.nodeTemplateMap.add("MoreData", this.createMoreDataNode());
         this.diagram.nodeTemplateMap.add("HiddenData", this.createHiddenDataNode());
-        
+
         this.diagram.groupTemplateMap.add("Owners", this.createOwnersGroup());
         this.diagram.nodeTemplateMap.add("Owner", this.createOwnerNode());
         this.diagram.nodeTemplate = this.createListItemNode();
@@ -1131,7 +1135,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private findSubGraph(startKey: string, direction: AssetBrowserApiHopDirection): AssetBrowserTranslation {
         let subgraph = new AssetBrowserTranslation();
 
-        subgraph.nodes = []; 
+        subgraph.nodes = [];
         subgraph.links = [];
 
         let node = this.diagram.findNodeForKey(startKey);
@@ -1404,10 +1408,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.saveFilter();
         this.isLoading = true;
         this.loadingText = "Determining links and meaning...";
-        let assetData = this.browserService.convertResponseModel(this.responseModel, this.filterModel.AncestryMode); 
+        let assetData = this.browserService.convertResponseModel(this.responseModel, this.filterModel.AncestryMode);
         let assetTranslation: AssetBrowserTranslation = this.browserService.translateAssetsResponseModel(assetData);
         this.parseData(assetTranslation);
-         
+
         this.resizeDiagram();
         this.diagram.zoomToFit();
         this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
@@ -1558,7 +1562,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    private unhide(e, obj) { 
+    private unhide(e, obj) {
         if (obj != null && obj.part != null && obj.part.data != null) {
             let node: AssetBrowserTranslationNode = obj.part.data;
             this.unhideNode(node);
@@ -1579,7 +1583,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     // Remove immediate child.
                     this.diagram.remove(lnk.fromNode);
                     dm.removeNodeData(dm.findNodeDataForKey(lnk.fromNode.key));
-                } 
+                }
 
                 this.diagram.remove(lnk.link);
             });
@@ -1594,7 +1598,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.commitTransaction("collapseBadge");
     }
 
-    private clickOwnerBadge(e, obj) { 
+    private clickOwnerBadge(e, obj) {
         if (obj != null && obj.part != null && obj.part.data != null) {
             let ix = obj.itemIndex;
             let node: AssetBrowserTranslationNode = obj.part.data;
@@ -1604,7 +1608,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.collapseBadgeDependentNodesAndLinks(owner.key);
                 owner.expanded = false;
                 this.diagram.model.removeArrayItem(node.owners, ix);
-                this.diagram.model.insertArrayItem(node.owners, ix, owner); 
+                this.diagram.model.insertArrayItem(node.owners, ix, owner);
             }
             else {
                 let requestModel: AssetBrowserApiOwnerHopRequestModel = new AssetBrowserApiOwnerHopRequestModel();
@@ -1667,7 +1671,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.collapseBadgeDependentNodesAndLinks(relation.key);
                 relation.expanded = false;
                 this.diagram.model.removeArrayItem(node.relations, ix);
-                this.diagram.model.insertArrayItem(node.relations, ix, relation); 
+                this.diagram.model.insertArrayItem(node.relations, ix, relation);
             }
             else {
 
@@ -1856,7 +1860,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         new go.Binding("stroke", "expanded", (h) => (h ? this.fontOwnerBadgeLabelBorderColor_Disabled : this.fontOwnerBadgeLabelBorderColor)),
                         new go.Binding("fill", "expanded", (h) => (h ? this.fontOwnerBadgeLabelBackColor_Disabled : this.fontOwnerBadgeLabelBackColor)),
                     ),
-                    this.g( 
+                    this.g(
                         go.TextBlock,
                         {
                             row: 0,
@@ -1880,7 +1884,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         {
                             row: 0,
                             margin: 2,
-                            alignment: go.Spot.Center, 
+                            alignment: go.Spot.Center,
                             editable: false,
                             font: this.fontOwnerBadge,
                             stroke: this.fontOwnerBadgeCountForeColor
@@ -1950,6 +1954,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             { areaBackground: "#ffffff", background: "#ffffff" },
             this.g(
                 "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Navigate to", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+                { click: (e, obj) => this.navigateTo(e, obj) },
+                new go.Binding("visible", "", function (o) {
+                    return o.part.data.hasAssetReadAccess;
+                }).ofObject()
+            ),
+            this.g(
+                "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenuShowDetails }),
                 {
                     click: (e, obj) => {
@@ -1975,7 +1987,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: (e, obj) => this.hide(e, obj, AssetBrowserApiHopDirection.Forward) } 
+                { click: (e, obj) => this.hide(e, obj, AssetBrowserApiHopDirection.Forward) }
             )//,
             //this.g(
             //    "ContextMenuButton",
@@ -1983,6 +1995,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             //    { click: function (e, obj) { alert("Not yet implemented") } }
             //)
         );
+    }
+
+    private assetUidRedirect: string = '';
+    private navigateTo(e, obj) {
+        this.assetUidRedirect = obj.part.data.assetUid;
+
+        if (this.assetUidRedirect == this.assetUid)
+            return;
+
+        this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
+            this.router.navigate([SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, 'browser', this.assetUidRedirect]);
+        });
     }
 
     private createTooltip(): go.Adornment {
@@ -2078,12 +2102,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.Shape,
                         "Rectangle",
                         { strokeWidth: 2, isPanelMain: true },
-                        new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)), 
+                        new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)),
                         new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
                     ),
                     this.g(go.Panel, "Vertical",
                         this.g(
-                            go.Panel, 
+                            go.Panel,
                             "Horizontal",
                             // button next to TextBlock
                             { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
@@ -2353,7 +2377,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             go.Panel,
                             "Horizontal",
                             // button next to TextBlock
-                            { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top, background: this.fontOwnerBadgeLabelBackColor }, 
+                            { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top, background: this.fontOwnerBadgeLabelBackColor },
                             this.g(
                                 "SubGraphExpanderButton",
                                 { alignment: go.Spot.Right, margin: 5 }
@@ -2367,7 +2391,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     alignment: go.Spot.Center,
                                     editable: false,
                                     font: this.fontLabelIcon,
-                                    stroke: '#000000' 
+                                    stroke: '#000000'
                                 },
                                 new go.Binding("text", "icon"),
                                 new go.Binding("visible", "showIcon")
@@ -2429,7 +2453,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("background", "isHighlighted", (h) => (h ? this.selectionPathHighlightColor : this.leafBackColor)).ofObject(),
                 this.g(
                     go.Shape,
-                    { width: 10, height: 0, stroke: "transparent" } 
+                    { width: 10, height: 0, stroke: "transparent" }
                 ),
                 //icon
                 this.g(
@@ -2559,13 +2583,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private createDefaultLink(): go.Link {
         return this.g(
             go.Link, {
-                routing: go.Link.AvoidsNodes,
-                corner: 5,
-                relinkableFrom: false,
-                relinkableTo: false,
-                click: (e, obj) => this.highlightPath(e, obj as any),
-                zOrder: 1000
-            },
+            routing: go.Link.AvoidsNodes,
+            corner: 5,
+            relinkableFrom: false,
+            relinkableTo: false,
+            click: (e, obj) => this.highlightPath(e, obj as any),
+            zOrder: 1000
+        },
             // the whole link panel
             this.g(go.Shape,
                 { stroke: this.linkBackColor, strokeWidth: 1 },
@@ -2575,7 +2599,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("stroke", "hasProperties", (h) => (h ? "black" : this.linkBackColor))
             ), // the link shape
             this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
-            this.g(go.Panel, "Auto",  
+            this.g(go.Panel, "Auto",
                 this.g(
                     go.Shape,
                     {
