@@ -94,7 +94,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         this.savingInProgress = true;
         this.allocationService.save(item)
             .subscribe(res => {
-                this.selection = new ScoreTypeAllocation();
+
                 this.savingInProgress = false;
                 if (res.type && res.type == "error")
                     return;
@@ -106,6 +106,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
                 else {
                     msg = `Allocation succesfully updated`;
                 }
+                this.selection = new ScoreTypeAllocation();
                 this.messagesService.showInfoMessage('Success', msg);
                 this.onSave.emit(res);
             });

@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+﻿import { Component, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { ScoreTypeAllocation, ScoreType, ScoreTypeAllocationFormatted } from '../../../models/metrics.model';
 import { AssetTypeClass } from '../../../models/asset.model';
