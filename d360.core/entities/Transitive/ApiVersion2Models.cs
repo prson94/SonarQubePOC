@@ -1,9 +1,11 @@
 ﻿using d360.core.enums;
 using d360.core.enums.Workflow;
+using d360.core.resources;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Dynamic;
 using System.Runtime.Serialization;
 
@@ -59,6 +61,7 @@ namespace d360.core.entities
         public bool AutoDisplayDescription { get; set; }
 
         [DataMember]
+        [MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
         public string DisplayFormat { get; set; }
 
         public HierarchyInsert Hierarchy { get; set; }

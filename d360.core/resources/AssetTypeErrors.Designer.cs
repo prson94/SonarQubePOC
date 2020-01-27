@@ -196,6 +196,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} cannot exceed {1} characters..
+        /// </summary>
+        public static string MaxLengthExceeded {
+            get {
+                return ResourceManager.GetString("MaxLengthExceeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset Type not found based on Class provided..
         /// </summary>
         public static string NotFoundBasedOnClass {
