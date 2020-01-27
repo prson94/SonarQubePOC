@@ -53,12 +53,12 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                             </td>
                                             <td>
                                                 <div class="RowTools" *ngIf="!item.IsSystem">
-                                                    <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
+                                                    <a style="cursor:pointer;" (click)="selected=item;selectedItemChange();showEditor=true"><i class="fa fa-pencil"></i></a>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="RowTools" *ngIf="!item.IsSystem">
-                                                    <a style="cursor:pointer;" (click)="selected=item;showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                                    <a style="cursor:pointer;" (click)="selected=item;selectedItemChange();showDelete=true"><i class="fa fa-trash-o"></i></a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -121,7 +121,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
 
     ngOnDestroy() {
         this.clearSidebar();
-    }
+    }   
 
     private deleteIssueType(id: number) {
         this.isLoading = true;
