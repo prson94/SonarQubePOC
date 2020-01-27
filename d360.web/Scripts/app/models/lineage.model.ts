@@ -478,6 +478,7 @@ export class AssetBrowserTranslationNode {
     icon: string;
     class: AssetTypeClass;
     subgraph: any;
+    hasAssetReadAccess: boolean;
     showIcon: boolean;
     showReveal: AssetBrowserApiHopDirection;
     owners: AssetBrowserTranslationOwnerCount[] = new Array();
@@ -599,6 +600,7 @@ export class AssetBrowserAssetModel {
     backAmount: number;
     foreColor: string;
     foreAmount: number;
+    hasAssetReadAccess: boolean;
     icon: string;
     class: AssetTypeClass;
     reveal: AssetBrowserApiHopDirection;

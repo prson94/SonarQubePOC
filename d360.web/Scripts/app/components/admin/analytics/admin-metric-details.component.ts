@@ -59,11 +59,9 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         this.routeParamsSubscription = this.route.params.subscribe(params => {
             this.assetGuid = params['assetTypeUid'];
             this.scoreTypeEnumValue = +params['scoreTypeEnumValue'];
-            this.selectedAssetType = new AssetTypeMetricModel();
-            this.selectedAssetType.Uid = this.assetGuid;
             this.assetTypeService.GetAssetTypeByUid(this.assetGuid).subscribe(res => {
                 this.selectedAssetType = { Class: res.Class.Name, Name: res.Name, Uid: res.uid };
-                this.changeAssetType({ ...this.selectedAssetType });
+                this.changeAssetType(this.selectedAssetType);
             });
 
         });
