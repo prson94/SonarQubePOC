@@ -17,5 +17,6 @@ namespace d360.model.DataAccessLayer
         AllocationApiGetModel PostAllocation(AllocationApiUpsertModel model, ref ScoreTypeAllocation alloc);
         AllocationApiGetModel UpdateAllocation(AllocationApiUpsertModel model, ScoreTypeAllocation alloc);
         Task<List<AllocationApiGetUnallocatedAssetTypeModel>> GetUnallocatedAssetTypes(ScoreType scoreType);
+        List<AssetTypeClass> AllowedClassesForScoreType();
     }
 }

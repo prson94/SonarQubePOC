@@ -255,6 +255,278 @@ namespace igx.UnitTests.ValidatorTests
         }
 
         [Fact]
+        public void PostInvalidModel_TextTypeDecimalMaxLength()
+        {
+            model = new FieldTypesApiEditModel();
+            model.AssetTypeUid = Guid.NewGuid();
+            model.Action = FieldTypesApiEditAction.Replace;
+            assetTypeModels = new TypeIdentifierInfoModel();
+
+            model.Fields = new List<FieldTypeApiEditModel>();
+            model.Fields.Add(new FieldTypeApiEditModel()
+            {
+                Type = new FieldTypeDataTypeApiViewModel()
+                {
+                    Text = new FieldTypeDataTypeTextApiViewModel()
+                    {
+                        IsPartOfKey = true,
+                        Validation = new FieldTypeDescriptionApiViewModel_ValidationText
+                        {
+                            MaximumLength = 1.2m
+                        }
+                    }
+                },
+                Name = "MaximumTest",
+                FriendlyName = "Maximum Test"
+            });
+            
+            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
+
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+        }
+        [Fact]
+        public void PostInvalidModel_TextTypeDecimalMinLength()
+        {
+            model = new FieldTypesApiEditModel();
+            model.AssetTypeUid = Guid.NewGuid();
+            model.Action = FieldTypesApiEditAction.Replace;
+            assetTypeModels = new TypeIdentifierInfoModel();
+
+            model.Fields = new List<FieldTypeApiEditModel>();
+            model.Fields.Add(new FieldTypeApiEditModel()
+            {
+                Type = new FieldTypeDataTypeApiViewModel()
+                {
+                    Text = new FieldTypeDataTypeTextApiViewModel()
+                    {
+                        IsPartOfKey = true,
+                        Validation = new FieldTypeDescriptionApiViewModel_ValidationText
+                        {
+                            MinimumLength = 1.1m
+                        }
+                    }
+                },
+                Name = "MinimumTest",
+                FriendlyName = "Minimum Test"
+            });
+
+            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
+
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+        }
+
+        [Fact]
+        public void PostInvalidModel_HTMLTypeDecimalMaxLength()
+        {
+            model = new FieldTypesApiEditModel();
+            model.AssetTypeUid = Guid.NewGuid();
+            model.Action = FieldTypesApiEditAction.Replace;
+            assetTypeModels = new TypeIdentifierInfoModel();
+
+            model.Fields = new List<FieldTypeApiEditModel>();
+            model.Fields.Add(new FieldTypeApiEditModel()
+            {
+                Type = new FieldTypeDataTypeApiViewModel()
+                {
+                    Html = new FieldTypeDataTypeHtmlApiViewModel()
+                    {
+                        IsPartOfKey = true,
+                        Validation = new FieldTypeDescriptionApiViewModel_ValidationText
+                        {
+                            MaximumLength = 1.2m
+                        }
+                    }
+                },
+                Name = "MaximumTest",
+                FriendlyName = "Maximum Test"
+            });
+
+            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
+
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+        }
+        [Fact]
+        public void PostInvalidModel_HTMLTypeDecimalMinLength()
+        {
+            model = new FieldTypesApiEditModel();
+            model.AssetTypeUid = Guid.NewGuid();
+            model.Action = FieldTypesApiEditAction.Replace;
+            assetTypeModels = new TypeIdentifierInfoModel();
+
+            model.Fields = new List<FieldTypeApiEditModel>();
+            model.Fields.Add(new FieldTypeApiEditModel()
+            {
+                Type = new FieldTypeDataTypeApiViewModel()
+                {
+                    Html = new FieldTypeDataTypeHtmlApiViewModel()
+                    {
+                        IsPartOfKey = true,
+                        Validation = new FieldTypeDescriptionApiViewModel_ValidationText
+                        {
+                            MinimumLength = 1.1m
+                        }
+                    }
+                },
+                Name = "MinimumTest",
+                FriendlyName = "Minimum Test"
+            });
+
+            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
+
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+        }
+
+        [Fact]
+        public void PostInvalidModel_NumberTypeDecimalMaxValue()
+        {
+            model = new FieldTypesApiEditModel();
+            model.AssetTypeUid = Guid.NewGuid();
+            model.Action = FieldTypesApiEditAction.Replace;
+            assetTypeModels = new TypeIdentifierInfoModel();
+
+            model.Fields = new List<FieldTypeApiEditModel>();
+            model.Fields.Add(new FieldTypeApiEditModel()
+            {
+                Type = new FieldTypeDataTypeApiViewModel()
+                {
+                    Number = new FieldTypeDataTypeNumberApiViewModel()
+                    {
+                        IsPartOfKey = true,
+                        Validation = new FieldTypeDescriptionApiViewModel_ValidationMinMaxValue
+                        {
+                            MaximumValue = 1.2m
+                        }
+                    }
+                },
+                Name = "MaximumTest",
+                FriendlyName = "Maximum Test"
+            });
+
+            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
+
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+        }
+        [Fact]
+        public void PostInvalidModel_NumberTypeDecimalMinValue()
+        {
+            model = new FieldTypesApiEditModel();
+            model.AssetTypeUid = Guid.NewGuid();
+            model.Action = FieldTypesApiEditAction.Replace;
+            assetTypeModels = new TypeIdentifierInfoModel();
+
+            model.Fields = new List<FieldTypeApiEditModel>();
+            model.Fields.Add(new FieldTypeApiEditModel()
+            {
+                Type = new FieldTypeDataTypeApiViewModel()
+                {
+                    Number = new FieldTypeDataTypeNumberApiViewModel()
+                    {
+                        IsPartOfKey = true,
+                        Validation = new FieldTypeDescriptionApiViewModel_ValidationMinMaxValue
+                        {
+                            MinimumValue = 1.1m
+                        }
+                    }
+                },
+                Name = "MinimumTest",
+                FriendlyName = "Minimum Test"
+            });
+
+            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
+
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+        }
+
+        [Fact]
+        public void PostInvalidModel_NumberTypeDecimalIncrement()
+        {
+            model = new FieldTypesApiEditModel();
+            model.AssetTypeUid = Guid.NewGuid();
+            model.Action = FieldTypesApiEditAction.Replace;
+            assetTypeModels = new TypeIdentifierInfoModel();
+
+            model.Fields = new List<FieldTypeApiEditModel>();
+            model.Fields.Add(new FieldTypeApiEditModel()
+            {
+                Type = new FieldTypeDataTypeApiViewModel()
+                {
+                    Number = new FieldTypeDataTypeNumberApiViewModel()
+                    {
+                        IsPartOfKey = true,
+                        Increment = 1.1m                        
+                    }
+                },
+                Name = "IncrementTest",
+                FriendlyName = "Increment Test"
+            });
+
+            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
+
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+        }
+
+        [Fact]
+        public void PostValidModel_DecimalTypeDecimalMaxValue()
+        {
+            model = new FieldTypesApiEditModel();
+            model.AssetTypeUid = Guid.NewGuid();
+            model.Action = FieldTypesApiEditAction.Replace;
+            assetTypeModels = new TypeIdentifierInfoModel();
+
+            model.Fields = new List<FieldTypeApiEditModel>();
+            model.Fields.Add(new FieldTypeApiEditModel()
+            {
+                Type = new FieldTypeDataTypeApiViewModel()
+                {
+                    Decimal = new FieldTypeDataTypeDecimalApiViewModel()
+                    {
+                        IsPartOfKey = true,
+                        Validation = new FieldTypeDescriptionApiViewModel_ValidationDecimal
+                        {
+                            MaximumValue = 1.2m
+                        }
+                    }
+                },
+                Name = "MaximumTest",
+                FriendlyName = "Maximum Test"
+            });
+
+            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
+
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+        }
+        [Fact]
+        public void PostValidModel_DecimalTypeDecimalMinValue()
+        {
+            model = new FieldTypesApiEditModel();
+            model.AssetTypeUid = Guid.NewGuid();
+            model.Action = FieldTypesApiEditAction.Replace;
+            assetTypeModels = new TypeIdentifierInfoModel();
+
+            model.Fields = new List<FieldTypeApiEditModel>();
+            model.Fields.Add(new FieldTypeApiEditModel()
+            {
+                Type = new FieldTypeDataTypeApiViewModel()
+                {
+                    Decimal = new FieldTypeDataTypeDecimalApiViewModel()
+                    {
+                        IsPartOfKey = true,
+                        Validation = new FieldTypeDescriptionApiViewModel_ValidationDecimal
+                        {
+                            MinimumValue = 1.1m
+                        }
+                    }
+                },
+                Name = "MinimumTest",
+                FriendlyName = "Minimum Test"
+            });
+
+            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
+
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
+        }
+
+        [Fact]
         public void PostValidModel()
         {
             model = new FieldTypesApiEditModel();

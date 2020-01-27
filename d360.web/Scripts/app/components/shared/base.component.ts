@@ -19,6 +19,7 @@ import { SiteMenuService } from '../../services/site-menu.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { OnDestroy, OnInit } from '@angular/core';
 import { Policy } from '../../models/policy.model';
+import { Router } from '@angular/router';
 
 declare var CompanySettings;
 
@@ -209,6 +210,9 @@ export class BaseComponent {
     ) {
         if (this.secondaryNavService) {
             this.clearSidebar();
+
+            var isCommonAsset: boolean = this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule';
+
             if (hasLineage && CompanySettings.ShowLineageSidebar != 'false') {
 
                 let lineageVersion: number = 1;
@@ -271,7 +275,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.ownershipSidebar);
             }
 
-            if (hasDashboard) {
+            if (hasDashboard || isCommonAsset) {
                 this.dashboardSidebar = new SecondaryNavItem(
                     'Dashboards',
                     'dashboards',
@@ -312,7 +316,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.followersSidebar);
             }
 
-            if (hasMonitor) {
+            if (hasMonitor || isCommonAsset) {
                 this.monitorSidebar = new SecondaryNavItem(
                     'Workflow',
                     'monitor',
@@ -333,7 +337,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.childSidebar);
             }
 
-            if (this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule') {
+            if (isCommonAsset) {
                 this.scoreSidebar = new SecondaryNavItem(
                     'Scoring',
                     'Scoring',
@@ -648,33 +652,25 @@ export class BaseComponent {
         return hasValue;
     }
 
-    private setLoadedKey(_key: string) {
-        localStorage.setItem('loadedNavItem', _key);
-    }
-    private invalidateKey() {
-        localStorage.setItem('loadedNavItem', '{"AssetId":"","AssetTypeIdb":"","Uid":"","Object":"","ObjectId":""}');
-    }
-    private getLoadedKey(): string {
-        return localStorage.getItem('loadedNavItem');
+
+
+    buildSecondaryNavigationForAssetID(assetId: number, object: string, buildBreadcrumbOverride: Function = null) {
+        this.buildSecondaryNavigation(null, null, object, assetId, null, buildBreadcrumbOverride);
     }
 
-    buildSecondaryNavigationForAssetID(assetId: number, object: string) {
-        this.buildSecondaryNavigation(null, null, object, assetId);
-    }
-
-    buildSecondaryNavigationForObject(objectId: number, object: string) {
-        this.buildSecondaryNavigation(null, objectId, object);
+    buildSecondaryNavigationForObject(objectId: number, object: string, buildBreadcrumbOverride: Function = null) {
+        this.buildSecondaryNavigation(null, objectId, object, null, null, buildBreadcrumbOverride);
     }
 
     private isSidebarLoadedForCurrentObject(loadData: SecondaryNavPostModel): boolean {
-
         //this is fullpage refresh, invalidate key to recreate navigation
         if (!this.secondaryNavService["isSidebarCreated"]) {
-            this.invalidateKey();
+            this.secondaryNavService.invalidateKey();
             return false;
         }
 
-        var currentData = JSON.parse(this.getLoadedKey());
+
+        var currentData = JSON.parse(this.secondaryNavService.getLoadedKey());
         if (loadData.ObjectType == currentData.Object && loadData.ObjectId == currentData.ObjectId)
             return true;
 
@@ -687,7 +683,7 @@ export class BaseComponent {
         return false;
     }
 
-    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null) {
+    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null) {
         var data = new SecondaryNavPostModel();
         data.PreloadData = false;
         if (assetUid != null)
@@ -726,7 +722,7 @@ export class BaseComponent {
             this.objectID = r.ObjectID;
 
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
-            this.setLoadedKey(_key);
+            this.secondaryNavService.setLoadedKey(_key);
 
             this.clearSidebar();
             this.breadcrumbsService.clearBreadcrumbs();
@@ -747,27 +743,32 @@ export class BaseComponent {
             var homeUrl = SiteUrlHelpers.getUrl(r.Object, r.ObjectID, r.ObjectTypeId, areaName);
 
             this.secondaryNavService.setLocalHomeUrl(homeUrl);
+            this.breadcrumbsService.setCurrentObjectInfo(r.Object, r.ObjectID);
+            if (buildBreadcrumbOverride == null) {
+                if (this.objectType.toLowerCase() == 'artifact') {
+                    this.setArtifactBreadcrumbs(r);
+                }
+                else if (this.objectType.toLowerCase() == 'policy') {
+                    this.setTreeBreadcrumbs(r, 'Policy');
+                }
+                else if (this.objectType.toLowerCase() == 'taxonomy') {
+                    this.setTreeBreadcrumbs(r, 'Taxonomy');
+                }
+                else if (this.objectType.toLowerCase() == 'rule') {
+                    this.setRuleBreadcrumbs(r);
+                }
+                else if (this.objectType.toLowerCase() == 'referenceitemtype') {
+                    this.breadcrumbsService.clearBreadcrumbs();
 
-            if (this.objectType.toLowerCase() == 'artifact') {
-                this.setArtifactBreadcrumbs(r);
-            }
-            else if (this.objectType.toLowerCase() == 'policy') {
-                this.setTreeBreadcrumbs(r, 'Policy');
-            }
-            else if (this.objectType.toLowerCase() == 'taxonomy') {
-                this.setTreeBreadcrumbs(r, 'Taxonomy');
-            }
-            else if (this.objectType.toLowerCase() == 'rule') {
-                this.setRuleBreadcrumbs(r);
-            }
-            else if (this.objectType.toLowerCase() == 'referenceitemtype') {
-                this.breadcrumbsService.clearBreadcrumbs();
-
-                this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Reference Lists', homeUrl));
-                this.setBrowserTitle(this.breadcrumbsService.getTitleService(), 'Reference Lists');
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Reference Lists', homeUrl));
+                    this.setBrowserTitle(this.breadcrumbsService.getTitleService(), 'Reference Lists');
+                }
+                else {
+                    this.SetCommonBreadcrumbs(r, area, homeUrl);
+                }
             }
             else {
-                this.SetCommonBreadcrumbs(r, area, homeUrl);
+                buildBreadcrumbOverride();
             }
 
             this.secondaryNavService.clearItems();
@@ -799,34 +800,31 @@ export class BaseComponent {
     }
 
     private activateComponent() {
-        var componentName = this.constructor.name;
-        switch (componentName) {
-            case "ScoreComponent": this.scoreSidebar.active = true;
-                break;
-            case "DashboardComponent": this.dashboardSidebar.active = true;
-                break;
-            case "BrowserComponent": this.lineageSidebar.active = true;
-                break;
-            case "RelationshipsComponent": this.relationsSidebar.active = true;
-                break;
-            case "OwnershipComponent": this.ownershipSidebar.active = true;
-                break;
-            case "ActionsComponent": this.actionsSidebar.active = true;
-                break;
-            case "MonitorWorkflowComponent": this.monitorSidebar.active = true;
-                break;
-            case "CommentsComponent": this.commentsSidebar.active = true;
-                break;
-            case "FollowersComponent": this.followersSidebar.active = true;
-                break;
-            case "AuditComponent": this.auditSidebar.active = true;
-                break;
-            case "ChildrenComponent": this.childSidebar.active = true;
-                break;
-            case "FieldDefinitionComponent": this.fieldNav.active = true;
-                break;
-            default: break;
+        var currentComponentUrl = '';
+        if (this.breadcrumbsService) {
+            currentComponentUrl = this.breadcrumbsService.getCurrentUrl();
         }
+        var components: SecondaryNavItem[] = [];
+        components.push(this.scoreSidebar);
+        components.push(this.dashboardSidebar);
+        components.push(this.lineageSidebar);
+        components.push(this.relationsSidebar);
+        components.push(this.ownershipSidebar);
+        components.push(this.actionsSidebar);
+        components.push(this.monitorSidebar);
+        components.push(this.commentsSidebar);
+        components.push(this.followersSidebar);
+        components.push(this.auditSidebar);
+        components.push(this.childSidebar);
+        components.push(this.fieldNav);
+
+        components.forEach(cmp => {
+            if (cmp && cmp.url == currentComponentUrl) {
+                cmp.active = true;
+            }
+        });
+
+   
     }
 
     private setArtifactBreadcrumbs(data) {
@@ -870,7 +868,7 @@ export class BaseComponent {
 
                         for (let breadcrumb of data.Artifact.Breadcrumbs) {
                             index++;
-                   
+
                             if (index == data.Artifact.Breadcrumbs.length) {
                                 //last item in the breadcrumb
                                 this

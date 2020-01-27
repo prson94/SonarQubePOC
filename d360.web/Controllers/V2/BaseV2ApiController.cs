@@ -3,7 +3,10 @@ using d360.model;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SpreadsheetLight;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -123,6 +126,16 @@ namespace d360.web.Controllers.V2
                     ");
                     dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
                 }
+                else if (f.Type == "Tag")
+                {
+                    fieldJoins.Add($@"outer apply(
+                        select FormattedValue = STUFF((
+                            select '|' + T.Value from AssetTag AT
+                                inner join Tag T on AT.TagID = T.ID
+                                where AT.AssetID = A.ID
+                            for xml path ('')), 1, 1, '')
+                         ){tableAlias}(FormattedValue) ");
+                }
                 else
                 {
                     fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]");
@@ -194,6 +207,82 @@ namespace d360.web.Controllers.V2
                 {
                     return default(T);
                 }
+            }
+        }
+
+        internal SLDocument createExcelBaseDocument(AssetTypeExportTemplate template, string worksheetName)
+        {
+            SLDocument document = null;
+
+            if (template == null)
+            {
+                template = new AssetTypeExportTemplate();
+            }
+
+            if (template.TemplateFile != null)
+            {
+                document = new SLDocument(new MemoryStream(template.TemplateFile));
+                document.AddWorksheet(worksheetName);
+            }
+            else
+            {
+                document = new SLDocument();
+                document.RenameWorksheet(SLDocument.DefaultFirstSheetName, worksheetName);
+
+                if (!string.IsNullOrEmpty(template.UsageNotes))
+                {
+                    var wk = "Usage Notes";
+                    document.AddWorksheet(wk);
+                    document.MoveWorksheet(wk, 0);
+                    document.SelectWorksheet(wk);
+
+                    document.SetCellValue("A1", "Usage Notes");
+                    document.SetCellValue("A2", template.UsageNotes);
+                    document.SetColumnWidth(0, 600);
+                }
+
+                document.SelectWorksheet(worksheetName);
+            }
+
+            return document;
+        }
+
+        internal void SetSpreadsheetValueFromField(SLDocument document, int rowIndex, int columnIndex, FieldType field, string value)
+        {
+            switch ((field.Type ?? "").ToUpper())
+            {
+                case "DECIMAL":
+                    double dVal = 0;
+                    if (double.TryParse(value, out dVal))
+                        document.SetCellValue(rowIndex, columnIndex, dVal);
+                    else
+                        document.SetCellValue(rowIndex, columnIndex, value);
+                    break;
+                case "NUMBER":
+                    int intVal = 0;
+                    if (int.TryParse(value, out intVal))
+                        document.SetCellValue(rowIndex, columnIndex, intVal);
+                    else
+                        document.SetCellValue(rowIndex, columnIndex, value);
+                    break;
+                case "DATE":
+                    if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
+                    {
+                        document.SetCellValue(rowIndex, columnIndex, dateVal);
+
+                        SLStyle style = document.CreateStyle();
+                        style.FormatCode = "m/d/yyyy";
+                        document.SetCellStyle(rowIndex, columnIndex, style);
+                    }
+                    break;
+                default:
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(value + "");
+                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+                    if (txt.StartsWith("="))
+                        txt = "'" + txt;
+                    document.SetCellValue(rowIndex, columnIndex, txt);
+                    break;
             }
         }
     }

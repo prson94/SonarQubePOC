@@ -2182,7 +2182,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var row = 1;
 
             list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
-            list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString() });
+            list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Code", true, "", 1, 250, "Must be between 1 and 250 alphanumeric characters in length.") });
 
             //if the reference type has a parent we need to add parent field with the values from the parent
 
@@ -2212,7 +2212,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var row = 1;
 
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
-            list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString() });
+            list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString(), Validations = checkAndAddValidation("Text", "Code", true, "", 1, 250, "Must be between 1 and 250 alphanumeric characters in length.") });
 
             //if the reference type has a parent we need to add parent field with the values from the parent
             

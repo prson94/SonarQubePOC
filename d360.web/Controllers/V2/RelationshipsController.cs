@@ -188,6 +188,14 @@ namespace d360.web.Controllers.V2
                 if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} predicates in this request."));
 
+                foreach(var pred in predicates)
+                {
+                    if(pred.Name.Length > 100)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Name must be less then 100 characters."));
+                    if (pred.Inverse.Length > 250)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Inverse must be less then 250 characters."));
+                }
+
                 var execution = getApiExecution(predicates.Count);
 
 
@@ -1051,13 +1059,13 @@ namespace d360.web.Controllers.V2
             #region Header
 
             int index = 1;
-            document.SetCellValue(1, index++, "Id");
-            document.SetCellValue(1, index++, "Uid");
             document.SetCellValue(1, index++, "Subject");
             document.SetCellValue(1, index++, "Subject Class");
             document.SetCellValue(1, index++, "Predicate");
             document.SetCellValue(1, index++, "Object");
             document.SetCellValue(1, index++, "Object Class");
+            document.SetCellValue(1, index++, "Relationship Type UID");
+            document.SetCellValue(1, index++, "Relationship Type Id");            
 
             #endregion
 
@@ -1066,13 +1074,13 @@ namespace d360.web.Controllers.V2
             {
                 index = 1;
                 rowNumber++;
-                document.SetCellValue(rowNumber, index++, row.Id);
-                document.SetCellValue(rowNumber, index++, row.Uid.ToString());
                 document.SetCellValue(rowNumber, index++, row.Subject.Name);
                 document.SetCellValue(rowNumber, index++, row.Subject.Class.ToString());
                 document.SetCellValue(rowNumber, index++, row.Predicate.Name);
                 document.SetCellValue(rowNumber, index++, row.Object.Name);
-                document.SetCellValue(rowNumber, index++, row.Object.Class.ToString());
+                document.SetCellValue(rowNumber, index++, row.Object.Class.ToString());                
+                document.SetCellValue(rowNumber, index++, row.Uid.ToString());
+                document.SetCellValue(rowNumber, index++, row.Id);
             }
 
             #endregion

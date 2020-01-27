@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import {Subject} from 'rxjs';
+import { Subject } from 'rxjs';
 import { SecondaryNavItem, DynamicButton, AssetAction, SecondaryNavCurrentObject, SecondaryNavState, NavState } from '../models/secondaryNav.model';
 import { AssetTypeClass } from '../models/asset.model';
 import { BaseComponent } from '../components/shared/base.component';
 import { SiteMenuService } from './site-menu.service';
 import { PlatformLocation } from '@angular/common'
+import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 
 declare var CompanySettings: any;
 
@@ -25,12 +26,48 @@ export class SecondaryNavService {
     private rebuildHeaderSource = new Subject<any>();
     private secondaryNavState: SecondaryNavState;
 
-    constructor(private siteMenuService: SiteMenuService, location: PlatformLocation) {
+    private crossNavURIS: string[] = [];
+
+    constructor(private siteMenuService: SiteMenuService, location: PlatformLocation, private router: Router) {
         this.secondaryNavState = new SecondaryNavState();
         location.onPopState(() => {
             this.isSidebarCreated = false;
+            this.invalidateKey();
         });
+
+        router.events.subscribe((event) => {
+            if (event instanceof NavigationStart) {
+                if (this.router.url.indexOf("dashboard") != -1) {
+                    this.isSidebarCreated = false;
+                    this.invalidateKey();
+                }
+            }
+            
+            if (event instanceof NavigationEnd) {
+                var homeUrl = this.secondaryNavState.currentState.currentHome ? this.secondaryNavState.currentState.currentHome : '';
+                
+                if (!this.crossNavURIS.some(x => x == homeUrl)) {
+                    this.crossNavURIS.push(homeUrl);
+                }
+                if (!this.crossNavURIS.some(x => event.url.toLowerCase() == x.toLowerCase())) {
+                    this.isSidebarCreated = false;
+                    this.invalidateKey();
+                }
+            }
+        });
+
     }
+
+    public setLoadedKey(_key: string) {
+        localStorage.setItem('loadedNavItem', _key);
+    }
+    public invalidateKey() {
+        localStorage.setItem('loadedNavItem', '{"AssetId":"","AssetTypeIdb":"","Uid":"","Object":"","ObjectId":""}');
+    }
+    public getLoadedKey(): string {
+        return localStorage.getItem('loadedNavItem');
+    }
+
     // Observable streams
     rightSidebar$ = this.rightSidebarSource.asObservable();
     rightSidebarClear$ = this.rightSidebarClearSource.asObservable();
@@ -82,10 +119,13 @@ export class SecondaryNavService {
 
     // Service message commands
     showItem(rightSidebarItem: SecondaryNavItem) {
+        if (rightSidebarItem && rightSidebarItem.url)
+            this.crossNavURIS.push(rightSidebarItem.url);
         this.rightSidebarSource.next(rightSidebarItem);
     }
 
     clearItems() {
+        this.crossNavURIS = [];
         this.rightSidebarClearSource.next(true);
     }
 
@@ -152,7 +192,7 @@ export class SecondaryNavService {
         let current = this.getCurrentState();
         return current.previousStates.find(state => state.currentTab && state.currentTab.url == url);
     }
-    getCurrentState(): SecondaryNavState{
+    getCurrentState(): SecondaryNavState {
         return JSON.parse(localStorage.getItem('SecondaryNavState'));
     }
 

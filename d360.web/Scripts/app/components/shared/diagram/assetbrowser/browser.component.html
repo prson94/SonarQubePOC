@@ -97,14 +97,32 @@
                         </div>
 
                         <div class="filter-section">
-                            <div class="filter-header">Hide by Impact Predicates</div>
+                            <div class="filter-header">Hide by Impact Predicate</div>
                             <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
                             <p-tree [value]="filterSelectionsModel?.FilterPredicates"
                                     [hidden]="filtersLoading"
                                     selectionMode="checkbox"
                                     styleClass="filter-tree"
                                     [selection]="selectedFilterPredicates"
-                                    (selectionChange)="selectedFilterPredicates = $event; filterPredicateChange($event)"
+                                    (selectionChange)="selectedFilterPredicates = $event; filterPredicateChange($event)" 
+                                    (onNodeExpand)="resizeDiagram()"
+                                    [propagateSelectionUp]="false"
+                                    [propagateSelectionDown]="true">
+                                <ng-template let-node pTemplate="default">
+                                    <div style="word-break: break-word; max-width: 275px;">{{node.label}}</div>
+                                </ng-template>
+                            </p-tree>
+                        </div>
+
+                        <div class="filter-section">
+                            <div class="filter-header">Hide by Responsible Party</div>
+                            <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
+                            <p-tree [value]="filterSelectionsModel?.FilterResponsibilityTypes"
+                                    [hidden]="filtersLoading"
+                                    selectionMode="checkbox"
+                                    styleClass="filter-tree"
+                                    [selection]="selectedFilterResponsibilityTypes"
+                                    (selectionChange)="selectedFilterResponsibilityTypes = $event; filterResponsibilityTypeChange($event)"
                                     (onNodeExpand)="resizeDiagram()"
                                     [propagateSelectionUp]="false"
                                     [propagateSelectionDown]="true">

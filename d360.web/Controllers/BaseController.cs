@@ -196,6 +196,19 @@ namespace d360.web.Controllers
             telemetry = null;
         }
 
+        internal HttpResponseMessage createFileResponseMessage(HttpStatusCode status, string fileName, byte[] content)
+        {
+            var response = Request.CreateResponse(status);
+            response.Content = new ByteArrayContent(content);
+            response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment");
+            response.Content.Headers.ContentDisposition.FileName = fileName;
+            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+
+            return response;
+
+        }
+
+
         #region Private Methods
 
         internal void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFieldName = true, bool checkForListable = true, bool checkForKeyColumn = false, string coreTableIdJoinColumn = "A.ID", string nameColumnOverride = "", bool enableRelationFields = true)
@@ -1853,45 +1866,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             }
 
             #endregion
-
-            #region Attribute Filters
-
-            int attcount = 0;
-
-            if (int.TryParse(query["attcount"], out attcount))
-            {
-                for (int i = 0; i < attcount; i++)
-                {
-                    var qs_value = $"att_value_{i}";
-                    var qs_typeid = $"att_typeid_{i}";
-
-                    var AttributeType = Request.Form.AllKeys.Any(k => k == qs_typeid) ? Request[qs_typeid] : "";
-                    var AttributeSearchValue = Request.Form.AllKeys.Any(k => k == qs_value) ? Server.UrlDecode(Request[qs_value]) : "";
-
-                    //check querystring
-                    if (string.IsNullOrEmpty(AttributeType) || string.IsNullOrEmpty(AttributeSearchValue))
-                    {
-                        AttributeType = query.AllKeys.Any(k => k == qs_typeid) ? query[qs_typeid] : "";
-                        AttributeSearchValue = query.AllKeys.Any(k => k == qs_value) ? Server.UrlDecode(query[qs_value]) : "";
-                    }
-
-                    if (!string.IsNullOrEmpty(AttributeType) && !string.IsNullOrEmpty(AttributeSearchValue))
-                    {
-                        int attributeTypeID;
-                        if (int.TryParse(AttributeType, out attributeTypeID))
-                        {
-                            filters.Add(new UiRequestAttributeFilterValue
-                            {
-                                AttributeTypeID = attributeTypeID,
-                                RawValue = AttributeSearchValue
-                            });
-                        }
-                    }
-                }
-            }
-
-            #endregion
-
+            
             #region Ownership Filters
 
             string ownerUsers = query["ownerUsers"];

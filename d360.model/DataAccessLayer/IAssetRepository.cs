@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
+using SpreadsheetLight;
 
 namespace d360.model.DataAccessLayer
 {
@@ -40,5 +41,6 @@ namespace d360.model.DataAccessLayer
         Guid GetRuleUIDFromRuleID(int id);
         Task<dynamic> GetAssetDetails(Asset asset);
         Task<dynamic> GetAssetTypeDetails(AssetType type);
+        Task<SLDocument> GetAssetsExcel(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }

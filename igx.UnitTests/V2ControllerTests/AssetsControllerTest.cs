@@ -581,11 +581,11 @@ namespace igx.UnitTests
 
             insertItem.Class = AssetTypeClass.BusinessAsset;
             responseMessageResult = await GetResponseForPostAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
 
             insertItem.Name = "testName";
             responseMessageResult = await GetResponseForPostAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
 
             insertItem.DisplayFormat = "{name}";
             responseMessageResult = await GetResponseForPostAsset(insertItem);
@@ -593,6 +593,16 @@ namespace igx.UnitTests
 
             insertItem.IconStyle.BackColor = "#000000";
             insertItem.IconStyle.ForeColor = "#000000";
+            responseMessageResult = await GetResponseForPostAsset(insertItem);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+
+            insertItem.IconStyle.BackColor = "#FAB";
+            insertItem.IconStyle.ForeColor = "#FFAABB";
+            responseMessageResult = await GetResponseForPostAsset(insertItem);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+
+            insertItem.IconStyle.BackColor = "#000000";
+            insertItem.IconStyle.ForeColor = "#FF0000";
             responseMessageResult = await GetResponseForPostAsset(insertItem);
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.OK, XMsg.BadResponseCode);
 
@@ -623,9 +633,13 @@ namespace igx.UnitTests
 
             insertItem.Class = AssetTypeClass.BusinessAsset;
             responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
 
             insertItem.Name = "testName";
+            responseMessageResult = await GetResponseForPutAsset(insertItem);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+
+            insertItem.DisplayFormat = "{name}";
             insertItem.Uid = Guid.Parse(DataConstants.InvalidGUID);
             responseMessageResult = await GetResponseForPutAsset(insertItem);
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.NotFound, XMsg.BadResponseCode);
@@ -634,12 +648,19 @@ namespace igx.UnitTests
             responseMessageResult = await GetResponseForPutAsset(insertItem);
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
            
-            insertItem.DisplayFormat = "{name}";
-            responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.InternalServerError, XMsg.BadResponseCode);
 
             insertItem.IconStyle.BackColor = "#000000";
             insertItem.IconStyle.ForeColor = "#000000";
+            responseMessageResult = await GetResponseForPutAsset(insertItem);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+
+            insertItem.IconStyle.BackColor = "#FAB";
+            insertItem.IconStyle.ForeColor = "#FFAABB";
+            responseMessageResult = await GetResponseForPutAsset(insertItem);
+            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+
+            insertItem.IconStyle.BackColor = "#000000";
+            insertItem.IconStyle.ForeColor = "#FF0000";
             responseMessageResult = await GetResponseForPutAsset(insertItem);
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.OK, XMsg.BadResponseCode);
 

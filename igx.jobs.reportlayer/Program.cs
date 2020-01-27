@@ -429,7 +429,7 @@ END");
 
         private static void RemoveSynonyms(SqlConnection companyConnection, List<string> synonymNames, TextWriter log, string schemaName)
         {
-            var currentSynonyms = companyConnection.Query<string>(@"select name from sys.synonyms where base_object_name like '%reporting%'").ToList();
+            var currentSynonyms = companyConnection.Query<string>(@"select name from sys.synonyms where base_object_name like '%reporting%' and base_object_name not in (select '[' + TABLE_SCHEMA + '].[' + TABLE_NAME + ']' from [INFORMATION_SCHEMA].[VIEWS] where TABLE_SCHEMA = 'reporting')").ToList();
 
             currentSynonyms.ForEach(cv =>
             {

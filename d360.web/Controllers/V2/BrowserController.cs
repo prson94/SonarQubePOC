@@ -58,6 +58,7 @@ namespace d360.web.Controllers.V2
             public string ownerCounts { get; set; }
             public string relationCounts { get; set; }
             public bool useAsTransformation { get; set; }
+            public bool hasAssetReadAccess { get; set; }
             public bool isSubjectInTransformation { get; set; }
             public bool isLeaf { get; set; }
 
@@ -111,6 +112,7 @@ namespace d360.web.Controllers.V2
                     ownerCounts = parseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
                     relationCounts = parseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
                     useAsTransformation = h.useAsTransformation,
+                    hasAssetReadAccess = h.hasAssetReadAccess,
                     isSubjectInTransformation = h.isSubjectInTransformation
                 };
 
@@ -147,6 +149,7 @@ namespace d360.web.Controllers.V2
                     ownerCounts = parseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
                     relationCounts = parseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
                     useAsTransformation = h.useAsTransformation, 
+                    hasAssetReadAccess = h.hasAssetReadAccess,
                     isSubjectInTransformation = h.isSubjectInTransformation 
                 };
                 recurse(model, hierarchies, current, multiplier + 1);
@@ -230,7 +233,7 @@ namespace d360.web.Controllers.V2
                 {
                     var hopModel = new HopModel();
 
-                    var reader = await Company.QueryMultipleAsync(@"exec graph.GetHop @assets, @hopSalt, @direction, @predicateUid", new
+                    var reader = await Company.QueryMultipleAsync(@"exec graph.GetHop @assets, @hopSalt, @direction, @predicateUid, @resourceId, @isAdmin", new
                     {
                         assets = hopAssets.AsTableValuedParameter(
                             "dbo.AssetBrowserImpactTable",
@@ -238,7 +241,9 @@ namespace d360.web.Controllers.V2
                             ),
                         HopSalt,
                         direction,
-                        predicateUid = criteria.PredicateUid
+                        predicateUid = criteria.PredicateUid,
+                        resourceId = Company.CurrentResourceID,
+                        isAdmin = Company.CurrentResourceIsAdmin
                     }, timeout: 60);
 
                     hopModel.nodes = reader.Read<HopNodeResult>().ToList();
@@ -560,7 +565,14 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             public string Name { get; set; }
             public string Inverse { get; set; }
         }
-        
+
+        internal class AssetBrowserResponsibilityTypeFilterItem
+        {
+            public int Id { get; set; }
+            public Guid Uid { get; set; }
+            public string Name { get; set; }
+        }
+
         #endregion
 
         /// <summary>
@@ -652,7 +664,13 @@ select	Id,
 		[Inverse]
 from	[Predicate]
 where	[Type] in (6,7,9)
-order by [Type], [Name]";
+order by [Type], [Name];
+
+select  Id,
+        [Uid],
+        Name
+from    ResponsibilityType
+order by Name";
                 
                 #endregion
 
@@ -660,8 +678,13 @@ order by [Type], [Name]";
 
                 var assetTypes = reader.Read<AssetBrowserAssetTypeFilterItem>().ToList();
                 var predicates = reader.Read<AssetBrowserPredicateFilterItem>().ToList();
+                var responsibilityTypes = reader.Read<AssetBrowserResponsibilityTypeFilterItem>().ToList();
 
-                return Request.CreateResponse(HttpStatusCode.OK, new { AssetTypeOptions = assetTypes, PredicateOptions = predicates });
+                return Request.CreateResponse(HttpStatusCode.OK, new { 
+                    AssetTypeOptions = assetTypes, 
+                    PredicateOptions = predicates, 
+                    ResponsibilityTypeOptions = responsibilityTypes 
+                });
             }
             catch (Exception ex)
             {

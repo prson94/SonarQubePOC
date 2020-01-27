@@ -1,7 +1,7 @@
 
-import {map} from 'rxjs/operators';
-import { CommonModule }       from '@angular/common';
-import { NgModule, Input, Output, Component, EventEmitter } from '@angular/core';
+import { map } from 'rxjs/operators';
+import { CommonModule } from '@angular/common';
+import { NgModule, Input, Output, Component, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { FormMessage } from '../../models/form.model';
 import { JsonResult } from '../../models/jsonresult.model';
@@ -9,10 +9,10 @@ import { SharedFormMessageModule } from './form-message.part';
 
 @Component({
     selector: 'd3s-delete-form',
-    templateUrl: './delete.form.html',    
+    templateUrl: './delete.form.html',
 })
 
-export class DeleteForm  {
+export class DeleteForm implements OnChanges {
     @Input() model: any;
     @Input() uri: string;
     @Input() deleteButtonText: string;
@@ -21,6 +21,8 @@ export class DeleteForm  {
     @Input() callback: Function;
     @Input() itemId: number;
     @Input() items: any[];
+    @Input() hideDeleteButton: boolean = false;
+    @Input() modalCssClasses: string = 'modal-delete-form';
     @Output() onDeleteComplete = new EventEmitter();
     @Output() onDeleteSuccess = new EventEmitter();
     @Output() onDeleteFail = new EventEmitter();
@@ -43,8 +45,13 @@ export class DeleteForm  {
         this.http = http;
     }
 
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes.items && changes.items.previousValue != changes.items.currentValue)
+            this.deletingInProgress = false;
+    }
+
     public delete(): void {
-       if (this.isLoading)
+        if (this.isLoading)
             return;
 
         this.deletingInProgress = true;
@@ -61,45 +68,45 @@ export class DeleteForm  {
                 else {
                     this.callback(this.itemId);
                 }
-                 break;
+                break;
             case 'post':
                 this.http.post(this.uri, JSON.stringify(this.model), { headers: headers }).pipe(
                     map(data => data))
                     .subscribe(
-                    data => {
-                        var r = new JsonResult(data);
-                        if (r.isError) {
-                            this.message.Error(r.message);
-                            this.onDeleteFail.emit({ message: this.message, result: r  });
-                        } else if (r.isSuccess) {
-                            this.message.Success(r.message);
-                            this.onDeleteSuccess.emit({ message: this.message, result: r  });
-                        } else {
-                            this.message.Info(r.message);
+                        data => {
+                            var r = new JsonResult(data);
+                            if (r.isError) {
+                                this.message.Error(r.message);
+                                this.onDeleteFail.emit({ message: this.message, result: r });
+                            } else if (r.isSuccess) {
+                                this.message.Success(r.message);
+                                this.onDeleteSuccess.emit({ message: this.message, result: r });
+                            } else {
+                                this.message.Info(r.message);
+                            }
+                            this.onDeleteComplete.emit({ message: this.message, result: r });
+                            this.isLoading = false;
                         }
-                        this.onDeleteComplete.emit({ message: this.message, result: r  });
-                        this.isLoading = false;
-                    }
                     );
                 break;
             case 'put':
                 this.http.put(this.uri, JSON.stringify(this.model), { headers: headers }).pipe(
                     map(data => data))
                     .subscribe(
-                    data => {
-                        var r = new JsonResult(data);
-                        if (r.isError) {
-                            this.message.Error(r.message);
-                            this.onDeleteFail.emit({ message: this.message, result: r  });
-                        } else if (r.isSuccess) {
-                            this.message.Success(r.message);
-                            this.onDeleteSuccess.emit({ message: this.message, result: r  });
-                        } else {
-                            this.message.Info(r.message);
+                        data => {
+                            var r = new JsonResult(data);
+                            if (r.isError) {
+                                this.message.Error(r.message);
+                                this.onDeleteFail.emit({ message: this.message, result: r });
+                            } else if (r.isSuccess) {
+                                this.message.Success(r.message);
+                                this.onDeleteSuccess.emit({ message: this.message, result: r });
+                            } else {
+                                this.message.Info(r.message);
+                            }
+                            this.onDeleteComplete.emit({ message: this.message, result: r });
+                            this.isLoading = false;
                         }
-                        this.onDeleteComplete.emit({ message: this.message, result: r  });
-                        this.isLoading = false;
-                    }
                     );
                 break;
             case 'delete':
@@ -108,20 +115,20 @@ export class DeleteForm  {
                 this.http.delete(this.uri).pipe(
                     map(data => data))
                     .subscribe(
-                    data => {                        
-                        var r = new JsonResult(data);
-                        if (r.isError) {
-                            this.message.Error(r.message);
-                            this.onDeleteFail.emit({ message: this.message, result: r  });
-                        } else if (r.isSuccess) {
-                            this.message.Success(r.message);
-                            this.onDeleteSuccess.emit({ message: this.message, result: r  });
-                        } else {
-                            this.message.Info(r.message);
+                        data => {
+                            var r = new JsonResult(data);
+                            if (r.isError) {
+                                this.message.Error(r.message);
+                                this.onDeleteFail.emit({ message: this.message, result: r });
+                            } else if (r.isSuccess) {
+                                this.message.Success(r.message);
+                                this.onDeleteSuccess.emit({ message: this.message, result: r });
+                            } else {
+                                this.message.Info(r.message);
+                            }
+                            this.onDeleteComplete.emit({ message: this.message, result: r });
+                            this.isLoading = false;
                         }
-                        this.onDeleteComplete.emit({ message: this.message, result: r });
-                        this.isLoading = false;
-                    }
                     );
                 break;
             default:
@@ -144,10 +151,10 @@ import { SiteModalModule } from '../shared/modal/gov-modal.module';
 
 @NgModule({
     declarations: [
-        DeleteForm,        
+        DeleteForm,
     ],
     exports: [
-        DeleteForm,        
+        DeleteForm,
     ]
     , imports: [
         CommonModule,

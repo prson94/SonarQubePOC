@@ -138,6 +138,9 @@
   <data name="ImproperPredicate" xml:space="preserve">
     <value>You have not provided a proper predicate based on its asset type class.</value>
   </data>
+  <data name="InvalidDisplayFormat" xml:space="preserve">
+    <value>No valid DisplayFormat provided.</value>
+  </data>
   <data name="InvalidModelDepth" xml:space="preserve">
     <value>Invalid maximum depth. Model level specified must be a value between 1 and 10.</value>
   </data>
@@ -160,7 +163,7 @@
     <value>Asset Type not found based on Class provided.</value>
   </data>
   <data name="NotFoundBasedOnUid" xml:space="preserve">
-    <value>Asset type not found based on Uid provided.</value>
+    <value>Asset Type not found based on Uid provided.</value>
   </data>
   <data name="NotFoundGeneric" xml:space="preserve">
     <value>Asset Type not found.</value>
@@ -176,5 +179,8 @@
   </data>
   <data name="UnsupportedAssetClass" xml:space="preserve">
     <value>Unsupported asset class.</value>
+  </data>
+  <data name="MatchingIconStyle" xml:space="preserve">
+    <value>Icon Style ForeColor and BackColor cannot be the same value.</value>
   </data>
 </root>

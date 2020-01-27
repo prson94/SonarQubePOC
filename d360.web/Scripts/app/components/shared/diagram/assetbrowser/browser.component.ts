@@ -22,7 +22,8 @@ import {
     AssetBrowserOwnersModel,
     AssetBrowserModel,
     AssetBrowserAssetModel,
-    AssetBrowserGenericRelationModel
+    AssetBrowserGenericRelationModel,
+    LoadedFilterTypesModel
 } from '../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../services/browser.service';
@@ -37,6 +38,8 @@ import { Observable } from 'rxjs';
 import { PredicatesService } from '../../../../services/predicates.service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
+import { Router, ActivatedRoute } from '@angular/router';
+import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
 
 declare var window: any;
 
@@ -55,7 +58,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     DiagramObjectType = DiagramObjectType;
 
     private requestModel: AssetBrowserApiHopRequestModel;
-    private responseModel: AssetBrowserModel = new AssetBrowserModel(); 
+    private responseModel: AssetBrowserModel = new AssetBrowserModel();
     private revealedKeys: string[] = [];
     private originalAssetUid: string;
     private menuItems: MenuItem[] = [];
@@ -81,7 +84,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     filtersLoading: boolean = true;
     selectedFilterAssetTypes: TreeNode[] = [];
     selectedFilterPredicates: TreeNode[] = [];
-    filterSelectionsModel: FilterSelectionsModel = new FilterSelectionsModel([], []);
+    selectedFilterResponsibilityTypes: TreeNode[] = [];
+    filterSelectionsModel: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
 
     //#endregion
 
@@ -93,16 +97,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly fontOwnerBadge: string = "8pt 'Source Sans Pro'";
     private readonly fontOwnerBackColor: string = "#FEF6F2";
     private readonly fontOwnerBadgeLabelBorderColor: string = "#DE4B00";
+    private readonly fontOwnerBadgeLabelBorderColor_Disabled: string = "#ebebeb";
     private readonly fontOwnerBadgeLabelBackColor: string = "#FFE5D0";
+    private readonly fontOwnerBadgeLabelBackColor_Disabled: string = "#ebebeb";
     private readonly fontOwnerBadgeLabelForeColor: string = "#000000";
     private readonly fontOwnerBadgeCountBackColor: string = "#DE4B00";
+    private readonly fontOwnerBadgeCountBackColor_Disabled: string = "#ebebeb";
     private readonly fontOwnerBadgeCountForeColor: string = "white";
 
     private readonly fontRelationBadge: string = "8pt 'Source Sans Pro'";
     private readonly fontRelationBadgeLabelBorderColor: string = "#A4AAAF";
+    private readonly fontRelationBadgeLabelBorderColor_Disabled: string = "#ebebeb";
     private readonly fontRelationBadgeLabelBackColor: string = "#ffffff";
+    private readonly fontRelationBadgeLabelBackColor_Disabled: string = "#ebebeb";
     private readonly fontRelationBadgeLabelForeColor: string = "#000000";
     private readonly fontRelationBadgeCountBackColor: string = "#A4AAAF";
+    private readonly fontRelationBadgeCountBackColor_Disabled: string = "#ebebeb";
     private readonly fontRelationBadgeCountForeColor: string = "#ffffff";
 
     private readonly fontLabelIcon: string = "12px FontAwesome";
@@ -133,8 +143,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region Control Properties
 
     constructor(
+        private route: ActivatedRoute,
         private myElement: ElementRef,
         private browserService: BrowserService,
+        private router: Router,
         protected permissionsService: PermissionsService,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
@@ -158,6 +170,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
         this.initializeDiagram();
         this.checkSecondaryNavLocalStorage();
+
+        this.route.params.subscribe(
+            params => {
+                this.originalAssetUid = params['assetUid']; 
+                this.refreshDiagram();
+            }
+        );
     }
 
     public ngAfterViewInit() {
@@ -212,7 +231,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let image_data = this.diagram.makeImageData({
             scale: 1,
             returnType: "blob",
-            background: "#fff", 
+            background: "#fff",
             callback: (image_data) => this.savePngButtonClickCallback(image_data, this.assetUid)
         });
     }
@@ -251,8 +270,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.cdRef.markForCheck();
     }
 
-    private setFilterWindow(options: FilterSelectionsModel) {
-        this.filterSelectionsModel = options;
+    private setFilterWindow(actOnFilterWindow: boolean) {
+        let loadedTypes: LoadedFilterTypesModel = this.determineLoadedFilterOptions();
 
         //#region Asset Types
 
@@ -267,26 +286,29 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.filterSelectionsModel.AssetTypeOptions.forEach(at => {
             if (classIDs.findIndex(c => c == at.ClassId) > -1) {
 
-                let thisClassNode = assetTypes.find(c => c.data == 'C' +at.ClassId);
-                let nodeExists: boolean = (thisClassNode != undefined);
-                if (!nodeExists) {
-                    thisClassNode = {
-                        label: at.Class,
-                        data: 'C'+at.ClassId,
-                        children: []
-                    };
+                //let thisClassNode = assetTypes.find(c => c.data == 'C' +at.ClassId);
+                //let nodeExists: boolean = (thisClassNode != undefined);
+                //if (!nodeExists) {
+                //    thisClassNode = {
+                //        label: at.Class,
+                //        data: 'C'+at.ClassId,
+                //        children: []
+                //    };
+                //}
+                if (loadedTypes.AssetTypes.findIndex(ix => { return ix == at.AssetTypeId }) > -1) {
+                    assetTypes.push({//thisClassNode.children.push({
+                        label: at.Path,
+                        data: at.AssetTypeId
+                    });
                 }
-                thisClassNode.children.push({
-                    label: at.Path,
-                    data: at.AssetTypeId
-                });
 
-                if (!nodeExists) {
-                    assetTypes.push(thisClassNode);
-                }
+                //if (!nodeExists) {
+                //    assetTypes.push(thisClassNode);
+                //}
             }
         });
         assetTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
+
         this.filterSelectionsModel.FilterAssetTypes = assetTypes;
         this.selectedFilterAssetTypes = this.getTreeNodeSelectionNodes(this.filterModel.SelectedAssetTypes, this.filterSelectionsModel.FilterAssetTypes);
 
@@ -294,47 +316,75 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         //#region Predicates
 
+        this.filterSelectionsModel.FilterPredicates = [];
         this.filterSelectionsModel.PredicateOptions.forEach(p => {
-            let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == 'F' +p.TypeId);
-            let nodeExists: boolean = (thisPredicateTypeNode != undefined);
-            if (!nodeExists) {
-                thisPredicateTypeNode = {
-                    label: p.Type,
-                    data: 'F'+p.TypeId, 
-                    children: []
-                };
-            }
-            thisPredicateTypeNode.children.push({
-                label: p.Name.substring(0, 50) + ' / ' + p.Inverse.substring(0, 50),
-                data: p.Id
-            });
+            //let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == 'F' +p.TypeId);
+            //let nodeExists: boolean = (thisPredicateTypeNode != undefined);
+            //if (!nodeExists) {
+            //    thisPredicateTypeNode = {
+            //        label: p.Type,
+            //        data: 'F'+p.TypeId, 
+            //        children: []
+            //    };
+            //}
 
-            if (!nodeExists) {
-                this.filterSelectionsModel.FilterPredicates.push(thisPredicateTypeNode);
+            let inLoadedPredicates: boolean = loadedTypes.Predicates.findIndex(ix => { return ix == p.Id }) > -1;
+            if (inLoadedPredicates) {
+                this.filterSelectionsModel.FilterPredicates.push({//thisPredicateTypeNode.children.push({
+                    label: p.Name.substring(0, 50) + ' / ' + p.Inverse.substring(0, 50),
+                    data: p.Id
+                });
             }
+
+            //if (!nodeExists) {
+            //    this.filterSelectionsModel.FilterPredicates.push(thisPredicateTypeNode);
+            //}
         });
         this.filterSelectionsModel.FilterPredicates.sort((a, b) => (a.label > b.label) ? 1 : -1);
         this.selectedFilterPredicates = this.getTreeNodeSelectionNodes(this.filterModel.SelectedPredicates, this.filterSelectionsModel.FilterPredicates);
 
         //#endregion
 
-        this.filtersLoading = false;
-        this.panelButtonClick('filter');
+        //#region Responsibility Types
+
+        this.filterSelectionsModel.FilterResponsibilityTypes = [];
+        this.filterSelectionsModel.ResponsibilityTypeOptions.forEach(p => {
+
+            let inLoadedResponsibilityTypes: boolean = loadedTypes.ResponsibilityTypes.findIndex(ix => { return ix == p.Id }) > -1;
+            if (inLoadedResponsibilityTypes) {
+                let thisResponsibilityTypeNode: TreeNode = {
+                    label: p.Name,
+                    data: p.Id,
+                    children: []
+                };
+                this.filterSelectionsModel.FilterResponsibilityTypes.push(thisResponsibilityTypeNode);
+            }
+
+        });
+        this.filterSelectionsModel.FilterResponsibilityTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
+        this.selectedFilterResponsibilityTypes = this.getTreeNodeSelectionNodes(this.filterModel.SelectedResponsibilityTypes, this.filterSelectionsModel.FilterResponsibilityTypes);
+
+        //#endregion
+
+        if (actOnFilterWindow) {
+            this.filtersLoading = false;
+            this.panelButtonClick('filter');
+        }
         this.cdRef.markForCheck();
     }
-
 
     private filterButtonClick(e) {
         if (this.filterSelectionsModel.AssetTypeOptions.length == 0) {
             this.filtersLoading = true;
             this.browserService
                 .getFilterOptions()
-                .subscribe(options => this.setFilterWindow(options));
+                .subscribe(options => {
+                    this.filterSelectionsModel = options;
+                    this.setFilterWindow(true);
+                });
         }
         else {
-            this.filtersLoading = false;
-            this.panelButtonClick('filter');
-            this.cdRef.markForCheck();
+            this.setFilterWindow(true);
         }
     }
 
@@ -390,6 +440,75 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private addButtonSelectedClass() {
         return this.isAddRelationshipWindowVisible ? "selected" : "";
+    }
+
+    private determineLoadedFilterOptions(): LoadedFilterTypesModel {
+        let model: LoadedFilterTypesModel = new LoadedFilterTypesModel();
+
+        // Loop through nodes and figure out what is visible.
+        this.diagram.model.nodeDataArray.forEach((tn: AssetBrowserTranslationNode) => {
+
+            if (tn.assetTypeId) {
+
+                if (model.AssetTypes.findIndex(o => { return o == tn.assetTypeId }) == -1) {
+                    model.AssetTypes.push(tn.assetTypeId);
+                }
+                if (tn.owners) {
+                    tn.owners.forEach(r => {
+                        if (model.ResponsibilityTypes.findIndex(o => { return o == r.responsibilityTypeId }) == -1) {
+                            model.ResponsibilityTypes.push(r.responsibilityTypeId);
+                        }
+                    });
+                }
+                if (tn.relations) {
+                    tn.relations.forEach(r => {
+                        if (model.Predicates.findIndex(o => { return o == r.predicateId }) == -1) {
+                            model.Predicates.push(r.predicateId);
+                        }
+                    });
+                }
+            }
+
+            if (tn.responsibilityTypeId) {
+                if (model.ResponsibilityTypes.findIndex(o => { return o == tn.responsibilityTypeId }) == -1) {
+                    model.ResponsibilityTypes.push(tn.responsibilityTypeId);
+                }
+            }
+        });
+
+        // Now check the links for the predicates that are currently displayed.
+        this.diagram.links.each(link => {
+            let linkData: AssetBrowserTranslationLink = link.data as AssetBrowserTranslationLink;
+
+            if (linkData.predicateIds) {
+                linkData.predicateIds.forEach(r => {
+                    if (model.Predicates.findIndex(o => { return o == r }) == -1) {
+                        model.Predicates.push(r);
+                    }
+                });
+            }
+        });
+
+        // Now that filters are loaded, set the visibility on the tree nodes.
+        //this.visibleFilterSelectionsModel.AssetTypeOptions.forEach(o => {
+        //    let ix: number = this.selectedFilterAssetTypes.findIndex(v => { return v.key == o.toString() });
+        //    if (ix > -1) {
+        //        this.selectedFilterAssetTypes.splice(ix, 1);
+        //    }
+        //});
+        //this.visibleFilterSelectionsModel.PredicateOptions.forEach(o => {
+        //    let ix: number = this.selectedFilterPredicates.findIndex(v => { return v.key == o.toString() });
+        //    if (ix > -1) {
+        //        this.selectedFilterPredicates.splice(ix, 1);
+        //    }
+        //});
+        //this.filterSelectionsModel.FilterResponsibilityTypes.forEach(o => {
+        //    let ix: number = this.visibleFilterSelectionsModel.ResponsibilityTypeOptions.findIndex(v => { return o.key == v.toString() });
+        //    o.data = (ix > -1);
+        //    console.log(o);
+        //});
+
+        return model;
     }
 
     private filterButtonSelectedClass() {
@@ -454,28 +573,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.findTopLevelGroups().each(g => {
             let topLevelNode: AssetBrowserTranslationNode = g.data as AssetBrowserTranslationNode;
 
-            //#region Owners badge logic
-            topLevelNode.owners.forEach(rC => {
-                let showBadge: boolean = true;
-
-                //if (this.filterModel.SelectedPredicates.findIndex(v => { return v == rC.predicateId; }) > -1) {
-                //    showBadge = false;
-                //}
-                //else {
-                //    showBadge = true;
-                //}
-
-                //if (showBadge) {
-                //    // Check to see if we should ignore this predicate based on previouly revealed badges.
-                //    if (topLevelNode.ignoredPredicates.findIndex(v => { return v == rC.predicateUid; }) > -1) {
-                //        showBadge = false;
-                //    }
-                //}
-
-                this.diagram.model.setDataProperty(rC, "showBadge", showBadge);
-            });
-            //#endregion
-
             //#region Relations badge logic
             topLevelNode.relations.forEach(rC => {
                 let showBadge: boolean;
@@ -490,11 +587,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (showBadge) {
                     // Check to see if we should ignore this predicate based on previouly revealed badges.
                     if (topLevelNode.ignoredPredicates.findIndex(v => { return v == rC.predicateUid; }) > -1) {
-                        showBadge = false; 
+                        showBadge = false;
                     }
                 }
 
-                this.diagram.model.setDataProperty(rC, "showBadge", showBadge); 
+                this.diagram.model.setDataProperty(rC, "showBadge", showBadge);
             });
             //#endregion
         });
@@ -507,20 +604,85 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.links.each(link => {
             let linkData: AssetBrowserTranslationLink = link.data as AssetBrowserTranslationLink;
             if (linkData.predicateIds) {
-                let g: any = this.diagram.findNodeForKey(linkData.to);
-
-                if (linkData.predicateIds.filter(l => {
-                    return this.filterModel.SelectedPredicates.findIndex(v => { return v == l; }) > -1
-                }).length > 0) {
-                    this.hideIndividualNode(g.data as AssetBrowserTranslationNode, g);
-                }
-                else {
-                    if (this.filterModel.SelectedAssetTypes.findIndex(v => { return v == (g.data as AssetBrowserTranslationNode).assetTypeId; }) == -1) {
-                        this.unhideNode(g.data as AssetBrowserTranslationNode);
+                let g: any = this.diagram.findNodeForKey(linkData.from);
+                if (g) {
+                    if (linkData.predicateIds.filter(l => {
+                        return this.filterModel.SelectedPredicates.findIndex(v => { return v == l; }) > -1
+                    }).length > 0) {
+                        this.hideIndividualNode(g.data as AssetBrowserTranslationNode, g);
+                    }
+                    else {
+                        if (this.filterModel.SelectedAssetTypes.findIndex(v => { return v == (g.data as AssetBrowserTranslationNode).assetTypeId; }) == -1) {
+                            this.unhideNode(g.data as AssetBrowserTranslationNode);
+                        }
                     }
                 }
             }
         });
+
+        //#endregion
+    }
+
+    private hideDeselectedResponsibilityTypes() {
+
+        //#region Hide Badge
+
+        this.diagram.startTransaction('ownerBadge');
+        this.diagram.findTopLevelGroups().each(g => {
+            let topLevelNode: AssetBrowserTranslationNode = g.data as AssetBrowserTranslationNode;
+
+            //#region Owners badge logic
+            topLevelNode.owners.forEach(rC => {
+                let showBadge: boolean = true;
+
+                if (this.filterModel.SelectedResponsibilityTypes.findIndex(v => { return v == rC.responsibilityTypeId; }) > -1) {
+                    showBadge = false;
+                }
+                else {
+                    showBadge = true;
+                }
+
+                //if (showBadge) {
+                //    // Check to see if we should ignore this predicate based on previouly revealed badges.
+                //    if (topLevelNode.ignoredPredicates.findIndex(v => { return v == rC.responsibilityTypeId; }) > -1) {
+                //        showBadge = false;
+                //    }
+                //}
+
+                this.diagram.model.setDataProperty(rC, "showBadge", showBadge);
+            });
+            //#endregion
+        });
+        this.diagram.commitTransaction('ownerBadge');
+
+        //#endregion Badge
+
+        //#region Hide Node
+
+        // Now loop through selected asset types, as those are the ones we need to hide.
+        let nodesToHide: AssetBrowserTranslationNode[] = [];
+        this.diagram.model
+            .nodeDataArray
+            .filter((tn: AssetBrowserTranslationNode) => { return tn.template == "Owners" || tn.template == "HiddenData"; })
+            .forEach((tn: AssetBrowserTranslationNode) => {
+                if (this.filterModel.SelectedResponsibilityTypes.findIndex(v => { return v == tn.responsibilityTypeId; }) > -1) {
+                    if (tn.template == "Owners") { //only hide if it is already displayed.
+                        nodesToHide.push(tn);
+                    }
+                }
+                else {
+                    if (!(this.filterModel.SelectedAssetTypes.findIndex(v => { return v == tn.assetTypeId; }) > -1)) {
+                        this.unhideNode(tn);
+                    }
+                }
+            });
+
+        if (nodesToHide.length > 0) {
+            nodesToHide.forEach(n => {
+                let group: any = this.diagram.findNodeForKey(n.key);
+                this.hideIndividualNode(n, group);
+            });
+        }
 
         //#endregion
     }
@@ -533,6 +695,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         hideNode.subgraph = new AssetBrowserTranslation();
         hideNode.template = "HiddenData";
         hideNode.assetTypeId = node.assetTypeId;
+        hideNode.responsibilityTypeId = node.responsibilityTypeId;
         hideNode.back = node.back;
         hideNode.subgraph.nodes = [];
         hideNode.subgraph.links = [];
@@ -541,6 +704,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let children = group.findSubGraphParts();
 
         children.each(c => {
+            console.log(c.data);
             hideNode.subgraph.nodes.push(c.data);
         });
 
@@ -676,7 +840,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.diagram.nodeTemplateMap.add("MoreData", this.createMoreDataNode());
         this.diagram.nodeTemplateMap.add("HiddenData", this.createHiddenDataNode());
-        
+
         this.diagram.groupTemplateMap.add("Owners", this.createOwnersGroup());
         this.diagram.nodeTemplateMap.add("Owner", this.createOwnerNode());
         this.diagram.nodeTemplate = this.createListItemNode();
@@ -694,6 +858,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.populateDiagram().subscribe(bComplete => {
             this.hideDeselectedAssetTypes();
             this.hideDeselectedPredicates();
+            this.hideDeselectedResponsibilityTypes();
         });
     }
 
@@ -909,6 +1074,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 this.browserService.getAssetLineage(model)
                     .subscribe(response => {
+
                         response.assets.forEach(a => {
                             if (this.responseModel.assets.find(r => r.key == a.key) == null) {
                                 this.responseModel.assets.push(a);
@@ -938,8 +1104,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                         this.diagram.commitTransaction('reveal');
 
+                        this.setFilterWindow(false);
+
                         this.hideDeselectedAssetTypes();
                         this.hideDeselectedPredicates();
+                        this.hideDeselectedResponsibilityTypes();
+
                     });
             }
         }
@@ -955,15 +1125,17 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.fromRefresh = true;
         this.populateDiagram().subscribe(bComplete => {
             this.fromRefresh = false;
+            this.setFilterWindow(false);
             this.hideDeselectedAssetTypes();
             this.hideDeselectedPredicates();
+            this.hideDeselectedResponsibilityTypes();
         });
     }
 
     private findSubGraph(startKey: string, direction: AssetBrowserApiHopDirection): AssetBrowserTranslation {
         let subgraph = new AssetBrowserTranslation();
 
-        subgraph.nodes = []; 
+        subgraph.nodes = [];
         subgraph.links = [];
 
         let node = this.diagram.findNodeForKey(startKey);
@@ -1236,10 +1408,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.saveFilter();
         this.isLoading = true;
         this.loadingText = "Determining links and meaning...";
-        let assetData = this.browserService.convertResponseModel(this.responseModel, this.filterModel.AncestryMode); 
+        let assetData = this.browserService.convertResponseModel(this.responseModel, this.filterModel.AncestryMode);
         let assetTranslation: AssetBrowserTranslation = this.browserService.translateAssetsResponseModel(assetData);
         this.parseData(assetTranslation);
-         
+
         this.resizeDiagram();
         this.diagram.zoomToFit();
         this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
@@ -1250,6 +1422,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.hideDeselectedAssetTypes();
         this.hideDeselectedPredicates();
+        this.hideDeselectedResponsibilityTypes();
     }
 
     private filterBadgesChange(): void {
@@ -1287,6 +1460,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.filterModel.SelectedPredicates = this.getTreeNodeSelectionKeys(e);
         this.saveFilter();
         this.hideDeselectedPredicates();
+    }
+
+    private filterResponsibilityTypeChange(e) {
+        this.filterModel.SelectedResponsibilityTypes = this.getTreeNodeSelectionKeys(e);
+        this.saveFilter();
+        this.hideDeselectedResponsibilityTypes();
     }
 
     private getTreeNodeSelectionNodes(keys: number[], source: TreeNode[]) {
@@ -1383,64 +1562,101 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    private unhide(e, obj) { 
+    private unhide(e, obj) {
         if (obj != null && obj.part != null && obj.part.data != null) {
             let node: AssetBrowserTranslationNode = obj.part.data;
             this.unhideNode(node);
         }
     }
 
+    private collapseNodesAndLinks(dm: go.GraphLinksModel, links: go.Iterator<go.Link>) {
+        if (links) {
+            let lnks: any[] = [];
+            links.iterator.each(link => {
+                lnks.push({ link: link, fromNode: link.fromNode });
+            });
+            lnks.forEach(lnk => {
+                if (lnk.fromNode) {
+                    // Go back to incoming nodes and remove them too. 
+                    this.collapseNodesAndLinks(dm, lnk.fromNode.findLinksInto());
+
+                    // Remove immediate child.
+                    this.diagram.remove(lnk.fromNode);
+                    dm.removeNodeData(dm.findNodeDataForKey(lnk.fromNode.key));
+                }
+
+                this.diagram.remove(lnk.link);
+            });
+        }
+    }
+
+    private collapseBadgeDependentNodesAndLinks(key: string) {
+        this.diagram.startTransaction("collapseBadge");
+        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
+        var links = this.diagram.links.filter(l => { return l.data.expandedByBadgeKey == key; });
+        this.collapseNodesAndLinks(dm, links);
+        this.diagram.commitTransaction("collapseBadge");
+    }
+
     private clickOwnerBadge(e, obj) {
         if (obj != null && obj.part != null && obj.part.data != null) {
-            let existingIgnoredPredicates: string[] = new Array();
             let ix = obj.itemIndex;
             let node: AssetBrowserTranslationNode = obj.part.data;
             let owner: AssetBrowserTranslationOwnerCount = node.owners[ix];
-            let requestModel: AssetBrowserApiOwnerHopRequestModel = new AssetBrowserApiOwnerHopRequestModel();
 
-            requestModel.Assets = [];
-            requestModel.ResponsibilityTypeId = owner.responsibilityTypeId;
-
-            let n = node;
-            if (n.isGroup) {
-                (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
-                    if (g.data.isGroup == undefined || g.data.isGroup == false) {
-                        let asset = new AssetBrowserApiHopAssetRequestModel();
-                        asset.Uid = g.data.assetUid;
-                        asset.Key = g.data.key
-                        requestModel.Assets.push(asset);
-                    }
-                })
+            if (owner.expanded) {
+                this.collapseBadgeDependentNodesAndLinks(owner.key);
+                owner.expanded = false;
+                this.diagram.model.removeArrayItem(node.owners, ix);
+                this.diagram.model.insertArrayItem(node.owners, ix, owner);
             }
+            else {
+                let requestModel: AssetBrowserApiOwnerHopRequestModel = new AssetBrowserApiOwnerHopRequestModel();
 
-            this.diagram.model.removeArrayItem(node.owners, ix);
+                requestModel.Assets = [];
+                requestModel.ResponsibilityTypeId = owner.responsibilityTypeId;
 
-            this.browserService.getAssetOwners(requestModel)
-                .subscribe(response => {
+                let n = node;
+                if (n.isGroup) {
+                    (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
+                        if (g.data.isGroup == undefined || g.data.isGroup == false) {
+                            let asset = new AssetBrowserApiHopAssetRequestModel();
+                            asset.Uid = g.data.assetUid;
+                            asset.Key = g.data.key
+                            requestModel.Assets.push(asset);
+                        }
+                    })
+                }
 
-                    // Some extra data you will need later on during translation.
-                    response.fromKey = node.key;
-                    response.responsibilityType = owner.responsibilityType;
-                    response.responsibilityTypeId = owner.responsibilityTypeId;
+                this.browserService.getAssetOwners(requestModel)
+                    .subscribe(response => {
 
-                    response.owners.forEach(o => {
-                        this.responseModel.owners.push(o);
+                        // Some extra data you will need later on during translation.
+                        response.fromKey = node.key;
+                        response.responsibilityType = owner.responsibilityType;
+                        response.responsibilityTypeId = owner.responsibilityTypeId;
+
+                        response.owners.forEach(o => {
+                            this.responseModel.owners.push(o);
+                        });
+                        response.ownerRelations.forEach(r => {
+                            this.responseModel.ownerRelations.push(r);
+                        });
+
+                        let translationModel: AssetBrowserTranslation = this.browserService.translateOwnersResponseModel(response);
+                        translationModel.links.forEach(l => {
+                            l.expandedByBadgeKey = owner.key;
+                        });
+                        owner.expanded = true;
+                        this.parseData(translationModel, true);
+
+                        this.setFilterWindow(false);
+
+                        this.hideDeselectedAssetTypes();
+                        this.hideDeselectedPredicates();
+                        this.hideDeselectedResponsibilityTypes();
                     });
-                    response.ownerRelations.forEach(r => {
-                        this.responseModel.ownerRelations.push(r);
-                    });
-
-                    //let nodeToPull = this.findInApiModel(node.key, this.responseModel);
-                    //if (nodeToPull) {
-                    //    response.owners.push(nodeToPull);
-                    //}
-
-                    let translationModel: AssetBrowserTranslation = this.browserService.translateOwnersResponseModel(response);
-                    this.parseData(translationModel, true);
-
-                    this.hideDeselectedAssetTypes();
-                    this.hideDeselectedPredicates();
-                });
+            }
         }
     }
 
@@ -1450,74 +1666,90 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let ix = obj.itemIndex;
             let node: AssetBrowserTranslationNode = obj.part.data;
             let relation: AssetBrowserTranslationRelationCount = node.relations[ix];
-            let requestModel: AssetBrowserApiHopRequestModel = new AssetBrowserApiHopRequestModel();
 
-            requestModel.Assets = [];
-            requestModel.PredicateUid = relation.predicateUid;
-            requestModel.IsInitial = false;
+            if (relation.expanded) {
+                this.collapseBadgeDependentNodesAndLinks(relation.key);
+                relation.expanded = false;
+                this.diagram.model.removeArrayItem(node.relations, ix);
+                this.diagram.model.insertArrayItem(node.relations, ix, relation);
+            }
+            else {
 
-            let n = node;
-            if (n.isGroup) {
-                (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
-                    if (g.data.isGroup == undefined || g.data.isGroup == false) {
+                let requestModel: AssetBrowserApiHopRequestModel = new AssetBrowserApiHopRequestModel();
 
-                        // Get existing ignored predicates so we can continue to skip these along the impact chain.
-                        if (g.data.ignoredPredicates !== undefined) {
-                            g.data.ignoredPredicates.forEach(p => {
-                                if (existingIgnoredPredicates.findIndex(pix => p == pix) === -1) {
-                                    existingIgnoredPredicates.push(p);
-                                }
-                            });
+                requestModel.Assets = [];
+                requestModel.PredicateUid = relation.predicateUid;
+                requestModel.IsInitial = false;
+
+                let n = node;
+                if (n.isGroup) {
+                    (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
+                        if (g.data.isGroup == undefined || g.data.isGroup == false) {
+
+                            // Get existing ignored predicates so we can continue to skip these along the impact chain.
+                            if (g.data.ignoredPredicates !== undefined) {
+                                g.data.ignoredPredicates.forEach(p => {
+                                    if (existingIgnoredPredicates.findIndex(pix => p == pix) === -1) {
+                                        existingIgnoredPredicates.push(p);
+                                    }
+                                });
+                            }
+
+                            let asset = new AssetBrowserApiHopAssetRequestModel();
+                            asset.Uid = g.data.assetUid;
+                            asset.Key = g.data.key
+                            requestModel.Assets.push(asset);
+
+                            //add immediate parent
+                            //let p = this.diagram.model.nodeDataArray.find(n => n.key == g.data.group);
+                            //let a = new AssetBrowserApiHopAssetRequestModel();
+                            //if (p != null) {
+                            //    a.Uid = p.assetUid;
+                            //    a.Key = p.key
+                            //    requestModel.Assets.push(a);
+                            //}
+                        }
+                    })
+                }
+
+                //this.diagram.model.removeArrayItem(node.relations, ix);
+
+                this.browserService.getAssetImpacts(requestModel)
+                    .subscribe(response => {
+
+                        response.assets.forEach(a => {
+                            this.responseModel.assets.push(a);
+                        });
+                        response.assetRelations.forEach(i => {
+                            this.responseModel.assetRelations.push(i);
+                        });
+
+                        let nodeToPull = this.findInApiModel(node.key, this.responseModel);
+                        if (nodeToPull) {
+                            response.assets.push(nodeToPull);
                         }
 
-                        let asset = new AssetBrowserApiHopAssetRequestModel();
-                        asset.Uid = g.data.assetUid;
-                        asset.Key = g.data.key
-                        requestModel.Assets.push(asset); 
-                         
-                        //add immediate parent
-                        //let p = this.diagram.model.nodeDataArray.find(n => n.key == g.data.group);
-                        //let a = new AssetBrowserApiHopAssetRequestModel();
-                        //if (p != null) {
-                        //    a.Uid = p.assetUid;
-                        //    a.Key = p.key
-                        //    requestModel.Assets.push(a);
-                        //}
-                    }
-                })
-            }
-
-            this.diagram.model.removeArrayItem(node.relations, ix);
-
-            this.browserService.getAssetImpacts(requestModel)
-                .subscribe(response => {
-
-                    response.assets.forEach(a => {
-                        this.responseModel.assets.push(a);
-                    });
-                    response.assetRelations.forEach(i => {
-                        this.responseModel.assetRelations.push(i);
-                    });
-
-                    let nodeToPull = this.findInApiModel(node.key, this.responseModel);
-                    if (nodeToPull) {
-                        response.assets.push(nodeToPull);
-                    }
-
-                    response = this.browserService.convertResponseModel(response, this.filterModel.AncestryMode);
-                    let translationModel: AssetBrowserTranslation = this.browserService.translateAssetsResponseModel(response);
-                    translationModel.nodes.forEach(n => {
-                        // Transfer ignored predicates to the newly created nodes.
-                        existingIgnoredPredicates.forEach(ep => { 
-                            n.ignoredPredicates.push(ep);
+                        response = this.browserService.convertResponseModel(response, this.filterModel.AncestryMode);
+                        let translationModel: AssetBrowserTranslation = this.browserService.translateAssetsResponseModel(response);
+                        translationModel.links.forEach(l => {
+                            l.expandedByBadgeKey = relation.key;
                         });
-                        n.ignoredPredicates.push(relation.predicateUid);
-                    });
-                    this.parseData(translationModel, true);
+                        translationModel.nodes.forEach(n => {
+                            // Transfer ignored predicates to the newly created nodes.
+                            existingIgnoredPredicates.forEach(ep => {
+                                n.ignoredPredicates.push(ep);
+                            });
+                            n.ignoredPredicates.push(relation.predicateUid);
+                        });
+                        relation.expanded = true;
+                        this.parseData(translationModel, true);
 
-                    this.hideDeselectedAssetTypes();
-                    this.hideDeselectedPredicates(); 
-                });
+                        this.setFilterWindow(false);
+                        this.hideDeselectedAssetTypes();
+                        this.hideDeselectedPredicates();
+                        this.hideDeselectedResponsibilityTypes();
+                    });
+            }
         }
     }
 
@@ -1624,7 +1856,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 { alignment: go.Spot.Center },
                 this.g(go.Panel, "Auto",
                     this.g(go.Shape,
-                        { figure: "RoundedRectLeft", parameter1: 2, fill: this.fontOwnerBadgeLabelBackColor, stroke: this.fontOwnerBadgeLabelBorderColor, strokeWidth: 0.5 },
+                        { figure: "RoundedRectLeft", parameter1: 2, strokeWidth: 0.5 },
+                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontOwnerBadgeLabelBorderColor_Disabled : this.fontOwnerBadgeLabelBorderColor)),
+                        new go.Binding("fill", "expanded", (h) => (h ? this.fontOwnerBadgeLabelBackColor_Disabled : this.fontOwnerBadgeLabelBackColor)),
                     ),
                     this.g(
                         go.TextBlock,
@@ -1641,14 +1875,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 ),
                 this.g(go.Panel, "Auto",
                     this.g(go.Shape, "RoundedRectRight",
-                        { parameter1: 2, fill: this.fontOwnerBadgeCountBackColor, stroke: this.fontOwnerBadgeCountBackColor, strokeWidth: 1 }
+                        { parameter1: 2, strokeWidth: 1 },
+                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontOwnerBadgeCountBackColor_Disabled : this.fontOwnerBadgeCountBackColor)),
+                        new go.Binding("fill", "expanded", (h) => (h ? this.fontOwnerBadgeCountBackColor_Disabled : this.fontOwnerBadgeCountBackColor)),
                     ),
                     this.g(
                         go.TextBlock,
                         {
                             row: 0,
                             margin: 2,
-                            alignment: go.Spot.Center, 
+                            alignment: go.Spot.Center,
                             editable: false,
                             font: this.fontOwnerBadge,
                             stroke: this.fontOwnerBadgeCountForeColor
@@ -1673,7 +1909,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 { alignment: go.Spot.Center },
                 this.g(go.Panel, "Auto",
                     this.g(go.Shape,
-                        { figure: "RoundedRectLeft", parameter1: 2, fill: this.fontRelationBadgeLabelBackColor, stroke: this.fontRelationBadgeLabelBorderColor, strokeWidth: 0.5 },
+                        { figure: "RoundedRectLeft", parameter1: 2, strokeWidth: 0.5 },
+                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontRelationBadgeLabelBorderColor_Disabled : this.fontRelationBadgeLabelBorderColor)),
+                        new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeLabelBackColor_Disabled : this.fontRelationBadgeLabelBackColor)),
                     ),
                     this.g(
                         go.TextBlock,
@@ -1690,7 +1928,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 ),
                 this.g(go.Panel, "Auto",
                     this.g(go.Shape, "RoundedRectRight",
-                        { parameter1: 2, fill: this.fontRelationBadgeCountBackColor, stroke: this.fontRelationBadgeCountForeColor, strokeWidth: 1 }
+                        { parameter1: 2, stroke: this.fontRelationBadgeCountForeColor, strokeWidth: 1 },
+                        new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeCountBackColor_Disabled : this.fontRelationBadgeCountBackColor)),
                     ),
                     this.g(
                         go.TextBlock,
@@ -1713,6 +1952,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return this.g(
             "ContextMenu",
             { areaBackground: "#ffffff", background: "#ffffff" },
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Navigate to", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+                { click: (e, obj) => this.navigateTo(e, obj) },
+                new go.Binding("visible", "", function (o) {
+                    return o.part.data.hasAssetReadAccess;
+                }).ofObject()
+            ),
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenuShowDetails }),
@@ -1740,7 +1987,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.g(
                 "ContextMenuButton",
                 this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: (e, obj) => this.hide(e, obj, AssetBrowserApiHopDirection.Forward) } 
+                { click: (e, obj) => this.hide(e, obj, AssetBrowserApiHopDirection.Forward) }
             )//,
             //this.g(
             //    "ContextMenuButton",
@@ -1748,6 +1995,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             //    { click: function (e, obj) { alert("Not yet implemented") } }
             //)
         );
+    }
+
+    private assetUidRedirect: string = '';
+    private navigateTo(e, obj) {
+        this.assetUidRedirect = obj.part.data.assetUid;
+
+        if (this.assetUidRedirect == this.assetUid)
+            return;
+
+        this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
+            this.router.navigate([SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, 'browser', this.assetUidRedirect]);
+        });
     }
 
     private createTooltip(): go.Adornment {
@@ -1843,12 +2102,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.Shape,
                         "Rectangle",
                         { strokeWidth: 2, isPanelMain: true },
-                        new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)), 
+                        new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)),
                         new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
                     ),
                     this.g(go.Panel, "Vertical",
                         this.g(
-                            go.Panel, 
+                            go.Panel,
                             "Horizontal",
                             // button next to TextBlock
                             { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
@@ -2118,7 +2377,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             go.Panel,
                             "Horizontal",
                             // button next to TextBlock
-                            { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top, background: this.fontOwnerBadgeLabelBackColor }, 
+                            { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top, background: this.fontOwnerBadgeLabelBackColor },
                             this.g(
                                 "SubGraphExpanderButton",
                                 { alignment: go.Spot.Right, margin: 5 }
@@ -2132,7 +2391,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     alignment: go.Spot.Center,
                                     editable: false,
                                     font: this.fontLabelIcon,
-                                    stroke: '#000000' 
+                                    stroke: '#000000'
                                 },
                                 new go.Binding("text", "icon"),
                                 new go.Binding("visible", "showIcon")
@@ -2194,7 +2453,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("background", "isHighlighted", (h) => (h ? this.selectionPathHighlightColor : this.leafBackColor)).ofObject(),
                 this.g(
                     go.Shape,
-                    { width: 10, height: 0, stroke: "transparent" } 
+                    { width: 10, height: 0, stroke: "transparent" }
                 ),
                 //icon
                 this.g(
@@ -2254,7 +2513,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             )  // end Horizontal Panel
         );
     }
-
 
     private createMoreDataNode(): go.Node {
         return this.g(go.Node, "Auto",
@@ -2325,13 +2583,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private createDefaultLink(): go.Link {
         return this.g(
             go.Link, {
-                routing: go.Link.AvoidsNodes,
-                corner: 5,
-                relinkableFrom: false,
-                relinkableTo: false,
-                click: (e, obj) => this.highlightPath(e, obj as any),
-                zOrder: 1000
-            },
+            routing: go.Link.AvoidsNodes,
+            corner: 5,
+            relinkableFrom: false,
+            relinkableTo: false,
+            click: (e, obj) => this.highlightPath(e, obj as any),
+            zOrder: 1000
+        },
             // the whole link panel
             this.g(go.Shape,
                 { stroke: this.linkBackColor, strokeWidth: 1 },
@@ -2341,7 +2599,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 new go.Binding("stroke", "hasProperties", (h) => (h ? "black" : this.linkBackColor))
             ), // the link shape
             this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
-            this.g(go.Panel, "Auto",  
+            this.g(go.Panel, "Auto",
                 this.g(
                     go.Shape,
                     {
