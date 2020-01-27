@@ -867,16 +867,13 @@ namespace d360.extensions.search
             Nest.Field fldCategory = new Nest.Field(D3S_FIELD_PREFIX + "Category");
             Nest.Field fldAssetType = new Nest.Field(D3S_FIELD_PREFIX + "AssetType");
             Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
-            Nest.Field fldNoReadResource = new Nest.Field(D3S_FIELD_PREFIX + "NoReadResourceID");
-            Nest.Field fldNoReadGroup = new Nest.Field(D3S_FIELD_PREFIX + "NoReadGroupID");
-            Nest.Field fldNoReadOrg = new Nest.Field(D3S_FIELD_PREFIX + "NoReadOrgID");
 
             string tagSearch = "";
             bool tagMust = false;
+            char tagStrategy = 'Q'; // Q(ueryString), (MatchPhrase)P(refix), M(atchPhrase)
             List<QueryContainer> shouldQueries = new List<QueryContainer>();
             List<QueryContainer> mustQueries = new List<QueryContainer>();
             List<QueryContainer> filterMustQueries = new List<QueryContainer>();
-            List<QueryContainer> filterMustNotQueries = new List<QueryContainer>();
 
             List<Nest.Field> mainFields = new List<Nest.Field>
             {
@@ -951,6 +948,8 @@ namespace d360.extensions.search
                     case "d3sTags":
                         tagSearch = EscapeSpecialCharacters(fieldFilter.Phrase);
                         tagMust = true;
+                        //If filter is MatchWords, strategy is MatchPhrase. Othewise use MatchPhrasePrefix. If search string contains * use QueryStringQuery
+                        tagStrategy = fieldFilter.MatchWords ? 'M' : tagSearch.Contains("*") ? 'Q' : 'P';
                         continue;
                     case "_type":
                         fld = new Nest.Field(D3S_FIELD_PREFIX + "Category");
@@ -985,15 +984,39 @@ namespace d360.extensions.search
             //Tag query
             if (tagSearch != "")
             {
+                List<QueryContainer> tagQueries = new List<QueryContainer>();
+                switch(tagStrategy)
+                {
+                    case 'P':
+                        tagQueries.Add(new MatchPhrasePrefixQuery {
+                            Field = fldTag,
+                            Query = tagSearch
+                        });
+                        break;
+                    case 'M':
+                        tagQueries.Add(new MatchPhraseQuery
+                        {
+                            Field = fldTag,
+                            Query = tagSearch
+                        });
+                        break;
+                    case 'Q':
+                    default:
+                        tagQueries.Add(new QueryStringQuery
+                        {
+                            DefaultField = fldTag,
+                            Query = tagSearch
+                        });
+                        break;
+
+                }
+
                 NestedQuery tagQuery = new NestedQuery
                 {
                     Path = D3S_FIELD_PREFIX + "Tags",
                     Query = new BoolQuery
                     {
-                        Must = new QueryContainer[] { new QueryStringQuery {
-                                            DefaultField = fldTag,
-                                            Query = tagSearch
-                                        }}
+                        Must = tagQueries
                     },
                     InnerHits = new InnerHits
                     {
@@ -1051,60 +1074,6 @@ namespace d360.extensions.search
                 }
             }
 
-            //Apply limitations
-            filterMustNotQueries.Add(new TermQuery
-            {
-                Field = fldNoReadResource,
-                Value = queryLimit.ResourceID
-            });
-            filterMustNotQueries.Add(new TermsQuery
-            {
-                Field = fldNoReadGroup,
-                Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
-            });
-            filterMustNotQueries.Add(new TermsQuery
-            {
-                Field = fldNoReadOrg,
-                Terms = queryLimit.ResourceOrgIDs.Select(i => i.ToString())
-            });
-            if (queryLimit.HideData3SixtyUsers)
-            {
-                filterMustNotQueries.Add(new BoolQuery {
-                    Must = new QueryContainer[] {
-                            new TermQuery {
-                                Field = fldCategory,
-                                Value = "Resource"
-                            },
-                            new TermQuery
-                            {
-                                Field = new Nest.Field(D3S_FIELD_PREFIX + "Data3SixtyUser"),
-                                Value = true
-                            }
-                        }
-                });
-            }
-            foreach (AggregationFilter limitAggFilter in queryLimit.AggregationFilters)
-            {
-                string fieldname;
-                switch (limitAggFilter.Field)
-                {
-                    case "d3sCategory":
-                        fieldname = D3S_FIELD_PREFIX + "Category";
-                        break;
-                    case "d3sAssetType":
-                        fieldname = D3S_FIELD_PREFIX + "AssetType";
-                        break;
-                    default:
-                        fieldname = DYNAMIC_FIELD_PREFIX + limitAggFilter.Field;
-                        break;
-                }
-                filterMustNotQueries.Add(new TermsQuery
-                {
-                    Field = new Nest.Field(fieldname),
-                    Terms = limitAggFilter.Values
-                });
-            }
-
             SearchRequest sReq = new SearchRequest
             {
                 Query = new BoolQuery
@@ -1118,7 +1087,7 @@ namespace d360.extensions.search
                     },
                     Filter = new QueryContainer[] { new BoolQuery {
                         Must = filterMustQueries,
-                        MustNot = filterMustNotQueries
+                        MustNot = FiltersFromLimit(queryLimit)
                     } }
                 },
                 Highlight = new Highlight
@@ -1207,6 +1176,72 @@ namespace d360.extensions.search
             return result;
         }
 
+        List<QueryContainer> FiltersFromLimit(QueryLimitation queryLimit)
+        {
+            List<QueryContainer> mustNotQueries = new List<QueryContainer>
+            {
+                //NoRead limitations
+                new TermQuery
+                {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadResourceID"),
+                    Value = queryLimit.ResourceID
+                },
+                new TermsQuery
+                {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadGroupID"),
+                    Terms = queryLimit.ResourceGroupIDs.Select(i => i.ToString())
+                },
+                new TermsQuery
+                {
+                    Field = new Nest.Field(D3S_FIELD_PREFIX + "NoReadOrgID"),
+                    Terms = queryLimit.ResourceOrgIDs.Select(i => i.ToString())
+                }
+            };
+
+            //User access limitations
+            if (queryLimit.HideData3SixtyUsers)
+            {
+                mustNotQueries.Add(new BoolQuery
+                {
+                    Must = new QueryContainer[] {
+                            new TermQuery {
+                                Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
+                                Value = "Resource"
+                            },
+                            new TermQuery
+                            {
+                                Field = new Nest.Field(D3S_FIELD_PREFIX + "Data3SixtyUser"),
+                                Value = true
+                            }
+                        }
+                });
+            }
+
+            //Additional limitations
+            foreach (AggregationFilter limitAggFilter in queryLimit.AggregationFilters)
+            {
+                string fieldname;
+                switch (limitAggFilter.Field)
+                {
+                    case "d3sCategory":
+                        fieldname = D3S_FIELD_PREFIX + "Category";
+                        break;
+                    case "d3sAssetType":
+                        fieldname = D3S_FIELD_PREFIX + "AssetType";
+                        break;
+                    default:
+                        fieldname = DYNAMIC_FIELD_PREFIX + limitAggFilter.Field;
+                        break;
+                }
+                mustNotQueries.Add(new TermsQuery
+                {
+                    Field = new Nest.Field(fieldname),
+                    Terms = limitAggFilter.Values
+                });
+            }
+            return mustNotQueries;
+        }
+
         private string MapCategoryToFriendlyName(string key)
         {
             if (string.IsNullOrEmpty(key)) return string.Empty;
@@ -1256,8 +1291,7 @@ namespace d360.extensions.search
             Nest.Field fldCategory = new Nest.Field(D3S_FIELD_PREFIX + "Category");
             Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
             List<QueryContainer> mustClauses = new List<QueryContainer>();
-            List<QueryContainer> mustNotQueries = new List<QueryContainer>();
-            BoolQuery filterQuery = null;
+            List<QueryContainer> filterMustQueries = new List<QueryContainer>();
             string tagSearch;
 
             int isGuid = IsPhraseGuid(phrase);
@@ -1286,7 +1320,7 @@ namespace d360.extensions.search
                  * queried using 'match' and the last word will be 'prefix'
                  * For searching tags, an asterisk is appended and a regular 'query_string' query is used 
                  */
-            Queue<string> parts = new Queue<string>(phrase.ToLower().Split(' '));
+                Queue<string> parts = new Queue<string>(phrase.ToLower().Split(' '));
                 tagSearch = EscapeSpecialCharacters(phrase.ToLower()) + (!phrase.EndsWith("*") ? "*" : "");
 
                 while (parts.Count > 1)
@@ -1315,55 +1349,18 @@ namespace d360.extensions.search
 
                 if (categories.Length > 1)
                 {
-                    filterQuery = new BoolQuery
-                    {
-                        Must = new QueryContainer[] {
-                            new TermsQuery {
-                                Field = fldCategory,
-                                Terms = categories
-                            }
-                        }
-                    };
+                    filterMustQueries.Add(new TermsQuery {
+                        Field = fldCategory,
+                        Terms = categories
+                    });
                 }
                 else
                 {
-                    filterQuery = new BoolQuery
-                    {
-                        Must = new QueryContainer[] {
-                            new TermQuery {
-                                Field = fldCategory,
-                                Value = categories[0]
-                            }
-                        }
-                    };
+                    filterMustQueries.Add(new TermQuery {
+                        Field = fldCategory,
+                        Value = categories[0]
+                    });
                 }
-            }
-
-            //Apply limitations
-            if (queryLimit.HideData3SixtyUsers)
-            {
-                mustNotQueries.Add(new BoolQuery
-                {
-                    Must = new QueryContainer[] {
-                            new TermQuery {
-                                Field = fldCategory,
-                                Value = "Resource"
-                            },
-                            new TermQuery
-                            {
-                                Field = new Nest.Field(D3S_FIELD_PREFIX + "Data3SixtyUser"),
-                                Value = true
-                            }
-                        }
-                });
-            }
-            foreach (AggregationFilter limitAggFilter in queryLimit.AggregationFilters)
-            {
-                mustNotQueries.Add(new TermsQuery
-                {
-                    Field = new Nest.Field(D3S_FIELD_PREFIX + "Category"),
-                    Terms = limitAggFilter.Values
-                });
             }
 
             SearchRequest sReq = new SearchRequest
@@ -1393,8 +1390,10 @@ namespace d360.extensions.search
                             }
                         }
                     },
-                    MustNot = mustNotQueries,
-                    Filter = new QueryContainer[] { filterQuery }
+                    Filter = new QueryContainer[] { new BoolQuery {
+                        Must = filterMustQueries,
+                        MustNot = FiltersFromLimit(queryLimit)
+                    } }
                 },
                 Size = size
             };
