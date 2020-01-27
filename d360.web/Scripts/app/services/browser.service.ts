@@ -461,6 +461,8 @@ export class BrowserService extends BaseObservableService {
         n.isGroup = (a.items && a.items.length > 0);
         n.key = a.key;
         n.text = a.displayValue;
+        n.hasAssetReadAccess = a.hasAssetReadAccess;
+        
         if (parentKey && parentKey !== "") {
             n.group = parentKey;
 

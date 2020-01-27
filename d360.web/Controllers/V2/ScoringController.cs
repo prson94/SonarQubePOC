@@ -169,38 +169,38 @@ namespace d360.web.Controllers.V2
                 ScoreTypeAllocation alloc = ScoringRepository.GetAllocationByUid(allocationUid);
 
                 if (alloc == null)
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error updating allocation", $"Allocation with uid {allocationUid} does not exist");
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error updating allocation", $"Allocation with uid {allocationUid} does not exist.");
 
                 if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"You have not provided valid assetTypeUid");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"You have not provided valid assetTypeUid.");
 
                 List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance, ScoreType.Perceptional };
 
                 if (!scoreTypes.Contains(model.scoreType))
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"You have not provided valid scoreType.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"You have not provided valid scoreType.");
                 }
 
                 var assetType = AssetRepository.GetAssetTypeByUID(model.assetTypeUid);
 
                 List<AssetTypeClass> allowedClasses = ScoringRepository.AllowedClassesForScoreType();
                 if (assetType == null)
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error updating allocation", $"AssetType with uid {model.assetTypeUid} does not exist");
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error updating allocation", $"AssetType with uid {model.assetTypeUid} does not exist.");
 
                 if (!allowedClasses.Contains(assetType.Class))
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Asset type has invalid class");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Asset type has invalid class.");
 
                 bool alreadyExists = ScoringRepository.DoesAllocationExist(allocationUid, model);
 
                 if (alreadyExists)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Allocation with same configuration already exists");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Score Allocation already exists.");
                 }
 
                 bool hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
                 if (hasActiveMeasures)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined.");
                 }
                 AllocationApiGetModel allocation = ScoringRepository.UpdateAllocation(model, alloc);
 
@@ -238,12 +238,12 @@ namespace d360.web.Controllers.V2
                 var alloc = ScoringRepository.GetAllocationByUid(allocationUid);
 
                 if (alloc == null)
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error deleting allocation", $"Allocation with uid {allocationUid} does not exist");
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error deleting allocation", $"Allocation with uid {allocationUid} does not exist.");
 
                 var hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
                 if (hasActiveMeasures)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined.");
                 }
 
                 ScoringRepository.DeleteAllocation(alloc);

@@ -170,6 +170,7 @@ namespace d360.web.Controllers.V2
         /// *  If you use the subject asset type Uid as the assetTypeUid value, only use of the objectUid filter is supported.
         /// *  If you use either the subjectUid or objectUid filter, the predicateUid must be included in the request. 
         /// *  If you do not include the predicateUid, any values given in the subjectUid or objectUid field are ignored.
+        /// 
         /// If the requested content media type is "application/octet-stream", the response will be an excel document with the asset results and the assetTypeUid as the file name.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
@@ -377,7 +378,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Conflict, "You already have an asset type with the specified name", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Request is badly formated or has failed validation.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request is badly formatted or has failed validation.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeUpsert model)
         {
