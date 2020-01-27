@@ -366,19 +366,33 @@ namespace d360.web.Controllers.V2
             Route("groups/{groupUid:Guid}/{resourceUid:Guid}"),
             SwaggerResponse(HttpStatusCode.OK, "Success"),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist."),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.")
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation."),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
 
         ]
-        public async Task<HttpResponseMessage> DeleteGroupMember(Guid groupUid,Guid resourceUid)
+        public async Task<IHttpActionResult> DeleteGroupMember(Guid groupUid,Guid resourceUid)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+            var prefix = "Membership.DeleteGroupMember => ";
 
-            var res = await Company.Database.Connection.ExecuteAsync("delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID", new { resource = resourceUid, group = groupUid });
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
 
-            if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
+                var res = await Company.Database.Connection.ExecuteAsync("delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID", new { resource = resourceUid, group = groupUid });
 
-            throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist"));
+                if (res > 0) return await Task.FromResult(successMessageResponse(HttpStatusCode.OK,"Success","User removed from group")); // deleted
+                else return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Resource / Group doesn't exist"));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
         }
 
 
