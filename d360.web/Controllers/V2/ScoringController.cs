@@ -284,11 +284,11 @@ namespace d360.web.Controllers.V2
             #region Header
 
             int index = 1;
-            document.SetCellValue(1, index++, "Uid");
             document.SetCellValue(1, index++, "Asset Class");
             document.SetCellValue(1, index++, "Asset Type");
-            document.SetCellValue(1, index++, "Asset Type Uid");
             document.SetCellValue(1, index++, "Score Type");
+            document.SetCellValue(1, index++, "Asset Type UID");
+            document.SetCellValue(1, index++, "Score UID");
 
             #endregion
 
@@ -297,11 +297,11 @@ namespace d360.web.Controllers.V2
             {
                 index = 1;
                 rowNumber++;
-                document.SetCellValue(rowNumber, index++, row.uid.ToString());
                 document.SetCellValue(rowNumber, index++, row.assetClassName.GetDisplayName());
                 document.SetCellValue(rowNumber, index++, row.assetTypePath);
-                document.SetCellValue(rowNumber, index++, row.assetTypeUid.ToString());
                 document.SetCellValue(rowNumber, index++, row.scoreType.GetDisplayName());
+                document.SetCellValue(rowNumber, index++, row.assetTypeUid.ToString());
+                document.SetCellValue(rowNumber, index++, row.uid.ToString());
             }
 
             #endregion
