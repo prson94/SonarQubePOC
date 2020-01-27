@@ -46,15 +46,15 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
             .subscribe(data => {
                 this.ddlAssetTypes = [];
                 data.forEach(item => {
-                    this.ddlAssetTypes.push({ value: item.assetTypeUid, label: this.getClassFriendlyName(item.assetTypeClass) + ' > ' + item.assetTypePath });
+                    this.ddlAssetTypes.push({ value: item.assetTypeUid, class: this.getClassFriendlyName(item.assetTypeClass), name: item.assetTypePath, label: this.getClassFriendlyName(item.assetTypeClass) + ' : ' + item.assetTypePath });
                 })
 
                 if (this.selection.uid) {
-                    this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, label: this.getClassFriendlyName(this.selection.assetClassName) + ' > ' + this.selection.assetTypePath });
+                    this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' : ' + this.selection.assetTypePath });
                 }
                 this.ddlAssetTypes = this.ddlAssetTypes.sort((a, b) => a.label.localeCompare(b.label));
 
-                this.ddlAssetTypes = [{ value: null, label: 'Select Asset Type' }, ...this.ddlAssetTypes];
+                this.ddlAssetTypes = [{ value: null,  label: 'Select Asset Type' }, ...this.ddlAssetTypes];
 
             });
     }
@@ -94,7 +94,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         this.savingInProgress = true;
         this.allocationService.save(item)
             .subscribe(res => {
-                this.selection = new ScoreTypeAllocation();
+
                 this.savingInProgress = false;
                 if (res.type && res.type == "error")
                     return;
@@ -106,8 +106,8 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
                 else {
                     msg = `Allocation succesfully updated`;
                 }
+                this.selection = new ScoreTypeAllocation();
                 this.messagesService.showInfoMessage('Success', msg);
-
                 this.onSave.emit(res);
             });
     }

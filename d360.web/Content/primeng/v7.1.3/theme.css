@@ -1501,3 +1501,8 @@ p-calendar .ui-datepicker {
 .modal-dialog p-calendar .ui-datepicker {
     top: 26px !important;
 }
+
+.gov-table tbody tr:hover  {
+    background-color: #ffef99;
+    cursor:pointer;
+}

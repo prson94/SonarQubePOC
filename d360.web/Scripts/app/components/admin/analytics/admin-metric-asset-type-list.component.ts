@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, ViewChild } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { ScoreTypeAllocation, ScoreType, ScoreTypeAllocationFormatted } from '../../../models/metrics.model';
 import { AssetTypeClass } from '../../../models/asset.model';
@@ -44,25 +44,33 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         this.theDeleteCallback = this.deleteAllocation.bind(this);
     }
 
-    load() {
+    load(selectedItem: any = null) {
+
+        if (selectedItem)
+            this.selection = selectedItem;
+
         this.isLoading = true;
         this.allocationService.getAllocations()
             .subscribe(r => {
                 this.allocations = [];
                 this._loadedAllocations = r;
                 r.forEach(x => {
-                    let formatted: ScoreTypeAllocationFormatted = new ScoreTypeAllocationFormatted();
-                    formatted.assetClassName = this.getClassFriendlyName(x.assetClassName);
-                    formatted.assetTypePath = x.assetTypePath;
-                    formatted.assetTypeUid = x.assetTypeUid;
-                    formatted.scoreType = this.getScoreTypeFriendlyName(x.scoreType);
-                    formatted.state = x.state;
-                    formatted.uid = x.uid;
-                    formatted.hasMeasure = x.hasMeasure;
-                    this.allocations.push(formatted);
+                    this.allocations.push(this.getFormattedItem(x));
                 })
                 this.isLoading = false;
             });
+    }
+
+    getFormattedItem(x: ScoreTypeAllocation): ScoreTypeAllocationFormatted {
+        let formatted: ScoreTypeAllocationFormatted = new ScoreTypeAllocationFormatted();
+        formatted.assetClassName = this.getClassFriendlyName(x.assetClassName);
+        formatted.assetTypePath = x.assetTypePath;
+        formatted.assetTypeUid = x.assetTypeUid;
+        formatted.scoreType = this.getScoreTypeFriendlyName(x.scoreType);
+        formatted.state = x.state;
+        formatted.uid = x.uid;
+        formatted.hasMeasure = x.hasMeasure;
+        return formatted;
     }
 
     onRowSelect(e: any) {
@@ -128,11 +136,13 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         this.showEdit = false;
     }
 
-    private onSave() {
-        this.showEdit = false;
-        this.load();
+    private getClass(item): string {
+        var listItem = this.getAllocationByUid(item.uid);
+        if (this.selection.assetTypeUid == listItem.assetTypeUid && this.selection.scoreType == listItem.scoreType) {
+            return 'ui-state-highlight';
+        }
+        return '';
     }
-
 
     private openMeasures(event: ScoreTypeAllocationFormatted) {
         var alloc = this.getAllocationByUid(event.uid);
