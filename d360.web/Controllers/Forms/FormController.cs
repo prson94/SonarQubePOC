@@ -1806,7 +1806,7 @@ order by Sort, title";
                 JsonResult json;
                 Load load = null;
                 var success = false;
-                var errorMessage = "";
+                var errorMessages = new List<string>();
                 SLDocument xls;
 
                 using (var stream = new MemoryStream(byteArray))
@@ -1854,7 +1854,6 @@ order by Sort, title";
                         // spreadsheet should only contain columns that the type has
                         if (columnCount <= fieldTypeNames.Count)
                         {
-                            var hasError = false;
                             load.LoadColumns = new List<LoadColumn>();
                             //loop through spreadsheet columns and make sure type has that column
                             for (var i = stats.StartColumnIndex; i <= stats.EndColumnIndex; i++)
@@ -1865,8 +1864,7 @@ order by Sort, title";
 
                                 if (!fieldTypeNames.Any(x => x.Name == columnName))
                                 {
-                                    hasError = true;
-                                    errorMessage += string.Format("Unexpected column found [{0}]", columnName);
+                                    errorMessages.Add($"Unexpected column found [{columnName}]");
                                 }
                                 else
                                 {
@@ -1874,16 +1872,73 @@ order by Sort, title";
                                 }
                             }
 
-                            success = !hasError;
+                            // Log any missing key field errors.
+                            errorMessages.AddRange(
+                                fieldTypeNames
+                                    .Where(ft => ft.PartOfKey && !load.LoadColumns.Any(lc => lc.Name == ft.Name))
+                                    .Select(ft => $"Key column not provided [{ft.Name}]")
+                            );
+
+                            // Log any missing required field errors.
+                            errorMessages.AddRange(
+                                fieldTypeNames
+                                    .Where(ft => !ft.PartOfKey && ft.Required && !load.LoadColumns.Any(lc => lc.Name == ft.Name))
+                                    .Select(ft => $"Required column not provided [{ft.Name}]")
+                            );
+
+                            // loop through required/key field types
+                            List<string> invalidKeyFields = new List<string>();
+                            List<string> invalidRequiredFields = new List<string>();
+                            List<string> alreadyInvalidatedFields = new List<string>();
+                            foreach (var fieldTypeName in fieldTypeNames.Where(ft => ft.PartOfKey || ft.Required))
+                            {
+                                var loadColumn = load.LoadColumns.FirstOrDefault(lc => lc.Name == fieldTypeName.Name);
+
+                                if (loadColumn != null)
+                                {
+                                    for (var i = stats.StartRowIndex; i <= stats.EndRowIndex; i++)
+                                    {
+                                        // If we have already invalidated rows with this field, then do not bother to continue invalidating this particular field type.
+                                        if (!alreadyInvalidatedFields.Contains(fieldTypeName.Name))
+                                        {
+                                            var rowValue = (xls.GetCellValueAsString(i, loadColumn.ColumnIndex) ?? string.Empty).Trim();
+
+                                            if (string.IsNullOrEmpty(rowValue))
+                                            {
+                                                alreadyInvalidatedFields.Add(fieldTypeName.Name);
+
+                                                if (fieldTypeName.PartOfKey && !invalidKeyFields.Contains(fieldTypeName.Name))
+                                                {
+                                                    invalidKeyFields.Add(fieldTypeName.Name);
+                                                }
+                                                else if (fieldTypeName.Required && !invalidRequiredFields.Contains(fieldTypeName.Name))
+                                                {
+                                                    invalidRequiredFields.Add(fieldTypeName.Name);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (invalidKeyFields.Count > 0)
+                            {
+                                errorMessages.Add($"One or more values not populated for Key column{(invalidKeyFields.Count>1 ? "s" : "")} [{string.Join(", ", invalidKeyFields)}]");
+                            }
+                            if (invalidRequiredFields.Count > 0)
+                            {
+                                errorMessages.Add($"One or more values not populated for Required column{(invalidRequiredFields.Count > 1 ? "s" : "")} [{string.Join(", ", invalidRequiredFields)}]");
+                            }
+
+                            success = (errorMessages.Count == 0);
                         }
                         else
                         {
-                            errorMessage = "The number of columns in the spreadsheet exceeds the number of defined fields for this load type.";
+                            errorMessages.Add("The number of columns in the spreadsheet exceeds the number of defined fields for this load type.");
                         }
                     }
                     else
                     {
-                        errorMessage = "Incorrect file type";
+                        errorMessages.Add("Incorrect file type");
                     }
                 }
 
@@ -1900,7 +1955,7 @@ order by Sort, title";
                 }
                 else
                 {
-                    json = jsonException(errorMessage, HttpStatusCode.BadRequest);
+                    json = jsonException(string.Join(";", errorMessages), HttpStatusCode.BadRequest);
                 }
 
                 return json;
