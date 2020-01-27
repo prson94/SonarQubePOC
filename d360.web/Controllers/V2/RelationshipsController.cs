@@ -188,6 +188,14 @@ namespace d360.web.Controllers.V2
                 if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} predicates in this request."));
 
+                foreach(var pred in predicates)
+                {
+                    if(pred.Name.Length > 100)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Name must be less then 100 characters."));
+                    if (pred.Inverse.Length > 250)
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Inverse must be less then 250 characters."));
+                }
+
                 var execution = getApiExecution(predicates.Count);
 
 
