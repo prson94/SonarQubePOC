@@ -312,8 +312,8 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Decimal' then FT.DisplayDescription else null end as 'Type.Decimal.Description.Display',
 		        case when FT.Type = 'Decimal' then FT.FormDescription else null end as 'Type.Decimal.Description.Form',
 		        case when FT.Type = 'Decimal' then FT.Increment else null end as 'Type.Decimal.Increment',
-		        case when FT.Type = 'Decimal' then FT.MinimumLength else null end as 'Type.Decimal.Validation.MinimumLength',
-		        case when FT.Type = 'Decimal' then FT.MaximumLength else null end as 'Type.Decimal.Validation.MaximumLength',
+		        case when FT.Type = 'Decimal' then FT.MinimumLength else null end as 'Type.Decimal.Validation.MinimumValue',
+		        case when FT.Type = 'Decimal' then FT.MaximumLength else null end as 'Type.Decimal.Validation.MaximumValue',
 		        case when FT.Type = 'Decimal' then FT.[Precision] else null end as 'Type.Decimal.Validation.Precision',
 		        case when FT.Type = 'Decimal' then FT.IsRequired else null end as 'Type.Decimal.Validation.IsRequired',
 		        case when FT.Type = 'Decimal' then FT.IsDisplayable else null end as 'Type.Decimal.IsDisplayable',
@@ -403,8 +403,8 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Number' then FT.DisplayDescription else null end as 'Type.Number.Description.Display',
 		        case when FT.Type = 'Number' then FT.FormDescription else null end as 'Type.Number.Description.Form',
 		        case when FT.Type = 'Number' then FT.Increment else null end as 'Type.Number.Increment',
-		        case when FT.Type = 'Number' then FT.MinimumLength else null end as 'Type.Number.Validation.MinimumLength',
-		        case when FT.Type = 'Number' then FT.MaximumLength else null end as 'Type.Number.Validation.MaximumLength',
+		        case when FT.Type = 'Number' then FT.MinimumLength else null end as 'Type.Number.Validation.MinimumValue',
+		        case when FT.Type = 'Number' then FT.MaximumLength else null end as 'Type.Number.Validation.MaximumValue',
 		        case when FT.Type = 'Number' then FT.IsRequired else null end as 'Type.Number.Validation.IsRequired',
 		        case when FT.Type = 'Number' then FT.IsDisplayable else null end as 'Type.Number.IsDisplayable',
 		        case when FT.Type = 'Number' then FT.IsEditable else null end as 'Type.Number.IsEditable',
@@ -863,8 +863,8 @@ from	IntersectType I
                     if (f.Type.Decimal.Validation != null)
                     {
                         newFieldType.IsRequired = f.Type.Decimal.Validation.IsRequired;
-                        newFieldType.MaximumLength = f.Type.Decimal.Validation.MaximumLength;
-                        newFieldType.MinimumLength = f.Type.Decimal.Validation.MinimumLength;
+                        newFieldType.MaximumLength = f.Type.Decimal.Validation.MaximumValue;
+                        newFieldType.MinimumLength = f.Type.Decimal.Validation.MinimumValue;
                         newFieldType.Precision = f.Type.Decimal.Validation.Precision;
                     }
                 }
@@ -1087,8 +1087,8 @@ from	IntersectType I
                     if (f.Type.Number.Validation != null)
                     {
                         newFieldType.IsRequired = f.Type.Number.Validation.IsRequired;
-                        newFieldType.MaximumLength = f.Type.Number.Validation.MaximumLength;
-                        newFieldType.MinimumLength = f.Type.Number.Validation.MinimumLength;
+                        newFieldType.MaximumLength = f.Type.Number.Validation.MaximumValue;
+                        newFieldType.MinimumLength = f.Type.Number.Validation.MinimumValue;
                     }
                 }
                 else if (f.Type.Relationship != null)
