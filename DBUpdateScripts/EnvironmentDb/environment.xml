@@ -416,4 +416,5 @@
   <include file="scripts/GOV-9231.xml"/> <!-- Remove unused database objects -->
   <include file="scripts/GOV-9416.xml"/> <!-- AssetBrowser procedure - limit relationship badge counts to leaf assets -->
   <include file="scripts/GOV-9442.xml"/> <!-- script to recreate synonyms that were deleted -->
+  <include file="scripts/GOV-9444.xml"/> <!-- remove invalid allocation -->
 </databaseChangeLog>
