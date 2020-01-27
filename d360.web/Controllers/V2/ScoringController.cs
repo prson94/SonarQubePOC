@@ -194,7 +194,7 @@ namespace d360.web.Controllers.V2
 
                 if (alreadyExists)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Allocation with same configuration already exists.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Score Allocation already exists.");
                 }
 
                 bool hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
