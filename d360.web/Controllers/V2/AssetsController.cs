@@ -378,7 +378,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Conflict, "You already have an asset type with the specified name", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Request is badly formated or has failed validation.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request is badly formatted or has failed validation.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeUpsert model)
         {
