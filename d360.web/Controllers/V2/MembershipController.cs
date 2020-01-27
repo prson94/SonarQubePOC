@@ -364,9 +364,9 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete,
             Route("groups/{groupUid:Guid}/{resourceUid:Guid}"),
-            SwaggerResponse(HttpStatusCode.OK, "Success"),
-            SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist."),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation."),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
 
         ]
@@ -381,7 +381,7 @@ namespace d360.web.Controllers.V2
 
                 var res = await Company.Database.Connection.ExecuteAsync("delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID", new { resource = resourceUid, group = groupUid });
 
-                if (res > 0) return await Task.FromResult(successMessageResponse(HttpStatusCode.OK,"Success","User removed from group")); // deleted
+                if (res > 0) return successMessageResponse(HttpStatusCode.OK, "User removed.", "User removed from group."); // deleted
                 else return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Resource / Group doesn't exist"));
             }
             catch (Exception ex)
