@@ -5849,6 +5849,15 @@ where    A.RuleID = @id", new { id });
 
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = "Error Messages", FieldName = "ErrorMessage", FieldDescription = "", Value = load.ErrorMessage + "" }
+                            }
+                        });
+
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField>
                             {
@@ -8043,17 +8052,6 @@ where	Type = 'ReferenceItemType'
         #endregion
 
         #region Issue Types
-
-        [Route("adminissuetypes")]
-        public IQueryable<core.entities.IssueType> GetAdminIssueTypes()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
-            }
-
-            return Company.Table<core.entities.IssueType>();
-        }
 
         [Route("issuetypes")]
         public IQueryable<core.entities.IssueType> GetIssueTypes(string @object = null, int? objectID = null)

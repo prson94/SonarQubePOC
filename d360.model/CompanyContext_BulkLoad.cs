@@ -47,7 +47,8 @@ namespace d360.model
             when L.[Action] in ('P','R','U') then coalesce(C_D.[Name], '[Deleted]')  
 			else coalesce(C_D.[Name], 'Default') 
 		end as ObjectName,
-		L.Notes,
+		L.Notes, 
+        coalesce(EA.ErrorMessage, '' ) + iif(EA.ErrorMessage is null, '', '; ') + coalesce(EE.ErrorMessage, '' ) as ErrorMessage,
 		'MyFile.' + L.Extension as FilePath,
 		L.DateStarted,
 		case when L.Action = 'P' and L.[File] is null then

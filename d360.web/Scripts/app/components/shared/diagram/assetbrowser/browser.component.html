@@ -5,7 +5,7 @@
             <div [hidden]="isLoading && !fromRefresh" class="asset-browser-header">
                 <div class="controls-left">
                     <div class="asset-browser-search">
-                        <input type="text" class="{{searchValue.length != 0 ? 'has-text' : ''}}" (keyup)="searchDiagram($event);" [(ngModel)]="searchValue" pInputText placeholder="Find in diagram...">
+                        <input type="text" maxlength="100" class="{{searchValue.length != 0 ? 'has-text' : ''}}" (keyup)="searchDiagram($event);" [(ngModel)]="searchValue" pInputText placeholder="Find in diagram...">
                         <div class="input-actions">
                             <span *ngIf="searchValue.length != 0" class="search-item-location">
                                 {{searchCurrentItem}}/{{searchResults.length}}

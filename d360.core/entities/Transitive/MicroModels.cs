@@ -161,6 +161,8 @@ namespace d360.core.entities
         [DataMember]
         public string Notes { get; set; }
         [DataMember]
+        public string ErrorMessage { get; set; }
+        [DataMember]
         public string FilePath { get; set; }
         [DataMember]
         public DateTime? DateStarted { get; set; }
