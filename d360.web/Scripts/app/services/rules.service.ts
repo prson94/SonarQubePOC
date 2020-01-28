@@ -175,6 +175,13 @@ export class RulesService extends BaseObservableService {
             return this.putDynamic(this.http, 'ruleimplementation', implementation);
     }
 
+    hasCustomExport(assetTypeID: number): Observable<boolean>{
+        return this.http.get(`api/v2/scoring/hasCustomExport/${assetTypeID}`).pipe(
+            response => response,
+            catchError(err => this.handleError(err))
+        );
+    }
+
     exportRules(uid: string,  typeName: string){
         this.http.get(`api/v2/scoring/exportRules/${uid}`, { responseType: "blob" }).pipe(
             map((response) => {

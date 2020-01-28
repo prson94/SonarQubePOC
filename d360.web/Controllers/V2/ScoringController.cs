@@ -505,6 +505,26 @@ namespace d360.web.Controllers.V2
             return "";
         }
 
+        /// <summary>
+        /// Check if the asset has custom exports.
+        /// </summary>
+        /// <param name="assetTypeID">The assetTypeID of the Rule Type to cehck for custome export.</param>
+        /// <returns>An excel sheet of the rules of the given rule type uid.</returns>
+        [
+            HttpGet,
+            Route("exportRules/{assetTypeID}"),
+            ApiExplorerSettings(IgnoreApi = true),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "Check if the asset has custom ecport templates.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult HasCustomExport(int assetTypeID)
+        {
+            var res = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == assetTypeID);
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res));
+        }
+
     }
 
 
