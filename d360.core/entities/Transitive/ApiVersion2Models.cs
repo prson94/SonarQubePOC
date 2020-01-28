@@ -48,6 +48,7 @@ namespace d360.core.entities
         public Guid Uid { get; set; }
 
         [DataMember]
+        [MaxLength(250, ErrorMessageResourceType = typeof(AssetTypeErrors), ErrorMessageResourceName = "MaxLengthExceeded")]
         public string Name { get; set; }
 
         [DataMember]
