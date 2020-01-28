@@ -437,10 +437,9 @@ namespace d360.web.Controllers.V2
 
                 //set row headers and non dynamic field columns
                 fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
-                fieldTypes.Insert(1, new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
-                fieldTypes.Insert(0, new FieldType { Type = "string", Name = "AssetTypeUid", FriendlyName = "Asset Type UID" });
-                fieldTypes.Insert(0, new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Asset UID" });
-                fieldTypes.Insert(0, new FieldType { Type = "Number", Name = "ID", FriendlyName = "ID" });
+                fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
+                fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Rule UID" });
+                fieldTypes.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Rule ID" });
 
                 int index = 1;
                 int rowNumber = 1;
