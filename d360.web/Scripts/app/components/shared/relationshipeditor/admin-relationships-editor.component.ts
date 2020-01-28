@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { RelationshipDetail } from '../../../models/relationship.model';
+import { RelationshipDetail, PredicateDropdown } from '../../../models/relationship.model';
 import { ViewEncapsulation } from '@angular/core';
 
 @Component({
@@ -84,7 +84,7 @@ export class AdminRelationshipsEditor {
     cardinalityOptions: SelectItem[] = [];
     subjectOptions: SelectItem[] = [];
     objectOptions: SelectItem[] = [];
-    predicates: any[] = [];
+    predicates: PredicateDropdown[] = [];
     isLoading: boolean = false;
     isLoadingObject: boolean = false;
     isLoadingItem: boolean = false;
@@ -142,9 +142,9 @@ export class AdminRelationshipsEditor {
     private predicateChanged(value) {
         if (!value) return;
         let predicateId = Number(value);
-        let predicate = this.predicates.find(p => p.value == predicateId);
+        let predicate = this.predicates.find(p => p.value == value);
 
-        if (predicate != null && predicate.type == 14) {
+        if (predicate != null && predicate.isSemantic == true) {
             this.canChangeObject = false;
             this.objectOptions = this.subjectOptions.slice();
             this.editedRelationship.Object = this.editedRelationship.Subject;
@@ -164,12 +164,12 @@ export class AdminRelationshipsEditor {
         this.relationshipsService.getRelationshipPredicates(subject, subjectId, object, objectId, predicateId)
             .subscribe(result => {
                 this.predicates = [];
-                this.predicates.push({ label: 'Select A Predicate', value: null, type: null });
+                this.predicates.push({ label: 'Select A Predicate', value: null, isSemantic: false });
                 for (let item of result) {
                     this.predicates.push({
-                        label: item.title,
+                        label: item.label,
                         value: item.value,
-                        type: item.type
+                        isSemantic: item.isSemantic
                     });
                 }                
             });

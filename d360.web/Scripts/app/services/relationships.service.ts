@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
-import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship } from '../models/relationship.model';
+import { RelationshipType, RelationshipDetail, ObjectRelationship, RelatedItem, ObjectRelationshipCount, PossibleTechnicalRelationship, PredicateDropdown } from '../models/relationship.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { DropdownOption } from '../models/dropdown.model';
 import { Observable } from 'rxjs';
@@ -122,7 +122,7 @@ export class RelationshipsService extends BaseObservableService {
         return this.putDynamic(this.http, 'intersecttype', relationship);
     }
 
-    getRelationshipPredicates(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number): Observable<any[]> {
+    getRelationshipPredicates(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number): Observable<PredicateDropdown[]> {
         let url = `form/IntersectType_PredicateOptions?subject=${subject}&subjectID=${subjectId}`;
         if (object != undefined)
             url = url += `&object=${object}`;
@@ -132,7 +132,7 @@ export class RelationshipsService extends BaseObservableService {
             url = url += `&predicateID=${predicateId}`;
         return this.http.get(url)
             .pipe(
-                map(response => <any[]>response),
+                map(response => <PredicateDropdown[]>response),
                 catchError(err => this.handleError(err))
             );
     }

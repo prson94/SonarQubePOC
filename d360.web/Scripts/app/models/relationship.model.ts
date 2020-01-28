@@ -65,3 +65,9 @@ export class PossibleTechnicalRelationship {
     ObjectType: string;
     ParentIntersectTypeID: number;
 }
+
+export class PredicateDropdown {
+    label: string;
+    value: string;
+    isSemantic: boolean;
+}
