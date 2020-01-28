@@ -27,6 +27,7 @@ export class TagView extends BaseComponent implements OnInit {
     @Input() ignoreResizing: boolean = false;
     showEditor: boolean = false;
     showDelete: boolean = false;
+    savingTag: boolean = false;
     private inputValue: any;
     tagNoSpaces: string = "";
     private searchResults: any[] = [];
@@ -135,38 +136,44 @@ export class TagView extends BaseComponent implements OnInit {
         }
     }
 
-    checkKey(event,value) {
-        if (event.key == "Enter" ) {
+    checkKey(event, value) {
+        if (event.key == "Enter" && !this.savingTag) {
             event.Value = value;
             this.saveTag(event);
         }
     }
 
     saveTag(event) {
+        this.savingTag = true;
         this.existingTag = false;
         var tags = Array<TagApiModel>();
         let tag = new TagApiModel();
         tag.AssetUID = this.assetUID;
+        event.Value = event.Value.trim();
         tag.TagName = event.Value;
         tags.push(tag);
         this.tags.forEach(x => {
             if (x.Value == event.Value) {
                 this.existingTag = true;
                 this.showEditor = false;
+                this.savingTag = false;
                 this.messagesService.showError('Error', 'Tag already assigned to Asset');
             }
         })
         if (event.Value.includes("|")) {
             this.existingTag = true;
+            this.savingTag = false;
             this.messagesService.showError('Error', "Tag can't contain | character");
         }
         this.tagNoSpaces = event.Value.trim();
         if (this.tagNoSpaces.length < 1) {
             this.existingTag = true;
+            this.savingTag = false;
             this.messagesService.showError('Error', "Tag must be as least 1 character long in length");
         }
         if (this.tagNoSpaces.length > 100) {
             this.existingTag = true;
+            this.savingTag = false;
             this.messagesService.showError('Error', "Tag must be less then 100 characters in length");
         }
         if (!this.existingTag) {
@@ -195,6 +202,7 @@ export class TagView extends BaseComponent implements OnInit {
                                         event.UseCount = 0;
                                         this.searchResults = [];
                                         this.inputValue = "";
+                                        this.savingTag = false;
                                         this.ref.markForCheck();
                                     });
                             });
@@ -213,6 +221,7 @@ export class TagView extends BaseComponent implements OnInit {
                                 event.UseCount = 0;
                                 this.searchResults = [];
                                 this.inputValue = "";
+                                this.savingTag = false;
                                 this.ref.markForCheck();
 
                             });
