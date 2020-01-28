@@ -742,6 +742,16 @@ namespace d360.web.Controllers
                                 var result = Company.GetRelationshipFieldItems(f.ID);
                                 fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
                                 fld.RecordCount = (int)result["Count"];
+
+                                Predicate predicate = null;
+                                if (intersectType.PredicateID.HasValue)
+                                {
+                                    predicate = Company.GetById<Predicate>((int)intersectType.PredicateID);
+                                    if (predicate != null && predicate.Type == PredicateType.SemanticRelation)
+                                    {
+                                        fld.IsSemantic = true;
+                                    }
+                                }
                             }
                         }
 
@@ -992,6 +1002,16 @@ namespace d360.web.Controllers
 
                                 fld.Value = JsonConvert.SerializeObject(((List<dynamic>)result["Selection"]).Select(i => new SelectListItem { Text = i.Text, Value = i.Value.ToString(), Selected = i.Selected == 1 ? true : false }).ToArray());
                                 fld.RecordCount = (int)result["Count"];
+
+                                Predicate predicate = null;
+                                if (intersectType.PredicateID.HasValue)
+                                {
+                                    predicate = Company.GetById<Predicate>((int)intersectType.PredicateID);
+                                    if (predicate != null && predicate.Type == PredicateType.SemanticRelation)
+                                    {
+                                        fld.IsSemantic = true;
+                                    }
+                                }
                             }
                         }
 

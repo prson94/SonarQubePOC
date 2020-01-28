@@ -122,7 +122,7 @@ export class RelationshipsService extends BaseObservableService {
         return this.putDynamic(this.http, 'intersecttype', relationship);
     }
 
-    getRelationshipPredicates(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number): Observable<DropdownOption[]> {
+    getRelationshipPredicates(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number): Observable<any[]> {
         let url = `form/IntersectType_PredicateOptions?subject=${subject}&subjectID=${subjectId}`;
         if (object != undefined)
             url = url += `&object=${object}`;
@@ -132,7 +132,7 @@ export class RelationshipsService extends BaseObservableService {
             url = url += `&predicateID=${predicateId}`;
         return this.http.get(url)
             .pipe(
-                map(response => <DropdownOption[]>response),
+                map(response => <any[]>response),
                 catchError(err => this.handleError(err))
             );
     }

@@ -4181,10 +4181,10 @@ end",
                             set		T.Message = coalesce(T.Message + '; ', '') + 'Not able to create this relationship because a relationship for this functional type already exists.',
 		                            T.Success = 0
                             from	api.ExecutionRelationship T
-                                    inner join [Intersect] I on I.[Subject] = T.[Subject] and I.SubjectID = T.SubjectID
-                                    inner join [IntersectType] T on T.ID = I.IntersectTypeID
-                                    inner join [Predicate] P on P.ID = T.PredicateID and P.[Type] = @predicateType
-		                            where T.ExecutionId = @ExecutionID 
+                                    inner join [Intersect] I on I.[Subject] = T.[Subject] and I.SubjectID = T.SubjectID and I.[Object] = T.[Object] and I.ObjectID = T.ObjectID
+                                    inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
+                                    inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = @predicateType  
+		                            where IT.ID <> @intersectTypeID and T.ExecutionId = @ExecutionID 
                                     and T.IsNew = 1 
                             ", new { execution.ExecutionID, predicateType = (int)PredicateType.SemanticRelation, intersectTypeID = rt.ID}, commandTimeout: timeout);
                         this.AITrackTrace(client, execution, METHOD_NAME, "  Semantic Relationships Validation", sw.ElapsedMilliseconds, isLog);
@@ -5417,7 +5417,8 @@ where   ER.ExecutionID = @ExecutionID
                     var allowedPredicates = new List<PredicateType>() {
                         PredicateType.Grammar,
                         PredicateType.SeeAlso,
-                        PredicateType.Simple
+                        PredicateType.Simple,
+                        PredicateType.SemanticRelation
                     };
 
                     if (Community.GetCompanySettingByKey<int>("LineageVersion") == 3)

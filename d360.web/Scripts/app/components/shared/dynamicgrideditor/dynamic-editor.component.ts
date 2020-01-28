@@ -84,7 +84,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     categories: EditorCategory[] = [];
     editedItem: any;
-    editorSubject: Subject<any> = new Subject();
+    editorChange: Subject<any> = new Subject();
     hasDirections: boolean = false;
     hasIconFields = false;
     fore: EditorField;
@@ -586,6 +586,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             return;
         }
 
+        if (field.FieldType == 'Relationship' && field.IsSemantic === true) {
+            this.editorChange.next(event);
+        }
+
         if (Array.isArray(event.value)) {
             value = event.value.join();
         }
@@ -598,7 +602,34 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
 
     relationItemChanged(event: any) {
-        console.log('relationItemChanged', event);
-        this.editorSubject.next({ event });
+        if (event == null || event.field == null)
+            return;
+
+        //if (event.field.FieldType == 'Relationship' && event.field.IsSemantic === true) {
+        //    this.editorChange.next(event);
+        //}
+
+
+
+        //if (event.field.FieldType == 'Relationship' && event.field.IsSemantic === true) {
+            
+        //    let key = event.field.FieldName;
+        //    let sel = event.field.Items.filter(i => i.Selected === true);
+
+        //    //console.log('relationItemChanged', key, sel);
+
+        //    //this.fields.forEach(f => {
+        //    //    if (f.FieldType != 'Relationship' || !f.IsSemantic || f.FieldName == key)
+        //    //        return;
+
+        //    //    sel.forEach(s => {
+        //    //        let ix = f.Items.findIndex(i => i.value == sel.value);
+        //    //        if (ix > -1) {
+        //    //            f.Items.splice(ix);
+        //    //        }
+        //    //    })
+        //    //})
+        //    this.editorChange.next(event);
+        //}
     }
 }

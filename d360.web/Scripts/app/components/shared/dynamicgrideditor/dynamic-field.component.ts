@@ -42,7 +42,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     @Input() objectID: number = null;
     @Input() selectedObject: string;
     @Input() selectedObjectID: number;
-    @Input() editorSubject: Observable<any> = null;
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
@@ -52,6 +51,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     @Output() listItemChange = new EventEmitter();
     @Output() relationItemChange = new EventEmitter();
+    @Input() editorChange: Subject<any>;
 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     private fieldTooltip: string;
@@ -59,6 +59,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private relationSource$ = new Subject<any>();
     private relationSub: any;
     private relationItems = [];
+    private excludedRelationitems = {};
     private relationItemsLoading = false;
 
     private typeAheadSource$ = new Subject<any>();
@@ -166,6 +167,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             });
         }
 
+        if (this.editorChange != null) {
+            this.editorChangeSub = this.editorChange.subscribe(e => this.onEditorChange(e));
+        }
+
         this.cascadeSub = this.cascadeService.cascadeMessage$.subscribe(
             casc => {
                 if (this.field.ParentFieldTypeID > 0 && casc.fieldTypeId == this.field.FieldTypeID) {
@@ -239,12 +244,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     this.field.Items = <EditorDropDownItem[]>res;
                     this.ref.markForCheck();
                 });
-
-        if (this.editorSubject != null) {
-            this.editorSubject.subscribe(res => {
-                this.handleEditorSubject(res);
-            });
-        }
 
         if (this.field.DelayedLoadType == 'Predicate') {
             this.fieldsService.getLookupFilteredByPredicate(this.field.FieldTypeID, this.selectedObject, this.selectedObjectID).subscribe(
@@ -370,7 +369,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.listItemChange.emit({ field: this.field, value: data });
         }
         else if (this.field.FieldType == 'Relationship') {
-            console.log({ field: this.field, value: data });
+            //console.log({ field: this.field, value: data });
+            this.relationItemChange.emit({ field: this.field, value: this.relationItems });
             this.listItemChange.emit({ field: this.field, value: data });
             
         } else if (this.field.FieldType == 'Html') {
@@ -656,7 +656,55 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         this.ref.markForCheck();
     }
 
-    private handleEditorSubject(e: any) {
-        console.log('handleEditorSubject', e);
+    private onEditorChange(event: any) {
+        if (event == null ||  event.field == null)
+            return;
+
+        let eventField = event.field;
+
+        if (eventField.FieldName == this.field.FieldName)
+            return;
+
+
+        if (this.field.FieldType == 'Relationship' && this.field.IsSemantic === true) {
+            if (eventField.FieldType == 'Relationship' && eventField.IsSemantic === true) {
+                if (eventField.Items == null)
+                    return;
+
+                let selectedItems = eventField.Value.split(',');
+
+                console.log('eventFIeld', eventField, selectedItems);
+                eventField.Items.forEach(i => {
+                    let selected = selectedItems.findIndex(s => s == i.Value) > -1;
+                    if (selected) {
+                        console.log('selected', i, this.field.Items.slice());
+                        let ix = this.field.Items.findIndex(r => r.Value == i.Value);
+                        console.log('item', ix, this.field.Items.slice()[ix]);
+                        if (ix > -1) {
+                            let item = this.field.Items.slice()[ix];
+                            this.field.Items.splice(ix, 1);
+                            if (this.excludedRelationitems[eventField.FieldName] == null)
+                                this.excludedRelationitems[eventField.FieldName] = [];
+                            this.excludedRelationitems[eventField.FieldName].push(item);
+                            console.log('remove', this.field.FieldName, eventField.FieldName, i.Text, this.excludedRelationitems);
+                        }
+                    } else {
+                        if (this.excludedRelationitems[eventField.FieldName] == null)
+                            return;
+                        let ix = this.excludedRelationitems[eventField.FieldName].findIndex(r => r.Value == i.Value);
+                        if (ix > -1) {
+                            let item = this.excludedRelationitems[eventField.FieldName].slice()[ix];
+                            this.excludedRelationitems[eventField.FieldName].splice(ix, 1)
+                            this.field.Items.push(item);
+                            console.log('restore', this.field.FieldName, eventField.FieldName, i.Text, this.excludedRelationitems);
+
+                        }
+
+                    }
+                })
+            }
+            this.ref.markForCheck();
+        }
     }
+
 }
