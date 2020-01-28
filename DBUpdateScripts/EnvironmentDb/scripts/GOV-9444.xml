@@ -822,7 +822,7 @@ end
 ]]>
     </rollback>
   </changeSet>
-  <changeSet author="Tomislav Duric" id="GOV-9444-UpdateDeleteObjectProc">
+  <changeSet author="Tomislav Duric" id="GOV-9444-UpdateDeleteObjectProc-V2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -1055,9 +1055,9 @@ begin
    set @ClearResponsibilities = 1      
    set @ClearSiteNav = 1         
          
+   delete [metrics].[Allocation] where AssetTypeUid in (Select uid from AssetType where object='ArtifactType' and objectId in (select ObjectID from @ht))      
    delete [Asset] where AssetTypeID in (Select ID from AssetType where object='ArtifactType' and objectId in (select ObjectID from @ht))         
    delete AssetType where ID in (Select ID from AssetType where object='ArtifactType' and objectId in (select ObjectID from @ht))      
-   delete [metrics].[Allocation] where AssetTypeUid in (Select uid from AssetType where object='ArtifactType' and objectId in (select ObjectID from @ht))      
 
   end      
       
