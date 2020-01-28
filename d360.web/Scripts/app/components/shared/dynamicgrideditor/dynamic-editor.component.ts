@@ -29,6 +29,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 import { AssetEditorModel } from '../../../models/asset.model';
 import { AssetService } from '../../../services/asset.service';
 import { JsonCoreResult } from '../../../models/jsonresult.model';
+import { Subject } from 'rxjs';
 
 @Component({
     selector: 'd3s-dynamic-editor',
@@ -83,6 +84,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     categories: EditorCategory[] = [];
     editedItem: any;
+    editorChange: Subject<any> = new Subject();
     hasDirections: boolean = false;
     hasIconFields = false;
     fore: EditorField;
@@ -228,7 +230,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     previousCategory = currentCategory;
                     rows = [];
                 }
-
+               
                 if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
                     if (f.Value) {
                         /* checkbox doesnt work binding to a string */
@@ -280,6 +282,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 let parts = (field.Value ? field.Value.split("|") : []);
                 let url = "";
                 let name = "";
+                
 
                 if (parts.length == 2) {
                     name = parts[0];
@@ -581,6 +584,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         if (field == null || this.fields == null || this.fields.length <= 0) {
             return;
+        }
+
+        if (field.FieldType == 'Relationship' && field.IsSemantic === true) {
+            this.editorChange.next(event);
         }
 
         if (Array.isArray(event.value)) {

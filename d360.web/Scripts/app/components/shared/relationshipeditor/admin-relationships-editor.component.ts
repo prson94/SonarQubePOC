@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { RelationshipsService } from '../../../services/relationships.service';
-import { RelationshipDetail } from '../../../models/relationship.model';
+import { RelationshipDetail, PredicateDropdown } from '../../../models/relationship.model';
 import { ViewEncapsulation } from '@angular/core';
 
 @Component({
@@ -25,7 +25,7 @@ import { ViewEncapsulation } from '@angular/core';
                             <div class="col l4 m4 s12">
                                 <d3s-loading [isLoading]="isLoadingObject"></d3s-loading>
                                 <div *ngIf="!isLoadingObject" class="FieldName">Object</div>
-                                <p-dropdown *ngIf="!isLoadingObject" filter="true" appendTo="body" name="object" #object="ngModel" [options]="objectOptions" [(ngModel)]="editedRelationship.Object" [disabled]="editedRelationship.LimitedChangesOnly" required [style]="{ 'width': '100%' }"></p-dropdown>
+                                <p-dropdown *ngIf="!isLoadingObject" filter="true" appendTo="body" name="object" #object="ngModel" [options]="objectOptions" [(ngModel)]="editedRelationship.Object" [disabled]="editedRelationship.LimitedChangesOnly || !canChangeObject" required [style]="{ 'width': '100%' }"></p-dropdown>
                             </div>
                         </div>
 
@@ -84,11 +84,12 @@ export class AdminRelationshipsEditor {
     cardinalityOptions: SelectItem[] = [];
     subjectOptions: SelectItem[] = [];
     objectOptions: SelectItem[] = [];
-    predicates: SelectItem[] = [];
+    predicates: PredicateDropdown[] = [];
     isLoading: boolean = false;
     isLoadingObject: boolean = false;
     isLoadingItem: boolean = false;
     canChangePredicate: boolean = true;
+    canChangeObject: boolean = true;
 
     constructor(private relationshipsService: RelationshipsService) { }
 
@@ -141,9 +142,19 @@ export class AdminRelationshipsEditor {
     private predicateChanged(value) {
         if (!value) return;
         let predicateId = Number(value);
+        let predicate = this.predicates.find(p => p.value == value);
+
+        if (predicate != null && predicate.isSemantic == true) {
+            this.canChangeObject = false;
+            this.objectOptions = this.subjectOptions.slice();
+            this.editedRelationship.Object = this.editedRelationship.Subject;
+        }
+        else {
+            this.canChangeObject = true;
+        }
 
         let subject = this.editedRelationship.Subject.split('|');
-        if (!this.editedRelationship.LimitedChangesOnly) {
+        if (!this.editedRelationship.LimitedChangesOnly && this.canChangeObject) {
             this.editedRelationship.Object = null;
             this.loadObjectOptions(subject[0], Number(subject[1]), null, null, predicateId);
         }
@@ -153,11 +164,12 @@ export class AdminRelationshipsEditor {
         this.relationshipsService.getRelationshipPredicates(subject, subjectId, object, objectId, predicateId)
             .subscribe(result => {
                 this.predicates = [];
-                this.predicates.push({ label: 'Select A Predicate', value: null });
+                this.predicates.push({ label: 'Select A Predicate', value: null, isSemantic: false });
                 for (let item of result) {
                     this.predicates.push({
-                        label: item.title,
-                        value: item.value
+                        label: item.label,
+                        value: item.value,
+                        isSemantic: item.isSemantic
                     });
                 }                
             });

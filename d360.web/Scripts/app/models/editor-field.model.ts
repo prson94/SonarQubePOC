@@ -33,6 +33,7 @@ export class EditorField {
     RecordCount: number;
     UseTypeahead: boolean;
     DelayedLoadType: string;
+    IsSemantic: boolean;
 }
 
 export class EditorCategory {

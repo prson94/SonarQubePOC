@@ -286,6 +286,10 @@ namespace d360.web.Controllers
         public JsonResult Relationship_DataTable(int intersectTypeId, SystemObjects type, int objectId)
         {
             var relationshipType = Company.GetById<IntersectType>(intersectTypeId, i => i.Predicate);
+            Predicate predicate = null;
+
+            if (relationshipType.PredicateID.HasValue)
+                predicate = Company.GetById<Predicate>((int)relationshipType.PredicateID);
 
             int objectTypeID = -1;
             string parentType = string.Empty;
@@ -319,6 +323,8 @@ namespace d360.web.Controllers
             var IntersectDirectionSql = "";
             var IntersectCardinalitySql = "";
             var IntersectTypeDirectionSql = "";
+            var SemanticRelationshipSql = "";
+
             if (relationshipType.Subject == parentType && relationshipType.SubjectID == objectTypeID)
             {
                 targetType = relationshipType.Object;
@@ -340,6 +346,16 @@ namespace d360.web.Controllers
             {
                 IntersectDirectionSql = @"and (  ( (I.Subject = @source and I.SubjectID = @id) AND(I.Object = A.[Object] and I.ObjectID = A.ObjectID) ) OR
                                           ( (I.Subject = A.[Object] and I.SubjectID = A.ObjectID) AND(I.Object = @source and I.ObjectID = @id) )   )";
+            }
+
+            if (predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false)
+            {
+                SemanticRelationshipSql = @"outer apply (
+			     select IR.ID from [Intersect] IR
+			     inner join IntersectType ITR on ITR.ID = IR.IntersectTypeID and ITR.ID <> @it 
+			     inner join [Predicate] P on P.ID = ITR.PredicateID and P.[Type] = 14
+			     where IR.[Subject] = @source and IR.SubjectID = @id and IR.[Object] = a.Object and IR.ObjectID = a.ObjectID
+			) SR";
             }
 
             var targetAssetType = Company.Filter<AssetType>(i => i.Object == targetType && i.ObjectID == targetTypeID).SingleOrDefault();
@@ -366,7 +382,9 @@ from		Asset A
             inner join AssetType T on A.AssetTypeID = T.ID
             inner join IntersectType IT on IT.ID = @it {IntersectTypeDirectionSql}
 			left join [Intersect] I on	I.IntersectTypeID = IT.ID {IntersectDirectionSql}
+            {SemanticRelationshipSql}
 where		I.ID is null 
+            {(predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false ? "and SR.ID is null" : "")}
             and A.[State] = 1 
             and T.ObjectID = @targetTypeID 
             and T.[Object] = @targetType 
@@ -708,6 +726,11 @@ order by r.Name";
 
                 var currentIntersects = Company.Filter<Intersect>(i => i.IntersectTypeID == id).Any();
 
+                Predicate predicate = null;
+
+                if (type.PredicateID.HasValue)
+                    predicate = Company.GetById<Predicate>((int)type.PredicateID);
+
                 var model = new Dictionary<string, object> {
                     { "ID", id },
                     { "LimitedChangesOnly", currentIntersects },
@@ -715,7 +738,8 @@ order by r.Name";
                     { "SubjectCardinality", $"{(int)type.SubjectCardinality}" },
                     { "Object", $"{type.Object}|{type.ObjectID}" },
                     { "ObjectCardinality", $"{(int)type.ObjectCardinality}" },
-                    { "Predicate", type.PredicateID }
+                    { "Predicate", type.PredicateID },
+                    { "PredicateType", predicate?.Type }
                 };
 
                 return new JsonNetResult { Data = model, Formatting = Newtonsoft.Json.Formatting.None };
@@ -733,8 +757,8 @@ order by r.Name";
             {
                 var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
                 var models = Company.GetPredicateOptions(lineageVersion, subject, subjectID, @object, objectID, predicateID)
-                    .Select(i => new { title = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.ID })
-                    .OrderBy(i => i.title);
+                    .Select(i => new { label = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.ID, isSemantic = i.Type.AsInfoModel().SingleRelationshipByFunctionalType })
+                    .OrderBy(i => i.label);
 
                 return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
             }

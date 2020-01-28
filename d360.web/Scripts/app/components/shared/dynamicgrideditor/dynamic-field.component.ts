@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
-import { Subject } from 'rxjs';
+import { Subject, Observable } from 'rxjs';
 
 import { EditorDropDownItem, EditorField } from '../../../models/editor-field.model';
 
@@ -42,6 +42,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     @Input() objectID: number = null;
     @Input() selectedObject: string;
     @Input() selectedObjectID: number;
+    @Input() editorChange: Observable<any>;
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
@@ -50,6 +51,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private quill;
 
     @Output() listItemChange = new EventEmitter();
+    @Output() relationItemChange = new EventEmitter(); 
 
     private regexErrorMessage: string = "The field doesnt meet the required pattern.";
     private fieldTooltip: string;
@@ -57,6 +59,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private relationSource$ = new Subject<any>();
     private relationSub: any;
     private relationItems = [];
+    private excludedRelationitems = {};
     private relationItemsLoading = false;
 
     private typeAheadSource$ = new Subject<any>();
@@ -71,6 +74,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     private filterException: string = '';
     private fieldChangeSub;
+    private editorChangeSub;
 
     private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
     private hasCascadeLoaded: boolean = false;
@@ -161,6 +165,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe(data => {
                 this.onFieldChanges(data);
             });
+        }
+
+        if (this.editorChange != null) {
+            this.editorChangeSub = this.editorChange.subscribe(e => this.onEditorChange(e));
         }
 
         this.cascadeSub = this.cascadeService.cascadeMessage$.subscribe(
@@ -359,6 +367,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.field.Value = data;
             }
             this.listItemChange.emit({ field: this.field, value: data });
+        }
+        else if (this.field.FieldType == 'Relationship') {
+            this.listItemChange.emit({ field: this.field, value: data });
+            
         } else if (this.field.FieldType == 'Html') {
             this.setEditorContent(data);
             this.field.Value = data;
@@ -616,6 +628,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.field.Value = null;
         }
 
+        this.relationItemChange.emit({ field: this.field, value: null });
         this.form.controls[this.field.FieldName].setValue(this.field.Value);
         this.ref.markForCheck();
     }
@@ -640,4 +653,58 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         this.field.Value = null;
         this.ref.markForCheck();
     }
+
+    private onEditorChange(event: any) {
+        if (event == null ||  event.field == null)
+            return;
+
+        let field = event.field;
+
+
+        if (this.field.FieldType == 'Relationship') {
+            this.filterSemanticRelationItems(field);
+        }
+    }
+
+    private filterSemanticRelationItems(field: any) {
+
+        if (field.FieldName == this.field.FieldName)
+            return;
+
+        if (this.field.FieldType == 'Relationship' && this.field.IsSemantic === true) {
+            if (field.FieldType == 'Relationship' && field.IsSemantic === true) {
+                if (field.Items == null)
+                    return;
+
+                let selectedItems = field.Value.split(',');
+
+                field.Items.forEach(i => {
+                    let selected = selectedItems.findIndex(s => s == i.Value) > -1;
+                    if (selected) {
+                        let ix = this.field.Items.findIndex(r => r.Value == i.Value);
+
+                        if (ix > -1) {
+                            let item = this.field.Items.slice()[ix];
+                            this.field.Items.splice(ix, 1);
+                            if (this.excludedRelationitems[field.FieldName] == null)
+                                this.excludedRelationitems[field.FieldName] = [];
+                            this.excludedRelationitems[field.FieldName].push(item);
+                        }
+
+                    } else {
+                        if (this.excludedRelationitems[field.FieldName] == null)
+                            return;
+                        let ix = this.excludedRelationitems[field.FieldName].findIndex(r => r.Value == i.Value);
+                        if (ix > -1) {
+                            let item = this.excludedRelationitems[field.FieldName].slice()[ix];
+                            this.excludedRelationitems[field.FieldName].splice(ix, 1)
+                            this.field.Items.push(item);
+                        }
+                    }
+                })
+            }
+            this.ref.markForCheck();
+        }
+    }
+
 }

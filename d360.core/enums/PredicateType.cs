@@ -15,6 +15,7 @@ namespace d360.core.enums
             Name("Simple"),
             Description("Allows you to create a simple association between two objects that do not fit into any other functional type, such as lineage."),
             ReadOnly(false),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
@@ -26,6 +27,7 @@ namespace d360.core.enums
             Name("Data Lineage"),
             Description("Allows you to define source paths between objects."),
             ReadOnly(false),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
@@ -38,6 +40,7 @@ namespace d360.core.enums
             Name("Reference Data Lineage"),
             Description("Allow for defining links between reference items across lists."),
             ReadOnly(true),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
@@ -51,6 +54,7 @@ namespace d360.core.enums
             Name("Inter-type Hierarchy"),
             Description("This hierarchy allows for creating a tree structure or hierarchy referencing different asset types at each level."),
             ReadOnly(false),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
@@ -62,6 +66,7 @@ namespace d360.core.enums
             Name("Intra-type Hierarchy"),
             Description("This hierarchy allows for creating a tree structure or hierarchy referencing the same asset type at each level."),
             ReadOnly(false),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(false),
@@ -73,6 +78,7 @@ namespace d360.core.enums
             Name("User Ownership - NOT USED YET"),
             Description("This allows owners to be associated with owned items."),
             ReadOnly(true),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(false),
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
@@ -86,6 +92,7 @@ namespace d360.core.enums
             Name("Grammatic Association"),
             Description("Allows you to establish grammatic association between two objects."),
             ReadOnly(false),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
@@ -97,6 +104,7 @@ namespace d360.core.enums
             Name("Mapping"),
             Description("Allows you to create mappings that are used in fusion rules."),
             ReadOnly(true),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
@@ -109,6 +117,7 @@ namespace d360.core.enums
             Name("See Also"),
             Description("This type of predicate allows for items to be related together to express similarity between them."),
             ReadOnly(false),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
@@ -120,6 +129,7 @@ namespace d360.core.enums
             Name("Usage"),
             Description("This type of predicate allows for items to be act as filters within a greater lineage diagram to indicate that only certain paths are used."),
             ReadOnly(false),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
@@ -132,6 +142,7 @@ namespace d360.core.enums
             Name("Object Ownership"),
             Description("This type of predicate allows for fusion configurations to be owned by glossary-level objects."),
             ReadOnly(true),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
@@ -145,6 +156,7 @@ namespace d360.core.enums
             Name("Transformation"),
             Description("This type of predicate enforces relationships to or from an asset whose type is marked as supporting transformations. When configuring relationship types, either the subject or object must be a transformation asset type, but not both."),
             ReadOnly(false),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
@@ -157,6 +169,7 @@ namespace d360.core.enums
             Name("Business To Technical"),
             Description("This type of predicate enforces relationships to or from an asset whose type is classified as a Technical Asset. When configuring relationship types, the subject must be a Business asset while the object must be a Technical asset."),
             ReadOnly(false),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
@@ -164,7 +177,20 @@ namespace d360.core.enums
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(3)
         ]
-        BusinessToTechnical = 13
+        BusinessToTechnical = 13,
+        [
+            Name("Semantic Relationship"),
+            Description(""),
+            ReadOnly(false),
+            SingleRelationshipByFunctionalType(true),
+            AllowIntersectTypeAssignment(true),
+            AllowMultiplePredicates(true),
+            AllowDifferentSubjectObject(false),
+            ForceDifferentSubjectObject(false),
+            AllowEditFromRelationshipEditor(true),
+            LineageVersionsSupported(3)
+        ]
+        SemanticRelation = 14
     }
 
 
@@ -193,6 +219,9 @@ namespace d360.core.enums
 
         [JsonIgnore]
         public bool AllowEditFromRelationshipEditor { get; set; }
+
+        [JsonIgnore]
+        public bool SingleRelationshipByFunctionalType { get; set; }
 
         [JsonIgnore]
         public bool ReadOnly { get; set; }
@@ -255,6 +284,7 @@ namespace d360.core.enums
                         AllowMultiplePredicates = ((AllowMultiplePredicatesAttribute)tm.GetCustomAttribute(typeof(AllowMultiplePredicatesAttribute))).Allowed,
                         AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
                         AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditorAttribute)tm.GetCustomAttribute(typeof(AllowEditFromRelationshipEditorAttribute))).Allowed,
+                        SingleRelationshipByFunctionalType = ((SingleRelationshipByFunctionalTypeAttribute)tm.GetCustomAttribute(typeof(SingleRelationshipByFunctionalTypeAttribute))).Allowed,
                         ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
                         ReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly,
                         LineageVersionsSupported = tm.IsDefined(typeof(LineageVersionsSupportedAttribute), false) ?
@@ -283,6 +313,7 @@ namespace d360.core.enums
                     ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)t.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
                     ReadOnly = ((ReadOnlyAttribute)t.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly,
                     AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditorAttribute)t.GetCustomAttribute(typeof(AllowEditFromRelationshipEditorAttribute))).Allowed,
+                    SingleRelationshipByFunctionalType = ((SingleRelationshipByFunctionalTypeAttribute)t.GetCustomAttribute(typeof(SingleRelationshipByFunctionalTypeAttribute))).Allowed,
                     LineageVersionsSupported = t.IsDefined(typeof(LineageVersionsSupportedAttribute), false) ?
                                                     ((LineageVersionsSupportedAttribute)t.GetCustomAttribute(typeof(LineageVersionsSupportedAttribute))).Versions :
                                                     new int[4] { 0, 1, 2, 3 }, //0 accounts for unit tests

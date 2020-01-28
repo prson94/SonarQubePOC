@@ -199,6 +199,10 @@ namespace d360.web.Models
         [DataMember]
         public string DelayedLoadType { get; set; }
 
+        [DataMember]
+        public bool IsSemantic{ get; set; }
+
+
     }
 
     [DataContract(Namespace = constants.NAMESPACE)]

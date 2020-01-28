@@ -20,5 +20,6 @@ export enum PredicateType {
     Usage ='Usage',
     ObjectOwnerhip ='ObjectOwnerhip',
     Transformation ='Transformation',
-    BusinessToTechnical ='BusinessToTechnical'
+    BusinessToTechnical = 'BusinessToTechnical',
+    SemanticRelation = 'SemanticRelation'
 }
