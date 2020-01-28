@@ -747,7 +747,7 @@ namespace d360.web.Controllers
                                 if (intersectType.PredicateID.HasValue)
                                 {
                                     predicate = Company.GetById<Predicate>((int)intersectType.PredicateID);
-                                    if (predicate != null && predicate.Type == PredicateType.SemanticRelation)
+                                    if (predicate != null && predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType)
                                     {
                                         fld.IsSemantic = true;
                                     }
@@ -1007,7 +1007,7 @@ namespace d360.web.Controllers
                                 if (intersectType.PredicateID.HasValue)
                                 {
                                     predicate = Company.GetById<Predicate>((int)intersectType.PredicateID);
-                                    if (predicate != null && predicate.Type == PredicateType.SemanticRelation)
+                                    if (predicate != null && predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType)
                                     {
                                         fld.IsSemantic = true;
                                     }

@@ -348,7 +348,7 @@ namespace d360.web.Controllers
                                           ( (I.Subject = A.[Object] and I.SubjectID = A.ObjectID) AND(I.Object = @source and I.ObjectID = @id) )   )";
             }
 
-            if (predicate?.Type == PredicateType.SemanticRelation)
+            if (predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false)
             {
                 SemanticRelationshipSql = @"outer apply (
 			     select IR.ID from [Intersect] IR
@@ -384,7 +384,7 @@ from		Asset A
 			left join [Intersect] I on	I.IntersectTypeID = IT.ID {IntersectDirectionSql}
             {SemanticRelationshipSql}
 where		I.ID is null 
-            {(predicate?.Type == PredicateType.SemanticRelation ? "and SR.ID is null" : "")}
+            {(predicate?.Type.AsInfoModel().SingleRelationshipByFunctionalType ?? false ? "and SR.ID is null" : "")}
             and A.[State] = 1 
             and T.ObjectID = @targetTypeID 
             and T.[Object] = @targetType 

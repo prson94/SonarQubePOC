@@ -3804,9 +3804,7 @@ select [uid] from #ParentChildRelationships",
             bool checkCircularRelationships = false;
             if (rt.Predicate.Type == PredicateType.Transformation)
                 checkCircularRelationships = true;
-            bool checkSemanticRelation = false;
-            if (rt.Predicate.Type == PredicateType.SemanticRelation)
-                checkSemanticRelation = true;
+            bool checkSemanticRelation = rt.Predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType;
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
