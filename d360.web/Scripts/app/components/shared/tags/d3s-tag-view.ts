@@ -149,6 +149,7 @@ export class TagView extends BaseComponent implements OnInit {
         var tags = Array<TagApiModel>();
         let tag = new TagApiModel();
         tag.AssetUID = this.assetUID;
+        event.Value = event.Value.trim();
         tag.TagName = event.Value;
         tags.push(tag);
         this.tags.forEach(x => {
