@@ -420,4 +420,5 @@
   <include file="scripts/GOV-9456.xml"/> <!-- Update [graph].[GetHop] to fix duplication, badge counts, and predicate filtering on badges -->
   <include file="scripts/GOV-9444.xml"/> <!-- remove invalid allocation -->
   <include file="scripts/GOV-9092.xml"/> <!-- modify [dbo].[GetDynamicAssets] to use graph tables for Relationship fields -->
+  <include file="scripts/GOV-9492.xml"/> <!-- remove retired ObjectStyle table -->
 </databaseChangeLog>
