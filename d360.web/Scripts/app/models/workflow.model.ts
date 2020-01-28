@@ -133,6 +133,7 @@ export class WorkflowStatusDetails {
 }
 
 export class WorkflowIssueType {
+    Uid: string;
     ID: number;
     Name: string;
     Description: string;

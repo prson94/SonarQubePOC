@@ -8053,17 +8053,6 @@ where	Type = 'ReferenceItemType'
 
         #region Issue Types
 
-        [Route("adminissuetypes")]
-        public IQueryable<core.entities.IssueType> GetAdminIssueTypes()
-        {
-            if (!Company.CurrentResourceIsAdmin)
-            {
-                throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
-            }
-
-            return Company.Table<core.entities.IssueType>();
-        }
-
         [Route("issuetypes")]
         public IQueryable<core.entities.IssueType> GetIssueTypes(string @object = null, int? objectID = null)
         {
