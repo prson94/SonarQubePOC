@@ -53,12 +53,12 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                             </td>
                                             <td>
                                                 <div class="RowTools" *ngIf="!item.IsSystem">
-                                                    <a style="cursor:pointer;" (click)="selected=item;selectedItemChange();showEditor=true"><i class="fa fa-pencil"></i></a>
+                                                    <a style="cursor:pointer;" (click)="selected=item;OnEdit();"><i class="fa fa-pencil"></i></a>
                                                 </div>
                                             </td>
                                             <td>
                                                 <div class="RowTools" *ngIf="!item.IsSystem">
-                                                    <a style="cursor:pointer;" (click)="selected=item;selectedItemChange();showDelete=true"><i class="fa fa-trash-o"></i></a>
+                                                    <a style="cursor:pointer;" (click)="selected=item;OnDelete();"><i class="fa fa-trash-o"></i></a>
                                                 </div>
                                             </td>
                                         </tr>
@@ -136,7 +136,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
             });
     }
 
-    selectedItemChange() {
+    selectedItemChange(callback: Function = null) {        
         if (this.selected) {
             if (!this.selected.ID) {
                 this.workflowService.getIssueByUID(this.selected.Uid)
@@ -144,11 +144,18 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
                         this.selected.ID = result.ID;
                         this.isLoading = false;
                         this.buildSecondaryNavigationForObject(result.ID, 'IssueType');
+                        if (callback) {
+                            callback();
+                        }
                     });
             } else {
                 this.buildSecondaryNavigationForObject(this.selected.ID, 'IssueType');
+                if (callback) {
+                    callback();
+                }
             }
-        }        
+        }
+        
     }
     private load() {
         this.isLoading = true;
@@ -189,5 +196,13 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
     private closeEditor() {
         this.showEditor = false;
         if (!this.selected) this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
+    }
+
+    private OnEdit() {
+        this.selectedItemChange(() => this.showEditor = true);
+    }
+
+    private OnDelete() {
+        this.selectedItemChange(() => this.showDelete = true);
     }
 };
