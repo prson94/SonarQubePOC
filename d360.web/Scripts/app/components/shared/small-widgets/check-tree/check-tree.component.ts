@@ -45,6 +45,8 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
 
     @Input() emptyMessage: string = 'No records found';
 
+    @Input() title: string;
+
     @Input() ariaLabel: string;
 
     @Input() ariaLabelledBy: string;
@@ -331,6 +333,15 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
         }
 
         return matched;
+    }
+
+    showClearSelection() {
+        return (this.selection && this.selection.length > 0);
+    }
+
+    clearSelection() {
+        this.selection = [];
+        this.selectionChange.emit(this.selection);
     }
 
     private checkPropagation() {

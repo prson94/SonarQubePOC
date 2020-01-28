@@ -3,13 +3,11 @@
         <div class="search-content">
             <div class="categories">
                 <div class="scrollpane">
-                    <h2>Filter by Category</h2>
-                    <d3s-loading [isLoading]="(searchStateService.treeLoading | async)"></d3s-loading>
-                    <d3s-check-tree *ngIf="!(searchStateService.treeLoading | async)"
+                    <d3s-check-tree [loading]="(searchStateService.treeLoading | async)"
+                                    [title]="'Filter by Category'"
                                     [value]="searchStateService.categories | async"
                                     [(selection)]="searchStateService.selectedFilters"
-                                    (onNodeSelect)="nodeSelectDeselect($event)"
-                                    (onNodeUnselect)="nodeSelectDeselect($event)"
+                                    (selectionChange)="treeSelectionChange($event)"
                                     [emptyMessage]="'No categories found'">
                     </d3s-check-tree>
                 </div>

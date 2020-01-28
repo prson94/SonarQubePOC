@@ -63,7 +63,7 @@ export class SearchResultsComponent extends BaseComponent implements AfterViewIn
         }, 50);
     }
 
-    private nodeSelectDeselect(event) {
+    private treeSelectionChange(event) {
         this.selectedCategoryChange.emit(this.searchStateService.selectedFilters);
     }
 
