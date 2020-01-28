@@ -122,7 +122,11 @@ namespace d360.web.Controllers.V2
                 {
                     current.items = new List<AssetBrowserAssetModel>();
                 }
-                current.items.Add(child);
+
+                if (!current.items.Any(c => c.key == child.key))
+                {
+                    current.items.Add(child);
+                }
                 //model.assets.Add(child);
             }
         }
@@ -153,7 +157,11 @@ namespace d360.web.Controllers.V2
                     isSubjectInTransformation = h.isSubjectInTransformation 
                 };
                 recurse(model, hierarchies, current, multiplier + 1);
-                model.assets.Add(current);
+
+                if (!model.assets.Any(r => r.key == current.key))
+                {
+                    model.assets.Add(current);
+                }
             }
 
             model.assetRelations = relationships.Select(r => new AssetBrowserAssetRelationModel
