@@ -385,7 +385,7 @@ where   A.RuleImplementationID = @id";
 
 
             var groupby = @"group by wi.id,wt.name, wi.startedOn,wi.CompletedOn,wi.[object],wi.objectid,cod.id,ass.id, wi.startedOn, wi.CompletedOn,
-		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],ITypeName.Name, assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId), wi.Uid";
+		                        gr.firstName , gr.lastName,assettype.name, it.Name,assettype.[Object],assettype.[Class],ITypeName.Name, assettype.ObjectId, coalesce(cod.Object,ass.Object), coalesce(cod.ObjectId,ass.ObjectId), wi.Uid";
 
             var fromSql = @"		from [workflow].[type] wt 
                                 inner join [workflow].[version] wv on (wt.id = wv.typeid) 
@@ -403,8 +403,10 @@ where   A.RuleImplementationID = @id";
             var sql = $@"
                             select wi.id as Id,                    
                             wt.name as 'WorkflowName' ,                    
-                            case when assettype.[Object] = 'ArtifactType' then
-                            'Artifact'
+                            case when assettype.[Object] = 'ArtifactType' and assettype.[Class] = {(int)AssetTypeClass.BusinessAsset} then
+                            'Business Asset'
+                            when assettype.[Object] = 'ArtifactType' and assettype.[Class] = {(int)AssetTypeClass.TechnicalAsset} then
+                            'Technical Asset'
                             when assettype.[Object] = 'RuleType' then
                             'Rule'
                             when assettype.[Object] = 'PolicyType' then
