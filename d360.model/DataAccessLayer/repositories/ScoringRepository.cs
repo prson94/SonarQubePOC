@@ -36,13 +36,14 @@ namespace d360.model.DataAccessLayer
 
             var dbArgs = new DynamicParameters();
 
-            foreach (var kp in queryParams)
+            foreach (var kp in queryParams.Where(x => !string.IsNullOrEmpty(x.Value)))
             {
                 switch (kp.Key.ToLower())
                 {
                     case "_state":
-                        var value = kp.Value;
-                        State stateValue = (State)Enum.Parse(typeof(State), value);
+                        State stateValue;
+                        Enum.TryParse(kp.Value, true, out stateValue);
+
                         whereStatements.Add("AL.[state] = @state");
                         dbArgs.Add("@state", stateValue);
                         break;
@@ -91,6 +92,12 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            //Defaults
+            if (dbArgs.ParameterNames.Contains("@state"))
+            {
+                whereStatements.Add("AL.[state] = @state");
+                dbArgs.Add("@state", State.Active);
+            }
 
             string sqlWhere = whereStatements.Count > 0 ? " where " + string.Join(" and ", whereStatements) : "";
             var sql = $@"select 
