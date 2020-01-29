@@ -1603,19 +1603,6 @@ select 'ReferenceItemType|0' as value, 'Reference' as title
                 #endregion
                 case "P":   // Promotion
                     #region
-
-                    var fusionEnabled = Community.GetCompanySettingByKey<bool>("FusionEnabled");
-                    string technicalAssetSql = "";
-                    if (!fusionEnabled) { 
-                        technicalAssetSql = $@"union
-select		4 as Sort,
-			'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 
-			'{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + P.[Path] as title 
-from		AssetType A
-			cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
-where		[Class] = 8";
-                    }
-
                     sql = $@"
 select	value,
 		title
@@ -1644,14 +1631,20 @@ from	(
 					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
 		where		[Class] = 9
 
-		{technicalAssetSql}
-
 		union
 
 		select		5 as Sort,
 					'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title 
 		from		AttributeType 
 		where		ParentID is null
+
+        union
+		select		8 as Sort,
+					'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 
+					'{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + P.[Path] as title 
+		from		AssetType A
+					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
+		where		[Class] = 8 
 		) O
 order by Sort, title";
                     break;
