@@ -217,7 +217,11 @@ namespace d360.web.Controllers.V2
                     const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
                     return new string(Enumerable.Repeat(chars, 25).Select(s => s[random.Next(s.Length)]).ToArray());
                 };
-                
+                Func<List<HopNodeResult>, List<AssetBrowserApiHopAssetRequestModel>> getLeafAssets = delegate (List<HopNodeResult> nodes)
+                {
+                    return nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
+                };
+
                 var model = new HopModel {
                     links = new List<HopLinkResult>(),
                     nodes = new List<HopNodeResult>()
@@ -287,16 +291,27 @@ namespace d360.web.Controllers.V2
                         criteria.Hops = 3;
                     }
 
-                    var backwardAssets = criteria.Assets;
-                    var forwardAssets = criteria.Assets;
+                    List<AssetBrowserApiHopAssetRequestModel> backwardAssets;
+                    List<AssetBrowserApiHopAssetRequestModel> forwardAssets;
+                    if (model.nodes.Count > 0)
+                    {
+                        backwardAssets = getLeafAssets(model.nodes);
+                        forwardAssets = getLeafAssets(model.nodes);
+                    }
+                    else
+                    {
+                        backwardAssets = criteria.Assets;
+                        forwardAssets = criteria.Assets;
+                    }
+
                     for (int i = 0; i < criteria.Hops; i++)
                     {
                         HopSalt = generateSalt(); // We have multiple hops, so we should reset the salt after each hop.
                         var backModel = await getHop(backwardAssets, "B");
                         var forwardModel = await getHop(forwardAssets, "F");
 
-                        backwardAssets = backModel.nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
-                        forwardAssets = forwardModel.nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
+                        backwardAssets = getLeafAssets(backModel.nodes);
+                        forwardAssets = getLeafAssets(forwardModel.nodes);
 
                         model.links.AddRange(backModel.links);
                         model.links.AddRange(forwardModel.links);
@@ -358,6 +373,8 @@ namespace d360.web.Controllers.V2
                     return returnValue;
                 }
 
+                var distinctOwners = new List<AssetBrowserOwnerModel>();
+
                 var owners = Company.Query<AssetBrowserOwnerModel>(@"
 select	distinct
 		A.Uid as assetUid,
@@ -374,7 +391,11 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                 // Check to see if keys are populated on incoming assets. If not, populate with auto-generated salt.
                 owners.ForEach(o =>
                 {
-                    o.key = hashKey($"{o.assetUid}|{o.resourceUid}");
+                    o.key = hashKey($"{criteria.ResponsibilityTypeId}|{o.resourceUid}");
+                    if (!distinctOwners.Any(d => d.key == o.key))
+                    {
+                        distinctOwners.Add(o);
+                    }
                 });
 
                 var ownerRelations = from o in owners
@@ -389,7 +410,7 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                                          ownerUid = o.resourceUid
                                      };
 
-                return Request.CreateResponse(HttpStatusCode.OK, new { owners, ownerRelations });
+                return Request.CreateResponse(HttpStatusCode.OK, new { owners = distinctOwners, ownerRelations });
             }
             catch (Exception ex)
             {

@@ -181,7 +181,7 @@ namespace d360.web.Models
         [DataMember]
         public string icon { get; set; }
         
-        [DataMember]
+        //[DataMember]
         public Guid assetUid { get; set; }
         
         [DataMember]
