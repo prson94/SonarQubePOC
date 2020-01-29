@@ -209,7 +209,11 @@ namespace d360.web.Controllers.V2
                     const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
                     return new string(Enumerable.Repeat(chars, 25).Select(s => s[random.Next(s.Length)]).ToArray());
                 };
-                
+                Func<List<HopNodeResult>, List<AssetBrowserApiHopAssetRequestModel>> getLeafAssets = delegate (List<HopNodeResult> nodes)
+                {
+                    return nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
+                };
+
                 var model = new HopModel {
                     links = new List<HopLinkResult>(),
                     nodes = new List<HopNodeResult>()
@@ -279,16 +283,27 @@ namespace d360.web.Controllers.V2
                         criteria.Hops = 3;
                     }
 
-                    var backwardAssets = criteria.Assets;
-                    var forwardAssets = criteria.Assets;
+                    List<AssetBrowserApiHopAssetRequestModel> backwardAssets;
+                    List<AssetBrowserApiHopAssetRequestModel> forwardAssets;
+                    if (model.nodes.Count > 0)
+                    {
+                        backwardAssets = getLeafAssets(model.nodes);
+                        forwardAssets = getLeafAssets(model.nodes);
+                    }
+                    else
+                    {
+                        backwardAssets = criteria.Assets;
+                        forwardAssets = criteria.Assets;
+                    }
+
                     for (int i = 0; i < criteria.Hops; i++)
                     {
                         HopSalt = generateSalt(); // We have multiple hops, so we should reset the salt after each hop.
                         var backModel = await getHop(backwardAssets, "B");
                         var forwardModel = await getHop(forwardAssets, "F");
 
-                        backwardAssets = backModel.nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
-                        forwardAssets = forwardModel.nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
+                        backwardAssets = getLeafAssets(backModel.nodes);
+                        forwardAssets = getLeafAssets(forwardModel.nodes);
 
                         model.links.AddRange(backModel.links);
                         model.links.AddRange(forwardModel.links);
