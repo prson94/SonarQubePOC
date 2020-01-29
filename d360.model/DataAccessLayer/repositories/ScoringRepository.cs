@@ -30,19 +30,26 @@ namespace d360.model.DataAccessLayer
                 };
         }
 
-        public List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams, out string error)
         {
+            error = string.Empty;
             List<string> whereStatements = new List<string>();
 
             var dbArgs = new DynamicParameters();
 
-            foreach (var kp in queryParams.Where(x => !string.IsNullOrEmpty(x.Value)))
+            foreach (var kp in queryParams)
             {
                 switch (kp.Key.ToLower())
                 {
                     case "_state":
                         State stateValue;
                         Enum.TryParse(kp.Value, true, out stateValue);
+
+                        if ((stateValue != State.Active && stateValue != State.Deleted) || string.IsNullOrEmpty(kp.Value))
+                        {
+                            error = "Invalid state value specified.";
+                            return null;
+                        }
 
                         whereStatements.Add("AL.[state] = @state");
                         dbArgs.Add("@state", stateValue);
