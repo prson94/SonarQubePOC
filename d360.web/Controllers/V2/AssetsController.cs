@@ -171,7 +171,7 @@ namespace d360.web.Controllers.V2
         /// *  If you use either the subjectUid or objectUid filter, the predicateUid must be included in the request. 
         /// *  If you do not include the predicateUid, any values given in the subjectUid or objectUid field are ignored.
         /// 
-        /// If the requested content media type is "application/octet-stream", the response will be an excel document with the asset results and the assetTypeUid as the file name.
+        /// If the requested content media type is "application/octet-stream", the response will be an Excel document with the asset results and the assetTypeUid as the file name.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
         /// <returns>An HTTP status code and message.</returns>
