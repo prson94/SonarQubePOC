@@ -109,6 +109,7 @@ namespace d360.model.DataAccessLayer
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
                             cross apply (select count(*) from metrics.Asset where State = 1 and AssetTypeUid = AL.AssetTypeUid and ScoreType = AL.ScoreType)Measures(F)
                         {sqlWhere}
+                        order by P.[Path]
                         ";
 
             List<AllocationApiGetModel> allocations = companyContext.Query<AllocationApiGetModel>(sql, dbArgs).ToList();
