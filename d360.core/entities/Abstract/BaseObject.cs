@@ -64,7 +64,7 @@ namespace d360.core.entities
     }
 
     [Serializable, DataContract(Namespace = NAMESPACE)]
-    public abstract class BaseCreatedAndUpdatedIntObject : BaseIntObject
+    public abstract class BaseCreatedAndUpdatedIntObject : BaseIntObject, Contracts.IUpdatedMetadata, Contracts.ICreatedMetadata
     {
         public int? CreatedBy { get; set; }
 
