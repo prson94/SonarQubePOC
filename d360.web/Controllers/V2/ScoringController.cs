@@ -73,7 +73,13 @@ namespace d360.web.Controllers.V2
                 }
 
                 var queryParams = Request.GetQueryNameValuePairs();
-                List<AllocationApiGetModel> allocations = ScoringRepository.GetAllocations(queryParams);
+
+                string errorMessage = string.Empty;
+
+                List<AllocationApiGetModel> allocations = ScoringRepository.GetAllocations(queryParams, out errorMessage);
+
+                if (!string.IsNullOrEmpty(errorMessage))
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error retrieving allocations", errorMessage);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, allocations));
             }
@@ -275,7 +281,8 @@ namespace d360.web.Controllers.V2
         {
             var queryParams = Request.GetQueryNameValuePairs();
             queryParams = queryParams.Union(new List<KeyValuePair<string, string>>() { new KeyValuePair<string, string>("_state", "1") });
-            var models = ScoringRepository.GetAllocations(queryParams);
+            string error = string.Empty;
+            var models = ScoringRepository.GetAllocations(queryParams, out error);
             var document = new SLDocument();
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
@@ -398,10 +405,10 @@ namespace d360.web.Controllers.V2
                 List<string> fieldJoins = new List<string>();
 
                 var document = createExcelBaseDocument(null, "Items");
-                if (!Guid.TryParse(uid, out guid) || guid == Guid.Empty) 
+                if (!Guid.TryParse(uid, out guid) || guid == Guid.Empty)
                 {
                     return errorMessageResponse(
-                        HttpStatusCode.BadRequest, 
+                        HttpStatusCode.BadRequest,
                         "Invalid Guid", $"Please provide a valid Guid");
                 }
 
