@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -1130,6 +1130,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
     <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
+    <TypeScriptCompile Include="Scripts\app\components\rule\rule-custom-export.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\hero-search-input.ts" />

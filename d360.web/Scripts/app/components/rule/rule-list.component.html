@@ -2,10 +2,17 @@
     <div class="col s12">
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div class="tile tile-detail">
-            <div class="row" *ngIf="!isLoading && !showDelete && !showEditor">
+            <div class="row" *ngIf="!isLoading && !showDelete && !showEditor && !showCustomExport">
                 <div class="col s12">
                     <header>
-                        <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()" (addClick)="showAddRule()" [hasExport]="true" (exportClick)="exportRules()" hasFilterMode="true" [(filterMode)]="showSimpleFilter">
+                        <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()"
+                                          (addClick)="showAddRule()"
+                                          [hasExport]="true && !hasCustomExport"
+                                          (exportClick)="exportRules()"
+                                          [hasCustomExport]="hasCustomExport"
+                                          (customExportClick)="exportCustomRules()"
+                                          hasFilterMode="true"
+                                          [(filterMode)]="showSimpleFilter">
                         </d3s-tile-actions>
                     </header>
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
@@ -81,6 +88,13 @@
                                      (onCancel)="showDelete = false"
                                      (onDeleted)="onDeleted()">
             </d3s-asset-delete-editor>
+            <d3s-rule-custom-export 
+                                    *ngIf="showCustomExport"
+                                    [ruleType]="ruleType"
+                                    (closeClick)="showCustomExport = false"
+                            >
+            </d3s-rule-custom-export>
+
         </div>                        
     </div>
 </div>

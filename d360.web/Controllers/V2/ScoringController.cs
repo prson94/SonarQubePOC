@@ -384,8 +384,35 @@ namespace d360.web.Controllers.V2
             try
             {
                 Guid guid = Guid.Empty;
-                DynamicParameters dbArgs = new DynamicParameters();
-                string selectSql = @"
+                if (!Guid.TryParse(uid, out guid) || guid == Guid.Empty)
+                {
+                    return errorMessageResponse(
+                        HttpStatusCode.BadRequest,
+                        "Invalid Guid", $"Please provide a valid Guid");
+                }
+                var stream = new MemoryStream();
+                SLDocument doc = await GetDefaultRuleDocument(guid);
+                doc.SaveAs(stream);
+                var result = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent(stream.GetBuffer())
+                };
+                result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+                var response = ResponseMessage(result);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"{ex.Message}");
+            }
+        }
+
+        private async Task<SLDocument> GetDefaultRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
+        {
+            #region getFields
+            DynamicParameters dbArgs = new DynamicParameters();
+            string selectSql = @"
                         SELECT 
 		                        A.ID as 'ID',
 		                        A.uid as 'AssetUid',
@@ -396,45 +423,38 @@ namespace d360.web.Controllers.V2
                                 'asset/' +  + CAST(A.uid as varchar(36)) as 'Url'
 	                         ";
 
-                string joinsSql = "  ";
+            string joinsSql = "  ";
 
-                string whereSQL = "WHERE AT.uid = @uid";
-                dbArgs.Add("uid", uid);
+            string whereSQL = "WHERE AT.uid = @uid";
+            dbArgs.Add("uid", guid);
 
-                List<string> fieldColumns = new List<string>();
-                List<string> fieldJoins = new List<string>();
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
 
-                var document = createExcelBaseDocument(null, "Items");
-                if (!Guid.TryParse(uid, out guid) || guid == Guid.Empty)
-                {
-                    return errorMessageResponse(
-                        HttpStatusCode.BadRequest,
-                        "Invalid Guid", $"Please provide a valid Guid");
-                }
 
-                var typesToAvoid = new List<string>() {
+            var typesToAvoid = new List<string>() {
                     DataType.Attribute.ToString(),
                     DataType.ComplexRelationLookup.ToString(),
                     DataType.DataTableSelect.ToString(),
                     DataType.FilteredLookup.ToString(),
                     DataType.OwnershipLookup.ToString()
                 };
-                var assetType = AssetRepository.GetAssetTypeByUID(guid);
-                var fieldTypes = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID).ToList()
-                                    .Where(x => !typesToAvoid.Contains(x.Type)).ToList();
+            var assetType = AssetRepository.GetAssetTypeByUID(guid);
+            var fieldTypes = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID).ToList()
+                                .Where(x => !typesToAvoid.Contains(x.Type)).ToList();
 
-                getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
-                foreach (var col in fieldColumns)
-                {
-                    selectSql += "," + col;
-                }
+            foreach (var col in fieldColumns)
+            {
+                selectSql += "," + col;
+            }
 
-                foreach (var join in fieldJoins)
-                {
-                    joinsSql += join ;
-                }
-                var sql = $@"
+            foreach (var join in fieldJoins)
+            {
+                joinsSql += join;
+            }
+            var sql = $@"
                             {selectSql}
                             FROM dbo.[Rule] R
                                                                     LEFT JOIN dbo.RuleType RT on R.RuleTypeID = RT.ID
@@ -443,85 +463,94 @@ namespace d360.web.Controllers.V2
                             {joinsSql} 
                             {whereSQL}";
 
-                var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
+            var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
 
 
-                //set row headers and non dynamic field columns
-                fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
-                fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
-                fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Rule UID" });
-                fieldTypes.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Rule ID" });
+            //set row headers and non dynamic field columns
+            fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+            fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
+            fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Rule UID" });
+            fieldTypes.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Rule ID" });
 
-                int index = 1;
-                int rowNumber = 1;
-                foreach (var field in fieldTypes)
-                {
-                    document.SetCellValue(1, index++, (string)field.FriendlyName);
-                }
-                //set values into columns
-                foreach (var row in results)
-                {
-                    index = 1;
-                    rowNumber++;
+            #endregion
 
-                    foreach (var field in fieldTypes)
-                    {
-                        var val = getRowFieldValue(row, field);
-                        SetSpreadsheetValueFromField(document, rowNumber, index, field, val);
-                        index++;
-                    }
-                }
-
-                var stream = new MemoryStream();
-                document.SaveAs(stream);
-                var result = new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new ByteArrayContent(stream.GetBuffer())
-                };
-                result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
-                var response = ResponseMessage(result);
-
-                return response;
-            }
-            catch(Exception ex)
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"{ex.Message}");
-            }
+            SLDocument document = new SLDocument();
+            document = GenerateDefaultSpreadsheet(fieldTypes, results, template, "Items");
+            return document;
         }
-        private string getRowFieldValue(dynamic row, FieldType field)
+
+        /// <summary>
+        /// Custom exports.
+        /// </summary>
+        /// <param name="assetTypeUid">The assetTypeID of the Rule Type to custom export.</param>
+        /// <param name="templateID">The templateID of the custom export template.</param>
+        /// <returns>An custom excel sheet of the rules of the given rule type uid.</returns>
+        [
+            HttpGet,
+            Route("customExportRules/{assetTypeUid}/{templateID}"),
+            ApiExplorerSettings(IgnoreApi = true),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "Export custom templates.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> CustomExport(Guid assetTypeUid, int templateID)
         {
-            if (field != null && field.ID > 0)
-                return (((row as IDictionary<string, object>)[field.Name]) ?? "").ToString();
-            else if (field != null && field.Name == "AssetTypeUid")
-                return (string)((row as IDictionary<string, object>)["AssetTypeUid"]).ToString();
-            else if (field != null && field.Name == "AssetUid")
-                return (string)((row as IDictionary<string, object>)["AssetUid"]).ToString();
-            else if (field != null && field.Name == "ID")
-                return (row as IDictionary<string, object>)["ID"].ToString();
-            else if (field != null && field.Name == "Threshold")
-                return (string)((row as IDictionary<string, object>)["Threshold"].ToString());
-            else if (field != null && field.Name == "Url")
-                return (string)((row as IDictionary<string, object>)["Url"].ToString());
-            return "";
+            var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+            var template = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.ID == templateID);
+
+            if (assetType == null)
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"No asset type with Uid of {assetTypeUid.ToString()}");
+
+            if(template == null)
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"No template with id of {templateID}");
+
+            var templateType = template.ExportViewType;
+            SLDocument doc = new SLDocument();
+            switch (templateType)
+            {
+                case ExportView.None:
+                    doc = await GetDefaultRuleDocument(assetType.uid, template);
+                    break;
+                case ExportView.Pivot:
+                    break;
+                case ExportView.Grouped:
+                    break;
+                default:
+                    return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"Unrecognised export view type");
+            }
+
+            var stream = new MemoryStream();
+            doc.SaveAs(stream);
+            var result = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(stream.GetBuffer())
+            };
+            result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+            var response = ResponseMessage(result);
+
+            return response;
+
         }
 
         /// <summary>
         /// Check if the asset has custom exports.
         /// </summary>
-        /// <param name="assetTypeID">The assetTypeID of the Rule Type to cehck for custome export.</param>
+        /// <param name="uid">The uid of the Rule Type to check for custom export.</param>
         /// <returns>An excel sheet of the rules of the given rule type uid.</returns>
         [
             HttpGet,
-            Route("exportRules/{assetTypeID}"),
+            Route("hasCustomExport/{uid}"),
             ApiExplorerSettings(IgnoreApi = true),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "Check if the asset has custom ecport templates.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.OK, "Check if the asset has custom export templates.", typeof(bool)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
-        public IHttpActionResult HasCustomExport(int assetTypeID)
+        public IHttpActionResult HasCustomExport(Guid uid)
         {
-            var res = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == assetTypeID);
+            var assettype = Company.AssetTypes.FirstOrDefault(x => x.uid == uid);
+            var res = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == assettype.ID);
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res));
         }
 
