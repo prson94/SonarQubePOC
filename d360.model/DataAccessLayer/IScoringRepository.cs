@@ -12,7 +12,7 @@ namespace d360.model.DataAccessLayer
         bool DoesAllocationExist(Guid allocationUid, AllocationApiUpsertModel model);
         ScoreTypeAllocation GetAllocationByModel(AllocationApiUpsertModel model);
         ScoreTypeAllocation GetAllocationByUid(Guid allocationUid);
-        List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams);
+        List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams, out string error);
         bool HasActiveMeasures(ScoreTypeAllocation alloc);
         AllocationApiGetModel PostAllocation(AllocationApiUpsertModel model, ref ScoreTypeAllocation alloc);
         AllocationApiGetModel UpdateAllocation(AllocationApiUpsertModel model, ScoreTypeAllocation alloc);

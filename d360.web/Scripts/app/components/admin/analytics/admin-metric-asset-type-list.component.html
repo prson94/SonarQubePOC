@@ -9,7 +9,7 @@
     <p-table #dt class="gov-table" [rowHover]="true" [value]="allocations" selectionMode="single" [globalFilterFields]="['assetClassName','assetTypePath','scoreType']" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selection" (onRowSelect)="onRowSelect($event)">
         <ng-template pTemplate="header">
             <tr>
-                <th [pSortableColumn]="'assetClassName'" style="width: 150px">
+                <th [pSortableColumn]="'assetClassName'" style="width: 200px">
                     Asset Class
                     <d3s-sortIcon [field]="'assetClassName'"></d3s-sortIcon>
                 </th>

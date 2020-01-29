@@ -774,13 +774,22 @@ export class BaseComponent {
             this.secondaryNavService.clearItems();
             this.secondaryNavService.clearButtons();
             this.secondaryNavService.setCurrentArea(areaName, area === 'Configuration' ? 'fa-sliders' : "fa-cog", mainTabTitle);
-            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, this.assetTypeID, this.objectType, this.objectID, false, r.Items.HasWorkflow, this.uid));
-
+            var isType = this.IsType(r.Object);
+            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, this.assetTypeID, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
             this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild);
             this.secondaryNavService.showHeader(true);
 
             this.activateComponent();
         })
+    }
+
+    private IsType(objectName: string): boolean {
+        if (objectName.length <= 4)
+            return false;
+        if (objectName.substr(objectName.length - 4).toLowerCase() == "type") {
+            return true;
+        }
+        return false;
     }
 
     private SetCommonBreadcrumbs(data, area, url) {
@@ -824,7 +833,7 @@ export class BaseComponent {
             }
         });
 
-   
+
     }
 
     private setArtifactBreadcrumbs(data) {

@@ -46,11 +46,11 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
             .subscribe(data => {
                 this.ddlAssetTypes = [];
                 data.forEach(item => {
-                    this.ddlAssetTypes.push({ value: item.assetTypeUid, class: this.getClassFriendlyName(item.assetTypeClass), name: item.assetTypePath, label: this.getClassFriendlyName(item.assetTypeClass) + ' : ' + item.assetTypePath });
+                    this.ddlAssetTypes.push({ value: item.assetTypeUid, class: this.getClassFriendlyName(item.assetTypeClass), name: item.assetTypePath, label: this.getClassFriendlyName(item.assetTypeClass) + ' | ' + item.assetTypePath });
                 })
 
                 if (this.selection.uid) {
-                    this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' : ' + this.selection.assetTypePath });
+                    this.ddlAssetTypes.push({ value: this.selection.assetTypeUid, class: this.selection.assetClassName, name: this.selection.assetTypePath, label: this.selection.assetClassName + ' | ' + this.selection.assetTypePath });
                 }
                 this.ddlAssetTypes = this.ddlAssetTypes.sort((a, b) => a.label.localeCompare(b.label));
 
@@ -101,10 +101,10 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
                 let msg: string = '';
                 if (this.selection.uid == undefined) {
-                    msg = `Allocation succesfully created`;
+                    msg = `Your score has been added`;
                 }
                 else {
-                    msg = `Allocation succesfully updated`;
+                    msg = `Your score has been updated`;
                 }
                 this.selection = new ScoreTypeAllocation();
                 this.messagesService.showInfoMessage('Success', msg);
