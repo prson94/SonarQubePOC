@@ -1660,8 +1660,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 if (f.Type == "FieldFromRelationship")
                 {
                     fieldJoins.Add($@"outer apply (
-                        select top 1 
-                            ISNULL(F1.FormattedValue,F2.FormattedValue) as FormattedValue
+                        select
+                            STRING_AGG(ISNULL(F1.FormattedValue,F2.FormattedValue),',') as FormattedValue
                         from [Intersect] I
                         left join Asset R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
                         left join Field F1 on F1.FieldTypeID = {f.LookupObjectFieldTypeID} and F1.AssetID = R1.ID
@@ -1673,8 +1673,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 else if(f.Type == "Relationship")
                 {
                     fieldJoins.Add($@"outer apply (
-                        select top 1 
-                            ISNULL(AD1.DisplayValue,AD2.DisplayValue) as FormattedValue
+                        select 
+                            STRING_AGG(ISNULL(AD1.DisplayValue,AD2.DisplayValue),',') as FormattedValue
                         from [Intersect] I
                         left join Asset R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
                         left join AssetDetail AD1 on AD1.Object = R1.Object and AD1.ObjectID = R1.ObjectId
@@ -1686,8 +1686,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 else if (f.Type == "RefListRelationship")
                 {
                     fieldJoins.Add($@"outer apply (
-                        select top 1 
-                           ISNULL(R1.SubjectName,R2.ObjectName) as FormattedValue
+                        select
+                           STRING_AGG(ISNULL(R1.SubjectName,R2.ObjectName),',') as FormattedValue
                         from [Intersect] I
                         left join [IntersectDetail] R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
 						left join [IntersectDetail] R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
