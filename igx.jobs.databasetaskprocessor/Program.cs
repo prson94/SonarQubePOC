@@ -132,24 +132,28 @@ namespace igx.jobs.databasetaskprocessor
 
                                 #region Load Info for Object
 
-                                if (o == "Intersect" && givenAssetId > 0)
+                                //Only "Synonym' intersects should be indexed
+                                if (o == "Intersect")
                                 {
+                                    //If Intersect does not have an assetID it should not be indexed
+                                    if( givenAssetId > 0) return string.Empty;
+
                                     var sql = @"SELECT * FROM (" + ElasticSearchSource.INTERSECT_SYNONYM_QUERY +
                                         ") q WHERE q.ID = @oid AND q.SynonymAssetID = @givenAssetId";
                                     dynamic intersectDetail = companyConnection.Query<dynamic>(sql, new { oid, givenAssetId }).SingleOrDefault();
 
-                                    if(intersectDetail != null)
-                                    {
-                                        indexObject.Category = "Synonym";
-                                        indexObject.AssetType = "Synonym";
-                                        indexObject.ItemUniqueID = $"intersect|{oid}|{intersectDetail.Direction}";
-                                        indexObject.RelativeUrl = intersectDetail.Url;
-                                        indexObject.Fields.Add("Name", intersectDetail.Synonym);
-                                        indexObject.Fields.Add("NymType", intersectDetail.PredicateName);
-                                        indexObject.Fields.Add("SynonymFor", intersectDetail.SynonymFor);
-                                        indexObject.Fields.Add("SynonymForObject", intersectDetail.SynonymForObject);
-                                        indexObject.Fields.Add("SynonymForObjectType", intersectDetail.SynonymForObjectType);
-                                    }
+                                    //If Intersect does not have synonym details it should not be indexed
+                                    if (intersectDetail == null) return string.Empty;
+
+                                    indexObject.Category = "Synonym";
+                                    indexObject.AssetType = "Synonym";
+                                    indexObject.ItemUniqueID = $"intersect|{oid}|{intersectDetail.Direction}";
+                                    indexObject.RelativeUrl = intersectDetail.Url;
+                                    indexObject.Fields.Add("Name", intersectDetail.Synonym);
+                                    indexObject.Fields.Add("NymType", intersectDetail.PredicateName);
+                                    indexObject.Fields.Add("SynonymFor", intersectDetail.SynonymFor);
+                                    indexObject.Fields.Add("SynonymForObject", intersectDetail.SynonymForObject);
+                                    indexObject.Fields.Add("SynonymForObjectType", intersectDetail.SynonymForObjectType);
                                 }
                                 else
                                 {
