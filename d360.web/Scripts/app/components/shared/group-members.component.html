@@ -74,11 +74,11 @@
             </div>
         </div>
         <div *ngSwitchCase="FormMode.Deleting">
-            <d3s-delete-form [uri]="'/form/ResourceGroup?groupID=0&resourceID=' + selectedRow.ResourceID + '&groupUid=' + groupUid"
-                         [method]="'delete'"
-                         [prompt]="'Are you sure you want to remove ' + selectedRow.FirstName + ' ' + selectedRow.LastName + ' from ' + groupName + '?'"
-                         (onDeleteSuccess)="confirmDelete()"
-                         (onCancel)="cancel();">
+            <d3s-delete-form [uri]="'/api/v2/membership/groups/' + groupUid + '/' + selectedRow.uid"
+                             [method]="'delete'"
+                             [prompt]="'Are you sure you want to remove ' + selectedRow.FirstName + ' ' + selectedRow.LastName + ' from ' + groupName + '?'"
+                             (onDeleteSuccess)="confirmDelete()"
+                             (onCancel)="cancel();">
             </d3s-delete-form>
         </div>
     </div>

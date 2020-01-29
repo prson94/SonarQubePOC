@@ -556,36 +556,6 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region Group : Delete User
-
-        [HttpDelete, ActionName("ResourceGroup"), Route("ResourceGroup"), NonNullableParameters]
-        public JsonResult DeleteResourceGroup(int groupID, int resourceID,Guid? groupUid)
-        {
-            try
-            {
-                if (groupUid.HasValue && groupUid.Value != Guid.Empty)
-                    groupID = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
-
-                if (!Company.HasAssetPermission(SystemObjects.Group, groupID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                Company.Delete<ResourceGroup>(i => i.GroupID == groupID && i.ResourceID == resourceID);
-
-                return jsonSuccess("User successfully removed from group.", resourceID.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
         #region Group : Delete
 
         [HttpDelete, Route("DeleteGroup")]
