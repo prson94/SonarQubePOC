@@ -373,6 +373,8 @@ namespace d360.web.Controllers.V2
                     return returnValue;
                 }
 
+                var distinctOwners = new List<AssetBrowserOwnerModel>();
+
                 var owners = Company.Query<AssetBrowserOwnerModel>(@"
 select	distinct
 		A.Uid as assetUid,
@@ -389,7 +391,11 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                 // Check to see if keys are populated on incoming assets. If not, populate with auto-generated salt.
                 owners.ForEach(o =>
                 {
-                    o.key = hashKey($"{o.assetUid}|{o.resourceUid}");
+                    o.key = hashKey($"{criteria.ResponsibilityTypeId}|{o.resourceUid}");
+                    if (!distinctOwners.Any(d => d.key == o.key))
+                    {
+                        distinctOwners.Add(o);
+                    }
                 });
 
                 var ownerRelations = from o in owners
@@ -404,7 +410,7 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                                          ownerUid = o.resourceUid
                                      };
 
-                return Request.CreateResponse(HttpStatusCode.OK, new { owners, ownerRelations });
+                return Request.CreateResponse(HttpStatusCode.OK, new { owners = distinctOwners, ownerRelations });
             }
             catch (Exception ex)
             {
