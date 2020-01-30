@@ -774,9 +774,9 @@ export class BaseComponent {
             this.secondaryNavService.clearItems();
             this.secondaryNavService.clearButtons();
             this.secondaryNavService.setCurrentArea(areaName, area === 'Configuration' ? 'fa-sliders' : "fa-cog", mainTabTitle);
-            var isType = this.IsType(r.Object);
-            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, this.assetTypeID, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
             this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild);
+            var isType = this.IsType(r.Object);
+            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
             this.secondaryNavService.showHeader(true);
 
             this.activateComponent();
