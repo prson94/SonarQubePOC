@@ -75,10 +75,7 @@ namespace d360.web.Controllers.V2
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
 
-            if (_pageNum < 1) _pageNum = 1;
-
-            if (_pageSize < 1) _pageSize = 1;
-            if (_pageSize > 250) _pageSize = 250;
+            isPageSizeAndNumValid(ref _pageSize, ref _pageNum);
 
             var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
 
@@ -247,7 +244,6 @@ namespace d360.web.Controllers.V2
                             {
                                 if (pageSize < 1) pageSize = 1;
                             }
-                            if (pageSize > 250) pageSize = 250; // max page size is 250 people.
                             break;
                         case "_pagenum":
                             if (int.TryParse(q.Value, out pageNum))
@@ -258,6 +254,8 @@ namespace d360.web.Controllers.V2
                     }
                 }
             });
+
+            isPageSizeAndNumValid(ref pageSize, ref pageNum);
 
             var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);

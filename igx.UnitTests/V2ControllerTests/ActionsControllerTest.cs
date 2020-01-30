@@ -47,5 +47,48 @@ namespace igx.UnitTests.V2ControllerTests
             Assert.True(data != null, XMsg.InvalidJSON);
 
         }
+
+        [Fact]
+        public void CheckNegativePageSize()
+        {
+            int pageSize = -10000;
+            int pageNum = 1;
+            actionsController.isPageSizeAndNumValid(ref pageSize, ref pageNum);
+
+            Assert.InRange(pageSize, 1, 200000);
+
+        }
+
+        [Fact]
+        public void CheckMaxPageSize()
+        {
+            int pageSize = 500000;
+            int pageNum = 1;
+            actionsController.isPageSizeAndNumValid(ref pageSize, ref pageNum);
+
+            Assert.InRange(pageSize, 1, 200000);
+
+        }
+        [Fact]
+        public void CheckNegativePageNum()
+        {
+            int pageSize = 5;
+            int pageNum = -5000;
+            actionsController.isPageSizeAndNumValid(ref pageSize, ref pageNum);
+
+            Assert.InRange(pageSize, 1, 10000);
+
+        }
+
+        [Fact]
+        public void CheckMaxPageNum()
+        {
+            int pageSize = 5;
+            int pageNum = 50000;
+            actionsController.isPageSizeAndNumValid(ref pageSize, ref pageNum);
+
+            Assert.InRange(pageSize, 1, 10000);
+
+        }
     }
 }

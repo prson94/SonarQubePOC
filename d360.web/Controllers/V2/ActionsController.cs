@@ -100,7 +100,6 @@ namespace d360.web.Controllers.V2
                             {
                                 if (pageSize < 1) pageSize = 1;
                             }
-                            if (pageSize > 250) pageSize = 250; // max page size is 250 people.
                             break;
                         case "_pagenum":
                             if (int.TryParse(q.Value, out pageNum))
@@ -127,6 +126,8 @@ namespace d360.web.Controllers.V2
                     }
                 }
             });
+
+            isPageSizeAndNumValid(ref pageSize, ref pageNum);
 
             if (actionTypeUid != null)
             {
