@@ -758,11 +758,18 @@ namespace d360.web.Models
     #region Asset Browser
 
     public enum AssetBrowserApiHopDirection
-    { 
+    {
         None = 0,
         Forward = 1,
         Backward = 2,
         Both = 3
+    }
+
+    public enum AssetBrowserApiHopType
+    { 
+        Self = 1,
+        Lineage = 2,
+        Impact = 3
     }
 
     [DataContract]
@@ -773,15 +780,15 @@ namespace d360.web.Models
 
         [DataMember]
         public AssetBrowserApiHopDirection Direction { get; set; } = AssetBrowserApiHopDirection.Both;
-        
+
+        [DataMember]
+        public AssetBrowserApiHopType HopType { get; set; } = AssetBrowserApiHopType.Self;
+
         [DataMember]
         public Guid? PredicateUid { get; set; }
         
         [DataMember]
         public int Hops { get; set; } = 3;
-
-        [DataMember]
-        public bool IsInitial { get; set; } = false;
     }
 
     [DataContract]
