@@ -422,4 +422,5 @@
   <include file="scripts/GOV-9092.xml"/> <!-- modify [dbo].[GetDynamicAssets] to use graph tables for Relationship fields -->
   <include file="scripts/GOV-9492.xml"/> <!-- remove retired ObjectStyle table -->
   <include file="scripts/GOV-9498.xml"/> <!-- Update [graph].[GetHop] to pull in descendents when you select an ancestor asset from the asset browser -->
+  <include file="scripts/GOV-9485.xml"/> <!-- Add triggers to ResponsibilityRuleResultSecurityAsset to update index on affected Assets and change of read access on ResponsibilityTypeRelation-->
 </databaseChangeLog>
