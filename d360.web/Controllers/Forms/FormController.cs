@@ -3038,7 +3038,7 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
 
-            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset || f.Class == AssetTypeClass.Rule).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
             
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 

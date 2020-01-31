@@ -136,6 +136,38 @@ namespace d360.web.Controllers.V2
                             for xml path ('')), 1, 1, '')
                          ){tableAlias}(FormattedValue) ");
                 }
+                else if (f.Type == "Relationship")
+                {
+                    if (!f.LookupObjectID.HasValue)
+                    {
+                        throw new Exception("Invalid Relationship field encountered no relationship type to lookup found in definition.");
+                    }
+                    var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
+
+                    if (intersectType == null)
+                    {
+                        throw new Exception("Invalid Relationship field encountered invalid or deleted relationship type encountered.");
+                    }
+
+                    fieldJoins.Add($@"
+                    outer apply (
+		                    SELECT hello = Stuff((
+		                    SELECT  distinct ' | ' + p.TextPath
+			                    from [Intersect] I 
+			                    inner Join Asset RA on 
+			                    I.[IntersectTypeID] = {intersectType.ID} AND 
+			                    (((A.[Object] = I.[Subject] and A.[ObjectID] = I.[SubjectID]) AND (RA.[Object] = I.[Object] and RA.[ObjectID] = I.[ObjectID])) 
+			                    OR (A.[Object] = I.[Object] and A.[ObjectID] = I.[Object]) AND (I.[Subject] = RA.[Object] and I.[SubjectID] = RA.ObjectID))
+			                    cross apply GetAssetTextPathById(RA.ID, '/') P
+			                    Where 
+			                    I.[IntersectTypeID] = {intersectType.ID} AND
+			                    ((I.[Object] = A.[Object] and I.ObjectID = A.ObjectID) 
+			                    or 
+			                    (I.[Subject] = A.[Object] and I.[SubjectID] = A.ObjectID))
+		                    for xml path ('')
+		                    ), 2, 1, '')
+		                    ){tableAlias}(FormattedValue)");
+                }
                 else
                 {
                     fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]");

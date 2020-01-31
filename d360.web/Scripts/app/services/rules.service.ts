@@ -144,7 +144,7 @@ export class RulesService extends BaseObservableService {
     }
 
     downloadFile(data: any, name: string = 'Rule Data') {
-        var filename = `${name} list ${new Date().toDateString()}.xlsx`;
+        var filename = `${name} ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob(data, filename);
         }

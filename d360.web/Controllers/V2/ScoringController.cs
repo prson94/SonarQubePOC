@@ -408,77 +408,6 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        private async Task<SLDocument> GetDefaultRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
-        {
-            #region getFields
-            DynamicParameters dbArgs = new DynamicParameters();
-            string selectSql = @"
-                        SELECT 
-		                        A.ID as 'ID',
-		                        A.uid as 'AssetUid',
-		                        AT.uid as 'AssetTypeUid',
-		                        R.Threshold,
-		                        A.UpdatedOn,
-		                        A.CreatedOn,
-                                'asset/' +  + CAST(A.uid as varchar(36)) as 'Url'
-	                         ";
-
-            string joinsSql = "  ";
-
-            string whereSQL = "WHERE AT.uid = @uid";
-            dbArgs.Add("uid", guid);
-
-            List<string> fieldColumns = new List<string>();
-            List<string> fieldJoins = new List<string>();
-
-
-            var typesToAvoid = new List<string>() {
-                    DataType.Attribute.ToString(),
-                    DataType.ComplexRelationLookup.ToString(),
-                    DataType.DataTableSelect.ToString(),
-                    DataType.FilteredLookup.ToString(),
-                    DataType.OwnershipLookup.ToString()
-                };
-            var assetType = AssetRepository.GetAssetTypeByUID(guid);
-            var fieldTypes = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID).ToList()
-                                .Where(x => !typesToAvoid.Contains(x.Type)).ToList();
-
-            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
-
-            foreach (var col in fieldColumns)
-            {
-                selectSql += "," + col;
-            }
-
-            foreach (var join in fieldJoins)
-            {
-                joinsSql += join;
-            }
-            var sql = $@"
-                            {selectSql}
-                            FROM dbo.[Rule] R
-                                                                    LEFT JOIN dbo.RuleType RT on R.RuleTypeID = RT.ID
-                                                                    INNER JOIN [dbo].Asset A on A.Object = 'Rule' and A.ObjectID = R.ID
-                                                                    INNER JOIN [dbo].AssetType AT on AT.ID = a.AssetTypeID
-                            {joinsSql} 
-                            {whereSQL}";
-
-            var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
-
-
-            //set row headers and non dynamic field columns
-            fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
-            fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
-            fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Rule UID" });
-            fieldTypes.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Rule ID" });
-
-            #endregion
-
-            SLDocument document = new SLDocument();
-            document = GenerateDefaultSpreadsheet(fieldTypes, results, template, "Items");
-            return document;
-        }
-
         /// <summary>
         /// Custom exports.
         /// </summary>
@@ -513,8 +442,10 @@ namespace d360.web.Controllers.V2
                     doc = await GetDefaultRuleDocument(assetType.uid, template);
                     break;
                 case ExportView.Pivot:
+                    doc = await GetPivotRuleDocument(assetType.uid, template);
                     break;
                 case ExportView.Grouped:
+                    doc = await GetGroupedRuleDocument(assetType.uid, template);
                     break;
                 default:
                     return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"Unrecognised export view type");
@@ -552,6 +483,104 @@ namespace d360.web.Controllers.V2
             var assettype = Company.AssetTypes.FirstOrDefault(x => x.uid == uid);
             var res = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == assettype.ID);
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res));
+        }
+
+        private async Task<IEnumerable<dynamic>> GetRuleTypeFieldResults(Guid guid, List<FieldType> fieldTypes)
+        {
+            DynamicParameters dbArgs = new DynamicParameters();
+            string selectSql = @"
+                        SELECT 
+		                        A.ID as 'ID',
+		                        A.uid as 'AssetUid',
+		                        AT.uid as 'AssetTypeUid',
+		                        R.Threshold,
+		                        A.UpdatedOn,
+		                        A.CreatedOn,
+                                'asset/' +  + CAST(A.uid as varchar(36)) as 'Url'
+	                         ";
+
+            string joinsSql = "  ";
+
+            string whereSQL = "WHERE AT.uid = @uid";
+            dbArgs.Add("uid", guid);
+
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
+
+
+
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+            fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
+            fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Rule UID" });
+            fieldTypes.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Rule ID" });
+            fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+
+            foreach (var col in fieldColumns)
+            {
+                selectSql += "," + col;
+            }
+
+            foreach (var join in fieldJoins)
+            {
+                joinsSql += join;
+            }
+            var sql = $@"
+                            {selectSql}
+                            FROM dbo.[Rule] R
+                                    LEFT JOIN dbo.RuleType RT on R.RuleTypeID = RT.ID
+                                    INNER JOIN [dbo].Asset A on A.Object = 'Rule' and A.ObjectID = R.ID
+                                    INNER JOIN [dbo].AssetType AT on AT.ID = a.AssetTypeID
+                            {joinsSql} 
+                            {whereSQL}";
+
+            var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
+            return results;
+        }
+
+        private List<FieldType> GetRuleTypeFields(Guid guid)
+        {
+            var assetType = AssetRepository.GetAssetTypeByUID(guid);
+            var typesToAvoid = new List<string>() {
+                    DataType.Attribute.ToString(),
+                    DataType.ComplexRelationLookup.ToString(),
+                    DataType.DataTableSelect.ToString(),
+                    DataType.FilteredLookup.ToString(),
+                    DataType.OwnershipLookup.ToString()
+                };
+            var fieldTypes = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID).ToList()
+                                .Where(x => !typesToAvoid.Contains(x.Type)).ToList();
+            
+            
+            return fieldTypes;
+        }
+        private async Task<SLDocument> GetDefaultRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
+        {
+            List<FieldType> fieldTypes = GetRuleTypeFields(guid);
+            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
+
+            SLDocument document = new SLDocument();
+            document = GenerateDefaultSpreadsheet(fieldTypes, results, template, "Items");
+            return document;
+        }
+        private async Task<SLDocument> GetPivotRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
+        {
+            List<FieldType> fieldTypes = GetRuleTypeFields(guid);
+            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
+
+            SLDocument document = new SLDocument();
+            document = GeneratePivotedSpreadsheet(fieldTypes, results, template, "Items");
+            return document;
+        }
+
+        private async Task<SLDocument> GetGroupedRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
+        {
+            List<FieldType> fieldTypes = GetRuleTypeFields(guid);
+            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
+
+            SLDocument document = new SLDocument();
+            document = GenerateGroupedSpreadsheet(fieldTypes, results, template, "Items");
+            return document;
         }
 
     }
