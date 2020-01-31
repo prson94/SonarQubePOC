@@ -55,7 +55,7 @@ namespace d360.web.Controllers.V2
             Route("users"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of Users.", typeof(ResourceApiViewModel)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Invalid PageSize/PageNum value provided. Number is too large"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
         ]
         public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, int _pageSize = 5, int _pageNum = 1, string _order = "ResourceID", string _direction = "asc")
@@ -80,7 +80,7 @@ namespace d360.web.Controllers.V2
 
             if(isValid == false)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid PageSize/PageNum value provided. Number is too large"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"));
             }
 
             var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
@@ -186,7 +186,7 @@ namespace d360.web.Controllers.V2
            Route("groups/{groupUid:Guid}/members"),
            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
            SwaggerResponse(HttpStatusCode.OK, "Gets Members of a Group.", typeof(ResourceApiViewModel)),
-           SwaggerResponse(HttpStatusCode.NotFound, "Invalid PageSize/PageNum value provided. Number is too large"),
+           SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
            SwaggerParameter("_firstName", "The First Name of the user.", DataType = "string", ParameterType = "query", Required = false),
            SwaggerParameter("_lastName", "The last name of the user.", DataType = "string", ParameterType = "query", Required = false),
@@ -266,7 +266,7 @@ namespace d360.web.Controllers.V2
 
             if (isValid == false)
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid PageSize/PageNum value provided. Number is too large"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"));
             }
 
             var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
