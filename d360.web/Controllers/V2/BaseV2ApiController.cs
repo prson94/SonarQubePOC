@@ -148,13 +148,13 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        public void isPageSizeAndNumValid(ref int _pageSize, ref int _pageNum)
+        public bool isPageSizeAndNumValid(int _pageSize, int _pageNum)
         {
-            if (_pageSize < 1) _pageSize = 1;
-            if (_pageSize > 200000) _pageSize = 200000;
+            if (_pageSize > 200000) return false;
 
-            if (_pageNum < 1) _pageNum = 1;
-            if (_pageNum > 10000) _pageNum = 10000;
+            if (_pageNum > 10000) return false;
+
+            return true;
         }
 
         protected async Task<T> readRequestJsonContent<T>(HttpRequestMessage request, bool deserializeAsIs = false)

@@ -127,7 +127,12 @@ namespace d360.web.Controllers.V2
                 }
             });
 
-            isPageSizeAndNumValid(ref pageSize, ref pageNum);
+            bool isValid = isPageSizeAndNumValid(pageSize, pageNum);
+
+            if (isValid == false)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Invalid PageSize/PageNum value provided. Number is too large"));
+            }
 
             if (actionTypeUid != null)
             {
