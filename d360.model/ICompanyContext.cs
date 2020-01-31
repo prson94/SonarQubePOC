@@ -331,5 +331,6 @@ namespace d360.model
         string GetIconText(string assetName);
         void SetApiExecutionProcessingStartTime(Guid ExecutionId);
         string GetEscapedFilterString(string filter);
+        string GetAssetTypePath(int iD);
     }
 }

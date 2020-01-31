@@ -3506,5 +3506,13 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return iconText;
 
         }
+
+        public string GetAssetTypePath(int ID)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@ID", ID);
+            var sql = $@"SELECT P.[Path] from dbo.GetAssetTypeTextPathById(@ID, ' / ') P";
+            return Query<string>(sql, dbArgs).FirstOrDefault();
+        }
     }
 }
