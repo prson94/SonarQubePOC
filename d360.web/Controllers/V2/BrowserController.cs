@@ -83,14 +83,12 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
-        List<T> parseArrayCount<T>(string json)
+        List<T> ParseArrayCount<T>(string json)
         {
-            var arr = new List<T>();
-            arr = JsonConvert.DeserializeObject<List<T>>(json ?? "[]");
-            return arr;
+            return JsonConvert.DeserializeObject<List<T>>(json ?? "[]");
         }
 
-        private void recurse(AssetBrowserAssetsModel model, List<HopNodeResult> hierarchies, AssetBrowserAssetModel current, int multiplier)
+        private void Recurse(AssetBrowserAssetsModel model, List<HopNodeResult> hierarchies, AssetBrowserAssetModel current, int multiplier)
         {
             foreach (var h in hierarchies.Where(h => h.parentKey == current.key && h.key != current.key))
             {
@@ -109,25 +107,29 @@ namespace d360.web.Controllers.V2
                     @class = h.@class,
                     displayValue = h.displayValue,
                     reveal = h.reveal,
-                    ownerCounts = parseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
-                    relationCounts = parseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
+                    ownerCounts = ParseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
+                    relationCounts = ParseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
                     useAsTransformation = h.useAsTransformation,
                     hasAssetReadAccess = h.hasAssetReadAccess,
                     isSubjectInTransformation = h.isSubjectInTransformation
                 };
 
-                recurse(model, hierarchies, child, multiplier+1);
+                Recurse(model, hierarchies, child, multiplier+1);
 
                 if (current.items == null)
                 {
                     current.items = new List<AssetBrowserAssetModel>();
                 }
-                current.items.Add(child);
+
+                if (!current.items.Any(c => c.key == child.key))
+                {
+                    current.items.Add(child);
+                }
                 //model.assets.Add(child);
             }
         }
 
-        private AssetBrowserAssetsModel buildResponseModel(List<HopNodeResult> hierarchies, List<HopLinkResult> relationships, int multiplier)
+        private AssetBrowserAssetsModel BuildResponseModel(List<HopNodeResult> hierarchies, List<HopLinkResult> relationships, int multiplier)
         {
             var model = new AssetBrowserAssetsModel();
 
@@ -146,14 +148,18 @@ namespace d360.web.Controllers.V2
                     @class = h.@class, 
                     displayValue = h.displayValue, 
                     reveal = h.reveal,
-                    ownerCounts = parseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
-                    relationCounts = parseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
+                    ownerCounts = ParseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
+                    relationCounts = ParseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
                     useAsTransformation = h.useAsTransformation, 
                     hasAssetReadAccess = h.hasAssetReadAccess,
                     isSubjectInTransformation = h.isSubjectInTransformation 
                 };
-                recurse(model, hierarchies, current, multiplier + 1);
-                model.assets.Add(current);
+                Recurse(model, hierarchies, current, multiplier + 1);
+
+                if (!model.assets.Any(r => r.key == current.key))
+                {
+                    model.assets.Add(current);
+                }
             }
 
             model.assetRelations = relationships.Select(r => new AssetBrowserAssetRelationModel
@@ -209,7 +215,11 @@ namespace d360.web.Controllers.V2
                     const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
                     return new string(Enumerable.Repeat(chars, 25).Select(s => s[random.Next(s.Length)]).ToArray());
                 };
-                
+                Func<List<HopNodeResult>, List<AssetBrowserApiHopAssetRequestModel>> getLeafAssets = delegate (List<HopNodeResult> nodes)
+                {
+                    return nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
+                };
+
                 var model = new HopModel {
                     links = new List<HopLinkResult>(),
                     nodes = new List<HopNodeResult>()
@@ -229,18 +239,19 @@ namespace d360.web.Controllers.V2
                     return returnValue;
                 }
 
-                async Task<HopModel> getHop(List<AssetBrowserApiHopAssetRequestModel> hopAssets, string direction)
+                async Task<HopModel> getHop(List<AssetBrowserApiHopAssetRequestModel> hopAssets, AssetBrowserApiHopType hopType, AssetBrowserApiHopDirection direction)
                 {
                     var hopModel = new HopModel();
 
-                    var reader = await Company.QueryMultipleAsync(@"exec graph.GetHop @assets, @hopSalt, @direction, @predicateUid, @resourceId, @isAdmin", new
+                    var reader = await Company.QueryMultipleAsync(@"exec graph.GetHop @assets, @ht, @HopSalt, @direction, @predicateUid, @resourceId, @isAdmin", new
                     {
                         assets = hopAssets.AsTableValuedParameter(
                             "dbo.AssetBrowserImpactTable",
                             new List<string>() { "Key", "Uid" }
                             ),
                         HopSalt,
-                        direction,
+                        ht = (int)hopType,
+                        direction = (direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
                         predicateUid = criteria.PredicateUid,
                         resourceId = Company.CurrentResourceID,
                         isAdmin = Company.CurrentResourceIsAdmin
@@ -261,17 +272,17 @@ namespace d360.web.Controllers.V2
                     }
                 });
 
-                if (criteria.Direction == AssetBrowserApiHopDirection.None && criteria.PredicateUid.HasValue)
+                if (criteria.HopType == AssetBrowserApiHopType.Impact && criteria.PredicateUid.HasValue)
                 {
                     // This is an IMPACT call.
-                    model = await getHop(criteria.Assets, "I");
+                    model = await getHop(criteria.Assets, criteria.HopType, criteria.Direction);
                 }
                 else 
                 {
                     // This is a LINEAGE call.
-                    if (criteria.IsInitial)
+                    if (criteria.HopType == AssetBrowserApiHopType.Self)
                     {
-                        model = await getHop(criteria.Assets, "");
+                        model = await getHop(criteria.Assets, criteria.HopType, AssetBrowserApiHopDirection.None);
                     }
 
                     if (criteria.Hops <= 0 || criteria.Hops > 15)
@@ -279,16 +290,27 @@ namespace d360.web.Controllers.V2
                         criteria.Hops = 3;
                     }
 
-                    var backwardAssets = criteria.Assets;
-                    var forwardAssets = criteria.Assets;
+                    List<AssetBrowserApiHopAssetRequestModel> backwardAssets;
+                    List<AssetBrowserApiHopAssetRequestModel> forwardAssets;
+                    if (model.nodes.Count > 0)
+                    {
+                        backwardAssets = getLeafAssets(model.nodes);
+                        forwardAssets = getLeafAssets(model.nodes);
+                    }
+                    else
+                    {
+                        backwardAssets = criteria.Assets;
+                        forwardAssets = criteria.Assets;
+                    }
+
                     for (int i = 0; i < criteria.Hops; i++)
                     {
                         HopSalt = generateSalt(); // We have multiple hops, so we should reset the salt after each hop.
-                        var backModel = await getHop(backwardAssets, "B");
-                        var forwardModel = await getHop(forwardAssets, "F");
+                        var backModel = await getHop(backwardAssets, AssetBrowserApiHopType.Lineage, AssetBrowserApiHopDirection.Backward);
+                        var forwardModel = await getHop(forwardAssets, AssetBrowserApiHopType.Lineage, AssetBrowserApiHopDirection.Forward);
 
-                        backwardAssets = backModel.nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
-                        forwardAssets = forwardModel.nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
+                        backwardAssets = getLeafAssets(backModel.nodes);
+                        forwardAssets = getLeafAssets(forwardModel.nodes);
 
                         model.links.AddRange(backModel.links);
                         model.links.AddRange(forwardModel.links);
@@ -297,7 +319,7 @@ namespace d360.web.Controllers.V2
                     }
                 }
                 
-                return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(model.nodes, model.links, 0));
+                return Request.CreateResponse(HttpStatusCode.OK, BuildResponseModel(model.nodes, model.links, 0));
             }
             catch (Exception ex)
             {
@@ -350,7 +372,9 @@ namespace d360.web.Controllers.V2
                     return returnValue;
                 }
 
-                var owners = Company.Query<AssetBrowserOwnerModel>(@"
+                var distinctOwners = new List<AssetBrowserOwnerModel>();
+
+                var owners = await Company.QueryAsync<AssetBrowserOwnerModel>(@"
 select	distinct
 		A.Uid as assetUid,
 		R.ResourceName as displayValue, 
@@ -361,13 +385,17 @@ from	ResponsibilityDetail R
 		inner join reporting.Global_Resource RE on RE.ResourceID = R.ResourceID
 where	A.Uid in @assetUids
         and R.ResponsibilityTypeID = @ResponsibilityTypeId
-order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).ToList(), criteria.ResponsibilityTypeId }).ToList();
+order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).ToList(), criteria.ResponsibilityTypeId });
 
                 // Check to see if keys are populated on incoming assets. If not, populate with auto-generated salt.
-                owners.ForEach(o =>
+                foreach(var o in owners)
                 {
-                    o.key = hashKey($"{o.assetUid}|{o.resourceUid}");
-                });
+                    o.key = hashKey($"{criteria.ResponsibilityTypeId}|{o.resourceUid}");
+                    if (!distinctOwners.Any(d => d.key == o.key))
+                    {
+                        distinctOwners.Add(o);
+                    }
+                }
 
                 var ownerRelations = from o in owners
                                      join a in criteria.Assets on o.assetUid equals a.Uid
@@ -381,7 +409,7 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                                          ownerUid = o.resourceUid
                                      };
 
-                return Request.CreateResponse(HttpStatusCode.OK, new { owners, ownerRelations });
+                return Request.CreateResponse(HttpStatusCode.OK, new { owners = distinctOwners, ownerRelations });
             }
             catch (Exception ex)
             {
@@ -663,7 +691,7 @@ select	Id,
 		[Name],
 		[Inverse]
 from	[Predicate]
-where	[Type] in (6,7,9)
+where	[Type] in (6,7,9,14)
 order by [Type], [Name];
 
 select  Id,

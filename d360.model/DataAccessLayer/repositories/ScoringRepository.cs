@@ -30,8 +30,9 @@ namespace d360.model.DataAccessLayer
                 };
         }
 
-        public List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public List<AllocationApiGetModel> GetAllocations(IEnumerable<KeyValuePair<string, string>> queryParams, out string error)
         {
+            error = string.Empty;
             List<string> whereStatements = new List<string>();
 
             var dbArgs = new DynamicParameters();
@@ -41,8 +42,15 @@ namespace d360.model.DataAccessLayer
                 switch (kp.Key.ToLower())
                 {
                     case "_state":
-                        var value = kp.Value;
-                        State stateValue = (State)Enum.Parse(typeof(State), value);
+                        State stateValue;
+                        Enum.TryParse(kp.Value, true, out stateValue);
+
+                        if ((stateValue != State.Active && stateValue != State.Deleted) || string.IsNullOrEmpty(kp.Value))
+                        {
+                            error = "Invalid state value specified.";
+                            return null;
+                        }
+
                         whereStatements.Add("AL.[state] = @state");
                         dbArgs.Add("@state", stateValue);
                         break;
@@ -91,6 +99,12 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            //Defaults
+            if (dbArgs.ParameterNames.Contains("@state"))
+            {
+                whereStatements.Add("AL.[state] = @state");
+                dbArgs.Add("@state", State.Active);
+            }
 
             string sqlWhere = whereStatements.Count > 0 ? " where " + string.Join(" and ", whereStatements) : "";
             var sql = $@"select 
@@ -109,6 +123,7 @@ namespace d360.model.DataAccessLayer
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
                             cross apply (select count(*) from metrics.Asset where State = 1 and AssetTypeUid = AL.AssetTypeUid and ScoreType = AL.ScoreType)Measures(F)
                         {sqlWhere}
+                        order by P.[Path]
                         ";
 
             List<AllocationApiGetModel> allocations = companyContext.Query<AllocationApiGetModel>(sql, dbArgs).ToList();

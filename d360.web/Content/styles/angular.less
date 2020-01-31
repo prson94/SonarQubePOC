@@ -2519,8 +2519,8 @@ div.home-image-title-text {
     font-size: 18px;
     font-weight: 600;
     width: 100%;
+    line-height:32px;
     display: inline-flex;
-    line-height: 2;
     margin-right: 30px;
     margin-left: 0px;
     margin-bottom: 0px;
@@ -4222,9 +4222,25 @@ button.tab-scroller {
                     overflow-y: auto;
                     padding-right: 15px;
 
-                    h2 {
-                        font-size: 14px;
-                        font-weight: bold;
+                    .check-tree-header {
+                        display: flex;
+                        flex-direction: row;
+
+                        h2 {
+                            font-size: 14px;
+                            font-weight: bold;
+                        }
+
+                        .clear-tree {
+                            cursor: pointer;
+                            color: #0971b9;
+                            margin-left: auto;
+                            margin-top: auto;
+                            margin-bottom: auto;
+                            &:hover {
+                                text-decoration: underline;
+                            }
+                        }
                     }
 
                     ul {

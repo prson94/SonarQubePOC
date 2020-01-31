@@ -2,6 +2,7 @@
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using d360.core.entities.Contracts;
 
 namespace d360.core.entities
 {
@@ -64,7 +65,7 @@ namespace d360.core.entities
     }
 
     [Serializable, DataContract(Namespace = NAMESPACE)]
-    public abstract class BaseCreatedAndUpdatedIntObject : BaseIntObject
+    public abstract class BaseCreatedAndUpdatedIntObject : BaseIntObject, IUpdatedMetadata, ICreatedMetadata
     {
         public int? CreatedBy { get; set; }
 

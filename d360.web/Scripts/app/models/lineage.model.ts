@@ -502,6 +502,12 @@ export enum AssetBrowserApiHopDirection {
     Both = 3
 }
 
+export enum AssetBrowserApiHopType {
+    Self = 1,
+    Lineage = 2,
+    Impact = 3
+}
+
 export class AssetBrowserApiOwnerHopRequestModel {
     Assets: AssetBrowserApiHopAssetRequestModel[];
     ResponsibilityTypeId: number;
@@ -510,9 +516,9 @@ export class AssetBrowserApiOwnerHopRequestModel {
 export class AssetBrowserApiHopRequestModel {
     Assets: AssetBrowserApiHopAssetRequestModel[];
     Direction: AssetBrowserApiHopDirection;
+    HopType: AssetBrowserApiHopType;
     PredicateUid: string;
     Hops: number;
-    IsInitial: boolean;
 }
 
 export class AssetBrowserApiHopAssetRequestModel {

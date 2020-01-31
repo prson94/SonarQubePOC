@@ -49,6 +49,7 @@ namespace d360.web.Controllers.V2
            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
            SwaggerResponse(HttpStatusCode.OK, "Gets all actions.", typeof(ResourceApiViewModel)),
            SwaggerResponse(HttpStatusCode.NotFound, "Uid {uid} not found."),
+           SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
            SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 users per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
@@ -100,7 +101,6 @@ namespace d360.web.Controllers.V2
                             {
                                 if (pageSize < 1) pageSize = 1;
                             }
-                            if (pageSize > 250) pageSize = 250; // max page size is 250 people.
                             break;
                         case "_pagenum":
                             if (int.TryParse(q.Value, out pageNum))
@@ -127,6 +127,13 @@ namespace d360.web.Controllers.V2
                     }
                 }
             });
+
+            bool isValid = isPageSizeAndNumValid(pageSize, pageNum);
+
+            if (isValid == false)
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"));
+            }
 
             if (actionTypeUid != null)
             {

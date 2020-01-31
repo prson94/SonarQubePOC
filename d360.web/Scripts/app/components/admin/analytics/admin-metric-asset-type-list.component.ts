@@ -125,7 +125,8 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
     private deleteAllocation($event) {
         this.allocationService.deleteAllocationByUid($event.uid).
             subscribe(result => {
-                this.showMessageForResult(this.messagesService, result, "Allocation successfully deleted!");
+                result.message = "Score successfully deleted";
+                this.showMessageForResult(this.messagesService, result);
                 this.load();
                 this.showDelete = false;
 
