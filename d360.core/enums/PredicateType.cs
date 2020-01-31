@@ -179,7 +179,7 @@ namespace d360.core.enums
         ]
         BusinessToTechnical = 13,
         [
-            Name("Semantic Relationship"),
+            Name("Semantic Relation"),
             Description(""),
             ReadOnly(false),
             SingleRelationshipByFunctionalType(true),

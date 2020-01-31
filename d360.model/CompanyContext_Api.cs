@@ -4179,7 +4179,8 @@ end",
                             set		T.Message = coalesce(T.Message + '; ', '') + 'Not able to create this relationship because a relationship for this functional type already exists.',
 		                            T.Success = 0
                             from	api.ExecutionRelationship T
-                                    inner join [Intersect] I on I.[Subject] = T.[Subject] and I.SubjectID = T.SubjectID and I.[Object] = T.[Object] and I.ObjectID = T.ObjectID
+                                    inner join [Intersect] I on ((I.[Subject] = T.[Subject] and I.SubjectID = T.SubjectID and I.[Object] = T.[Object] and I.ObjectID = T.ObjectID) 
+                                        or (I.[Object] = T.[Subject] and I.ObjectID = T.SubjectID and I.[Subject] = T.[Object] and I.SubjectID = T.ObjectID))
                                     inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
                                     inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = @predicateType  
 		                            where IT.ID <> @intersectTypeID and T.ExecutionId = @ExecutionID 
