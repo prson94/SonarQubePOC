@@ -23,7 +23,8 @@ import {
     AssetBrowserModel,
     AssetBrowserAssetModel,
     AssetBrowserGenericRelationModel,
-    LoadedFilterTypesModel
+    LoadedFilterTypesModel,
+    AssetBrowserApiHopType
 } from '../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../services/browser.service';
@@ -285,26 +286,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         ];
         this.filterSelectionsModel.AssetTypeOptions.forEach(at => {
             if (classIDs.findIndex(c => c == at.ClassId) > -1) {
-
-                //let thisClassNode = assetTypes.find(c => c.data == 'C' +at.ClassId);
-                //let nodeExists: boolean = (thisClassNode != undefined);
-                //if (!nodeExists) {
-                //    thisClassNode = {
-                //        label: at.Class,
-                //        data: 'C'+at.ClassId,
-                //        children: []
-                //    };
-                //}
                 if (loadedTypes.AssetTypes.findIndex(ix => { return ix == at.AssetTypeId }) > -1) {
-                    assetTypes.push({//thisClassNode.children.push({
+                    assetTypes.push({
                         label: at.Path,
                         data: at.AssetTypeId
                     });
                 }
-
-                //if (!nodeExists) {
-                //    assetTypes.push(thisClassNode);
-                //}
             }
         });
         assetTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
@@ -318,27 +305,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.filterSelectionsModel.FilterPredicates = [];
         this.filterSelectionsModel.PredicateOptions.forEach(p => {
-            //let thisPredicateTypeNode = this.filterSelectionsModel.FilterPredicates.find(c => c.data == 'F' +p.TypeId);
-            //let nodeExists: boolean = (thisPredicateTypeNode != undefined);
-            //if (!nodeExists) {
-            //    thisPredicateTypeNode = {
-            //        label: p.Type,
-            //        data: 'F'+p.TypeId, 
-            //        children: []
-            //    };
-            //}
-
             let inLoadedPredicates: boolean = loadedTypes.Predicates.findIndex(ix => { return ix == p.Id }) > -1;
             if (inLoadedPredicates) {
-                this.filterSelectionsModel.FilterPredicates.push({//thisPredicateTypeNode.children.push({
+                this.filterSelectionsModel.FilterPredicates.push({
                     label: p.Name.substring(0, 50) + ' / ' + p.Inverse.substring(0, 50),
                     data: p.Id
                 });
             }
-
-            //if (!nodeExists) {
-            //    this.filterSelectionsModel.FilterPredicates.push(thisPredicateTypeNode);
-            //}
         });
         this.filterSelectionsModel.FilterPredicates.sort((a, b) => (a.label > b.label) ? 1 : -1);
         this.selectedFilterPredicates = this.getTreeNodeSelectionNodes(this.filterModel.SelectedPredicates, this.filterSelectionsModel.FilterPredicates);
@@ -604,7 +577,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.links.each(link => {
             let linkData: AssetBrowserTranslationLink = link.data as AssetBrowserTranslationLink;
             if (linkData.predicateIds) {
-                let g: any = this.diagram.findNodeForKey(linkData.from);
+                let g: any = this.diagram.findNodeForKey(linkData.to);
                 if (g) {
                     if (linkData.predicateIds.filter(l => {
                         return this.filterModel.SelectedPredicates.findIndex(v => { return v == l; }) > -1
@@ -702,9 +675,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         hideNode.subgraph.nodes.push(node); //add this node to the subgraph so we can unhide it later
 
         let children = group.findSubGraphParts();
-
         children.each(c => {
-            console.log(c.data);
             hideNode.subgraph.nodes.push(c.data);
         });
 
@@ -716,13 +687,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         upstreamLinks.forEach(l => {
             hideNode.subgraph.links.push(l);
             this.diagramModelAsGraph().removeLinkData(l);
-            this.diagramModelAsGraph().addLinkData({ from: l.from, to: hideNode.key, predicateIds: l.predicateIds });
+            this.diagramModelAsGraph().addLinkData({ from: l.from, to: hideNode.key, predicateIds: l.predicateIds, expandedByBadgeKey: l.expandedByBadgeKey });
         });
 
         downstreamLinks.forEach(l => {
             hideNode.subgraph.links.push(l);
             this.diagramModelAsGraph().removeLinkData(l);
-            this.diagramModelAsGraph().addLinkData({ from: hideNode.key, to: l.to, predicateIds: l.predicateIds });
+            this.diagramModelAsGraph().addLinkData({ from: hideNode.key, to: l.to, predicateIds: l.predicateIds, expandedByBadgeKey: l.expandedByBadgeKey });
         });
 
         this.diagram.remove(group);
@@ -880,7 +851,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             this.requestModel.Direction = AssetBrowserApiHopDirection.Both;
             this.requestModel.Hops = this.filterModel.NumberOfHops;
-            this.requestModel.IsInitial = true;
+            this.requestModel.HopType = AssetBrowserApiHopType.Self; 
 
             this.browserService.getAssetLineage(this.requestModel)
                 .subscribe(data => {
@@ -978,11 +949,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (data.relations != null && data.relations.length > 0) {
                     for (let i = 0; i < data.relations.length; i++) {
                         let r = data.relations[i];
-                        let rel = childRelations.find(c => c.predicateUid == r.predicateUid);
+                        let rel = childRelations.find(c => c.predicateUid == r.predicateUid && c.direction == r.direction);
                         if (rel != null) {
                             rel.count += r.count;
                         }
-                        else if (g.data.relations.find(c => c.predicateUid == r.predicateUid) == null) {
+                        else if (g.data.relations.find(c => c.predicateUid == r.predicateUid && c.direction == r.direction) == null) {
                             childRelations.push(r);
                         }
                     }
@@ -1070,7 +1041,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 model.Assets = data.assetUids;
                 model.Direction = data.showReveal;
                 model.Hops = 1;
-                model.IsInitial = false;
+                model.HopType = AssetBrowserApiHopType.Lineage;
 
                 this.browserService.getAssetLineage(model)
                     .subscribe(response => {
@@ -1573,16 +1544,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (links) {
             let lnks: any[] = [];
             links.iterator.each(link => {
-                lnks.push({ link: link, fromNode: link.fromNode });
+                lnks.push({ link: link, toNode: link.toNode });
             });
             lnks.forEach(lnk => {
-                if (lnk.fromNode) {
+                if (lnk.toNode) {
                     // Go back to incoming nodes and remove them too. 
-                    this.collapseNodesAndLinks(dm, lnk.fromNode.findLinksInto());
+                    this.collapseNodesAndLinks(dm, lnk.toNode.findLinksOutOf());
 
                     // Remove immediate child.
-                    this.diagram.remove(lnk.fromNode);
-                    dm.removeNodeData(dm.findNodeDataForKey(lnk.fromNode.key));
+                    this.diagram.remove(lnk.toNode);
+                    dm.removeNodeData(dm.findNodeDataForKey(lnk.toNode.key));
                 }
 
                 this.diagram.remove(lnk.link);
@@ -1679,7 +1650,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 requestModel.Assets = [];
                 requestModel.PredicateUid = relation.predicateUid;
-                requestModel.IsInitial = false;
+                requestModel.Direction = relation.direction;
+                requestModel.HopType = AssetBrowserApiHopType.Impact;
 
                 let n = node;
                 if (n.isGroup) {
@@ -1699,20 +1671,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             asset.Uid = g.data.assetUid;
                             asset.Key = g.data.key
                             requestModel.Assets.push(asset);
-
-                            //add immediate parent
-                            //let p = this.diagram.model.nodeDataArray.find(n => n.key == g.data.group);
-                            //let a = new AssetBrowserApiHopAssetRequestModel();
-                            //if (p != null) {
-                            //    a.Uid = p.assetUid;
-                            //    a.Key = p.key
-                            //    requestModel.Assets.push(a);
-                            //}
                         }
                     })
                 }
-
-                //this.diagram.model.removeArrayItem(node.relations, ix);
 
                 this.browserService.getAssetImpacts(requestModel)
                     .subscribe(response => {

@@ -14,7 +14,7 @@ import {
     AssetBrowserTranslationLink,
     AssetBrowserDiagramAsset,
     AssetBrowserTranslationRelationCount,
-    AssetBrowserApiHopDirection,
+    AssetBrowserApiHopDirection,    AssetBrowserApiHopType,
     FilterAncestryMode,
     FilterSelectionsModel,
     AssetBrowserApiHopRequestModel,
@@ -77,6 +77,7 @@ export class BrowserService extends BaseObservableService {
             map(response => response),
             catchError(err => this.handleError(err)) 
         );
+
     }
 
     private findDirectParents(currentParent: AssetBrowserAssetModel, nodes: AssetBrowserAssetModel[], newHierarchy: AssetBrowserAssetModel[]) {
@@ -124,7 +125,8 @@ export class BrowserService extends BaseObservableService {
         model: AssetBrowserApiHopRequestModel
     ): Observable<AssetBrowserAssetsModel> {
         const url = `api/v2/browser`;
-        model.Direction = AssetBrowserApiHopDirection.None; 
+
+        model.HopType = AssetBrowserApiHopType.Impact; 
         return this.http.post(url, model).pipe(
             map(response => response),
             catchError(err => this.handleError(err))
@@ -438,7 +440,7 @@ export class BrowserService extends BaseObservableService {
 
         a.relationCounts.forEach(rC => {
             let assetBrowserTranslationRelationCount: AssetBrowserTranslationRelationCount = new AssetBrowserTranslationRelationCount();
-            assetBrowserTranslationRelationCount.key = a.key + '-R-' + rC.PredicateID.toString();
+            assetBrowserTranslationRelationCount.key = a.key + '-R-' + a.reveal + '-' + rC.PredicateID.toString();
             assetBrowserTranslationRelationCount.expanded = false;
             assetBrowserTranslationRelationCount.count = rC.Count;
             assetBrowserTranslationRelationCount.direction = rC.Direction;
