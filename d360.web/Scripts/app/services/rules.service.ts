@@ -176,14 +176,14 @@ export class RulesService extends BaseObservableService {
     }
 
     hasCustomExport(uid: string): Observable<boolean>{
-        return this.http.get(`api/v2/scoring/hasCustomExport/${uid}`).pipe(
+        return this.http.get(`api/v2/exporttemplates/hasCustomExport/${uid}`).pipe(
             response => response,
             catchError(err => this.handleError(err))
         );
     }
 
     exportRules(uid: string, typeName: string){
-        this.http.get(`api/v2/scoring/exportRules/${uid}`, { responseType: "blob" }).pipe(
+        this.http.get(`api/v2/exporttemplates/exportRules/${uid}`, { responseType: "blob" }).pipe(
             map((response) => {
                 this.downloadFile(response, typeName);
             }),
@@ -192,7 +192,7 @@ export class RulesService extends BaseObservableService {
     }
 
     exportRulesCustomXls(exportTemplateID: number, uid: string, typeName: string) {
-        this.http.get(`api/v2/scoring/customExportRules/${uid}/${exportTemplateID}`, { responseType: "blob" }).pipe(
+        this.http.get(`api/v2/exporttemplates/customExportRules/${uid}/${exportTemplateID}`, { responseType: "blob" }).pipe(
             map((response) => {
                 this.downloadFile(response, typeName);
             }),

@@ -1,18 +1,22 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
+using d360.core.enums;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Filters;
 using d360.web.Models;
 using Dapper;
 using Microsoft.Web.Http;
+using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -27,11 +31,11 @@ namespace d360.web.Controllers.V2
     public class ExportTemplatesController : BaseV2ApiController
     {
         #region DI
-
-        public ExportTemplatesController(ICommunityContext community, ICompanyContext company)
+        private IAssetRepository assetRepository;
+        public ExportTemplatesController(ICommunityContext community, ICompanyContext company, IAssetRepository assetRepository)
             : base(community, company)
         {
-
+            this.assetRepository = assetRepository;
         }
 
         #endregion
@@ -363,5 +367,224 @@ namespace d360.web.Controllers.V2
 
             throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Export Template not found to update."));
         }
+
+        /// <summary>
+        /// Exports the list of Rules.
+        /// </summary>
+        /// <param name="uid">The Uid of the Rule Type.</param>
+        /// <returns>An excel sheet of the rules of the given rule type uid.</returns>
+        [
+            HttpGet,
+            Route("exportRules/{uid}"),
+            ApiExplorerSettings(IgnoreApi = true),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "Returns an excel sheet with all the rules.", typeof(List<Rule>)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetExportRules(string uid)
+        {
+            try
+            {
+                Guid guid = Guid.Empty;
+                if (!Guid.TryParse(uid, out guid) || guid == Guid.Empty)
+                {
+                    return errorMessageResponse(
+                        HttpStatusCode.BadRequest,
+                        "Invalid Guid", $"Please provide a valid Guid");
+                }
+                var stream = new MemoryStream();
+                SLDocument doc = await GetDefaultRuleDocument(guid);
+                doc.SaveAs(stream);
+                var result = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent(stream.GetBuffer())
+                };
+                result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+                var response = ResponseMessage(result);
+
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"{ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Custom exports.
+        /// </summary>
+        /// <param name="assetTypeUid">The assetTypeID of the Rule Type to custom export.</param>
+        /// <param name="templateID">The templateID of the custom export template.</param>
+        /// <returns>An custom excel sheet of the rules of the given rule type uid.</returns>
+        [
+            HttpGet,
+            Route("customExportRules/{assetTypeUid}/{templateID}"),
+            ApiExplorerSettings(IgnoreApi = true),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "Export custom templates.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> CustomExport(Guid assetTypeUid, int templateID)
+        {
+            var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+            var template = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.ID == templateID);
+
+            if (assetType == null)
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"No asset type with Uid of {assetTypeUid.ToString()}");
+
+            if (template == null)
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"No template with id of {templateID}");
+
+            var templateType = template.ExportViewType;
+            SLDocument doc = new SLDocument();
+            switch (templateType)
+            {
+                case ExportView.None:
+                    doc = await GetDefaultRuleDocument(assetType.uid, template);
+                    break;
+                case ExportView.Pivot:
+                    doc = await GetPivotRuleDocument(assetType.uid, template);
+                    break;
+                case ExportView.Grouped:
+                    doc = await GetGroupedRuleDocument(assetType.uid, template);
+                    break;
+                default:
+                    return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"Unrecognised export view type");
+            }
+
+            var stream = new MemoryStream();
+            doc.SaveAs(stream);
+            var result = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(stream.GetBuffer())
+            };
+            result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
+            var response = ResponseMessage(result);
+
+            return response;
+
+        }
+
+        /// <summary>
+        /// Check if the asset has custom exports.
+        /// </summary>
+        /// <param name="uid">The uid of the Rule Type to check for custom export.</param>
+        /// <returns>An excel sheet of the rules of the given rule type uid.</returns>
+        [
+            HttpGet,
+            Route("hasCustomExport/{uid}"),
+            ApiExplorerSettings(IgnoreApi = true),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "Check if the asset has custom export templates.", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult HasCustomExport(Guid uid)
+        {
+            var assettype = Company.AssetTypes.FirstOrDefault(x => x.uid == uid);
+            var res = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == assettype.ID);
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res));
+        }
+
+        private async Task<IEnumerable<dynamic>> GetRuleTypeFieldResults(Guid guid, List<FieldType> fieldTypes)
+        {
+            DynamicParameters dbArgs = new DynamicParameters();
+            string selectSql = @"
+                        SELECT 
+		                        A.ID as 'ID',
+		                        A.uid as 'AssetUid',
+		                        AT.uid as 'AssetTypeUid',
+		                        R.Threshold,
+		                        A.UpdatedOn,
+		                        A.CreatedOn,
+                                'asset/' +  + CAST(A.uid as varchar(36)) as 'Url'
+	                         ";
+
+            string joinsSql = "  ";
+
+            string whereSQL = "WHERE AT.uid = @uid";
+            dbArgs.Add("uid", guid);
+
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
+
+
+
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+            fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
+            fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Rule UID" });
+            fieldTypes.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Rule ID" });
+            fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+
+            foreach (var col in fieldColumns)
+            {
+                selectSql += "," + col;
+            }
+
+            foreach (var join in fieldJoins)
+            {
+                joinsSql += join;
+            }
+            var sql = $@"
+                            {selectSql}
+                            FROM dbo.[Rule] R
+                                    LEFT JOIN dbo.RuleType RT on R.RuleTypeID = RT.ID
+                                    INNER JOIN [dbo].Asset A on A.Object = 'Rule' and A.ObjectID = R.ID
+                                    INNER JOIN [dbo].AssetType AT on AT.ID = a.AssetTypeID
+                            {joinsSql} 
+                            {whereSQL}";
+
+            var results = await Company.QueryAsync<dynamic>(sql, dbArgs);
+            return results;
+        }
+
+        private List<FieldType> GetRuleTypeFields(Guid guid)
+        {
+            var assetType = assetRepository.GetAssetTypeByUID(guid);
+            var typesToAvoid = new List<string>() {
+                    DataType.Attribute.ToString(),
+                    DataType.ComplexRelationLookup.ToString(),
+                    DataType.DataTableSelect.ToString(),
+                    DataType.FilteredLookup.ToString(),
+                    DataType.OwnershipLookup.ToString()
+                };
+            var fieldTypes = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID).ToList()
+                                .Where(x => !typesToAvoid.Contains(x.Type)).ToList();
+
+
+            return fieldTypes;
+        }
+        private async Task<SLDocument> GetDefaultRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
+        {
+            List<FieldType> fieldTypes = GetRuleTypeFields(guid);
+            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
+
+            SLDocument document = new SLDocument();
+            document = GenerateDefaultSpreadsheet(fieldTypes, results, template, "Items");
+            return document;
+        }
+        private async Task<SLDocument> GetPivotRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
+        {
+            List<FieldType> fieldTypes = GetRuleTypeFields(guid);
+            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
+
+            SLDocument document = new SLDocument();
+            document = GeneratePivotedSpreadsheet(fieldTypes, results, template, "Items");
+            return document;
+        }
+
+        private async Task<SLDocument> GetGroupedRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
+        {
+            List<FieldType> fieldTypes = GetRuleTypeFields(guid);
+            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
+
+            SLDocument document = new SLDocument();
+            document = GenerateGroupedSpreadsheet(fieldTypes, results, template, "Items");
+            return document;
+        }
+
     }
 }
