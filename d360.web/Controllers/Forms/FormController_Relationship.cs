@@ -354,7 +354,9 @@ namespace d360.web.Controllers
 			     select IR.ID from [Intersect] IR
 			     inner join IntersectType ITR on ITR.ID = IR.IntersectTypeID and ITR.ID <> @it 
 			     inner join [Predicate] P on P.ID = ITR.PredicateID and P.[Type] = 14
-			     where IR.[Subject] = @source and IR.SubjectID = @id and IR.[Object] = a.Object and IR.ObjectID = a.ObjectID
+			     where 
+((IR.[Subject] = @source and IR.SubjectID = @id and IR.[Object] = a.Object and IR.ObjectID = a.ObjectID)
+ or (IR.[Object] = @source and IR.ObjectID = @id and IR.[Subject] = a.Object and IR.SubjectID = a.ObjectID))
 			) SR";
             }
 
