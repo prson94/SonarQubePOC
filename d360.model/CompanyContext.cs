@@ -3507,12 +3507,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
         }
 
-        public string GetAssetTypePath(int ID)
+        public Dictionary<Guid,string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds)
         {
             var dbArgs = new DynamicParameters();
-            dbArgs.Add("@ID", ID);
-            var sql = $@"SELECT P.[Path] from dbo.GetAssetTypeTextPathById(@ID, ' / ') P";
-            return Query<string>(sql, dbArgs).FirstOrDefault();
+            var sql = $@"select AT.[uid] as AssetUID, P.[Path] as assetTypePath 
+                            from AssetType AT cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P 
+                            where AT.class in({string.Join(",",assetClassIds.ToArray())})";
+
+            return Query<dynamic>(sql).ToDictionary(x => (Guid)x.AssetUID, x => x.assetTypePath as string);
         }
     }
 }
