@@ -426,4 +426,5 @@
   <include file="scripts/GOV-9525.xml"/> <!-- Update [graph].[GetHop] added parameter to include direction for impacts, and to include semantic relation impacts -->
   <include file="scripts/GOV-9232.xml"/> <!-- Dropped fusion.stagingFile and fusion.stagingfileitem tables -->
   <include file="scripts/GOV-9539.xml"/> <!-- clean up FieldType records with inappropriate LookupObjectType/LookupObjectID values -->
+  <include file="scripts/GOV-9554.xml"/> <!-- graph.UpdateAssetEdge - consider changes to subject/object of relationship and recreate record if necessary -->
 </databaseChangeLog>
