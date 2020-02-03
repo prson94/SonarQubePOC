@@ -1177,6 +1177,18 @@ offset 0 rows fetch next 25 rows only
 
                 if (model.FieldType.Type != DataType.Lookup.ToString())
                     model.FieldType.ParentFieldTypeID = 0;
+                
+                if (!new[] { "Lookup"
+                    , "FieldFromRelationship"
+                    , "Relationship"
+                    , "FilteredLookup"
+                    , "OwnershipLookup"
+                    , "RefListRelationship"
+                    , "FusionLookup" }.Contains(model.FieldType.Type.ToString()))
+                {
+                    model.FieldType.LookupObjectID = null;
+                    model.FieldType.LookupObjectType = null;
+                }
 
                 switch (model.FieldType.Type)
                 {
