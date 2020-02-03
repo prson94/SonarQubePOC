@@ -586,6 +586,18 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             return;
         }
 
+        if (this.objectType == "ExportTemplate" && field.Name == "Asset Type") {
+            var item = field.Items.filter(x => {
+                return x.Value == field.Value
+            })[0];
+            if (item && item.Text.startsWith("Rule")) {
+                this.fields.find(x => x.FieldName == "IncludeParent").FieldType = "no-display";
+                this.ref.detectChanges();
+            } else {
+                this.fields.find(x => x.FieldName == "IncludeParent").FieldType = "Boolean";
+                this.ref.detectChanges();
+            }
+        }
         if (field.FieldType == 'Relationship' && field.IsSemantic === true) {
             this.editorChange.next(event);
         }
