@@ -388,7 +388,18 @@ namespace d360.model.DataAccessLayer
                     List<string> simpleFilters = new List<string>();
                     foreach(var ft in fieldTypes.Where(x=> x.IsListable == true))
                     {
-                        simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+                        if (ft.Type == "Tag")
+                        {
+                            string simpleFilterTagSql = @"exists (select top 1 AT.TagId from AssetTag AT
+						                                inner join Tag T on AT.TagId = T.Id
+						                                where AT.AssetID = A.ID and T.Value like @simpleFilter)";
+
+                            simpleFilters.Add(simpleFilterTagSql);
+                        }
+                        else
+                        {
+                            simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+                        }
                     }
 
                     whereStatements.Add($"({string.Join(" or ", simpleFilters)})");
