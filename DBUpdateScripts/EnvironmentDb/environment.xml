@@ -425,4 +425,5 @@
   <include file="scripts/GOV-9485.xml"/> <!-- Add triggers to ResponsibilityRuleResultSecurityAsset to update index on affected Assets and change of read access on ResponsibilityTypeRelation-->
   <include file="scripts/GOV-9525.xml"/> <!-- Update [graph].[GetHop] added parameter to include direction for impacts, and to include semantic relation impacts -->
   <include file="scripts/GOV-9232.xml"/> <!-- Dropped fusion.stagingFile and fusion.stagingfileitem tables -->
+  <include file="scripts/GOV-9539.xml"/> <!-- clean up FieldType records with inappropriate LookupObjectType/LookupObjectID values -->
 </databaseChangeLog>

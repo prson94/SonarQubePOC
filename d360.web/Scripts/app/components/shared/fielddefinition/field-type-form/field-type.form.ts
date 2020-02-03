@@ -365,6 +365,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         }
 
+
         switch (value.toLowerCase()) {
             case 'lookup':
                 observables.push(this.lookupTypeSelected(this.model.selectedLookup || this.lookups.Lookups[0].value));
@@ -439,6 +440,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsPartOfKey = false;
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.LookupDisplayFormat = null;
+                this.model.FieldType.LookupObjectID = null;
+                this.model.FieldType.LookupObjectType = null;
                 if (this.model.RelationItems == null || this.model.RelationItems.length == 0) {
                     let r = new FieldTypeRelationItemEditorModel();
 
@@ -476,6 +479,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsPartOfKey = false;
                 this.model.FieldType.IsRequired = false;
                 this.model.FieldType.LookupDisplayFormat = null;
+                this.model.FieldType.LookupObjectID = null;
+                this.model.FieldType.LookupObjectType = null;
                 break;
             case 'json':
                 this.model.FieldType.IsEditable = false;
@@ -483,6 +488,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.IsPartOfKey = false;
                 this.model.FieldType.AllowMultipleValues = false;
                 this.model.FieldType.IsPrimaryFilter = false;
+                this.model.FieldType.LookupDisplayFormat = null;
+                this.model.FieldType.LookupObjectID = null;
+                this.model.FieldType.LookupObjectType = null;
                 break;
             case 'ownershiplookup':
                 if (!this.model.OwnershipLookupSettings) this.model.OwnershipLookupSettings = new OwnershipLookupSettings();
@@ -503,6 +511,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.showIsEditable = false;
                 this.showDescription = false;
                 this.enableAllowMultipleValues = false;
+                this.model.FieldType.LookupDisplayFormat = null;
+                this.model.FieldType.LookupObjectID = null;
+                this.model.FieldType.LookupObjectType = null;
                 break;
             default:
                 this.model.FieldType.LookupDisplayFormat = null;
