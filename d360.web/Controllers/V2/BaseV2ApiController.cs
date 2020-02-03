@@ -116,7 +116,7 @@ namespace d360.web.Controllers.V2
                         inner join Asset R on R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
                         inner join Field F on F.FieldTypeID = {f.LookupObjectFieldTypeID} and F.AssetID = R.ID
                         where I.[Subject] = A.Object and I.SubjectID = A.ObjectID and I.IntersectTypeID = {f.LookupObjectID}
-                    ) {tableAlias}");
+                    ) {tableAlias} ");
                 }
                 else if (f.Type == "JsonElement")
                 {
@@ -157,7 +157,7 @@ namespace d360.web.Controllers.V2
 			                    inner Join Asset RA on 
 			                    I.[IntersectTypeID] = {intersectType.ID} AND 
 			                    (((A.[Object] = I.[Subject] and A.[ObjectID] = I.[SubjectID]) AND (RA.[Object] = I.[Object] and RA.[ObjectID] = I.[ObjectID])) 
-			                    OR (A.[Object] = I.[Object] and A.[ObjectID] = I.[Object]) AND (I.[Subject] = RA.[Object] and I.[SubjectID] = RA.ObjectID))
+			                    OR (A.[Object] = I.[Object] and A.[ObjectID] = I.[ObjectID]) AND (I.[Subject] = RA.[Object] and I.[SubjectID] = RA.ObjectID))
 			                    cross apply GetAssetTextPathById(RA.ID, '/') P
 			                    Where 
 			                    I.[IntersectTypeID] = {intersectType.ID} AND
@@ -166,7 +166,7 @@ namespace d360.web.Controllers.V2
 			                    (I.[Subject] = A.[Object] and I.[SubjectID] = A.ObjectID))
 		                    for xml path ('')
 		                    ), 2, 1, '')
-		                    ){tableAlias}(FormattedValue)");
+		                    ){tableAlias}(FormattedValue) ");
                 }
                 else
                 {
