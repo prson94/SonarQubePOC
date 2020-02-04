@@ -534,7 +534,7 @@ namespace d360.model.DataAccessLayer
             return model;
         }
 
-        public List<string> GetMetricStructureFragments(Guid assetTypeUid)
+        public List<string> GetMetricStructureFragments(Guid assetTypeUid, ScoreType scoreTypeFilter)
         {
             return Company.Query<string>($@"
                     select	A.Uid,
@@ -562,7 +562,7 @@ namespace d360.model.DataAccessLayer
                     			where	Uid = A.Uid
                     		) MV
                     		inner join metrics.AssetVersion V on V.Uid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] = 1
-                    where	A.AssetTypeUid = '{assetTypeUid.ToString()}'
+                    where	A.AssetTypeUid = '{assetTypeUid.ToString()}' and A.ScoreType = {(int)scoreTypeFilter}
                     for		json path").ToList();
         }
 
