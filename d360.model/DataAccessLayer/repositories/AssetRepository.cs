@@ -384,7 +384,7 @@ namespace d360.model.DataAccessLayer
                     simpleFilter = CompanyContext.GetEscapedFilterString(simpleFilter);
 
                     dbArgs.Add("@simpleFilter", simpleFilter);
-                    
+
                     List<string> simpleFilters = new List<string>();
                     foreach(var ft in fieldTypes.Where(x=> x.IsListable == true))
                     {
@@ -1378,7 +1378,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 }
                 orderDirection = allowedDirections.Contains(order.Trim().ToLower()) ? order : "asc";
             }
-            
+
             if (!queryParams.Any(p => p.Key == "_order"))
             {
                 orderBySql = $" order by [CompletedOn] {orderDirection} ";
@@ -1406,7 +1406,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             if (queryParams.Any(x => x.Key.Equals("_pageSize",StringComparison.OrdinalIgnoreCase)))
                 if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out pageSize))
                     if (pageSize < 1) pageSize = 1;
-           
+
             if (pageSize > 0 || pageNum > 0)
             {
                 if (pageSize < 1) pageSize = 1;
@@ -1416,7 +1416,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
 
                 offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only ";
-            }          
+            }
 
 
             var sql = $@"
@@ -1899,6 +1899,45 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         }
                     });
 
+
+                bool useTypeLevelDefaultSorts = false;
+                var defSorts = queryParams.FirstOrDefault(x => x.Key.ToLower() == "usetypeleveldefaultsorts");
+                if (!string.IsNullOrEmpty(defSorts.Key))
+                    bool.TryParse(defSorts.Value, out useTypeLevelDefaultSorts);
+
+                if (useTypeLevelDefaultSorts)
+                {
+                    var orderFields = fieldTypes.Where(x => x.SortOrder > 0 && x.IsListable == true)
+                        .OrderBy(x => x.SortOrder)
+                        .GroupBy(x => x.SortOrder)
+                        .ToList();
+
+                    if (orderFields.Count == 0)
+                        orderBySql = "order by A.ID ";
+                    else
+                    {
+                        List<string> sortStatements = new List<string>();
+                        orderFields.ForEach(ft =>
+                        {
+                            if (ft.Count() == 1)
+                            {
+                                sortStatements.Add(getFieldDataTypeWrapper(ft.FirstOrDefault()));
+                            }
+                            else
+                            {
+                                //If same sort number order by field type Name
+                                var fts = ft.ToList().OrderBy(x => x.Name).ToList();
+                                fts.ForEach(_ft =>
+                                {
+                                    sortStatements.Add(getFieldDataTypeWrapper(_ft));
+                                });
+                            }
+                        });
+
+                        orderBySql = "order by " + string.Join(", ", sortStatements);
+                    }
+                }
+
                 pagingSql.Add(orderBySql);
 
                 if (pageSize > 0 || pageNum > 0)
@@ -1914,6 +1953,28 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 }
 
             }
+        }
+
+        private string getFieldDataTypeWrapper(FieldType ft)
+        {
+            var fieldType = getFieldDataType(ft);
+
+            if (!string.IsNullOrEmpty(fieldType))
+            {
+                string val = $"F{ft.ID}.FormattedValue";
+
+                if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
+                {
+                    val = $"coalesce({val}, {ft.DefaultFormattedValue})";
+                }
+
+                if (fieldType == "bit")
+                    return $"try_cast(case when {val} = 'true' then 1 else 0 end as {fieldType})";
+                else
+                    return $"try_cast({val} as {fieldType})";
+            }
+
+            return $"F{ft.ID}.FormattedValue";
         }
         private string getFieldDataType(FieldType field)
         {
