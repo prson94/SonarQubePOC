@@ -608,16 +608,24 @@ namespace d360.web.Controllers.V2
             int index = 1;
             foreach (var field in fields)
             {
-                if (field.ColumnWidth.HasValue)
+                try
                 {
-                    int width = field.ColumnWidth.Value > 0 ? field.ColumnWidth.Value / 10 : 0;
-                    document.SetColumnWidth(index, width);
+                    if (field.ColumnWidth.HasValue)
+                    {
+                        int width = field.ColumnWidth.Value > 0 ? field.ColumnWidth.Value / 10 : 0;
+                        document.SetColumnWidth(index, width);
+                    }
+                    else
+                    {
+                        document.AutoFitColumn(index);
+                    }
+                    index++;
                 }
-                else
+                catch (Exception e)
                 {
-                    document.AutoFitColumn(index);
+                    document.SetColumnWidth(index, 10);
+                    index++;
                 }
-                index++;
             }
         }
         #endregion
