@@ -27,7 +27,7 @@
                             <div *ngFor="let field of row.Fields"
                                     [class]="'field-col col ' + row.getColClass()"
                                     style="padding-bottom:10px;">
-                                <d3s-dynamic-field [field]="field"
+                                <d3s-dynamic-field *ngIf="field.FieldType !== 'no-display'" [field]="field"
                                                     [form]="form"
                                                     (listItemChange)="listSelectionChanged($event)"
                                                     [editorChange]="editorChange"
@@ -44,7 +44,7 @@
                             <div *ngFor="let field of row.Fields"
                                     [class]="'field-col col ' + row.getColClass()"
                                     style="padding-bottom:10px;">
-                                <d3s-dynamic-field [field]="field"
+                                <d3s-dynamic-field *ngIf="field.FieldType !== 'no-display'" [field]="field"
                                                     [form]="form"
                                                     (listItemChange)="listSelectionChanged($event)"
                                                     [editorChange]="editorChange"
@@ -101,7 +101,7 @@
                             <div class="row"
                                  *ngFor="let row of category.rows">
                                 <div *ngFor="let field of row.Fields" [class]="'form-row'">
-                                    <d3s-dynamic-field [useNewUI]="true"
+                                    <d3s-dynamic-field *ngIf="field.FieldType !== 'no-display'" [useNewUI]="true"
                                                        [field]="field"
                                                        [form]="form"
                                                        (listItemChange)="listSelectionChanged($event)"
@@ -117,7 +117,7 @@
                             <div class="row"
                                  *ngFor="let row of category.rows">
                                 <div *ngFor="let field of row.Fields" [class]="'form-row'">
-                                    <d3s-dynamic-field [useNewUI]="true"
+                                    <d3s-dynamic-field *ngIf="field.FieldType !== 'no-display'" [useNewUI]="true"
                                                        [field]="field"
                                                        [form]="form"
                                                        (listItemChange)="listSelectionChanged($event)"

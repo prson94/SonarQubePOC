@@ -45,6 +45,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
+import { RuleCustomExportComponent } from './rule-custom-export.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -95,6 +96,7 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
         RuleQualifierGridComponent,
         RuleQualifierEditorComponent,
         RuleQualifiersComponent,
+        RuleCustomExportComponent,
     ],
     providers: [
         {

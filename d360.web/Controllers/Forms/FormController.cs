@@ -3029,7 +3029,13 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             var template = Company.AssetTypeExportTemplates.Where(x => x.ID == id).FirstOrDefault();
 
             var list = new List<EditableField>();
-
+            var assetPaths = Company.GetAssetTypePathsByAssetClasses(
+                new List<int>()
+                {
+                    { (int)AssetTypeClass.BusinessAsset },
+                    { (int)AssetTypeClass.TechnicalAsset },
+                    { (int) AssetTypeClass.Rule }
+                });
             list.Add(new EditableField { FieldName = "ID", Name = "ID", FieldType = DataType.Hidden.ToString(), Value = template.ID.ToString() });
             list.Add(new EditableField { FieldName = "IncludeFields", Name = "IncludeFields", FieldType = DataType.Hidden.ToString(), Value = (string.IsNullOrEmpty(template.IncludeFields) ? "" : template.IncludeFields.ToString()) });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Namespace", true, "", 1, 250), Value = template.Name });
@@ -3038,12 +3044,18 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names });
 
-            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset || f.Class == AssetTypeClass.Rule).ToArray()
+                .Select(i => new SelectListItem {
+                    Text = $"{i.Class.GetDisplayName()} : {assetPaths[i.uid]}",
+                    Value = i.uid.ToString(), Selected = template.AssetTypeID == i.ID }).OrderBy(x => x.Text).ToList();
             
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Asset Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() , Value = template.IncludeUrl.ToString()});
-            list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent Name", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = template.IncludeParent.ToString() });
+
+            if(template.AssetType.Class != AssetTypeClass.Rule)
+                list.Add(new EditableField { Row = 6, Column = 1, Required = true, FieldName = "IncludeParent", Name = "Include Parent Name", FieldDescription = "", FieldType = DataType.Boolean.ToString(), Value = template.IncludeParent.ToString() });
+
             list.Add(new EditableField { Row = 7, Column = 1, Required = false, FieldName = "UsageNotes", Name = "Usage Notes", FieldDescription = "", FieldType = DataType.Text.ToString(), Value = template.UsageNotes });
 
             return Json(list, JsonRequestBehavior.AllowGet);
@@ -3052,7 +3064,13 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         private JsonResult ExportTemplate_AddFields()
         {
             var list = new List<EditableField>();
-                        
+            var assetPaths = Company.GetAssetTypePathsByAssetClasses(
+                new List<int>()
+                {
+                    { (int)AssetTypeClass.BusinessAsset },
+                    { (int)AssetTypeClass.TechnicalAsset },
+                    { (int) AssetTypeClass.Rule }
+                });
             list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "Name", Name = "Name", FieldDescription = "", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Namespace", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = false, FieldName = "Description", Name = "Description", FieldDescription = "", FieldType = DataType.Text.ToString() });
 
@@ -3060,7 +3078,10 @@ order by I.RowIndex asc, C.ColumnIndex asc";
             
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "ExportViewType", Name = "List Arrangement", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = names});
 
-            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset).Select(i => new SelectListItem { Text = i.Name, Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
+            var types = Company.AssetTypes.Where(f => f.Class == AssetTypeClass.BusinessAsset || f.Class == AssetTypeClass.TechnicalAsset || f.Class == AssetTypeClass.Rule).ToArray()
+                .Select(i => new SelectListItem {
+                    Text = $"{i.Class.GetDisplayName()} : {assetPaths[i.uid]}",
+                    Value = i.uid.ToString() }).OrderBy(x=>x.Text).ToList();
             list.Add(new EditableField { Row = 4, Column = 1, Required = true, FieldName = "AssetTypeUID", Name = "Asset Type", FieldDescription = "", FieldType = DataType.Lookup.ToString(), Items = types });
 
             list.Add(new EditableField { Row = 5, Column = 1, Required = true, FieldName = "IncludeUrl", Name = "Include Asset Url", FieldDescription = "", FieldType = DataType.Boolean.ToString() });

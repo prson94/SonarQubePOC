@@ -40,6 +40,8 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     private ruleType: RuleType;
     private showEditor: boolean = false;
     private showDelete: boolean = false;
+    private showCustomExport: boolean = false;
+    private hasCustomExport: boolean = false;
 
     columns: GridColumn[] = [];
     fields: GridField[] = [];
@@ -67,9 +69,14 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         return f;
     }
 
+    private exportCustomRules() {
+        this.showCustomExport = true;
+    }
+
     ngOnInit() {
         this.routeParamsSubscription = this.route.params.subscribe(params => {
-
+            
+            this.showCustomExport = false;
             this.ruleTypeId = +params['ruleTypeId'];
             this.currentAreaNameSubscription =
                 this.headerBreadcrumbService
@@ -87,6 +94,9 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                     this.isLoading = false;
                     this.ruleType = result;
                     this.setObjectInfo('RuleType', this.ruleType.ID);
+                    this.rulesService.hasCustomExport(this.ruleType.AssetTypeUID).subscribe(res => {
+                        this.hasCustomExport = res;
+                    });
                     this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res));
@@ -98,7 +108,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                             undefined,
                             true));
 
-                        this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
+                        this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID, this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
                             this.secondaryNavService.setCurrentArea(this.ruleType.Name, icon, 'Rules');
                             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true));
                             this.setCommonSecondaryNavTabs(false, false, this.ruleType.HasDashboards);

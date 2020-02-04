@@ -144,7 +144,7 @@ export class RulesService extends BaseObservableService {
     }
 
     downloadFile(data: any, name: string = 'Rule Data') {
-        var filename = `${name} list ${new Date().toDateString()}.xlsx`;
+        var filename = `${name} ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob(data, filename);
         }
@@ -175,10 +175,26 @@ export class RulesService extends BaseObservableService {
             return this.putDynamic(this.http, 'ruleimplementation', implementation);
     }
 
-    exportRules(uid: string,  typeName: string){
-        this.http.get(`api/v2/scoring/exportRules/${uid}`, { responseType: "blob" }).pipe(
+    hasCustomExport(uid: string): Observable<boolean>{
+        return this.http.get(`api/v2/exporttemplates/hasCustomExport/${uid}`).pipe(
+            response => response,
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    exportRules(uid: string, typeName: string){
+        this.http.get(`api/v2/exporttemplates/exportRules/${uid}`, { responseType: "blob" }).pipe(
             map((response) => {
-                this.downloadFile(response, );
+                this.downloadFile(response, typeName);
+            }),
+            catchError(err => this.handleError(err))
+        ).subscribe();
+    }
+
+    exportRulesCustomXls(exportTemplateID: number, uid: string, typeName: string) {
+        this.http.get(`api/v2/exporttemplates/customExportRules/${uid}/${exportTemplateID}`, { responseType: "blob" }).pipe(
+            map((response) => {
+                this.downloadFile(response, typeName);
             }),
             catchError(err => this.handleError(err))
         ).subscribe();
