@@ -1104,12 +1104,11 @@ from	api.ExecutionField T
                                 break;
                             case "Lookup":
                                 break;
-                            case "Number":
-                                int intTest;
-                                if (!int.TryParse(fieldValue, out intTest) && !string.IsNullOrEmpty(fieldValue))
+                            case "Number":                                
+                                if (!long.TryParse(fieldValue, out _) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessages.Add($"{fieldName} must be a valid whole number");
+                                    errorMessages.Add($"{fieldName} must be a valid whole number, greater than -9223372036854775808 and less than 9223372036854775807.");
                                 }
                                 break;
                             case "Percentage":
