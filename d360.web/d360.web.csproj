@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -1088,6 +1088,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-allocation.component.ts" />
     <Content Include="Scripts\app\components\admin\analytics\admin-allocation-editor.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-allocation-editor.component.ts" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-data-quality.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-data-quality.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-list.component.ts" />

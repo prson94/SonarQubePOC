@@ -43,6 +43,7 @@ import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { AdminAllocationEditorComponent } from './admin-allocation-editor.component';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component';
+import { AdminDataQualityListComponent } from './admin-data-quality.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -90,7 +91,8 @@ import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component
         AdminMetricEditorComponent,
         AdminMetricListComponent,
         AdminAllocationEditorComponent,
-        AdminAnalyticsDetailsComponent 
+        AdminAnalyticsDetailsComponent,
+        AdminDataQualityListComponent
     ],
     providers: [
         {

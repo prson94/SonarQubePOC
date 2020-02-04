@@ -13,6 +13,7 @@ import { AssetTypeService } from '../../../services/asset-type.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { AllocationService } from '../../../services/allocations.service';
+import { ScoreType } from '../../../models/metrics.model';
 
 @Component({
     selector: 'd3s-admin-analytics-details',
@@ -20,7 +21,9 @@ import { AllocationService } from '../../../services/allocations.service';
                         <div class="row" *ngIf="selectedAssetType != null">
                             <div class="col s12">
                                 <div class="tile tile-detail">  
-                                    <d3s-admin-metric-list [assetType]="selectedAssetType" (selectionChange)="selectedMetric = $event"></d3s-admin-metric-list>
+                                    <d3s-admin-metric-list *ngIf="scoreTypeEnumValue == 'Governance'" [assetType]="selectedAssetType" (selectionChange)="selectedMetric = $event"></d3s-admin-metric-list>
+                                
+                                    <d3s-admin-data-quality-list *ngIf="scoreTypeEnumValue == 'DataQuality'"></d3s-admin-data-quality-list>
                                 </div>
                             </div>
                         </div>
@@ -35,7 +38,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     routeParamsSubscription: any;
 
     private assetGuid: string;
-    private scoreTypeEnumValue: number;
+    private scoreTypeEnumValue: ScoreType;
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -49,21 +52,17 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         titleService: Title) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Scoring";
-        this.tabTitle = 'Governance Score';
-        this.setCommonItems();
-        this.setCommonSecondaryNavTabs(false);
-
     }
 
     ngOnInit() {
         this.routeParamsSubscription = this.route.params.subscribe(params => {
             this.assetGuid = params['assetTypeUid'];
-            this.scoreTypeEnumValue = +params['scoreTypeEnumValue'];
+            this.scoreTypeEnumValue = params['scoreTypeEnumValue'];
             this.assetTypeService.GetAssetTypeByUid(this.assetGuid).subscribe(res => {
                 this.selectedAssetType = { Class: res.Class.Name, Name: res.Name, Uid: res.uid };
                 this.changeAssetType(this.selectedAssetType);
             });
-
+            this.setScoringSecondaryNavTabs(this.scoreTypeEnumValue, this.assetGuid);
         });
     }
 
@@ -78,6 +77,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         this.tabTitle = 'Governance Score';
         this.setCommonItems(true, this.selectedAssetType.Name);
         this.setCommonSecondaryNavTabs(false);
+        this.setScoringSecondaryNavTabs(this.scoreTypeEnumValue, this.selectedAssetType.Uid);
         this.allocationService.getAllocations()
             .subscribe(r => {
                 var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);
@@ -88,7 +88,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     searchRes.Url = url;
                     searchRes.Uid = x.assetTypeUid;
                     crumb.preLoadedTypeAhead.push(searchRes);
-                }); 
+                });
                 this.headerBreadcrumbService.showBreadcrumb(crumb);
                 this.isLoading = false;
             });
