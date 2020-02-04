@@ -21,9 +21,7 @@ import { ScoreType } from '../../../models/metrics.model';
                         <div class="row" *ngIf="selectedAssetType != null">
                             <div class="col s12">
                                 <div class="tile tile-detail">  
-                                    <d3s-admin-metric-list *ngIf="scoreTypeEnumValue == 'Governance'" [assetType]="selectedAssetType" (selectionChange)="selectedMetric = $event"></d3s-admin-metric-list>
-                                
-                                    <d3s-admin-data-quality-list *ngIf="scoreTypeEnumValue == 'DataQuality'"></d3s-admin-data-quality-list>
+                                    <d3s-admin-metric-list [scoreType]="scoreTypeEnumValue" [assetType]="selectedAssetType" (selectionChange)="selectedMetric = $event"></d3s-admin-metric-list>
                                 </div>
                             </div>
                         </div>
@@ -62,7 +60,6 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                 this.selectedAssetType = { Class: res.Class.Name, Name: res.Name, Uid: res.uid };
                 this.changeAssetType(this.selectedAssetType);
             });
-            this.setScoringSecondaryNavTabs(this.scoreTypeEnumValue, this.assetGuid);
         });
     }
 
@@ -75,9 +72,9 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         this.areaName = 'Scoring';
         this.areaLink = '/admin/scoring';
         this.tabTitle = 'Governance Score';
+
         this.setCommonItems(true, this.selectedAssetType.Name);
         this.setCommonSecondaryNavTabs(false);
-        this.setScoringSecondaryNavTabs(this.scoreTypeEnumValue, this.selectedAssetType.Uid);
         this.allocationService.getAllocations()
             .subscribe(r => {
                 var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);
@@ -89,6 +86,10 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     searchRes.Uid = x.assetTypeUid;
                     crumb.preLoadedTypeAhead.push(searchRes);
                 });
+
+                var types = r.filter(x => x.assetTypeUid.toLowerCase() == this.selectedAssetType.Uid.toLowerCase()).map(x => x.scoreType.toString())
+                this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, types.some(x => x == 'Governance'), types.some(x => x == 'DataQuality'), this.scoreTypeEnumValue);
+
                 this.headerBreadcrumbService.showBreadcrumb(crumb);
                 this.isLoading = false;
             });

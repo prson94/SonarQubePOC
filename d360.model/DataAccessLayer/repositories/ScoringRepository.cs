@@ -114,6 +114,7 @@ namespace d360.model.DataAccessLayer
 	                        P.[Path] as assetTypePath,
 	                        AL.scoreType,
 	                        AL.[state],
+                            AL.isExternallyCalculated,
                             case 
                                 when Measures.F > 0 then 1
 								else 0
@@ -136,6 +137,7 @@ namespace d360.model.DataAccessLayer
             {
                 alloc.State = State.Active;
                 alloc.UpdatedBy = companyContext.CurrentResourceID;
+                alloc.IsExternallyCalculated = model.isExternallyCalculated;
                 alloc.UpdatedOn = DateTime.UtcNow;
                 companyContext.SaveChanges();
             }
@@ -146,6 +148,7 @@ namespace d360.model.DataAccessLayer
                 alloc.ScoreType = model.scoreType;
                 alloc.CreatedBy = alloc.UpdatedBy = companyContext.CurrentResourceID;
                 alloc.CreatedOn = alloc.UpdatedOn = DateTime.UtcNow;
+                alloc.IsExternallyCalculated = model.isExternallyCalculated;
                 companyContext.ScoreTypeAllocations.Add(alloc);
                 companyContext.SaveChanges();
 
@@ -161,7 +164,8 @@ namespace d360.model.DataAccessLayer
 	                        AL.assettypeuid,
 	                        P.[Path] as assetTypePath,
 	                        AL.scoreType,
-	                        AL.[state]
+	                        AL.[state],
+                            AL.isExternallyCalculated
                         from metrics.Allocation AL
 	                        inner join AssetType AT on AT.uid = AL.assettypeuid                                    
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
@@ -176,6 +180,7 @@ namespace d360.model.DataAccessLayer
             alloc.AssetTypeUid = model.assetTypeUid;
             alloc.ScoreType = model.scoreType;
             alloc.UpdatedBy = companyContext.CurrentResourceID;
+            alloc.IsExternallyCalculated = model.isExternallyCalculated;
             alloc.UpdatedOn = DateTime.UtcNow;
             companyContext.SaveChanges();
 
@@ -190,7 +195,8 @@ namespace d360.model.DataAccessLayer
 	                        AL.assettypeuid,
 	                        P.[Path] as assetTypePath,
 	                        AL.scoreType,
-	                        AL.[state]
+	                        AL.[state],
+                            AL.isExternallyCalculated
                         from metrics.Allocation AL
 	                        inner join AssetType AT on AT.uid = AL.assettypeuid                                    
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P

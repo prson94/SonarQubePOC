@@ -1,6 +1,6 @@
 import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
@@ -18,6 +18,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
     @Input() assetTypeUid: string;
     @Input() uid: string;
     @Input() parentUid: string;
+    @Input() scoreType: ScoreType;
 
     @Input() metricEditorFieldTypes: MetricFieldTypeViewModel[] = [];
 
@@ -90,8 +91,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
             prevDate = this.model.EffectiveDate;
             this.model.EffectiveDate = new Date(<string>this.model.EffectiveDate).toISOString();
         }
-            
-
+        this.model.ScoreType = this.scoreType;
         this.metricsService.saveMetric(this.model)
             .subscribe(r => {
                 this.isLoading = false;

@@ -39,9 +39,16 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
     scoreTypeChange($event) {
         this.populateAssetTypesDDL();
+        if (this.selection.scoreType.toString() == 'Governance')
+            this.selection.isExternallyCalculated = false;
+
+        if (this.selection.scoreType.toString() == 'DataQuality')
+            this.selection.isExternallyCalculated = true;
+
     }
 
     private populateAssetTypesDDL() {
+
         this.allocationService.getunallocatedAssetTypes(this.selection.scoreType)
             .subscribe(data => {
                 this.ddlAssetTypes = [];
@@ -88,6 +95,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
         item.assetTypeUid = this.selection.assetTypeUid;
         item.scoreType = this.selection.scoreType;
+        item.isExternallyCalculated = this.selection.isExternallyCalculated;
         this.savingInProgress = true;
         this.allocationService.save(item)
             .subscribe(res => {

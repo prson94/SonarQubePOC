@@ -61,6 +61,7 @@ export class BaseComponent {
 
 
     scoringDataQualitySidebar: SecondaryNavItem;
+    scoringGovernanceSidebar: SecondaryNavItem;
     // tabs
 
     lineageShowUsageOnly = false;
@@ -200,27 +201,37 @@ export class BaseComponent {
             this.breadcrumbsService.buildFromStorage();
     }
 
-    setScoringSecondaryNavTabs(scoreTypeEnumValue: ScoreType, assetTypeUid: string) {
-        console.log(scoreTypeEnumValue);
-        console.log(assetTypeUid);
-
+    setScoringSecondaryNavTabs(assetTypeUid: string, hasGovernance: boolean, hasDataQuality: boolean, currentType: ScoreType) {
         var baseUrl = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${assetTypeUid}/`;
 
         if (this.secondaryNavService) {
             this.clearSidebar();
 
-            this.scoringDataQualitySidebar = new SecondaryNavItem(
-                'Data Quality Score',
-                'Data Quality Score',
-                ['fa-drivers-license-o'],
-                `${baseUrl}DataQuality`, null, 20
-            );
-            this.secondaryNavService.showItem(this.scoringDataQualitySidebar);
-
-            if (scoreTypeEnumValue.toString() == "DataQuality") {
-                this.scoringDataQualitySidebar.active = true;
+            if (hasGovernance) {
+                this.scoringGovernanceSidebar = new SecondaryNavItem(
+                    'Governance Score',
+                    'Governance Score',
+                    ['fa-drivers-license-o'],
+                    `${baseUrl}Governance`, null, 20
+                );
+                this.secondaryNavService.showItem(this.scoringGovernanceSidebar);
             }
 
+            if (hasDataQuality) {
+                this.scoringDataQualitySidebar = new SecondaryNavItem(
+                    'Data Quality Score',
+                    'Data Quality Score',
+                    ['fa-drivers-license-o'],
+                    `${baseUrl}DataQuality`, null, 20
+                );
+                this.secondaryNavService.showItem(this.scoringDataQualitySidebar);
+            }
+
+            if (currentType.toString() == 'Governance')
+                this.scoringGovernanceSidebar.active = true;
+
+            if (currentType.toString() == 'DataQuality')
+                this.scoringDataQualitySidebar.active = true;
         }
     }
 

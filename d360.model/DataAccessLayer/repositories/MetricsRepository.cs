@@ -131,6 +131,7 @@ namespace d360.model.DataAccessLayer
 
                 metricAsset.Description = model.Description;
                 metricAsset.Name = model.Name.Trim();
+                metricAsset.ScoreType = model.ScoreType;
 
                 // If results, then you cannot change. 
                 if (existingResultCount > 0 && model.IsGroup)
@@ -155,7 +156,8 @@ namespace d360.model.DataAccessLayer
                     Description = model.Description,
                     IsGroup = model.IsGroup,
                     Name = model.Name.Trim(),
-                    State = State.Active
+                    State = State.Active,
+                    ScoreType = model.ScoreType
                 };
 
                 if (model.AssetTypeUid == Guid.Empty)

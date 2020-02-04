@@ -119,7 +119,7 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You are have provided an invalid name.");
             }
 
-            if (model.Weight == 0)
+            if (model.Weight == 0 && model.ScoreType != ScoreType.DataQuality)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You must supply a weight greater than 0.");
             }
@@ -133,6 +133,13 @@ namespace d360.web.Controllers.V2
             if (model.Conditions.Any(x => x.FieldTypeID <= 0))
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldTypeID must be greater than 0.");
+            }
+
+            List<ScoreType> allowedScoreTypes = new List<ScoreType>() { ScoreType.Governance, ScoreType.DataQuality };
+            //backward compatibility
+            if (!allowedScoreTypes.Contains(model.ScoreType))
+            {
+                model.ScoreType = ScoreType.Governance;
             }
 
             var isNew = true;
