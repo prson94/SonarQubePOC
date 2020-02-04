@@ -277,6 +277,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("structure/{assetTypeUid:Guid}"),
+            SwaggerParameter("_scoreType", "Filter results by score type. By default results are filtered by Governance Score type", DataType = "string", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             ApiExplorerSettings(IgnoreApi = true)
         ]
@@ -292,10 +293,32 @@ namespace d360.web.Controllers.V2
             {
                 List<MetricAssetViewModel> models = null;
 
-                List<string> fragments = MetricsRepository.GetMetricStructureFragments(assetTypeUid);
+                ScoreType filterScoreTypes = ScoreType.Governance;
+
+                var queryParams = Request.GetQueryNameValuePairs();
+
+                foreach (var qp in queryParams.ToList())
+                {
+                    switch (qp.Key.ToLower())
+                    {
+                        case "_scoretype":
+                            Enum.TryParse(qp.Value, true, out filterScoreTypes);
+
+                            List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance, ScoreType.Perceptional };
+
+                            if (!scoreTypes.Contains(filterScoreTypes) || string.IsNullOrEmpty(qp.Value))
+                            {
+                                return errorMessageResponse(HttpStatusCode.BadRequest, "Error retrieve the metric heirarchy", $"You have not provided valid scoreType.");
+                            }
+                            break;
+                    }
+                }
+
+                List<string> fragments = MetricsRepository.GetMetricStructureFragments(assetTypeUid, filterScoreTypes);
 
                 models = JsonConvert.DeserializeObject<List<MetricAssetViewModel>>(string.Join("", fragments));
-
+                if (models == null)
+                    models = new List<MetricAssetViewModel>();
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
             }
             catch (Exception ex)
@@ -418,7 +441,7 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetMetricScores(Guid assetTypeUid)
         {
             var prefix = "Metrics.GetMetricScores => ";
-            
+
             try
             {
                 AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
