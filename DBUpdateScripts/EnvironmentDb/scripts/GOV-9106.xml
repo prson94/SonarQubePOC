@@ -1,0 +1,72 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-9106">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+alter view [dbo].[AssetWithType]
+as
+	select	A.ID,
+			A.AssetTypeID,
+			T.[Uid] as AssetTypeUid,
+			A.State,
+			A.Object,
+			A.ObjectID,
+			A.SourceID,
+			A.CreatedOn,
+			A.CreatedBy,
+			A.UpdatedOn,
+			A.UpdatedBy,
+			T.Class as AssetTypeClass,
+			T.Description as AssetTypeDescription,
+			T.Name as TypeName,
+			T.Object as Type,
+			T.ObjectID as TypeID,
+			coalesce(S.IconBackColor, '#000') as BackColor,
+			coalesce(S.IconForeColor, '#fff') as ForeColor,
+			coalesce(S.Icon, 'fa-book') as Icon,
+			A.UID
+	from	Asset A
+			inner join AssetType T on T.ID = A.AssetTypeID
+			left join AssetTypeStyle S on S.ID = T.ID
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+alter view [dbo].[AssetWithType]
+as
+	select	A.ID,
+			A.AssetTypeID,
+			T.[Uid] as AssetTypeUid,
+			A.State,
+			A.Object,
+			A.ObjectID,
+			A.SourceID,
+			A.CreatedOn,
+			A.CreatedBy,
+			A.UpdatedOn,
+			A.UpdatedBy,
+			T.Class as AssetTypeClass,
+			T.Description as AssetTypeDescription,
+			T.Name as TypeName,
+			T.Object as Type,
+			T.ObjectID as TypeID,
+			coalesce(S.IconBackColor, '#000') as BackColor,
+			coalesce(S.IconForeColor, '#fff') as ForeColor,
+			coalesce(S.IconText, 'leaf') as Icon,
+			A.UID
+	from	Asset A
+			inner join AssetType T on T.ID = A.AssetTypeID
+			left join AssetTypeStyle S on S.ID = T.ID
+]]>
+	</rollback>
+  </changeSet>
+
+  </databaseChangeLog>

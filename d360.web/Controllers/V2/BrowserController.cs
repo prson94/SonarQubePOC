@@ -290,22 +290,31 @@ namespace d360.web.Controllers.V2
                         criteria.Hops = 3;
                     }
 
-                    List<AssetBrowserApiHopAssetRequestModel> backwardAssets;
-                    List<AssetBrowserApiHopAssetRequestModel> forwardAssets;
+                    var backwardAssets = new List<AssetBrowserApiHopAssetRequestModel>();
+                    var forwardAssets = new List<AssetBrowserApiHopAssetRequestModel>();
                     if (model.nodes.Count > 0)
                     {
+                        // This means you got the self, now you need to loop through backwards and forwards.
                         backwardAssets = getLeafAssets(model.nodes);
                         forwardAssets = getLeafAssets(model.nodes);
                     }
                     else
                     {
-                        backwardAssets = criteria.Assets;
-                        forwardAssets = criteria.Assets;
+                        if (criteria.Direction == AssetBrowserApiHopDirection.Backward || criteria.Direction == AssetBrowserApiHopDirection.Both)
+                        {
+                            backwardAssets = criteria.Assets;
+                        }
+                        if (criteria.Direction == AssetBrowserApiHopDirection.Forward || criteria.Direction == AssetBrowserApiHopDirection.Both)
+                        {
+                            forwardAssets = criteria.Assets;
+                        }
                     }
 
                     for (int i = 0; i < criteria.Hops; i++)
                     {
                         HopSalt = generateSalt(); // We have multiple hops, so we should reset the salt after each hop.
+                        model.nodes.ForEach(a => { a.reveal = AssetBrowserApiHopDirection.None; }); // Ensure that nodes we are about to traverse to do not have the reveal set, as we are about to expose the reveal.
+
                         var backModel = await getHop(backwardAssets, AssetBrowserApiHopType.Lineage, AssetBrowserApiHopDirection.Backward);
                         var forwardModel = await getHop(forwardAssets, AssetBrowserApiHopType.Lineage, AssetBrowserApiHopDirection.Forward);
 
