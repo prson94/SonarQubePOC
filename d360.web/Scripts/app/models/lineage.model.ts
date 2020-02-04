@@ -430,6 +430,19 @@ export class SourceRuleSource {
 
 //#endregion
 
+// #region ASSET BROWSER
+
+export class AssetBrowserModel {
+    focalAssetUid: string;
+    assets: AssetBrowserAssetsModel;
+    owners: AssetBrowserOwnersModel;
+
+    clear() {
+        this.assets = new AssetBrowserAssetsModel();
+        this.owners = new AssetBrowserOwnersModel();
+    }
+}
+
 // #region Asset Browser : Translation
 
 export class AssetBrowserTranslationOwnerCount {
@@ -487,8 +500,13 @@ export class AssetBrowserTranslationNode {
 }
 
 export class AssetBrowserTranslation {
-    links: AssetBrowserTranslationLink[] = new Array();
-    nodes: AssetBrowserTranslationNode[] = new Array();
+    links: AssetBrowserTranslationLink[] = new Array<AssetBrowserTranslationLink>();
+    nodes: AssetBrowserTranslationNode[] = new Array<AssetBrowserTranslationNode>();
+
+    clear() {
+        this.links = new Array<AssetBrowserTranslationLink>();
+        this.nodes = new Array<AssetBrowserTranslationNode>();
+    }
 }
 
 // #endregion Translation
@@ -532,21 +550,6 @@ export class AssetBrowserApiHopAssetRequestModel {
 
 // Core View Model
 
-export class AssetBrowserModel {
-    focalAssetUid: string;
-    assets: AssetBrowserAssetModel[];
-    assetRelations: AssetBrowserAssetRelationModel[];
-    owners: AssetBrowserOwnerModel[];
-    ownerRelations: AssetBrowserOwnerRelationModel[];
-
-    clear() {
-        this.assets = new Array();
-        this.assetRelations = new Array();
-        this.owners = new Array();
-        this.ownerRelations = new Array();
-    }
-}
-
 export class AssetBrowserGenericRelationModel {
     from: string;
     to: string;
@@ -573,8 +576,8 @@ export class AssetBrowserOwnersModel {
     responsibilityType: string;
     responsibilityTypeId: number;
     fromKey: string;
-    owners: AssetBrowserOwnerModel[];
-    ownerRelations: AssetBrowserOwnerRelationModel[];
+    owners: AssetBrowserOwnerModel[] = new Array<AssetBrowserOwnerModel>();
+    ownerRelations: AssetBrowserOwnerRelationModel[] = new Array<AssetBrowserOwnerRelationModel>();
 }
 
 export class AssetBrowserOwnerModel {
@@ -590,12 +593,12 @@ export class AssetBrowserOwnerModel {
 
 export class AssetBrowserAssetsModel {
     focalAssetUid: string;
-    assets: AssetBrowserAssetModel[];
-    assetRelations: AssetBrowserAssetRelationModel[];
+    assets: AssetBrowserAssetModel[] = new Array<AssetBrowserAssetModel>();
+    assetRelations: AssetBrowserAssetRelationModel[] = new Array<AssetBrowserAssetRelationModel>();
 }
 
 export class AssetBrowserAssetModel {
-    hop: number;
+    //hop: number;
     assetUid: string;
     assetTypeId: number;
     key: string;
@@ -767,4 +770,5 @@ export class LoadedFilterTypesModel {
 
 //#endregion
 
+// #endregion
 
