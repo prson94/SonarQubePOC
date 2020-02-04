@@ -292,10 +292,11 @@ export class BrowserService extends BaseObservableService {
         try {
             let link = new AssetBrowserTranslationLink();
 
+            // from/to must stay as is, because there is other code that depends on this ordering.
             link.back = "#cccccc";
-            link.from = baseKey;
+            link.from = model.fromKey;
             link.fromPort = "R";
-            link.to = model.fromKey;
+            link.to = baseKey;
             link.toPort = "L;"
 
             translationModel.links = new Array();
