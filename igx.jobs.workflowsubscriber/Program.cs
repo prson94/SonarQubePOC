@@ -35,7 +35,7 @@ namespace igx.jobs.workflowsubscriber
     public static class WorkflowSubscriber
     {
         const string functionName = "Workflow_Subscriber";
-        const int MAX_NUMBER_OF_WORKFLOW_EVENTS = 200;
+        const int MAX_NUMBER_OF_WORKFLOW_EVENTS = 10000;
 
         public static async Task Run([ServiceBusTrigger("%EventBusTopicName%", "Workflow", AccessRights.Manage)]BrokeredMessage brokeredMessage, TextWriter log)
         {
