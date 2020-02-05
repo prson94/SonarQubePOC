@@ -7,8 +7,10 @@
                 <div class="FieldNameRequired">Name</div>
                 <input type="text" [(ngModel)]="model.Name" style="width: 100%" />
             </div>
-            <div class="col l6 m12 s12"  *ngIf="scoreType != 'DataQuality'">
-                <p-checkbox [(ngModel)]="model.IsGroup" binary="true" label="Grouping?"></p-checkbox>
+            <div class="col l6 m12 s12" *ngIf="scoreType != 'DataQuality'">
+                <ng-container *ngIf="!parentUid && !model.ParentUid">
+                    <p-checkbox [(ngModel)]="model.IsGroup" binary="true" label="Grouping?"></p-checkbox>
+                </ng-container>
             </div>
         </div>
         <div class="section">

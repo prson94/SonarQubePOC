@@ -3506,5 +3506,15 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             return iconText;
 
         }
+
+        public Dictionary<Guid,string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds)
+        {
+            var dbArgs = new DynamicParameters();
+            var sql = $@"select AT.[uid] as AssetUID, P.[Path] as assetTypePath 
+                            from AssetType AT cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P 
+                            where AT.class in({string.Join(",",assetClassIds.ToArray())})";
+
+            return Query<dynamic>(sql).ToDictionary(x => (Guid)x.AssetUID, x => x.assetTypePath as string);
+        }
     }
 }

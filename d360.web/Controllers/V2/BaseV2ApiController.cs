@@ -116,7 +116,7 @@ namespace d360.web.Controllers.V2
                         inner join Asset R on R.[Object] = I.[Object] and R.ObjectID = I.ObjectID
                         inner join Field F on F.FieldTypeID = {f.LookupObjectFieldTypeID} and F.AssetID = R.ID
                         where I.[Subject] = A.Object and I.SubjectID = A.ObjectID and I.IntersectTypeID = {f.LookupObjectID}
-                    ) {tableAlias}");
+                    ) {tableAlias} ");
                 }
                 else if (f.Type == "JsonElement")
                 {
@@ -135,6 +135,38 @@ namespace d360.web.Controllers.V2
                                 where AT.AssetID = A.ID
                             for xml path ('')), 1, 1, '')
                          ){tableAlias}(FormattedValue) ");
+                }
+                else if (f.Type == "Relationship")
+                {
+                    if (!f.LookupObjectID.HasValue)
+                    {
+                        throw new Exception("Invalid Relationship field encountered no relationship type to lookup found in definition.");
+                    }
+                    var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
+
+                    if (intersectType == null)
+                    {
+                        throw new Exception("Invalid Relationship field encountered invalid or deleted relationship type encountered.");
+                    }
+
+                    fieldJoins.Add($@"
+                    outer apply (
+		                    SELECT hello = Stuff((
+		                    SELECT  distinct ' | ' + p.TextPath
+			                    from [Intersect] I 
+			                    inner Join Asset RA on 
+			                    I.[IntersectTypeID] = {intersectType.ID} AND 
+			                    (((A.[Object] = I.[Subject] and A.[ObjectID] = I.[SubjectID]) AND (RA.[Object] = I.[Object] and RA.[ObjectID] = I.[ObjectID])) 
+			                    OR (A.[Object] = I.[Object] and A.[ObjectID] = I.[ObjectID]) AND (I.[Subject] = RA.[Object] and I.[SubjectID] = RA.ObjectID))
+			                    cross apply GetAssetTextPathById(RA.ID, '/') P
+			                    Where 
+			                    I.[IntersectTypeID] = {intersectType.ID} AND
+			                    ((I.[Object] = A.[Object] and I.ObjectID = A.ObjectID) 
+			                    or 
+			                    (I.[Subject] = A.[Object] and I.[SubjectID] = A.ObjectID))
+		                    for xml path ('')
+		                    ), 2, 1, '')
+		                    ){tableAlias}(FormattedValue) ");
                 }
                 else
                 {
@@ -219,6 +251,8 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        #region excel export functions
+
         internal SLDocument createExcelBaseDocument(AssetTypeExportTemplate template, string worksheetName)
         {
             SLDocument document = null;
@@ -255,6 +289,159 @@ namespace d360.web.Controllers.V2
 
             return document;
         }
+        internal SLDocument GenerateDefaultSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, AssetTypeExportTemplate template = null, string worksheetName = "Items")
+        {
+            ICollection<AssetTypeExportTemplateStyle> styles = null;
+            if (template != null)
+            {
+                styles = template.AssetTypeExportTemplateStyles;
+            }
+
+            int index = 1;
+            var document = createExcelBaseDocument(template, worksheetName);
+
+            #region Header
+
+            SetRowStyles(document, 1, styles);
+
+            foreach (var field in fields)
+            {
+                SetColumnStyles(document, index, styles);
+
+                document.SetCellValue(1, index++, (string)field.FriendlyName);
+            }
+
+            #endregion
+
+            int rowNumber = 1;
+            foreach (var row in results)
+            {
+                index = 1;
+                rowNumber++;
+
+                foreach (var field in fields)
+                {
+                    var val = getRowFieldValue(row, field.ID, field.Name);
+                    SetSpreadsheetValueFromField(document, rowNumber, index, field, val);
+                    SetColumnStylesFromField(styles, document, rowNumber, index, field, row);
+                    index++;
+                }
+            }
+
+            SetExcelColumnWidths(document, fields);
+
+            return document;
+        }
+
+        internal SLDocument GenerateGroupedSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, AssetTypeExportTemplate template, string worksheetName = "Items")
+        {
+            var styles = template.AssetTypeExportTemplateStyles;
+
+            int index = 1;
+            var document = createExcelBaseDocument(template, worksheetName);
+
+            #region Header
+
+            SetRowStyles(document, 1, styles);
+
+            foreach (var field in fields)
+            {
+                SetColumnStyles(document, index, styles);
+                document.SetCellValue(1, index++, (string)field.FriendlyName);
+            }
+
+            #endregion
+
+            int rowNumber = 1;
+            dynamic previousRow = null;
+
+            foreach (var row in results)
+            {
+                bool rowSameAsPrevious = true;
+
+                if (previousRow == null) rowSameAsPrevious = false;
+
+                index = 1;
+                rowNumber++;
+
+                foreach (var field in fields)
+                {
+                    var val = getRowFieldValue(row, field.ID, field.Name);
+                    var previousVal = previousRow != null ? getRowFieldValue(previousRow, field.ID, field.Name) : "";
+
+                    rowSameAsPrevious = rowSameAsPrevious && (val == previousVal);
+
+                    if (!rowSameAsPrevious)
+                    {
+                        SetSpreadsheetValueFromField(document, rowNumber, index, field, val);
+                        SetColumnStylesFromField(styles, document, rowNumber, index, field, row);
+                        index++;
+                    }
+                    else
+                    {
+                        document.SetCellValue(rowNumber, index++, "");
+                        SetColumnStylesFromField(styles, document, rowNumber, index, field, row);
+                    }
+                }
+
+                previousRow = row;
+            }
+
+            SetExcelColumnWidths(document, fields);
+
+            return document;
+        }
+
+        internal SLDocument GeneratePivotedSpreadsheet(List<FieldType> fields, IEnumerable<dynamic> results, AssetTypeExportTemplate template, string worksheetName = "Items")
+        {
+            var styles = template.AssetTypeExportTemplateStyles;
+
+            int index = 1;
+
+            var document = createExcelBaseDocument(template, worksheetName);
+
+            var uniques = new List<string>();
+
+            int columnNumber = 0;
+            foreach (var row in results)
+            {
+                var concatenatedValue = "";
+                foreach (var field in fields)
+                {
+                    concatenatedValue += getRowFieldValue(row, field.ID, field.Name);
+                }
+                if (!uniques.Contains(concatenatedValue))
+                {
+                    index = 1;
+                    columnNumber++;
+
+                    uniques.Add(concatenatedValue);
+                    foreach (var field in fields)
+                    {
+                        var val = getRowFieldValue(row, field.ID, field.Name);
+                        SetSpreadsheetValueFromField(document, index, columnNumber, field, val);
+                        SetRowStylesFromField(styles, document, index, columnNumber, field, row);
+
+                        index++;
+                    }
+                }
+            }
+
+            for (int i = 1; i < index; i++)
+            {
+                SetRowStyles(document, i, styles);
+            }
+
+            for (int i = 1; i < columnNumber; i++)
+            {
+                SetColumnCellStyle(document, i, index - 1, styles);
+            }
+
+            document.AutoFitColumn(1, columnNumber);
+
+            return document;
+        }
+
 
         internal void SetSpreadsheetValueFromField(SLDocument document, int rowIndex, int columnIndex, FieldType field, string value)
         {
@@ -294,5 +481,154 @@ namespace d360.web.Controllers.V2
                     break;
             }
         }
+
+        internal void SetRowStylesFromField(ICollection<AssetTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
+        {
+            if (!styles.Any()) return;
+
+            //check if the styles collection has an entry for this row
+            var style = styles.Where(x => x.Row == rowIndex && x.Column == -1 && (x.BackgroundColorValueFieldTypeID > 0 || x.ColorValueFieldTypeID > 0)).FirstOrDefault();
+
+            if (style != null)
+            {
+                //we have a style based on the value in another column(s)
+                document.SetCellStyle(rowIndex, columnIndex, CreateStyle(style, row));
+            }
+        }
+
+        internal void SetColumnStylesFromField(ICollection<AssetTypeExportTemplateStyle> styles, SLDocument document, int rowIndex, int columnIndex, FieldType field, dynamic row)
+        {
+            if (styles != null && styles.Any())
+            {
+
+                //check if the styles collection has an entry for this row
+                var style = styles.Where(x => x.Row == -1 && x.Column == columnIndex && (x.BackgroundColorValueFieldTypeID > 0 || x.ColorValueFieldTypeID > 0)).FirstOrDefault();
+
+                if (style != null)
+                {
+                    var st = CreateStyle(style, row);
+                    if (field.Type == "Date")
+                        st.FormatCode = "m/d/yyyy";
+
+                    //we have a style based on the value in another column(s)
+                    document.SetCellStyle(rowIndex, columnIndex, st);
+                }
+            }
+        }
+
+        private void SetColumnCellStyle(SLDocument document, int column, int totalRows, ICollection<AssetTypeExportTemplateStyle> styles)
+        {
+            if (styles == null) return;
+            //style for the whole column
+            var columnStyle = styles.Where(x => x.Row == -1 && x.Column == column).FirstOrDefault();
+
+            if (columnStyle != null)
+            {
+                document.SetCellStyle(1, column, totalRows, column, CreateStyle(columnStyle));
+            }
+        }
+        private void SetColumnStyles(SLDocument document, int column, ICollection<AssetTypeExportTemplateStyle> styles)
+        {
+            if (styles == null) return;
+
+            //style for the whole column
+            var columnStyle = styles.Where(x => x.Row == -1 && x.Column == column).FirstOrDefault();
+
+            if (columnStyle != null)
+            {
+                document.SetColumnStyle(column, CreateStyle(columnStyle));
+            }
+
+            //style for the header
+            var columnheaderStyle = styles.Where(x => x.Row == 1 && x.Column == column).FirstOrDefault();
+
+            if (columnheaderStyle != null)
+            {
+                document.SetCellStyle(1, column, CreateStyle(columnheaderStyle));
+            }
+        }
+
+        private void SetRowStyles(SLDocument document, int row, ICollection<AssetTypeExportTemplateStyle> styles)
+        {
+            if (styles == null) return;
+
+            var columnStyle = styles.Where(x => x.Row == row && x.Column == -1).FirstOrDefault();
+
+            if (columnStyle == null) return;
+
+            document.SetRowStyle(row, CreateStyle(columnStyle));
+        }
+
+        private SLStyle CreateStyle(AssetTypeExportTemplateStyle columnStyle, dynamic row = null)
+        {
+            SLStyle style = new SLStyle();
+
+            if (columnStyle.BackgroundColor.HasValue)
+            {
+                style.Fill.SetPatternType(DocumentFormat.OpenXml.Spreadsheet.PatternValues.Solid);
+                style.Fill.SetPatternForegroundColor(System.Drawing.Color.FromArgb(columnStyle.BackgroundColor.Value));
+            }
+
+            if (columnStyle.Color.HasValue)
+                style.SetFontColor(System.Drawing.Color.FromArgb(columnStyle.Color.Value));
+
+            if (columnStyle.BackgroundColorValueFieldTypeID > 0 && row != null)
+            {
+                var color = getRowFieldValue(row, columnStyle.BackgroundColorValueFieldTypeID);
+                if (!string.IsNullOrWhiteSpace(color))
+                {
+                    style.Fill.SetPatternType(DocumentFormat.OpenXml.Spreadsheet.PatternValues.Solid);
+                    style.Fill.SetPatternForegroundColor(System.Drawing.ColorTranslator.FromHtml(color));
+                }
+            }
+
+            if (columnStyle.ColorValueFieldTypeID > 0 && row != null)
+            {
+                var color = getRowFieldValue(row, columnStyle.ColorValueFieldTypeID);
+                if (!string.IsNullOrWhiteSpace(color))
+                {
+                    style.SetFontColor(System.Drawing.ColorTranslator.FromHtml(color));
+                }
+            }
+
+            style.SetFontBold(columnStyle.IsBold);
+
+            return style;
+        }
+        private string getRowFieldValue(dynamic row, int fieldId, string hardCodedName = null)
+        {
+            if (fieldId > 0 && string.IsNullOrEmpty(hardCodedName))
+                return (string)((row as IDictionary<string, object>)[$"Field{fieldId}"]);
+            else
+                return (((row as IDictionary<string, object>)[$"{hardCodedName}"]) ?? "").ToString();
+        }
+       
+        private void SetExcelColumnWidths(SLDocument document, List<FieldType> fields)
+        {
+            int index = 1;
+            foreach (var field in fields)
+            {
+                try
+                {
+                    if (field.ColumnWidth.HasValue)
+                    {
+                        int width = field.ColumnWidth.Value > 0 ? field.ColumnWidth.Value / 10 : 0;
+                        document.SetColumnWidth(index, width);
+                    }
+                    else
+                    {
+                        document.AutoFitColumn(index);
+                    }
+                    index++;
+                }
+                catch (Exception e)
+                {
+                    document.SetColumnWidth(index, 10);
+                    index++;
+                }
+            }
+        }
+        #endregion
+
     }
 }

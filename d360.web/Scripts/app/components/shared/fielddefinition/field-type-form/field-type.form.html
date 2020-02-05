@@ -135,7 +135,8 @@
                                     [(ngModel)]="model.FieldType.IsRequired"
                                     label="Is Required?"
                                     [ngModelOptions]="{standalone: true}"
-                                    [disabled]="isSettingDisabled('IsRequired')"></p-checkbox>
+                                    [disabled]="isSettingDisabled('IsRequired')"
+                                    (onChange)="model.FieldType.MinimumLength=0"></p-checkbox>
                     </div>
                     <div *ngIf="showIsPartOfKey">
                         <p-checkbox binary="true"
@@ -300,7 +301,7 @@
                            pInputText
                            type="text"
                            [(ngModel)]="model.FieldType.Pattern"
-                           (change)="validatePattern();"
+                           (change)="validatePattern(); model.FieldType.MinimumLength=0;"
                            style="width: 98%; display: block;" />
                 </div>
                 <div *ngIf="model.FieldType.Type == 'Text'"
@@ -321,7 +322,7 @@
                     <input name="minLength"
                            type="number"
                            step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"
-                           [disabled]="CheckMinRequired(model)"
+                           [disabled]="CheckMinRequired(model) || model.FieldType.Pattern?.length > 0 "
                            [(ngModel)]="model.FieldType.MinimumLength"
                            (input)="validate('MinimumLength')"
                            style="width: 98%; display: block;" />

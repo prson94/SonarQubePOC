@@ -274,6 +274,15 @@ namespace d360.web.Controllers.V2
                 #endregion
 
                 #region Validation done, time to do some work
+                
+                foreach (var field in model.Fields)
+                {
+                    if(field.Type?.Text?.Validation != null && (!string.IsNullOrEmpty(field.Type.Text.Validation.Pattern) || !field.Type.Text.Validation.IsRequired))
+                    {
+                        field.Type.Text.Validation.MinimumLength = 0;
+                    }                    
+                }
+
                 var status = FieldsRepository.UpdateFields(model, typeIdentifierInfoModel);
                 if(status.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(status.StatusCode, status.Error, status.Message);

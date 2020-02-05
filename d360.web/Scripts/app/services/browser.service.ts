@@ -23,8 +23,7 @@ import {
     AssetBrowserAssetsModel,
     AssetBrowserAssetModel,
     AssetBrowserOwnersModel,
-    AssetBrowserAssetRelationModel,
-    AssetBrowserModel
+    AssetBrowserAssetRelationModel
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -102,7 +101,9 @@ export class BrowserService extends BaseObservableService {
     }
 
     public convertResponseModel(model: AssetBrowserAssetsModel, ancestryMode: FilterAncestryMode): AssetBrowserAssetsModel {
-        let convertedModel: AssetBrowserAssetsModel = model;
+        let convertedModel: AssetBrowserAssetsModel = new AssetBrowserAssetsModel();
+        convertedModel.assets = model.assets.map(o => o);
+        convertedModel.assetRelations = model.assetRelations.map(o => o);
 
         switch (+ancestryMode) {
             case FilterAncestryMode.AllAncestors:
@@ -162,26 +163,77 @@ export class BrowserService extends BaseObservableService {
 
     /**
     * Converts a response from the Govern API into a more appropriate representation for the asset browser diagram.
-    * @returns A diagram-specific representation for the nodes and links.
+    * @returns A diagram-specific representation for the nodes.
     */
-    public translateAssetsResponseModel(model: AssetBrowserAssetsModel): AssetBrowserTranslation {
-        let translationModel: AssetBrowserTranslation = new AssetBrowserTranslation();
+    public translateAssetNodes(assets: AssetBrowserAssetModel[]): AssetBrowserTranslationNode[] {
+        let nodes: AssetBrowserTranslationNode[] = new Array<AssetBrowserTranslationNode>();
 
         try {
-            model.assets.forEach(a => {
-                this.loadTranslationChildNodes(translationModel, model.assetRelations, a, null, a.backColor, a.foreColor); // a.parentKey instead of null value in the paremeter to the left?
+            assets.forEach(a => {
+                this.loadTranslationChildNodes(nodes, a, null, a.backColor, a.foreColor);
             });
         } catch (e) {
             console.log(e);
         }
 
+        return nodes;
+    }
+
+    /**
+    * Traverses data and determines the links to draw on root diagram nodes, as determined
+    * by relationships within descendant nodes.
+    * @returns A diagram-specific representation for the links.
+    */
+    public translateAssetLinks(nodes: AssetBrowserTranslationNode[], relations: AssetBrowserAssetRelationModel[]): AssetBrowserTranslationLink[] {
+        let links: AssetBrowserTranslationLink[] = new Array<AssetBrowserTranslationLink>();
+
         try {
-            translationModel.links = this.determineLinkRoots(translationModel, model.assetRelations);
+            let rootNodes = nodes.filter(n => { return n.isGroup && !n.group; });
+            let ignoredRootKeys: string[] = new Array();
+
+            rootNodes.forEach(rootNode => {
+
+                let keys: string[] = new Array();
+
+                // 1. Cycle through all descendants and compile list of keys.
+                this.compileDescendantUidList(rootNode.key, nodes, keys);
+                keys.push(rootNode.key);
+
+                // 2. Loop through all assetRelations to see if any apply.
+                let forwardIntersections = relations.filter(x => { return keys.indexOf(x.subjectKey) >= 0; });
+                let backwardIntersections = relations.filter(x => { return keys.indexOf(x.objectKey) >= 0; });
+
+                // You can ignore this node in loop below.
+                ignoredRootKeys.push(rootNode.key);
+
+                rootNodes
+                    .filter(nextRootNode => { return ignoredRootKeys.indexOf(nextRootNode.key) == -1; })
+                    .forEach(nextRootNode => {
+
+                        let theseNodeKeys: string[] = new Array();
+                        this.compileDescendantUidList(nextRootNode.key, nodes, theseNodeKeys);
+                        theseNodeKeys.push(nextRootNode.key);
+
+                        let fl = this.buildLinkRoot(forwardIntersections, rootNode.key, keys, nextRootNode.key, theseNodeKeys, true);
+                        if (fl) {
+                            if (links.findIndex(l => { return l.from == fl.from && l.to == fl.to; }) == -1) {
+                                links.push(fl);
+                            }
+                        }
+
+                        let bl = this.buildLinkRoot(backwardIntersections, rootNode.key, keys, nextRootNode.key, theseNodeKeys, false);
+                        if (bl) {
+                            if (links.findIndex(l => { return l.from == bl.from && l.to == bl.to; }) == -1) {
+                                links.push(bl);
+                            }
+                        }
+                    });
+            });
         } catch (e) {
             console.log(e);
         }
 
-        return translationModel;
+        return links;
     }
 
     /**
@@ -199,7 +251,6 @@ export class BrowserService extends BaseObservableService {
             let ownersNode: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
 
             ownersNode.showReveal = AssetBrowserApiHopDirection.None;
-            ownersNode.hop = 0;
             //ownersNode.assetUid = a.assetUid;
             //ownersNode.assetTypeId = a.assetTypeId;
             ownersNode.class = AssetTypeClass.Organization; //convert string from API to enum value
@@ -219,7 +270,6 @@ export class BrowserService extends BaseObservableService {
                 let ownerNode: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
 
                 ownerNode.showReveal = AssetBrowserApiHopDirection.None;
-                ownerNode.hop = 0;
                 ownerNode.assetUid = a.resourceUid;
                 //ownerNode.assetTypeId = a.assetTypeId;
                 ownerNode.class = AssetTypeClass.BusinessAsset; //convert string from API to enum value
@@ -242,10 +292,11 @@ export class BrowserService extends BaseObservableService {
         try {
             let link = new AssetBrowserTranslationLink();
 
+            // from/to must stay as is, because there is other code that depends on this ordering.
             link.back = "#cccccc";
-            link.from = baseKey;
+            link.from = model.fromKey;
             link.fromPort = "R";
-            link.to = model.fromKey;
+            link.to = baseKey;
             link.toPort = "L;"
 
             translationModel.links = new Array();
@@ -265,18 +316,13 @@ export class BrowserService extends BaseObservableService {
         parentKey: string,
         nodes: AssetBrowserTranslationNode[],
         keys: string[]
-    )//: string[]
+    )
     {
-
-        //let keys: string[] = new Array();
-
         let childNodes = nodes.filter(n => { return n.group == parentKey; });
         childNodes.forEach(n => {
             this.compileDescendantUidList(n.key, nodes, keys);
             keys.push(n.key);
         });
-
-        //return keys;
     }
 
     /**
@@ -294,7 +340,6 @@ export class BrowserService extends BaseObservableService {
     ): AssetBrowserTranslationLink {
 
         let fl: AssetBrowserTranslationLink;
-
         let relevantIntersects = assetRelations.filter(x => {
             return (forward) ?
                 (rootNodeUids.indexOf(x.subjectKey) >= 0) :
@@ -334,69 +379,12 @@ export class BrowserService extends BaseObservableService {
     }
 
     /**
-    * Traverses data and determines the links to draw on root diagram nodes, as determined 
-    * by relationships within descendant nodes.
-    * @returns An array of links to add to a diagram.
-    */
-    private determineLinkRoots(
-        translationModel: AssetBrowserTranslation,
-        assetRelations: AssetBrowserAssetRelationModel[]
-    ): AssetBrowserTranslationLink[] {
-        let links: AssetBrowserTranslationLink[] = new Array();
-
-        let rootNodes = translationModel.nodes.filter(n => { return n.isGroup && !n.group; });
-        let ignoredRootKeys: string[] = new Array();
-
-        rootNodes.forEach(rootNode => {
-
-            let keys: string[] = new Array();
-
-            // 1. Cycle through all descendants and compile list of keys.
-            this.compileDescendantUidList(rootNode.key, translationModel.nodes, keys);
-            keys.push(rootNode.key);
-
-            // 2. Loop through all assetRelations to see if any apply.
-            let forwardIntersections = assetRelations.filter(x => { return keys.indexOf(x.subjectKey) >= 0; });
-            let backwardIntersections = assetRelations.filter(x => { return keys.indexOf(x.objectKey) >= 0; });
-
-            // You can ignore this node in loop below.
-            ignoredRootKeys.push(rootNode.key);
-
-            rootNodes
-                .filter(nextRootNode => { return ignoredRootKeys.indexOf(nextRootNode.key) == -1; })
-                .forEach(nextRootNode => {
-
-                    let theseNodeKeys: string[] = new Array();
-                    this.compileDescendantUidList(nextRootNode.key, translationModel.nodes, theseNodeKeys);
-                    theseNodeKeys.push(nextRootNode.key);
-
-                    let fl = this.buildLinkRoot(forwardIntersections, rootNode.key, keys, nextRootNode.key, theseNodeKeys, true);
-                    if (fl) {
-                        if (links.findIndex(l => { return l.from == fl.from && l.to == fl.to; }) == -1) {
-                            links.push(fl);
-                        }
-                    }
-
-                    let bl = this.buildLinkRoot(backwardIntersections, rootNode.key, keys, nextRootNode.key, theseNodeKeys, false);
-                    if (bl) {
-                        if (links.findIndex(l => { return l.from == bl.from && l.to == bl.to; }) == -1) {
-                            links.push(bl);
-                        }
-                    }
-            });
-        });
-
-        return links;
-    }
-
-    /**
     * Recurses through a node hierarchy received from the Govern API, then sends a list of impacted keys up the 
     * hierarchy in order to properly populate the impact property string collection on each ancestor node.
     * @returns A string of impacted keys. This impacted keys are used for node highlighting for impact paths.
     */
     private loadTranslationChildNodes(
-        translationModel: AssetBrowserTranslation,
-        assetRelations: AssetBrowserAssetRelationModel[],
+        nodesToReturn: AssetBrowserTranslationNode[],
         current: AssetBrowserAssetModel,
         parentKey: string,
         backColor: string,
@@ -408,12 +396,12 @@ export class BrowserService extends BaseObservableService {
         if (current.items) {
             current.items.forEach(a => {
                 // Recurse
-                this.loadTranslationChildNodes(translationModel, assetRelations, a, current.key, backColor, foreColor);
+                this.loadTranslationChildNodes(nodesToReturn, a, current.key, backColor, foreColor);
             });
         }
 
         // Add the current node, after everything is calculated, including impact collection.
-        translationModel.nodes.push(currentNode);
+        nodesToReturn.push(currentNode);
 
     }
 
@@ -451,7 +439,6 @@ export class BrowserService extends BaseObservableService {
         });
 
         n.showReveal = AssetBrowserApiHopDirection[a.reveal] as any; //convert string from API to enum value
-        n.hop = a.hop;
         n.assetUid = a.assetUid;
         n.assetTypeId = a.assetTypeId;
         n.class = AssetTypeClass[a.class] as any; //convert string from API to enum value

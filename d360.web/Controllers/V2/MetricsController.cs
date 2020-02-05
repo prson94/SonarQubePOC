@@ -135,6 +135,11 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldTypeID must be greater than 0.");
             }
 
+            if(model.IsGroup && model.ParentUid != null && model.ParentUid != Guid.Empty)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Maximum number of levels for measures is 2.");
+            }
+
             List<ScoreType> allowedScoreTypes = new List<ScoreType>() { ScoreType.Governance, ScoreType.DataQuality };
             //backward compatibility
             if (!allowedScoreTypes.Contains(model.ScoreType))

@@ -114,6 +114,21 @@ namespace d360.model.DataAccessLayer
 
             }
 
+            int metricExistsCount = 0;
+            metricExistsCount = (model.ParentUid.HasValue) ?
+                Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and ParentUid = @p and AssetTypeUid = @assetTypeUid and uid <> @uid", new { n = model.Name.Trim().ToLower(), p = model.ParentUid.Value, assetTypeUid = targetAssetType.uid, uid = model.Uid }).Single() :
+                Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and ParentUid is null and AssetTypeUid = @assetTypeUid and uid <> @uid", new { n = model.Name.Trim().ToLower(), assetTypeUid = targetAssetType.uid, uid = model.Uid }).Single();
+
+            if (metricExistsCount > 0)
+            {
+                return new WorkHttpStatus(
+                    HttpStatusCode.BadRequest,
+                    "Error adding metric",
+                    (model.ParentUid.HasValue) ?
+                    "You may not add a metric with the same name under the same grouping." :
+                    "You may not add a metric with the same name at the root of the hierarchy.");
+            }
+
 
             if (model.Uid != Guid.Empty)
             {
@@ -181,21 +196,6 @@ namespace d360.model.DataAccessLayer
                     }
                     metricAsset.ParentUid = model.ParentUid;
                 }
-                int metricExistsCount = 0;
-                metricExistsCount = (model.ParentUid.HasValue) ?
-                    Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and ParentUid = @p", new { n = model.Name.Trim().ToLower(), p = model.ParentUid.Value }).Single() :
-                    Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and ParentUid is null", new { n = model.Name.Trim().ToLower() }).Single();
-
-                if (metricExistsCount > 0)
-                {
-                    return new WorkHttpStatus(
-                        HttpStatusCode.BadRequest,
-                        "Error adding metric",
-                        (model.ParentUid.HasValue) ?
-                        "You may not add a metric with the same name under the same grouping." :
-                        "You may not add a metric with the same name at the root of the hierarchy.");
-                }
-
                 Company.MetricAssets.Add(metricAsset);
             }
 
