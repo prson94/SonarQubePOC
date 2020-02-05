@@ -552,7 +552,7 @@ namespace d360.web.Controllers.V2
                     DataType.OwnershipLookup.ToString()
                 };
             var fieldTypes = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID).ToList()
-                                .Where(x => !typesToAvoid.Contains(x.Type)).OrderBy(x => x.ColumnOrder).ToList();
+                                           .Where(x => !typesToAvoid.Contains(x.Type)).OrderBy(x => x.ColumnOrder).ToList();
 
 
             return fieldTypes;
@@ -560,15 +560,20 @@ namespace d360.web.Controllers.V2
         private async Task<SLDocument> GetDefaultRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
         {
             List<FieldType> fieldTypes = GetRuleTypeFields(guid);
+            if(template != null)
+                UseTempleteFields(template, fieldTypes);
             IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
 
             SLDocument document = new SLDocument();
             document = GenerateDefaultSpreadsheet(fieldTypes, results, template, "Items");
             return document;
         }
+
         private async Task<SLDocument> GetPivotRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
         {
             List<FieldType> fieldTypes = GetRuleTypeFields(guid);
+            if (template != null)
+                UseTempleteFields(template, fieldTypes);
             IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
 
             SLDocument document = new SLDocument();
@@ -579,6 +584,8 @@ namespace d360.web.Controllers.V2
         private async Task<SLDocument> GetGroupedRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
         {
             List<FieldType> fieldTypes = GetRuleTypeFields(guid);
+            if (template != null)
+                UseTempleteFields(template, fieldTypes);
             IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
 
             SLDocument document = new SLDocument();

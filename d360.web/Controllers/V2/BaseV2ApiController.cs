@@ -628,6 +628,26 @@ namespace d360.web.Controllers.V2
                 }
             }
         }
+
+        internal static void UseTempleteFields(AssetTypeExportTemplate template, List<FieldType> fieldTypes)
+        {
+            var oldFields = new List<FieldType>(fieldTypes);
+            //if include fields is specified only include field ids from list
+            if (!string.IsNullOrEmpty(template.IncludeFields))
+            {
+                var fieldIdList = template.IncludeFields.Split(',').Select(int.Parse);
+
+                fieldTypes.Clear();
+
+                //done this way to set order of fields in spreadsheet to the order specified in include fields.
+                foreach (var fieldId in fieldIdList)
+                {
+                    var field = oldFields.Find(x => x.ID == fieldId);
+                    if (field != null) fieldTypes.Add(field);
+                }
+            }
+        }
+
         #endregion
 
     }
