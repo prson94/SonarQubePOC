@@ -116,8 +116,8 @@ namespace d360.model.DataAccessLayer
 
             int metricExistsCount = 0;
             metricExistsCount = (model.ParentUid.HasValue) ?
-                Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and ParentUid = @p and AssetTypeUid = @assetTypeUid and uid <> @uid", new { n = model.Name.Trim().ToLower(), p = model.ParentUid.Value, assetTypeUid = targetAssetType.uid, uid = model.Uid }).Single() :
-                Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and ParentUid is null and AssetTypeUid = @assetTypeUid and uid <> @uid", new { n = model.Name.Trim().ToLower(), assetTypeUid = targetAssetType.uid, uid = model.Uid }).Single();
+                Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and [State] = 1 and ParentUid = @p and AssetTypeUid = @assetTypeUid and uid <> @uid", new { n = model.Name.Trim().ToLower(), p = model.ParentUid.Value, assetTypeUid = targetAssetType.uid, uid = model.Uid }).Single() :
+                Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and [State] = 1 and ParentUid is null and AssetTypeUid = @assetTypeUid and uid <> @uid", new { n = model.Name.Trim().ToLower(), assetTypeUid = targetAssetType.uid, uid = model.Uid }).Single();
 
             if (metricExistsCount > 0)
             {
