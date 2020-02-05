@@ -27,8 +27,7 @@
                         <button type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
                         <button type="button" title="Add Lineage" (click)="addRelationshipsClick($event)" [class]="addButtonSelectedClass()"><i class="fa fa-plus"></i></button>
                         <button type="button" title="Download to PNG" (click)="savePngButtonClick($event)" class="right-margin-4"><i class="fa fa-download"></i></button>
-                        <div class="button-spacer"></div>
-                        <!--<button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>-->
+                        <div class="button-spacer"></div>                        
                         <button type="button" title="{{isFullScreen ? 'Minimize':'Full screen'}}" (click)="fullScreenButtonClick($event)"><i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-arrows-alt' : !isFullScreen}"></i></button>
                     </div>
                 </div>
@@ -79,7 +78,7 @@
                         </div>
 
                         <div class="filter-section">
-                            <div class="filter-header">Hide By Asset Type</div>
+                            <div class="filter-header">Hide by Asset Type</div>
                             <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
                             <p-tree [value]="filterSelectionsModel?.FilterAssetTypes"
                                     [hidden]="filtersLoading"
@@ -245,8 +244,7 @@
                             </p-tabPanel>
                         </p-tabView>
                     </div>
-
-
+                    
                     <div class="asset-browser-controls-bottom">
                         <div class="asset-browser-button-group zoom-controls">
                             <button type="button" title="Zoom out" (click)="zoomOutButtonClick($event)"><i class="fa fa-minus-circle"></i></button>
@@ -260,5 +258,3 @@
         </div>
     </div>
 </div>
-
-
