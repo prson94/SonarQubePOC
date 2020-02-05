@@ -428,4 +428,8 @@
   <include file="scripts/GOV-9539.xml"/> <!-- clean up FieldType records with inappropriate LookupObjectType/LookupObjectID values -->
   <include file="scripts/GOV-9554.xml"/> <!-- graph.UpdateAssetEdge - consider changes to subject/object of relationship and recreate record if necessary -->
   <include file="scripts/GOV-9106.xml"/> <!-- Changed AssetWithType view to point to asset type icon, instead of icon text -->
+  
+  <!-- Sprint 3 2020 Start -->
+  <include file="scripts/GOV-9579.xml"/> <!-- add RunDate column to [metrics].[Score] -->
+  
 </databaseChangeLog>
