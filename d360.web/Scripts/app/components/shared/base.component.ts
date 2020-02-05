@@ -20,6 +20,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { OnDestroy, OnInit } from '@angular/core';
 import { Policy } from '../../models/policy.model';
 import { Router } from '@angular/router';
+import { ScoreType } from '../../models/metrics.model';
 
 declare var CompanySettings;
 
@@ -57,6 +58,10 @@ export class BaseComponent {
     scoreSidebar: SecondaryNavItem;
     commentsSidebar: SecondaryNavItem;
     actionsSidebar: SecondaryNavItem;
+
+
+    scoringDataQualitySidebar: SecondaryNavItem;
+    scoringGovernanceSidebar: SecondaryNavItem;
     // tabs
 
     lineageShowUsageOnly = false;
@@ -194,6 +199,40 @@ export class BaseComponent {
         }
         if (crumbs.length > 0)
             this.breadcrumbsService.buildFromStorage();
+    }
+
+    setScoringSecondaryNavTabs(assetTypeUid: string, hasGovernance: boolean, hasDataQuality: boolean, currentType: ScoreType) {
+        var baseUrl = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${assetTypeUid}/`;
+
+        if (this.secondaryNavService) {
+            this.clearSidebar();
+
+            if (hasGovernance) {
+                this.scoringGovernanceSidebar = new SecondaryNavItem(
+                    'Governance Score',
+                    'Governance Score',
+                    ['fa-drivers-license-o'],
+                    `${baseUrl}Governance`, null, 20
+                );
+                this.secondaryNavService.showItem(this.scoringGovernanceSidebar);
+            }
+
+            if (hasDataQuality) {
+                this.scoringDataQualitySidebar = new SecondaryNavItem(
+                    'Data Quality Score',
+                    'Data Quality Score',
+                    ['fa-drivers-license-o'],
+                    `${baseUrl}DataQuality`, null, 20
+                );
+                this.secondaryNavService.showItem(this.scoringDataQualitySidebar);
+            }
+
+            if (currentType.toString() == 'Governance')
+                this.scoringGovernanceSidebar.active = true;
+
+            if (currentType.toString() == 'DataQuality')
+                this.scoringDataQualitySidebar.active = true;
+        }
     }
 
     setCommonSecondaryNavTabs(

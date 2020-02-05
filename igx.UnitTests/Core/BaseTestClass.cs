@@ -25,6 +25,7 @@ using d360.core.entities.Metric;
 using d360.core;
 using System.Dynamic;
 using Newtonsoft.Json.Linq;
+using d360.core.entities.Scoring;
 
 namespace igx.UnitTests
 {
@@ -246,7 +247,7 @@ namespace igx.UnitTests
                 }
                 : null);
             mockRepo.Setup(x => x.GetExecutionItems(It.IsAny<IEnumerable<KeyValuePair<string, string>>>()))
-                .Returns(Task.FromResult(new APIExecutionAPIModelResult { total = 1, pageNum = 1, pageSize = 200, StatusCode = HttpStatusCode.OK}));
+                .Returns(Task.FromResult(new APIExecutionAPIModelResult { total = 1, pageNum = 1, pageSize = 200, StatusCode = HttpStatusCode.OK }));
 
             mockRepo.Setup(x => x.GetAssetTypeByModel(It.IsAny<AssetTypeUpsert>()))
                 .Returns(new AssetType());
@@ -312,7 +313,8 @@ namespace igx.UnitTests
                 .Returns((AssetCrossReference xref) => xref.uid == Guid.Parse(DataConstants.InvalidGUID) ? Task.FromResult(true) : Task.FromResult(false));
 
             mock.Setup(x => x.PostBulkCrossReference(It.IsAny<List<AssetCrossReference>>(), It.IsAny<ApiExecution>()))
-                 .Returns((List<AssetCrossReference> xRefList, object o2) => {
+                 .Returns((List<AssetCrossReference> xRefList, object o2) =>
+                 {
                      if (xRefList.Count == 0) return null;
                      else return new List<AssetCrossReferenceResult>() { };
                  });
@@ -548,6 +550,9 @@ namespace igx.UnitTests
                 .Returns(new List<string>() {
                     @"[{""ID"":420,""Name"":""Name"",""Type"":""Text""},{""ID"":421,""Name"":""AssetDate"",""Type"":""Date""}]"
                 });
+
+            mock.Setup(x => x.GetAllocationByMetricModel(It.IsAny<MetricAssetViewModel>()))
+                .Returns(new ScoreTypeAllocation() { IsExternallyCalculated = false });
 
             return mock.Object;
         }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using d360.core.entities;
 using d360.core.entities.Metric;
+using d360.core.entities.Scoring;
 using d360.core.enums;
 
 namespace d360.model.DataAccessLayer
@@ -17,6 +18,7 @@ namespace d360.model.DataAccessLayer
         List<string> GetMetricFieldFragments(Guid assetTypeUid);
         MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate);
         List<string> GetMetricStructureFragments(Guid assetTypeUid, ScoreType scoreType);
+        ScoreTypeAllocation GetAllocationByMetricModel(MetricAssetViewModel model);
         (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }

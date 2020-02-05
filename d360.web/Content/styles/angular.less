@@ -2519,7 +2519,7 @@ div.home-image-title-text {
     font-size: 18px;
     font-weight: 600;
     width: 100%;
-    line-height:32px;
+    line-height: 32px;
     display: inline-flex;
     margin-right: 30px;
     margin-left: 0px;
@@ -3278,6 +3278,11 @@ button.tab-scroller {
             margin-bottom: 8px;
         }
 
+        .light-text {
+            padding-top: 10px;
+            color: grey;
+        }
+
         p-dropdown {
             .ui-dropdown {
                 width: 400px;
@@ -3353,6 +3358,21 @@ button.tab-scroller {
                         top: 4px;
                     }
                 }
+            }
+        }
+
+
+        p-checkbox {
+            .ui-chkbox-box.ui-state-active {
+                border: 1px solid #0971b9;
+                background: #ffffff;
+                color: #0971b9;
+                line-height: 1px;
+            }
+
+            label {
+                font-weight: bold;
+                color: black;
             }
         }
     }
@@ -4237,6 +4257,7 @@ button.tab-scroller {
                             margin-left: auto;
                             margin-top: auto;
                             margin-bottom: auto;
+
                             &:hover {
                                 text-decoration: underline;
                             }
