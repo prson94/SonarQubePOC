@@ -70,6 +70,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         formatted.state = x.state;
         formatted.uid = x.uid;
         formatted.hasMeasure = x.hasMeasure;
+        formatted.isExternallyCalculated = x.isExternallyCalculated;
         return formatted;
     }
 

@@ -53,6 +53,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     private statistics: ObjectStatistics;
     private actionsAssigned: boolean = false;
     private currentResouceID: number;
+    private isScoringScreen: boolean = false;
 
     status: string;
     showStatus = false;
@@ -110,6 +111,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     }
                     if (event instanceof NavigationEnd) {
                         this.previousUrl = event.url;
+                        if (event.url.endsWith('DataQuality') || event.url.endsWith('Governance')) {
+                            this.isScoringScreen = true;
+                        }
                     }
                 });
     }
