@@ -43,7 +43,7 @@
             </div>
         </div>
         <div *ngIf="errorMessage.length > 0" class="col s12">
-            <span style="color:maroon;">An error occured while uploading the file: {{errorMessage}}</span>
+            <span style="color:maroon;">An error occurred while uploading the file: {{errorMessage}}</span>
         </div>
         <div class="col s12" style="padding-top:15px;">
             <button pButton  type="submit" label="Save" [disabled]="!file || !showDetail() || isSaving"></button><button pButton label="Cancel" (click)="cancel()"></button><i *ngIf="isSaving" class="fa fa-spinner fa-spin"></i>
