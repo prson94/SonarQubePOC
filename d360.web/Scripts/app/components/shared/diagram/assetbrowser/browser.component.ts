@@ -24,7 +24,9 @@ import {
     AssetBrowserAssetModel,
     AssetBrowserGenericRelationModel,
     LoadedFilterTypesModel,
-    AssetBrowserApiHopType
+    AssetBrowserApiHopType,
+    AssetBrowserAlertRequest,
+    AssetBrowserAlert
 } from '../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../services/browser.service';
@@ -60,16 +62,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private requestModel: AssetBrowserApiHopRequestModel;
     private responseModel: AssetBrowserModel = new AssetBrowserModel();
-    //private translationModel: AssetBrowserTranslation = new AssetBrowserTranslation();
     private revealedKeys: string[] = [];
     private originalAssetUid: string;
     private menuItems: MenuItem[] = [];
+
+    private isAlertWindowVisible: boolean = false;
+    private alerts: AssetBrowserAlert[];
+    private assetsWithAlerts: string[] = [];
+    private totalAlertCount: number = 0;
 
     private isInfoWindowVisible: boolean = false;
     private isInfoTabDisabled: boolean = true;
     private isWindowLoading = false;
     private isAddRelationshipWindowVisible: boolean = false;
-    private showWindowTabs: boolean = false;
     private tab: string = "info";
     private selectedDiagramAsset: AssetBrowserDiagramAsset;
     private isFullScreen: boolean = false;
@@ -118,6 +123,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private readonly fontRelationBadgeCountForeColor: string = "#ffffff";
 
     private readonly fontLabelIcon: string = "12px FontAwesome";
+    private readonly fontLabelAlertColor: string = "#FF0000";
     private readonly fontLabel: string = "12px 'Source Sans Pro'";
     private readonly fontLabelColor: string = "#404040";
     private readonly fontLink: string = "9pt 'Source Sans Pro'";
@@ -239,23 +245,41 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private alertButtonClick(e) {
-        alert('Alerts coming soon');
+        this.panelButtonClick('alert');
+
+        //if (this.isAlertWindowVisible) {
+            if (this.selectedDiagramAsset) {
+                this.showAlertsByAsset(this.selectedDiagramAsset.Uid);
+            }
+            else {
+                this.showAlertsByDisplayedAssets();
+            }
+        //}
     }
 
     private panelButtonClick(name: string) {
         switch (name) {
             case 'add':
                 this.isAddRelationshipWindowVisible = !this.isAddRelationshipWindowVisible;
-                this.isInfoWindowVisible = false;
+                this.isAlertWindowVisible = false;
                 this.isFilterWindowVisible = false;
+                this.isInfoWindowVisible = false;
+                break;
+            case 'alert':
+                this.isAddRelationshipWindowVisible = false;
+                this.isAlertWindowVisible = !this.isAlertWindowVisible;
+                this.isFilterWindowVisible = false;
+                this.isInfoWindowVisible = false;
                 break;
             case 'filter':
                 this.isAddRelationshipWindowVisible = false;
-                this.isInfoWindowVisible = false;
+                this.isAlertWindowVisible = false;
                 this.isFilterWindowVisible = !this.isFilterWindowVisible;
+                this.isInfoWindowVisible = false;
                 break;
             case 'info':
                 this.isAddRelationshipWindowVisible = false;
+                this.isAlertWindowVisible = false;
                 this.isFilterWindowVisible = false;
                 this.isInfoWindowVisible = !this.isInfoWindowVisible;
                 break;
@@ -268,8 +292,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (this.isInfoWindowVisible && this.selectedDiagramAsset != null && this.selectedDiagramAsset.Loaded == false) {
             this.showDetails(this.selectedDiagramAsset.Uid);
         }
-
-        this.cdRef.markForCheck();
     }
 
     private setFilterWindow(actOnFilterWindow: boolean) {
@@ -414,6 +436,37 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private addButtonSelectedClass() {
         return this.isAddRelationshipWindowVisible ? "selected" : "";
+    }
+
+    private alertButtonClass() {
+        let classes: string = "";
+
+        if (this.isAlertWindowVisible) {
+            classes += "selected";
+        }
+
+        return classes;
+    }
+
+    private alertButtonWidth() {
+        let width: number = 32;
+        if (this.totalAlertCount > 0) {
+            width += (this.totalAlertCount.toLocaleString().length * 6);
+            width += 10;
+        }
+        return width + 'px';
+    }
+
+    private alertCountClass() {
+        return this.totalAlertCount > 0 ? "fa fa-bell has-alerts-label" : "fa fa-bell";
+    }
+
+    private alertCountNumberClass() {
+        return this.totalAlertCount > 0 ? "has-alerts-count" : "";
+    }
+
+    private alertCountNumber() {
+        return this.totalAlertCount > 0 ? this.totalAlertCount : ""; 
     }
 
     private determineLoadedFilterOptions(): LoadedFilterTypesModel {
@@ -1031,8 +1084,24 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         //#endregion
 
+        this.recheckAlertCount();
+
         this.diagram.commitTransaction("load_all_data");
         this.reOrderLayout();
+    }
+
+    private recheckAlertCount() {
+        this.totalAlertCount = 0;
+        this.assetsWithAlerts = [];
+        this.diagram.nodes.each(n => {
+            if (n.data) {
+                if (n.data.actionCount) {
+                    this.totalAlertCount += n.data.actionCount;
+                    this.assetsWithAlerts.push(n.data.assetUid);
+                    console.log(this.assetsWithAlerts);
+                }
+            }
+        });
     }
 
     private getFullResponseModelAsTranslationNodes() : AssetBrowserTranslationNode[] {
@@ -1143,6 +1212,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private refreshDiagram() {
         this.assetUid = this.originalAssetUid;
         this.fromRefresh = true;
+        this.selectedDiagramAsset = null;
+        this.isInfoWindowVisible = false;
+        this.isInfoTabDisabled = true;
         this.populateDiagram().subscribe(bComplete => {
             this.fromRefresh = false;
             this.setFilterWindow(false);
@@ -1392,33 +1464,44 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                     if (uid !== '' && uid != emptyUid) {
                         this.isInfoTabDisabled = false;
-                        if (this.isInfoWindowVisible) {
-                            if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
+                        if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
+                            if (this.isInfoWindowVisible) {
                                 this.showDetails(uid);
                             }
-                        } else {
-                            this.selectedDiagramAsset = new AssetBrowserDiagramAsset();
-                            this.selectedDiagramAsset.Uid = uid;
-                            this.cdRef.markForCheck();
+                            else if (this.isAlertWindowVisible) {
+                                this.showAlertsByAsset(uid);
+                            }
+                            else {
+                                this.selectedDiagramAsset = new AssetBrowserDiagramAsset();
+                                this.selectedDiagramAsset.Uid = uid;
+                                this.cdRef.markForCheck();
+                            }
                         }
                     }
                     else {
+                        this.diagram.nodes.each(n => {
+                            n.isHighlighted = false;
+                        });
                         this.selectedDiagramAsset = null;
                         this.isInfoTabDisabled = true;
                         this.isInfoWindowVisible = false;
+                        if (this.isAlertWindowVisible) {
+                            this.showAlertsByDisplayedAssets();
+                        }
                         this.cdRef.markForCheck();
                     }
 
                 } else if (parts.count == 0) {
-                    if (this.isInfoWindowVisible) {
-                        this.selectedDiagramAsset = null;
-                        this.isInfoTabDisabled = true;
-                        this.isInfoWindowVisible = false;
-                        this.cdRef.markForCheck();
-                    } else {
-                        this.isInfoTabDisabled = true;
-                        this.cdRef.markForCheck();
+                    this.diagram.nodes.each(n => {
+                        n.isHighlighted = false;
+                    });
+                    this.selectedDiagramAsset = null;
+                    this.isInfoTabDisabled = true;
+                    this.isInfoWindowVisible = false;
+                    if (this.isAlertWindowVisible) {
+                        this.showAlertsByDisplayedAssets();
                     }
+                    this.cdRef.markForCheck();
                 }
             }
         }
@@ -1523,14 +1606,45 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#region Context menu actions
 
+    private showAlertsByDisplayedAssets() {
+        this.isWindowLoading = true;
+
+        console.log(this.assetsWithAlerts);
+        if (this.assetsWithAlerts.length > 0) {
+            let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
+
+            this.assetsWithAlerts.forEach(a => {
+                model.assets.push({ uid: a });
+                console.log(a);
+            });
+
+            this.browserService.getAlertsByAsset(model).subscribe(alerts => {
+                this.alerts = alerts;
+                this.isWindowLoading = false;
+                this.cdRef.markForCheck();
+            });
+        }
+    }
+
+    private showAlertsByAsset(assetUid: string) {
+        this.isWindowLoading = true;
+        let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
+        model.assets.push({ uid: assetUid });
+
+        this.browserService.getAlertsByAsset(model).subscribe(alerts => {
+            this.alerts = alerts;
+            this.isWindowLoading = false;
+            this.cdRef.markForCheck();
+        });
+    }
+
     private showDetails(assetUid: string) {
         this.isWindowLoading = true;
-        this.browserService.getAssetBrowserDiagramAsset(assetUid).subscribe(response => {
+        this.browserService.getDetailByAsset(assetUid).subscribe(response => {
             this.selectedDiagramAsset = response;
             this.selectedDiagramAsset.Loaded = true;
             this.selectedDiagramAsset.Url = "/" + this.selectedDiagramAsset.Url;
             this.isWindowLoading = false;
-            this.showWindowTabs = true;
             this.cdRef.markForCheck();
         });
     }
@@ -1633,6 +1747,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 owner.expanded = false;
                 this.diagram.model.removeArrayItem(node.owners, ix);
                 this.diagram.model.insertArrayItem(node.owners, ix, owner);
+                this.recheckAlertCount();
+                this.cdRef.markForCheck();
             }
             else {
                 let requestModel: AssetBrowserApiOwnerHopRequestModel = new AssetBrowserApiOwnerHopRequestModel();
@@ -1700,6 +1816,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 relation.expanded = false;
                 this.diagram.model.removeArrayItem(node.relations, ix);
                 this.diagram.model.insertArrayItem(node.relations, ix, relation);
+                this.recheckAlertCount();
+                this.cdRef.markForCheck();
             }
             else {
 
@@ -2309,11 +2427,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         row: 0,
                         alignment: go.Spot.Center,
                         editable: false,
-                        font: this.fontLabelIcon,
-                        stroke: this.fontLabelColor
+                        font: this.fontLabelIcon//,
+                        //stroke: this.fontLabelColor
                     },
                     new go.Binding("text", "icon"),
-                    new go.Binding("visible", "showIcon")
+                    new go.Binding("visible", "showIcon"),
+                    new go.Binding("stroke", "actionCount", (v) => (v > 0) ? this.fontLabelAlertColor : this.fontLabelColor)
                 ),
                 this.g(
                     go.Shape,
@@ -2349,13 +2468,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     {
                         editable: false,
                         font: this.fontLabel,
-                        stroke: this.fontLabelColor,
+                        //stroke: this.fontLabelColor,
                         maxLines: this.textMaxLines,
                         maxSize: this.textMaxSize,
                         overflow: this.textOverflowStyle,
                         toolTip: this.createTooltip()
                     },
-                    new go.Binding("text", "text").makeTwoWay()
+                    new go.Binding("text", "text").makeTwoWay(),
+                    new go.Binding("stroke", "actionCount", (v) => (v > 0) ? this.fontLabelAlertColor : this.fontLabelColor)
                 )
             )  // end Horizontal Panel
         );

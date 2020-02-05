@@ -28,7 +28,10 @@
                         <button type="button" title="Add Lineage" (click)="addRelationshipsClick($event)" [class]="addButtonSelectedClass()"><i class="fa fa-plus"></i></button>
                         <button type="button" title="Download to PNG" (click)="savePngButtonClick($event)" class="right-margin-4"><i class="fa fa-download"></i></button>
                         <div class="button-spacer"></div>
-                        <!--<button type="button" title="Alerts" (click)="alertButtonClick($event)"><i class="fa fa-bell"></i></button>-->
+                        <button type="button" [class]="alertButtonClass()" [ngStyle]="{'width': alertButtonWidth()}" title="Alerts" (click)="alertButtonClick($event)">
+                            <i [class]="alertCountClass()"></i>
+                            <div [class]="alertCountNumberClass()" [innerText]="alertCountNumber()"></div>
+                        </button>
                         <button type="button" title="{{isFullScreen ? 'Minimize':'Full screen'}}" (click)="fullScreenButtonClick($event)"><i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-arrows-alt' : !isFullScreen}"></i></button>
                     </div>
                 </div>
@@ -104,7 +107,7 @@
                                     selectionMode="checkbox"
                                     styleClass="filter-tree"
                                     [selection]="selectedFilterPredicates"
-                                    (selectionChange)="selectedFilterPredicates = $event; filterPredicateChange($event)" 
+                                    (selectionChange)="selectedFilterPredicates = $event; filterPredicateChange($event)"
                                     (onNodeExpand)="resizeDiagram()"
                                     [propagateSelectionUp]="false"
                                     [propagateSelectionDown]="true">
@@ -133,11 +136,11 @@
                         </div>
                     </div>
                     <div class="asset-browser-tab">
-                        <d3s-diagram-relationships *ngIf="isAddRelationshipWindowVisible" 
+                        <d3s-diagram-relationships *ngIf="isAddRelationshipWindowVisible"
                                                    [assetBrowserData]="responseModel"
-                                                   (refreshDiagram)="refreshButtonClick($event)"
-                                                   ></d3s-diagram-relationships>
+                                                   (refreshDiagram)="refreshButtonClick($event)"></d3s-diagram-relationships>
                     </div>
+
                     <div *ngIf="isInfoWindowVisible" class="asset-browser-window-header">
                         <div class="asset-browser-window-header-name" [title]="selectedDiagramAsset?.DisplayValue">
                             <a [routerLink]="selectedDiagramAsset?.Url">{{selectedDiagramAsset?.DisplayValue}}</a>
@@ -246,6 +249,38 @@
                         </p-tabView>
                     </div>
 
+                    <div *ngIf="isAlertWindowVisible" class="asset-browser-window-header">
+                        <div class="asset-browser-window-header-name">Alerts</div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div *ngIf="isAlertWindowVisible" class="asset-browser-window-content">
+                        <p-tabView>
+                            <p-tabPanel header="Alerts">
+                                <d3s-loading [(isLoading)]="isWindowLoading"></d3s-loading>
+                                <div [(hidden)]="isWindowLoading" class="asset-browser-window-tabs-content">
+                                    <div class="asset-browser-window-tabs-content-alert" *ngFor="let alert of alerts">
+                                        <div class="asset">
+                                            <span class="icon fa fa-book"></span>
+                                            <span>{{alert.asset.displayValue}}</span>
+                                        </div>
+                                        <div class="action" *ngIf="alert.action">
+                                            <div>
+                                                <span class="label">Action Alert:</span>
+                                                <span class="type">{{alert.action.name}}</span>
+                                            </div>
+                                            <div class="content" [innerHTML]="alert.action.description"></div>
+                                        </div>
+                                        <div class="score" *ngIf="alert.score">
+                                            <div>
+                                                <span class="label">Quality Alert:</span>
+                                                <span class="type">{{alert.score.name}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </p-tabPanel>
+                        </p-tabView>
+                    </div>
 
                     <div class="asset-browser-controls-bottom">
                         <div class="asset-browser-button-group zoom-controls">

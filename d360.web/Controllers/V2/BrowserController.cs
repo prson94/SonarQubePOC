@@ -38,51 +38,6 @@ namespace d360.web.Controllers.V2
         {
         }
 
-        #region Internal Classes For GetAssetLineage Endpoint
-
-        internal class HopNodeResult
-        {
-            public Guid assetUid { get; set; }
-            public long assetID { get; set; }
-            public string key { get; set; }
-            public long parentID { get; set; }
-            public string parentKey { get; set; }
-            public string back { get; set; }
-            public string fore { get; set; }
-            public string icon { get; set; }
-            public int assetTypeID { get; set; }
-            public Guid assetTypeUid { get; set; }
-            public AssetTypeClass @class { get; set; }
-            public string displayValue { get; set; }
-            public AssetBrowserApiHopDirection reveal { get; set; }
-            public string ownerCounts { get; set; }
-            public string relationCounts { get; set; }
-            public bool useAsTransformation { get; set; }
-            public bool hasAssetReadAccess { get; set; }
-            public bool isSubjectInTransformation { get; set; }
-            public bool isLeaf { get; set; }
-
-        }
-
-        internal class HopLinkResult
-        {
-            public Guid uid { get; set; }
-            public string subjectKey { get; set; }
-            public string objectKey { get; set; }
-            public int predicateId { get; set; }
-            public Guid predicateUid { get; set; }
-            public string predicate { get; set; }
-            public PredicateType predicateType { get; set; }
-        }
-
-        internal class HopModel 
-        {
-            public List<HopNodeResult> nodes { get; set; }
-            public List<HopLinkResult> links { get; set; }
-        }
-
-        #endregion
-
         List<T> ParseArrayCount<T>(string json)
         {
             return JsonConvert.DeserializeObject<List<T>>(json ?? "[]");
@@ -107,6 +62,7 @@ namespace d360.web.Controllers.V2
                     @class = h.@class,
                     displayValue = h.displayValue,
                     reveal = h.reveal,
+                    actionCount = h.actionCount,
                     ownerCounts = ParseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
                     relationCounts = ParseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
                     useAsTransformation = h.useAsTransformation,
@@ -148,6 +104,7 @@ namespace d360.web.Controllers.V2
                     @class = h.@class, 
                     displayValue = h.displayValue, 
                     reveal = h.reveal,
+                    actionCount = h.actionCount,
                     ownerCounts = ParseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
                     relationCounts = ParseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
                     useAsTransformation = h.useAsTransformation, 
@@ -426,49 +383,6 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
             }
         }
 
-        #region Internal Classes For GetDiagramAsset Endpoint
-
-        internal class AssetBrowserDiagramAsset
-        {
-            public string TypeName { get; set; }
-            public AssetTypeClass AssetTypeClass { get; set; }
-            public string AssetTypeClassDisplayName { get { return AssetTypeClass.GetDisplayName(); } }
-            public Guid Uid { get; set; }
-            public string DisplayValue { get; set; }
-            public string Path { get; set; }
-            public string Url { get; set; }
-            public List<AssetBrowserDiagramAssetField> Fields { get; set; } = new List<AssetBrowserDiagramAssetField>();
-            public List<AssetBrowserDiagramAssetScore> Scores { get; set; } = new List<AssetBrowserDiagramAssetScore>();
-            public List<AssetBrowserDiagramAssetOwner> Owners { get; set; } = new List<AssetBrowserDiagramAssetOwner>();
-        }
-
-        internal class AssetBrowserDiagramAssetField
-        {
-            public string Name { get; set; }
-            public string Value { get; set; }
-            public string Values { get; set; }
-            public string Type { get; set; }
-        }
-
-        internal class AssetBrowserDiagramAssetScore
-        {
-            public string Name { get; set; }
-            public int Value { get; set; }
-        }
-
-        internal class AssetBrowserDiagramAssetOwner
-        {
-            public int ResponsibilityTypeID { get; set; }
-            public string ResponsibilityTypeName { get; set; }
-            public string Icon { get; set; }
-            public int ResourceID { get; set; }
-            public string ResourceName { get; set; }
-            public string SecurityAssetName { get; set; }
-            public string Context { get; set; }
-        }
-
-        #endregion
-
         /// <summary>
         /// Gets detailed field information regarding a specific asset that a user selects from the Asset Browser UI.
         /// </summary>
@@ -584,33 +498,76 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             }
         }
 
-        #region Filter Classes
-
-        internal class AssetBrowserAssetTypeFilterItem {
-            public Guid Uid { get; set; }
-            public int AssetTypeId { get; set; }
-            public int ClassId { get; set; }
-            public string Class { get { return ((AssetTypeClass)ClassId).GetDisplayName(); } }
-            public string Name { get; set; }
-            public string Path { get; set; }
-        }
-        internal class AssetBrowserPredicateFilterItem {
-            public int Id { get; set; }
-            public Guid Uid { get; set; }
-            public int TypeId { get; set; }
-            public string Type { get { return ((PredicateType)TypeId).GetDisplayName(); } }
-            public string Name { get; set; }
-            public string Inverse { get; set; }
-        }
-
-        internal class AssetBrowserResponsibilityTypeFilterItem
+        /// <summary>
+        /// Gets detailed field information regarding a specific asset that a user selects from the Asset Browser UI.
+        /// </summary>
+        /// <param name="model">The uid of the asset that we are getting field information for.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            Route("actions"),
+            ApiExplorerSettings(IgnoreApi = true),
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the GET request.", typeof(AssetBrowserDiagramAsset)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetDiagramAlerts(AssetBrowserAlertRequest model)
         {
-            public int Id { get; set; }
-            public Guid Uid { get; set; }
-            public string Name { get; set; }
-        }
+            try
+            {
+                var sql = @"
+select	A.uid as 'asset.uid',
+		coalesce(A.icon, 'fa-book') as 'asset.icon',
+		A.TypeName + ' > ' + A.DisplayValue as 'asset.displayValue',
+		IT.name as 'action.name', 
+		reporting.StripHTML(F.FormattedValue) as 'action.description'
+from	AssetDetail A
+        inner join @uids U on U.Uid = A.Uid
+		inner join Issue I on I.Object = A.Object and I.ObjectID = A.ObjectID
+		left join IssueType IT on IT.ID = I.IssueTypeID
+		left join FieldType FT on FT.Object = 'IssueType' and FT.ObjectID = IT.ID and (FT.Name = 'Description' or FT.Name = 'ProblemDesc')
+		left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = 'Issue' and F.ObjectID = I.ID
+		left join workflow.Item W on W.Object = 'Issue' and W.ObjectID = I.ID
+where	I.CompletedOn is null and W.CompletedOn is null
+for json path";
 
-        #endregion
+                if (model == null) 
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have passed an empty or invalid set of criteria.");
+                }
+                else if (model.assets.Count == 0) 
+                {
+                    AssetBrowserAlert[] alerts = new AssetBrowserAlert[0];
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.NoContent, alerts)));
+                }
+                
+                var reader = await Company.QueryAsync<string>(sql, 
+                    new {
+                        uids = model.assets.Select(i => i.uid).AsTableValuedParameter(
+                            "dbo.UidTable",
+                            new List<string>() { "Uid" }
+                            )
+                    }, timeout: 100);
+                var json = string.Join("", reader);
+
+                var returnModel = JsonConvert.DeserializeObject<AssetBrowserAlert[]>(json);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, returnModel)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", "BrowserController.GetDiagramAlerts" },
+                    { "model", JsonConvert.SerializeObject(model) }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
 
         /// <summary>
         /// Retrieves lists of filters to be used in the Asset Browser. Hidden from Swagger as this is an internal API.

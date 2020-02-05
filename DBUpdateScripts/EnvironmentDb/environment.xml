@@ -431,5 +431,5 @@
   
   <!-- Sprint 3 2020 Start -->
   <include file="scripts/GOV-9579.xml"/> <!-- add RunDate column to [metrics].[Score] -->
-  
+  <include file="scripts/GOV-9079.xml"/> <!-- Update [graph].[GetHop] return actionCount to asset browser -->
 </databaseChangeLog>
