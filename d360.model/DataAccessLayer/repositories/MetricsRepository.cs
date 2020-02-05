@@ -14,6 +14,7 @@ using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System.Data.SqlClient;
 using Dapper;
 using Newtonsoft.Json;
+using d360.core.entities.Scoring;
 
 namespace d360.model.DataAccessLayer
 {
@@ -729,6 +730,12 @@ namespace d360.model.DataAccessLayer
             if (result.items == null) result.items = new List<MetricAssetScoreModel>();
             return (result, "");
         }
+
+        public ScoreTypeAllocation GetAllocationByMetricModel(MetricAssetViewModel model)
+        {
+            return Company.ScoreTypeAllocations.FirstOrDefault(x => x.AssetTypeUid == model.AssetTypeUid && x.ScoreType == model.ScoreType);
+        }
+
 
     }
 }

@@ -19,6 +19,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
     @Input() uid: string;
     @Input() parentUid: string;
     @Input() scoreType: ScoreType;
+    @Input() isExternallyCalculated: boolean;
 
     @Input() metricEditorFieldTypes: MetricFieldTypeViewModel[] = [];
 

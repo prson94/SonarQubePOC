@@ -139,11 +139,6 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"Score Allocation already exists.");
                 }
 
-                if(model.scoreType == ScoreType.Governance && model.isExternallyCalculated == true)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"Governance Score Allocation cannot have isExternallyCalculated flag set to True.");
-                }
-
                 if (model.scoreType == ScoreType.DataQuality && model.isExternallyCalculated == false)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"Data Quality Score Allocation cannot have isExternallyCalculated flag set to False.");
@@ -217,12 +212,6 @@ namespace d360.web.Controllers.V2
                 if (hasActiveMeasures)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined.");
-                }
-
-
-                if (model.scoreType == ScoreType.Governance && model.isExternallyCalculated == true)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Governance Score Allocation cannot have isExternallyCalculated flag set to True.");
                 }
 
                 if (model.scoreType == ScoreType.DataQuality && model.isExternallyCalculated == false)

@@ -41,6 +41,20 @@ namespace d360.model.DataAccessLayer
             {
                 switch (kp.Key.ToLower())
                 {
+                    case "assettypeuid":
+                        Guid assetTypeUid = Guid.Empty;
+                        Guid.TryParse(kp.Value, out assetTypeUid);
+
+                        if(assetTypeUid == Guid.Empty)
+                        {
+                            error = "Invalid Asset Type UID specified.";
+                            return null;
+                        }
+
+                        whereStatements.Add("AL.assettypeuid = @assettypeuid");
+                        dbArgs.Add("@assettypeuid", assetTypeUid);
+                        break;
+
                     case "_state":
                         State stateValue;
                         Enum.TryParse(kp.Value, true, out stateValue);

@@ -114,12 +114,26 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You are have provided a null metric.");
             }
 
+            List<ScoreType> allowedScoreTypes = new List<ScoreType>() { ScoreType.Governance, ScoreType.DataQuality };
+            //backward compatibility
+            if (!allowedScoreTypes.Contains(model.ScoreType))
+            {
+                model.ScoreType = ScoreType.Governance;
+            }
+
+            var allocation = MetricsRepository.GetAllocationByMetricModel(model);
+
+            if(allocation == null)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "There is no allocation for specified Asset Type UID and Score Type.");
+            }
+
             if (string.IsNullOrEmpty(model.Name))
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You are have provided an invalid name.");
             }
 
-            if (model.Weight == 0 && model.ScoreType != ScoreType.DataQuality)
+            if (model.Weight == 0 && allocation.IsExternallyCalculated == false)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You must supply a weight greater than 0.");
             }
@@ -138,13 +152,6 @@ namespace d360.web.Controllers.V2
             if(model.IsGroup && model.ParentUid != null && model.ParentUid != Guid.Empty)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Maximum number of levels for measures is 2.");
-            }
-
-            List<ScoreType> allowedScoreTypes = new List<ScoreType>() { ScoreType.Governance, ScoreType.DataQuality };
-            //backward compatibility
-            if (!allowedScoreTypes.Contains(model.ScoreType))
-            {
-                model.ScoreType = ScoreType.Governance;
             }
 
             var isNew = true;
