@@ -136,6 +136,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     private checkSelectionValues() {
         if (this.transformationAsset.length > 0) {
+            this.isTargetDisabled = false;
             this.relationshipService.getRelationshipsByAssetTypeUid(this.transformationAsset[0].AssetTypeUid)
                 .subscribe(res => {
                     this.targetAllowedPredicates = [];
@@ -145,7 +146,6 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
                         }
                     });
                     this.buildTargetFilters();
-                    this.isTargetDisabled = false;
                 });
         }
         else {
