@@ -1088,8 +1088,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-allocation.component.ts" />
     <Content Include="Scripts\app\components\admin\analytics\admin-allocation-editor.component.html" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-allocation-editor.component.ts" />
-    <Content Include="Scripts\app\components\admin\analytics\admin-data-quality.component.html" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-data-quality.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-list.component.ts" />

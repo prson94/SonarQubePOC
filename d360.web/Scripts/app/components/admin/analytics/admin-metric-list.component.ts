@@ -23,7 +23,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                             <ng-template pTemplate="header">
                                 <tr> 
                                     <th>Name</th>
-                                    <th>Weight</th>
+                                    <th *ngIf="scoreType != 'DataQuality'">Weight</th>
                                     <th>Effective Date</th>
                                     <th style="width: 40px"></th>
                                     <th style="width: 40px"></th>
@@ -37,7 +37,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                         <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                                         {{item.Name}}
                                     </td>
-                                    <td>{{item.Weight}}</td>
+                                    <td *ngIf="scoreType != 'DataQuality'">{{item.Weight}}</td>
                                     <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
                                     <td>
                                         <div class="RowTools" *ngIf="rowNode.node.data.Uid">                                
