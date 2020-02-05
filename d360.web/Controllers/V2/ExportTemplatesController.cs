@@ -488,7 +488,7 @@ namespace d360.web.Controllers.V2
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res));
         }
 
-        private async Task<IEnumerable<dynamic>> GetRuleTypeFieldResults(Guid guid, List<FieldType> fieldTypes)
+        private async Task<IEnumerable<dynamic>> GetRuleTypeFieldResults(Guid guid, List<FieldType> fieldTypes, AssetTypeExportTemplate template = null)
         {
             DynamicParameters dbArgs = new DynamicParameters();
             string selectSql = @"
@@ -517,7 +517,8 @@ namespace d360.web.Controllers.V2
             fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
             fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Rule UID" });
             fieldTypes.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Rule ID" });
-            fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+            if (template == null || (template != null && template.IncludeUrl)) 
+                fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
 
             foreach (var col in fieldColumns)
             {
@@ -551,6 +552,7 @@ namespace d360.web.Controllers.V2
                     DataType.FilteredLookup.ToString(),
                     DataType.OwnershipLookup.ToString()
                 };
+
             var fieldTypes = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID)
                                 .Where(x => !typesToAvoid.Contains(x.Type))
                                 .OrderBy(x => x.ColumnOrder)
@@ -562,16 +564,21 @@ namespace d360.web.Controllers.V2
         private async Task<SLDocument> GetDefaultRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
         {
             List<FieldType> fieldTypes = GetRuleTypeFields(guid);
-            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
+            if(template != null)
+                UseTempleteFields(template, fieldTypes);
+            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes, template);
 
             SLDocument document = new SLDocument();
             document = GenerateDefaultSpreadsheet(fieldTypes, results, template, "Items");
             return document;
         }
+
         private async Task<SLDocument> GetPivotRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
         {
             List<FieldType> fieldTypes = GetRuleTypeFields(guid);
-            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
+            if (template != null)
+                UseTempleteFields(template, fieldTypes);
+            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes, template);
 
             SLDocument document = new SLDocument();
             document = GeneratePivotedSpreadsheet(fieldTypes, results, template, "Items");
@@ -581,7 +588,9 @@ namespace d360.web.Controllers.V2
         private async Task<SLDocument> GetGroupedRuleDocument(Guid guid, AssetTypeExportTemplate template = null)
         {
             List<FieldType> fieldTypes = GetRuleTypeFields(guid);
-            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
+            if (template != null)
+                UseTempleteFields(template, fieldTypes);
+            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes, template);
 
             SLDocument document = new SLDocument();
             document = GenerateGroupedSpreadsheet(fieldTypes, results, template, "Items");
