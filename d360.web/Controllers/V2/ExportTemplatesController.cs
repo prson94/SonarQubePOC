@@ -488,7 +488,7 @@ namespace d360.web.Controllers.V2
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res));
         }
 
-        private async Task<IEnumerable<dynamic>> GetRuleTypeFieldResults(Guid guid, List<FieldType> fieldTypes)
+        private async Task<IEnumerable<dynamic>> GetRuleTypeFieldResults(Guid guid, List<FieldType> fieldTypes, AssetTypeExportTemplate template = null)
         {
             DynamicParameters dbArgs = new DynamicParameters();
             string selectSql = @"
@@ -517,7 +517,8 @@ namespace d360.web.Controllers.V2
             fieldTypes.Add(new FieldType { Type = "decimal", Name = "Threshold", FriendlyName = "Threshold" });
             fieldTypes.Add(new FieldType { Type = "Number", Name = "AssetUid", FriendlyName = "Rule UID" });
             fieldTypes.Add(new FieldType { Type = "Number", Name = "ID", FriendlyName = "Rule ID" });
-            fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+            if (template == null || (template != null && template.IncludeUrl)) 
+                fieldTypes.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
 
             foreach (var col in fieldColumns)
             {
@@ -565,7 +566,7 @@ namespace d360.web.Controllers.V2
             List<FieldType> fieldTypes = GetRuleTypeFields(guid);
             if(template != null)
                 UseTempleteFields(template, fieldTypes);
-            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
+            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes, template);
 
             SLDocument document = new SLDocument();
             document = GenerateDefaultSpreadsheet(fieldTypes, results, template, "Items");
@@ -577,7 +578,7 @@ namespace d360.web.Controllers.V2
             List<FieldType> fieldTypes = GetRuleTypeFields(guid);
             if (template != null)
                 UseTempleteFields(template, fieldTypes);
-            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
+            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes, template);
 
             SLDocument document = new SLDocument();
             document = GeneratePivotedSpreadsheet(fieldTypes, results, template, "Items");
@@ -589,7 +590,7 @@ namespace d360.web.Controllers.V2
             List<FieldType> fieldTypes = GetRuleTypeFields(guid);
             if (template != null)
                 UseTempleteFields(template, fieldTypes);
-            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes);
+            IEnumerable<dynamic> results = await GetRuleTypeFieldResults(guid, fieldTypes, template);
 
             SLDocument document = new SLDocument();
             document = GenerateGroupedSpreadsheet(fieldTypes, results, template, "Items");
