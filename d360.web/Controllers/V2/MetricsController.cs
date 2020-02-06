@@ -22,6 +22,7 @@ using d360.web.Filters;
 using d360.core.exceptions;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
+using System.ComponentModel.DataAnnotations;
 
 namespace d360.web.Controllers.V2
 {
@@ -114,14 +115,13 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You are have provided a null metric.");
             }
 
-            if (string.IsNullOrEmpty(model.Name))
-            {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You are have provided an invalid name.");
-            }
+            List<ValidationResult> validationResults = new List<ValidationResult>();
+            bool isValid = true;
 
-            if (model.Weight == 0)
+            isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+            if (!isValid)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You must supply a weight greater than 0.");
+                return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", validationResults.First().ErrorMessage);
             }
 
             if (model.IsGroup && model.Conditions.Count > 0)
