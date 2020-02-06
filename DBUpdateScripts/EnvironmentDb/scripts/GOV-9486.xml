@@ -1738,6 +1738,8 @@ end
             stripComments="false">
 		<![CDATA[
 		DELETE From metrics.Asset WHERE [AssetTypeUid] not in (SELECT distinct [Uid] FROM AssetType)
+		DELETE From [metrics].[Score] where AssetUid  not in (SELECT distinct [Uid] FROM Asset)
+		DELETE From [metrics].[ScoreItem] where AssetUid  not in (SELECT distinct [Uid] FROM Asset)
 		]]>
     </sql>
 	<rollback>
