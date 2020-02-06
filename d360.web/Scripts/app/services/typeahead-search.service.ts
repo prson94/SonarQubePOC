@@ -13,7 +13,7 @@ export class TypeaheadSearchService extends BaseObservableService {
 
     getResults(size, term, types?: string[]): Observable<SearchResult[]> {
 
-        return this.http.get(`search/typeahead?q=${encodeURIComponent(term)}&num=${size}&t=${types != undefined ? types.join(',') : ''}`)
+        return this.http.get(`search/typeahead?q=${encodeURIComponent(term.substring(0, 255))}&num=${size}&t=${types != undefined ? types.join(',') : ''}`)
             .pipe(
                 map(response => <SearchResult[]>response),
                 catchError(err => this.handleError(err))
