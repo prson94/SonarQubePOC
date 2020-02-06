@@ -203,8 +203,9 @@ namespace d360.web.Controllers.V2
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
                 var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));
-                if (!validator.IsValidAssetTypeByUIDForGetAssets(assetTypeUid))
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid unique identifier of the asset type."));
+
+                if (AssetRepository.GetAssetTypeByUID(assetTypeUid) == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid));
 
                 if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request"));

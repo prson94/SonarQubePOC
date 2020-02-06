@@ -230,14 +230,5 @@ namespace d360.core.validators
 
             return true;
         }
-        public bool IsValidAssetTypeByUIDForGetAssets(Guid uid)
-        {
-            var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
-            if (assetType == null)
-                return false;
-            else
-                return true;
-
-        }
     }
 }
