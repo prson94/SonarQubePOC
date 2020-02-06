@@ -28,7 +28,7 @@
                         <button type="button" title="Add Lineage" (click)="addRelationshipsClick($event)" [class]="addButtonSelectedClass()"><i class="fa fa-plus"></i></button>
                         <button type="button" title="Download to PNG" (click)="savePngButtonClick($event)" class="right-margin-4"><i class="fa fa-download"></i></button>
                         <div class="button-spacer"></div>
-                        <button type="button" [class]="alertButtonClass()" [ngStyle]="{'width': alertButtonWidth()}" title="Alerts" (click)="alertButtonClick($event)">
+                        <button type="button" [class]="alertButtonClass()" [ngStyle]="{'width': alertButtonWidth()}" title="Alerts" (click)="alertButtonClick($event)" [disabled]="totalAlertCount == 0">
                             <i [class]="alertCountClass()"></i>
                             <div [class]="alertCountNumberClass()" [innerText]="alertCountNumber()"></div>
                         </button>
@@ -258,9 +258,12 @@
                             <p-tabPanel header="Alerts">
                                 <d3s-loading [(isLoading)]="isWindowLoading"></d3s-loading>
                                 <div [(hidden)]="isWindowLoading" class="asset-browser-window-tabs-content">
+                                    <div *ngIf="alerts.length == 0" class="error-msg">
+                                        No alerts displayed.
+                                    </div>
                                     <div class="asset-browser-window-tabs-content-alert" *ngFor="let alert of alerts">
                                         <div class="asset">
-                                            <span class="icon fa fa-book"></span>
+                                            <span [className]="'icon fa ' + alert.asset.icon"></span>
                                             <span>{{alert.asset.displayValue}}</span>
                                         </div>
                                         <div class="action" *ngIf="alert.action">

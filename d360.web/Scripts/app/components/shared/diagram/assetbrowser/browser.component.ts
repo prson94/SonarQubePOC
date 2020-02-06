@@ -67,7 +67,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private menuItems: MenuItem[] = [];
 
     private isAlertWindowVisible: boolean = false;
-    private alerts: AssetBrowserAlert[];
+    private isAlertTabDisabled: boolean = true;
+    private alerts: AssetBrowserAlert[] = [];
     private assetsWithAlerts: string[] = [];
     private totalAlertCount: number = 0;
 
@@ -246,15 +247,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private alertButtonClick(e) {
         this.panelButtonClick('alert');
-
-        //if (this.isAlertWindowVisible) {
-            if (this.selectedDiagramAsset) {
-                this.showAlertsByAsset(this.selectedDiagramAsset.Uid);
-            }
-            else {
-                this.showAlertsByDisplayedAssets();
-            }
-        //}
+        if (this.selectedDiagramAsset) {
+            this.showAlertsByAsset(this.selectedDiagramAsset.Uid);
+        }
+        else {
+            this.showAlertsByDisplayedAssets();
+        }
     }
 
     private panelButtonClick(name: string) {
@@ -444,6 +442,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (this.isAlertWindowVisible) {
             classes += "selected";
         }
+        if (this.isAlertTabDisabled) {
+            classes += "disabled";
+        }
 
         return classes;
     }
@@ -515,25 +516,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 });
             }
         });
-
-        // Now that filters are loaded, set the visibility on the tree nodes.
-        //this.visibleFilterSelectionsModel.AssetTypeOptions.forEach(o => {
-        //    let ix: number = this.selectedFilterAssetTypes.findIndex(v => { return v.key == o.toString() });
-        //    if (ix > -1) {
-        //        this.selectedFilterAssetTypes.splice(ix, 1);
-        //    }
-        //});
-        //this.visibleFilterSelectionsModel.PredicateOptions.forEach(o => {
-        //    let ix: number = this.selectedFilterPredicates.findIndex(v => { return v.key == o.toString() });
-        //    if (ix > -1) {
-        //        this.selectedFilterPredicates.splice(ix, 1);
-        //    }
-        //});
-        //this.filterSelectionsModel.FilterResponsibilityTypes.forEach(o => {
-        //    let ix: number = this.visibleFilterSelectionsModel.ResponsibilityTypeOptions.findIndex(v => { return o.key == v.toString() });
-        //    o.data = (ix > -1);
-        //    console.log(o);
-        //});
 
         return model;
     }
@@ -1098,7 +1080,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (n.data.actionCount) {
                     this.totalAlertCount += n.data.actionCount;
                     this.assetsWithAlerts.push(n.data.assetUid);
-                    console.log(this.assetsWithAlerts);
                 }
             }
         });
@@ -1609,17 +1590,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private showAlertsByDisplayedAssets() {
         this.isWindowLoading = true;
 
-        console.log(this.assetsWithAlerts);
         if (this.assetsWithAlerts.length > 0) {
             let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
 
             this.assetsWithAlerts.forEach(a => {
                 model.assets.push({ uid: a });
-                console.log(a);
             });
 
             this.browserService.getAlertsByAsset(model).subscribe(alerts => {
-                this.alerts = alerts;
+                if (alerts) {
+                    this.alerts = alerts;
+                    this.isAlertTabDisabled = (alerts.length > 0);
+                }
+                else {
+                    this.alerts = [];
+                    this.isAlertTabDisabled = true;
+                }
                 this.isWindowLoading = false;
                 this.cdRef.markForCheck();
             });
@@ -1632,7 +1618,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         model.assets.push({ uid: assetUid });
 
         this.browserService.getAlertsByAsset(model).subscribe(alerts => {
-            this.alerts = alerts;
+            if (alerts) {
+                this.alerts = alerts;
+                this.isAlertTabDisabled = (alerts.length > 0);
+            }
+            else {
+                this.alerts = [];
+                this.isAlertTabDisabled = true;
+            }
             this.isWindowLoading = false;
             this.cdRef.markForCheck();
         });
@@ -2427,8 +2420,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         row: 0,
                         alignment: go.Spot.Center,
                         editable: false,
-                        font: this.fontLabelIcon//,
-                        //stroke: this.fontLabelColor
+                        font: this.fontLabelIcon
                     },
                     new go.Binding("text", "icon"),
                     new go.Binding("visible", "showIcon"),
@@ -2468,7 +2460,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     {
                         editable: false,
                         font: this.fontLabel,
-                        //stroke: this.fontLabelColor,
                         maxLines: this.textMaxLines,
                         maxSize: this.textMaxSize,
                         overflow: this.textOverflowStyle,

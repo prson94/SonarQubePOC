@@ -672,14 +672,12 @@ export class AssetBrowserAlertAsset {
     uid: string;
     icon: string;
     displayValue: string;
-    //segments: string[];
 }
 export class AssetBrowserAlertScore {
     type: ScoreType;
     name: string;
     value: number;
     backColor: string;
-    //trend: ScoreTrend;
 }
 
 //#endregion

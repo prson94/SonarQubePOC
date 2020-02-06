@@ -138,12 +138,3 @@ export enum ScoreType {
     DataQuality = 2,
     Perceptional = 3
 }
-
-export enum ScoreTrend {
-    Down = 1,
-    Flat = 2,
-    Up = 3
-}
-
-
-

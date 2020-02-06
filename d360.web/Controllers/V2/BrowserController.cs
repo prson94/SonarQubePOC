@@ -529,8 +529,7 @@ from	AssetDetail A
 		left join IssueType IT on IT.ID = I.IssueTypeID
 		left join FieldType FT on FT.Object = 'IssueType' and FT.ObjectID = IT.ID and (FT.Name = 'Description' or FT.Name = 'ProblemDesc')
 		left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = 'Issue' and F.ObjectID = I.ID
-		left join workflow.Item W on W.Object = 'Issue' and W.ObjectID = I.ID
-where	I.CompletedOn is null and W.CompletedOn is null
+where	I.CompletedOn is null
 for json path";
 
                 if (model == null) 

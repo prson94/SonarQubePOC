@@ -35,7 +35,6 @@ namespace d360.web.Models
         public Guid uid { get; set; }
         public string icon { get; set; }
         public string displayValue { get; set; }
-        //public List<string> segments { get; set; } = new List<string>();
     }
 
     internal class AssetBrowserAlertScore
