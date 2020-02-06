@@ -58,7 +58,7 @@ namespace igx.UnitTests
         public async void GetAssetTypeByGUID()
         {
 
-            var testGuid = Guid.NewGuid();
+            var testGuid = Guid.Parse(DataConstants.ValidGUID);
 
             var actionResult = await assetsController.GetAssetsAsync(testGuid);
             var res = actionResult.ExecuteAsync(new System.Threading.CancellationToken());
