@@ -1,12 +1,13 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef  } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { TreeNode } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
 import { FormHelpers } from '../../../static/form-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { AllocationService } from '../../../services/allocations.service';
 
 @Component({
     selector: 'd3s-admin-metric-list',
@@ -23,7 +24,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                             <ng-template pTemplate="header">
                                 <tr> 
                                     <th>Name</th>
-                                    <th>Weight</th>
+                                    <th *ngIf="!isExternallyCalculated">Weight</th>
                                     <th>Effective Date</th>
                                     <th style="width: 40px"></th>
                                     <th style="width: 40px"></th>
@@ -37,7 +38,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                         <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                                         {{item.Name}}
                                     </td>
-                                    <td>{{item.Weight}}</td>
+                                    <td *ngIf="!isExternallyCalculated">{{item.Weight}}</td>
                                     <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
                                     <td>
                                         <div class="RowTools" *ngIf="rowNode.node.data.Uid">                                
@@ -64,10 +65,10 @@ import { MessagesObservableService } from '../../../services/messages-observable
                         </p-treeTable>
                     </div>
                     <div *ngSwitchCase="FormMode.Adding">
-                        <d3s-admin-metric-editor [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [scoreType]="scoreType" [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
                     </div>
                     <div *ngSwitchCase="FormMode.Editing">
-                        <d3s-admin-metric-editor [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [uid]="selection.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [scoreType]="scoreType" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [uid]="selection.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
                     </div>
                     <div *ngSwitchCase="FormMode.Deleting">
                         <header>
@@ -86,11 +87,12 @@ import { MessagesObservableService } from '../../../services/messages-observable
 
                 </div>
                 `,
-    providers: [MetricsService, MessagesObservableService]
+    providers: [MetricsService, MessagesObservableService, AllocationService]
 })
 
 export class AdminMetricListComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() assetType: AssetTypeMetricModel;
+    @Input() scoreType: ScoreType;
     @Output() selectionChange = new EventEmitter();
 
     private metrics: MetricAssetViewModel[] = [];
@@ -103,7 +105,9 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     private formMode = FormMode.Default;
     FormMode = FormMode;
 
-    constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
+    private isExternallyCalculated: boolean = false;
+
+    constructor(private metricsService: MetricsService, private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
         super();
     }
 
@@ -123,7 +127,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.metrics = [];
         this.metricTree = [];
         if (this.assetType) {
-            this.metricsService.getMetricsByAssetType(this.assetType.Uid)
+            this.metricsService.getMetricsByAssetType(this.assetType.Uid, this.scoreType)
                 .subscribe(r => {
 
                     this.metrics = r;
@@ -146,7 +150,11 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                     this.metricsService.getFieldTypeViewModelsByAssetType(this.assetType.Uid)
                         .subscribe(f => {
                             this.metricListFieldTypes = f;
-                            this.isLoading = false;
+
+                            this.allocationService.getAllocationsByAssetTypeUid(this.assetType.Uid).subscribe(res => {
+                                this.isLoading = false;
+                                this.isExternallyCalculated = res.find(x => x.scoreType == this.scoreType).isExternallyCalculated;
+                            })
                         });
                 });
         }

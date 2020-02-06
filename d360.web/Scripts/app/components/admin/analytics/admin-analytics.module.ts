@@ -90,7 +90,7 @@ import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component
         AdminMetricEditorComponent,
         AdminMetricListComponent,
         AdminAllocationEditorComponent,
-        AdminAnalyticsDetailsComponent 
+        AdminAnalyticsDetailsComponent
     ],
     providers: [
         {

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { JsonResult } from '../models/jsonresult.model';
-import { MetricAssetViewModel, MetricFieldTypeViewModel } from '../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType } from '../models/metrics.model';
 import { AssetTypeMetricModel } from '../models/asset.model';
 import { Observable } from 'rxjs';
 import { MessagesObservableService } from './messages-observable.service';
@@ -24,9 +24,9 @@ export class MetricsService extends BaseObservableService {
             .get<MetricFieldTypeViewModel[]>(`/api/v2/metrics/fields/${assetTypeUid}`);
     }
 
-    public getMetricsByAssetType(assetTypeUid: string): Observable<MetricAssetViewModel[]> {
+    public getMetricsByAssetType(assetTypeUid: string, scoreType: ScoreType): Observable<MetricAssetViewModel[]> {
         return this.http
-            .get<MetricAssetViewModel[]>(`/api/v2/metrics/structure/${assetTypeUid}`);
+            .get<MetricAssetViewModel[]>(`/api/v2/metrics/structure/${assetTypeUid}?_scoreType=${scoreType.toString()}`);
     }
 
     public saveMetric(model: MetricAssetViewModel): Observable<JsonResult> {

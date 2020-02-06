@@ -7,7 +7,7 @@
                 <div class="FieldNameRequired">Name</div>
                 <input type="text" [(ngModel)]="model.Name" style="width: 100%" />
             </div>
-            <div class="col l6 m12 s12">
+            <div class="col l6 m12 s12" *ngIf="!isExternallyCalculated">
                 <ng-container *ngIf="!parentUid && !model.ParentUid">
                     <p-checkbox [(ngModel)]="model.IsGroup" binary="true" label="Grouping?"></p-checkbox>
                 </ng-container>
@@ -24,7 +24,7 @@
                         <p-calendar [(ngModel)]="model.EffectiveDate" [showTime]="false" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"></p-calendar>
                     </div>
                 </div>
-                <div class="col l6 m12 s12">
+                <div class="col l6 m12 s12"  *ngIf="!isExternallyCalculated">
                     <div class="FieldNameRequired">
                         Weight
                     </div>
@@ -47,7 +47,7 @@
         </div>
     </div>
 </div>
-<div class="row" *ngIf="!isLoading">
+<div class="row" *ngIf="!isLoading && !isExternallyCalculated">
     <div class="col s12">
         <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup">
             <div class="row">

@@ -39,9 +39,18 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
     scoreTypeChange($event) {
         this.populateAssetTypesDDL();
+
+        if (this.selection.scoreType.toString() == 'DataQuality')
+            this.selection.isExternallyCalculated = true;
+
+    }
+
+    isExtCalcDisabled(): boolean {
+        return this.selection.scoreType.toString() == 'DataQuality';
     }
 
     private populateAssetTypesDDL() {
+
         this.allocationService.getunallocatedAssetTypes(this.selection.scoreType)
             .subscribe(data => {
                 this.ddlAssetTypes = [];
@@ -62,11 +71,8 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
 
     private initialData() {
-        this.ddlScoreTypes.push({ value: ScoreType.Governance, label: "Governance" });
-
-        //Uncomment in 2020-sprint-3
-        //this.ddlScoreTypes.push({ value: ScoreType.DataQuality, label: "Data Quality" });
-        //this.ddlScoreTypes.push({ value: ScoreType.Perceptional, label: "Perceptional" });
+        this.ddlScoreTypes.push({ value: 'Governance', label: 'Governance' });
+        this.ddlScoreTypes.push({ value: 'DataQuality', label: 'Data Quality' });
     }
 
     getClassFriendlyName(atc: AssetTypeClass): string {
@@ -91,12 +97,13 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
         item.assetTypeUid = this.selection.assetTypeUid;
         item.scoreType = this.selection.scoreType;
+        item.isExternallyCalculated = this.selection.isExternallyCalculated;
         this.savingInProgress = true;
         this.allocationService.save(item)
             .subscribe(res => {
 
                 this.savingInProgress = false;
-                if (res.type && res.type == "error")
+                if (!res || (res.type && res.type == "error"))
                     return;
 
                 let msg: string = '';
