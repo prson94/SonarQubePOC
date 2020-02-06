@@ -1287,6 +1287,9 @@ namespace d360.extensions.search
             if (string.IsNullOrEmpty(phrase))
                 return new List<TypeaheadResult>();
 
+            if (phrase.Length > QueryRequest.SEARCH_TERM_MAX_LENGTH)
+                phrase = phrase.Substring(0, QueryRequest.SEARCH_TERM_MAX_LENGTH);
+
             Nest.Field fldName = new Nest.Field(DYNAMIC_FIELD_PREFIX + "Name");
             Nest.Field fldCategory = new Nest.Field(D3S_FIELD_PREFIX + "Category");
             Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");

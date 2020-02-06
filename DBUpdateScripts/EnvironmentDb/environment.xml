@@ -428,8 +428,10 @@
   <include file="scripts/GOV-9539.xml"/> <!-- clean up FieldType records with inappropriate LookupObjectType/LookupObjectID values -->
   <include file="scripts/GOV-9554.xml"/> <!-- graph.UpdateAssetEdge - consider changes to subject/object of relationship and recreate record if necessary -->
   <include file="scripts/GOV-9106.xml"/> <!-- Changed AssetWithType view to point to asset type icon, instead of icon text -->
-  
+
   <!-- Sprint 3 2020 Start -->
   <include file="scripts/GOV-9579.xml"/> <!-- add RunDate column to [metrics].[Score] -->
+  <include file="scripts/GOV-9577.xml"/> <!-- add IsExternallyCalculated to metrics.Allocation -->
+  <include file="scripts/GOV-9486.xml"/> <!-- update delete object proc and remove orphaned metric.asset rows -->
   <include file="scripts/GOV-9079.xml"/> <!-- Update [graph].[GetHop] return actionCount to asset browser -->
 </databaseChangeLog>

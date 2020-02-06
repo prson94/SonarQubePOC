@@ -28,6 +28,7 @@ namespace d360.core.entities.Scoring
         [JsonConverter(typeof(StringEnumConverter))]
         public State state { get; set; } = State.Active;
         public bool hasMeasure { get; set; }
+        public bool isExternallyCalculated { get; set; }
     }
 
     public class AllocationApiUpsertModel
@@ -37,6 +38,9 @@ namespace d360.core.entities.Scoring
 
         [DataMember]
         public ScoreType scoreType { get; set; }
+
+        [DataMember]
+        public bool isExternallyCalculated { get; set; }
     }
 
     public class AllocationApiGetUnallocatedAssetTypeModel

@@ -82,7 +82,7 @@
                         </div>
 
                         <div class="filter-section">
-                            <div class="filter-header">Hide By Asset Type</div>
+                            <div class="filter-header">Hide by Asset Type</div>
                             <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
                             <p-tree [value]="filterSelectionsModel?.FilterAssetTypes"
                                     [hidden]="filtersLoading"
@@ -100,7 +100,7 @@
                         </div>
 
                         <div class="filter-section">
-                            <div class="filter-header">Hide by Impact Predicate</div>
+                            <div class="filter-header" *ngIf="filterSelectionsModel?.FilterPredicates && filterSelectionsModel?.FilterPredicates.length > 0">Hide by Impact Predicate</div>
                             <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
                             <p-tree [value]="filterSelectionsModel?.FilterPredicates"
                                     [hidden]="filtersLoading"
@@ -118,7 +118,7 @@
                         </div>
 
                         <div class="filter-section">
-                            <div class="filter-header">Hide by Responsible Party</div>
+                            <div class="filter-header" *ngIf="filterSelectionsModel?.FilterResponsibilityTypes && filterSelectionsModel?.FilterResponsibilityTypes.length > 0">Hide by Responsible Party</div>
                             <d3s-loading [isLoading]="filtersLoading"></d3s-loading>
                             <p-tree [value]="filterSelectionsModel?.FilterResponsibilityTypes"
                                     [hidden]="filtersLoading"
@@ -298,5 +298,3 @@
         </div>
     </div>
 </div>
-
-

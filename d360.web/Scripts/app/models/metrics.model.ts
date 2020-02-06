@@ -11,7 +11,7 @@ export class MetricAssetViewModel {
     EffectiveDate: string | Date;
     Weight: number;
     ConditionAndOr: string;
-
+    ScoreType: ScoreType;
     Conditions: MetricAssetVersionConditionViewModel[] = [];
 }
 
@@ -121,6 +121,7 @@ export class ScoreTypeAllocation {
     scoreType: ScoreType;
     state: State;
     hasMeasure: boolean;
+    isExternallyCalculated: boolean;
 }
 
 export class ScoreTypeAllocationFormatted {
@@ -131,6 +132,7 @@ export class ScoreTypeAllocationFormatted {
     scoreType: string;
     state: State;
     hasMeasure: boolean;
+    isExternallyCalculated: boolean;
 }
 
 export enum ScoreType {

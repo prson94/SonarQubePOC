@@ -34,6 +34,17 @@
                 </p-dropdown>
             </div>
         </div>
+        <div class="row">
+            <div class="FieldName">
+                <span>&nbsp;</span>
+            </div>
+            <div class="col s12 no-padding">
+                <p-checkbox label="Externally Calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="isExtCalcDisabled()" binary="true"></p-checkbox>
+            </div>
+            <div class="col s12 light-text">
+            If externally calculated, then all scores and measures must be passed in by an external provider and no conditions may be set on the measures themselves.
+            </div>
+        </div>
 
         <div *ngIf="disabled" class="warningMessage">
             This allocation cannot be edited as there are measures related to this allocation.
