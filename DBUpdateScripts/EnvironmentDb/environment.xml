@@ -432,4 +432,5 @@
   <!-- Sprint 3 2020 Start -->
   <include file="scripts/GOV-9579.xml"/> <!-- add RunDate column to [metrics].[Score] -->
   <include file="scripts/GOV-9577.xml"/> <!-- add IsExternallyCalculated to metrics.Allocation -->
+  <include file="scripts/GOV-9486.xml"/> <!-- update delete object proc and remove orphaned metric.asset rows -->
 </databaseChangeLog>
