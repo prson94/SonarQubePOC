@@ -21,6 +21,8 @@ namespace d360.core.entities
 
         public bool AllowMultipleValues { get; set; }
 
+        public int Level { get; set; }
+
         public List<BulkLoadGetLoadColumnModelValue> Lookups { get; set; }
     }
 
