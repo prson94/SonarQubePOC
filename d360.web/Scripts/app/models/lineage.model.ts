@@ -1,6 +1,6 @@
 ﻿import { AssetTypeClass } from "./asset.model";
 import { SelectItem, TreeNode } from "primeng/api";
-import { ScoreType, ScoreTrend } from "./metrics.model";
+import { ScoreType } from "./metrics.model";
 
 //#region Legacy: V2
 
