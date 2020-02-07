@@ -72,11 +72,11 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
         if (this.model == null) {
             valid = false;
         } else {
-            if (this.model.Name == null || this.model.Name.length > 250)
+            if (this.model.Name == null || this.model.Name.trim().length > 250 || this.model.Name.trim().length==0)
                 valid = false;
             if (this.model.EffectiveDate == null)
                 valid = false;
-            if (this.model.Weight == null || parseFloat(this.model.Weight.toFixed(2)) == 0)
+            if (!this.isExternallyCalculated && (this.model.Weight == null || parseFloat(this.model.Weight.toFixed(2)) == 0))
                 valid = false;
         }
 

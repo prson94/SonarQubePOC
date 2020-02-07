@@ -33,10 +33,7 @@ namespace d360.core.entities.Metric
         #region From metric asset version
 
         public DateTime EffectiveDate { get; set; }
-
-        [Required(AllowEmptyStrings = false, ErrorMessage = "You are have provided an invalid name.")]
-        [Range(typeof(decimal), "0.01", "1",
-        ErrorMessage = "Weight must be a value between 0 and 1")]
+        
         public decimal Weight { get; set; }
 
         [StringLength(1)]

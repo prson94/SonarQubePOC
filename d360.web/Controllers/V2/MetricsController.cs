@@ -132,11 +132,17 @@ namespace d360.web.Controllers.V2
             
             List<ValidationResult> validationResults = new List<ValidationResult>();
             bool isValid = true;
-
+            
             isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
             if (!isValid)
-            {
+            {                
                 return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", validationResults.First().ErrorMessage);
+            }
+
+        
+            if (allocation.IsExternallyCalculated != true && (model.Weight == 0 || model.Weight > 1))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight must be a value between 0 and 1");
             }
 
             if (model.IsGroup && model.Conditions.Count > 0)
