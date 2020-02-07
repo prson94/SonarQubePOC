@@ -48,5 +48,6 @@
   <include file="scripts/GOV-9260.xml"/> <!-- changing company logo to .svg -->
   <include file="scripts/GOV-7930.xml"/> <!-- remove UseLegacyLineage setting -->
   <include file="scripts/GOV-9226.xml"/> <!-- script to add the setting for max number of excel rows-->
+  <include file="scripts/GOV-8871.xml"/> <!-- Removing unused Govern Settings-->
   <include file="scripts/GOV-9473.xml"/> <!-- Change default value for fusion to false-->
 </databaseChangeLog>

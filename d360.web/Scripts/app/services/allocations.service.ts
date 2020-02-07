@@ -22,6 +22,13 @@ export class AllocationService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
+    public getAllocationsByAssetTypeUid(assetTypeUid: string): Observable<ScoreTypeAllocation[]> {
+        let url = `/api/v2/scoring/allocations?_state=Active&includeFlags=true&assetTypeUid=${assetTypeUid}`;
+        return this.http.get(url)
+            .pipe(map(response => <ScoreTypeAllocation[]>response),
+                catchError(err => this.handleError(err, true)));
+    }
+
     public deleteAllocationByUid(uid: string): Observable<any> {
         let url = `api/v2/scoring/allocations/${uid}`;
         return this.http.delete(url)
