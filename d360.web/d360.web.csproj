@@ -312,7 +312,6 @@
     <Compile Include="Controllers\Forms\FormController_Survey.cs" />
     <Compile Include="Controllers\Forms\FormController_Taxonomy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
-    <Compile Include="Controllers\Services\Obsolete\ReportsController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
     <Compile Include="Controllers\V2\FieldsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
