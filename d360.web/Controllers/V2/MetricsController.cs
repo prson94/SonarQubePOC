@@ -140,7 +140,7 @@ namespace d360.web.Controllers.V2
             }
 
         
-            if (allocation.IsExternallyCalculated != true && (model.Weight == 0 || model.Weight > 1))
+            if (allocation.IsExternallyCalculated == false && (model.Weight == 0 || model.Weight > 1))
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight must be a value between 0 and 1");
             }
