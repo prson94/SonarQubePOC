@@ -53,8 +53,10 @@
         </div>
 
         <div class="gas-search {{isSearchWindowOpened ? 'visible':''}}">
-            <input #searchInput (keyup)="search($event)" placeholder="Type to search for assets" />
-
+            <div class="search-field {{!isSearchPhraseValid ? 'error' : ''}}">
+                <input #searchInput (keyup)="search($event)" placeholder="Type to search for assets" />
+                <span class="feedback">Search phrase must have at least one alpha-numerical character!</span>
+            </div>
             <span class="search-button">
                 <i class="fa fa-search"></i>
             </span>
